@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 98137b6eb04513642a1b7aee48152245
+timeCreated: 1490812310
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - grapStart: {instanceID: 0}
+  - grapHook: {fileID: 145354, guid: fd64cd14bf1361c4285aafdcd868d235, type: 2}
+  - grapPoint: {fileID: 171988, guid: a2d651855cb5ef34db89c17a6b644c43, type: 2}
+  - grapParticles: {fileID: 1020015163052228, guid: d890a1c387cecd84db3652e67745e0db,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
