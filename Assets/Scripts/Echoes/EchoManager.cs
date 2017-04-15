@@ -69,7 +69,6 @@ public class EchoManager : MonoBehaviour {
 	public void CreateEcho() {
         Echo newEcho = InstantiateFromPool(echoPrefab, transform.position);
         echoes.Add(newEcho);
-		Debug.Log ("echo");
         if (echoes.Count > maxEchoes)
             echoes[0].Break();
     }
@@ -84,6 +83,11 @@ public class EchoManager : MonoBehaviour {
         eclipse = false;
         for (int i = 0; i < echoes.Count; i++)
             echoes[i].Unfreeze();
+    }
+
+    public void BreakAll() {
+        for (int i = echoes.Count-1; i >=0; i--)
+            echoes[i].Break();
     }
 
     public void SetEchoesParent(Transform parent) {

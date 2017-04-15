@@ -83,6 +83,9 @@ namespace HutongGames.PlayMakerEditor
             if ((int)(object)group == 16) return false;
 #endif
 
+#if UNITY_5_6 // Unity 5.4+ doesn't like Wp8 and Blackberry any more
+            if ((int)(object)group == 27) return false;
+#endif
             return true;
         }
 
