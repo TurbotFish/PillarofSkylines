@@ -4,7 +4,7 @@
 public class Echo : MonoBehaviour {
 
     new BoxCollider collider;
-    public bool isActive, isFrozen;
+    public bool isActive, isFrozen, playerEcho;
 
     public float colliderSizeWhenSolid = 2;
     float defaultColliderSize;
@@ -28,8 +28,9 @@ public class Echo : MonoBehaviour {
         defaultColliderSize = collider.size.x;
 
         echoManager = FindObjectOfType<EchoManager>();
-
         pool = echoManager.pool;
+
+        if (!playerEcho) echoManager.nonEchoes.Add(this);
 	}
 
     void OnTriggerEnter(Collider col) {
@@ -40,15 +41,21 @@ public class Echo : MonoBehaviour {
 
     void OnTriggerExit(Collider col) {
         if (col.tag == "Player") {
-            isActive = true;
+            if (isActive)
+                Break();
+            else
+                isActive = true;
         }
     }
 
     public void Break() {
+        isActive = false;
         echoManager.BreakParticles(transform.position);
         gameObject.SetActive(false);
-        transform.parent = pool;
-        echoManager.echoes.Remove(this);
+        if (playerEcho) {
+            transform.parent = pool;
+            echoManager.echoes.Remove(this);
+        }
     }
 
     public void Freeze() {
@@ -58,7 +65,7 @@ public class Echo : MonoBehaviour {
         renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
         isFrozen = true;
 
-        collider.size = Vector3.one * colliderSizeWhenSolid;
+        collider.size *= colliderSizeWhenSolid;
         collider.isTrigger = false;
     }
 

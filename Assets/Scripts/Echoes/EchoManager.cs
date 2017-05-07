@@ -17,6 +17,8 @@ public class EchoManager : MonoBehaviour {
     public List<Echo> echoes;
     public int maxEchoes = 3;
 
+    public List<Echo> nonEchoes; // For echoes that were not created by the player
+
     [HideInInspector]
     public Transform pool;
 
@@ -68,6 +70,7 @@ public class EchoManager : MonoBehaviour {
 
 	public void CreateEcho() {
         Echo newEcho = InstantiateFromPool(echoPrefab, transform.position);
+        newEcho.playerEcho = true;
         echoes.Add(newEcho);
         if (echoes.Count > maxEchoes)
             echoes[0].Break();
@@ -77,12 +80,16 @@ public class EchoManager : MonoBehaviour {
         eclipse = true;
         for (int i = 0; i < echoes.Count; i++)
             echoes[i].Freeze();
+        for (int i = 0; i < nonEchoes.Count; i++)
+            nonEchoes[i].Freeze();
     }
 
     public void UnfreezeAll() {
         eclipse = false;
         for (int i = 0; i < echoes.Count; i++)
             echoes[i].Unfreeze();
+        for (int i = 0; i < nonEchoes.Count; i++)
+            nonEchoes[i].Unfreeze();
     }
 
     public void BreakAll() {
