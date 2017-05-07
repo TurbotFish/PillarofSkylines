@@ -110,6 +110,6 @@ public class EchoManager : MonoBehaviour {
     }
 
     public void BreakParticles(Vector3 position) {
-        BreakEchoParticles breakParticles = InstantiateFromPool(breakEchoParticles, position);
+        InstantiateFromPool(breakEchoParticles, position);
     }
 }

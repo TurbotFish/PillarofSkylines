@@ -8,7 +8,7 @@ public class LightRay : MonoBehaviour {
     Transform lookAtTarget;
 
     LightReceptor receptor;
-    LineRenderer renderer;
+    new LineRenderer renderer;
     Transform my;
     private void Start() {
         my = transform;

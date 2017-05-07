@@ -31,9 +31,6 @@ public class CubicDistortion : MonoBehaviour {
             _material = new Material(_shader);
             _material.hideFlags = HideFlags.DontSave;
         }
-
-        var cam = GetComponent<Camera>();
-        
         _material.SetFloat("_Intensity", intensity);
         Graphics.Blit(source, destination, _material, 0);
     }

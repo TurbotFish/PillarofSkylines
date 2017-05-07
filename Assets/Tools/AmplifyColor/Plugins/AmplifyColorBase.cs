@@ -164,7 +164,7 @@ public class AmplifyColorBase : MonoBehaviour
 	bool CheckSupport()
 	{
 		// Disable if we don't support image effect or render textures
-		if ( !SystemInfo.supportsImageEffects || !SystemInfo.supportsRenderTextures )
+		if ( !SystemInfo.supportsImageEffects)
 		{
 			ReportNotSupported();
 			return false;
@@ -736,7 +736,7 @@ public class AmplifyColorBase : MonoBehaviour
 
 		Texture lut = ( LutTexture == null ) ? defaultLut : LutTexture;
 		Texture lutBlend = LutBlendTexture;
-		int pass = ( colorSpace == ColorSpace.Linear ? 2 : 0 ) + ( ownerCamera.hdr ? 1 : 0 );
+		int pass = ( colorSpace == ColorSpace.Linear ? 2 : 0 ) + ( ownerCamera.allowHDR ? 1 : 0 );
 
 		bool blend = ( BlendAmount != 0.0f ) || blending;
 		bool requiresBlend = blend || ( blend && lutBlend != null );

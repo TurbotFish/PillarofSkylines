@@ -3,7 +3,9 @@
 public class SurfacesManager : MonoBehaviour {
 
     [SerializeField]
-    Transform westSurface, eastSurface;
+    Transform westSurface;
+    [SerializeField]
+    Transform eastSurface;
 
     public float distance;
     

@@ -64,10 +64,8 @@ public class EclipseManager : MonoBehaviour {
     IEnumerator _RotatePillar(Vector3 pivot, Vector3 axis, float angle) {
         
         for (float elapsed = 0; elapsed < rotationDuration; elapsed += Time.deltaTime) {
-            float t = elapsed / rotationDuration;
             
             pillar.RotateAround(pivot, axis, angle * rotationDuration * Time.deltaTime);
-
             yield return new WaitForEndOfFrame();
         }
     }

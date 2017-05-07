@@ -262,7 +262,6 @@ public partial class LightShafts : MonoBehaviour
 		m_DX11Support = SystemInfo.graphicsShaderLevel >= 50;
 
 		m_MinRequirements = SystemInfo.graphicsShaderLevel >= 30;
-		m_MinRequirements &= SystemInfo.supportsRenderTextures;
 		m_MinRequirements &= SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RGFloat);
 		m_MinRequirements &= SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.RFloat);
 

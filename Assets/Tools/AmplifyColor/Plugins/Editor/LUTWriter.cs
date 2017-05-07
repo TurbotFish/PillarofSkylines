@@ -80,9 +80,9 @@ namespace AmplifyColor
 				tImporter.textureType = TextureImporterType.Default;
 				tImporter.filterMode = FilterMode.Bilinear;
 				tImporter.anisoLevel = 0;
-				tImporter.textureFormat = TextureImporterFormat.AutomaticTruecolor;
+				tImporter.textureCompression = TextureImporterCompression.Uncompressed;
 				tImporter.wrapMode = TextureWrapMode.Clamp;
-				tImporter.linearTexture = true;
+				tImporter.sRGBTexture = true;
 				tImporter.maxTextureSize = 1024;
 				AssetDatabase.ImportAsset( _texturePath, ImportAssetOptions.ForceUpdate );
 			}

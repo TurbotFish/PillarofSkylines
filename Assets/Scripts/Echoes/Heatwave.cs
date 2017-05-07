@@ -4,16 +4,14 @@ public class Heatwave : MonoBehaviour {
 
 	public float growSpeed;
 	public float fadeSpeed;
-
-	float _startRefraction;
+    
 	Material _mat;
     Transform _my, _camera;
 
 	void Start () {
 		_mat = GetComponent<MeshRenderer>().material;
-		_startRefraction = _mat.GetFloat("_RefractionIntensity");
         _my = transform;
-		_camera = GameObject.FindObjectOfType<ThirdPersonCamera> ().transform;
+		_camera = FindObjectOfType<ThirdPersonCamera> ().transform;
         LookAtCamera();
     }
 	

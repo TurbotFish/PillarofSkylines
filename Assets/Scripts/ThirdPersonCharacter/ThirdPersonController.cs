@@ -28,7 +28,6 @@ public class ThirdPersonController : MonoBehaviour {
 
     CharacterController controller;
     GameObject platform;
-    Rigidbody rb;
     Animator animator;
     ParticleSystem doubleJumpParticles, dashParticles;
 
@@ -51,7 +50,6 @@ public class ThirdPersonController : MonoBehaviour {
         camera = FindObjectOfType<ThirdPersonCamera>();
         animator = GetComponent<Animator>();
         controller = GetComponent<CharacterController>();
-        rb = GetComponent<Rigidbody>();
         distToGround.y = - (GetComponent<Collider>().bounds.extents.y + .1f);
         
         if (FXManager.instance) {
@@ -221,7 +219,7 @@ public class ThirdPersonController : MonoBehaviour {
         //animator.applyRootMotion = controller.isGrounded;
         animator.applyRootMotion = false;
 
-        float m_TurnAmount = Mathf.Atan2(move.x, move.z);
+        //float m_TurnAmount = Mathf.Atan2(move.x, move.z);
 
         // update the animator parameters
         animator.SetFloat("Forward", move.z, 0.1f, Time.deltaTime);

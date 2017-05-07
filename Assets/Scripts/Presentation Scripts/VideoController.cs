@@ -1,19 +1,16 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 using UnityEngine.Video;
 
 public class VideoController : MonoBehaviour {
 
 	AudioSource _audio;
 	VideoPlayer _movie;
-	int _vsyncBase;
+	//int _vsyncBase;
 	// Use this for initialization
 	void Start () {
 		_movie = GetComponent<VideoPlayer>();
 		_audio = GetComponent<AudioSource>();
-		_vsyncBase = QualitySettings.vSyncCount;
+		//_vsyncBase = QualitySettings.vSyncCount;
 	}
 	
 	// Update is called once per frame

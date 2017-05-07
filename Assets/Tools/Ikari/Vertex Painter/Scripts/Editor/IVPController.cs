@@ -59,7 +59,7 @@ namespace Ikari.VertexPainter
         int menuOptionsIndex = 0;
 
         //Editor UI
-        Texture2D logo;
+        //Texture2D logo;
         Color headerColor = new Color(0.65f, 0.65f, 0.65f, 1);
         Color backgroundColor = new Color(0.75f, 0.75f, 0.75f);
         Texture2D alphaTexture;
@@ -133,7 +133,7 @@ namespace Ikari.VertexPainter
             }
 
             //Logo
-            logo = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(internalResourcesPath, "Interface/IVPTitle.png"), typeof(Texture2D));
+            //logo = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(internalResourcesPath, "Interface/IVPTitle.png"), typeof(Texture2D));
 
             //Alpha Background
             alphaTexture = (Texture2D)AssetDatabase.LoadAssetAtPath(Path.Combine(internalResourcesPath, "Interface/IVPAlphaTexture.png"), typeof(Texture2D));
@@ -381,7 +381,7 @@ namespace Ikari.VertexPainter
                                         if (GUILayout.Button("Enable Wireframe"))
                                         {
                                             Undo.RecordObjects(new UnityEngine.Object[] { Selection.transforms[i].GetComponent<Renderer>(), objectData }, "Show Wireframe");
-                                            EditorUtility.SetSelectedWireframeHidden(Selection.transforms[i].GetComponent<Renderer>(), false);
+                                            EditorUtility.SetSelectedRenderState(Selection.transforms[i].GetComponent<Renderer>(), EditorSelectedRenderState.Wireframe);
                                             EditorUtility.SetDirty(Selection.transforms[i].GetComponent<Renderer>());
                                             objectData.editorData.showingWireframe = false;
                                         }
@@ -392,7 +392,7 @@ namespace Ikari.VertexPainter
                                         if (GUILayout.Button("Disable Wireframe", GUILayout.MaxWidth(position.width)))
                                         {
                                             Undo.RecordObjects(new UnityEngine.Object[] { Selection.transforms[i].GetComponent<Renderer>(), objectData }, "Show Wireframe");
-                                            EditorUtility.SetSelectedWireframeHidden(Selection.transforms[i].GetComponent<Renderer>(), true);
+                                            EditorUtility.SetSelectedRenderState(Selection.transforms[i].GetComponent<Renderer>(), EditorSelectedRenderState.Hidden);
                                             EditorUtility.SetDirty(Selection.transforms[i].GetComponent<Renderer>());
                                             objectData.editorData.showingWireframe = true;
                                         }

@@ -165,7 +165,7 @@ public class AmplifyColorEffectEditorBase : Editor
 		EditorGUILayout.PropertyField( triggerVolumeProxy );
 		EditorGUILayout.PropertyField( volumeCollisionMask );
 
-		if ( ownerCamera != null && ( exposure.floatValue != 1.0f || useToneMapping.boolValue || useDithering.boolValue ) &&  !ownerCamera.hdr )
+		if ( ownerCamera != null && ( exposure.floatValue != 1.0f || useToneMapping.boolValue || useDithering.boolValue ) &&  !ownerCamera.allowHDR )
 		{
 			GUILayout.Space( 4 );
 			EditorGUILayout.HelpBox( "HDR Control requires Camera HDR to be enabled", MessageType.Warning );

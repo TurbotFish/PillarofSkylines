@@ -27,9 +27,6 @@ public class ThirdPersonControllerAI : MonoBehaviour {
     float xForce, zForce;
     Vector3 direction;
     Vector3 distToGround;
-    KeyCode jumpKey = KeyCode.Space;
-
-    new ThirdPersonCamera camera;
 
     CharacterController controller;
     GameObject platform;
@@ -53,7 +50,6 @@ public class ThirdPersonControllerAI : MonoBehaviour {
     }
     
     void Start() {
-        camera = FindObjectOfType<ThirdPersonCamera>();
         animator = GetComponent<Animator>();
         controller = GetComponent<CharacterController>();
         rb = GetComponent<Rigidbody>();
@@ -74,13 +70,11 @@ public class ThirdPersonControllerAI : MonoBehaviour {
     #region Jump
 	[HideInInspector]
     public int jumpsRemaining;
-    bool jumping;
     public void Jump() {
         if (jumpsRemaining == numberOfJumps && !controller.isGrounded)
             jumpsRemaining--; // The first jump can only be done on the ground
         if (jumpsRemaining > 0) {
             jumpsRemaining--;
-            jumping = true;
             verticalVelocity = jumpForce;
             if(!controller.isGrounded && doubleJumpParticles) {
                 if (doubleJumpParticles.isPlaying) {
@@ -100,7 +94,7 @@ public class ThirdPersonControllerAI : MonoBehaviour {
     public MinMax impact = new MinMax(0.7f, 3);
 
     void Impact() {
-        float impactStrength = Mathf.Min(reachedMaxFallingSpeed * fallImpact + impact.min, impact.max);
+        //float impactStrength = Mathf.Min(reachedMaxFallingSpeed * fallImpact + impact.min, impact.max);
         //camera.temporaryOffset = new Vector2(0, -impactStrength);
     }
     #endregion
@@ -214,7 +208,7 @@ public class ThirdPersonControllerAI : MonoBehaviour {
         //animator.applyRootMotion = controller.isGrounded;
         animator.applyRootMotion = false;
 
-        float m_TurnAmount = Mathf.Atan2(move.x, move.z);
+        //float m_TurnAmount = Mathf.Atan2(move.x, move.z);
 
         // update the animator parameters
         animator.SetFloat("Forward", move.z, 0.1f, Time.deltaTime);
