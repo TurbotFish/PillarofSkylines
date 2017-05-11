@@ -45,7 +45,7 @@ public class EclipseManager : MonoBehaviour {
         GameObject[] allRootObjects = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
 
         foreach (GameObject go in allRootObjects) {
-            if (go.GetComponent<Camera>()) continue; //not the camera
+            if (go.GetComponent<Camera>() || go.GetComponent<ThirdPersonController>()) continue; //not the camera nor the player
             go.transform.parent = pillar;
         }
     }
@@ -69,7 +69,14 @@ public class EclipseManager : MonoBehaviour {
             pillar.RotateAround(pivot, axis, trueAngle * Time.deltaTime);
             yield return new WaitForEndOfFrame();
         }
-        // Need to set it at 0,0,90 just to be sure
+
+        float zRot = pillar.rotation.eulerAngles.z;
+
+        zRot /= 10;
+        zRot = Mathf.Round(zRot);
+        zRot *= 10;
+
+        pillar.eulerAngles = new Vector3(0, 0, zRot);
     }
 
 }
