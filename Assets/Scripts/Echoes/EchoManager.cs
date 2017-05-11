@@ -21,7 +21,7 @@ public class EchoManager : MonoBehaviour {
 
     [HideInInspector]
     public Transform pool;
-
+    Transform player;
     new EchoCameraEffect camera;
 
     bool eclipse;
@@ -40,6 +40,7 @@ public class EchoManager : MonoBehaviour {
 
     void Start() {
 		camera = FindObjectOfType<ThirdPersonCamera>().GetComponent<EchoCameraEffect>();
+        player = FindObjectOfType<ThirdPersonController>().transform;
         pool = new GameObject().transform;
         pool.name = "Echo Pool";
     }
@@ -50,26 +51,31 @@ public class EchoManager : MonoBehaviour {
                 Drift();
             if (Input.GetKeyUp(KeyCode.E)) 
                 CreateEcho();
+        } else if (Input.GetKeyUp(KeyCode.A)) {
+                StopEclipse();
         }
 	}
+
+    public void StopEclipse() {
+        EclipseManager.instance.StopEclipse();
+    }
 
     public void Drift() {
         if (echoes.Count > 0) {
 			if (!AI) camera.SetFov(70, 0.15f, true);
             Echo targetEcho = echoes[echoes.Count - 1];
-            transform.position = targetEcho.transform.position; // We should reference Player and move this script in a Manager object
+            player.position = targetEcho.transform.position; // We should reference Player and move this script in a Manager object
             if (!targetEcho.isActive)
                 targetEcho.Break();
 
-			if (demo)
-			{
+			if (demo) {
 				GetComponent<Rigidbody>().velocity = demoVelocity;
 			}
         }
     }
 
 	public void CreateEcho() {
-        Echo newEcho = InstantiateFromPool(echoPrefab, transform.position);
+        Echo newEcho = InstantiateFromPool(echoPrefab, player.position);
         newEcho.playerEcho = true;
         echoes.Add(newEcho);
         if (echoes.Count > maxEchoes)
