@@ -12,15 +12,16 @@ public class Door : TriggerableObject {
     public void Start() {
         my = transform;
         localPositionWhenClosed = my.localPosition;
-        localPositionWhenOpen = localPositionWhenClosed + offsetWhenOpen;
         elapsed = timeToMove;
     }
 
     protected override void Activate() {
+        localPositionWhenOpen = localPositionWhenClosed + offsetWhenOpen;
         Move(localPositionWhenClosed, localPositionWhenOpen);
     }
 
     protected override void Deactivate() {
+        localPositionWhenClosed = localPositionWhenOpen - offsetWhenOpen;
         Move(localPositionWhenOpen, localPositionWhenClosed);
     }
 
