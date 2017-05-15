@@ -135,6 +135,8 @@ public class ThirdPersonController : MonoBehaviour {
 
     float deltaTime;
     void Update() {
+        if (GameState.isPaused)
+            return;
         deltaTime = Time.deltaTime;
         
         DoVerticalVelocity();

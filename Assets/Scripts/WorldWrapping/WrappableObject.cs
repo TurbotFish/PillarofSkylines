@@ -2,6 +2,10 @@
 
 public class WrappableObject : MonoBehaviour {
 
+    [SerializeField]
+    Transform follower;
+    Vector3 followOffset;
+
     WorldWrapper wrapper;
     Transform my;
     bool teleporting;
@@ -15,6 +19,8 @@ public class WrappableObject : MonoBehaviour {
         Vector3 pos = my.position;
         Vector3 wrapPos = wrapper.transform.position;
         Vector3 worldSize = wrapper.worldSize;
+        if (follower)
+            followOffset = follower.position - pos;
         teleporting = false;
 
         if (wrapper.repeatAxes.x) {
@@ -53,5 +59,7 @@ public class WrappableObject : MonoBehaviour {
 
     public virtual void SetPosition(Vector3 pos) {
         my.position = pos;
+        if (follower)
+            follower.position = pos + followOffset;
     }
 }

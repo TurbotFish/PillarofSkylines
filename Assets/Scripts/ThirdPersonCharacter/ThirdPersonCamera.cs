@@ -60,7 +60,8 @@ public class ThirdPersonCamera : MonoBehaviour {
     }
 
     void OnApplicationFocus(bool hasFocus) {
-        Cursor.lockState = CursorLockMode.Locked;
+        if (!GameState.isPaused)
+            Cursor.lockState = CursorLockMode.Locked;
     }
 
     void LateUpdate() {
