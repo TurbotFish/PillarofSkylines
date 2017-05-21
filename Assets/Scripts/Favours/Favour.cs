@@ -15,25 +15,41 @@ public class Favour : MonoBehaviour {
 
     GameObject obj;
     FavourManager manager;
+    bool dragged;
 
     void Start() {
         obj = gameObject;
         manager = FavourManager.instance;
-        if (!manager.favours.Contains(this))
-            manager.favours.Add(this);
-
-        if (Hidden)
+        if (state == FavourState.free)
+            Unlock();
+        else if (Hidden)
             obj.SetActive(false);
+    }
+
+    void Update() {
+        if (!dragged) return;
+
+        transform.position = Input.mousePosition;
     }
 
     public void Unlock() {
         state = FavourState.free;
         obj.SetActive(true);
+        if (!manager.freeFavours.Contains(this))
+            manager.freeFavours.Add(this);
     }
 
     public void Sacrifice() {
         state = FavourState.sacrificed;
         obj.SetActive(false);
+    }
+
+    public void Pick() {
+        dragged = true;
+    }
+
+    public void Drop() {
+        dragged = false;
     }
 
     #region Editor

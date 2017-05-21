@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class FavourManager : MonoBehaviour {
 
     public Favour favourPrefab;
-    public List<Favour> favours;
+    public List<Favour> freeFavours;
 
     [SerializeField]
     GameObject favourMenu;
@@ -23,8 +23,7 @@ public class FavourManager : MonoBehaviour {
             Destroy(gameObject);
     }
     #endregion
-
-
+    
     void Start () {
         visible = false;
         favourMenu.SetActive(visible);
@@ -42,6 +41,7 @@ public class FavourManager : MonoBehaviour {
     public Favour CreateFavour() {
         Favour newFavour = PrefabUtility.InstantiatePrefab(favourPrefab) as Favour;
         newFavour.transform.SetParent(favourMenu.transform);
+        newFavour.transform.localScale = Vector3.one;
         return newFavour;
     }
 }

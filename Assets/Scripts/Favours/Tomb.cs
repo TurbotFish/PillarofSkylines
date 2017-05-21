@@ -10,7 +10,9 @@ public class Tomb : MonoBehaviour {
     void OnTriggerEnter(Collider other) {
 
         if (other.tag == "Player") {
-            print("Press F to Pay Respect");
+            if (!freedSpirit) {
+                print("Press F to Pay Respect");
+            }
             playerIsHere = true;
         }
 
@@ -19,7 +21,6 @@ public class Tomb : MonoBehaviour {
     void OnTriggerExit(Collider other) {
         
         if (other.tag == "Player") {
-            print("leaved");
             playerIsHere = false;
         }
 
