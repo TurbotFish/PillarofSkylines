@@ -13,11 +13,14 @@ public class Favour : MonoBehaviour {
         get { return state == FavourState.locked || state == FavourState.sacrificed; }
     }
 
+    Transform my;
     GameObject obj;
     FavourManager manager;
+    FavourSlot currentSlot;
     bool dragged;
 
     void Start() {
+        my = transform;
         obj = gameObject;
         manager = FavourManager.instance;
         if (state == FavourState.free)
@@ -29,7 +32,22 @@ public class Favour : MonoBehaviour {
     void Update() {
         if (!dragged) return;
 
-        transform.position = Input.mousePosition;
+        my.position = Input.mousePosition;
+    }
+
+    void OnTriggerEnter2D(Collider2D col) {
+        print("trigger enter");
+        FavourSlot slot = col.GetComponent<FavourSlot>();
+        if (slot) {
+            currentSlot = slot;
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D col) {
+        FavourSlot slot = GetComponent<FavourSlot>();
+        if (slot == currentSlot) {
+            currentSlot = null;
+        }
     }
 
     public void Unlock() {
@@ -50,6 +68,9 @@ public class Favour : MonoBehaviour {
 
     public void Drop() {
         dragged = false;
+        if (currentSlot) {
+            my.position = currentSlot.transform.position;
+        }
     }
 
     #region Editor
