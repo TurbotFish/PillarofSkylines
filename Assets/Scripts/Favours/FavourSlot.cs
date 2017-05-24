@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FavourSlot : MonoBehaviour {
+public class FavourSlot : Slot {
 
-    void OnTriggerEnter2D(Collider2D col) {
-        print("slot trigger");
-    }
+
 }
