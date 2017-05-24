@@ -16,6 +16,7 @@ public class FavourManager : MonoBehaviour {
     [SerializeField]
     GameObject sacrificeMenu;
 
+    List<Slot> slotPool = new List<Slot>();
     bool visible;
 
     #region Singleton
@@ -33,7 +34,8 @@ public class FavourManager : MonoBehaviour {
         visible = false;
         favourMenu.SetActive(visible);
         sacrificeGrid = sacrificeMenu.GetComponentInChildren<GridLayoutGroup>();
-	}
+        sacrificeMenu.SetActive(false);
+    }
 	
 	void Update() {
 		if (Input.GetKeyDown(KeyCode.Tab)) {
@@ -53,15 +55,7 @@ public class FavourManager : MonoBehaviour {
         GameState.Pause(value);
         Cursor.lockState = value ? CursorLockMode.None : CursorLockMode.Locked;
         favourMenu.SetActive(value);
-
-        if (sacrificeMenu.activeSelf) {
-            for (int i = 0; i < sacrificeSlots.Length; i++) {
-                if (sacrificeSlots[i].item) {
-                    PutInFreeRow(sacrificeSlots[i].item.GetComponent<Favour>());
-                }
-            }
-        }
-        sacrificeMenu.SetActive(false);
+        HideSacrificeMenu();
     }
 
     #region Sacrifice Menu
@@ -71,6 +65,8 @@ public class FavourManager : MonoBehaviour {
     PillarEntrance currentPillarEntrance;
 
     public void DisplaySacrificeMenu(PillarEntrance pillarEntrance) {
+        if (sacrificeMenu.activeSelf) return;
+
         ToggleMenu(true);
         sacrificeMenu.SetActive(true);
         sacrificeSlots = new Slot[pillarEntrance.favoursToSacrify];
@@ -80,6 +76,17 @@ public class FavourManager : MonoBehaviour {
         currentPillarEntrance = pillarEntrance;
     }
     
+    void HideSacrificeMenu() {
+        if (sacrificeMenu.activeSelf) {
+            for (int i = 0; i < sacrificeSlots.Length; i++) {
+                if (sacrificeSlots[i].item)
+                    PutInFreeRow(sacrificeSlots[i].item.GetComponent<Favour>());
+                sacrificeSlots[i].gameObject.SetActive(false);
+            }
+        }
+        sacrificeMenu.SetActive(false);
+    }
+
     public void SacrificeFavours() {
         if (AllSacrificeSlotsAreFull()) {
             for (int i = 0; i < sacrificeSlots.Length; i++) {
@@ -98,13 +105,31 @@ public class FavourManager : MonoBehaviour {
     }
     
     Slot CreateSacrificeSlot() {
-        return Instantiate(slotPrefab, sacrificeGrid.transform);
+        return CreateSlotInParent(sacrificeGrid.transform);
     }
 
     #endregion
 
+    Slot CreateSlotInParent(Transform parent) {
+        
+        foreach(Slot slot in slotPool) {
+            if (!slot.gameObject.activeSelf) {
+                slot.transform.SetParent(parent);
+                slot.gameObject.SetActive(true);
+                return slot;
+            }
+        }
+        Slot newSlot = Instantiate(slotPrefab, parent);
+        slotPool.Add(newSlot);
+        return newSlot;
+    }
+
+    // We could simply set FreeFavoursRow.GridLayoutGroup.CellSize to the size of a Favour on Start
+    // Get rid of slots in FreeFavoursRow and use Favours directly, the row as the single macro slot
+
     public void PutInFreeRow(Favour favour) {
-        Slot newSlot = Instantiate(slotPrefab, freeFavoursRow.transform);
+        Slot newSlot = CreateSlotInParent(freeFavoursRow.transform);
+
         favour.transform.SetParent(newSlot.transform);
         favour.transform.localPosition = Vector2.zero;
     }
