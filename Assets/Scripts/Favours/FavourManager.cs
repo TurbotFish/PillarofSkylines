@@ -33,6 +33,8 @@ public class FavourManager : MonoBehaviour {
     void Start () {
         visible = false;
         favourMenu.SetActive(visible);
+        freeFavoursRow.GetComponent<GridLayoutGroup>().cellSize = favourPrefab.GetComponent<RectTransform>().sizeDelta;
+
         sacrificeGrid = sacrificeMenu.GetComponentInChildren<GridLayoutGroup>();
         sacrificeMenu.SetActive(false);
     }
@@ -123,15 +125,9 @@ public class FavourManager : MonoBehaviour {
         slotPool.Add(newSlot);
         return newSlot;
     }
-
-    // We could simply set FreeFavoursRow.GridLayoutGroup.CellSize to the size of a Favour on Start
-    // Get rid of slots in FreeFavoursRow and use Favours directly, the row as the single macro slot
-
+    
     public void PutInFreeRow(Favour favour) {
-        Slot newSlot = CreateSlotInParent(freeFavoursRow.transform);
-
-        favour.transform.SetParent(newSlot.transform);
-        favour.transform.localPosition = Vector2.zero;
+        favour.transform.SetParent(freeFavoursRow.transform);
     }
 
     public Favour CreateFavour() {
