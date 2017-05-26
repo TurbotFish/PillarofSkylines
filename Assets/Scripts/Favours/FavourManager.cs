@@ -95,6 +95,7 @@ public class FavourManager : MonoBehaviour {
                 sacrificeSlots[i].item.GetComponent<Favour>().Sacrifice();
             }
         }
+        ToggleMenu(false);
         currentPillarEntrance.OpenDoor();
     }
 
