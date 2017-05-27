@@ -35,22 +35,18 @@ public class EclipseManager : MonoBehaviour {
 	}
 	
     public void StartEclipse() {
-        Time.timeScale = 0;
         PlaceAllObjectsInPillar();
         echoes.FreezeAll();
         isEclipseActive = true;
         RotatePillar(player.position, Vector3.forward, -90);
-        Time.timeScale = 1;
     }
 
     public void StopEclipse() {
-        Time.timeScale = 0;
         PlaceAllObjectsInPillar();
         echoes.UnfreezeAll();
         isEclipseActive = false;
         needle.gameObject.SetActive(true);
         RotatePillar(player.position, Vector3.forward, 90);
-        Time.timeScale = 1;
     }
 
     void PlaceAllObjectsInPillar() {
@@ -60,7 +56,7 @@ public class EclipseManager : MonoBehaviour {
         GameObject[] allRootObjects = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
 
         foreach (GameObject go in allRootObjects) {
-            if (go.GetComponent<Camera>()) continue; //not the camera nor the player
+            if (go.GetComponent<Camera>() || go.tag == "Player") continue; //not the camera nor the player
             go.transform.parent = pillar;
         }
     }
@@ -71,21 +67,19 @@ public class EclipseManager : MonoBehaviour {
 
     IEnumerator _RotatePillar(Vector3 pivot, Vector3 axis, float angle) {
 
+        GameState.Pause(true);
+        float finalzRot = Mathf.Round(pillar.eulerAngles.z + angle);
         float trueAngle = angle / rotationDuration;
         for (float elapsed = 0; elapsed < rotationDuration; elapsed += Time.unscaledDeltaTime) {
 
-            pillar.Rotate(axis * trueAngle * Time.unscaledDeltaTime);
+            //pillar.Rotate(axis * trueAngle * Time.unscaledDeltaTime);
 
-            //pillar.RotateAround(pivot, axis, trueAngle * Time.unscaledDeltaTime);
+            pillar.RotateAround(pivot, axis, trueAngle * Time.unscaledDeltaTime);
             yield return new WaitForEndOfFrame();
         }
-        float zRot = pillar.rotation.eulerAngles.z;
 
-        zRot /= 10;
-        zRot = Mathf.Round(zRot);
-        zRot *= 10;
-
-        pillar.eulerAngles = new Vector3(0, 0, zRot);
+        pillar.eulerAngles = new Vector3(0, 0, finalzRot);
+        GameState.Pause(false);
     }
 
 }

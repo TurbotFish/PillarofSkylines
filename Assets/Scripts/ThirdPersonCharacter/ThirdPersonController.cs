@@ -38,8 +38,6 @@ public class ThirdPersonController : MonoBehaviour {
     float lastForce;
     float currentForce {
         get {
-            if (dashing) lastForce = dashForce;
-            else
             if (controller.isGrounded)
                 lastForce = Input.GetKey(KeyCode.LeftShift) ? runForce : walkForce;
             return lastForce;
@@ -96,21 +94,7 @@ public class ThirdPersonController : MonoBehaviour {
         camera.temporaryOffset = new Vector2(0, -impactStrength);
     }
     #endregion
-
-    #region Dash
-    bool dashing;
-    [Header("Dash")]
-    public float dashForce = 20;
-    public float dashDuration = 0.5f;
-    float timeDashed;
-
-    void StartDash() {
-        dashing = true;
-        timeDashed = 0;
-        if (dashParticles) dashParticles.Play();
-    }
-    #endregion
-
+    
     void DoVerticalVelocity() {
         reachedMaxFallingSpeed = verticalVelocity <= -maxFallingSpeed ? reachedMaxFallingSpeed + deltaTime : 0;
 
@@ -143,20 +127,7 @@ public class ThirdPersonController : MonoBehaviour {
         
         xForce = Input.GetAxis("Horizontal") * currentForce;
         zForce = Input.GetAxis("Vertical") * currentForce;
-
-        if (Input.GetKeyDown(KeyCode.V) && !dashing)
-            StartDash();
-
-        if (dashing) {
-            zForce = dashForce;
-            verticalVelocity = 0;
-            timeDashed += Time.deltaTime;
-            if (timeDashed > dashDuration) {
-                dashing = false;
-                if (dashParticles) dashParticles.Stop();
-            }
-        }
-
+        
         if (strafe) {
             if (xForce != 0 || zForce != 0) // If we are moving, rotate in the direction of the camera
                 transform.rotation = Quaternion.Lerp(transform.rotation, rotator.rotation, deltaTime * rotationSpeed);
