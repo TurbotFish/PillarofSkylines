@@ -50,12 +50,56 @@ public class PresentationManagerV2 : MonoBehaviour {
 
 	void NextAnimation()
 	{
-		
+		if (currentSlide < _slidesInOrder.Count-1 || (currentSlide == _slidesInOrder.Count-1 && currentAnim < _slidesInOrder[currentSlide].animList.Count-1))
+		{
+			CompleteAnimation (currentSlide, currentAnim);
+
+			currentAnim ++;
+
+			if (currentAnim > _slidesInOrder[currentSlide].animList.Count-1)
+			{
+				//CompleteAnimation (currentSlide);
+				currentSlide++;
+				//_slidesInOrder[currentSlide].slide.transform.DOComplete();
+				_slidesInOrder[currentSlide].slide.SetActive(true);
+				//_slidesInOrder[currentSlide].slide.GetComponent<DOTweenAnimation>().DORestart();
+				currentAnim = -1;
+			}
+			else
+			{
+				ReadAnimation(currentSlide,currentAnim);
+			}
+		}
 	}
 
 	void PreviousAnimation()
 	{
 		
+	}
+		
+	void ReadAnimation(int _slide, int _anim)
+	{
+		string _id = _slidesInOrder [_slide].animList [_anim].GetComponent<DOTweenAnimation> ().id;
+		DOTween.Restart(_id);
+		//DOTween.Play (_id);
+	}
+
+	void ReadAnimation (int _slide)
+	{
+		string _id = _slidesInOrder [_slide].slide.GetComponent<DOTweenAnimation> ().id;
+		DOTween.Restart(_id);
+	}
+
+	void CompleteAnimation(int _slide, int _anim)
+	{
+		string _id = _slidesInOrder [_slide].animList [_anim].GetComponent<DOTweenAnimation> ().id;
+		DOTween.Complete (_id);
+	}
+
+	void CompleteAnimation (int _slide)
+	{
+		string _id = _slidesInOrder [_slide].slide.GetComponent<DOTweenAnimation> ().id;
+		DOTween.Complete(_id);
 	}
 
 	void SetSlidesInOrder()
