@@ -146,7 +146,8 @@ public class PresentationManager : MonoBehaviour {
 	void MoveSlideAway()
 	{
 		GameObject _slide = _slidesInOrder[currentSlide].slide;
-		_slide.transform.DOLocalMove(_slide.transform.right*-30, 2 , false).SetEase(Ease.OutQuint).OnComplete(()=>DisableSlide(_slide));
+		Debug.Log (_slide.transform.right);
+		_slide.transform.DOLocalMove(_slide.transform.position + _slide.transform.right*-150, 2 , false).SetEase(Ease.OutQuint).OnComplete(()=>DisableSlide(_slide));
 	}
 
 	void MoveSlideBack(bool _disable)
@@ -155,9 +156,9 @@ public class PresentationManager : MonoBehaviour {
 		_slide.transform.DOComplete();
 		_slide.SetActive(true);
 		if (!_disable)
-			_slide.transform.DOLocalMove(Vector3.zero, 2 , false).SetEase(Ease.OutQuint);
+			_slide.transform.DOLocalMove(new Vector3(-39.7f,17.4f,40.6f), 2 , false).SetEase(Ease.OutQuint);
 		else
-			_slide.transform.DOLocalMove(_slide.transform.right*30, 2 , false).SetEase(Ease.OutQuint).OnComplete(()=>DisableSlide(_slide));
+			_slide.transform.DOLocalMove(_slide.transform.position + _slide.transform.right*150, 2 , false).SetEase(Ease.OutQuint).OnComplete(()=>DisableSlide(_slide));
 	}
 
 	void DisableSlide(GameObject slide)
