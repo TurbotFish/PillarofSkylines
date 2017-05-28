@@ -16,13 +16,11 @@ public class Door : TriggerableObject {
     }
 
     protected override void Activate() {
-        print("Activate | pause: " + GameState.isPaused);
         localPositionWhenOpen = localPositionWhenClosed + offsetWhenOpen;
         Move(localPositionWhenClosed, localPositionWhenOpen);
     }
 
     protected override void Deactivate() {
-        print("Deactivate | pause: " + GameState.isPaused);
         localPositionWhenClosed = localPositionWhenOpen - offsetWhenOpen;
         Move(localPositionWhenOpen, localPositionWhenClosed);
     }
