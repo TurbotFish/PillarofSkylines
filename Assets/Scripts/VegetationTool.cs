@@ -9,6 +9,8 @@ public class VegetationTool : MonoBehaviour {
 	public int density = 20;
 	public float posRandom = 0.3f;
 	public float heightRandom = 0.1f;
+	public Vector3 rayOrigin = new Vector3(0,1,0);
+
 	[Space()]
 	[Header("Normal Target")]
 	public bool useNormalTarget = false;
@@ -33,7 +35,7 @@ public class VegetationTool : MonoBehaviour {
 		Vector3 center = col.bounds.center;
 		float radius = col.radius*transform.localScale.x;
 		float rotator = 2*Mathf.PI / density;
-		Vector3 newCenter = center+Vector3.up*radius*0.5f;
+		Vector3 newCenter = center+rayOrigin*radius*0.5f;
 
 		RaycastHit hit;
 		GameObject vegeGroup = new GameObject("vegetationGroup");
