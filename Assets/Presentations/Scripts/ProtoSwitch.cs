@@ -15,7 +15,7 @@ public class ProtoSwitch : MonoBehaviour {
 		{
 			if(inPrez)
 			{
-				SceneManager.LoadSceneAsync("grrTests");
+				SceneManager.LoadSceneAsync("Outside_Proto");
 			}	
 			if(!inPrez)
 			{
