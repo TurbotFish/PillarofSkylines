@@ -8,9 +8,12 @@ public class Needle : MonoBehaviour {
 
     void Start() {
         eclipseManager = EclipseManager.instance;
+    }
+
+    private void OnEnable() {
         fakeNeedle.SetActive(false);
     }
-    
+
     void OnTriggerStay(Collider col) {
 
         if (col.tag == "Player" && eclipseManager.isEclipseActive == false) {

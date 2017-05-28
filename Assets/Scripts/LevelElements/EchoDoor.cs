@@ -4,12 +4,12 @@ public class EchoDoor : MonoBehaviour {
 
     EclipseManager eclipse;
     GameObject echo;
-    bool state;
+    public bool state;
 
     void Start() {
         eclipse = EclipseManager.instance;
         echo = GetComponentInChildren<Echo>(true).gameObject;
-        state = echo.activeSelf;
+        echo.SetActive(state);
     }
 
     void OnTriggerEnter(Collider col) {

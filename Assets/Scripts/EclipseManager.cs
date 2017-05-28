@@ -66,8 +66,9 @@ public class EclipseManager : MonoBehaviour {
     }
 
     IEnumerator _RotatePillar(Vector3 pivot, Vector3 axis, float angle) {
-
+        
         GameState.Pause(true);
+
         float finalzRot = Mathf.Round(pillar.eulerAngles.z + angle);
         float trueAngle = angle / rotationDuration;
         for (float elapsed = 0; elapsed < rotationDuration; elapsed += Time.unscaledDeltaTime) {
@@ -79,6 +80,8 @@ public class EclipseManager : MonoBehaviour {
         }
 
         pillar.eulerAngles = new Vector3(0, 0, finalzRot);
+
+        player.position = needle.transform.position;
         GameState.Pause(false);
     }
 

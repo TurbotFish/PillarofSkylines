@@ -7,7 +7,7 @@ public class Echo : MonoBehaviour {
     public bool isActive, isFrozen, playerEcho;
 
     public float colliderSizeWhenSolid = 2;
-    float defaultColliderSize;
+    Vector3 defaultColliderSize;
 
     [SerializeField]
     Material solidMaterial;
@@ -25,7 +25,7 @@ public class Echo : MonoBehaviour {
 
         collider = GetComponent<BoxCollider>();
         collider.isTrigger = true;
-        defaultColliderSize = collider.size.x;
+        defaultColliderSize = collider.size;
 
         echoManager = FindObjectOfType<EchoManager>();
         pool = echoManager.pool;
@@ -76,7 +76,7 @@ public class Echo : MonoBehaviour {
         renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         isFrozen = false;
 
-        collider.size = Vector3.one * defaultColliderSize;
+        collider.size = defaultColliderSize;
         collider.isTrigger = true;
     }
 }
