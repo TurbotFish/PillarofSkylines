@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Collections;
 
 [RequireComponent(typeof(BoxCollider))]
 public class PillarEntrance : MonoBehaviour {
@@ -8,11 +7,11 @@ public class PillarEntrance : MonoBehaviour {
     public bool isOpen;
     public int favoursToSacrify = 3;
     public SceneField pillarLevel;
-
+    
     [SerializeField]
-    Transform actualDoor;
+    Animator anim;
     [SerializeField]
-    float timeToOpen = 1;
+    float timeBeforeNewScene = 0.5f;
 
     bool playerIsHere;
     FavourManager favourManager;
@@ -26,15 +25,21 @@ public class PillarEntrance : MonoBehaviour {
 
         if (Input.GetKeyDown(KeyCode.F)) {
             if (isOpen) {
-                SceneManager.LoadScene(pillarLevel);
+                anim.SetBool("Door_descent", true);
+                Invoke("LoadTheScene", timeBeforeNewScene);
             } else
                 favourManager.DisplaySacrificeMenu(this);
         }
     }
 
+    void LoadTheScene() {
+        SceneManager.LoadScene(pillarLevel);
+    }
+
     public void OpenDoor() {
         print("Pillar Door Open");
-        StartCoroutine(_OpenDoor());
+        anim.SetBool("Door_open", true);
+        GetComponent<BoxCollider>().enabled = false;
         isOpen = true;
     }
 
@@ -55,16 +60,5 @@ public class PillarEntrance : MonoBehaviour {
             playerIsHere = false;
         }
     }
-
-    IEnumerator _OpenDoor() {
-
-        Vector3 startPos = actualDoor.localPosition;
-
-        for (float elapsed = 0; elapsed < timeToOpen; elapsed+=Time.deltaTime) {
-            float t = elapsed / timeToOpen;
-            actualDoor.localPosition = Vector3.Lerp(startPos, Vector3.zero, t);
-            yield return null;
-        }
-        actualDoor.localPosition = Vector3.zero;
-    }
+    
 }
