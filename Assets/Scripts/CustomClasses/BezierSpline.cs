@@ -19,7 +19,7 @@ public class BezierSpline : MonoBehaviour {
 
 	public Vector3 GetControlPoint (int index) {
 		return points[index];
-		EnforceMode(index);
+		//EnforceMode(index);
 	}
 
 	public void SetControlPoint (int index, Vector3 point) {

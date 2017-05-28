@@ -27,12 +27,12 @@ public class Tomb : MonoBehaviour {
     }
 
     void Update() {
-        if (playerIsHere) {
-            if (!freedSpirit && Input.GetKeyDown(KeyCode.F)) {
-                print("thx mate");
-                favour.Unlock();
-                freedSpirit = true;
-            }
+        if (!playerIsHere) return;
+        
+        if (!freedSpirit && Input.GetKeyDown(KeyCode.F)) {
+            print("thx mate");
+            favour.Unlock();
+            freedSpirit = true;
         }
     }
 

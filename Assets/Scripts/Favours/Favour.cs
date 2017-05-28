@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 
-public class Favour : MonoBehaviour {
+public class Favour : DragHandler {
 
     public FavourState state;
     /// <summary>
@@ -23,6 +22,10 @@ public class Favour : MonoBehaviour {
         my = transform;
         obj = gameObject;
         manager = FavourManager.instance;
+
+        if (!manager.allFavours.Contains(this))
+            manager.allFavours.Add(this);
+
         if (state == FavourState.free)
             Unlock();
         else if (Hidden)
@@ -53,8 +56,7 @@ public class Favour : MonoBehaviour {
     public void Unlock() {
         state = FavourState.free;
         obj.SetActive(true);
-        if (!manager.freeFavours.Contains(this))
-            manager.freeFavours.Add(this);
+        PutInFreeRow();
     }
 
     public void Sacrifice() {
@@ -73,18 +75,9 @@ public class Favour : MonoBehaviour {
         }
     }
 
-    #region Editor
-    new RectTransform transform;
-    new BoxCollider2D collider;
-    void OnValidate() {
-        if (!transform)
-            transform = GetComponent<RectTransform>();
-        if (!collider)
-            collider = GetComponent<BoxCollider2D>();
-
-        collider.size = transform.sizeDelta;
+    public void PutInFreeRow() {
+        manager.PutInFreeRow(this);
     }
-    #endregion
 }
 
 [System.Serializable]

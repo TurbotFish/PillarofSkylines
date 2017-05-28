@@ -107,7 +107,7 @@ public class CableInspector : Editor {
 		Vector3 point = handleTransform.TransformPoint(spline.GetControlPoint(index));
 		float size = HandleUtility.GetHandleSize(point);
 		Handles.color = modeColors[(int)spline.GetControlPointMode(index)];
-		if (Handles.Button(point, handleRotation, size*handleSize,  size*pickSize, Handles.DotCap)) {
+		if (Handles.Button(point, handleRotation, size*handleSize,  size*pickSize, Handles.DotHandleCap)) {
 			selectedIndex = index;
 			Repaint();
 		}

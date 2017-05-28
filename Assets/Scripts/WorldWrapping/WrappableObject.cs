@@ -16,6 +16,8 @@ public class WrappableObject : MonoBehaviour {
     }
 
 	void Update () {
+        if (!wrapper) return;
+
         Vector3 pos = my.position;
         Vector3 wrapPos = wrapper.transform.position;
         Vector3 worldSize = wrapper.worldSize;
