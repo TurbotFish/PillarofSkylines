@@ -94,9 +94,9 @@ public class FavourManager : MonoBehaviour {
             for (int i = 0; i < sacrificeSlots.Length; i++) {
                 sacrificeSlots[i].item.GetComponent<Favour>().Sacrifice();
             }
+            ToggleMenu(false);
+            currentPillarEntrance.OpenDoor();
         }
-        ToggleMenu(false);
-        currentPillarEntrance.OpenDoor();
     }
 
     bool AllSacrificeSlotsAreFull() {
