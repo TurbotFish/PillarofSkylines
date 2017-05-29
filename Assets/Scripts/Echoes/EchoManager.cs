@@ -32,7 +32,8 @@ public class EchoManager : MonoBehaviour {
         if (!instance) {
             instance = this;
 			if (!demo)
-           		DontDestroyOnLoad(gameObject);
+           		//DontDestroyOnLoad(gameObject);
+				Debug.Log("test");
         } else if (instance != this)
             Destroy(gameObject);
     }

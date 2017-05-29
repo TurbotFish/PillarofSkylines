@@ -6,21 +6,13 @@ using UnityEngine.SceneManagement;
 public class ProtoSwitch : MonoBehaviour {
 
 
-	public bool inPrez = true;
-
+	public SceneField _scene;
 
 	// Update is called once per frame
 	void Update () {
 		if (Input.GetKeyDown(KeyCode.P))
 		{
-			if(inPrez)
-			{
-				SceneManager.LoadSceneAsync("Outside_Proto");
-			}	
-			if(!inPrez)
-			{
-				SceneManager.LoadSceneAsync("PresentationJury");
-			}	
+			SceneManager.LoadSceneAsync (_scene);	
 		}
 	}
 }
