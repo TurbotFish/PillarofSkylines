@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEditor;
+//using UnityEditor;
 
 public class FavourManager : MonoBehaviour {
 
     public Favour favourPrefab;
     public Slot slotPrefab;
     public List<Favour> allFavours;
-    
+	public GameObject F;
+
     [SerializeField]
     GameObject favourMenu;
     [SerializeField]
@@ -52,12 +53,21 @@ public class FavourManager : MonoBehaviour {
         ToggleMenu(visible);
     }
 
+	bool FwasHere;
     void ToggleMenu(bool value) {
+		if (F.activeSelf) {
+			FwasHere = true;
+			F.SetActive (false);
+		}
+		if (FwasHere && !value) {
+			F.SetActive (true);
+		}
         visible = value;
         GameState.Pause(value);
         Cursor.lockState = value ? CursorLockMode.None : CursorLockMode.Locked;
         favourMenu.SetActive(value);
         HideSacrificeMenu();
+
     }
 
     #region Sacrifice Menu
@@ -132,9 +142,10 @@ public class FavourManager : MonoBehaviour {
     }
 
     public Favour CreateFavour() {
-        Favour newFavour = PrefabUtility.InstantiatePrefab(favourPrefab) as Favour;
+		return favourPrefab;
+       /* Favour newFavour = PrefabUtility.InstantiatePrefab(favourPrefab) as Favour;
         newFavour.transform.SetParent(favourMenu.transform);
         newFavour.transform.localScale = Vector3.one;
-        return newFavour;
+        return newFavour;*/
     }
 }

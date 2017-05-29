@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 [RequireComponent(typeof(BoxCollider))]
 public class PillarEntrance : MonoBehaviour {
@@ -7,7 +8,8 @@ public class PillarEntrance : MonoBehaviour {
     public bool isOpen;
     public int favoursToSacrify = 3;
     public SceneField pillarLevel;
-    
+	public GameObject F;
+
     [SerializeField]
     Animator anim;
     [SerializeField]
@@ -26,6 +28,7 @@ public class PillarEntrance : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.F)) {
             if (isOpen) {
                 anim.SetBool("Door_descent", true);
+				F.SetActive (false);
                 Invoke("LoadTheScene", timeBeforeNewScene);
             } else
                 favourManager.DisplaySacrificeMenu(this);
@@ -37,6 +40,7 @@ public class PillarEntrance : MonoBehaviour {
     }
 
     public void OpenDoor() {
+		F.GetComponent<TextMeshProUGUI> ().SetText("[F] : Enter");
         print("Pillar Door Open");
         anim.SetBool("Door_open", true);
         GetComponent<BoxCollider>().enabled = false;
@@ -46,10 +50,18 @@ public class PillarEntrance : MonoBehaviour {
     void OnTriggerEnter(Collider other) {
 
         if (other.tag == "Player") {
-            if (isOpen)
-                print("press F to Enter");
-            else
-                print("Press F to Open");
+			if (isOpen) {
+				F.SetActive (true);
+				F.GetComponent<TextMeshProUGUI> ().SetText("[F] : Enter");
+				print ("press F to Enter");
+
+			} else {
+				F.SetActive (true);
+				F.GetComponent<TextMeshProUGUI> ().SetText("[F] : Open the Gate");
+
+				print("Press F to Open");
+
+			}
             playerIsHere = true;
         }
     }
@@ -58,6 +70,7 @@ public class PillarEntrance : MonoBehaviour {
 
         if (other.tag == "Player") {
             playerIsHere = false;
+			F.SetActive (false);
         }
     }
     

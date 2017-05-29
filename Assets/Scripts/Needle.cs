@@ -1,10 +1,15 @@
 ﻿using UnityEngine;
+using TMPro;
 
 public class Needle : MonoBehaviour {
 
     [SerializeField]
     GameObject fakeNeedle;
     EclipseManager eclipseManager;
+
+	public Animator anim;
+	public GameObject needle;
+	public GameObject F;
 
     void Start() {
         eclipseManager = EclipseManager.instance;
@@ -18,13 +23,30 @@ public class Needle : MonoBehaviour {
 
         if (col.tag == "Player" && eclipseManager.isEclipseActive == false) {
             print("Press F to take noodle");
+			F.SetActive (true);
+			F.GetComponent<TextMeshProUGUI> ().SetText("[F] : Take Needle");
+
+			anim.SetBool ("Needle_approach", true);
 
             if (Input.GetKeyDown(KeyCode.F)) {
                 eclipseManager.StartEclipse();
                 fakeNeedle.SetActive(true);
-                gameObject.SetActive(false);
+				needle.SetActive (false);
+				gameObject.SetActive(false);
+				F.SetActive (false);
+
+
             }
         }
     }
+
+	void OnTriggerExit(Collider col)
+	{
+		if (col.tag == "Player" && eclipseManager.isEclipseActive == false) {
+			anim.SetBool ("Needle_approach", false);
+			F.SetActive (false);
+
+		}
+	}
 
 }

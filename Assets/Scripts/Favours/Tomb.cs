@@ -1,9 +1,12 @@
 ﻿using UnityEngine;
+using TMPro;
 
 public class Tomb : MonoBehaviour {
 
     public string mora;
     public Favour favour;
+	public Animator anim;
+	public GameObject F;
 
     bool playerIsHere, freedSpirit;
 
@@ -12,6 +15,9 @@ public class Tomb : MonoBehaviour {
         if (other.tag == "Player") {
             if (!freedSpirit) {
                 print("Press F to Pay Respect");
+				F.SetActive (true);
+				F.GetComponent<TextMeshProUGUI> ().SetText("[F] : Take Favour");
+				anim.SetBool ("Tomb_approach", true);
             }
             playerIsHere = true;
         }
@@ -22,6 +28,9 @@ public class Tomb : MonoBehaviour {
         
         if (other.tag == "Player") {
             playerIsHere = false;
+			F.SetActive (false);
+
+			anim.SetBool ("Tomb_approach", false);
         }
 
     }
@@ -31,8 +40,11 @@ public class Tomb : MonoBehaviour {
         
         if (!freedSpirit && Input.GetKeyDown(KeyCode.F)) {
             print("thx mate");
+			anim.SetBool ("Get_favor",true);
             favour.Unlock();
             freedSpirit = true;
+			F.SetActive (false);
+
         }
     }
 

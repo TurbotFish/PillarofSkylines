@@ -53,6 +53,7 @@ Shader "Hidden/GradientFogGrr" {
 				float depth = LinearEyeDepth(tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.scrPos)).r);
 				// InverseLerp with Start and End Fog to get a [0, 1] depth value
 				float depthValue = (depth - _FogStart) / (_FogEnd - _FogStart);
+				//depthValue = saturate(depthValue);
 
 				float4 col = tex2Dlod(_Gradient, float4(depthValue, 0, 0, 0)); // Color we pick from the Gradient Texture using the depthValue
 
