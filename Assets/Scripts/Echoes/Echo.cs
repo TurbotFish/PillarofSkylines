@@ -34,7 +34,7 @@ public class Echo : MonoBehaviour {
 	}
 
     void OnTriggerEnter(Collider col) {
-        if (isActive && col.tag == "Player") {
+        if (isActive) { // Si un truc rentre dans un écho, il est détruit
             Break();
         }
     }
