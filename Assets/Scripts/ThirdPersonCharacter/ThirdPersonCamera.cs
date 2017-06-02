@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
 [AddComponentMenu("Camera/Third Person Camera")]
+[RequireComponent(typeof(Camera))]
 public class ThirdPersonCamera : MonoBehaviour {
     
     [Header("Position")]
@@ -21,12 +22,20 @@ public class ThirdPersonCamera : MonoBehaviour {
     #endregion
 
     [Header("Movement")]
+    public Bool3 invertAxis;
     public Vector2 maxRotationSpeed = new Vector2(15, 15);
     public Vector2 minRotationSpeed = new Vector2(10, 10);
     public Vector2 mouseSpeedLimit = new Vector2(10, 10);
     public MinMax pitchRotationLimit = new MinMax(-20, 80);
+
+    public MinMax distanceBasedOnPitch = new MinMax(1, 12);
+    public AnimationCurve distanceFromRotation;
+
+    public MinMax fovBasedOnPitch = new MinMax(60, 75);
+    public AnimationCurve fovFromRotation;
+
     public bool smoothMovement = true;
-    public float cameraSpeed = 10; // this name is bad
+    public float smoothDamp = .1f; // this name is bad
 
     #region Zoom
     [Header("Zoom")]
@@ -39,6 +48,7 @@ public class ThirdPersonCamera : MonoBehaviour {
     }
     #endregion
 
+    new Camera camera;
     Vector3 camPosition, negDistance;
     Quaternion camRotation;
     Vector2 rotationSpeed;
@@ -46,10 +56,10 @@ public class ThirdPersonCamera : MonoBehaviour {
     Transform my;
 
     float yaw, pitch;
-    float maxDistance, idealDistance;
-    bool blockedByAWall;
+    float maxDistance, defaultDistance, idealDistance;
     
     void Start() {
+        camera = GetComponent<Camera>();
         Cursor.lockState = CursorLockMode.Locked;
 
         my = transform;
@@ -59,7 +69,7 @@ public class ThirdPersonCamera : MonoBehaviour {
         pitch = angles.x;
         camPosition = transform.position;
 
-        idealDistance = distance;
+        defaultDistance = idealDistance = distance;
         maxDistance = canZoom ? zoomDistance.max : idealDistance;
     }
 
@@ -83,7 +93,7 @@ public class ThirdPersonCamera : MonoBehaviour {
         if (offsetOverriden) {
             targetPosition.x += _tempOffset.x;
             targetPosition.y += _tempOffset.y;
-            _tempOffset = Vector2.Lerp(_tempOffset, Vector2.zero, Time.deltaTime * cameraSpeed);
+            _tempOffset = Vector2.Lerp(_tempOffset, Vector2.zero, Time.deltaTime / smoothDamp);
             if (Vector2.Distance(_tempOffset, Vector2.zero) < .01f)
                 offsetOverriden = false;
         }
@@ -106,35 +116,48 @@ public class ThirdPersonCamera : MonoBehaviour {
         rotationSpeed.y = Mathf.Lerp(minRotationSpeed.y, maxRotationSpeed.y, distance / maxDistance);
 
         float clampedX = Mathf.Clamp(Input.GetAxis("Mouse X") * (idealDistance / distance), -mouseSpeedLimit.x, mouseSpeedLimit.x); // Avoid going too fast (makes weird lerp)
+        if (invertAxis.x) clampedX = -clampedX;
         yaw += clampedX * rotationSpeed.x * Time.deltaTime;
 
         float clampedY = Mathf.Clamp(Input.GetAxis("Mouse Y") * (idealDistance / distance), -mouseSpeedLimit.y, mouseSpeedLimit.y); // Avoid going too fast (makes weird lerp)
+        if (invertAxis.y) clampedY = -clampedY;
         pitch -= clampedY * rotationSpeed.y * Time.deltaTime;
         pitch = pitchRotationLimit.Clamp(pitch);
 
         camRotation = Quaternion.Euler(pitch, yaw, 0);
 
+        idealDistance = distanceBasedOnPitch.Lerp(distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
+        camera.fieldOfView = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
+
         //Changer la rotation de la caméra pendant l'Éclipse
         //camRotation = Quaternion.AngleAxis(90, Vector3.forward) * camRotation;
     }
 
+    bool blockedByAWall;
+    float sphereRadius = 1f;
+    float lastHitDistance;
     void CheckForCollision() {
         negDistance.z = -idealDistance;
         Vector3 idealPosition = camRotation * negDistance + target.position; // Virtually ideal position that does not take offset into account to avoid infinite back and forth
         Vector3 targetPos = target.position; // Same for the target
         targetPos.y += offsetClose.y;
+
+        int layerMask = ~(1 << 10); // ignore Layer #10 : "DontBlockCamera"
         
         RaycastHit hit;
-        blockedByAWall = Physics.Linecast(targetPos, idealPosition, out hit) 
-                      && hit.transform.tag != "Player" && !hit.collider.isTrigger;
+        blockedByAWall = Physics.SphereCast(targetPos, sphereRadius, my.position - targetPos, out hit, distance, layerMask);
+        Debug.DrawLine(targetPos, my.position, Color.yellow);
 
-        float fixedDistance = blockedByAWall ? hit.distance : idealDistance;
+        if (blockedByAWall && hit.distance > 0) // If we hit something, hitDistance cannot be 0, nor higher than idealDistance
+            lastHitDistance = Mathf.Min(hit.distance, idealDistance);
+
+        float fixedDistance = blockedByAWall ? lastHitDistance : idealDistance;
         
-        distance = Mathf.Lerp(distance, fixedDistance, Time.deltaTime * cameraSpeed);
+        distance = Mathf.Lerp(distance, fixedDistance, Time.deltaTime / smoothDamp);
     }
 
     void SmoothMovement() {
-        float t = smoothMovement ? Time.deltaTime * cameraSpeed : 1;
+        float t = smoothMovement ? Time.deltaTime / smoothDamp : 1;
         my.position = Vector3.Lerp(my.position, camPosition, t);
         my.rotation = Quaternion.Lerp(my.rotation, camRotation, t);
     }

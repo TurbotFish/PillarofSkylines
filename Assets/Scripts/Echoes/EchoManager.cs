@@ -31,9 +31,6 @@ public class EchoManager : MonoBehaviour {
     void Awake() {
         if (!instance) {
             instance = this;
-			if (!demo)
-           		//DontDestroyOnLoad(gameObject);
-				Debug.Log("test");
         } else if (instance != this)
             Destroy(gameObject);
     }

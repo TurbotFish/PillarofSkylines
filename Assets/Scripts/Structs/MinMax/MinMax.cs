@@ -50,6 +50,14 @@ public class MinMax {
     }
 
     /// <summary>
+    /// Returns the position of a value between 0 and 1 based on min and max.
+    /// </summary>
+    /// <param name="value"></param>
+    public float InverseLerp(float value) {
+        return (value - min) / (max - min);
+    }
+
+    /// <summary>
     /// The quotient of Min by Max.
     /// </summary>
     public float Quotient {
