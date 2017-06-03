@@ -27,19 +27,19 @@ namespace AmplifyShaderEditor
 			{
 				dataCollector.ForceNormal = true;
 
-				dataCollector.AddToInput( m_uniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_NORMAL ), true );
-				dataCollector.AddToInput( m_uniqueId, Constants.InternalData, false );
+				dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_NORMAL ), true );
+				dataCollector.AddToInput( UniqueId, Constants.InternalData, false );
 
-				dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3, "worldTangent", "WorldNormalVector( " + Constants.InputVarStr + ", float3(1,0,0) )" );
-
-				dataCollector.AddToIncludes( m_uniqueId, Constants.UnityShaderVariables );
+				//dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3, "worldTangent", "WorldNormalVector( " + Constants.InputVarStr + ", float3(1,0,0) )" );
+				GeneratorUtils.GenerateWorldTangent( ref dataCollector, UniqueId );
+				dataCollector.AddToIncludes( UniqueId, Constants.UnityShaderVariables );
 #if UNITY_5_4_OR_NEWER
 				string matrix = "unity_WorldToObject";
 #else
 				string matrix = "_World2Object";
 #endif
 
-				dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3, "vertexTangent", "mul( " + matrix + ", float4( worldTangent, 0 ) )" );
+				dataCollector.AddToLocalVariables( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3, "vertexTangent", "mul( " + matrix + ", float4( "+ GeneratorUtils.WorldTangentStr + ", 0 ) )" );
 				return GetOutputVectorItem( 0, outputId, "vertexTangent" );
 			}
 		}

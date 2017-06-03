@@ -31,13 +31,16 @@ namespace AmplifyShaderEditor
 			base.DrawProperties();
 			EditorGUILayout.BeginVertical();
 			{
-				m_posterizationPower = EditorGUILayout.IntSlider( PosterizationPowerStr, m_posterizationPower, 1, 256 );
+				m_posterizationPower = EditorGUILayoutIntSlider( PosterizationPowerStr, m_posterizationPower, 1, 256 );
 			}
 			EditorGUILayout.EndVertical();
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
+			if ( m_outputPorts[ 0 ].IsLocalValue )
+				return m_outputPorts[ 0 ].LocalValue;
+
 			string posterizationPower = "1";
 			if ( m_inputPorts[ 0 ].IsConnected )
 			{
@@ -50,10 +53,13 @@ namespace AmplifyShaderEditor
 
 			string colorTarget = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
 			
-			string divVar = "div" + m_uniqueId;
-			dataCollector.AddToLocalVariables( m_uniqueId, "float " + divVar + "=256.0/float(" + posterizationPower + ");" );
+			string divVar = "div" + OutputId;
+			dataCollector.AddLocalVariable( UniqueId, "float " + divVar + "=256.0/float(" + posterizationPower + ");" );
 			string result = "( floor( " + colorTarget + " * " + divVar + " ) / " + divVar + " )";
-			return CreateOutputLocalVariable( 0, result, ref dataCollector );
+
+			RegisterLocalVariable( 0, result, ref dataCollector, "posterize" + OutputId );
+
+			return m_outputPorts[ 0 ].LocalValue;
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )

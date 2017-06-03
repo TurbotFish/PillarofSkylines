@@ -49,7 +49,7 @@ namespace AmplifyShaderEditor
 		private readonly string[] TesselationTypeLabels = { "Distance-based", "Fixed", "Edge Length", "Edge Length Cull" };
 		private readonly string TesselationTypeStr = "Type";
 
-		private const string TessProperty = "_TessValue( \"Tessellation\", Range( 1, 32 ) ) = {0}";
+		private const string TessProperty = "_TessValue( \"Max Tessellation\", Range( 1, 32 ) ) = {0}";
 		private const string TessMinProperty = "_TessMin( \"Tess Min Distance\", Float ) = {0}";
 		private const string TessMaxProperty = "_TessMax( \"Tess Max Distance\", Float ) = {0}";
 
@@ -84,7 +84,7 @@ namespace AmplifyShaderEditor
 		private GUIContent PhongStrengthContent = new GUIContent( "Strength", "Strength\nDefault: 0.5" );
 		public const string PhongStrengthParam = "tessphong:_TessPhongStrength";
 
-		private const string PhongStrengthProperty = "_TessPhongStrength( \"Phong Strength\", Range( 0, 1 ) ) = {0}";
+		private const string PhongStrengthProperty = "_TessPhongStrength( \"Phong Tess Strength\", Range( 0, 1 ) ) = {0}";
 		private const string PhongStrengthUniformName = "_TessPhongStrength";
 
 		[SerializeField]
@@ -122,26 +122,30 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private string m_additionalData = string.Empty;
 
+		[SerializeField]
+		private StandardSurfaceOutputNode m_parentSurface;
+
 		private Dictionary<string, bool> m_additionalDataDict = new Dictionary<string, bool>();
-		
+
 		private int m_masterNodeIndexPort = 0;
 		private int m_vertexOffsetIndexPort = 0;
+		//private int m_orderIndex = 1000;
 
-		public void Draw( GUIStyle toolbarstyle, Material mat, bool connectedInput )
+		public void Draw( UndoParentNode owner,  GUIStyle toolbarstyle, Material mat, bool connectedInput )
 		{
 			Color cachedColor = GUI.color;
 			GUI.color = new Color( cachedColor.r, cachedColor.g, cachedColor.b, 0.5f );
 			EditorGUILayout.BeginHorizontal( toolbarstyle );
 			GUI.color = cachedColor;
 			EditorGUI.BeginChangeCheck();
-			UIUtils.CurrentWindow.ExpandedTesselation = GUILayout.Toggle( UIUtils.CurrentWindow.ExpandedTesselation, " Tessellation", UIUtils.MenuItemToggleStyle, GUILayout.ExpandWidth( true ) );
+			m_parentSurface.ContainerGraph.ParentWindow.ExpandedTesselation = GUILayout.Toggle( m_parentSurface.ContainerGraph.ParentWindow.ExpandedTesselation, " Tessellation", UIUtils.MenuItemToggleStyle, GUILayout.ExpandWidth( true ) );
 			if ( EditorGUI.EndChangeCheck() )
 			{
-				EditorPrefs.SetBool( "ExpandedTesselation", UIUtils.CurrentWindow.ExpandedTesselation );
+				EditorPrefs.SetBool( "ExpandedTesselation", m_parentSurface.ContainerGraph.ParentWindow.ExpandedTesselation );
 			}
 
 			EditorGUI.BeginChangeCheck();
-			m_enabled = EditorGUILayout.Toggle( string.Empty, m_enabled, UIUtils.MenuItemEnableStyle, GUILayout.Width( 16 ) );
+			m_enabled = owner.EditorGUILayoutToggle( string.Empty, m_enabled, UIUtils.MenuItemEnableStyle, GUILayout.Width( 16 ) );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				if ( m_enabled )
@@ -154,7 +158,7 @@ namespace AmplifyShaderEditor
 
 			m_enabled = m_enabled || connectedInput;
 
-			if ( UIUtils.CurrentWindow.ExpandedTesselation )
+			if ( m_parentSurface.ContainerGraph.ParentWindow.ExpandedTesselation )
 			{
 				cachedColor = GUI.color;
 				GUI.color = new Color( cachedColor.r, cachedColor.g, cachedColor.b, ( EditorGUIUtility.isProSkin ? 0.5f : 0.25f ) );
@@ -166,12 +170,12 @@ namespace AmplifyShaderEditor
 
 				EditorGUI.indentLevel += 1;
 
-				m_phongEnabled = EditorGUILayout.Toggle( PhongEnableContent, m_phongEnabled );
+				m_phongEnabled = owner.EditorGUILayoutToggle( PhongEnableContent, m_phongEnabled );
 				if ( m_phongEnabled )
 				{
 					EditorGUI.indentLevel += 1;
 					EditorGUI.BeginChangeCheck();
-					m_phongStrength = EditorGUILayout.Slider( PhongStrengthContent, m_phongStrength, 0.0f, 1.0f );
+					m_phongStrength = owner.EditorGUILayoutSlider( PhongStrengthContent, m_phongStrength, 0.0f, 1.0f );
 					if ( EditorGUI.EndChangeCheck() && mat != null )
 					{
 						if ( mat.HasProperty( PhongStrengthUniformName ) )
@@ -184,14 +188,14 @@ namespace AmplifyShaderEditor
 				bool guiEnabled = GUI.enabled;
 				GUI.enabled = !connectedInput && m_enabled;
 
-				m_tessType = EditorGUILayout.IntPopup( TesselationTypeStr, m_tessType, TesselationTypeLabels, TesselationTypeValues );
+				m_tessType = owner.EditorGUILayoutIntPopup( TesselationTypeStr, m_tessType, TesselationTypeLabels, TesselationTypeValues );
 
 				switch ( m_tessType )
 				{
 					case 0:
 					{
 						EditorGUI.BeginChangeCheck();
-						m_tessFactor = EditorGUILayout.Slider( TessFactorContent, m_tessFactor, 1, 32 );
+						m_tessFactor = owner.EditorGUILayoutSlider( TessFactorContent, m_tessFactor, 1, 32 );
 						if ( EditorGUI.EndChangeCheck() && mat != null )
 						{
 							if ( mat.HasProperty( TessUniformName ) )
@@ -199,7 +203,7 @@ namespace AmplifyShaderEditor
 						}
 
 						EditorGUI.BeginChangeCheck();
-						m_tessMinDistance = EditorGUILayout.FloatField( TessMinDistanceContent, m_tessMinDistance );
+						m_tessMinDistance = owner.EditorGUILayoutFloatField( TessMinDistanceContent, m_tessMinDistance );
 						if ( EditorGUI.EndChangeCheck() && mat != null )
 						{
 							if ( mat.HasProperty( TessMinUniformName ) )
@@ -207,7 +211,7 @@ namespace AmplifyShaderEditor
 						}
 
 						EditorGUI.BeginChangeCheck();
-						m_tessMaxDistance = EditorGUILayout.FloatField( TessMaxDistanceContent, m_tessMaxDistance );
+						m_tessMaxDistance = owner.EditorGUILayoutFloatField( TessMaxDistanceContent, m_tessMaxDistance );
 						if ( EditorGUI.EndChangeCheck() && mat != null )
 						{
 							if ( mat.HasProperty( TessMaxUniformName ) )
@@ -218,7 +222,7 @@ namespace AmplifyShaderEditor
 					case 1:
 					{
 						EditorGUI.BeginChangeCheck();
-						m_tessFactor = EditorGUILayout.Slider( TessFactorContent, m_tessFactor, 1, 32 );
+						m_tessFactor = owner.EditorGUILayoutSlider( TessFactorContent, m_tessFactor, 1, 32 );
 						if ( EditorGUI.EndChangeCheck() && mat != null )
 						{
 							if ( mat.HasProperty( TessUniformName ) )
@@ -229,7 +233,7 @@ namespace AmplifyShaderEditor
 					case 2:
 					{
 						EditorGUI.BeginChangeCheck();
-						m_tessFactor = EditorGUILayout.Slider( EdgeLengthContent, m_tessFactor, 2, 50 );
+						m_tessFactor = owner.EditorGUILayoutSlider( EdgeLengthContent, m_tessFactor, 2, 50 );
 						if ( EditorGUI.EndChangeCheck() && mat != null )
 						{
 							if ( mat.HasProperty( EdgeLengthTessUniformName ) )
@@ -240,7 +244,7 @@ namespace AmplifyShaderEditor
 					case 3:
 					{
 						EditorGUI.BeginChangeCheck();
-						m_tessFactor = EditorGUILayout.Slider( EdgeLengthContent, m_tessFactor, 2, 50 );
+						m_tessFactor = owner.EditorGUILayoutSlider( EdgeLengthContent, m_tessFactor, 2, 50 );
 						if ( EditorGUI.EndChangeCheck() && mat != null )
 						{
 							if ( mat.HasProperty( EdgeLengthTessUniformName ) )
@@ -248,7 +252,7 @@ namespace AmplifyShaderEditor
 						}
 
 						EditorGUI.BeginChangeCheck();
-						m_tessMaxDistance = EditorGUILayout.FloatField( EdgeLengthTessMaxDisplacementContent, m_tessMaxDistance );
+						m_tessMaxDistance = owner.EditorGUILayoutFloatField( EdgeLengthTessMaxDisplacementContent, m_tessMaxDistance );
 						if ( EditorGUI.EndChangeCheck() && mat != null )
 						{
 							if ( mat.HasProperty( TessMinUniformName ) )
@@ -342,14 +346,9 @@ namespace AmplifyShaderEditor
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_phongStrength );
 		}
 
-		public void AddToDataCollector( ref MasterNodeDataCollector dataCollector )
+		public void AddToDataCollector( ref MasterNodeDataCollector dataCollector, int reorder )
 		{
-			if ( m_phongEnabled )
-			{
-				UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( PhongStrengthProperty, m_phongStrength ), -1001 );
-				UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + PhongStrengthUniformName + ";" );
-			}
-
+			int orderIndex = reorder;
 			switch ( m_tessType )
 			{
 				case 0:
@@ -358,15 +357,15 @@ namespace AmplifyShaderEditor
 					if ( !m_hasCustomFunction )
 					{
 						//Tess
-						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( TessProperty, m_tessFactor ), -1000 );
+						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( TessProperty, m_tessFactor ), orderIndex++ );
 						UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + TessUniformName + ";" );
 
 						//Min
-						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( TessMinProperty, m_tessMinDistance ), -999 );
+						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( TessMinProperty, m_tessMinDistance ), orderIndex++ );
 						UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + TessMinUniformName + ";" );
 
 						//Max
-						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( TessMaxProperty, m_tessMaxDistance ), -998 );
+						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( TessMaxProperty, m_tessMaxDistance ), orderIndex++ );
 						UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + TessMaxUniformName + ";" );
 					}
 				}
@@ -376,7 +375,7 @@ namespace AmplifyShaderEditor
 					//Tess
 					if ( !m_hasCustomFunction )
 					{
-						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( TessProperty, m_tessFactor ), -1000 );
+						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( TessProperty, m_tessFactor ), orderIndex++ );
 						UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + TessUniformName + ";" );
 					}
 				}
@@ -388,7 +387,7 @@ namespace AmplifyShaderEditor
 					//Tess
 					if ( !m_hasCustomFunction )
 					{
-						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( EdgeLengthTessProperty, m_tessFactor ), -1000 );
+						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( EdgeLengthTessProperty, m_tessFactor ), orderIndex++ );
 						UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + EdgeLengthTessUniformName + ";" );
 					}
 				}
@@ -400,15 +399,21 @@ namespace AmplifyShaderEditor
 					if ( !m_hasCustomFunction )
 					{
 						//Tess
-						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( EdgeLengthTessProperty, m_tessFactor ), -1000 );
+						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( EdgeLengthTessProperty, m_tessFactor ), orderIndex++ );
 						UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + EdgeLengthTessUniformName + ";" );
 
 						//Max Displacement
-						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( EdgeLengthTessMaxDispProperty, m_tessMaxDistance ), -999 );
+						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( EdgeLengthTessMaxDispProperty, m_tessMaxDistance ), orderIndex++ );
 						UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + EdgeLengthTessMaxDispUniformName + ";" );
 					}
 				}
 				break;
+			}
+
+			if ( m_phongEnabled )
+			{
+				UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( PhongStrengthProperty, m_phongStrength ), orderIndex++ );
+				UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + PhongStrengthUniformName + ";" );
 			}
 		}
 
@@ -597,5 +602,7 @@ namespace AmplifyShaderEditor
 			get { return m_vertexOffsetIndexPort; }
 			set { m_vertexOffsetIndexPort = value; }
 		}
+
+		public StandardSurfaceOutputNode ParentSurface { get { return m_parentSurface; } set { m_parentSurface = value; } }
 	}
 }

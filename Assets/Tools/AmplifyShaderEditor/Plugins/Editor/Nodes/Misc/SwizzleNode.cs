@@ -59,7 +59,7 @@ namespace AmplifyShaderEditor
 
 			EditorGUILayout.BeginVertical();
 			EditorGUI.BeginChangeCheck();
-			_selectedOutputTypeInt = EditorGUILayout.Popup( OutputTypeStr, _selectedOutputTypeInt, _outputValueTypes );
+			_selectedOutputTypeInt = EditorGUILayoutPopup( OutputTypeStr, _selectedOutputTypeInt, _outputValueTypes );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				switch ( _selectedOutputTypeInt )
@@ -131,14 +131,14 @@ namespace AmplifyShaderEditor
 			{
 				for ( int i = 0; i < count; i++ )
 				{
-					_selectedOutputSwizzleTypes[ i ] = Mathf.Clamp( EditorGUILayout.Popup( SwizzleChannelLabels[ i ], _selectedOutputSwizzleTypes[ i ], SwizzleColorChannels ), 0, inputMaxChannelId );
+					_selectedOutputSwizzleTypes[ i ] = Mathf.Clamp( EditorGUILayoutPopup( SwizzleChannelLabels[ i ], _selectedOutputSwizzleTypes[ i ], SwizzleColorChannels ), 0, inputMaxChannelId );
 				}
 			}
 			else
 			{
 				for ( int i = 0; i < count; i++ )
 				{
-					_selectedOutputSwizzleTypes[ i ] = Mathf.Clamp( EditorGUILayout.Popup( SwizzleChannelLabels[ i ], _selectedOutputSwizzleTypes[ i ], SwizzleVectorChannels ), 0, inputMaxChannelId );
+					_selectedOutputSwizzleTypes[ i ] = Mathf.Clamp( EditorGUILayoutPopup( SwizzleChannelLabels[ i ], _selectedOutputSwizzleTypes[ i ], SwizzleVectorChannels ), 0, inputMaxChannelId );
 				}
 			}
 			if ( EditorGUI.EndChangeCheck() )

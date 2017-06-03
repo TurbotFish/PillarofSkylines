@@ -15,5 +15,11 @@ namespace AmplifyShaderEditor
 			m_inputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT4, false );
 			m_outputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT3, false );
 		}
+
+		protected override void OnUniqueIDAssigned()
+		{
+			base.OnUniqueIDAssigned();
+			m_localVarName = "decodeLightMap" + OutputId;
+		}
 	}
 }

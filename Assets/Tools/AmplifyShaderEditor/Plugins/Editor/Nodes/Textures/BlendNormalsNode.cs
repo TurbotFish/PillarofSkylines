@@ -21,7 +21,7 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
-			dataCollector.AddToIncludes( m_uniqueId, Constants.UnityStandardUtilsLibFuncs );
+			dataCollector.AddToIncludes( UniqueId, Constants.UnityStandardUtilsLibFuncs );
 			string _inputA = m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT3, ignoreLocalvar, true );
 			string _inputB = m_inputPorts[ 1 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT3, ignoreLocalvar, true );
 			string result = "BlendNormals( " + _inputA + " , " + _inputB + " )";

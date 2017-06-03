@@ -24,7 +24,7 @@
 					float3 normal = normalize(vertexPos);
 					float3 worldNormal = UnityObjectToWorldNormal(normal);
 					
-					float3 tangent = normalize(float3( 1-f, p.y*0.01, p.x ));
+					float3 tangent = normalize(float3( (1-f)*2, p.y*0.01, p.x ));
 					float3 worldPos = mul(unity_ObjectToWorld, vertexPos).xyz;
 					float3 worldTangent = UnityObjectToWorldDir(tangent);
 					float tangentSign = -1;

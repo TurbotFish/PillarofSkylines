@@ -14,7 +14,7 @@ namespace AmplifyShaderEditor
 		Y_AXIS,
 		ALL
 	}
-	
+
 	[Serializable]
 	public sealed class CommentaryNode : ParentNode, ISerializationCallbackReceiver
 	{
@@ -24,7 +24,7 @@ namespace AmplifyShaderEditor
 		private const float MIN_SIZE_X = 100;
 		private const float MIN_SIZE_Y = 100;
 		private const float COMMENTARY_BOX_HEIGHT = 30;
-		
+
 
 		private readonly Vector2 ResizeButtonPos = new Vector2( 1, 1 );
 
@@ -79,12 +79,12 @@ namespace AmplifyShaderEditor
 		protected override void OnUniqueIDAssigned()
 		{
 			base.OnUniqueIDAssigned();
-			m_focusName = CommentaryTitle + m_uniqueId;
+			m_focusName = CommentaryTitle + UniqueId;
 		}
 
-		public void CreateFromSelectedNodes( Vector2 mousePosOnCanvasCoords, List<ParentNode> selectedNodes )
+		public void CreateFromSelectedNodes( Vector2 mousePosOnCanvasCoords, ParentNode[] selectedNodes )
 		{
-			if ( selectedNodes.Count == 0 )
+			if ( selectedNodes.Length == 0 )
 			{
 				m_position = new Rect( mousePosOnCanvasCoords, new Vector2( 100, 100 ) );
 				return;
@@ -93,7 +93,7 @@ namespace AmplifyShaderEditor
 			Vector2 minPos = new Vector2( float.MaxValue, float.MaxValue );
 			Vector2 maxPos = new Vector2( float.MinValue, float.MinValue );
 
-			for ( int i = 0; i < selectedNodes.Count; i++ )
+			for ( int i = 0; i < selectedNodes.Length; i++ )
 			{
 				//Check min
 				if ( selectedNodes[ i ].Position.x < minPos.x )
@@ -124,15 +124,15 @@ namespace AmplifyShaderEditor
 			m_position = new Rect( minPos.x - BORDER_SIZE_X, minPos.y - BORDER_SIZE_Y, dims.x, dims.y );
 		}
 
-		public override void Move( Vector2 delta , bool snap )
+		public override void Move( Vector2 delta, bool snap )
 		{
 			if ( m_isResizingRight || m_isResizingLeft )
 				return;
 
-			base.Move( delta , snap );
+			base.Move( delta, snap );
 			for ( int i = 0; i < m_nodesOnCommentary.Count; i++ )
 			{
-				m_nodesOnCommentary[ i ].Move( delta , snap );
+				m_nodesOnCommentary[ i ].Move( delta, snap );
 			}
 		}
 
@@ -153,6 +153,9 @@ namespace AmplifyShaderEditor
 		{
 			if ( m_nodesOnCommentaryDict.ContainsKey( node.UniqueId ) )
 			{
+				UIUtils.MarkUndoAction();
+				Undo.RecordObject( this, Constants.UndoRemoveNodeFromCommentaryId );
+				Undo.RecordObject( node, Constants.UndoRemoveNodeFromCommentaryId );
 				m_nodesOnCommentary.Remove( node );
 				m_nodesOnCommentaryDict.Remove( node.UniqueId );
 				node.OnNodeStoppedMovingEvent -= NodeStoppedMoving;
@@ -163,10 +166,13 @@ namespace AmplifyShaderEditor
 
 		public void RemoveAllNodes()
 		{
+			UIUtils.MarkUndoAction();
 			for ( int i = 0; i < m_nodesOnCommentary.Count; i++ )
 			{
+				Undo.RecordObject( this, Constants.UndoRemoveNodeFromCommentaryId );
+				Undo.RecordObject( m_nodesOnCommentary[ i ], Constants.UndoRemoveNodeFromCommentaryId );
 				m_nodesOnCommentary[ i ].OnNodeStoppedMovingEvent -= NodeStoppedMoving;
-				m_nodesOnCommentary[ i ].OnNodeDestroyedEvent-= NodeDestroyed;
+				m_nodesOnCommentary[ i ].OnNodeDestroyedEvent -= NodeDestroyed;
 				m_nodesOnCommentary[ i ].CommentaryParent = -1;
 			}
 			m_nodesOnCommentary.Clear();
@@ -181,7 +187,7 @@ namespace AmplifyShaderEditor
 
 		public void AddNodeToCommentary( ParentNode node )
 		{
-			if (   !m_nodesOnCommentaryDict.ContainsKey( node.UniqueId ) )
+			if ( !m_nodesOnCommentaryDict.ContainsKey( node.UniqueId ) )
 			{
 				bool addToNode = false;
 
@@ -201,18 +207,22 @@ namespace AmplifyShaderEditor
 						if ( other.Depth < Depth )
 						{
 							other.RemoveNode( node );
-							addToNode = true;
 						}
+						addToNode = true;
 					}
 				}
-				
+
 				if ( addToNode )
 				{
+					UIUtils.MarkUndoAction();
+					Undo.RecordObject( this, Constants.UndoAddNodeToCommentaryId );
+					Undo.RecordObject( node, Constants.UndoAddNodeToCommentaryId );
+
 					m_nodesOnCommentary.Add( node );
 					m_nodesOnCommentaryDict.Add( node.UniqueId, node );
 					node.OnNodeStoppedMovingEvent += NodeStoppedMoving;
 					node.OnNodeDestroyedEvent += NodeDestroyed;
-					node.CommentaryParent = m_uniqueId;
+					node.CommentaryParent = UniqueId;
 				}
 			}
 		}
@@ -223,13 +233,13 @@ namespace AmplifyShaderEditor
 			base.DrawProperties();
 			EditorGUI.BeginChangeCheck();
 			GUI.SetNextControlName( m_focusName );
-			m_titleText = EditorGUILayout.TextField( "Frame Title", m_titleText );
+			m_titleText = EditorGUILayoutTextField( "Frame Title", m_titleText );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				m_checkTitleText = true;
 			}
 			EditorGUI.BeginChangeCheck();
-			m_commentText = EditorGUILayout.TextField( CommentaryTitle, m_commentText );
+			m_commentText = EditorGUILayoutTextField( CommentaryTitle, m_commentText );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				m_checkCommentText = true;
@@ -250,7 +260,7 @@ namespace AmplifyShaderEditor
 				{
 					for ( int i = 0; i < m_nodesIds.Count; i++ )
 					{
-						ParentNode node = UIUtils.CurrentWindow.CurrentGraph.GetNode( m_nodesIds[ i ] );
+						ParentNode node = ContainerGraph.GetNode( m_nodesIds[ i ] );
 						if ( node )
 						{
 							AddNodeToCommentary( node );
@@ -276,7 +286,7 @@ namespace AmplifyShaderEditor
 
 				CalculatePositionAndVisibility( drawInfo );
 
-				if(!string.IsNullOrEmpty( m_titleText ) )
+				if ( !string.IsNullOrEmpty( m_titleText ) )
 				{
 					Rect titleRect = m_globalPosition;
 					titleRect.y -= 24;
@@ -298,7 +308,7 @@ namespace AmplifyShaderEditor
 				GUI.color = m_headerColor;
 				m_headerPosition = m_globalPosition;
 				m_headerPosition.height = UIUtils.CurrentHeaderHeight;
-				
+
 				GUI.Box( m_headerPosition, string.Empty, UIUtils.GetCustomStyle( CustomStyle.NodeHeader ) );
 
 				GUI.color = bufferedColor;
@@ -307,7 +317,7 @@ namespace AmplifyShaderEditor
 					GUI.Box( m_globalPosition, string.Empty, UIUtils.GetCustomStyle( CustomStyle.NodeWindowOn ) );
 				}
 				EditorGUI.BeginChangeCheck();
-				m_commentText = EditorGUI.TextField( commentArea, string.Empty, m_commentText, UIUtils.GetCustomStyle( CustomStyle.CommentaryTitle ) );
+				m_commentText = EditorGUITextField( commentArea, string.Empty, m_commentText, UIUtils.GetCustomStyle( CustomStyle.CommentaryTitle ) );
 				if ( EditorGUI.EndChangeCheck() )
 				{
 					m_checkCommentText = true;
@@ -333,10 +343,10 @@ namespace AmplifyShaderEditor
 					if ( !m_isResizingRight && !m_isResizingLeft )
 					{
 						m_isResizingRight = true;
-						UIUtils.CurrentWindow.ForceAutoPanDir = true;
+						ContainerGraph.ParentWindow.ForceAutoPanDir = true;
 						m_resizeStartPoint = drawInfo.TransformedMousePos;
-						UIUtils.CurrentWindow.CurrentGraph.MarkToDeselect();
-						UIUtils.CurrentWindow.CurrentGraph.MarkToSelect( m_uniqueId );
+						ContainerGraph.MarkToDeselect();
+						ContainerGraph.MarkToSelect( UniqueId );
 					}
 				}
 
@@ -345,7 +355,7 @@ namespace AmplifyShaderEditor
 					if ( drawInfo.CurrentEventType == EventType.mouseUp )
 					{
 						m_isResizingRight = false;
-						UIUtils.CurrentWindow.ForceAutoPanDir = false;
+						ContainerGraph.ParentWindow.ForceAutoPanDir = false;
 						RemoveAllNodes();
 						FireStoppedMovingEvent( false, InteractionMode.Target );
 					}
@@ -387,10 +397,10 @@ namespace AmplifyShaderEditor
 					if ( !m_isResizingRight && !m_isResizingLeft )
 					{
 						m_isResizingLeft = true;
-						UIUtils.CurrentWindow.ForceAutoPanDir = true;
+						ContainerGraph.ParentWindow.ForceAutoPanDir = true;
 						m_resizeStartPoint = drawInfo.TransformedMousePos;
-						UIUtils.CurrentWindow.CurrentGraph.MarkToDeselect();
-						UIUtils.CurrentWindow.CurrentGraph.MarkToSelect( m_uniqueId );
+						ContainerGraph.MarkToDeselect();
+						ContainerGraph.MarkToSelect( UniqueId );
 					}
 				}
 
@@ -399,7 +409,7 @@ namespace AmplifyShaderEditor
 					if ( drawInfo.CurrentEventType == EventType.mouseUp )
 					{
 						m_isResizingLeft = false;
-						UIUtils.CurrentWindow.ForceAutoPanDir = false;
+						ContainerGraph.ParentWindow.ForceAutoPanDir = false;
 						RemoveAllNodes();
 						FireStoppedMovingEvent( false, InteractionMode.Target );
 					}
@@ -442,7 +452,7 @@ namespace AmplifyShaderEditor
 					m_titleText = m_titleText.Replace( IOUtils.FIELD_SEPARATOR, ' ' );
 				}
 			}
-			
+
 		}
 
 		public void Focus()
@@ -458,7 +468,7 @@ namespace AmplifyShaderEditor
 
 		public override bool OnNodeInteraction( ParentNode node )
 		{
-			if ( node == null || m_uniqueId == node.UniqueId )
+			if ( node == null || UniqueId == node.UniqueId )
 				return false;
 
 			for ( int i = 0; i < m_nodesOnCommentary.Count; i++ )
@@ -532,7 +542,7 @@ namespace AmplifyShaderEditor
 				{
 					m_nodesOnCommentary[ i ].CalculateCustomGraphDepth();
 				}
-				
+
 				if ( m_nodesOnCommentary[ i ].GraphDepth >= m_graphDepth )
 				{
 					m_graphDepth = m_nodesOnCommentary[ i ].GraphDepth + 1;

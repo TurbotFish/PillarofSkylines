@@ -38,19 +38,19 @@ namespace AmplifyShaderEditor
 		}
 
 
-		public void Draw()
+		public void Draw( UndoParentNode owner )
 		{
 			bool value = EditorVariablesManager.ExpandedRenderingPlatforms.Value;
-			NodeUtils.DrawPropertyGroup( ref value, RenderingPlatformsStr, () => 
-			{
-				for ( int i = 0; i < m_renderingPlatformValues.Length; i++ )
-				{
-					m_renderingPlatformValues[ i ] = EditorGUILayout.ToggleLeft( RenderingPlatformsLabels[ i ], m_renderingPlatformValues[ i ] );
-				}
-			} );
+			NodeUtils.DrawPropertyGroup( ref value, RenderingPlatformsStr, () =>
+			 {
+				 for ( int i = 0; i < m_renderingPlatformValues.Length; i++ )
+				 {
+					 m_renderingPlatformValues[ i ] = owner.EditorGUILayoutToggleLeft( RenderingPlatformsLabels[ i ], m_renderingPlatformValues[ i ] );
+				 }
+			 } );
 			EditorVariablesManager.ExpandedRenderingPlatforms.Value = value;
 		}
-		
+
 		public void SetRenderingPlatforms( ref string ShaderBody )
 		{
 			int checkedPlatforms = 0;
@@ -102,7 +102,7 @@ namespace AmplifyShaderEditor
 		{
 			for ( int i = 0; i < m_renderingPlatformValues.Length; i++ )
 			{
-				m_renderingPlatformValues[ i ] = Convert.ToBoolean( nodeParams[index++] );
+				m_renderingPlatformValues[ i ] = Convert.ToBoolean( nodeParams[ index++ ] );
 			}
 		}
 

@@ -84,7 +84,7 @@ namespace AmplifyShaderEditor
 			newPos.x += m_remainingBox.width * 0.5f - newPos.width * 0.5f;
 
 			EditorGUI.BeginChangeCheck();
-			m_currentSelectedInput = EditorGUI.IntPopup( newPos, m_currentSelectedInput, AvailableInputsLabels, AvailableInputsValues, UIUtils.SwitchNodePopUp );
+			m_currentSelectedInput = EditorGUIIntPopup( newPos, m_currentSelectedInput, AvailableInputsLabels, AvailableInputsValues, UIUtils.SwitchNodePopUp );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				UpdateOutput();
@@ -95,14 +95,14 @@ namespace AmplifyShaderEditor
 		{
 			base.DrawProperties();
 			EditorGUI.BeginChangeCheck();
-			m_currentSelectedInput = EditorGUILayout.IntPopup( CurrSelectedStr, m_currentSelectedInput, AvailableInputsLabels, AvailableInputsValues );
+			m_currentSelectedInput = EditorGUILayoutIntPopup( CurrSelectedStr, m_currentSelectedInput, AvailableInputsLabels, AvailableInputsValues );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				UpdateOutput();
 			}
 
 			EditorGUI.BeginChangeCheck();
-			m_maxAmountInputs = EditorGUILayout.IntPopup( MaxAmountStr, m_maxAmountInputs, MaxAllowedLabels, MaxAllowedValues );
+			m_maxAmountInputs = EditorGUILayoutIntPopup( MaxAmountStr, m_maxAmountInputs, MaxAllowedLabels, MaxAllowedValues );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				for ( int i = 0; i < MaxAllowedAmount; i++ )

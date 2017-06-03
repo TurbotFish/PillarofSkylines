@@ -35,14 +35,14 @@ namespace AmplifyShaderEditor
 		{
 			base.DrawProperties();
 			EditorGUI.BeginChangeCheck();
-			m_texcoordSize = EditorGUILayout.IntPopup( Constants.AvailableUVSizesLabel, m_texcoordSize, Constants.AvailableUVSizesStr, Constants.AvailableUVSizes );
+			m_texcoordSize = EditorGUILayoutIntPopup( Constants.AvailableUVSizesLabel, m_texcoordSize, Constants.AvailableUVSizesStr, Constants.AvailableUVSizes );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				UpdateOutput();
 			}
 
 			EditorGUI.BeginChangeCheck();
-			m_index = EditorGUILayout.IntPopup( Constants.AvailableUVChannelLabel, m_index, Constants.AvailableUVChannelsStr, Constants.AvailableUVChannels );
+			m_index = EditorGUILayoutIntPopup( Constants.AvailableUVChannelLabel, m_index, Constants.AvailableUVChannelsStr, Constants.AvailableUVChannels );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				m_currentVertexData = ( m_index == 0 ) ? "texcoord" : "texcoord" + Constants.AvailableUVChannelsStr[ m_index ];
@@ -67,6 +67,7 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
+				m_texcoordSize = 2;
 				m_outputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT2, false );
 				m_outputPorts[ 0 ].Name = "UV";
 				m_outputPorts[ 3 ].Visible = false;
@@ -77,19 +78,15 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
-			if ( dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation )
+			if ( dataCollector.PortCategory == MasterNodePortCategory.Fragment || dataCollector.PortCategory == MasterNodePortCategory.Debug )
 			{
-				return base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalVar );
-			}
-			else
-			{
-				if( m_texcoordSize > 2)
+				if ( m_texcoordSize > 2 )
 					dataCollector.UsingHigherSizeTexcoords = true;
-
-				WirePortDataType size = ( WirePortDataType )( 1 << ( m_texcoordSize + 1 ) );
-				string texcoords = GenerateFragUVs( ref dataCollector, m_uniqueId, m_index, null, size );
-				return GetOutputVectorItem( 0, outputId, texcoords );
 			}
+
+			WirePortDataType size = ( WirePortDataType )( 1 << ( m_texcoordSize + 1 ) );
+			string texcoords = GeneratorUtils.GenerateAutoUVs( ref dataCollector, UniqueId, m_index, null, size );
+			return GetOutputVectorItem( 0, outputId, texcoords );
 		}
 
 		/// <summary>
@@ -99,19 +96,54 @@ namespace AmplifyShaderEditor
 		/// <param name="uniqueId"></param>
 		/// <param name="index"></param>
 		/// <returns>frag variable name</returns>
-		static public string GenerateFragUVs( ref MasterNodeDataCollector dataCollector, int uniqueId, int index, string propertyName = null, WirePortDataType size = WirePortDataType.FLOAT2)
+		static public string GenerateFragUVs( ref MasterNodeDataCollector dataCollector, int uniqueId, int index, string propertyName = null, WirePortDataType size = WirePortDataType.FLOAT2 )
 		{
 			string dummyPropUV = "_texcoord" + ( index > 0 ? ( index + 1 ).ToString() : "" );
 			string dummyUV = "uv" + ( index > 0 ? ( index + 1 ).ToString() : "" ) + dummyPropUV;
 
 			dataCollector.AddToProperties( uniqueId, "[HideInInspector] " + dummyPropUV + "( \"\", 2D ) = \"white\" {}", 100 );
-			dataCollector.AddToInput( uniqueId, UIUtils.WirePortToCgType( size )+" " + dummyUV, true );
-			
+			dataCollector.AddToInput( uniqueId, UIUtils.WirePortToCgType( size ) + " " + dummyUV, true );
+
 			string result = Constants.InputVarStr + "." + dummyUV;
-			if ( !string.IsNullOrEmpty(propertyName) )
+			if ( !string.IsNullOrEmpty( propertyName ) )
 			{
-				dataCollector.AddToUniforms( uniqueId, "uniform float4 "+ propertyName+"_ST;" );
-				dataCollector.AddToLocalVariables( uniqueId, PrecisionType.Float, size, "uv" + propertyName, result + " * " + propertyName +"_ST.xy + "+propertyName+"_ST.zw");
+				dataCollector.AddToUniforms( uniqueId, "uniform float4 " + propertyName + "_ST;" );
+				dataCollector.AddToLocalVariables( uniqueId, PrecisionType.Float, size, "uv" + propertyName, result + " * " + propertyName + "_ST.xy + " + propertyName + "_ST.zw" );
+				result = "uv" + propertyName;
+			}
+
+			return result;
+		}
+
+		static public string GenerateVertexUVs( ref MasterNodeDataCollector dataCollector, int uniqueId, int index, string propertyName = null, WirePortDataType size = WirePortDataType.FLOAT2 )
+		{
+
+			string result = Constants.VertexShaderInputStr + ".texcoord";
+			if ( index > 0 )
+			{
+				result += index.ToString();
+			}
+
+			switch ( size )
+			{
+				default:
+				case WirePortDataType.FLOAT2:
+				{
+					result += ".xy";
+				}
+				break;
+				case WirePortDataType.FLOAT3:
+				{
+					result += ".xyz";
+				}
+				break;
+				case WirePortDataType.FLOAT4: break;
+			}
+
+			if ( !string.IsNullOrEmpty( propertyName ) )
+			{
+				dataCollector.AddToUniforms( uniqueId, "uniform float4 " + propertyName + "_ST;" );
+				dataCollector.AddToVertexLocalVariables( uniqueId, UIUtils.WirePortToCgType( size ) + " uv" + propertyName + " = " + Constants.VertexShaderInputStr + ".texcoord" + ( index > 0 ? index.ToString() : string.Empty ) + " * " + propertyName + "_ST.xy + " + propertyName + "_ST.zw;" );
 				result = "uv" + propertyName;
 			}
 
@@ -133,9 +165,9 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void WriteInputDataToString( ref string nodeInfo )
+		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
 		{
-			base.WriteInputDataToString( ref nodeInfo );
+			base.WriteToString( ref nodeInfo, ref connectionsInfo );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_index );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_texcoordSize );
 		}

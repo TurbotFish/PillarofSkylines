@@ -43,7 +43,7 @@ namespace AmplifyShaderEditor
 			base.DrawProperties ();
 			EditorGUILayout.BeginVertical ();
 			EditorGUI.BeginChangeCheck();
-			_selectedOutputTypeInt = EditorGUILayout.Popup( "Output type", _selectedOutputTypeInt, _outputValueTypes );
+			_selectedOutputTypeInt = EditorGUILayoutPopup( "Output type", _selectedOutputTypeInt, _outputValueTypes );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				switch ( _selectedOutputTypeInt )
@@ -63,7 +63,7 @@ namespace AmplifyShaderEditor
 				for ( int i = 0; i < count; i++ )
 				{
 					if ( !m_inputPorts[ i ].IsConnected )
-						_defaultValuesV3[ i ] = EditorGUILayout.Vector3Field( _defaultValuesStr[ i ], _defaultValuesV3[ i ] );
+						_defaultValuesV3[ i ] = EditorGUILayoutVector3Field( _defaultValuesStr[ i ], _defaultValuesV3[ i ] );
 				}
 				break;
 				case WirePortDataType.FLOAT4x4:
@@ -71,7 +71,7 @@ namespace AmplifyShaderEditor
 				for ( int i = 0; i < count; i++ )
 				{
 					if ( !m_inputPorts[ i ].IsConnected )
-						_defaultValuesV4[ i ] = EditorGUILayout.Vector4Field( _defaultValuesStr[ i ], _defaultValuesV4[ i ] );
+						_defaultValuesV4[ i ] = EditorGUILayoutVector4Field( _defaultValuesStr[ i ], _defaultValuesV4[ i ] );
 				}
 				break;
 			}

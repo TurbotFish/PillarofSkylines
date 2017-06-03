@@ -66,7 +66,10 @@ namespace AmplifyShaderEditor
 
 		[SerializeField]
 		private bool m_offsetEnabled;
-		
+
+		[SerializeField]
+		private StandardSurfaceOutputNode m_parentSurface;
+
 		public string CreateDepthInfo()
 		{
 			string result = string.Empty;
@@ -88,21 +91,21 @@ namespace AmplifyShaderEditor
 			return result;
 		}
 
-		public void Draw( GUIStyle toolbarstyle, bool customBlendAvailable )
+		public void Draw( UndoParentNode owner, GUIStyle toolbarstyle, bool customBlendAvailable )
 		{
 			Color cachedColor = GUI.color;
 			GUI.color = new Color( cachedColor.r, cachedColor.g, cachedColor.b, 0.5f );
 			EditorGUILayout.BeginHorizontal( toolbarstyle );
 			GUI.color = cachedColor;
 			EditorGUI.BeginChangeCheck();
-			UIUtils.CurrentWindow.ExpandedDepth = GUILayout.Toggle( UIUtils.CurrentWindow.ExpandedDepth, DepthParametersStr, UIUtils.MenuItemToggleStyle );
+			m_parentSurface.ContainerGraph.ParentWindow.ExpandedDepth = owner.GUILayoutToggle( m_parentSurface.ContainerGraph.ParentWindow.ExpandedDepth, DepthParametersStr, UIUtils.MenuItemToggleStyle );
 			if ( EditorGUI.EndChangeCheck() )
 			{
-				EditorPrefs.SetBool( "ExpandedDepth", UIUtils.CurrentWindow.ExpandedDepth );
+				EditorPrefs.SetBool( "ExpandedDepth", m_parentSurface.ContainerGraph.ParentWindow.ExpandedDepth );
 			}
 			EditorGUILayout.EndHorizontal();
 
-			if ( UIUtils.CurrentWindow.ExpandedDepth )
+			if ( m_parentSurface.ContainerGraph.ParentWindow.ExpandedDepth )
 			{
 				cachedColor = GUI.color;
 				GUI.color = new Color( cachedColor.r, cachedColor.g, cachedColor.b, ( EditorGUIUtility.isProSkin ? 0.5f : 0.25f ) );
@@ -116,14 +119,14 @@ namespace AmplifyShaderEditor
 				EditorGUILayout.Separator();
 				EditorGUI.BeginDisabledGroup( !customBlendAvailable );
 
-				m_zWriteMode = EditorGUILayout.Popup( ZWriteModeStr, m_zWriteMode, ZWriteModeValues );
-				m_zTestMode = EditorGUILayout.Popup( ZTestModeStr, m_zTestMode, ZTestModeLabels );
-				m_offsetEnabled = EditorGUILayout.Toggle( OffsetStr, m_offsetEnabled );
+				m_zWriteMode = owner.EditorGUILayoutPopup( ZWriteModeStr, m_zWriteMode, ZWriteModeValues );
+				m_zTestMode = owner.EditorGUILayoutPopup( ZTestModeStr, m_zTestMode, ZTestModeLabels );
+				m_offsetEnabled = owner.EditorGUILayoutToggle( OffsetStr, m_offsetEnabled );
 				if ( m_offsetEnabled )
 				{
 					EditorGUI.indentLevel++;
-					m_offsetFactor = EditorGUILayout.FloatField( OffsetFactorStr, m_offsetFactor );
-					m_offsetUnits = EditorGUILayout.FloatField( OffsetUnitsStr, m_offsetUnits );
+					m_offsetFactor = owner.EditorGUILayoutFloatField( OffsetFactorStr, m_offsetFactor );
+					m_offsetUnits = owner.EditorGUILayoutFloatField( OffsetUnitsStr, m_offsetUnits );
 					EditorGUI.indentLevel--;
 				}
 				EditorGUILayout.Separator();
@@ -171,5 +174,6 @@ namespace AmplifyShaderEditor
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_offsetUnits );
 		}
 		public bool IsActive { get { return m_zTestMode != 0 || m_zWriteMode != 0 || m_offsetEnabled; } }
+		public StandardSurfaceOutputNode ParentSurface { get { return m_parentSurface; } set { m_parentSurface = value; } }
 	}
 }

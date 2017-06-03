@@ -28,7 +28,7 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				dataCollector.AddToInput( m_uniqueId, _inputColorStr, true );
+				dataCollector.AddToInput( UniqueId, _inputColorStr, true );
 				string result = Constants.InputVarStr + _colorValueStr;
 				switch ( outputId )
 				{

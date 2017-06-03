@@ -19,7 +19,7 @@ namespace AmplifyShaderEditor
 		}
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
-			dataCollector.AddToIncludes( m_uniqueId, Constants.UnityShaderVariables );
+			dataCollector.AddToIncludes( UniqueId, Constants.UnityShaderVariables );
 			return string.Empty;
 		}
 	}

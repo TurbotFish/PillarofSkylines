@@ -134,13 +134,13 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public void Draw( bool customBlendAvailable)
+		public void Draw( UndoParentNode owner, bool customBlendAvailable)
 		{
 			m_enabled = customBlendAvailable;
 
 			// RGB
 			EditorGUI.BeginChangeCheck();
-			m_currentIndex = EditorGUILayout.Popup( BlendModesRGBStr, m_currentIndex, m_commonBlendTypesArr );
+			m_currentIndex = owner.EditorGUILayoutPopup( BlendModesRGBStr, m_currentIndex, m_commonBlendTypesArr );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				if ( m_currentIndex > 1 )
@@ -156,10 +156,10 @@ namespace AmplifyShaderEditor
 			EditorGUIUtility.labelWidth = 40;
 
 			EditorGUILayout.BeginHorizontal();
-			m_sourceFactorRGB = ( AvailableBlendFactor )EditorGUILayout.EnumPopup( SourceFactorStr, m_sourceFactorRGB );
+			m_sourceFactorRGB = ( AvailableBlendFactor )owner.EditorGUILayoutEnumPopup( SourceFactorStr, m_sourceFactorRGB );
 			EditorGUI.indentLevel--;
 			EditorGUIUtility.labelWidth = 25;
-			m_destFactorRGB = ( AvailableBlendFactor )EditorGUILayout.EnumPopup( DstFactorStr, m_destFactorRGB );
+			m_destFactorRGB = ( AvailableBlendFactor ) owner.EditorGUILayoutEnumPopup( DstFactorStr, m_destFactorRGB );
 			EditorGUI.indentLevel++;
 			EditorGUILayout.EndHorizontal();
 
@@ -170,7 +170,7 @@ namespace AmplifyShaderEditor
 			}
 
 			EditorGUI.BeginChangeCheck();
-			m_blendOpRGB = ( AvailableBlendOps )EditorGUILayout.EnumPopup( BlendOpsRGBStr, m_blendOpRGB );
+			m_blendOpRGB = ( AvailableBlendOps )owner.EditorGUILayoutEnumPopup( BlendOpsRGBStr, m_blendOpRGB );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				m_blendOpEnabled = m_blendOpRGB != AvailableBlendOps.OFF;
@@ -189,7 +189,7 @@ namespace AmplifyShaderEditor
 
 			//EditorGUI.BeginDisabledGroup( m_currentAlphaIndex == 0 );
 			EditorGUI.BeginChangeCheck();
-			m_currentAlphaIndex = EditorGUILayout.Popup( BlendModesAlphaStr, m_currentAlphaIndex, m_commonBlendTypesArr );
+			m_currentAlphaIndex = owner.EditorGUILayoutPopup( BlendModesAlphaStr, m_currentAlphaIndex, m_commonBlendTypesArr );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				if ( m_currentAlphaIndex > 0 )
@@ -206,10 +206,10 @@ namespace AmplifyShaderEditor
 			cached = EditorGUIUtility.labelWidth;
 			EditorGUIUtility.labelWidth = 40;
 			EditorGUILayout.BeginHorizontal();
-			m_sourceFactorAlpha = ( AvailableBlendFactor )EditorGUILayout.EnumPopup( SourceFactorStr, m_sourceFactorAlpha );
+			m_sourceFactorAlpha = ( AvailableBlendFactor )owner.EditorGUILayoutEnumPopup( SourceFactorStr, m_sourceFactorAlpha );
 			EditorGUI.indentLevel--;
 			EditorGUIUtility.labelWidth = 25;
-			m_destFactorAlpha = ( AvailableBlendFactor )EditorGUILayout.EnumPopup( DstFactorStr, m_destFactorAlpha );
+			m_destFactorAlpha = ( AvailableBlendFactor ) owner.EditorGUILayoutEnumPopup( DstFactorStr, m_destFactorAlpha );
 			EditorGUI.indentLevel++;
 			EditorGUILayout.EndHorizontal();
 			EditorGUIUtility.labelWidth = cached;
@@ -218,7 +218,7 @@ namespace AmplifyShaderEditor
 			{
 				CheckAlphaIndex();
 			}
-			m_blendOpAlpha = ( AvailableBlendOps )EditorGUILayout.EnumPopup( BlendOpsAlphaStr, m_blendOpAlpha );
+			m_blendOpAlpha = ( AvailableBlendOps ) owner.EditorGUILayoutEnumPopup( BlendOpsAlphaStr, m_blendOpAlpha );
 			EditorGUI.EndDisabledGroup();
 			EditorGUILayout.Separator();
 		}

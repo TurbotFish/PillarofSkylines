@@ -42,7 +42,8 @@ namespace AmplifyShaderEditor
 
 
 		private const string ItemWikiFormat = "*<b>[{0}]:</b> {1}\n";
-		private Dictionary<KeyCode, ShortcutItem> m_editorShortcutsDict = new Dictionary<KeyCode, ShortcutItem>();
+		private Dictionary<KeyCode, Dictionary<EventModifiers, ShortcutItem>> m_editorShortcutsDict = new Dictionary<KeyCode, Dictionary<EventModifiers, ShortcutItem>>();
+		private Dictionary<KeyCode, ShortcutItem> m_editorNoModifiersShortcutsDict = new Dictionary<KeyCode, ShortcutItem>();
 		private List<ShortcutItem> m_editorShortcutsList = new List<ShortcutItem>();
 
 		private Dictionary<KeyCode, ShortcutItem> m_nodesShortcutsDict = new Dictionary<KeyCode, ShortcutItem>();
@@ -87,9 +88,32 @@ namespace AmplifyShaderEditor
 			m_nodesShortcutsList.Add( m_nodesShortcutsDict[ key ] );
 		}
 
-		public void RegisterEditorShortcut( KeyCode key, string description, ShortcutItem.ShortcutFunction myKeyDownFunctionPtr, ShortcutItem.ShortcutFunction myKeyUpFunctionPtr = null )
+		public void RegisterEditorShortcut( bool showOnList, EventModifiers modifiers, KeyCode key, string description, ShortcutItem.ShortcutFunction myKeyDownFunctionPtr, ShortcutItem.ShortcutFunction myKeyUpFunctionPtr = null )
 		{
 			if ( m_editorShortcutsDict.ContainsKey( key ) )
+			{
+				if ( m_editorShortcutsDict[ key ].ContainsKey( modifiers ) )
+				{
+					if ( DebugConsoleWindow.DeveloperMode )
+					{
+						Debug.Log( "Attempting to register an already used editor shortcut key " + key );
+					}
+					return;
+				}
+			}
+			else
+			{
+				m_editorShortcutsDict.Add( key, new Dictionary<EventModifiers, ShortcutItem>() );
+			}
+			ShortcutItem item = new ShortcutItem( ( modifiers == EventModifiers.None ? key.ToString() : modifiers + " + " + key ), description, myKeyDownFunctionPtr, myKeyUpFunctionPtr );
+			m_editorShortcutsDict[ key ].Add( modifiers, item );
+			if ( showOnList )
+				m_editorShortcutsList.Add( item );
+		}
+
+		public void RegisterEditorShortcut( bool showOnList, KeyCode key, string description, ShortcutItem.ShortcutFunction myKeyDownFunctionPtr, ShortcutItem.ShortcutFunction myKeyUpFunctionPtr = null )
+		{
+			if ( m_editorNoModifiersShortcutsDict.ContainsKey( key ) )
 			{
 				if ( DebugConsoleWindow.DeveloperMode )
 				{
@@ -98,39 +122,79 @@ namespace AmplifyShaderEditor
 				return;
 			}
 
-			m_editorShortcutsDict.Add( key, new ShortcutItem( key.ToString(), description, myKeyDownFunctionPtr, myKeyUpFunctionPtr ) );
-			m_editorShortcutsList.Add( m_editorShortcutsDict[ key ] );
+			ShortcutItem item = new ShortcutItem( key.ToString(), description, myKeyDownFunctionPtr, myKeyUpFunctionPtr );
+			m_editorNoModifiersShortcutsDict.Add( key, item );
+			if ( showOnList )
+				m_editorShortcutsList.Add( item );
 		}
 
-		public bool ActivateShortcut( KeyCode key, bool isKeyDown )
+		public bool ActivateShortcut( EventModifiers modifiers, KeyCode key, bool isKeyDown )
 		{
 			if ( m_editorShortcutsDict.ContainsKey( key ) )
 			{
 				if ( isKeyDown )
 				{
-					if ( m_editorShortcutsDict[ key ].MyKeyDownFunctionPtr != null )
+					if ( m_editorShortcutsDict[ key ].ContainsKey( modifiers ) )
 					{
-						m_editorShortcutsDict[ key ].MyKeyDownFunctionPtr();
+						if ( m_editorShortcutsDict[ key ][ modifiers ].MyKeyDownFunctionPtr != null )
+						{
+							m_editorShortcutsDict[ key ][ modifiers ].MyKeyDownFunctionPtr();
+							return true;
+						}
+					}
+				}
+				else
+				{
+					if ( m_editorShortcutsDict[ key ].ContainsKey( modifiers ) )
+					{
+						if ( m_editorShortcutsDict[ key ][ modifiers ].MyKeyUpFunctionPtr != null )
+						{
+							m_editorShortcutsDict[ key ][ modifiers ].MyKeyUpFunctionPtr();
+							return true;
+						}
+					}
+				}
+			}
+
+			if ( m_editorNoModifiersShortcutsDict.ContainsKey( key ) )
+			{
+				if ( isKeyDown )
+				{
+					if ( m_editorNoModifiersShortcutsDict[ key ].MyKeyDownFunctionPtr != null )
+					{
+						m_editorNoModifiersShortcutsDict[ key ].MyKeyDownFunctionPtr();
 						return true;
 					}
 				}
 				else
 				{
-					if ( m_editorShortcutsDict[ key ].MyKeyUpFunctionPtr != null )
+					if ( m_editorNoModifiersShortcutsDict[ key ].MyKeyUpFunctionPtr != null )
 					{
-						m_editorShortcutsDict[ key ].MyKeyUpFunctionPtr();
+						m_editorNoModifiersShortcutsDict[ key ].MyKeyUpFunctionPtr();
 						return true;
 					}
 				}
 			}
+
 			return false;
 		}
 
 		public void Destroy()
 		{
-			foreach ( KeyValuePair<KeyCode, ShortcutItem> kvp in m_editorShortcutsDict )
+			foreach ( KeyValuePair<KeyCode, ShortcutItem> kvp in m_editorNoModifiersShortcutsDict )
 			{
 				kvp.Value.Destroy();
+			}
+			m_editorNoModifiersShortcutsDict.Clear();
+			m_editorNoModifiersShortcutsDict = null;
+
+			foreach ( KeyValuePair<KeyCode, Dictionary<EventModifiers, ShortcutItem>> kvpKey in m_editorShortcutsDict )
+			{
+				foreach ( KeyValuePair<EventModifiers, ShortcutItem> kvpMod in kvpKey.Value )
+				{
+					kvpMod.Value.Destroy();
+				}
+				kvpKey.Value.Clear();
 			}
 			m_editorShortcutsDict.Clear();
 			m_editorShortcutsDict = null;
@@ -145,10 +209,7 @@ namespace AmplifyShaderEditor
 			m_nodesShortcutsList = null;
 		}
 
-		public Dictionary<KeyCode, ShortcutItem> AvailableEditorShortcuts { get { return m_editorShortcutsDict; } }
 		public List<ShortcutItem> AvailableEditorShortcutsList { get { return m_editorShortcutsList; } }
-
-		public Dictionary<KeyCode, ShortcutItem> AvailableNodeShortcuts { get { return m_nodesShortcutsDict; } }
 		public List<ShortcutItem> AvailableNodesShortcutsList { get { return m_nodesShortcutsList; } }
 	}
 }

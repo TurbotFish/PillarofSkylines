@@ -16,5 +16,11 @@ namespace AmplifyShaderEditor
 			AddInputPort( WirePortDataType.FLOAT3, false, "Normal" );
 			m_outputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT3, false );
 		}
+
+		protected override void OnUniqueIDAssigned()
+		{
+			base.OnUniqueIDAssigned();
+			m_localVarName = "shaderVertexLights" + OutputId;
+		}
 	}
 }

@@ -67,7 +67,7 @@ namespace AmplifyShaderEditor
 			newPos.x += m_remainingBox.width * 0.5f - newPos.width * 0.5f;
 
 			EditorGUI.BeginChangeCheck();
-			m_currentSelectedInput = EditorGUI.IntPopup( newPos, m_currentSelectedInput, AvailableInputsLabels, AvailableInputsValues, UIUtils.SwitchNodePopUp );
+			m_currentSelectedInput = EditorGUIIntPopup( newPos, m_currentSelectedInput, AvailableInputsLabels, AvailableInputsValues, UIUtils.SwitchNodePopUp );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				UpdateOutputProperties();
@@ -79,7 +79,7 @@ namespace AmplifyShaderEditor
 			base.DrawMainPropertyBlock();
 			EditorGUILayout.Separator();
 			EditorGUI.BeginChangeCheck();
-			m_currentSelectedInput = EditorGUILayout.IntPopup( CurrSelectedStr, m_currentSelectedInput, AvailableInputsLabels, AvailableInputsValues );
+			m_currentSelectedInput = EditorGUILayoutIntPopup( CurrSelectedStr, m_currentSelectedInput, AvailableInputsLabels, AvailableInputsValues );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				UpdateOutputProperties();
@@ -133,10 +133,10 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void SetMaterialMode( Material mat )
+		public override void SetMaterialMode( Material mat , bool fetchMaterialValues )
 		{
-			base.SetMaterialMode( mat );
-			if ( m_materialMode && UIUtils.IsProperty( m_currentParameterType ) && mat.HasProperty( m_propertyName ) )
+			base.SetMaterialMode( mat , fetchMaterialValues );
+			if ( fetchMaterialValues && m_materialMode && UIUtils.IsProperty( m_currentParameterType ) && mat.HasProperty( m_propertyName ) )
 			{
 				m_currentSelectedInput = ( int ) mat.GetFloat( m_propertyName );
 			}

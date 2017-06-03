@@ -20,7 +20,7 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private bool[] m_colorMask = { true, true, true, true };
 
-		public void Draw()
+		public void Draw( UndoParentNode owner )
 		{
 			if ( m_leftToggleColorMask == null || m_leftToggleColorMask.normal.background == null )
 			{
@@ -41,10 +41,10 @@ namespace AmplifyShaderEditor
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField( ColorMaskContent, GUILayout.Width( 90 ) );
 
-			m_colorMask[ 0 ] = GUILayout.Toggle( m_colorMask[ 0 ], "R", m_leftToggleColorMask );
-			m_colorMask[ 1 ] = GUILayout.Toggle( m_colorMask[ 1 ], "G", m_middleToggleColorMask );
-			m_colorMask[ 2 ] = GUILayout.Toggle( m_colorMask[ 2 ], "B", m_middleToggleColorMask );
-			m_colorMask[ 3 ] = GUILayout.Toggle( m_colorMask[ 3 ], "A", m_rightToggleColorMask );
+			m_colorMask[ 0 ] = owner.GUILayoutToggle( m_colorMask[ 0 ], "R", m_leftToggleColorMask );
+			m_colorMask[ 1 ] = owner.GUILayoutToggle( m_colorMask[ 1 ], "G", m_middleToggleColorMask );
+			m_colorMask[ 2 ] = owner.GUILayoutToggle( m_colorMask[ 2 ], "B", m_middleToggleColorMask );
+			m_colorMask[ 3 ] = owner.GUILayoutToggle( m_colorMask[ 3 ], "A", m_rightToggleColorMask );
 
 			EditorGUILayout.EndHorizontal();
 		}

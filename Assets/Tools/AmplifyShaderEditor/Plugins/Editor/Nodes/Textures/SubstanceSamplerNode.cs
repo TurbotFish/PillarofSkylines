@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Substance Sample", "Textures", "Samples a procedural material", KeyCode.None, true, 0, typeof( SubstanceArchive ), typeof( ProceduralMaterial ) )]
+	[NodeAttributes( "Substance Sample", "Textures", "Samples a procedural material", KeyCode.None, true, 0, int.MaxValue, typeof( SubstanceArchive ), typeof( ProceduralMaterial ) )]
 	public sealed class SubstanceSamplerNode : PropertyNode
 	{
 		private const string GlobalVarDecStr = "uniform sampler2D {0};";
@@ -136,7 +136,7 @@ namespace AmplifyShaderEditor
 			}
 
 			EditorGUI.BeginChangeCheck();
-			m_proceduralMaterial = EditorGUI.ObjectField( pickerArea, m_proceduralMaterial, m_type, false ) as ProceduralMaterial;
+			m_proceduralMaterial = EditorGUIObjectField( pickerArea, m_proceduralMaterial, m_type, false ) as ProceduralMaterial;
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				textures = m_proceduralMaterial != null ? m_proceduralMaterial.GetGeneratedTextures() : null;
@@ -152,7 +152,7 @@ namespace AmplifyShaderEditor
 			ConnectFromCache();
 			m_requireMaterialUpdate = true;
 			CalculateFirstOutputConnected();
-			UIUtils.CurrentWindow.RequestRepaint();
+			ContainerGraph.ParentWindow.RequestRepaint();
 		}
 
 		public override void DrawProperties()
@@ -160,7 +160,7 @@ namespace AmplifyShaderEditor
 			base.DrawProperties();
 
 			EditorGUI.BeginChangeCheck();
-			m_proceduralMaterial = EditorGUILayout.ObjectField( SubstanceStr, m_proceduralMaterial, m_type, false ) as ProceduralMaterial ;
+			m_proceduralMaterial = EditorGUILayoutObjectField( SubstanceStr, m_proceduralMaterial, m_type, false ) as ProceduralMaterial ;
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				Texture[] textures = m_proceduralMaterial != null ? m_proceduralMaterial.GetGeneratedTextures() : null;
@@ -170,9 +170,9 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-			m_textureCoordSet = EditorGUILayout.IntPopup( Constants.AvailableUVSetsLabel, m_textureCoordSet, Constants.AvailableUVSetsStr, Constants.AvailableUVSets );
+			m_textureCoordSet = EditorGUILayoutIntPopup( Constants.AvailableUVSetsLabel, m_textureCoordSet, Constants.AvailableUVSetsStr, Constants.AvailableUVSets );
 			EditorGUI.BeginChangeCheck();
-			m_autoNormal = EditorGUILayout.Toggle( AutoNormalStr, m_autoNormal );
+			m_autoNormal = EditorGUILayoutToggle( AutoNormalStr, m_autoNormal );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				for ( int i = 0; i < m_textureTypes.Length; i++ )
@@ -213,7 +213,7 @@ namespace AmplifyShaderEditor
 					int count = connections.Count;
 					for ( int connIdx = 0; connIdx < count; connIdx++ )
 					{
-						UIUtils.SetConnection( connections[ connIdx ].TargetNodeId, connections[ connIdx ].TargetPortId, m_uniqueId, i );
+						UIUtils.SetConnection( connections[ connIdx ].TargetNodeId, connections[ connIdx ].TargetPortId, UniqueId, i );
 					}
 				}
 			}
@@ -333,9 +333,9 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-			string name = textures[ outputId ].name + m_uniqueId;
-			dataCollector.AddToUniforms( m_uniqueId, string.Format( GlobalVarDecStr, textures[ outputId ].name ) );
-			dataCollector.AddToProperties( m_uniqueId, string.Format( PropertyDecStr, textures[ outputId ].name ) + "{}", -1 );
+			string name = textures[ outputId ].name + OutputId;
+			dataCollector.AddToUniforms( UniqueId, string.Format( GlobalVarDecStr, textures[ outputId ].name ) );
+			dataCollector.AddToProperties( UniqueId, string.Format( PropertyDecStr, textures[ outputId ].name ) + "{}", -1 );
 			bool isVertex = ( dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation );
 			string value = string.Format( "tex2D{0}( {1}, {2})", ( isVertex ? "lod" : string.Empty ), textures[ outputId ].name, GetUVCoords( ref dataCollector, ignoreLocalvar, uvPropertyName ) );
 			if ( m_autoNormal && m_textureTypes[ outputId ] == ProceduralOutputType.Normal )
@@ -368,17 +368,17 @@ namespace AmplifyShaderEditor
 				string dummyPropUV = "_texcoord" + ( m_textureCoordSet > 0 ? ( m_textureCoordSet + 1 ).ToString() : "" );
 				string dummyUV = "uv" + ( m_textureCoordSet > 0 ? ( m_textureCoordSet + 1 ).ToString() : "" ) + dummyPropUV;
 
-				dataCollector.AddToUniforms( m_uniqueId, "uniform float4 " + propertyName + "_ST;" );
-				dataCollector.AddToProperties( m_uniqueId, "[HideInInspector] " + dummyPropUV + "( \"\", 2D ) = \"white\" {}", 100 );
-				dataCollector.AddToInput( m_uniqueId, "float2 " + dummyUV, true );
+				dataCollector.AddToUniforms( UniqueId, "uniform float4 " + propertyName + "_ST;" );
+				dataCollector.AddToProperties( UniqueId, "[HideInInspector] " + dummyPropUV + "( \"\", 2D ) = \"white\" {}", 100 );
+				dataCollector.AddToInput( UniqueId, "float2 " + dummyUV, true );
 
 				if ( isVertex )
 				{
-					dataCollector.AddToVertexLocalVariables( m_uniqueId, "float4 " + uvChannelName + " = float4(" + vertexCoords + " * " + propertyName + "_ST.xy + " + propertyName + "_ST.zw, 0 ,0);" );
+					dataCollector.AddToVertexLocalVariables( UniqueId, "float4 " + uvChannelName + " = float4(" + vertexCoords + " * " + propertyName + "_ST.xy + " + propertyName + "_ST.zw, 0 ,0);" );
 					return uvChannelName;
 				}
 				else
-					dataCollector.AddToLocalVariables( m_uniqueId, PrecisionType.Float, WirePortDataType.FLOAT2, uvChannelName, Constants.InputVarStr + "." + dummyUV + " * " + propertyName + "_ST.xy + " + propertyName + "_ST.zw" );
+					dataCollector.AddToLocalVariables( UniqueId, PrecisionType.Float, WirePortDataType.FLOAT2, uvChannelName, Constants.InputVarStr + "." + dummyUV + " * " + propertyName + "_ST.xy + " + propertyName + "_ST.zw" );
 
 				return uvChannelName;
 			}

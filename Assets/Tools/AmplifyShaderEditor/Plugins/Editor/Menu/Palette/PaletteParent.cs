@@ -23,7 +23,7 @@ namespace AmplifyShaderEditor
 	public class PaletteParent : MenuParent
 	{
 		private const float ItemSize = 18;
-		public delegate void OnPaletteNodeCreate( Type type, string name );
+		public delegate void OnPaletteNodeCreate( Type type, string name, AmplifyShaderFunction function );
 		public event OnPaletteNodeCreate OnPaletteNodeCreateEvt;
 
 		private string m_searchFilterStr = "Search";
@@ -31,7 +31,7 @@ namespace AmplifyShaderEditor
 		protected bool m_focusOnSearch = false;
 		protected bool m_defaultCategoryVisible = false;
 
-		protected List<ContextMenuItem> m_allItems;
+		//protected List<ContextMenuItem> m_allItems;
 		protected List<ContextMenuItem> m_currentItems;
 		protected Dictionary<string, PaletteFilterData> m_currentCategories;
 		private bool m_forceUpdate = true;
@@ -43,40 +43,41 @@ namespace AmplifyShaderEditor
 		private GUIStyle m_buttonStyle;
 		private GUIStyle m_foldoutStyle;
 
+		protected bool m_previousWindowIsFunction = false;
 
 		protected int m_validButtonId = 0;
 		protected int m_initialSeparatorAmount = 1;
 
 		private Vector2 _currScrollBarDims = new Vector2( 1, 1 );
 		
-		public PaletteParent( List<ContextMenuItem> items, float x, float y, float width, float height, string name, MenuAnchor anchor = MenuAnchor.NONE, MenuAutoSize autoSize = MenuAutoSize.NONE ) : base( x, y, width, height, name, anchor, autoSize )
+		public PaletteParent( AmplifyShaderEditorWindow parentWindow, float x, float y, float width, float height, string name, MenuAnchor anchor = MenuAnchor.NONE, MenuAutoSize autoSize = MenuAutoSize.NONE ) : base( parentWindow, x, y, width, height, name, anchor, autoSize )
 		{
 			m_searchFilter = string.Empty;
 			m_currentCategories = new Dictionary<string, PaletteFilterData>();
-			m_allItems = new List<ContextMenuItem>();
+			//m_allItems = items;
 			m_currentItems = new List<ContextMenuItem>();
-			for ( int i = 0; i < items.Count; i++ )
-			{
-				m_allItems.Add( items[ i ] );
-			}
 		}
 
 		public virtual void OnEnterPressed() { }
 		public virtual void OnEscapePressed() { }
-
-		public void SortElements()
+		
+		public void FireNodeCreateEvent( Type type, string name, AmplifyShaderFunction function )
 		{
-			m_allItems.Sort( ( x, y ) => x.Category.CompareTo( y.Category ) );
-		}
-
-		public void FireNodeCreateEvent( Type type, string name )
-		{
-			OnPaletteNodeCreateEvt( type, name );
+			OnPaletteNodeCreateEvt( type, name, function );
 		}
 
 		public override void Draw( Rect parentPosition, Vector2 mousePosition, int mouseButtonId, bool hasKeyboadFocus )
 		{
 			base.Draw( parentPosition, mousePosition, mouseButtonId, hasKeyboadFocus );
+			if ( m_previousWindowIsFunction != ParentWindow.IsShaderFunctionWindow )
+			{
+				m_forceUpdate = true;
+			}
+
+			m_previousWindowIsFunction = ParentWindow.IsShaderFunctionWindow;
+
+			List<ContextMenuItem> allItems = ParentWindow.ContextMenuInstance.MenuItems;
+
 			if ( m_searchLabelSize < 0 )
 			{
 				m_searchLabelSize = GUI.skin.label.CalcSize( new GUIContent( m_searchFilterStr ) ).x;
@@ -90,7 +91,7 @@ namespace AmplifyShaderEditor
 
 			if ( m_buttonStyle == null )
 			{
-				m_buttonStyle = UIUtils.CurrentWindow.CustomStylesInstance.Label;
+				m_buttonStyle = UIUtils.Label;
 			}
 			
 			GUILayout.BeginArea( m_transformedArea, m_content, m_style );
@@ -134,8 +135,15 @@ namespace AmplifyShaderEditor
 				float width = EditorGUIUtility.labelWidth;
 				EditorGUIUtility.labelWidth = m_searchLabelSize;
 				EditorGUI.BeginChangeCheck();
-				GUI.SetNextControlName( m_searchFilterControl );
-				m_searchFilter = EditorGUILayout.TextField( m_searchFilterStr, m_searchFilter );
+				{
+					GUI.SetNextControlName( m_searchFilterControl );
+					m_searchFilter = EditorGUILayout.TextField( m_searchFilterStr, m_searchFilter );
+					if ( m_focusOnSearch )
+					{
+						m_focusOnSearch = false;
+						EditorGUI.FocusTextInControl( m_searchFilterControl );
+					}
+				}
 				if ( EditorGUI.EndChangeCheck() )
 					m_forceUpdate = true;
 
@@ -154,32 +162,32 @@ namespace AmplifyShaderEditor
 
 						if ( usingSearchFilter )
 						{
-							for ( int i = 0; i < m_allItems.Count; i++ )
+							for ( int i = 0; i < allItems.Count; i++ )
 							{
-								m_currentItems.Add( m_allItems[ i ] );
-								if ( !m_currentCategories.ContainsKey( m_allItems[ i ].Category ) )
+								m_currentItems.Add( allItems[ i ] );
+								if ( !m_currentCategories.ContainsKey( allItems[ i ].Category ) )
 								{
-									m_currentCategories.Add( m_allItems[ i ].Category, new PaletteFilterData( m_defaultCategoryVisible ) );
-									m_currentCategories[ m_allItems[ i ].Category ].HasCommunityData = m_allItems[ i ].NodeAttributes.FromCommunity || m_currentCategories[ m_allItems[ i ].Category ].HasCommunityData;
+									m_currentCategories.Add( allItems[ i ].Category, new PaletteFilterData( m_defaultCategoryVisible ) );
+									m_currentCategories[ allItems[ i ].Category ].HasCommunityData = allItems[ i ].NodeAttributes.FromCommunity || m_currentCategories[ allItems[ i ].Category ].HasCommunityData;
 								}
-								m_currentCategories[ m_allItems[ i ].Category ].Contents.Add( m_allItems[ i ] );
+								m_currentCategories[ allItems[ i ].Category ].Contents.Add( allItems[ i ] );
 							}
 						}
 						else
 						{
-							for ( int i = 0; i < m_allItems.Count; i++ )
+							for ( int i = 0; i < allItems.Count; i++ )
 							{
-								if ( m_allItems[ i ].Name.IndexOf( m_searchFilter, StringComparison.InvariantCultureIgnoreCase ) >= 0 ||
-										m_allItems[ i ].Category.IndexOf( m_searchFilter, StringComparison.InvariantCultureIgnoreCase ) >= 0
+								if ( allItems[ i ].Name.IndexOf( m_searchFilter, StringComparison.InvariantCultureIgnoreCase ) >= 0 ||
+										allItems[ i ].Category.IndexOf( m_searchFilter, StringComparison.InvariantCultureIgnoreCase ) >= 0
 									)
 								{
-									m_currentItems.Add( m_allItems[ i ] );
-									if ( !m_currentCategories.ContainsKey( m_allItems[ i ].Category ) )
+									m_currentItems.Add( allItems[ i ] );
+									if ( !m_currentCategories.ContainsKey( allItems[ i ].Category ) )
 									{
-										m_currentCategories.Add( m_allItems[ i ].Category, new PaletteFilterData( m_defaultCategoryVisible ) );
-										m_currentCategories[ m_allItems[ i ].Category ].HasCommunityData = m_allItems[ i ].NodeAttributes.FromCommunity || m_currentCategories[ m_allItems[ i ].Category ].HasCommunityData;
+										m_currentCategories.Add( allItems[ i ].Category, new PaletteFilterData( m_defaultCategoryVisible ) );
+										m_currentCategories[ allItems[ i ].Category ].HasCommunityData = allItems[ i ].NodeAttributes.FromCommunity || m_currentCategories[ allItems[ i ].Category ].HasCommunityData;
 									}
-									m_currentCategories[ m_allItems[ i ].Category ].Contents.Add( m_allItems[ i ] );
+									m_currentCategories[ allItems[ i ].Category ].Contents.Add( allItems[ i ] );
 								}
 							}
 						}
@@ -222,7 +230,7 @@ namespace AmplifyShaderEditor
 										{
 											int controlID = GUIUtility.GetControlID( FocusType.Passive );
 											GUIUtility.hotControl = controlID;
-											OnPaletteNodeCreateEvt( current.Value.Contents[ i ].NodeType, current.Value.Contents[ i ].Name );
+											OnPaletteNodeCreateEvt( current.Value.Contents[ i ].NodeType, current.Value.Contents[ i ].Name, current.Value.Contents[ i ].Function );
 										}
 									}
 									else
@@ -239,12 +247,7 @@ namespace AmplifyShaderEditor
 				EditorGUILayout.EndScrollView();
 			}
 			GUILayout.EndArea();
-
-			if ( m_focusOnSearch )
-			{
-				m_focusOnSearch = false;
-				EditorGUI.FocusTextInControl( m_searchFilterControl );
-			}
+			
 		}
 
 		public void DumpAvailableNodes( bool fromCommunity, string pathname )
@@ -259,7 +262,7 @@ namespace AmplifyShaderEditor
 			string OverallFoot = "[[Category:Nodes]]";
 
 			string NodeInfoBeginFormat = "{| cellpadding=\"10\"\n";
-			string nodeInfoBodyFormat = "|- style=\"vertical-align:top;\"\n| http://amplify.pt/Nodes/{0}.jpg\n| [[Unity Products:Amplify Shader Editor/{1} | <span style=\"font-size: 120%;\">'''{2}'''<span> ]] <br> {3}\n";
+			string nodeInfoBodyFormat = "|- style=\"vertical-align:top;\"\n| http://amplify.pt/Nodes/{0}.jpg\n| [[Unity Products:Amplify Shader Editor/{1} | <span style=\"font-size: 120%;\"><span id=\"{2}\"></span>'''{2}'''<span> ]] <br> {3}\n";
 			string NodeInfoEndFormat = "|}\n";
 
 			string nodesInfo = string.Empty;
@@ -325,12 +328,52 @@ namespace AmplifyShaderEditor
 
 		public void FillList( ref List<ContextMenuItem> list )
 		{
+			List<ContextMenuItem> allList = ParentWindow.ContextMenuInstance.MenuItems;
+
 			list.Clear();
-			int count = m_allItems.Count;
+			int count = allList.Count;
 			for ( int i = 0; i < count; i++ )
 			{
-				list.Add( m_allItems[ i ] );
+				list.Add( allList[ i ] );
 			}
+		}
+		
+		public Dictionary<string,PaletteFilterData> BuildFullList()
+		{
+			//Only need to build if search filter is active and list is set according to it
+			if ( m_searchFilter.Length > 0 || !m_isActive || m_currentCategories.Count == 0  )
+			{
+				m_currentItems.Clear();
+				m_currentCategories.Clear();
+
+				List<ContextMenuItem> allItems = ParentWindow.ContextMenuInstance.MenuItems;
+
+				for ( int i = 0; i < allItems.Count; i++ )
+				{
+					if ( allItems[ i ].Name.IndexOf( m_searchFilter, StringComparison.InvariantCultureIgnoreCase ) >= 0 ||
+							allItems[ i ].Category.IndexOf( m_searchFilter, StringComparison.InvariantCultureIgnoreCase ) >= 0
+						)
+					{
+						m_currentItems.Add( allItems[ i ] );
+						if ( !m_currentCategories.ContainsKey( allItems[ i ].Category ) )
+						{
+							m_currentCategories.Add( allItems[ i ].Category, new PaletteFilterData( m_defaultCategoryVisible ) );
+							m_currentCategories[ allItems[ i ].Category ].HasCommunityData = allItems[ i ].NodeAttributes.FromCommunity || m_currentCategories[ allItems[ i ].Category ].HasCommunityData;
+						}
+						m_currentCategories[ allItems[ i ].Category ].Contents.Add( allItems[ i ] );
+					}
+				}
+
+				var categoryEnumerator = m_currentCategories.GetEnumerator();
+				while ( categoryEnumerator.MoveNext() )
+				{
+					categoryEnumerator.Current.Value.Contents.Sort( ( x, y ) => x.CompareTo( y, false ) );
+				}
+
+				//mark to force update and take search filter into account
+				m_forceUpdate = true;
+			}
+			return m_currentCategories;
 		}
 
 		private bool IsItemVisible( float currPos )
@@ -348,8 +391,7 @@ namespace AmplifyShaderEditor
 		{
 			base.Destroy();
 
-			m_allItems.Clear();
-			m_allItems = null;
+			//m_allItems = null;
 
 			m_currentItems.Clear();
 			m_currentItems = null;
@@ -361,5 +403,12 @@ namespace AmplifyShaderEditor
 			m_buttonStyle = null;
 			m_foldoutStyle = null;
 		}
+
+		//public void Clear() {
+		//	m_allItems.Clear();
+		//	m_allItems = new List<ContextMenuItem>();
+		//}
+
+		public bool ForceUpdate { get { return m_forceUpdate; } set { m_forceUpdate = value; } }
 	}
 }

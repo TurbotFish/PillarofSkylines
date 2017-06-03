@@ -38,14 +38,14 @@ namespace AmplifyShaderEditor
 			string PixelCount_X = m_inputPorts[ 1 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT2, false );
 			string PixelCount_Y = m_inputPorts[ 2 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT2, false );
 
-			string pixelWidth = "float pixelWidth" + m_uniqueId + " =  1.0f / " + PixelCount_X + ";";
-			string pixelHeight = "float pixelHeight" + m_uniqueId + " = 1.0f / " + PixelCount_Y + ";";
-			string pixelatedUV = "half2 pixelateduv" + m_uniqueId + " = half2((int)(" + uv + ".x / pixelWidth" + m_uniqueId + ") * pixelWidth" + m_uniqueId + ", (int)(" + uv + ".y / pixelHeight" + m_uniqueId + ") * pixelHeight" + m_uniqueId + ");";
-			string result = "pixelateduv" + m_uniqueId;
+			string pixelWidth = "float pixelWidth" + UniqueId + " =  1.0f / " + PixelCount_X + ";";
+			string pixelHeight = "float pixelHeight" + UniqueId + " = 1.0f / " + PixelCount_Y + ";";
+			string pixelatedUV = "half2 pixelateduv" + UniqueId + " = half2((int)(" + uv + ".x / pixelWidth" + UniqueId + ") * pixelWidth" + UniqueId + ", (int)(" + uv + ".y / pixelHeight" + UniqueId + ") * pixelHeight" + UniqueId + ");";
+			string result = "pixelateduv" + UniqueId;
 
-			dataCollector.AddToLocalVariables( m_uniqueId, pixelWidth);
-			dataCollector.AddToLocalVariables( m_uniqueId, pixelHeight);
-			dataCollector.AddToLocalVariables( m_uniqueId, pixelatedUV);
+			dataCollector.AddToLocalVariables( UniqueId, pixelWidth);
+			dataCollector.AddToLocalVariables( UniqueId, pixelHeight);
+			dataCollector.AddToLocalVariables( UniqueId, pixelatedUV);
 
 			return GetOutputVectorItem( 0, outputId, result);
 

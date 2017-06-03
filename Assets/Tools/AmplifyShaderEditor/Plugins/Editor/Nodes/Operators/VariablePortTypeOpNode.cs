@@ -42,7 +42,7 @@ namespace AmplifyShaderEditor
 			EditorGUILayout.BeginVertical();
 			{
 				EditorGUILayout.LabelField( InputTypeStr );
-				m_selectedType = ( WirePortDataType ) EditorGUILayout.EnumPopup( m_selectedType );
+				m_selectedType = ( WirePortDataType ) EditorGUILayoutEnumPopup( m_selectedType );
 			}
 			EditorGUILayout.EndVertical();
 			if ( m_selectedType != m_lastSelectedType )

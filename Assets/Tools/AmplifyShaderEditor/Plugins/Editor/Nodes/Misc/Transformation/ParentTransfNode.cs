@@ -12,6 +12,8 @@ namespace AmplifyShaderEditor
 			base.CommonInit( uniqueId );
 			AddInputPort( WirePortDataType.FLOAT4, false, string.Empty );
 			AddOutputVectorPorts( WirePortDataType.FLOAT4, string.Empty );
+			m_useInternalPortData = true;
+			m_inputPorts[ 0 ].Vector4InternalData = new UnityEngine.Vector4( 0, 0, 0, 1 );
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
@@ -20,7 +22,7 @@ namespace AmplifyShaderEditor
 				return GetOutputVectorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue );
 
 			string value = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
-			RegisterLocalVariable( 0, string.Format( "mul({0},{1})", m_matrixName, value ),ref dataCollector,"transform"+m_uniqueId );
+			RegisterLocalVariable( 0, string.Format( "mul({0},{1})", m_matrixName, value ),ref dataCollector,"transform"+ OutputId );
 			return GetOutputVectorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue );
 		}
 	}

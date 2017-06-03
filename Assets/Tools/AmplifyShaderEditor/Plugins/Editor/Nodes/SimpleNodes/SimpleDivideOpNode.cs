@@ -21,12 +21,12 @@ namespace AmplifyShaderEditor
 			m_inputA = m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, m_inputPorts[ 0 ].DataType, ignoreLocalvar );
 			if ( m_inputPorts[ 0 ].DataType != m_mainDataType )
 			{
-				m_inputA = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( m_uniqueId, outputId ), m_inputA, m_inputPorts[ 0 ].DataType, m_mainDataType, m_inputA );
+				m_inputA = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputA, m_inputPorts[ 0 ].DataType, m_mainDataType, m_inputA );
 			}
 			m_inputB = m_inputPorts[ 1 ].GenerateShaderForOutput( ref dataCollector, m_inputPorts[ 1 ].DataType, ignoreLocalvar );
 			if ( m_inputPorts[ 1 ].DataType != m_mainDataType && m_inputPorts[ 1 ].DataType != WirePortDataType.FLOAT )
 			{
-				m_inputB = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( m_uniqueId, outputId ), m_inputB, m_inputPorts[ 1 ].DataType, m_mainDataType, m_inputB );
+				m_inputB = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputB, m_inputPorts[ 1 ].DataType, m_mainDataType, m_inputB );
 			}
 
 			switch ( m_outputPorts[ 0 ].DataType )

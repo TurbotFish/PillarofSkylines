@@ -19,7 +19,9 @@ namespace AmplifyShaderEditor
 			for ( int i = 0; i < m_inputPorts.Count; i++ )
 			{
 				if ( m_inputPorts[ i ].IsConnected )
-					m_inputPorts[ i ].GetOutputNode().ActivateNode( m_uniqueId, i, myType );
+				{
+					m_inputPorts[ i ].GetOutputNode().ActivateNode( UniqueId, i, myType );
+				}
 			}
 		}
 

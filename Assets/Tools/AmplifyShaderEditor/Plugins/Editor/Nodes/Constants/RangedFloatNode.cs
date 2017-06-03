@@ -53,6 +53,9 @@ namespace AmplifyShaderEditor
 
 		public void SetFloatMode( bool value )
 		{
+			if ( m_floatMode == value )
+				return;
+
 			m_floatMode = value;
 			if ( value )
 			{
@@ -72,11 +75,11 @@ namespace AmplifyShaderEditor
 			m_materialValue = m_defaultValue;
 		}
 
-		public override void DrawSubProperties()
+		void DrawMinMaxUI()
 		{
 			EditorGUI.BeginChangeCheck();
-			m_min = EditorGUILayout.FloatField( MinValueStr, m_min );
-			m_max = EditorGUILayout.FloatField( MaxValueStr, m_max );
+			m_min = EditorGUILayoutFloatField( MinValueStr, m_min );
+			m_max = EditorGUILayoutFloatField( MaxValueStr, m_max );
 			if ( m_min > m_max )
 				m_min = m_max;
 
@@ -87,47 +90,39 @@ namespace AmplifyShaderEditor
 			{
 				SetFloatMode( m_min == m_max );
 			}
+		}
+		public override void DrawSubProperties()
+		{
+			DrawMinMaxUI();
 
 			if ( m_floatMode )
 			{
-				m_defaultValue = EditorGUILayout.FloatField( Constants.DefaultValueLabel, m_defaultValue );
+				m_defaultValue = EditorGUILayoutFloatField( Constants.DefaultValueLabel, m_defaultValue );
 			}
 			else
 			{
-				m_defaultValue = EditorGUILayout.Slider( Constants.DefaultValueLabel, m_defaultValue, m_min, m_max );
+				m_defaultValue = EditorGUILayoutSlider( Constants.DefaultValueLabel, m_defaultValue, m_min, m_max );
 			}
 		}
 
 		public override void DrawMaterialProperties()
 		{
-			EditorGUI.BeginChangeCheck();
-			m_min = EditorGUILayout.FloatField( MinValueStr, m_min );
-			m_max = EditorGUILayout.FloatField( MaxValueStr, m_max );
-			if ( m_min > m_max )
-				m_min = m_max;
-
-			if ( m_max < m_min )
-				m_max = m_min;
-
-			if ( EditorGUI.EndChangeCheck() )
-			{
-				SetFloatMode( m_min == m_max );
-			}
+			DrawMinMaxUI();
 
 			EditorGUI.BeginChangeCheck();
 
 			if ( m_floatMode )
 			{
-				m_materialValue = EditorGUILayout.FloatField( Constants.MaterialValueLabel, m_materialValue );
+				m_materialValue = EditorGUILayoutFloatField( Constants.MaterialValueLabel, m_materialValue );
 			}
 			else
 			{
-				m_materialValue = EditorGUILayout.Slider( Constants.MaterialValueLabel, m_materialValue, m_min, m_max );
+				m_materialValue = EditorGUILayoutSlider( Constants.MaterialValueLabel, m_materialValue, m_min, m_max );
 			}
-			if (EditorGUI.EndChangeCheck())
+			if ( EditorGUI.EndChangeCheck() )
 			{
 				//MarkForPreviewUpdate();
-				if( m_materialMode )
+				if ( m_materialMode )
 					m_requireMaterialUpdate = true;
 			}
 		}
@@ -135,7 +130,7 @@ namespace AmplifyShaderEditor
 		public override void SetPreviewInputs()
 		{
 			base.SetPreviewInputs();
-			
+
 			if ( m_cachedPropertyId == -1 )
 				m_cachedPropertyId = Shader.PropertyToID( "_InputFloat" );
 
@@ -170,7 +165,7 @@ namespace AmplifyShaderEditor
 					EditorGUI.BeginChangeCheck();
 					if ( m_floatMode )
 					{
-						UIUtils.DrawFloat( ref m_propertyDrawPos, ref m_materialValue, LabelWidth * drawInfo.InvertedZoom );
+						UIUtils.DrawFloat( this, ref m_propertyDrawPos, ref m_materialValue, LabelWidth * drawInfo.InvertedZoom );
 					}
 					else
 					{
@@ -192,24 +187,24 @@ namespace AmplifyShaderEditor
 
 					if ( m_floatMode )
 					{
-						UIUtils.DrawFloat( ref m_propertyDrawPos, ref m_defaultValue, LabelWidth * drawInfo.InvertedZoom );
+						UIUtils.DrawFloat( this, ref m_propertyDrawPos, ref m_defaultValue, LabelWidth * drawInfo.InvertedZoom );
 					}
 					else
 					{
 						DrawSlider( ref m_defaultValue, drawInfo );
 					}
-					if (EditorGUI.EndChangeCheck())
+					if ( EditorGUI.EndChangeCheck() )
 					{
 						//MarkForPreviewUpdate();
 						BeginDelayedDirtyProperty();
 					}
-						
+
 				}
 			}
 		}
 
 		void DrawSlider( ref float value, DrawInfo drawInfo )
-		{	
+		{
 			int originalFontSize = EditorStyles.numberField.fontSize;
 			EditorStyles.numberField.fontSize = ( int ) ( OriginalFontSize * drawInfo.InvertedZoom );
 
@@ -218,7 +213,7 @@ namespace AmplifyShaderEditor
 
 			//Min
 			m_propertyDrawPos.width = rangeWidth;
-			m_min = EditorGUI.FloatField( m_propertyDrawPos, m_min, UIUtils.MainSkin.textField );
+			m_min = EditorGUIFloatField( m_propertyDrawPos, m_min, UIUtils.MainSkin.textField );
 
 			//Value Slider
 			m_propertyDrawPos.x += m_propertyDrawPos.width + rangeSpacing;
@@ -229,17 +224,17 @@ namespace AmplifyShaderEditor
 			slider.y += m_propertyDrawPos.height * 0.5f - slider.height * 0.5f;
 			GUI.Box( slider, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SliderStyle ) );
 
-			value = GUI.HorizontalSlider( m_propertyDrawPos, value, m_min, m_max , GUIStyle.none, UIUtils.RangedFloatSliderThumbStyle );
+			value = GUI.HorizontalSlider( m_propertyDrawPos, value, m_min, m_max, GUIStyle.none, UIUtils.RangedFloatSliderThumbStyle );
 
 			//Value Area
 			m_propertyDrawPos.x += m_propertyDrawPos.width + rangeSpacing;
 			m_propertyDrawPos.width = rangeWidth;
-			value = EditorGUI.FloatField( m_propertyDrawPos, value, UIUtils.MainSkin.textField );
+			value = EditorGUIFloatField( m_propertyDrawPos, value, UIUtils.MainSkin.textField );
 
 			//Max
 			m_propertyDrawPos.x += m_propertyDrawPos.width + rangeSpacing;
 			m_propertyDrawPos.width = rangeWidth;
-			m_max = EditorGUI.FloatField( m_propertyDrawPos, m_max, UIUtils.MainSkin.textField );
+			m_max = EditorGUIFloatField( m_propertyDrawPos, m_max, UIUtils.MainSkin.textField );
 
 			EditorStyles.numberField.fontSize = originalFontSize;
 		}
@@ -276,10 +271,10 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void SetMaterialMode( Material mat )
+		public override void SetMaterialMode( Material mat , bool fetchMaterialValues )
 		{
-			base.SetMaterialMode( mat );
-			if ( m_materialMode && UIUtils.IsProperty( m_currentParameterType ) && mat.HasProperty( m_propertyName ) )
+			base.SetMaterialMode( mat , fetchMaterialValues );
+			if ( fetchMaterialValues && m_materialMode && UIUtils.IsProperty( m_currentParameterType ) && mat.HasProperty( m_propertyName ) )
 			{
 				m_materialValue = mat.GetFloat( m_propertyName );
 			}
@@ -306,6 +301,18 @@ namespace AmplifyShaderEditor
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_defaultValue );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_min );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_max );
+		}
+
+		public override void ReadAdditionalClipboardData( ref string[] nodeParams )
+		{
+			base.ReadAdditionalClipboardData( ref nodeParams );
+			m_materialValue = Convert.ToSingle( GetCurrentParam( ref nodeParams ) );
+		}
+
+		public override void WriteAdditionalClipboardData( ref string nodeInfo )
+		{
+			base.WriteAdditionalClipboardData( ref nodeInfo );
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_materialValue );
 		}
 
 		public override string GetPropertyValStr()

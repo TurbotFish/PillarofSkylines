@@ -142,7 +142,8 @@ namespace AmplifyShaderEditor
 		public override void DrawMainPropertyBlock()
 		{
 			EditorGUI.BeginChangeCheck();
-			m_referenceType = ( TexReferenceType ) EditorGUILayout.EnumPopup( Constants.ReferenceTypeStr, m_referenceType );
+			//m_referenceType = ( TexReferenceType ) EditorGUILayout.EnumPopup( Constants.ReferenceTypeStr, m_referenceType );
+			m_referenceType = ( TexReferenceType ) EditorGUILayoutPopup( Constants.ReferenceTypeStr, ( int ) m_referenceType, Constants.ReferenceArrayLabels );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				m_sizeIsDirty = true;
@@ -191,7 +192,7 @@ namespace AmplifyShaderEditor
 					GUI.enabled = false;
 				}
 
-				m_referenceArrayId = EditorGUILayout.Popup(  Constants.AvailableReferenceStr, m_referenceArrayId, arr );
+				m_referenceArrayId = EditorGUILayoutPopup(  Constants.AvailableReferenceStr, m_referenceArrayId, arr );
 				GUI.enabled = guiEnabledBuffer;
 			}
 		}
@@ -267,10 +268,10 @@ namespace AmplifyShaderEditor
 					if ( connectedPorts > 1 || m_outputPorts[ i ].ConnectionCount > 1  )
 					{
 						// Create common local var and mark as fetched
-						m_textureFetchedValue = SamplerType + "Node" + m_uniqueId;
+						m_textureFetchedValue = SamplerType + "Node" + UniqueId;
 						m_isTextureFetched = true;
 
-						dataCollector.AddToLocalVariables( m_uniqueId, ( "float4 " ) + m_textureFetchedValue + " = " + samplerOp + ";" );
+						dataCollector.AddToLocalVariables( UniqueId, ( "float4 " ) + m_textureFetchedValue + " = " + samplerOp + ";" );
 						m_outputPorts[ 0 ].SetLocalValue( m_textureFetchedValue );
 						m_outputPorts[ 1 ].SetLocalValue( m_textureFetchedValue + ".r" );
 						m_outputPorts[ 2 ].SetLocalValue( m_textureFetchedValue + ".g" );
@@ -302,19 +303,19 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				dataCollector.AddToInput( m_uniqueId, "float4 " + ScreenPosStr, true );
+				dataCollector.AddToInput( UniqueId, "float4 " + ScreenPosStr, true );
 
-				string localVarName = ScreenPosStr + m_uniqueId;
+				string localVarName = ScreenPosStr + UniqueId;
 				string value = UIUtils.PrecisionWirePortToCgType( m_currentPrecisionType, m_outputPorts[ 0 ].DataType ) + " " + localVarName + " = " + ScreenPosOnFragStr + ";";
 				dataCollector.AddInstructions( value, true, true );
 
 				dataCollector.AddInstructions( HackInstruction[ 0 ], true, true );
-				dataCollector.AddInstructions( string.Format( HackInstruction[ 1 ], m_uniqueId ), true, true );
+				dataCollector.AddInstructions( string.Format( HackInstruction[ 1 ], UniqueId ), true, true );
 				dataCollector.AddInstructions( HackInstruction[ 2 ], true, true );
-				dataCollector.AddInstructions( string.Format( HackInstruction[ 3 ], m_uniqueId ), true, true );
+				dataCollector.AddInstructions( string.Format( HackInstruction[ 3 ], UniqueId ), true, true );
 				dataCollector.AddInstructions( HackInstruction[ 4 ], true, true );
-				dataCollector.AddInstructions( string.Format( HackInstruction[ 5 ], localVarName, m_uniqueId ), true, true );
-				dataCollector.AddInstructions( string.Format( HackInstruction[ 6 ], localVarName, m_uniqueId ), true, true );
+				dataCollector.AddInstructions( string.Format( HackInstruction[ 5 ], localVarName, UniqueId ), true, true );
+				dataCollector.AddInstructions( string.Format( HackInstruction[ 6 ], localVarName, UniqueId ), true, true );
 				dataCollector.AddInstructions( string.Format( ProjectionInstruction, localVarName ), true, true );
 				return "UNITY_PROJ_COORD( " + localVarName + " )";
 
@@ -431,11 +432,11 @@ namespace AmplifyShaderEditor
 		{
 			if ( SoftValidReference )
 			{
-				if ( m_referenceNode.IsConnected )
-				{
-					dataType = string.Empty;
-					dataName = string.Empty;
-				}
+				//if ( m_referenceNode.IsConnected )
+				//{
+				//	dataType = string.Empty;
+				//	dataName = string.Empty;
+				//}
 
 				m_referenceNode.GetUniformData( out dataType, out  dataName );
 				return;

@@ -25,20 +25,49 @@ namespace AmplifyShaderEditor
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-			m_viewSpaceInt = EditorGUILayout.Popup( "View Space", m_viewSpaceInt, m_viewSpaceStr );
+			m_viewSpaceInt = EditorGUILayoutPopup( "View Space", m_viewSpaceInt, m_viewSpaceStr );
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
-			dataCollector.AddToIncludes( m_uniqueId, Constants.UnityShaderVariables );
-			dataCollector.AddToInput( m_uniqueId, "float " + m_vertexNameStr[ m_viewSpaceInt ], true );
+			if ( dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation )
+			{
+				//UIUtils.ShowMessage( "Depth Fade node doesn't generate any code in vertex function!", MessageSeverity.Warning );
+				string vertexSpace = m_viewSpaceInt == 1 ? " * _ProjectionParams.w" : "";
+				string vertexInstruction = "-UnityObjectToViewPos( " + Constants.VertexShaderInputStr + ".vertex.xyz ).z" + vertexSpace;
+				dataCollector.AddVertexInstruction( "float " + m_vertexNameStr[ m_viewSpaceInt ] + " = " + vertexInstruction, UniqueId );
 
-			string space = m_viewSpaceInt == 1 ? space = " * _ProjectionParams.w" : "";
+				return m_vertexNameStr[ m_viewSpaceInt ];
+			}
 
-			string instruction = "-UnityObjectToViewPos( " + Constants.VertexShaderInputStr + ".vertex.xyz ).z" + space;
-			dataCollector.AddVertexInstruction( Constants.VertexShaderOutputStr + "." + m_vertexNameStr[ m_viewSpaceInt ] + " = " + instruction, m_uniqueId );
+			dataCollector.AddToIncludes( UniqueId, Constants.UnityShaderVariables );
+		
 
-			return GetOutputVectorItem( 0, outputId, Constants.InputVarStr + "." + m_vertexNameStr[ m_viewSpaceInt ] );
+			if ( dataCollector.TesselationActive )
+			{
+				string eyeDepth = GeneratorUtils.GenerateScreenDepthOnFrag( ref dataCollector, UniqueId, m_currentPrecisionType );
+				if ( m_viewSpaceInt == 1 )
+				{
+					dataCollector.AddLocalVariable( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT, m_vertexNameStr[ 1 ], eyeDepth + " * _ProjectionParams.w" );
+					return m_vertexNameStr[ 1 ];
+				}
+				else
+				{
+					return eyeDepth;
+				}
+			}
+			else
+			{
+				string space = string.Empty;
+				if ( m_viewSpaceInt == 1 )
+					space = " * _ProjectionParams.w";
+
+				dataCollector.AddToInput( UniqueId, "float " + m_vertexNameStr[ m_viewSpaceInt ], true );
+				string instruction = "-UnityObjectToViewPos( " + Constants.VertexShaderInputStr + ".vertex.xyz ).z" + space;
+				dataCollector.AddVertexInstruction( Constants.VertexShaderOutputStr + "." + m_vertexNameStr[ m_viewSpaceInt ] + " = " + instruction, UniqueId );
+
+				return Constants.InputVarStr + "." + m_vertexNameStr[ m_viewSpaceInt ];
+			}
 		}
 
 		public override void ReadFromString( ref string[] nodeParams )

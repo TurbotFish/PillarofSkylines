@@ -13,7 +13,6 @@ namespace AmplifyShaderEditor
 	[NodeAttributes("Compare (A >= B)", "Logical Operators", "Check if A is greater than or equal to B. If true return value of True else return value of False", null, KeyCode.None, true, false, null, null, true )]
     public sealed class TFHCCompareGreaterEqual : TFHCStub
 	{
-
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
@@ -28,7 +27,7 @@ namespace AmplifyShaderEditor
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
 			GetInputData( ref dataCollector, ignoreLocalvar );
-			string strout = " ( ( " + m_inputDataPort0 + " >= " + m_inputDataPort1 + " ) ? " + m_inputDataPort2 + " :  " + m_inputDataPort3  + " ) ";
+			string strout = "(( " + m_inputDataPort0 + " >= " + m_inputDataPort1 + " ) ? " + m_inputDataPort2 + " :  " + m_inputDataPort3  + " )";
 			//Debug.Log(strout);
 			return CreateOutputLocalVariable( 0, strout, ref dataCollector );
 

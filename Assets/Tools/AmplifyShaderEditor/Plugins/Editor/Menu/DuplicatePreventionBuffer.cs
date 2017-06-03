@@ -189,7 +189,7 @@ namespace AmplifyShaderEditor
 
 		public bool ReleaseUniformName( int nodeId, string name )
 		{
-			if ( name.Length == 0 )
+			if ( !string.IsNullOrEmpty(name) && name.Length == 0 )
 				return false;
 
 			if ( m_availableUniformNames.ContainsKey( name ) )

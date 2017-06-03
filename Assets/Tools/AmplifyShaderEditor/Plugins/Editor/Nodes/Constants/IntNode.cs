@@ -54,7 +54,7 @@ namespace AmplifyShaderEditor
 
 		public override void DrawSubProperties()
 		{
-			m_defaultValue = EditorGUILayout.IntField( Constants.DefaultValueLabel, m_defaultValue );
+			m_defaultValue = EditorGUILayoutIntField( Constants.DefaultValueLabel, m_defaultValue );
 		}
 
 		public override void DrawMaterialProperties()
@@ -62,7 +62,7 @@ namespace AmplifyShaderEditor
 			if ( m_materialMode )
 				EditorGUI.BeginChangeCheck();
 
-			m_materialValue = EditorGUILayout.IntField( Constants.MaterialValueLabel, m_materialValue );
+			m_materialValue = EditorGUILayoutIntField( Constants.MaterialValueLabel, m_materialValue );
 
 			if ( m_materialMode && EditorGUI.EndChangeCheck() )
 			{
@@ -95,7 +95,7 @@ namespace AmplifyShaderEditor
 				if ( m_materialMode && m_currentParameterType != PropertyType.Constant )
 				{
 					EditorGUI.BeginChangeCheck();
-					m_materialValue = EditorGUI.IntField( m_propertyDrawPos, "  ", m_materialValue, UIUtils.MainSkin.textField );
+					m_materialValue = EditorGUIIntField( m_propertyDrawPos, "  ", m_materialValue, UIUtils.MainSkin.textField );
 					if ( EditorGUI.EndChangeCheck() )
 					{
 						m_requireMaterialUpdate = true;
@@ -107,7 +107,7 @@ namespace AmplifyShaderEditor
 				{
 					EditorGUI.BeginChangeCheck();
 
-					m_defaultValue = EditorGUI.IntField( m_propertyDrawPos, "  ", m_defaultValue, UIUtils.MainSkin.textField );
+					m_defaultValue = EditorGUIIntField( m_propertyDrawPos, "  ", m_defaultValue, UIUtils.MainSkin.textField );
 
 					if ( EditorGUI.EndChangeCheck() )
 						BeginDelayedDirtyProperty();
@@ -140,10 +140,10 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void SetMaterialMode( Material mat )
+		public override void SetMaterialMode( Material mat , bool fetchMaterialValues )
 		{
-			base.SetMaterialMode( mat );
-			if ( m_materialMode && UIUtils.IsProperty( m_currentParameterType ) && mat.HasProperty( m_propertyName ) )
+			base.SetMaterialMode( mat , fetchMaterialValues );
+			if ( fetchMaterialValues && m_materialMode && UIUtils.IsProperty( m_currentParameterType ) && mat.HasProperty( m_propertyName ) )
 			{
 				m_materialValue = mat.GetInt( m_propertyName );
 			}
@@ -165,6 +165,18 @@ namespace AmplifyShaderEditor
 		{
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_defaultValue );
+		}
+
+		public override void ReadAdditionalClipboardData( ref string[] nodeParams )
+		{
+			base.ReadAdditionalClipboardData( ref nodeParams );
+			m_materialValue = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
+		}
+
+		public override void WriteAdditionalClipboardData( ref string nodeInfo )
+		{
+			base.WriteAdditionalClipboardData( ref nodeInfo );
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_materialValue );
 		}
 
 		public override string GetPropertyValStr()

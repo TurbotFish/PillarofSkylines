@@ -8,13 +8,13 @@ namespace AmplifyShaderEditor
 {
 	public sealed class PaletteWindow : PaletteParent
 	{
-		public PaletteWindow( List<ContextMenuItem> items ) : base( items, 0, 0, 250, 0, string.Empty, MenuAnchor.TOP_RIGHT, MenuAutoSize.MATCH_VERTICAL )
+		public PaletteWindow( AmplifyShaderEditorWindow parentWindow ) : base( parentWindow, 0, 0, 250, 0, string.Empty, MenuAnchor.TOP_RIGHT, MenuAutoSize.MATCH_VERTICAL )
 		{
 			m_searchFilterControl += "PALETTEWINDOW";
-			SortElements();
 			m_initialSeparatorAmount = 4;
 			SetMinimizedArea( -225, 0, 260, 0 );
 		}
+
 		public override void Draw( Rect parentPosition, Vector2 mousePosition, int mouseButtonId, bool hasKeyboadFocus )
 		{
 			if ( m_isMaximized )
@@ -29,3 +29,5 @@ namespace AmplifyShaderEditor
 		}
 	}
 }
+
+

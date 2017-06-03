@@ -47,7 +47,7 @@ namespace AmplifyShaderEditor
 			EditorGUILayout.BeginVertical();
 
 			EditorGUI.BeginChangeCheck();
-			_selectedOutputTypeInt = EditorGUILayout.Popup( OutputTypeStr, _selectedOutputTypeInt, _outputValueTypes );
+			_selectedOutputTypeInt = EditorGUILayoutPopup( OutputTypeStr, _selectedOutputTypeInt, _outputValueTypes );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				switch ( _selectedOutputTypeInt )
@@ -92,7 +92,7 @@ namespace AmplifyShaderEditor
 			for ( int i = 0; i < count; i++ )
 			{
 				if ( !m_inputPorts[ i ].IsConnected )
-					_defaultValues[ i ] = EditorGUILayout.FloatField( _defaultValuesStr[ i ], _defaultValues[ i ] );
+					_defaultValues[ i ] = EditorGUILayoutFloatField( _defaultValuesStr[ i ], _defaultValues[ i ] );
 			}
 
 			EditorGUILayout.EndVertical();
@@ -119,7 +119,7 @@ namespace AmplifyShaderEditor
 					m_inputPorts[ 1 ].Visible = true;
 					m_inputPorts[ 2 ].Visible = true;
 					m_inputPorts[ 3 ].Visible = false;
-					UIUtils.DeleteConnection( true, m_uniqueId, 3, false, true );
+					UIUtils.DeleteConnection( true, UniqueId, 3, false, true );
 				}
 				break;
 				case WirePortDataType.FLOAT2:
@@ -127,10 +127,10 @@ namespace AmplifyShaderEditor
 					m_inputPorts[ 0 ].Visible = true;
 					m_inputPorts[ 1 ].Visible = true;
 					m_inputPorts[ 2 ].Visible = false;
-					UIUtils.DeleteConnection( true, m_uniqueId, 2, false, true );
+					UIUtils.DeleteConnection( true, UniqueId, 2, false, true );
 
 					m_inputPorts[ 3 ].Visible = false;
-					UIUtils.DeleteConnection( true, m_uniqueId, 3, false, true );
+					UIUtils.DeleteConnection( true, UniqueId, 3, false, true );
 				}
 				break;
 				case WirePortDataType.FLOAT:
@@ -195,7 +195,7 @@ namespace AmplifyShaderEditor
 				break;
 			}
 
-			RegisterLocalVariable( 0, value, ref dataCollector, "appendResult" + m_uniqueId );
+			RegisterLocalVariable( 0, value, ref dataCollector, "appendResult" + OutputId );
 			return m_outputPorts[ 0 ].LocalValue;
 		}
 

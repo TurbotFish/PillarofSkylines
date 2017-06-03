@@ -1,4 +1,251 @@
 Release Notes:
+v1.0.0 dev 01:
+* Fixes:
+    * Fixed issue on not recognizing Tessellation port correcty when at Lambert or BlinnPhong light models
+    * Fixed issue on dragging nodes via Alt mode not respecting ports unique ids when creating connections
+    * Fixed minor typo on 'Switch by Face' node
+    * Fixed minor issue when loading LoadPolyWater example
+
+v0.7.2 dev 08:
+* Fixes:
+    * Fixed issue generating input ports instructions on 'Custom Expression' node
+
+v0.7.2 dev 07:
+* New features:
+    * Added support for multiple ASE windows opened simultaneously
+
+* New Samples:
+    * Animated Fire with Shader Functions
+
+* Improvements:
+    * Forcing InvariantCulture on ASE execution cycle to prevent issues with number parsing
+    * 'Texture Sampler' node no longer shows it's sampler properties when a 'Texture Object' node  is connected to it
+    * Improved redundancy awareness on 'Virtual Texture Object' and 'Texture Sampler' nodes
+    * Improved 'Virtual Texture Object' tooltip
+    * Removed Return button from Shader Functions since it is now useless with new multi-tab behavior
+
+* Fixes:
+    * Fixed issue on changing Normal map option in 'Texture Sampler' node not changing its output type
+    * Changed 'Virtual Texture Object' node channel name to 'Layer' and fixed its default value not showing up correctly
+    * Virtual textures now generate properties with their correct name (requires user changes to the virtual texture itself)
+    * Fixed issue that break compiling when a missing shader function was present
+    * Forcing internal data update for shader function Output nodes to prevent errors when they are disconnected
+    * Fixed small issue with shader function nodes being stuck on selection when double clicking on them
+
+v0.7.2 dev 06:
+* New features:
+    * Added 'HSV To RGB' and 'RGB To HSV' nodes
+
+* Improvements:
+    * 'Custom Expression' node with a return instruction on its Code text area generates a function with the code contents thus enabling multiple instructions lines on its body
+        * Added small info text on node properties to explain its behavior
+        * Added new name field ( can also be edited directly on node by double clicking on it ) which is used to name the generated function/ local variable
+    * Small refactoring on some classes for consistency and warning removal from Visual Studio
+
+* Fixes:
+    * Fixed issue on some changes not being correctly caught on setting Blend Render Type
+    * Fixed issue with Unlit Light model doubling the value set on the Emission output port
+    * Small fix on title updates when using Shader Functions
+    * Removed warning from unused legacy source code on 'Register Local Var' and 'Get Local Var' nodes
+    * Fixed issues on incorrect  casts on 'Texture Sampler' node
+    * Fixed issues on incorrectly snapping wires into hidden ports
+
+v0.7.2 dev 05:
+* Improvements:
+    * Changed tool tip display to trigger when mouse is on top of the node ( now displays below the node)
+    * Shader Functions 
+        * Added default values for input node in SF (these are used when there's no connection) 
+        * Added port restrictions to dynamic node types
+        * Changed way input node work with restrictions when changing type to prevent invalid connections
+
+* Fixes:
+    * Fixed minor typo on 'Rotator' node
+
+v0.7.2 dev 04:
+* Fixes:
+    * Fixed multiple issues on save behavior when changing modes
+    * Fixed issue with shader functions not assigning the main node correctly
+    * Fixed issue on Project Window Change callback
+    * Fixed graph count increasing on shader switch
+    * Fixed version numbering in function nodes
+    * Fixed nested SF issue with inputs
+
+v0.7.2 dev 03:
+* Fixes:
+    * Fixed issue with 'Vertex TexCoord' not writing properties correctly into shader meta
+
+v0.7.2 dev 02:
+* Fixes:
+    * Fixed cast and port activation issues on Blend Nodes
+    * Fixed various issues with SF:
+        * Saving no longer deselects
+        * Reordering is now working properly
+        * Autocast now has port restrictions into account and deletes with warning when possible
+        * Sampler types no longer duplicate
+
+* Improvements:
+    * Texture Objects node family  can now be set as Globals
+
+v0.7.2 dev 01:
+* New features:
+    * Added Shader Functions
+    * Added new 'Object Scale' node
+
+* Fixes:
+    * Fixed multiple issues with Copy/Paste
+    * Fixed issues with nodes on Vertex Function
+        * 'Fresnel'
+        * 'Posterize'
+        * 'Heightmap Texture Blend'
+        * 'Unpack Scale Normal'
+    * Fixed issue with incorrect data read from 'Texture Coordinates' nodes on versions bellow 0.5.0 dev 003
+    * Fixed issue on inverted Receive Shadows toggle
+
+* Improvements:
+    * Can Copy/Paste between different Shaders and Shader Functions 
+    * Shader properties created by Refraction, Translucency, Mask Value and Tessellation now appear on the Output node Material Properties list and can be reordered
+    * Preventing UndoParentNode to generate DefaultValue conflicts caused by other plugins
+    * Removed warnings generated on some situations by the 'Screen Position' node
+
+* New Samples:
+    * LowPolyWater by The Four Headed Cat
+    * ForceShield by The Four Headed Cat
+
+v0.7.1 dev 02:
+* Improvements:
+    * Improved 'Texture Coordinates' node and added new Tex input port into it
+    * Improved local variable usage on several node generated code to improve overall shader instruction count
+    * 'Vertex Position' node now has new Size property
+
+* Fixes:
+    * Fixed issues on 'Vertex to Fragment' node
+    * Fixed issue on loading an ASE shader with its window already opened but tabbed and not visible during play mode
+    * Fixed multiple issues with 'Grab Screen Position' node usage on Vertex function
+    * Fixed issue with Forward Shadows not being correctly written when Custom Shadow Caster was active
+    * Fixed issues with Blend nodes usage on Vertex function
+    * Fixed issues with 'Dithering' node usage on vertex function and when Tessellation is active
+    * Fixed issues with 'Screen Depth' node usage on vertex function and when Tessellation is active
+    * Dithering sample now works while Tessellation is active
+
+v0.7.1 dev 01:
+* New features:
+    * Alt + Node Drag to Auto-(dis)connect node on existing wire connection
+
+* Improvements:
+    * Added new Tex Input Port into 'Texel Size' node
+    * Optimized nodes list usage on palettes (API)
+    * Improved retro-compatibility handling with adding new ports on already existing nodes (API)
+
+* Fixes:
+    * Fixed issue on horizontal scroll bar not appearing on Helper Window
+
+v0.7.0 dev 03:
+* New features:
+    * Added 'Face' node
+    * Added 'Switch by Face' node
+
+* Fixes:
+    * Fixed issue on not setting shader version on graph when creating a new empty one which lead to copy/paste issues
+    * Fixed wrong port type assignment and incorrect conditional operator usage on community 'Compare ...' nodes
+    * Fixed issue with creating a material from a shader already with properties in Unity 5.6
+    * Fixed multiple UI issues on Retina MacBook
+
+* New Samples:
+    * Highlight Animated by The Four Headed Cat
+    * 2 Sided by The Four Headed Cat
+    * Two Sided with Face
+
+v0.7.0 dev 02:
+* Improvements:
+    * Improved Float to Vector auto-cast
+    * Double-clicking on a 'Get Local Var' node focus on its referenced 'Register Local Var' node
+
+* Fixes:
+    * Fixed issue with keyboard shortcuts on Mac
+    * Fixed renaming issues with 'Triplanar Sampler' node
+    * Fixed issue on property nodes UI not refreshing on Undo
+    * Fixed issues on 'Fresnel' and 'Vertex Normal' related with normal generation
+    * Fixed typos on POM
+    * Fixed issue with Wire node deletion
+    * Fixed auto-change port types issues on all Compare nodes
+
+v0.7.0 dev 01:
+* Improvements:
+    * Greatly improved Undo
+    * Colored Port Mode behaves as a normal toggle and doesn't require double tap on W key
+
+* New Samples:
+    * Hologram by The Four Headed Cat
+
+* Fixes:
+   * Fixed issue on deleting nodes with Wire nodes on their connections
+   
+v0.6.1 dev 05:
+* Fixes:
+    * Fixed issue with custom Shadow Caster on Vulkan
+
+v0.6.1 dev 04:
+* Improvement:
+    * Renaming 'Texture Sampler' Type property Instance to Reference and prevent confusion with GPU Instanced properties
+
+* Fixes:
+    * Fixed issue on unnecessary saves on Live mode 
+        * Also increased Inactivity time from 0.5s to 1s
+    * Fixed issues on some node interactions not being detected by live mode ( and thus not being flagged to save )
+    * Fixed issue on 'Rotator' node not correctly generating local values according to vertex/frag
+    * Fixed issue on 'Texture Coordinates' node when defining its Inputs with Tessellation active
+    * Fixed issue with custom Shadow Caster on Metal IOs
+    * Fixed small typo on Tessellation Shader Model warning message
+
+v0.6.1 dev 03:
+* New features:
+    * Adding Fallback shader picker on Master Node
+    * Adding Shader LOD value modifier on Master Node
+
+* Improvements:
+    * Node property title changes according to selected node
+    * Added Multi-Line mode to wires ( Ctrl + W ) 
+    * Added ability to change 'Triplanar Sampler' node name 
+    * Improved wire connections rendering while zoomed
+    * Tweaked live mode to save only when user is inactive for 0.5s
+
+* Fixes:
+    * Small node resizing issues fixed
+    * Fixed issues on Live mode not catching node connections and creation correctly
+
+v0.6.1 dev 02:
+* New features:
+    * Added 'Triplanar Sampler' node
+    * Added Vertex Output ( can now change from Relative/Local Vertex Offset to Absolute/Local Vertex Position )
+    * Added Smear Sample
+    * Added Unlit Light Model
+    * Added simpler 'Time' node 
+    * Added 'Depth Fade' node
+    * Added 'Camera Depth' Fade node
+
+* Improvements:
+    * Adding node info into Helper Window
+    * Adding drag and drag valid unity assets list to helper window
+    * 'Screen Position' and 'Grab Screen Position' now have a Output dropdown on its properties instead of a Toggle 
+    * Improved GPU instancing example by adding a C# illustrating how to set instanced properties
+
+* Fixes:
+    * Fixed issue on preview materials not being initialized after returning from play mode
+    * Fixed issue on local variables reset
+    * Fixed issue with tangent and bitangent previews
+    * Fixed billboard issue with non-uniform scaling
+    * Fixed issue on Tex ports counting as having valid internal data on Node Properties UI
+    * Fixed issue on using 'Texture Sampler' or 'Screen Color instances on Master Node Debug port
+
+v0.6.1 dev 01:
+* Improvements:
+    * Activating internal data into 'Object To World' and 'World To Object' nodes and setting it to (0,0,0,1) by default
+    * 'Texture Array' nodes can be created by dragging a Texture 2D Array object into ASE canvas
+* Fixes:
+    * Fixed issue on 'Texture Array' node when connecting it to Vertex Ports
+    * Fixed issue on 'Vertex TexCoord' not generating correct source according to their properties
+    * Fixed issues on MourEnvironment, SandPOM and WaterSample shaders
+
 v0.6.0 dev 01:
 * Improvements:
     * Added Texture Coordinate Coord Size parameter for 'Vertex TexCoord' node
@@ -8,8 +255,8 @@ v0.6.0 dev 01:
     * Fixed issue with input port internal name not being set correctly
     * Fixed issue with custom shader inspector on unity 5.6
     * Fixed shadows issue on Matcap example
-	* Fixed 'Virtual Texture Object' sampling the correct UVs when not connected
-	
+    * Fixed 'Virtual Texture Object' sampling the correct UVs when not connected
+
 v0.5.1 dev 012:
 * Fixed issue with LightColor node not generating the proper values
 * Fixed issue when doing custom shadow caster with translucency on deferred mode

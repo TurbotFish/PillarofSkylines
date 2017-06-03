@@ -54,7 +54,7 @@ namespace AmplifyShaderEditor
             string height = m_inputPorts[ 1 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT, false, true );
             string scale = m_inputPorts[ 2 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT, false, true );
             string viewDirTan = m_inputPorts[ 3 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT3, false, true );
-            string localVarName = "Offset" + m_uniqueId;
+            string localVarName = "Offset" + UniqueId;
             string calculation = "";
 
             switch ( m_selectedParallaxType )
@@ -68,7 +68,7 @@ namespace AmplifyShaderEditor
                     break;
             }
 
-            dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, m_outputPorts[ 0 ].DataType, localVarName, calculation );
+            dataCollector.AddToLocalVariables( UniqueId, m_currentPrecisionType, m_outputPorts[ 0 ].DataType, localVarName, calculation );
             return GetOutputVectorItem( 0, outputId, localVarName );
         }
 
@@ -77,7 +77,7 @@ namespace AmplifyShaderEditor
             base.DrawProperties();
             EditorGUILayout.BeginVertical();
             EditorGUI.BeginChangeCheck();
-            m_selectedParallaxTypeInt = EditorGUILayout.Popup( "Parallax Type", m_selectedParallaxTypeInt, m_parallaxTypeStr );
+            m_selectedParallaxTypeInt = EditorGUILayoutPopup( "Parallax Type", m_selectedParallaxTypeInt, m_parallaxTypeStr );
             if ( EditorGUI.EndChangeCheck() )
             {
                 switch ( m_selectedParallaxTypeInt )

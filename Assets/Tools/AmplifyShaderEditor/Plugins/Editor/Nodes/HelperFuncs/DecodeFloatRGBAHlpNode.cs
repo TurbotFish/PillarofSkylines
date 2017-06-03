@@ -16,5 +16,10 @@ namespace AmplifyShaderEditor
 			m_inputPorts[ 0 ].Name = "RGBA";
 			m_outputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT, false );
 		}
+		protected override void OnUniqueIDAssigned()
+		{
+			base.OnUniqueIDAssigned();
+			m_localVarName = "decodeFloatRGBA" + OutputId;
+		}
 	}
 }

@@ -22,9 +22,11 @@ namespace AmplifyShaderEditor
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
 			//return base.GenerateShaderForOutput( outputId, inputPortType, ref dataCollector, ignoreLocalvar );
+			if ( m_outputPorts[ 0 ].IsLocalValue )
+				return m_outputPorts[ 0 ].LocalValue;
 
-			dataCollector.AddToInput( m_uniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_POS ), true );
-			dataCollector.AddToIncludes( m_uniqueId, Constants.UnityShaderVariables );
+			dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_POS ), true );
+			dataCollector.AddToIncludes( UniqueId, Constants.UnityShaderVariables );
 
 #if UNITY_5_4_OR_NEWER
 			string matrix = "unity_WorldToObject";
@@ -32,7 +34,9 @@ namespace AmplifyShaderEditor
 				string matrix = "_World2Object";
 #endif
 
-			return m_funcType + "( mul( " + matrix + ", float4( " + Constants.InputVarStr + ".worldPos , 1 ) ) )";
+			string value = m_funcType + "( mul( " + matrix + ", float4( " + Constants.InputVarStr + ".worldPos , 1 ) ) )";
+			RegisterLocalVariable( 0, value, ref dataCollector, "objectSpaceLightDir" + OutputId );
+			return m_outputPorts[ 0 ].LocalValue;
 		}
 	}
 }

@@ -9,21 +9,32 @@ namespace AmplifyShaderEditor
 
 	public struct Constants
 	{
+		public readonly static string UndoMoveNodesId = "Moving Nodes";
+		public readonly static string UndoRegisterFullGrapId = "Register Graph";
+		public readonly static string UndoAddNodeToCommentaryId = "Add node to Commentary";
+		public readonly static string UndoRemoveNodeFromCommentaryId = "Remove node from Commentary";
+		public readonly static string UndoCreateNodeId = "Create Object";
+		public readonly static string UndoDeleteNodeId = "Destroy Object";
+		public readonly static string UndoDeleteConnectionId = "Destroy Connection";
+		public readonly static string UndoCreateConnectionId = "Create Connection";
+
 		public readonly static float MenuDragSpeed = -0.5f;
 		public readonly static string DefaultCustomInspector = "ASEMaterialInspector";
-		public readonly static string ReferenceTypeStr = "Type";
+		public readonly static string ReferenceTypeStr = "Mode";
 		public readonly static string AvailableReferenceStr = "Reference";
 		public readonly static string InstancePostfixStr = " (Instance) ";
 
-		public readonly static string HelpURL = "http://amplify.pt/";
 		public readonly static string ASEMenuName = "Amplify Shader";
-		
+
 		public readonly static string UnityShaderVariables = "UnityShaderVariables.cginc";
 		public readonly static string UnityCgLibFuncs = "UnityCG.cginc";
 		public readonly static string UnityStandardUtilsLibFuncs = "UnityStandardUtils.cginc";
 		public readonly static string UnityPBSLightingLib = "UnityPBSLighting.cginc";
-		public static readonly string ATSharedLibGUID = "ba242738c4be3324aa88d126f7cc19f9";
-		
+		public readonly static string ATSharedLibGUID = "ba242738c4be3324aa88d126f7cc19f9";
+
+		public readonly static string HelpURL = "http://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor";
+		public readonly static string NodeCommonUrl = "http://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Nodes#";
+		public readonly static string CommunityNodeCommonUrl = "http://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Community_Nodes#";
 		public readonly static Color InfiniteLoopColor = Color.red;
 
 		public readonly static Color DefaultCategoryColor = new Color( 0.1f, 0.35f, 0.44f, 1.0f );
@@ -41,11 +52,9 @@ namespace AmplifyShaderEditor
 		public readonly static Color NodeErrorColor = new Color( 1f, 0.5f, 0.5f, 1f );
 		public readonly static string NoSpecifiedCategoryStr = "<None>";
 
-		public readonly static int MINIMIZE_WINDOW_LOCK_SIZE = 750;
+		public readonly static int MINIMIZE_WINDOW_LOCK_SIZE = 630;
 
 		public readonly static int FoldoutMouseId = 0; // Left Mouse Button
-
-
 
 		public readonly static float SNAP_SQR_DIST = 200f;
 		public readonly static int INVALID_NODE_ID = -1;
@@ -90,7 +99,7 @@ namespace AmplifyShaderEditor
 		public readonly static float HORIZONTAL_TANGENT_SIZE = 100f;
 		public readonly static float OUTSIDE_WIRE_MARGIN = 5f;
 
-		public readonly static string CodeWrapper = "({0})";
+		public readonly static string CodeWrapper = "( {0} )";
 		public readonly static string UnpackNormal = "UnpackNormal( {0} )";
 		public readonly static string UnpackNormalScale = "UnpackNormal( {0} , {1} )";
 
@@ -102,6 +111,7 @@ namespace AmplifyShaderEditor
 		public readonly static string LocalValueDecWithoutIdent = "{0} {1} = {2};";
 		public readonly static string LocalValueDec = LocalVarIdentation + LocalValueDecWithoutIdent + '\n';
 		public readonly static string LocalValueDef = LocalVarIdentation + "{0} = {1};\n";
+		public readonly static string CastHelper = "({0}).{1}";
 		public readonly static string PropertyLocalVarDec = "{0} {1} = {0}({2});";
 		public readonly static string UniformDec = "uniform {0} {1};";
 
@@ -158,22 +168,26 @@ namespace AmplifyShaderEditor
 		public readonly static string WorldNormalLocalDecStr = "WorldNormalVector( " + Constants.InputVarStr + " , {0}( 0,0,1 ))";
 
 
+		public readonly static string VFaceVariable = "ASEVFace";
+		public readonly static string VFaceInput = "fixed ASEVFace : VFACE";
+
+
+
 		public readonly static string NoStringValue = "None";
 		public readonly static string EmptyPortValue = "  ";
 
 		public readonly static string[] OverallInvalidChars = { "\r", "\n", "\\", " ", ".", ">", ",", "<", "\'", "\"", ";", ":", "[", "{", "]", "}", "=", "+", "`", "~", "/", "?", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-" };
 		public readonly static string[] ShaderInvalidChars = { "\r", "\n", "\\", "\'", "\"", };
 
-		public readonly static string[] WikiInvalidChars = { "#","<",">", "[", "]", "|", "{", "}", "%", "+", "?", "\\", "/", ",", ";", "." };
-															
+		public readonly static string[] WikiInvalidChars = { "#", "<", ">", "[", "]", "|", "{", "}", "%", "+", "?", "\\", "/", ",", ";", "." };
 
+		public readonly static Dictionary<string, string> UrlReplacementStringValues = new Dictionary<string, string>() { { " ", "_" } };
 
-		public readonly static Dictionary<string, string> ReplacementStringValues = new Dictionary<string, string>() {	{ " == ", "Equals" },
+		public readonly static Dictionary<string, string> ReplacementStringValues = new Dictionary<string, string>() {  { " == ", "Equals" },
 																														{ " > ", "Greater" },
 																														{ " >= ", "GreaterOrEqual" },
 																														{ " < ", "Less" },
 																														{ " <= ", "LessOrEqual" }};
-
 		public readonly static string InternalData = "INTERNAL_DATA";
 
 
@@ -201,7 +215,7 @@ namespace AmplifyShaderEditor
 		public readonly static string AvailableUVChannelLabel = "UV Channel";
 
 		public readonly static int[] AvailableUVSizes = { 2, 3, 4 };
-		public readonly static string[] AvailableUVSizesStr = { "Float 2", "Float 3", "Float 4"};
+		public readonly static string[] AvailableUVSizesStr = { "Float 2", "Float 3", "Float 4" };
 		public readonly static string AvailableUVSizesLabel = "Coord Size";
 
 		public readonly static int[] AvailableUVSets = { 0, 1, 2, 3 };
@@ -220,5 +234,7 @@ namespace AmplifyShaderEditor
 		public const string InternalDataLabelStr = "Internal Data";
 		public const string AttributesLaberStr = "Attributes";
 		public const string ParameterLabelStr = "Parameters";
+
+		public static readonly string[] ReferenceArrayLabels = { "Object", "Reference" };
 	}
 }

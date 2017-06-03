@@ -7,12 +7,14 @@ namespace AmplifyShaderEditor
 {
 	public class ToolsMenuButtonParent
 	{
+		protected AmplifyShaderEditorWindow m_parentWindow = null;
 		private float m_buttonSpacing = 10;
 		private int m_currentState = 0;
 		private bool m_isInitialized = false;
 		protected GUIContent m_content;
-		public ToolsMenuButtonParent( string text, string tooltip, float buttonSpacing )
+		public ToolsMenuButtonParent( AmplifyShaderEditorWindow parentWindow, string text, string tooltip, float buttonSpacing )
 		{
+			m_parentWindow = parentWindow;
 			m_content = new GUIContent( text, tooltip );
 
 			if ( buttonSpacing > 0 )

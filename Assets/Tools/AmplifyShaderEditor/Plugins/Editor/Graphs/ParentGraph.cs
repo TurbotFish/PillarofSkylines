@@ -25,17 +25,28 @@ namespace AmplifyShaderEditor
 		private GUIStyle nodeStyleOn;
 		private GUIStyle nodeTitle;
 		private GUIStyle commentaryBackground;
+		//private GUIStyle m_overlayThumbnail;
+
+		//[SerializeField]
+		//private AmplifyShaderFunction m_currentShaderFunction = null;
 
 		public delegate void EmptyGraphDetected( ParentGraph graph );
 		public event EmptyGraphDetected OnEmptyGraphDetectedEvt;
 
 		public delegate void NodeEvent( ParentNode node );
-		public event NodeEvent OnNodeEvent;
+		public event NodeEvent OnNodeEvent = null;
+
+		public delegate void DuplicateEvent();
+		public event DuplicateEvent OnDuplicateEvent;
 
 		public event MasterNode.OnMaterialUpdated OnMaterialUpdatedEvent;
 		public event MasterNode.OnMaterialUpdated OnShaderUpdatedEvent;
 
 		private bool m_afterDeserializeFlag = true;
+
+		//[SerializeField]
+		private AmplifyShaderEditorWindow m_parentWindow = null;
+
 		[SerializeField]
 		private int m_validNodeId;
 
@@ -62,6 +73,14 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private NodeUsageRegister m_propertyNodes;
 
+		[SerializeField]
+		private NodeUsageRegister m_functionInputNodes;
+
+		[SerializeField]
+		private NodeUsageRegister m_functionNodes;
+
+		[SerializeField]
+		private NodeUsageRegister m_functionOutputNodes;
 
 		[SerializeField]
 		private int m_masterNodeId = Constants.INVALID_NODE_ID;
@@ -83,6 +102,9 @@ namespace AmplifyShaderEditor
 
 		[SerializeField]
 		private int m_virtualTextureCount = 0;
+
+		[SerializeField]
+		private int m_graphId = 0;
 
 		[SerializeField]
 		private PrecisionType m_currentPrecision = PrecisionType.Float;
@@ -109,12 +131,18 @@ namespace AmplifyShaderEditor
 
 		//private Rect m_auxRect = new Rect();
 
+		private GUIStyle m_titleOverlay;
+		private GUIStyle m_buttonOverlay;
+		int m_tittleOverlayIndex = -1;
+		int m_buttonOverlayIndex = -1;
+
 		// Bezier info
 		private List<WireBezierReference> m_bezierReferences;
 		private const int MaxBezierReferences = 50;
 		private int m_wireBezierCount = 0;
 
 		protected int m_normalDependentCount = 0;
+
 
 		public ParentGraph()
 		{
@@ -123,6 +151,9 @@ namespace AmplifyShaderEditor
 			m_nodes = new List<ParentNode>();
 			m_samplerNodes = new NodeUsageRegister();
 			m_propertyNodes = new NodeUsageRegister();
+			m_functionInputNodes = new NodeUsageRegister();
+			m_functionNodes = new NodeUsageRegister();
+			m_functionOutputNodes = new NodeUsageRegister();
 			m_texturePropertyNodes = new NodeUsageRegister();
 			m_textureArrayNodes = new NodeUsageRegister();
 			m_screenColorNodes = new NodeUsageRegister();
@@ -147,6 +178,7 @@ namespace AmplifyShaderEditor
 			nodeStyleOn = UIUtils.GetCustomStyle( CustomStyle.NodeWindowOn );
 			nodeTitle = UIUtils.GetCustomStyle( CustomStyle.NodeHeader );
 			commentaryBackground = UIUtils.GetCustomStyle( CustomStyle.CommentaryBackground );
+			//m_overlayThumbnail = GUI.skin.FindStyle( "ObjectFieldThumbOverlay2" );
 		}
 
 		public int GetValidId()
@@ -207,8 +239,12 @@ namespace AmplifyShaderEditor
 		{
 			for ( int i = 0; i < m_nodes.Count; i++ )
 			{
-				m_nodes[ i ].Destroy();
-				GameObject.DestroyImmediate( m_nodes[ i ] );
+				if( m_nodes[ i ] != null )
+				{
+					Undo.ClearUndo( m_nodes[ i ] );
+					m_nodes[ i ].Destroy();
+					GameObject.DestroyImmediate( m_nodes[ i ] );
+				}
 			}
 
 			m_masterNodeId = Constants.INVALID_NODE_ID;
@@ -219,6 +255,9 @@ namespace AmplifyShaderEditor
 			m_nodes.Clear();
 			m_samplerNodes.Clear();
 			m_propertyNodes.Clear();
+			m_functionInputNodes.Clear();
+			m_functionNodes.Clear();
+			m_functionOutputNodes.Clear();
 			m_texturePropertyNodes.Clear();
 			m_textureArrayNodes.Clear();
 			m_screenColorNodes.Clear();
@@ -301,12 +340,37 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		public void FullCleanUndoStack()
+		{
+			int count = m_nodes.Count;
+			for ( int i = 0; i < count; i++ )
+			{
+				if ( m_nodes[ i ] != null )
+				{
+					Undo.ClearUndo( m_nodes[ i ] );
+				}
+			}
+		}
+
+		public void FullRegisterOnUndoStack()
+		{
+			int count = m_nodes.Count;
+			for ( int i = 0; i < count; i++ )
+			{
+				if ( m_nodes[ i ] != null )
+				{
+					Undo.RegisterCompleteObjectUndo( m_nodes[ i ], Constants.UndoRegisterFullGrapId );
+				}
+			}
+		}
+
 		public void Destroy()
 		{
 			for ( int i = 0; i < m_nodes.Count; i++ )
 			{
 				if ( m_nodes[ i ] != null )
 				{
+					Undo.ClearUndo( m_nodes[ i ] );
 					m_nodes[ i ].Destroy();
 					GameObject.DestroyImmediate( m_nodes[ i ] );
 				}
@@ -327,6 +391,15 @@ namespace AmplifyShaderEditor
 
 			m_propertyNodes.Destroy();
 			m_propertyNodes = null;
+
+			m_functionInputNodes.Destroy();
+			m_functionInputNodes = null;
+
+			m_functionNodes.Destroy();
+			m_functionNodes = null;
+
+			m_functionOutputNodes.Destroy();
+			m_functionOutputNodes = null;
 
 			m_texturePropertyNodes.Destroy();
 			m_texturePropertyNodes = null;
@@ -355,6 +428,8 @@ namespace AmplifyShaderEditor
 			IsDirty = true;
 
 			OnNodeEvent = null;
+			OnDuplicateEvent = null;
+			//m_currentShaderFunction = null;
 
 			OnMaterialUpdatedEvent = null;
 			OnShaderUpdatedEvent = null;
@@ -372,7 +447,7 @@ namespace AmplifyShaderEditor
 			m_nodeGrid.AddNodeToGrid( node );
 		}
 
-		void OnNodeFinishMoving( ParentNode node, bool testOnlySelected, InteractionMode interactionMode )
+		public void OnNodeFinishMoving( ParentNode node, bool testOnlySelected, InteractionMode interactionMode )
 		{
 			if ( OnNodeEvent != null )
 				OnNodeEvent( node );
@@ -453,10 +528,14 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public void AddNode( ParentNode node, bool updateId = false, bool addLast = true, bool registerUndo = true )
+		public void AddNode( ParentNode node, bool updateId = false, bool addLast = true, bool registerUndo = true, bool fetchMaterialValues = true )
 		{
 			if ( registerUndo )
-				UIUtils.RegisterCreatedObjectUndo( node );
+			{
+				UIUtils.MarkUndoAction();
+				Undo.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoCreateNodeId );
+				Undo.RegisterCreatedObjectUndo( node, Constants.UndoCreateNodeId );
+			}
 
 			if ( OnNodeEvent != null )
 			{
@@ -471,7 +550,7 @@ namespace AmplifyShaderEditor
 				UpdateIdFromNode( node );
 			}
 
-			node.SetMaterialMode( CurrentMaterial );
+			node.SetMaterialMode( CurrentMaterial, fetchMaterialValues );
 
 			if ( addLast )
 			{
@@ -495,18 +574,6 @@ namespace AmplifyShaderEditor
 			IsDirty = true;
 		}
 
-		public void RemoveNode( ParentNode node )
-		{
-			m_nodes.Remove( node );
-			m_nodesDict.Remove( node.UniqueId );
-			if ( node.UniqueId == m_masterNodeId )
-			{
-				m_masterNodeId = -1;
-			}
-			node.Destroy();
-			IsDirty = true;
-			m_markToReOrder = true;
-		}
 
 		public ParentNode GetClickedNode()
 		{
@@ -540,17 +607,22 @@ namespace AmplifyShaderEditor
 
 		public bool Draw( DrawInfo drawInfo )
 		{
-
+			SaveIsDirty = false;
 			if ( m_afterDeserializeFlag )
 			{
 				m_afterDeserializeFlag = false;
 				CleanCorruptedNodes();
 				if ( m_nodes.Count == 0 )
 				{
-					UIUtils.CreateNewGraph( "Empty" );
+					ParentWindow.CreateNewGraph( "Empty" );
 					SaveIsDirty = true;
 					if ( OnEmptyGraphDetectedEvt != null )
 						OnEmptyGraphDetectedEvt( this );
+				}
+
+				for ( int i = 0; i < m_nodes.Count; i++ )
+				{
+					m_nodes[ i ].SetContainerGraph( this );
 				}
 			}
 
@@ -606,6 +678,28 @@ namespace AmplifyShaderEditor
 			nodeStyleOn = UIUtils.GetCustomStyle( CustomStyle.NodeWindowOn );
 			nodeTitle = UIUtils.GetCustomStyle( CustomStyle.NodeHeader );
 			commentaryBackground = UIUtils.GetCustomStyle( CustomStyle.CommentaryBackground );
+
+
+			//Used only for triplanar sampler, breaks every other one if used
+			if ( m_tittleOverlayIndex == -1 )
+				m_tittleOverlayIndex = Array.IndexOf<GUIStyle>( GUI.skin.customStyles, GUI.skin.GetStyle( "ObjectFieldThumbOverlay" ) );
+
+			if ( m_buttonOverlayIndex == -1 )
+				m_buttonOverlayIndex = Array.IndexOf<GUIStyle>( GUI.skin.customStyles, GUI.skin.GetStyle( "ObjectFieldThumbOverlay2" ) );
+
+			m_titleOverlay = GUI.skin.customStyles[ m_tittleOverlayIndex ];
+			m_buttonOverlay = GUI.skin.customStyles[ m_buttonOverlayIndex ];
+
+			m_titleOverlay.fontSize = ( int ) ( 8 * drawInfo.InvertedZoom );
+			m_buttonOverlay.fontSize = ( int ) ( 8 * drawInfo.InvertedZoom );
+
+			m_buttonOverlay.overflow.top = ( int ) ( -28 * drawInfo.InvertedZoom );
+			m_buttonOverlay.overflow.left = ( int ) ( -6 * drawInfo.InvertedZoom );
+
+			m_buttonOverlay.border.top = 0;
+			m_buttonOverlay.border.bottom = 0;// ( int )( 12 * drawInfo.InvertedZoom);
+			m_buttonOverlay.border.left = 0;
+			m_buttonOverlay.border.right = 0;// ( int )( 32 * drawInfo.InvertedZoom);
 
 			// only resize if it changes (check one value to fix any external change, ie: loading)
 			if ( newLevel != m_lodLevel || ( UIUtils.MainSkin != null && UIUtils.MainSkin.textField.border.left != referenceValue ) )
@@ -737,6 +831,7 @@ namespace AmplifyShaderEditor
 			MasterNode masterNode = GetNode( m_masterNodeId ) as MasterNode;
 			Material currentMaterial = masterNode != null ? masterNode.CurrentMaterial : null;
 			EditorGUI.BeginChangeCheck();
+			bool repaintMaterialInspector = false;
 			for ( int i = 0; i < m_nodes.Count; i++ )
 			{
 				if ( m_nodes[ i ] != null )
@@ -767,14 +862,7 @@ namespace AmplifyShaderEditor
 					if ( m_nodes[ i ].RequireMaterialUpdate && currentMaterial != null )
 					{
 						m_nodes[ i ].UpdateMaterial( currentMaterial );
-						if ( ASEMaterialInspector.Instance != null )
-						{
-							 ASEMaterialInspector.Instance.Repaint();
-						}
-						//if ( currentMaterial == Selection.activeObject )
-						//{
-
-						//}
+						repaintMaterialInspector = true;
 					}
 
 					if ( m_nodes[ i ].IsVisible )
@@ -786,6 +874,40 @@ namespace AmplifyShaderEditor
 				else
 					nullCount += 1;
 			}
+
+			int visibleCount = m_visibleNodes.Count;
+			for ( int i = visibleCount - 1; i >= 0; i-- )
+			{
+				bool showing = m_visibleNodes[ i ].ShowTooltip( drawInfo );
+				if ( showing )
+					break;
+			}
+
+			//if( OnTooltip != null )
+			//{
+			//	OnTooltip( drawInfo );
+			//}
+
+			if ( repaintMaterialInspector )
+			{
+				if ( ASEMaterialInspector.Instance != null )
+				{
+					ASEMaterialInspector.Instance.Repaint();
+				}
+			}
+
+			m_titleOverlay.fontSize = 9;
+			m_buttonOverlay.fontSize = 9;
+
+			//fixed values from original skin
+			m_buttonOverlay.overflow.top = 0;
+			m_buttonOverlay.overflow.left = -24;
+
+			//fixed values from original skin
+			m_buttonOverlay.border.top = 0;
+			m_buttonOverlay.border.bottom = 16;
+			m_buttonOverlay.border.left = 8;
+			m_buttonOverlay.border.right = 31;
 
 			// Revert LOD changes to LOD0 (only if it's different)
 			if ( UIUtils.MainSkin.textField.border.left != 4 )
@@ -914,7 +1036,8 @@ namespace AmplifyShaderEditor
 								}
 								else
 								{
-									UIUtils.ShowMessage( "Detected Invalid connection from node " + node.UniqueId + " port " + inputPortIdx + " to Node " + reference.NodeId + " port " + reference.PortId, MessageSeverity.Error );
+									if ( DebugConsoleWindow.DeveloperMode )
+										UIUtils.ShowMessage( "Detected Invalid connection from node " + node.UniqueId + " port " + inputPortIdx + " to Node " + reference.NodeId + " port " + reference.PortId, MessageSeverity.Error );
 									cleanInvalidConnections = true;
 									inputPort.ExternalReferences[ wireIdx ].Invalidate();
 								}
@@ -975,7 +1098,7 @@ namespace AmplifyShaderEditor
 			startPos += UIUtils.ScaledPortsDelta;
 			endPos += UIUtils.ScaledPortsDelta;
 
-			float wiresTickness =/* drawInfo.InvertedZoom * */Constants.WIRE_WIDTH;
+			float wiresThickness =/* drawInfo.InvertedZoom * */Constants.WIRE_WIDTH;
 
 			// Calculate the 4 points for bezier taking into account wire nodes and their automatic tangents
 			float mag = ( endPos - startPos ).magnitude;
@@ -1003,12 +1126,41 @@ namespace AmplifyShaderEditor
 
 			//m_auxRect.Set( 0, 0, UIUtils.CurrentWindow.position.width, UIUtils.CurrentWindow.position.height );
 			//GLDraw.BeginGroup( m_auxRect );
+
+			int ty = 1;
+			float wireThickness = 0;
+
+
+			if ( ParentWindow.Options.MultiLinePorts )
+			{
+				GLDraw.MultiLine = true;
+				Shader.SetGlobalFloat( "_InvertedZoom", invertedZoom );
+				switch ( outputDataType )
+				{
+					case WirePortDataType.FLOAT2: ty = 2; break;
+					case WirePortDataType.FLOAT3: ty = 3; break;
+					case WirePortDataType.FLOAT4:
+					case WirePortDataType.COLOR:
+					{
+						ty = 4;
+					}
+					break;
+					default: ty = 1; break;
+				}
+				wireThickness = Mathf.Lerp( wiresThickness * ( ty * invertedZoom * -0.05f + 0.15f ), wiresThickness * ( ty * invertedZoom * 0.175f + 0.3f ), invertedZoom + 0.4f );
+			}
+			else
+			{
+				GLDraw.MultiLine = false;
+				wireThickness = Mathf.Lerp( wiresThickness * ( invertedZoom * -0.05f + 0.15f ), wiresThickness * ( invertedZoom * 0.175f + 0.3f ), invertedZoom + 0.4f );
+			}
+
 			Rect boundBox = new Rect();
 			int segments = Mathf.Clamp( Mathf.FloorToInt( ( endPos - startPos ).magnitude * 0.2f * invertedZoom ), 15, 35 );
-			if ( UIUtils.CurrentWindow.Options.ColoredPorts && wireStatus != WireStatus.Highlighted )
-				boundBox = GLDraw.DrawBezier( startPos, startTangent, endPos, endTangent, UIUtils.GetColorForDataType( outputDataType, false, false ), UIUtils.GetColorForDataType( inputDataType, false, false ), wiresTickness * 0.7f, segments );
+			if ( ParentWindow.Options.ColoredPorts && wireStatus != WireStatus.Highlighted )
+				boundBox = GLDraw.DrawBezier( startPos, startTangent, endPos, endTangent, UIUtils.GetColorForDataType( outputDataType, false, false ), UIUtils.GetColorForDataType( inputDataType, false, false ), wireThickness, segments, ty );
 			else
-				boundBox = GLDraw.DrawBezier( startPos, startTangent, endPos, endTangent, UIUtils.GetColorFromWireStatus( wireStatus ), wiresTickness * 0.7f, segments );
+				boundBox = GLDraw.DrawBezier( startPos, startTangent, endPos, endTangent, UIUtils.GetColorFromWireStatus( wireStatus ), wireThickness, segments, ty );
 			//GLDraw.EndGroup();
 
 			//GUI.Box( m_auxRect, string.Empty, UIUtils.CurrentWindow.CustomStylesInstance.Box );
@@ -1020,6 +1172,13 @@ namespace AmplifyShaderEditor
 
 			//Handles.DrawLine( startPos, startTangent );
 			//Handles.DrawLine( endPos, endTangent );
+
+			float extraBound = 30 * invertedZoom;
+			boundBox.xMin -= extraBound;
+			boundBox.xMax += extraBound;
+			boundBox.yMin -= extraBound;
+			boundBox.yMax += extraBound;
+
 			return boundBox;
 		}
 
@@ -1059,10 +1218,17 @@ namespace AmplifyShaderEditor
 
 		public void MoveSelectedNodes( Vector2 delta, bool snap = false )
 		{
+			bool performUndo = delta.magnitude > 0.01f;
+			if ( performUndo )
+				Undo.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoMoveNodesId );
 			for ( int i = 0; i < m_selectedNodes.Count; i++ )
 			{
 				if ( !m_selectedNodes[ i ].MovingInFrame )
+				{
+					if ( performUndo )
+						Undo.RecordObject( m_selectedNodes[ i ], Constants.UndoMoveNodesId );
 					m_selectedNodes[ i ].Move( delta, snap );
+				}
 			}
 			IsDirty = true;
 		}
@@ -1142,7 +1308,7 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public void CreateConnection( int inNodeId, int inPortId, int outNodeId, int outPortId )
+		public void CreateConnection( int inNodeId, int inPortId, int outNodeId, int outPortId, bool registerUndo = true )
 		{
 			ParentNode outputNode = GetNode( outNodeId );
 			if ( outputNode != null )
@@ -1183,7 +1349,7 @@ namespace AmplifyShaderEditor
 
 					if ( inputPort.IsConnected )
 					{
-						DeleteConnection( true, inNodeId, inPortId, true, false );
+						DeleteConnection( true, inNodeId, inPortId, true, false, registerUndo );
 					}
 
 					//link output to input
@@ -1196,7 +1362,7 @@ namespace AmplifyShaderEditor
 
 					MarkWireHighlights();
 				}
-				UIUtils.CurrentWindow.ShaderIsModified = true;
+				ParentWindow.ShaderIsModified = true;
 			}
 		}
 
@@ -1228,11 +1394,42 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public void DeleteConnection( bool isInput, int nodeId, int portId, bool registerOnLog, bool propagateCallback )
+		public void DeleteAllConnectionFromNode( int nodeId, bool registerOnLog, bool propagateCallback )
 		{
 			ParentNode node = GetNode( nodeId );
 			if ( ( object ) node == null )
 				return;
+			DeleteAllConnectionFromNode( node, registerOnLog, propagateCallback );
+		}
+
+		public void DeleteAllConnectionFromNode( ParentNode node, bool registerOnLog, bool propagateCallback )
+		{
+
+			for ( int i = 0; i < node.InputPorts.Count; i++ )
+			{
+				if ( node.InputPorts[ i ].IsConnected )
+					DeleteConnection( true, node.UniqueId, node.InputPorts[ i ].PortId, registerOnLog, propagateCallback );
+			}
+
+			for ( int i = 0; i < node.OutputPorts.Count; i++ )
+			{
+				if ( node.OutputPorts[ i ].IsConnected )
+					DeleteConnection( false, node.UniqueId, node.OutputPorts[ i ].PortId, registerOnLog, propagateCallback );
+			}
+		}
+
+		public void DeleteConnection( bool isInput, int nodeId, int portId, bool registerOnLog, bool propagateCallback, bool registerUndo = true )
+		{
+			ParentNode node = GetNode( nodeId );
+			if ( ( object ) node == null )
+				return;
+
+			if( registerUndo )
+			{
+				UIUtils.MarkUndoAction();
+				Undo.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoDeleteConnectionId );
+				Undo.RecordObject( node, Constants.UndoDeleteConnectionId );
+			}
 
 			if ( isInput )
 			{
@@ -1250,6 +1447,8 @@ namespace AmplifyShaderEditor
 					{
 						WireReference inputReference = inputPort.ExternalReferences[ i ];
 						ParentNode outputNode = GetNode( inputReference.NodeId );
+						if ( registerUndo )
+							Undo.RecordObject( outputNode, Constants.UndoDeleteConnectionId );
 						outputNode.GetOutputPortByUniqueId( inputReference.PortId ).InvalidateConnection( inputPort.NodeId, inputPort.PortId );
 						if ( propagateCallback )
 							outputNode.OnOutputPortDisconnected( inputReference.PortId );
@@ -1271,6 +1470,8 @@ namespace AmplifyShaderEditor
 					{
 						WireReference outputReference = outputPort.ExternalReferences[ i ];
 						ParentNode inputNode = GetNode( outputReference.NodeId );
+						if ( registerUndo )
+							Undo.RecordObject( inputNode, Constants.UndoDeleteConnectionId );
 						if ( inputNode.ConnStatus == NodeConnectionStatus.Connected )
 						{
 							node.DeactivateNode( portId, false );
@@ -1305,20 +1506,67 @@ namespace AmplifyShaderEditor
 
 			if ( invalidateMasterNode )
 			{
-				CurrentMasterNode.Selected = false;
+				CurrentOutputNode.Selected = false;
 			}
 			//Clear all references
 			m_selectedNodes.Clear();
 			IsDirty = true;
 		}
 
+		public void DeleteNodesOnArray( ref ParentNode[] nodeArray )
+		{
+			bool invalidateMasterNode = false;
+			for ( int nodeIdx = 0; nodeIdx < nodeArray.Length; nodeIdx++ )
+			{
+				ParentNode node = nodeArray[ nodeIdx ];
+				if ( node.UniqueId == m_masterNodeId )
+				{
+					FunctionOutput fout = node as FunctionOutput;
+					if ( fout != null )
+					{
+						for ( int i = 0; i < m_nodes.Count; i++ )
+						{
+							FunctionOutput secondfout = m_nodes[ i ] as FunctionOutput;
+							if ( secondfout != null && secondfout != fout )
+							{
+								secondfout.Function = fout.Function;
+								AssignMasterNode( secondfout, false );
+
+								DeselectNode( fout );
+								DestroyNode( fout );
+								break;
+							}
+						}
+					}
+					invalidateMasterNode = true;
+				}
+				else
+				{
+					DeselectNode( node );
+					DestroyNode( node );
+				}
+				nodeArray[ nodeIdx ] = null;
+			}
+
+			if ( invalidateMasterNode && CurrentMasterNode != null )
+			{
+				CurrentMasterNode.Selected = false;
+			}
+
+			//Clear all references
+			nodeArray = null;
+			IsDirty = true;
+		}
 
 		public void MarkWireNodeSequence( WireNode node, bool isInput )
 		{
-			if ( ( object ) node == null )
+			if ( node == null )
 			{
 				return;
 			}
+
+			if ( m_markedForDeletion.Contains( node ) )
+				return;
 
 			m_markedForDeletion.Add( node );
 
@@ -1332,35 +1580,147 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public void DeleteMarkedForDeletionNodes()
+		public void UndoableDeleteSelectedNodes( List<ParentNode> nodeList )
 		{
-			bool invalidateMasterNode = false;
-			int count = m_markedForDeletion.Count;
-			for ( int nodeIdx = 0; nodeIdx < count; nodeIdx++ )
+			if ( nodeList.Count == 0 )
+				return;
+
+			List<ParentNode> validNode = new List<ParentNode>();
+
+			for ( int i = 0; i < nodeList.Count; i++ )
 			{
-				ParentNode node = m_markedForDeletion[ nodeIdx ];
-				if ( node.UniqueId == m_masterNodeId )
+				if ( nodeList[ i ] != null && nodeList[ i ].UniqueId != m_masterNodeId )
 				{
-					invalidateMasterNode = true;
+					validNode.Add( nodeList[ i ] );
 				}
-				else
+			}
+			UIUtils.ClearUndoHelper();
+			ParentNode[] selectedNodes = new ParentNode[ validNode.Count ];
+			for ( int i = 0; i < selectedNodes.Length; i++ )
+			{
+				if ( validNode[ i ] != null )
 				{
-					if ( node.Selected )
-					{
-						m_selectedNodes.Remove( node );
-						node.Selected = false;
-					}
-					DestroyNode( node );
+					selectedNodes[ i ] = validNode[ i ];
+					UIUtils.CheckUndoNode( selectedNodes[ i ] );
 				}
 			}
 
-			if ( invalidateMasterNode )
+			//Check nodes connected to deleted nodes to preserve connections on undo
+			List<ParentNode> extraNodes = new List<ParentNode>();
+			for ( int selectedNodeIdx = 0; selectedNodeIdx < selectedNodes.Length; selectedNodeIdx++ )
 			{
-				CurrentMasterNode.Selected = false;
+				// Check inputs
+				if ( selectedNodes[ selectedNodeIdx ] != null )
+				{
+					int inputIdxCount = selectedNodes[ selectedNodeIdx ].InputPorts.Count;
+					if ( inputIdxCount > 0 )
+					{
+						for ( int inputIdx = 0; inputIdx < inputIdxCount; inputIdx++ )
+						{
+							if ( selectedNodes[ selectedNodeIdx ].InputPorts[ inputIdx ].IsConnected )
+							{
+								int nodeIdx = selectedNodes[ selectedNodeIdx ].InputPorts[ inputIdx ].ExternalReferences[ 0 ].NodeId;
+								if ( nodeIdx > -1 )
+								{
+									ParentNode node = GetNode( nodeIdx );
+									if ( node != null && UIUtils.CheckUndoNode( node ) )
+									{
+										extraNodes.Add( node );
+									}
+								}
+							}
+						}
+					}
+				}
+
+				// Check outputs
+				if ( selectedNodes[ selectedNodeIdx ] != null )
+				{
+					int outputIdxCount = selectedNodes[ selectedNodeIdx ].OutputPorts.Count;
+					if ( outputIdxCount > 0 )
+					{
+						for ( int outputIdx = 0; outputIdx < outputIdxCount; outputIdx++ )
+						{
+							int inputIdxCount = selectedNodes[ selectedNodeIdx ].OutputPorts[ outputIdx ].ExternalReferences.Count;
+							if ( inputIdxCount > 0 )
+							{
+								for ( int inputIdx = 0; inputIdx < inputIdxCount; inputIdx++ )
+								{
+									int nodeIdx = selectedNodes[ selectedNodeIdx ].OutputPorts[ outputIdx ].ExternalReferences[ inputIdx ].NodeId;
+									if ( nodeIdx > -1 )
+									{
+										ParentNode node = GetNode( nodeIdx );
+										if ( UIUtils.CheckUndoNode( node ) )
+										{
+											extraNodes.Add( node );
+										}
+									}
+								}
+							}
+						}
+					}
+
+				}
 			}
-			//Clear all references
+
+			UIUtils.ClearUndoHelper();
+
+			//Record deleted nodes
+			UIUtils.MarkUndoAction();
+			Undo.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoDeleteNodeId );
+			Undo.RecordObjects( selectedNodes, Constants.UndoDeleteNodeId );
+			Undo.RecordObjects( extraNodes.ToArray(), Constants.UndoDeleteNodeId );
+			//Record deleting connections
+			for ( int i = 0; i < selectedNodes.Length; i++ )
+			{
+				CurrentOutputNode.Selected = false;
+				DeleteAllConnectionFromNode( selectedNodes[ i ], false, true );
+			}
+			//Delete
+			DeleteNodesOnArray( ref selectedNodes );
+
+			extraNodes.Clear();
+			extraNodes = null;
+
+			EditorUtility.SetDirty( ParentWindow );
+
+			ParentWindow.ForceRepaint();
+		}
+
+
+		public void DeleteMarkedForDeletionNodes()
+		{
+			UndoableDeleteSelectedNodes( m_markedForDeletion );
 			m_markedForDeletion.Clear();
 			IsDirty = true;
+
+			//bool invalidateMasterNode = false;
+			//int count = m_markedForDeletion.Count;
+			//for ( int nodeIdx = 0; nodeIdx < count; nodeIdx++ )
+			//{
+			//	ParentNode node = m_markedForDeletion[ nodeIdx ];
+			//	if ( node.UniqueId == m_masterNodeId )
+			//	{
+			//		invalidateMasterNode = true;
+			//	}
+			//	else
+			//	{
+			//		if ( node.Selected )
+			//		{
+			//			m_selectedNodes.Remove( node );
+			//			node.Selected = false;
+			//		}
+			//		DestroyNode( node );
+			//	}
+			//}
+
+			//if ( invalidateMasterNode )
+			//{
+			//	CurrentMasterNode.Selected = false;
+			//}
+			////Clear all references
+			//m_markedForDeletion.Clear();
+			//IsDirty = true;
 		}
 
 		public void DestroyNode( int nodeId )
@@ -1369,9 +1729,9 @@ namespace AmplifyShaderEditor
 			DestroyNode( node );
 		}
 
-		public void DestroyNode( ParentNode node )
+		public void DestroyNode( ParentNode node, bool registerUndo = true )
 		{
-			if ( ( object ) node == null )
+			if ( node == null )
 			{
 				UIUtils.ShowMessage( "Attempting to destroying a inexistant node ", MessageSeverity.Warning );
 				return;
@@ -1384,17 +1744,17 @@ namespace AmplifyShaderEditor
 			}
 
 			//TODO: check better placement of this code (reconnects wires from wire nodes)
-			if ( node.GetType() == typeof( WireNode ) )
-			{
-				if ( node.InputPorts[ 0 ].ExternalReferences != null && node.InputPorts[ 0 ].ExternalReferences.Count > 0 )
-				{
-					WireReference backPort = node.InputPorts[ 0 ].ExternalReferences[ 0 ];
-					for ( int i = 0; i < node.OutputPorts[ 0 ].ExternalReferences.Count; i++ )
-					{
-						UIUtils.CurrentWindow.ConnectInputToOutput( node.OutputPorts[ 0 ].ExternalReferences[ i ].NodeId, node.OutputPorts[ 0 ].ExternalReferences[ i ].PortId, backPort.NodeId, backPort.PortId );
-					}
-				}
-			}
+			//if ( node.GetType() == typeof( WireNode ) )
+			//{
+			//	if ( node.InputPorts[ 0 ].ExternalReferences != null && node.InputPorts[ 0 ].ExternalReferences.Count > 0 )
+			//	{
+			//		WireReference backPort = node.InputPorts[ 0 ].ExternalReferences[ 0 ];
+			//		for ( int i = 0; i < node.OutputPorts[ 0 ].ExternalReferences.Count; i++ )
+			//		{
+			//			UIUtils.CurrentWindow.ConnectInputToOutput( node.OutputPorts[ 0 ].ExternalReferences[ i ].NodeId, node.OutputPorts[ 0 ].ExternalReferences[ i ].PortId, backPort.NodeId, backPort.PortId );
+			//		}
+			//	}
+			//}
 
 			if ( node.UniqueId != m_masterNodeId )
 			{
@@ -1444,13 +1804,29 @@ namespace AmplifyShaderEditor
 				}
 
 				//Remove node from main list
+				//Undo.RecordObject( node, "Destroying node " + ( node.Attributes != null? node.Attributes.Name: node.GetType().ToString() ) );
+				if( registerUndo )
+				{
+					UIUtils.MarkUndoAction();
+					Undo.RegisterCompleteObjectUndo( ParentWindow, Constants.UndoDeleteNodeId );
+					Undo.RecordObject( node, Constants.UndoDeleteNodeId );
+				}
 				m_nodes.Remove( node );
 				m_nodesDict.Remove( node.UniqueId );
 				node.Destroy();
-				UIUtils.DestroyObjectImmediate( node );
+				if ( registerUndo )
+					Undo.DestroyObjectImmediate( node );
+				else
+					ScriptableObject.DestroyImmediate( node );
 				IsDirty = true;
 				m_markToReOrder = true;
 			}
+			//else if( node.UniqueId == m_masterNodeId && node.GetType() == typeof(FunctionOutput) )
+			//{
+			//	Debug.Log( "Attempting to destroy a output node" );
+			//	DeselectNode( node );
+			//	UIUtils.ShowMessage( "Attempting to destroy a output node" );
+			//}
 			else
 			{
 				DeselectNode( node );
@@ -1478,6 +1854,8 @@ namespace AmplifyShaderEditor
 
 		public void SelectNode( ParentNode node, bool append, bool reorder )
 		{
+			if ( node == null )
+				return;
 
 			if ( append )
 			{
@@ -1543,6 +1921,14 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		public void SelectOutputNode()
+		{
+			if ( m_masterNodeId != Constants.INVALID_NODE_ID )
+			{
+				SelectNode( CurrentOutputNode, false, false );
+			}
+		}
+
 		public void DeselectNode( int nodeId )
 		{
 			ParentNode node = GetNode( nodeId );
@@ -1578,30 +1964,45 @@ namespace AmplifyShaderEditor
 		{
 			if ( m_selectedNodes.Count == 1 )
 			{
-				MasterNode newMasterNode = m_selectedNodes[ 0 ] as MasterNode;
-				if ( newMasterNode != null )
+				OutputNode newOutputNode = m_selectedNodes[ 0 ] as OutputNode;
+				MasterNode newMasterNode = newOutputNode as MasterNode;
+				if ( newOutputNode != null )
 				{
-					if ( m_masterNodeId != Constants.INVALID_NODE_ID && m_masterNodeId != newMasterNode.UniqueId )
+					if ( m_masterNodeId != Constants.INVALID_NODE_ID && m_masterNodeId != newOutputNode.UniqueId )
 					{
-						MasterNode oldMasterNode = GetNode( m_masterNodeId ) as MasterNode;
-						if ( oldMasterNode != null )
-							oldMasterNode.IsMainMasterNode = false;
+						OutputNode oldOutputNode = GetNode( m_masterNodeId ) as OutputNode;
+						MasterNode oldMasterNode = oldOutputNode as MasterNode;
+						if ( oldOutputNode != null )
+						{
+							oldOutputNode.IsMainOutputNode = false;
+							if ( oldMasterNode != null )
+							{
+								oldMasterNode.ClearUpdateEvents();
+							}
+						}
 					}
-					m_masterNodeId = newMasterNode.UniqueId;
-					newMasterNode.IsMainMasterNode = true;
-					newMasterNode.OnMaterialUpdatedEvent += OnMaterialUpdatedEvent;
-					newMasterNode.OnShaderUpdatedEvent += OnShaderUpdatedEvent;
+					m_masterNodeId = newOutputNode.UniqueId;
+					newOutputNode.IsMainOutputNode = true;
+					if ( newMasterNode != null )
+					{
+						newMasterNode.OnMaterialUpdatedEvent += OnMaterialUpdatedEvent;
+						newMasterNode.OnShaderUpdatedEvent += OnShaderUpdatedEvent;
+					}
 				}
 			}
 
 			IsDirty = true;
 		}
 
-		public void AssignMasterNode( MasterNode node, bool onlyUpdateGraphId )
+		public void AssignMasterNode( OutputNode node, bool onlyUpdateGraphId )
 		{
 			AssignMasterNode( node.UniqueId, onlyUpdateGraphId );
-			node.OnMaterialUpdatedEvent += OnMaterialUpdatedEvent;
-			node.OnShaderUpdatedEvent += OnShaderUpdatedEvent;
+			MasterNode masterNode = node as MasterNode;
+			if ( masterNode != null )
+			{
+				masterNode.OnMaterialUpdatedEvent += OnMaterialUpdatedEvent;
+				masterNode.OnShaderUpdatedEvent += OnShaderUpdatedEvent;
+			}
 		}
 
 		public void AssignMasterNode( int nodeId, bool onlyUpdateGraphId )
@@ -1611,9 +2012,16 @@ namespace AmplifyShaderEditor
 
 			if ( m_masterNodeId > Constants.INVALID_NODE_ID )
 			{
-				MasterNode oldMasterNode = ( GetNode( nodeId ) as MasterNode );
-				if ( oldMasterNode != null )
-					oldMasterNode.IsMainMasterNode = false;
+				OutputNode oldOutputNode = ( GetNode( nodeId ) as OutputNode );
+				MasterNode oldMasterNode = oldOutputNode as MasterNode;
+				if ( oldOutputNode != null )
+				{
+					oldOutputNode.IsMainOutputNode = false;
+					if ( oldMasterNode != null )
+					{
+						oldMasterNode.ClearUpdateEvents();
+					}
+				}
 			}
 
 			if ( onlyUpdateGraphId )
@@ -1622,15 +2030,30 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				MasterNode masterNode = ( GetNode( nodeId ) as MasterNode );
-				if ( masterNode != null )
+				OutputNode outputNode = ( GetNode( nodeId ) as OutputNode );
+				if ( outputNode != null )
 				{
-					masterNode.IsMainMasterNode = true;
+					outputNode.IsMainOutputNode = true;
 					m_masterNodeId = nodeId;
 				}
 			}
 
 			IsDirty = true;
+		}
+
+		public void RefreshOnUndo()
+		{
+			if ( m_nodes != null )
+			{
+				int count = m_nodes.Count;
+				for ( int i = 0; i < count; i++ )
+				{
+					if ( m_nodes[ i ] != null )
+					{
+						m_nodes[ i ].RefreshOnUndo();
+					}
+				}
+			}
 		}
 
 		public void DrawGrid( DrawInfo drawInfo )
@@ -1660,7 +2083,8 @@ namespace AmplifyShaderEditor
 
 		public void ForceSignalPropagationOnMasterNode()
 		{
-			( GetNode( m_masterNodeId ) as MasterNode ).GenerateSignalPropagation();
+			if ( CurrentOutputNode != null )
+				CurrentOutputNode.GenerateSignalPropagation();
 			List<ParentNode> localVarNodes = m_localVarNodes.NodesList;
 			int count = localVarNodes.Count;
 			for ( int i = 0; i < count; i++ )
@@ -1695,11 +2119,11 @@ namespace AmplifyShaderEditor
 			( GetNode( m_masterNodeId ) as MasterNode ).UpdateMasterNodeMaterial( material );
 		}
 
-		public void SetMaterialModeOnGraph( Material mat )
+		public void SetMaterialModeOnGraph( Material mat, bool fetchMaterialValues = true )
 		{
 			for ( int i = 0; i < m_nodes.Count; i++ )
 			{
-				m_nodes[ i ].SetMaterialMode( mat );
+				m_nodes[ i ].SetMaterialMode( mat, fetchMaterialValues );
 			}
 		}
 
@@ -1736,6 +2160,13 @@ namespace AmplifyShaderEditor
 			{
 				m_nodes[ i ].Reset();
 				m_nodes[ i ].ResetOutputLocals();
+
+				FunctionNode fnode = m_nodes[ i ] as FunctionNode;
+				if( fnode != null )
+				{
+					if( fnode.Function != null )
+						fnode.FunctionGraph.ResetNodesLocalVariables();
+				}
 			}
 		}
 
@@ -1765,13 +2196,41 @@ namespace AmplifyShaderEditor
 
 		public void OrderNodesByGraphDepth()
 		{
-			CurrentMasterNode.SetupNodeCategories();
-			int count = m_nodes.Count;
-			for ( int i = 0; i < count; i++ )
+			
+			if( CurrentMasterNode != null )
 			{
-				if ( m_nodes[ i ].ConnStatus == NodeConnectionStatus.Island )
+				CurrentMasterNode.SetupNodeCategories();
+				int count = m_nodes.Count;
+				for ( int i = 0; i < count; i++ )
 				{
-					m_nodes[ i ].CalculateCustomGraphDepth();
+					if ( m_nodes[ i ].ConnStatus == NodeConnectionStatus.Island )
+					{
+						m_nodes[ i ].CalculateCustomGraphDepth();
+					}
+				}
+			} else
+			{
+				//TODO: remove this dynamic list
+				List<FunctionOutput> allOutputs = new List<FunctionOutput>();
+				for ( int i = 0; i < AllNodes.Count; i++ )
+				{
+					FunctionOutput temp = AllNodes[ i ] as FunctionOutput;
+					if ( temp != null )
+						allOutputs.Add( temp );
+				}
+
+				for ( int j = 0; j < allOutputs.Count; j++ )
+				{
+
+					allOutputs[ j ].SetupNodeCategories();
+					int count = m_nodes.Count;
+					for ( int i = 0; i < count; i++ )
+					{
+						if ( m_nodes[ i ].ConnStatus == NodeConnectionStatus.Island )
+						{
+							m_nodes[ i ].CalculateCustomGraphDepth();
+						}
+					}
 				}
 			}
 
@@ -1782,9 +2241,7 @@ namespace AmplifyShaderEditor
 		{
 			for ( int i = 0; i < m_nodes.Count; i++ )
 			{
-				m_nodes[ i ].WriteToString( ref nodesInfo, ref connectionsInfo );
-				m_nodes[ i ].WriteInputDataToString( ref nodesInfo );
-				m_nodes[ i ].WriteOutputDataToString( ref nodesInfo );
+				m_nodes[ i ].FullWriteToString( ref nodesInfo, ref connectionsInfo );
 				IOUtils.AddLineTerminator( ref nodesInfo );
 			}
 		}
@@ -1797,7 +2254,7 @@ namespace AmplifyShaderEditor
 
 		public void OnBeforeSerialize()
 		{
-			DeSelectAll();
+			//DeSelectAll();
 		}
 
 		public void OnAfterDeserialize()
@@ -1817,11 +2274,46 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		public void OnDuplicateEventWrapper()
+		{
+			if ( OnDuplicateEvent != null )
+			{
+				AmplifyShaderEditorWindow temp = UIUtils.CurrentWindow;
+				UIUtils.CurrentWindow = ParentWindow;
+				OnDuplicateEvent();
+				UIUtils.CurrentWindow = temp;
+			}
+		}
+
+		public ParentNode CreateNode( AmplifyShaderFunction shaderFunction, bool registerUndo, int nodeId = -1, bool addLast = true )
+		{
+			FunctionNode newNode = ScriptableObject.CreateInstance<FunctionNode>();
+			if ( newNode )
+			{
+				newNode.ContainerGraph = this;
+				newNode.CommonInit( shaderFunction );
+				newNode.UniqueId = nodeId;
+				AddNode( newNode, nodeId < 0, addLast, registerUndo );
+			}
+			return newNode;
+		}
+
+		public ParentNode CreateNode( AmplifyShaderFunction shaderFunction, bool registerUndo, Vector2 pos, int nodeId = -1, bool addLast = true )
+		{
+			ParentNode newNode = CreateNode( shaderFunction, registerUndo, nodeId, addLast );
+			if ( newNode )
+			{
+				newNode.Vec2Position = pos;
+			}
+			return newNode;
+		}
+
 		public ParentNode CreateNode( Type type, bool registerUndo, int nodeId = -1, bool addLast = true )
 		{
 			ParentNode newNode = ScriptableObject.CreateInstance( type ) as ParentNode;
 			if ( newNode )
 			{
+				newNode.ContainerGraph = this;
 				newNode.UniqueId = nodeId;
 				AddNode( newNode, nodeId < 0, addLast, registerUndo );
 			}
@@ -1844,9 +2336,26 @@ namespace AmplifyShaderEditor
 			MasterNode newMasterNode = CreateNode( m_masterNodeDefaultType, false ) as MasterNode;
 			newMasterNode.SetName( name );
 			m_masterNodeId = newMasterNode.UniqueId;
+
+			ParentWindow.IsShaderFunctionWindow = false;
+			IOUtils.CurrentCanvasMode = NodeAvailability.SurfaceShader;
+
 			newMasterNode.OnMaterialUpdatedEvent += OnMaterialUpdatedEvent;
 			newMasterNode.OnShaderUpdatedEvent += OnShaderUpdatedEvent;
-			newMasterNode.IsMainMasterNode = true;
+			newMasterNode.IsMainOutputNode = true;
+			LoadedShaderVersion = UIUtils.CurrentVersion();
+		}
+
+		public void CreateNewEmptyFunction( AmplifyShaderFunction shaderFunction )
+		{
+			CleanNodes();
+			FunctionOutput newOutputNode = CreateNode( typeof( FunctionOutput ), false ) as FunctionOutput;
+			m_masterNodeId = newOutputNode.UniqueId;
+
+			ParentWindow.IsShaderFunctionWindow = true;
+			IOUtils.CurrentCanvasMode = NodeAvailability.ShaderFunction;
+
+			newOutputNode.IsMainOutputNode = true;
 		}
 
 		public Vector2 SelectedNodesCentroid
@@ -1940,6 +2449,8 @@ namespace AmplifyShaderEditor
 			}
 		}
 
+		public OutputNode CurrentOutputNode { get { return GetNode( m_masterNodeId ) as OutputNode; } }
+		public FunctionOutput CurrentFunctionOutput { get { return GetNode( m_masterNodeId ) as FunctionOutput; } }
 		public MasterNode CurrentMasterNode { get { return GetNode( m_masterNodeId ) as MasterNode; } }
 		public StandardSurfaceOutputNode CurrentStandardSurface { get { return GetNode( m_masterNodeId ) as StandardSurfaceOutputNode; } }
 		public List<ParentNode> AllNodes { get { return m_nodes; } }
@@ -1966,12 +2477,7 @@ namespace AmplifyShaderEditor
 		public bool SaveIsDirty
 		{
 			set { m_saveIsDirty = value && UIUtils.DirtyMask; }
-			get
-			{
-				bool value = m_saveIsDirty;
-				m_saveIsDirty = false;
-				return value;
-			}
+			get { return m_saveIsDirty; }
 		}
 		public int LoadedShaderVersion
 		{
@@ -1979,11 +2485,20 @@ namespace AmplifyShaderEditor
 			set { m_loadedShaderVersion = value; }
 		}
 
+		public AmplifyShaderFunction CurrentShaderFunction
+		{
+			get { if ( CurrentFunctionOutput != null ) return CurrentFunctionOutput.Function; else return null; }
+			set { if ( CurrentFunctionOutput != null ) CurrentFunctionOutput.Function = value; }
+		}
+
 		public bool HasUnConnectedNodes { get { return m_hasUnConnectedNodes; } }
 		public NodeUsageRegister SamplerNodes { get { return m_samplerNodes; } }
 		public NodeUsageRegister TexturePropertyNodes { get { return m_texturePropertyNodes; } }
 		public NodeUsageRegister TextureArrayNodes { get { return m_textureArrayNodes; } }
 		public NodeUsageRegister PropertyNodes { get { return m_propertyNodes; } }
+		public NodeUsageRegister FunctionInputNodes { get { return m_functionInputNodes; } }
+		public NodeUsageRegister FunctionNodes { get { return m_functionNodes; } }
+		public NodeUsageRegister FunctionOutputNodes { get { return m_functionOutputNodes; } }
 		public NodeUsageRegister ScreenColorNodes { get { return m_screenColorNodes; } }
 		public NodeUsageRegister LocalVarNodes { get { return m_localVarNodes; } }
 		public PrecisionType CurrentPrecision
@@ -1998,5 +2513,21 @@ namespace AmplifyShaderEditor
 		}
 
 		public List<ParentNode> NodePreviewList { get { return m_nodePreviewList; } set { m_nodePreviewList = value; } }
+
+		public void SetGraphId(int id)
+		{
+			m_graphId = id;
+		}
+
+		public int GraphId
+		{
+			get { return m_graphId; }
+		}
+
+		public AmplifyShaderEditorWindow ParentWindow
+		{
+			get { return m_parentWindow; }
+			set { m_parentWindow = value; }
+		}
 	}
 }

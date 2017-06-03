@@ -45,7 +45,7 @@ namespace AmplifyShaderEditor
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-			m_selectedType = ( BuiltInFogAndAmbientColors ) EditorGUILayout.Popup( ColorLabelStr, ( int ) m_selectedType, ColorValuesStr );
+			m_selectedType = ( BuiltInFogAndAmbientColors ) EditorGUILayoutPopup( ColorLabelStr, ( int ) m_selectedType, ColorValuesStr );
 
 			if ( m_selectedType != m_oldVarType )
 			{

@@ -8,10 +8,10 @@ namespace AmplifyShaderEditor
 {
 	public sealed class ToolsMenuButtonSep : ToolsMenuButtonParent
 	{
-		private Color SplitterColor = EditorGUIUtility.isProSkin ? new Color( 0.157f, 0.157f, 0.157f ) : new Color( 0.5f, 0.5f, 0.5f );
+		private Color m_splitterColor = EditorGUIUtility.isProSkin ? new Color( 0.157f, 0.157f, 0.157f ) : new Color( 0.5f, 0.5f, 0.5f );
 		[SerializeField]
 		private GUIStyle m_sepStyle;
-		public ToolsMenuButtonSep( string text = null, string tooltip = null, float buttonSpacing = -1 ) : base( text,tooltip, buttonSpacing ) { }
+		public ToolsMenuButtonSep( AmplifyShaderEditorWindow parentWindow = null, string text = null, string tooltip = null, float buttonSpacing = -1 ) : base( parentWindow, text, tooltip, buttonSpacing ) { }
 
 		public override void Draw()
 		{
@@ -28,7 +28,7 @@ namespace AmplifyShaderEditor
 				m_sepStyle.stretchHeight = true;
 			}
 			Color originalColor = GUI.color;
-			GUI.color = SplitterColor;
+			GUI.color = m_splitterColor;
 			GUILayout.Box( string.Empty, m_sepStyle, GUILayout.MaxWidth( 2 ), GUILayout.ExpandHeight( true ) );
 			GUI.color = originalColor;
 		}

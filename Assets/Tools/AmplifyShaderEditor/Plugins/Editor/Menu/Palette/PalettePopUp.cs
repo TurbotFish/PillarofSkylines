@@ -39,12 +39,12 @@ namespace AmplifyShaderEditor
 		{
 			if ( m_style == null )
 			{
-				m_style = UIUtils.CurrentWindow.CustomStylesInstance.TextArea;
+				m_style = UIUtils.TextArea;
 			}
 
 			if ( m_fontStyle == null )
 			{
-				m_fontStyle = new GUIStyle( UIUtils.CurrentWindow.CustomStylesInstance.Label );
+				m_fontStyle = new GUIStyle( UIUtils.Label );
 				m_fontStyle.fontSize = 15;
 			}
 

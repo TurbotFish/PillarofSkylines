@@ -132,20 +132,20 @@ namespace AmplifyShaderEditor
 			return result;
 		}
 
-		public void Draw( GUIStyle toolbarstyle )
+		public void Draw( UndoParentNode owner, GUIStyle toolbarstyle )
 		{
 			bool foldoutValue = EditorVariablesManager.ExpandedStencilOptions.Value;
-			NodeUtils.DrawPropertyGroup( ref foldoutValue, ref m_active, FoldoutLabelStr, () =>
-			{
-				m_refValue = EditorGUILayout.IntSlider( ReferenceValueContent, m_refValue, 0, 255 );
-				m_readMask = EditorGUILayout.IntSlider( ReadMaskContent, m_readMask, 0, 255 );
-				m_writeMask = EditorGUILayout.IntSlider( WriteMaskContent, m_writeMask, 0, 255 );
-				m_comparisonFunctionIdx = EditorGUILayout.Popup( ComparisonStr, m_comparisonFunctionIdx, ComparisonLabels );
-				m_passStencilOpIdx = EditorGUILayout.Popup( PassStr, m_passStencilOpIdx, StencilOpsLabels );
-				m_failStencilOpIdx = EditorGUILayout.Popup( FailStr, m_failStencilOpIdx, StencilOpsLabels );
-				m_zFailStencilOpIdx = EditorGUILayout.Popup( ZFailStr, m_zFailStencilOpIdx, StencilOpsLabels );
+			NodeUtils.DrawPropertyGroup( owner, ref foldoutValue, ref m_active, FoldoutLabelStr, () =>
+			 {
+				 m_refValue = owner.EditorGUILayoutIntSlider( ReferenceValueContent, m_refValue, 0, 255 );
+				 m_readMask = owner.EditorGUILayoutIntSlider( ReadMaskContent, m_readMask, 0, 255 );
+				 m_writeMask = owner.EditorGUILayoutIntSlider( WriteMaskContent, m_writeMask, 0, 255 );
+				 m_comparisonFunctionIdx = owner.EditorGUILayoutPopup( ComparisonStr, m_comparisonFunctionIdx, ComparisonLabels );
+				 m_passStencilOpIdx = owner.EditorGUILayoutPopup( PassStr, m_passStencilOpIdx, StencilOpsLabels );
+				 m_failStencilOpIdx = owner.EditorGUILayoutPopup( FailStr, m_failStencilOpIdx, StencilOpsLabels );
+				 m_zFailStencilOpIdx = owner.EditorGUILayoutPopup( ZFailStr, m_zFailStencilOpIdx, StencilOpsLabels );
 
-			} );
+			 } );
 			EditorVariablesManager.ExpandedStencilOptions.Value = foldoutValue;
 		}
 

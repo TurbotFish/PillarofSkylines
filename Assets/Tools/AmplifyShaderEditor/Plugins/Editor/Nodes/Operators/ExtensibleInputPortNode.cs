@@ -50,11 +50,11 @@ namespace AmplifyShaderEditor
 				if ( m_freeInputCountNb )
 				{
 					EditorGUILayout.LabelField( _inputAmountStr );
-					m_inputCount = EditorGUILayout.IntField( m_inputCount );
+					m_inputCount = EditorGUILayoutIntField( m_inputCount );
 				}
 
 				EditorGUILayout.LabelField( _inputTypeStr );
-				m_selectedType = ( WirePortDataType ) EditorGUILayout.EnumPopup( m_selectedType );
+				m_selectedType = ( WirePortDataType ) EditorGUILayoutEnumPopup( m_selectedType );
 			}
 			EditorGUILayout.EndVertical();
 			if ( m_inputCount != m_lastInputCount )

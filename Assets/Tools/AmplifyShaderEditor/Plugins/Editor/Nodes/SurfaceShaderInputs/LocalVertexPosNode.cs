@@ -38,8 +38,8 @@ namespace AmplifyShaderEditor
 			{
 				if ( m_addInstruction )
 				{
-					dataCollector.AddToInput( m_uniqueId, "float3 " + VertexVarName, true );
-					dataCollector.AddVertexInstruction( Constants.VertexShaderOutputStr + "." + VertexVarName + " = " + Constants.VertexShaderInputStr + ".vertex.xyz ", m_uniqueId );
+					dataCollector.AddToInput( UniqueId, "float3 " + VertexVarName, true );
+					dataCollector.AddVertexInstruction( Constants.VertexShaderOutputStr + "." + VertexVarName + " = " + Constants.VertexShaderInputStr + ".vertex.xyz ", UniqueId );
 					m_addInstruction = false;
 				}
 

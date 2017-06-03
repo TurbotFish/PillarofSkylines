@@ -37,7 +37,7 @@ namespace AmplifyShaderEditor
 
 			string initalColor = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 			string fraction = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
-			RegisterLocalVariable( 0, string.Format( GenericDesaturateOp, initalColor, fraction ), ref dataCollector, "desaturateVar" + m_uniqueId );
+			RegisterLocalVariable( 0, string.Format( GenericDesaturateOp, initalColor, fraction ), ref dataCollector, "desaturateVar" + OutputId );
 
 			return m_outputPorts[ 0 ].LocalValue;
 		}

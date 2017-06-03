@@ -23,7 +23,10 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
-			dataCollector.AddToIncludes( m_uniqueId, Constants.UnityCgLibFuncs );
+			if ( m_outputPorts[ 0 ].IsLocalValue )
+				return m_outputPorts[ 0 ].LocalValue;
+
+			dataCollector.AddToIncludes( UniqueId, Constants.UnityCgLibFuncs );
 			string result = string.Empty;
 			//if ( m_inputPorts[ 0 ].IsConnected )
 			//{
@@ -32,11 +35,12 @@ namespace AmplifyShaderEditor
 			//else
 			//{
 				string input = UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_POS );
-				dataCollector.AddToInput( m_uniqueId, input, true );
+				dataCollector.AddToInput( UniqueId, input, true );
 				result = Constants.InputVarStr + "." + UIUtils.GetInputValueFromType( AvailableSurfaceInputs.WORLD_POS );
 			//}
 			result = m_funcType + "( " + result + " )";
-			return CreateOutputLocalVariable( 0, result, ref dataCollector );
+			RegisterLocalVariable( 0, result, ref dataCollector, "worldSpaceLightDir" + OutputId );
+			return m_outputPorts[ 0 ].LocalValue;
 		}
 	}
 }

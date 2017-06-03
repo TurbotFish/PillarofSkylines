@@ -44,7 +44,7 @@ namespace AmplifyShaderEditor
 			EditorGUILayout.BeginVertical();
 			{
 				EditorGUILayout.LabelField( InputAmountStr );
-				m_inputCount = EditorGUILayout.IntField( m_inputCount );
+				m_inputCount = EditorGUILayoutIntField( m_inputCount );
 			}
 			EditorGUILayout.EndVertical();
 			if ( m_inputCount != m_lastInputCount )

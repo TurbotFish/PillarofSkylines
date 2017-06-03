@@ -40,7 +40,7 @@ namespace AmplifyShaderEditor
 
 		public override void DrawSubProperties()
 		{
-			m_defaultValue = EditorGUILayout.Vector2Field( Constants.DefaultValueLabel, m_defaultValue );
+			m_defaultValue = EditorGUILayoutVector2Field( Constants.DefaultValueLabel, m_defaultValue );
 		}
 
 		public override void DrawMaterialProperties()
@@ -48,7 +48,7 @@ namespace AmplifyShaderEditor
 			if ( m_materialMode )
 				EditorGUI.BeginChangeCheck();
 
-			m_materialValue = EditorGUILayout.Vector2Field( Constants.MaterialValueLabel, m_materialValue );
+			m_materialValue = EditorGUILayoutVector2Field( Constants.MaterialValueLabel, m_materialValue );
 			if ( m_materialMode && EditorGUI.EndChangeCheck() )
 				m_requireMaterialUpdate = true;
 		}
@@ -84,13 +84,13 @@ namespace AmplifyShaderEditor
 					if ( m_materialMode && m_currentParameterType != PropertyType.Constant )
 					{
 						float val = m_materialValue[ i ];
-						UIUtils.DrawFloat( ref m_propertyDrawPos, ref val, LabelWidth * drawInfo.InvertedZoom );
+						UIUtils.DrawFloat( this, ref m_propertyDrawPos, ref val, LabelWidth * drawInfo.InvertedZoom );
 						m_materialValue[ i ] = val;
 					}
 					else
 					{
 						float val = m_defaultValue[ i ];
-						UIUtils.DrawFloat( ref m_propertyDrawPos, ref val, LabelWidth * drawInfo.InvertedZoom );
+						UIUtils.DrawFloat( this, ref m_propertyDrawPos, ref val, LabelWidth * drawInfo.InvertedZoom );
 						m_defaultValue[ i ] = val;
 					}
 				}
@@ -106,14 +106,7 @@ namespace AmplifyShaderEditor
 		public override void ConfigureLocalVariable( ref MasterNodeDataCollector dataCollector )
 		{
 			Vector2 value = m_defaultValue;
-			if ( dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation )
-			{
-				dataCollector.AddToVertexLocalVariables( m_uniqueId, CreateLocalVarDec( value.x + "," + value.y ) );
-			}
-			else
-			{
-				dataCollector.AddToLocalVariables( m_uniqueId, CreateLocalVarDec( value.x + "," + value.y ) );
-			}
+			dataCollector.AddLocalVariable( UniqueId, CreateLocalVarDec( value.x + "," + value.y ) );
 			m_outputPorts[ 0 ].SetLocalValue( m_propertyName );
 			m_outputPorts[ 1 ].SetLocalValue( m_propertyName + ".x" );
 			m_outputPorts[ 2 ].SetLocalValue( m_propertyName + ".y" );
@@ -180,10 +173,10 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void SetMaterialMode( Material mat )
+		public override void SetMaterialMode( Material mat , bool fetchMaterialValues )
 		{
-			base.SetMaterialMode( mat );
-			if ( m_materialMode && UIUtils.IsProperty( m_currentParameterType ) && mat.HasProperty( m_propertyName ) )
+			base.SetMaterialMode( mat , fetchMaterialValues );
+			if ( fetchMaterialValues && m_materialMode && UIUtils.IsProperty( m_currentParameterType ) && mat.HasProperty( m_propertyName ) )
 			{
 				m_materialValue = mat.GetVector( m_propertyName );
 			}
@@ -215,6 +208,18 @@ namespace AmplifyShaderEditor
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_defaultValue.x.ToString() + IOUtils.VECTOR_SEPARATOR +
 														m_defaultValue.y.ToString() );
+		}
+
+		public override void ReadAdditionalClipboardData( ref string[] nodeParams )
+		{
+			base.ReadAdditionalClipboardData( ref nodeParams );
+			m_materialValue = IOUtils.StringToVector2( GetCurrentParam( ref nodeParams ) );
+		}
+
+		public override void WriteAdditionalClipboardData( ref string nodeInfo )
+		{
+			base.WriteAdditionalClipboardData( ref nodeInfo );
+			IOUtils.AddFieldValueToString( ref nodeInfo, IOUtils.Vector2ToString( m_materialValue ) );
 		}
 
 		public override string GetPropertyValStr()

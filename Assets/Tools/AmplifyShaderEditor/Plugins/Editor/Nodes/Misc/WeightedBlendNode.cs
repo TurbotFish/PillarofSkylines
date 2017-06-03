@@ -19,13 +19,16 @@ namespace AmplifyShaderEditor
 		
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
+			if ( m_outputPorts[ 0 ].IsLocalValue )
+				return m_outputPorts[ 0 ].LocalValue;
+
 			GetInputData( ref dataCollector, ignoreLocalvar );
 
 			string result = string.Empty;
 			string avgSum = string.Empty;
 
-			string localVarName = "weightedBlendVar" + m_uniqueId;
-			dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, m_inputPorts[ 0 ].DataType, localVarName, m_inputData[ 0 ] );
+			string localVarName = "weightedBlendVar" + OutputId;
+			dataCollector.AddLocalVariable( UniqueId, m_currentPrecisionType, m_inputPorts[ 0 ].DataType, localVarName, m_inputData[ 0 ] );
 			
 			if ( m_activeCount  < 2 )
 			{
@@ -47,7 +50,8 @@ namespace AmplifyShaderEditor
 
 			result = UIUtils.AddBrackets( result ) + "/" + UIUtils.AddBrackets( avgSum );
 			result = UIUtils.AddBrackets( result );
-			return CreateOutputLocalVariable( 0, result, ref dataCollector );
+			RegisterLocalVariable( 0, result, ref dataCollector, "weightedAvg" + OutputId );
+			return m_outputPorts[ 0 ].LocalValue;
 		}
 	}
 }

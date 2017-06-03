@@ -18,5 +18,11 @@ namespace AmplifyShaderEditor
 			m_outputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT2, false );
 			m_outputPorts[ 0 ].Name = "Out";
 		}
+
+		protected override void OnUniqueIDAssigned()
+		{
+			base.OnUniqueIDAssigned();
+			m_localVarName = "paralaxOffset" + OutputId;
+		}
 	}
 }

@@ -18,7 +18,7 @@ namespace AmplifyShaderEditor
 		private const string ModeStr = "Mode";
 
 		[SerializeField]
-		private eVectorFromMatrixMode _mode = eVectorFromMatrixMode.Row;
+		private eVectorFromMatrixMode m_mode = eVectorFromMatrixMode.Row;
 
 		[SerializeField]
 		private int m_index = 0;
@@ -30,6 +30,7 @@ namespace AmplifyShaderEditor
 		{
 			base.CommonInit( uniqueId );
 			AddInputPort( WirePortDataType.FLOAT4x4, false, Constants.EmptyPortValue );
+			m_inputPorts[ 0 ].CreatePortRestrictions( WirePortDataType.FLOAT3x3, WirePortDataType.FLOAT4x4 );
 			AddOutputVectorPorts( WirePortDataType.FLOAT4, "XYZW" );
 			m_useInternalPortData = true;
 			m_autoWrapProperties = true;
@@ -73,9 +74,9 @@ namespace AmplifyShaderEditor
 			if ( m_inputPorts[ 0 ].DataType != WirePortDataType.FLOAT4x4 &&
 				m_inputPorts[ 0 ].DataType != WirePortDataType.FLOAT3x3 )
 			{
-				value = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( m_uniqueId, outputId ), value, m_inputPorts[ 0 ].DataType, WirePortDataType.FLOAT4x4, value );
+				value = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), value, m_inputPorts[ 0 ].DataType, WirePortDataType.FLOAT4x4, value );
 			}
-			if ( _mode == eVectorFromMatrixMode.Row )
+			if ( m_mode == eVectorFromMatrixMode.Row )
 			{
 				value += "[" + m_index + "]";
 			}
@@ -108,22 +109,22 @@ namespace AmplifyShaderEditor
 
 		public override void DrawProperties()
 		{
-			m_index = EditorGUILayout.IntSlider( IndexStr, m_index, 0, m_maxIndex );
-			_mode = ( eVectorFromMatrixMode ) EditorGUILayout.EnumPopup( ModeStr, _mode );
+			m_index = EditorGUILayoutIntSlider( IndexStr, m_index, 0, m_maxIndex );
+			m_mode = ( eVectorFromMatrixMode ) EditorGUILayoutEnumPopup( ModeStr, m_mode );
 			base.DrawProperties();
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
 		{
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
-			IOUtils.AddFieldValueToString( ref nodeInfo, _mode );
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_mode );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_index );
 		}
 
 		public override void ReadFromString( ref string[] nodeParams )
 		{
 			base.ReadFromString( ref nodeParams );
-			_mode = ( eVectorFromMatrixMode ) Enum.Parse( typeof( eVectorFromMatrixMode ), GetCurrentParam( ref nodeParams ) );
+			m_mode = ( eVectorFromMatrixMode ) Enum.Parse( typeof( eVectorFromMatrixMode ), GetCurrentParam( ref nodeParams ) );
 			m_index = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 		}
 	}

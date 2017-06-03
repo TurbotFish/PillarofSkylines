@@ -41,7 +41,7 @@ namespace AmplifyShaderEditor
 			if ( isScaledNormal )
 			{
 				string scaleValue = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
-				dataCollector.AddToIncludes( m_uniqueId, Constants.UnityStandardUtilsLibFuncs );
+				dataCollector.AddToIncludes( UniqueId, Constants.UnityStandardUtilsLibFuncs );
 				normalMapUnpackMode = "UnpackScaleNormal( " + src + " ," + scaleValue + " )";
 			}
 			else
@@ -59,8 +59,8 @@ namespace AmplifyShaderEditor
 
 			if ( outputUsage > 1 )
 			{
-				string varName = "localUnpackNormal" + m_uniqueId;
-				dataCollector.AddToLocalVariables( m_uniqueId, "float3 " + varName + " = " + normalMapUnpackMode + ";" );
+				string varName = "localUnpackNormal" + UniqueId;
+				dataCollector.AddLocalVariable( UniqueId, "float3 " + varName + " = " + normalMapUnpackMode + ";" );
 				return GetOutputVectorItem( 0, outputId, varName );
 			}
 			else

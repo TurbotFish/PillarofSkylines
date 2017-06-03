@@ -22,16 +22,21 @@ namespace AmplifyShaderEditor
 	}
 
 	[Serializable]
-	public class MasterNode : SignalGeneratorNode
+	public class MasterNode : OutputNode
 	{
 
 		private const string IndentationHelper = "\t\t{0}\n";
+		private const string ShaderLODFormat = "\t\tLOD {0}\n";
+
 		public delegate void OnMaterialUpdated( MasterNode masterNode );
 		public event OnMaterialUpdated OnMaterialUpdatedEvent;
 		public event OnMaterialUpdated OnShaderUpdatedEvent;
 
 		protected readonly string[] ShaderModelTypeArr = { "2.0", "2.5", "3.0", "3.5", "4.0", "4.5", "4.6", "5.0" };
 		private const string ShaderKeywordsStr = "Shader Keywords";
+
+		[SerializeField]
+		protected int m_shaderLOD = 0;
 
 		[SerializeField]
 		protected int m_shaderModelIdx = 2;
@@ -42,8 +47,8 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		protected Material m_currentMaterial;
 
-		[SerializeField]
-		private bool m_isMainMasterNode = false;
+		//[SerializeField]
+		//private bool m_isMainMasterNode = false;
 
 		[SerializeField]
 		private Rect m_masterNodeIconCoords;
@@ -86,7 +91,7 @@ namespace AmplifyShaderEditor
 		{
 			m_currentMaterial = null;
 			m_masterNodeIconCoords = new Rect( 0, 0, 64, 64 );
-			m_isMainMasterNode = false;
+			m_isMainOutputNode = false;
 			m_connStatus = NodeConnectionStatus.Connected;
 			m_activeType = GetType();
 			m_currentPrecisionType = PrecisionType.Float;
@@ -100,26 +105,6 @@ namespace AmplifyShaderEditor
 		public virtual void UpdateMasterNodeMaterial( Material material ) { }
 
 		public virtual void SetName( string name ) { }
-
-		public override void ResetNodeData()
-		{
-			base.ResetNodeData();
-			m_graphDepth = -1;
-		}
-
-		public void SetupNodeCategories()
-		{
-			UIUtils.CurrentWindow.CurrentGraph.ResetNodesData();
-			int count = m_inputPorts.Count;
-			for ( int i = 0; i < count; i++ )
-			{
-				if ( m_inputPorts[ i ].IsConnected )
-				{
-					NodeData nodeData = new NodeData( m_inputPorts[ i ].Category );
-					m_inputPorts[ i ].GetOutputNode().PropagateNodeData( nodeData );
-				}
-			}
-		}
 
 		public void DrawShaderKeywords()
 		{
@@ -164,13 +149,13 @@ namespace AmplifyShaderEditor
 					{
 						GUILayout.Label( " " );
 						// Add new port
-						if ( GUILayout.Button( string.Empty, m_smallAddShaderKeywordItemStyle, GUILayout.Width( ShaderKeywordButtonLayoutWidth ) ) )
+						if ( GUILayoutButton( string.Empty, m_smallAddShaderKeywordItemStyle, GUILayout.Width( ShaderKeywordButtonLayoutWidth ) ) )
 						{
 							m_shaderKeywords.Insert( i, "" );
 						}
 
 						//Remove port
-						if ( GUILayout.Button( string.Empty, m_smallRemoveShaderKeywordStyle, GUILayout.Width( ShaderKeywordButtonLayoutWidth ) ) )
+						if ( GUILayoutButton( string.Empty, m_smallRemoveShaderKeywordStyle, GUILayout.Width( ShaderKeywordButtonLayoutWidth ) ) )
 						{
 							markedToDelete = i;
 						}
@@ -188,26 +173,26 @@ namespace AmplifyShaderEditor
 		public override void Draw( DrawInfo drawInfo )
 		{
 			base.Draw( drawInfo );
-			if ( m_isMainMasterNode )
+			if ( m_isMainOutputNode )
 			{
 				if ( m_masterNodeOnTex == null )
 				{
-					m_masterNodeOnTex = UIUtils.CurrentWindow.MasterNodeOnTexture;
+					m_masterNodeOnTex = UIUtils.MasterNodeOnTexture;
 				}
 
 				if ( m_masterNodeOffTex == null )
 				{
-					m_masterNodeOffTex = UIUtils.CurrentWindow.MasterNodeOffTexture;
+					m_masterNodeOffTex = UIUtils.MasterNodeOffTexture;
 				}
 
 				if ( m_gpuInstanceOnTex == null )
 				{
-					m_gpuInstanceOnTex = UIUtils.CurrentWindow.GPUInstancedOnTexture;
+					m_gpuInstanceOnTex = UIUtils.GPUInstancedOnTexture;
 				}
 
 				if ( m_gpuInstanceOffTex == null )
 				{
-					m_gpuInstanceOffTex = UIUtils.CurrentWindow.GPUInstancedOffTexture;
+					m_gpuInstanceOffTex = UIUtils.GPUInstancedOffTexture;
 				}
 
 				m_masterNodeIconCoords = m_globalPosition;
@@ -220,7 +205,7 @@ namespace AmplifyShaderEditor
 
 				if ( m_gpuInstanceOnTex == null )
 				{
-					m_gpuInstanceOnTex = UIUtils.CurrentWindow.GPUInstancedOnTexture;
+					m_gpuInstanceOnTex = UIUtils.GPUInstancedOnTexture;
 				}
 
 				if ( UIUtils.IsInstancedShader() )
@@ -243,20 +228,16 @@ namespace AmplifyShaderEditor
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
 		{
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
-			IOUtils.AddFieldValueToString( ref nodeInfo, m_isMainMasterNode );
+			//IOUtils.AddFieldValueToString( ref nodeInfo, m_isMainMasterNode );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_shaderModelIdx );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_currentPrecisionType );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_customInspectorName );
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_shaderLOD );
 		}
 
 		public override void ReadFromString( ref string[] nodeParams )
 		{
 			base.ReadFromString( ref nodeParams );
-			m_isMainMasterNode = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
-			if ( m_isMainMasterNode )
-			{
-				UIUtils.CurrentWindow.CurrentGraph.AssignMasterNode( this, true );
-			}
 			if ( UIUtils.CurrentShaderVersion() > 21 )
 			{
 				m_shaderModelIdx = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
@@ -267,6 +248,11 @@ namespace AmplifyShaderEditor
 			{
 				m_customInspectorName = GetCurrentParam( ref nodeParams );
 			}
+
+			if ( UIUtils.CurrentShaderVersion() > 6101 )
+			{
+				m_shaderLOD = Convert.ToInt32( GetCurrentParam( ref nodeParams ));
+			}
 		}
 
 		public override void OnInputPortConnected( int portId, int otherNodeId, int otherPortId, bool activateNode = true )
@@ -274,7 +260,7 @@ namespace AmplifyShaderEditor
 			if ( activateNode )
 			{
 				InputPort port = GetInputPortByUniqueId( portId );
-				port.GetOutputNode().ActivateNode( m_uniqueId, portId, m_activeType );
+				port.GetOutputNode().ActivateNode( UniqueId, portId, m_activeType );
 			}
 		}
 
@@ -300,32 +286,16 @@ namespace AmplifyShaderEditor
 
 		public virtual Shader Execute( string pathname, bool isFullPath )
 		{
-			UIUtils.CurrentWindow.CurrentGraph.ResetNodesLocalVariables();
+			ContainerGraph.ResetNodesLocalVariables();
 			return null;
 		}
 
 		public virtual void UpdateFromShader( Shader newShader ) { }
 
-		public bool IsMainMasterNode
+		public void ClearUpdateEvents()
 		{
-			get { return m_isMainMasterNode; }
-			set
-			{
-				if ( value != m_isMainMasterNode )
-				{
-					m_isMainMasterNode = value;
-					if ( m_isMainMasterNode )
-					{
-						GenerateSignalPropagation();
-					}
-					else
-					{
-						GenerateSignalInibitor();
-						OnShaderUpdatedEvent = null;
-						OnMaterialUpdatedEvent = null;
-					}
-				}
-			}
+			OnShaderUpdatedEvent = null;
+			OnMaterialUpdatedEvent = null;
 		}
 
 		public Material CurrentMaterial { get { return m_currentMaterial; } }
@@ -358,7 +328,7 @@ namespace AmplifyShaderEditor
 			m_smallAddShaderKeywordItemStyle = null;
 			m_smallRemoveShaderKeywordStyle = null;
 		}
-
+		
 		public static void OpenShaderBody( ref string result, string name )
 		{
 			result += string.Format( "Shader \"{0}\"\n", name ) + "{\n";
@@ -397,6 +367,14 @@ namespace AmplifyShaderEditor
 		public static void AddRenderTags( ref string result, string tags )
 		{
 			result += string.Format( IndentationHelper, tags ); ;
+		}
+
+		public static void AddShaderLOD( ref string result, int shaderLOD )
+		{
+			if ( shaderLOD > 0 )
+			{
+				result += string.Format( ShaderLODFormat, shaderLOD );
+			}
 		}
 
 		public static void AddMultilineBody( ref string result, string[] lines )

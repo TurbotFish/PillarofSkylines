@@ -3,7 +3,6 @@
 
 using UnityEngine;
 using System;
-using UnityEditor;
 
 namespace AmplifyShaderEditor
 {
@@ -38,8 +37,8 @@ namespace AmplifyShaderEditor
 		{
 			base.DrawProperties();
 
-			m_speedX = EditorGUILayout.FloatField( _speedXStr, m_speedX );
-			m_speedY = EditorGUILayout.FloatField( _speedYStr, m_speedY );
+			m_speedX = EditorGUILayoutFloatField( _speedXStr, m_speedX );
+			m_speedY = EditorGUILayoutFloatField( _speedYStr, m_speedY );
 		}
 
 		public override void SetPreviewInputs()
@@ -70,7 +69,7 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				dataCollector.AddToIncludes( m_uniqueId, Constants.UnityShaderVariables );
+				dataCollector.AddToIncludes( UniqueId, Constants.UnityShaderVariables );
 				timePort = "_Time[1]";
 			}
 
