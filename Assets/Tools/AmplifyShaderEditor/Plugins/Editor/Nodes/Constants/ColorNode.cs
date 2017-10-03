@@ -60,7 +60,7 @@ namespace AmplifyShaderEditor
 
 		public override void DrawSubProperties()
 		{
-			m_defaultValue = EditorGUILayout.ColorField( Constants.DefaultValueLabel, m_defaultValue );
+			m_defaultValue = EditorGUILayoutColorField( Constants.DefaultValueLabel, m_defaultValue );
 		}
 
 		public override void DrawMaterialProperties()
@@ -68,7 +68,7 @@ namespace AmplifyShaderEditor
 			if ( m_materialMode )
 				EditorGUI.BeginChangeCheck();
 
-			m_materialValue = EditorGUILayout.ColorField( Constants.MaterialValueLabel, m_materialValue );
+			m_materialValue = EditorGUILayoutColorField( Constants.MaterialValueLabel, m_materialValue );
 
 			if ( m_materialMode && EditorGUI.EndChangeCheck() )
 				m_requireMaterialUpdate = true;
@@ -87,7 +87,7 @@ namespace AmplifyShaderEditor
 				if ( m_materialMode && m_currentParameterType != PropertyType.Constant )
 				{
 					EditorGUI.BeginChangeCheck();
-					m_materialValue = EditorGUI.ColorField( newPos, m_dummyContent, m_materialValue, false, true, false, m_dummyHdrConfig );
+					m_materialValue = EditorGUIColorField( newPos, m_dummyContent, m_materialValue, false, true, false, m_dummyHdrConfig );
 					if ( EditorGUI.EndChangeCheck() )
 					{
 						m_requireMaterialUpdate = true;
@@ -101,7 +101,7 @@ namespace AmplifyShaderEditor
 				{
 					EditorGUI.BeginChangeCheck();
 
-					m_defaultValue = EditorGUI.ColorField( newPos, m_dummyContent, m_defaultValue, false, true, false, m_dummyHdrConfig );
+					m_defaultValue = EditorGUIColorField( newPos, m_dummyContent, m_defaultValue, false, true, false, m_dummyHdrConfig );
 					if ( EditorGUI.EndChangeCheck() )
 					{
 						BeginDelayedDirtyProperty();
@@ -113,14 +113,7 @@ namespace AmplifyShaderEditor
 		public override void ConfigureLocalVariable( ref MasterNodeDataCollector dataCollector )
 		{
 			Color color = m_defaultValue;
-			if ( dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation )
-			{
-				dataCollector.AddToVertexLocalVariables( m_uniqueId, CreateLocalVarDec( color.r + "," + color.g + "," + color.b + "," + color.a ) );
-			}
-			else
-			{
-				dataCollector.AddToLocalVariables( m_uniqueId, CreateLocalVarDec( color.r + "," + color.g + "," + color.b + "," + color.a ) );
-			}
+			dataCollector.AddLocalVariable( UniqueId, CreateLocalVarDec( color.r + "," + color.g + "," + color.b + "," + color.a ) );
 
 			m_outputPorts[ 0 ].SetLocalValue( m_propertyName );
 			m_outputPorts[ 1 ].SetLocalValue( m_propertyName + ".r" );
@@ -197,10 +190,10 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void SetMaterialMode( Material mat )
+		public override void SetMaterialMode( Material mat , bool fetchMaterialValues )
 		{
-			base.SetMaterialMode( mat );
-			if ( m_materialMode )
+			base.SetMaterialMode( mat , fetchMaterialValues );
+			if ( m_materialMode && fetchMaterialValues )
 			{
 				m_materialValue = ( UIUtils.IsProperty( m_currentParameterType ) && mat.HasProperty( m_propertyName ) ) ? mat.GetColor( m_propertyName ) : m_defaultValue;
 			}
@@ -231,9 +224,20 @@ namespace AmplifyShaderEditor
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
 		{
-
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_defaultValue.r.ToString() + IOUtils.VECTOR_SEPARATOR + m_defaultValue.g.ToString() + IOUtils.VECTOR_SEPARATOR + m_defaultValue.b.ToString() + IOUtils.VECTOR_SEPARATOR + m_defaultValue.a.ToString() );
+		}
+
+		public override void ReadAdditionalClipboardData( ref string[] nodeParams )
+		{
+			base.ReadAdditionalClipboardData( ref nodeParams );
+			m_materialValue = IOUtils.StringToColor( GetCurrentParam( ref nodeParams ) );
+		}
+
+		public override void WriteAdditionalClipboardData( ref string nodeInfo )
+		{
+			base.WriteAdditionalClipboardData( ref nodeInfo );
+			IOUtils.AddFieldValueToString( ref nodeInfo, IOUtils.ColorToString( m_materialValue ) );
 		}
 
 		public override string GetPropertyValStr()

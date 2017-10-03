@@ -8,7 +8,7 @@ namespace AmplifyShaderEditor
 {
 	public class NodeUtils
 	{
-		
+
 		public delegate void DrawPropertySection();
 
 		public static void DrawPropertyGroup( string sectionName, DrawPropertySection DrawSection )
@@ -43,7 +43,7 @@ namespace AmplifyShaderEditor
 			EditorGUILayout.BeginHorizontal( UIUtils.MenuItemToolbarStyle );
 			GUI.color = cachedColor;
 
-			bool value = GUILayout.Toggle( foldoutValue, sectionName, UIUtils.MenuItemToggleStyle );
+			bool value =  GUILayout.Toggle( foldoutValue, sectionName, UIUtils.MenuItemToggleStyle );
 			if ( Event.current.button == Constants.FoldoutMouseId )
 			{
 				foldoutValue = value;
@@ -67,7 +67,7 @@ namespace AmplifyShaderEditor
 		}
 
 
-		public static void DrawPropertyGroup( ref bool foldoutValue, string sectionName, DrawPropertySection DrawSection , DrawPropertySection HeaderSection )
+		public static void DrawPropertyGroup( ref bool foldoutValue, string sectionName, DrawPropertySection DrawSection, DrawPropertySection HeaderSection )
 		{
 			Color cachedColor = GUI.color;
 			GUI.color = new Color( cachedColor.r, cachedColor.g, cachedColor.b, 0.5f );
@@ -98,7 +98,7 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public static bool DrawPropertyGroup( ref bool foldoutValue, ref bool enabledValue, string sectionName, DrawPropertySection DrawSection )
+		public static bool DrawPropertyGroup( UndoParentNode owner, ref bool foldoutValue, ref bool enabledValue, string sectionName, DrawPropertySection DrawSection )
 		{
 			bool enableChanged = false;
 			Color cachedColor = GUI.color;
@@ -111,7 +111,8 @@ namespace AmplifyShaderEditor
 				foldoutValue = value;
 			}
 			EditorGUI.BeginChangeCheck();
-			value = EditorGUILayout.Toggle( string.Empty, enabledValue, UIUtils.MenuItemEnableStyle, GUILayout.Width( 16 ) );
+			value = ( ( object ) owner != null ) ? owner.EditorGUILayoutToggle( string.Empty, enabledValue, UIUtils.MenuItemEnableStyle, GUILayout.Width( 16 ) ) :
+											EditorGUILayout.Toggle( string.Empty, enabledValue, UIUtils.MenuItemEnableStyle, GUILayout.Width( 16 ) );
 			if ( Event.current.button == Constants.FoldoutMouseId )
 			{
 				enabledValue = value;

@@ -38,11 +38,11 @@ namespace AmplifyShaderEditor
 
 		void AddTangentInfo( ref MasterNodeDataCollector dataCollector )
 		{
-			dataCollector.AddToInput( m_uniqueId, InputTangentrStr, true );
-			dataCollector.AddToInput( m_uniqueId, InputTangentrStr, true );
-			dataCollector.AddToInput( m_uniqueId, InputNormalStr, true );
-			dataCollector.AddToLocalVariables( m_uniqueId, "float3 binormal = cross( normalize( v.normal ), normalize( v.tangent.xyz ) ) * v.tangent.w;" );
-			dataCollector.AddToLocalVariables( m_uniqueId, "float3x3 rotation = float3x3( v.tangent.xyz, binormal, v.normal );" );
+			dataCollector.AddToInput( UniqueId, InputTangentrStr, true );
+			dataCollector.AddToInput( UniqueId, InputTangentrStr, true );
+			dataCollector.AddToInput( UniqueId, InputNormalStr, true );
+			dataCollector.AddToLocalVariables( UniqueId, "float3 binormal = cross( normalize( v.normal ), normalize( v.tangent.xyz ) ) * v.tangent.w;" );
+			dataCollector.AddToLocalVariables( UniqueId, "float3x3 rotation = float3x3( v.tangent.xyz, binormal, v.normal );" );
 
 		}
 
@@ -55,7 +55,7 @@ namespace AmplifyShaderEditor
 
 			string value = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 			
-			dataCollector.AddToIncludes( m_uniqueId, Constants.UnityShaderVariables );
+			dataCollector.AddToIncludes( UniqueId, Constants.UnityShaderVariables );
 
 
 

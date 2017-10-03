@@ -18,18 +18,20 @@ namespace AmplifyShaderEditor
 		private ToolButtonType m_buttonType;
 		private GUIStyle m_style;
 		private bool m_enabled = true;
+		private bool m_drawOnFunction = true;
 
 		private List<string> m_cachedStates;
 		private int m_bufferedState = -1;
 		private string m_bufferedTooltip = string.Empty;
 
-		public ToolsMenuButton( ToolButtonType type, float x, float y, float width, float height, string texturePath, string text, string tooltip, float buttonSpacing = -1 ) : base( text, tooltip, buttonSpacing )
+		public ToolsMenuButton( AmplifyShaderEditorWindow parentWindow, ToolButtonType type, float x, float y, float width, float height, string texturePath, string text, string tooltip, float buttonSpacing = -1, bool drawOnFunction = true ) : base( parentWindow, text, tooltip, buttonSpacing )
 		{
 			m_buttonArea = new Rect( x, y, width, height );
 			m_buttonType = type;
 
 			m_buttonTexturePath = texturePath;
 			m_cachedStates = new List<string>();
+			m_drawOnFunction = drawOnFunction;
 		}
 		
 		public void AddState( string state )
@@ -72,7 +74,7 @@ namespace AmplifyShaderEditor
 
 			if ( m_style == null )
 			{
-				m_style = new GUIStyle( UIUtils.CurrentWindow.CustomStylesInstance.Button );
+				m_style = new GUIStyle( UIUtils.Button );
 				m_style.normal.background = m_buttonTexture[ 0 ];
 
 				m_style.hover.background = m_buttonTexture[ 0 ];
@@ -136,6 +138,8 @@ namespace AmplifyShaderEditor
 
 		public override void Draw( float x, float y )
 		{
+			if ( m_parentWindow.CurrentGraph.CurrentMasterNode == null && !m_drawOnFunction)
+				return;
 			base.Draw( x, y );
 
 			if ( m_bufferedState > -1 )

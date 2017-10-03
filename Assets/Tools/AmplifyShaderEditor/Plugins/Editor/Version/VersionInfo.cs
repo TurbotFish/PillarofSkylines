@@ -10,8 +10,8 @@ namespace AmplifyShaderEditor
 	[Serializable]
 	public class VersionInfo
 	{
-		public const byte Major = 0;
-		public const byte Minor = 6;
+		public const byte Major = 1;
+		public const byte Minor = 0;
 		public const byte Release = 0;
 		public const byte Revision = 1;
 		

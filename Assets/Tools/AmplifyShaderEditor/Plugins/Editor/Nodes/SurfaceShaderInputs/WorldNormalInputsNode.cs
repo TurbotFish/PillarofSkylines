@@ -39,14 +39,14 @@ namespace AmplifyShaderEditor
 
 		public override void Destroy()
 		{
+			ContainerGraph.RemoveNormalDependentCount();
 			base.Destroy();
-			UIUtils.RemoveNormalDependentCount();
 		}
 
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-			m_perPixel = EditorGUILayout.ToggleLeft( PerPixelLabelStr, m_perPixel );
+			m_perPixel = EditorGUILayoutToggleLeft( PerPixelLabelStr, m_perPixel );
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
@@ -56,7 +56,7 @@ namespace AmplifyShaderEditor
 				if ( m_addInstruction )
 				{
 					string precision = UIUtils.FinalPrecisionWirePortToCgType( m_currentPrecisionType, WirePortDataType.FLOAT3 );
-					dataCollector.AddVertexInstruction( precision + " worldNormal = UnityObjectToWorldNormal(" + Constants.VertexShaderInputStr + ".normal)", m_uniqueId );
+					dataCollector.AddVertexInstruction( precision + " worldNormal = UnityObjectToWorldNormal(" + Constants.VertexShaderInputStr + ".normal)", UniqueId );
 					m_addInstruction = false;
 				}
 
@@ -64,8 +64,8 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				dataCollector.AddToInput( m_uniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_NORMAL ), true );
-				dataCollector.AddToInput( m_uniqueId, Constants.InternalData, false );
+				dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_NORMAL ), true );
+				dataCollector.AddToInput( UniqueId, Constants.InternalData, false );
 				if ( dataCollector.PortCategory != MasterNodePortCategory.Debug && m_perPixel && dataCollector.DirtyNormal )
 				{
 					//string result = "WorldNormalVector( " + Constants.InputVarStr + " , float3( 0,0,1 ))";
@@ -88,8 +88,8 @@ namespace AmplifyShaderEditor
 					}
 					if ( count > 1 )
 					{
-						string localVarName = "WorldNormal" + m_uniqueId;
-						dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, m_outputPorts[ 0 ].DataType, localVarName, result );
+						string localVarName = "WorldNormal" + UniqueId;
+						dataCollector.AddToLocalVariables( UniqueId, m_currentPrecisionType, m_outputPorts[ 0 ].DataType, localVarName, result );
 						return GetOutputVectorItem( 0, outputId, localVarName );
 					}
 					else

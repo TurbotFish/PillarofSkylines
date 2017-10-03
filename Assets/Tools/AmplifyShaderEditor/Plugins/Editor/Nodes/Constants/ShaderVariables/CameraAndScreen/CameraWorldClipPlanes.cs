@@ -40,7 +40,7 @@ namespace AmplifyShaderEditor
 		{
 			base.DrawProperties();
 			EditorGUILayout.BeginVertical();
-			m_selectedType = ( BuiltInShaderClipPlanesTypes ) EditorGUILayout.EnumPopup( LabelStr, m_selectedType );
+			m_selectedType = ( BuiltInShaderClipPlanesTypes ) EditorGUILayoutEnumPopup( LabelStr, m_selectedType );
 			EditorGUILayout.EndVertical();
 
 			if ( m_selectedType != m_oldVarType )

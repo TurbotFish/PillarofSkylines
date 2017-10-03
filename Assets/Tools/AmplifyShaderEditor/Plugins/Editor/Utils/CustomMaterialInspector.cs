@@ -188,7 +188,7 @@ internal class ASEMaterialInspector : ShaderGUI
 							}
 							catch ( Exception e )
 							{
-								Debug.LogError( e );
+								Debug.LogException( e );
 								validData = false;
 							}
 

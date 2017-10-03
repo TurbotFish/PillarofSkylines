@@ -5,6 +5,7 @@ using System;
 using System.Reflection;
 using System.Globalization;
 using UnityEngine;
+using AmplifyShaderEditor;
 
 namespace UnityEditor
 {

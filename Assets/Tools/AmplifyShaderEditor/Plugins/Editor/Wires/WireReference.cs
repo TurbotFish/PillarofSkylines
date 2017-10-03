@@ -16,6 +16,10 @@ namespace AmplifyShaderEditor
 	[Serializable]
 	public sealed class WireReference
 	{
+		private WireStatus m_status = WireStatus.Default;
+
+
+
 		[SerializeField]
 		private int m_nodeId = -1;
 		[SerializeField]
@@ -24,8 +28,8 @@ namespace AmplifyShaderEditor
 		private WirePortDataType m_dataType = WirePortDataType.FLOAT;
 		[SerializeField]
 		private bool m_typeLocked = false;
-		[SerializeField]
-		private WireStatus _status = WireStatus.Default;
+		
+		
 		
 		public WireReference()
 		{
@@ -33,6 +37,7 @@ namespace AmplifyShaderEditor
 			m_portId = -1;
 			m_dataType = WirePortDataType.FLOAT;
 			m_typeLocked = false;
+			m_status = WireStatus.Default;
 		}
 
 		public WireReference( int nodeId, int portId, WirePortDataType dataType, bool typeLocked )
@@ -41,6 +46,7 @@ namespace AmplifyShaderEditor
 			m_nodeId = nodeId;
 			m_dataType = dataType;
 			m_typeLocked = typeLocked;
+			m_status = WireStatus.Default;
 		}
 
 		public void Invalidate()
@@ -48,6 +54,7 @@ namespace AmplifyShaderEditor
 			m_nodeId = -1;
 			m_portId = -1;
 			m_typeLocked = false;
+			m_status = WireStatus.Default;
 		}
 
 		public void SetReference( int nodeId, int portId, WirePortDataType dataType, bool typeLocked )
@@ -94,8 +101,8 @@ namespace AmplifyShaderEditor
 
 		public WireStatus WireStatus
 		{
-			get { return _status; }
-			set { _status = value; }
+			get { return m_status; }
+			set { m_status = value; }
 		}
 
 		public override string ToString()

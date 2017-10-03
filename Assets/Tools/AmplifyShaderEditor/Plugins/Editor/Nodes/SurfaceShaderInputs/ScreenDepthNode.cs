@@ -26,22 +26,32 @@ namespace AmplifyShaderEditor
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-			m_viewSpaceInt = EditorGUILayout.Popup( "View Space", m_viewSpaceInt, m_viewSpaceStr );
+			m_viewSpaceInt = EditorGUILayoutPopup( "View Space", m_viewSpaceInt, m_viewSpaceStr );
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
-			dataCollector.AddToIncludes( m_uniqueId, Constants.UnityCgLibFuncs );
-			dataCollector.AddToUniforms( m_uniqueId, "uniform sampler2D _CameraDepthTexture;" );
+			if ( dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation )
+			{
+				UIUtils.ShowNoVertexModeNodeMessage( this );
+				return "0";
+			}
 
-			string screenPos = m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT4, false );
+			dataCollector.AddToIncludes( UniqueId, Constants.UnityCgLibFuncs );
+			dataCollector.AddToUniforms( UniqueId, "uniform sampler2D _CameraDepthTexture;" );
+			string screenPos = string.Empty;
+			if ( m_inputPorts[ 0 ].IsConnected )
+				screenPos = m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT4, false );
+			else
+				screenPos = GeneratorUtils.GenerateScreenPosition( ref dataCollector, UniqueId, m_currentPrecisionType, true );
+			//string screenPos = m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT4, false );
 
 			string viewSpace = m_viewSpaceInt == 0 ? "Eye" : "01";
-			string screenDepthInstruction = "Linear" + viewSpace + "Depth(tex2Dproj(_CameraDepthTexture,UNITY_PROJ_COORD(" + screenPos + ")).r)";
+			string screenDepthInstruction = "Linear" + viewSpace + "Depth(UNITY_SAMPLE_DEPTH(tex2Dproj(_CameraDepthTexture,UNITY_PROJ_COORD(" + screenPos + "))))";
 
-			dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, WirePortDataType.FLOAT, m_vertexNameStr[ m_viewSpaceInt ] + m_uniqueId, screenDepthInstruction );
+			dataCollector.AddToLocalVariables( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT, m_vertexNameStr[ m_viewSpaceInt ] + UniqueId, screenDepthInstruction );
 
-			return m_vertexNameStr[ m_viewSpaceInt ] + m_uniqueId;
+			return m_vertexNameStr[ m_viewSpaceInt ] + UniqueId;
 		}
 
 		public override void ReadFromString( ref string[] nodeParams )

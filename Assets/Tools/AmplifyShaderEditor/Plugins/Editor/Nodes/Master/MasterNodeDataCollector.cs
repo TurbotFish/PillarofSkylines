@@ -54,7 +54,7 @@ namespace AmplifyShaderEditor
 
 	public class MasterNodeDataCollector
 	{
-		private bool ShowDebugMessages = false;
+		private bool m_showDebugMessages = false;
 		private string m_input;
 		private string m_customInput;
 		private string m_properties;
@@ -79,6 +79,7 @@ namespace AmplifyShaderEditor
 		private Dictionary<string, PropertyDataCollector> m_includesDict;
 		private Dictionary<string, PropertyDataCollector> m_pragmasDict;
 		private Dictionary<string, int> m_virtualCoordinatesDict;
+		private Dictionary<string, string> m_virtualVariablesDict;
 		private Dictionary<string, PropertyDataCollector> m_localVariablesDict;
 		private Dictionary<string, PropertyDataCollector> m_vertexLocalVariablesDict;
 		private Dictionary<string, PropertyDataCollector> m_specialLocalVariablesDict;
@@ -154,6 +155,7 @@ namespace AmplifyShaderEditor
 			m_pragmasDict = new Dictionary<string, PropertyDataCollector>();
 			m_virtualCoordinatesDict = new Dictionary<string, int>();
 			m_localVariablesDict = new Dictionary<string, PropertyDataCollector>();
+			m_virtualVariablesDict = new Dictionary<string, string>();
 			m_specialLocalVariablesDict = new Dictionary<string, PropertyDataCollector>();
 			m_vertexLocalVariablesDict = new Dictionary<string, PropertyDataCollector>();
 			m_localFunctions = new Dictionary<string, string>();
@@ -174,7 +176,7 @@ namespace AmplifyShaderEditor
 
 			m_portCategory = MasterNodePortCategory.Fragment;
 			m_propertyNodes = new Dictionary<int, PropertyNode>();
-			ShowDebugMessages = ( ShowDebugMessages && DebugConsoleWindow.DeveloperMode );
+			m_showDebugMessages = ( m_showDebugMessages && DebugConsoleWindow.DeveloperMode );
 		}
 
 		public void SetChannelUsage( int channelId, TextureChannelUsage usage )
@@ -215,7 +217,7 @@ namespace AmplifyShaderEditor
 				m_vertexData += "\t\t}\n\n";
 		}
 
-		public void AddToVertexDisplacement( string value )
+		public void AddToVertexDisplacement( string value , VertexMode vertexMode )
 		{
 			if ( string.IsNullOrEmpty( value ) )
 				return;
@@ -224,8 +226,19 @@ namespace AmplifyShaderEditor
 			{
 				OpenPerVertexHeader( true );
 			}
-
-			m_vertexData += "\t\t\t" + Constants.VertexShaderInputStr + ".vertex.xyz += " + value + ";\n";
+			
+			switch ( vertexMode )
+			{
+				default:
+				case VertexMode.Relative:
+				{
+					m_vertexData += "\t\t\t" + Constants.VertexShaderInputStr + ".vertex.xyz += " + value + ";\n";
+				} break;
+				case VertexMode.Absolute:
+				{
+					m_vertexData += "\t\t\t" + Constants.VertexShaderInputStr + ".vertex.xyz = " + value + ";\n";
+				} break;
+			}
 		}
 
 
@@ -361,7 +374,6 @@ namespace AmplifyShaderEditor
 		}
 
 		// Properties
-
 		public void AddToProperties( int nodeId, string value, int orderIndex )
 		{
 			if ( string.IsNullOrEmpty( value ) )
@@ -369,6 +381,7 @@ namespace AmplifyShaderEditor
 
 			if ( !m_propertiesDict.ContainsKey( value ) )
 			{
+				//Debug.Log( UIUtils );
 				m_propertiesDict.Add( value, new PropertyDataCollector( nodeId, value, orderIndex ) );
 				m_properties += string.Format( IOUtils.PropertiesElement, value );
 				m_dirtyProperties = true;
@@ -378,11 +391,17 @@ namespace AmplifyShaderEditor
 		public string BuildPropertiesString()
 		{
 			List<PropertyDataCollector> list = new List<PropertyDataCollector>( m_propertiesDict.Values );
+			//for ( int i = 0; i < list.Count; i++ )
+			//{
+			//	Debug.Log( list[ i ].OrderIndex + " " + list[ i ].PropertyName );
+			//}
+
 			list.Sort( ( x, y ) => { return x.OrderIndex.CompareTo( y.OrderIndex ); } );
 			m_properties = IOUtils.PropertiesBegin;
 			for ( int i = 0; i < list.Count; i++ )
 			{
 				m_properties += string.Format( IOUtils.PropertiesElement, list[ i ].PropertyName );
+				//Debug.Log()
 			}
 			m_properties += IOUtils.PropertiesEnd;
 			return m_properties;
@@ -423,7 +442,7 @@ namespace AmplifyShaderEditor
 			}
 			else if ( m_uniformsDict[ dataName ].NodeId != nodeId )
 			{
-				if ( ShowDebugMessages ) UIUtils.ShowMessage( "AddToUniforms:Attempting to add duplicate " + dataName, MessageSeverity.Warning );
+				if ( m_showDebugMessages ) UIUtils.ShowMessage( "AddToUniforms:Attempting to add duplicate " + dataName, MessageSeverity.Warning );
 			}
 		}
 
@@ -440,7 +459,7 @@ namespace AmplifyShaderEditor
 			}
 			else if ( m_uniformsDict[ value ].NodeId != nodeId )
 			{
-				if ( ShowDebugMessages ) UIUtils.ShowMessage( "AddToUniforms:Attempting to add duplicate " + value, MessageSeverity.Warning );
+				if ( m_showDebugMessages ) UIUtils.ShowMessage( "AddToUniforms:Attempting to add duplicate " + value, MessageSeverity.Warning );
 			}
 		}
 
@@ -457,7 +476,7 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				if ( ShowDebugMessages ) UIUtils.ShowMessage( "AddToIncludes:Attempting to add duplicate " + value, MessageSeverity.Warning );
+				if ( m_showDebugMessages ) UIUtils.ShowMessage( "AddToIncludes:Attempting to add duplicate " + value, MessageSeverity.Warning );
 			}
 		}
 
@@ -474,7 +493,7 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				if ( ShowDebugMessages ) UIUtils.ShowMessage( "AddToPragmas:Attempting to add duplicate " + value, MessageSeverity.Warning );
+				if ( m_showDebugMessages ) UIUtils.ShowMessage( "AddToPragmas:Attempting to add duplicate " + value, MessageSeverity.Warning );
 			}
 		}
 
@@ -483,7 +502,7 @@ namespace AmplifyShaderEditor
 			if ( !m_virtualCoordinatesDict.ContainsKey( coord ) )
 			{
 				m_virtualCoordinatesDict.Add( coord, nodeId );
-				AddToLocalVariables(nodeId, "VirtualCoord " + Constants.VirtualCoordNameStr + nodeId + " = VTComputeVirtualCoord" + lodBias + "(" + coord + ");" );
+				AddLocalVariable(nodeId, "VirtualCoord " + Constants.VirtualCoordNameStr + nodeId + " = VTComputeVirtualCoord" + lodBias + "(" + coord + ");" );
 				return nodeId;
 			}
 			else
@@ -492,6 +511,15 @@ namespace AmplifyShaderEditor
 				m_virtualCoordinatesDict.TryGetValue( coord, out fetchedId );
 				return fetchedId;
 			}
+		}
+
+		public bool AddToLocalVariables( MasterNodePortCategory category, int nodeId, PrecisionType precisionType, WirePortDataType type, string varName, string varValue )
+		{
+			if ( string.IsNullOrEmpty( varName ) || string.IsNullOrEmpty( varValue ) )
+				return false;
+
+			string value = UIUtils.PrecisionWirePortToCgType( precisionType, type ) + " " + varName + " = " + varValue + ";";
+			return AddToLocalVariables( category, nodeId, value );
 		}
 
 		public bool AddToLocalVariables( int nodeId, PrecisionType precisionType, WirePortDataType type, string varName, string varValue )
@@ -525,6 +553,75 @@ namespace AmplifyShaderEditor
 			return false;
 		}
 
+		public bool AddLocalVariable( int nodeId, PrecisionType precisionType, WirePortDataType type, string varName, string varValue )
+		{
+			if ( string.IsNullOrEmpty( varName ) || string.IsNullOrEmpty( varValue ) )
+				return false;
+
+			string value = UIUtils.PrecisionWirePortToCgType( precisionType, type ) + " " + varName + " = " + varValue + ";";
+			return AddLocalVariable( nodeId, value );
+		}
+
+		public bool AddLocalVariable( int nodeId, string name , string value, bool ignoreDuplicates = false )
+		{
+			return AddLocalVariable( nodeId, name + " = " + value, ignoreDuplicates );
+		}
+
+		public bool AddLocalVariable( int nodeId, string value, bool ignoreDuplicates = false )
+		{
+			if ( string.IsNullOrEmpty( value ) )
+				return false;
+
+			switch ( m_portCategory )
+			{
+				case MasterNodePortCategory.Vertex:
+				case MasterNodePortCategory.Tessellation:
+				{
+					return AddToVertexLocalVariables( nodeId, value, ignoreDuplicates );
+				}
+				case MasterNodePortCategory.Fragment:
+				case MasterNodePortCategory.Debug:
+				{
+					return AddToLocalVariables( nodeId, value, ignoreDuplicates );
+				}
+			}
+
+			return false;
+		}
+
+		public string AddVirtualLocalVariable( int nodeId, string variable, string value )
+		{
+			if ( string.IsNullOrEmpty( value ) )
+				return string.Empty;
+
+			string result = string.Empty;
+
+			//switch ( m_portCategory )
+			//{
+				//case MasterNodePortCategory.Vertex:
+				//case MasterNodePortCategory.Tessellation:
+				//{
+				//}
+				//break;
+				//case MasterNodePortCategory.Fragment:
+				//case MasterNodePortCategory.Debug:
+				//{
+					if ( !m_virtualVariablesDict.ContainsKey( value ) )
+					{
+						m_virtualVariablesDict.Add( value, variable );
+						result = variable;
+					}
+					else
+					{
+						m_virtualVariablesDict.TryGetValue(value, out result);
+					}
+				//}
+				//break;
+			//}
+
+			return result;
+		}
+
 		public void AddCodeComments( bool forceForwardSlash, params string[] comments )
 		{
 			if ( m_portCategory == MasterNodePortCategory.Tessellation || m_portCategory == MasterNodePortCategory.Vertex )
@@ -554,7 +651,7 @@ namespace AmplifyShaderEditor
 				}
 				else
 				{
-					if ( ShowDebugMessages ) UIUtils.ShowMessage( "AddToLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
+					if ( m_showDebugMessages ) UIUtils.ShowMessage( "AddToLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
 				}
 			}
 			else
@@ -569,7 +666,7 @@ namespace AmplifyShaderEditor
 				}
 				else
 				{
-					if ( ShowDebugMessages ) UIUtils.ShowMessage( "AddToLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
+					if ( m_showDebugMessages ) UIUtils.ShowMessage( "AddToLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
 				}
 			}
 			return false;
@@ -590,15 +687,24 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				if ( ShowDebugMessages ) UIUtils.ShowMessage( "AddToSpecialLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
+				if ( m_showDebugMessages ) UIUtils.ShowMessage( "AddToSpecialLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
 			}
 		}
 
 		public void ClearSpecialLocalVariables()
 		{
-			m_specialLocalVariablesDict.Clear();
+			//m_specialLocalVariablesDict.Clear();
 			m_specialLocalVariables = string.Empty;
 			m_dirtySpecialLocalVariables = false;
+		}
+
+		public bool AddToVertexLocalVariables( int nodeId, PrecisionType precisionType, WirePortDataType type, string varName, string varValue )
+		{
+			if ( string.IsNullOrEmpty( varName ) || string.IsNullOrEmpty( varValue ) )
+				return false;
+
+			string value = UIUtils.PrecisionWirePortToCgType( precisionType, type ) + " " + varName + " = " + varValue + ";";
+			return AddToVertexLocalVariables( nodeId, value );
 		}
 
 		public bool AddToVertexLocalVariables( int nodeId, string value, bool ignoreDuplicates = false )
@@ -617,7 +723,7 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				if ( ShowDebugMessages ) UIUtils.ShowMessage( "AddToVertexLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
+				if ( m_showDebugMessages ) UIUtils.ShowMessage( "AddToVertexLocalVariables:Attempting to add duplicate " + value, MessageSeverity.Warning );
 			}
 
 			return false;
@@ -625,7 +731,7 @@ namespace AmplifyShaderEditor
 
 		public void ClearVertexLocalVariables()
 		{
-			m_vertexLocalVariablesDict.Clear();
+			//m_vertexLocalVariablesDict.Clear();
 			m_vertexLocalVariables = string.Empty;
 			m_dirtyVertexLocalVariables = false;
 		}
@@ -646,6 +752,11 @@ namespace AmplifyShaderEditor
 			}
 
 			return String.Format( header, inParams );
+		}
+
+		public bool HasFunction( string functionId )
+		{
+			return m_localFunctions.ContainsKey( functionId );
 		}
 
 		public void AddFunction( string functionId, string body )
@@ -754,7 +865,7 @@ namespace AmplifyShaderEditor
 			}
 			catch ( Exception e )
 			{
-				Debug.LogError( e );
+				Debug.LogException( e );
 			}
 		}
 
@@ -788,6 +899,9 @@ namespace AmplifyShaderEditor
 
 			m_virtualCoordinatesDict.Clear();
 			m_virtualCoordinatesDict = null;
+
+			m_virtualVariablesDict.Clear();
+			m_virtualVariablesDict = null;
 
 			m_localVariablesDict.Clear();
 			m_localVariablesDict = null;
@@ -854,6 +968,11 @@ namespace AmplifyShaderEditor
 		{
 			get { return m_dirtyNormal; }
 			set { m_dirtyNormal = value; }
+		}
+
+		public bool IsFragmentCategory
+		{
+			get { return m_portCategory == MasterNodePortCategory.Fragment || m_portCategory == MasterNodePortCategory.Debug; }
 		}
 
 		public MasterNodePortCategory PortCategory

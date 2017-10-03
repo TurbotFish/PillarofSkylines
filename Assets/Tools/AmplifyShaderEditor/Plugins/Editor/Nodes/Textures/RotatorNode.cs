@@ -40,11 +40,14 @@ namespace AmplifyShaderEditor
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-			EditorGUILayout.HelpBox("Rotates UVs but can also be used to rotate other Vector2 values\n\nAnchor is the rotation point in UV space from which you rotate the UVs\nAngle is the amount of rotation applied [0,1], if less unconnected it will use time as the default value", MessageType.None);
+			EditorGUILayout.HelpBox("Rotates UVs but can also be used to rotate other Vector2 values\n\nAnchor is the rotation point in UV space from which you rotate the UVs\nAngle is the amount of rotation applied [0,1], if left unconnected it will use time as the default value", MessageType.None);
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
+
+			if( m_outputPorts[0].IsLocalValue )
+				return GetOutputVectorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue );
 
 			string result = string.Empty;
 			string uv = m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT4, false );
@@ -57,20 +60,20 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				dataCollector.AddToIncludes( m_uniqueId, Constants.UnityShaderVariables );
+				dataCollector.AddToIncludes( UniqueId, Constants.UnityShaderVariables );
 				time = "_Time[1]";
 			}
 
 			result += uv;
 
-			string cosVar = "cos" + m_uniqueId;
-			string sinVar = "sin" + m_uniqueId;
-			dataCollector.AddToLocalVariables( m_uniqueId, "float " + cosVar + " = cos( "+time+" );");
-			dataCollector.AddToLocalVariables( m_uniqueId, "float " + sinVar + " = sin( "+time+" );");
+			string cosVar = "cos" + UniqueId;
+			string sinVar = "sin" + UniqueId;
+			dataCollector.AddLocalVariable( UniqueId, "float " + cosVar + " = cos( "+time+" );");
+			dataCollector.AddLocalVariable( UniqueId, "float " + sinVar + " = sin( "+time+" );");
 
 
-			string rotatorVar = "rotator" + m_uniqueId;
-			dataCollector.AddToLocalVariables( m_uniqueId, "float2 " + rotatorVar + " = mul(" + result + " - "+anchor+", float2x2("+cosVar+",-"+sinVar+","+sinVar+","+cosVar+")) + "+anchor+";" );
+			string rotatorVar = "rotator" + UniqueId;
+			dataCollector.AddLocalVariable( UniqueId, "float2 " + rotatorVar + " = mul(" + result + " - "+anchor+", float2x2("+cosVar+",-"+sinVar+","+sinVar+","+cosVar+")) + "+anchor+";" );
 
 			return GetOutputVectorItem( 0, outputId, rotatorVar );
 		}

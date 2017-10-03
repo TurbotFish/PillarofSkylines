@@ -40,7 +40,7 @@ namespace AmplifyShaderEditor
 				DebugConsoleWindow currentWindow = ( DebugConsoleWindow ) DebugConsoleWindow.GetWindow( typeof( DebugConsoleWindow ), false, "ASE Debug Console" );
 				currentWindow.titleContent.tooltip = "Debug Options for ASE. Intented only for ASE development team";
 				currentWindow.minSize = new Vector2( WindowSizeX, WindowSizeY );
-				currentWindow.maxSize = new Vector2( WindowSizeX, 2*WindowSizeY ); ;
+				currentWindow.maxSize = new Vector2( WindowSizeX, 2 * WindowSizeY ); ;
 				currentWindow.wantsMouseMove = true;
 				return currentWindow;
 			}
@@ -95,7 +95,7 @@ namespace AmplifyShaderEditor
 
 			if ( GUILayout.Button( "Nodes Info" ) )
 			{
-				window.CurrentPaletteWindow.DumpAvailableNodes( false , Application.dataPath + "/../NodesInfo/" );
+				window.CurrentPaletteWindow.DumpAvailableNodes( false, Application.dataPath + "/../NodesInfo/" );
 				window.CurrentPaletteWindow.DumpAvailableNodes( true, Application.dataPath + "/../NodesInfo/" );
 			}
 
@@ -125,7 +125,16 @@ namespace AmplifyShaderEditor
 
 			if ( GUILayout.Button( "Dump Uniform Names" ) )
 			{
+				//window.CurrentPaletteWindow.NewList()
 				window.DuplicatePrevBufferInstance.DumpUniformNames();
+			}
+
+			EditorGUILayout.Separator();
+
+			if ( GUILayout.Button( "Force Palette Update" ) )
+			{
+				Debug.Log( UIUtils.CurrentWindow.IsShaderFunctionWindow );
+				window.CurrentPaletteWindow.ForceUpdate = true;
 			}
 		}
 	}

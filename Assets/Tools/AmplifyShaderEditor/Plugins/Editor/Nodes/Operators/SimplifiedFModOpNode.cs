@@ -35,7 +35,7 @@ namespace AmplifyShaderEditor
 				case WirePortDataType.COLOR:
 				case WirePortDataType.OBJECT:
 				{
-					RegisterLocalVariable( 0, string.Format( FmodCustomOp, m_inputA, m_inputB ), ref dataCollector, ("fmodResult"+m_uniqueId));
+					RegisterLocalVariable( 0, string.Format( FmodCustomOp, m_inputA, m_inputB ), ref dataCollector, ("fmodResult"+ OutputId ) );
 					return m_outputPorts[ 0 ].LocalValue;
 				}
 				case WirePortDataType.FLOAT3x3:

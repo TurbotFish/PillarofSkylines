@@ -54,7 +54,7 @@ namespace AmplifyShaderEditor
 		{
 			if ( m_areaStyle == null )
 			{
-				m_areaStyle = new GUIStyle( UIUtils.CurrentWindow.CustomStylesInstance.TextArea );
+				m_areaStyle = new GUIStyle( UIUtils.TextArea );
 				m_areaStyle.stretchHeight = true;
 				m_areaStyle.stretchWidth = true;
 				m_areaStyle.fontSize = ( int ) Constants.DefaultTitleFontSize;
@@ -62,12 +62,12 @@ namespace AmplifyShaderEditor
 
 			if ( m_buttonStyle == null )
 			{
-				m_buttonStyle = UIUtils.CurrentWindow.CustomStylesInstance.Button;
+				m_buttonStyle = UIUtils.Button;
 			}
 
 			if ( m_labelStyle == null )
 			{
-				m_labelStyle = new GUIStyle( UIUtils.CurrentWindow.CustomStylesInstance.Label );
+				m_labelStyle = new GUIStyle( UIUtils.Label );
 				m_labelStyle.alignment = TextAnchor.MiddleCenter;
 				m_labelStyle.wordWrap = true;
 			}

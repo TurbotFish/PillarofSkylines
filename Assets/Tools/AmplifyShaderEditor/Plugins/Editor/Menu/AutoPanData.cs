@@ -77,7 +77,7 @@ namespace AmplifyShaderEditor
 			{
 				if ( m_style == null )
 				{
-					m_style = UIUtils.CurrentWindow.CustomStylesInstance.Box;
+					m_style = UIUtils.Box;
 				}
 				Color bufferedColor = GUI.color;
 				GUI.color = m_color;

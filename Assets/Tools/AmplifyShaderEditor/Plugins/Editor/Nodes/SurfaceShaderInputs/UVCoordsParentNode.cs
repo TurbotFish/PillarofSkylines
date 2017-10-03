@@ -32,7 +32,7 @@ namespace AmplifyShaderEditor
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-			int newChannel = EditorGUILayout.IntPopup( Constants.AvailableUVChannelLabel, m_textureCoordChannel, Constants.AvailableUVChannelsStr, Constants.AvailableUVChannels );
+			int newChannel = EditorGUILayoutIntPopup( Constants.AvailableUVChannelLabel, m_textureCoordChannel, Constants.AvailableUVChannelsStr, Constants.AvailableUVChannels );
 			if ( newChannel != m_textureCoordChannel )
 			{
 				if ( UIUtils.IsChannelAvailable( newChannel ) )
@@ -50,9 +50,9 @@ namespace AmplifyShaderEditor
 				m_textureCoordChannel = -1;
 			}
 
-			m_textureCoordSet = EditorGUILayout.IntPopup( Constants.AvailableUVSetsLabel, m_textureCoordSet, Constants.AvailableUVSetsStr, Constants.AvailableUVSets );
+			m_textureCoordSet = EditorGUILayoutIntPopup( Constants.AvailableUVSetsLabel, m_textureCoordSet, Constants.AvailableUVSetsStr, Constants.AvailableUVSets );
 
-			m_tiling = EditorGUILayout.Vector2Field( TilingStr, m_tiling );
+			m_tiling = EditorGUILayoutVector2Field( TilingStr, m_tiling );
 		}
 
 		public override void Draw( DrawInfo drawInfo )
@@ -66,10 +66,10 @@ namespace AmplifyShaderEditor
 				m_propertyDrawPos.height = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_HEIGHT_FIELD_SIZE;
 
 				m_propertyDrawPos.y = m_outputPorts[ 1 ].Position.y;
-				UIUtils.DrawFloat( ref m_propertyDrawPos, ref m_tiling.x );
+				UIUtils.DrawFloat( this, ref m_propertyDrawPos, ref m_tiling.x );
 
 				m_propertyDrawPos.y = m_outputPorts[ 2 ].Position.y;
-				UIUtils.DrawFloat( ref m_propertyDrawPos, ref m_tiling.y );
+				UIUtils.DrawFloat( this, ref m_propertyDrawPos, ref m_tiling.y );
 			}
 		}
 
@@ -92,7 +92,7 @@ namespace AmplifyShaderEditor
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
 			string uvChannelDeclaration = IOUtils.GetUVChannelDeclaration( UIUtils.GetChannelName( m_textureCoordChannel ), m_textureCoordChannel, m_textureCoordSet );
-			dataCollector.AddToInput( m_uniqueId, uvChannelDeclaration, true );
+			dataCollector.AddToInput( UniqueId, uvChannelDeclaration, true );
 
 			if ( dataCollector.GetChannelUsage( m_textureCoordChannel ) != TextureChannelUsage.Used )
 				dataCollector.SetChannelUsage( m_textureCoordChannel, TextureChannelUsage.Required );

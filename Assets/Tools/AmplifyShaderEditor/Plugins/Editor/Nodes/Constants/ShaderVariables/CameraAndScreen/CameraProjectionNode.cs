@@ -37,7 +37,7 @@ namespace AmplifyShaderEditor
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-			m_selectedType = ( BuiltInShaderCameraTypes ) EditorGUILayout.Popup( _projMatrixLabelStr, ( int ) m_selectedType, _projMatrixValuesStr );
+			m_selectedType = ( BuiltInShaderCameraTypes ) EditorGUILayoutPopup( _projMatrixLabelStr, ( int ) m_selectedType, _projMatrixValuesStr );
 
 			if ( m_selectedType != m_oldVarType )
 			{

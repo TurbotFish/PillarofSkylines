@@ -116,7 +116,7 @@ namespace AmplifyShaderEditor
 		{
 			base.DrawProperties();
 			EditorGUI.BeginChangeCheck();
-			m_type = (NoiseGeneratorType)EditorGUILayout.EnumPopup( TypeLabelStr, m_type );
+			m_type = (NoiseGeneratorType)EditorGUILayoutEnumPopup( TypeLabelStr, m_type );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				ConfigurePorts();
@@ -176,7 +176,7 @@ namespace AmplifyShaderEditor
 
 					string size = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 					
-					RegisterLocalVariable( 0, string.Format( SimplexNoise2DFunc, size ), ref dataCollector, ( "simplePerlin2D" + m_uniqueId ) );
+					RegisterLocalVariable( 0, string.Format( SimplexNoise2DFunc, size ), ref dataCollector, ( "simplePerlin2D" + OutputId ) );
 				}break;
 				case NoiseGeneratorType.Simplex3D:
 				{
@@ -209,7 +209,7 @@ namespace AmplifyShaderEditor
 
 					string size = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 
-					RegisterLocalVariable( 0, string.Format( SimplexNoise3DFunc, size ), ref dataCollector, ( "simplePerlin3D" + m_uniqueId ) );
+					RegisterLocalVariable( 0, string.Format( SimplexNoise3DFunc, size ), ref dataCollector, ( "simplePerlin3D" + OutputId ) );
 				}
 				break;
 			}

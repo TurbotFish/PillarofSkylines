@@ -10,7 +10,7 @@ namespace AmplifyShaderEditor
 	[NodeAttributes( "World Normal", "Surface Standard Inputs", "Per pixel world normal vector" )]
 	public sealed class WorldNormalVector : ParentNode
 	{
-		private const string NormalVecValStr = "worldNormal";
+		private const string NormalVecValStr = "newWorldNormal";
 		private const string NormalVecDecStr = "float3 {0} = {1};";
 
 		private int m_cachedPropertyId = -1;
@@ -38,8 +38,8 @@ namespace AmplifyShaderEditor
 
 		public override void Destroy()
 		{
+			ContainerGraph.RemoveNormalDependentCount();
 			base.Destroy();
-			UIUtils.RemoveNormalDependentCount();
 		}
 
 		public override void PropagateNodeData( NodeData nodeData )
@@ -53,34 +53,36 @@ namespace AmplifyShaderEditor
 		{
 			if( dataCollector.PortCategory == MasterNodePortCategory.Fragment || dataCollector.PortCategory == MasterNodePortCategory.Debug )
 			{
-				dataCollector.AddToInput( m_uniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_NORMAL ), true );
-				dataCollector.AddToInput( m_uniqueId, Constants.InternalData, false );
+				dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_NORMAL ), true );
+				//dataCollector.AddToInput( m_uniqueId, Constants.InternalData, false );
 				string result = string.Empty;
 				if ( m_inputPorts[ 0 ].IsConnected )
 				{
+					dataCollector.AddToInput( UniqueId, Constants.InternalData, false );
+					dataCollector.ForceNormal = true;
+
 					result = "WorldNormalVector( " + Constants.InputVarStr + " , " + m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT3, ignoreLocalvar ) + " )";
-					//if ( !dataCollector.DirtyNormal )
-					//{
-						dataCollector.ForceNormal = true;
-					//}
+
+					if ( m_outputPorts[ 0 ].ConnectionCount > 1 )
+					{
+						dataCollector.AddToLocalVariables( UniqueId, string.Format( NormalVecDecStr, NormalVecValStr + UniqueId, result ) );
+						return GetOutputVectorItem( 0, outputId, NormalVecValStr + UniqueId );
+					}
 				}
 				else
 				{
 					if ( !dataCollector.DirtyNormal )
+					{
 						result = Constants.InputVarStr+".worldNormal";
+					}
 					else
-						result = "WorldNormalVector( " + Constants.InputVarStr + ", float3(0,0,1) )";
+					{
+						dataCollector.AddToInput( UniqueId, Constants.InternalData, false );
+						result = GeneratorUtils.GenerateWorldNormal( ref dataCollector, UniqueId );
+					}
 				}
 
-				if ( m_outputPorts[ 0 ].ConnectionCount > 1 )
-				{
-					dataCollector.AddToLocalVariables( m_uniqueId, string.Format( NormalVecDecStr, NormalVecValStr, result ) );
-					return GetOutputVectorItem( 0, outputId, NormalVecValStr );
-				}
-				else
-				{
-					return GetOutputVectorItem( 0, outputId, result );
-				}
+				return GetOutputVectorItem( 0, outputId, result );
 			}
 			else
 			{
@@ -88,16 +90,16 @@ namespace AmplifyShaderEditor
 				{
 					string inputTangent = m_inputPorts[ 0 ].GeneratePortInstructions(ref dataCollector);
 
-					dataCollector.AddToVertexLocalVariables(m_uniqueId, "float3 normalWorld = UnityObjectToWorldNormal( "+ Constants.VertexShaderInputStr + ".normal );" );
-					dataCollector.AddToVertexLocalVariables( m_uniqueId, "float4 tangentWorld = float4( UnityObjectToWorldDir( " + Constants.VertexShaderInputStr + ".tangent.xyz ), " + Constants.VertexShaderInputStr + ".tangent.w );" );
-					dataCollector.AddToVertexLocalVariables( m_uniqueId, "float3x3 tangentToWorld = CreateTangentToWorldPerVertex( normalWorld, tangentWorld.xyz, tangentWorld.w );" );
-					dataCollector.AddToVertexLocalVariables( m_uniqueId, "float3 tangentNormal" + m_uniqueId + " = " + inputTangent+";" );
-					dataCollector.AddToVertexLocalVariables( m_uniqueId, "float3 modWorldtangent" + m_uniqueId + " = (tangentToWorld[0] * tangentNormal" + m_uniqueId + ".x + tangentToWorld[1] * tangentNormal" + m_uniqueId + ".y + tangentToWorld[2] * tangentNormal" + m_uniqueId + ".z);" );
-					return GetOutputVectorItem( 0, outputId, "modWorldtangent" + m_uniqueId );
+					dataCollector.AddToVertexLocalVariables(UniqueId, "float3 normalWorld = UnityObjectToWorldNormal( "+ Constants.VertexShaderInputStr + ".normal );" );
+					dataCollector.AddToVertexLocalVariables( UniqueId, "float4 tangentWorld = float4( UnityObjectToWorldDir( " + Constants.VertexShaderInputStr + ".tangent.xyz ), " + Constants.VertexShaderInputStr + ".tangent.w );" );
+					dataCollector.AddToVertexLocalVariables( UniqueId, "float3x3 tangentToWorld = CreateTangentToWorldPerVertex( normalWorld, tangentWorld.xyz, tangentWorld.w );" );
+					dataCollector.AddToVertexLocalVariables( UniqueId, "float3 tangentNormal" + UniqueId + " = " + inputTangent+";" );
+					dataCollector.AddToVertexLocalVariables( UniqueId, "float3 modWorldtangent" + UniqueId + " = (tangentToWorld[0] * tangentNormal" + UniqueId + ".x + tangentToWorld[1] * tangentNormal" + UniqueId + ".y + tangentToWorld[2] * tangentNormal" + UniqueId + ".z);" );
+					return GetOutputVectorItem( 0, outputId, "modWorldtangent" + UniqueId );
 				}
 				else
 				{
-					dataCollector.AddToVertexLocalVariables( m_uniqueId, "float3 normalWorld = UnityObjectToWorldNormal( " + Constants.VertexShaderInputStr + ".normal );" );
+					dataCollector.AddToVertexLocalVariables( UniqueId, "float3 normalWorld = UnityObjectToWorldNormal( " + Constants.VertexShaderInputStr + ".normal );" );
 					return GetOutputVectorItem( 0, outputId, "normalWorld" );
 					//if ( m_outputPorts[ 0 ].IsLocalValue )
 					//	return GetOutputVectorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue );

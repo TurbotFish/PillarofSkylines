@@ -92,15 +92,15 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private OutlineMode m_mode = OutlineMode.VertexOffset;
 
-		public void Draw( GUIStyle toolbarstyle, Material mat )
+		public void Draw( UndoParentNode owner, GUIStyle toolbarstyle, Material mat )
 		{
 			Color cachedColor = GUI.color;
 			GUI.color = new Color( cachedColor.r, cachedColor.g, cachedColor.b, 0.5f );
 			EditorGUILayout.BeginHorizontal( toolbarstyle );
 			GUI.color = cachedColor;
-			EditorVariablesManager.OutlineActiveMode.Value = GUILayout.Toggle( EditorVariablesManager.OutlineActiveMode.Value, EditorVariablesManager.OutlineActiveMode.LabelName, UIUtils.MenuItemToggleStyle, GUILayout.ExpandWidth( true ) );
+			EditorVariablesManager.OutlineActiveMode.Value = owner.GUILayoutToggle( EditorVariablesManager.OutlineActiveMode.Value, EditorVariablesManager.OutlineActiveMode.LabelName, UIUtils.MenuItemToggleStyle, GUILayout.ExpandWidth( true ) );
 			EditorGUI.BeginChangeCheck();
-			m_enabled = EditorGUILayout.Toggle( string.Empty, m_enabled, UIUtils.MenuItemEnableStyle, GUILayout.Width( 16 ) );
+			m_enabled = owner.EditorGUILayoutToggle( string.Empty, m_enabled, UIUtils.MenuItemEnableStyle, GUILayout.Width( 16 ) );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				if ( m_enabled )
@@ -122,10 +122,10 @@ namespace AmplifyShaderEditor
 
 				EditorGUI.indentLevel += 1;
 				{
-					m_mode = ( OutlineMode ) EditorGUILayout.EnumPopup( ModePropertyStr, m_mode );
+					m_mode = ( OutlineMode ) owner.EditorGUILayoutEnumPopup( ModePropertyStr, m_mode );
 
 					EditorGUI.BeginChangeCheck();
-					m_outlineColor = EditorGUILayout.ColorField( OutlineColorLabel, m_outlineColor );
+					m_outlineColor = owner.EditorGUILayoutColorField( OutlineColorLabel, m_outlineColor );
 					if ( EditorGUI.EndChangeCheck() && mat != null )
 					{
 						if ( mat.HasProperty( ColorPropertyName ) )
@@ -135,7 +135,7 @@ namespace AmplifyShaderEditor
 					}
 
 					EditorGUI.BeginChangeCheck();
-					m_outlineWidth = EditorGUILayout.FloatField( OutlineWidthLabel, m_outlineWidth );
+					m_outlineWidth = owner.EditorGUILayoutFloatField( OutlineWidthLabel, m_outlineWidth );
 					if ( EditorGUI.EndChangeCheck() && mat != null )
 					{
 						if ( mat.HasProperty( WidthPropertyName ) )
@@ -235,7 +235,7 @@ namespace AmplifyShaderEditor
 				{
 					for ( int j = 0; j < billboardInfo.Length; j++ )
 					{
-						body.Add( string.Format( BillboardInstructionFormat, billboardInfo[ j ] ));
+						body.Add( string.Format( BillboardInstructionFormat, billboardInfo[ j ] ) );
 					}
 				}
 

@@ -6,9 +6,17 @@ using UnityEngine;
 
 namespace AmplifyShaderEditor
 {
+	public enum NodeAvailability
+	{
+		SurfaceShader = 1 << 0,
+		ShaderFunction = 1 << 1
+	}
+
+
 	[AttributeUsage( AttributeTargets.Class )]
 	public class NodeAttributes : Attribute
 	{
+
 		public string Name;
 		public string Description;
 		public string Category;
@@ -21,7 +29,9 @@ namespace AmplifyShaderEditor
 		public bool FromCommunity;
 		public string CustomCategoryColor; // Color created via a string containing its hexadecimal representation
 		public int SortOrderPriority; // to be used when name comparing on sorting 
-		public NodeAttributes( string name, string category, string description, Type castType = null, KeyCode shortcutKey = KeyCode.None, bool available = true, bool deprecated = false, string deprecatedAlternative = null, Type deprecatedAlternativeType = null, bool fromCommunity = false, string customCategoryColor = null , int sortOrderPriority = -1 )
+		public int NodeAvailabilityFlags;// used to define where this node can be used 
+		public string NodeUrl;
+		public NodeAttributes( string name, string category, string description, Type castType = null, KeyCode shortcutKey = KeyCode.None, bool available = true, bool deprecated = false, string deprecatedAlternative = null, Type deprecatedAlternativeType = null, bool fromCommunity = false, string customCategoryColor = null, int sortOrderPriority = -1, int nodeAvailabilityFlags = int.MaxValue )
 		{
 			Name = name;
 			Description = description;
@@ -37,9 +47,11 @@ namespace AmplifyShaderEditor
 			CustomCategoryColor = customCategoryColor;
 			DeprecatedAlternativeType = deprecatedAlternativeType;
 			SortOrderPriority = sortOrderPriority;
+			NodeAvailabilityFlags = nodeAvailabilityFlags;
+			NodeUrl = ( FromCommunity ? Constants.CommunityNodeCommonUrl : Constants.NodeCommonUrl ) + UIUtils.UrlReplaceInvalidStrings( Name );
 		}
 
-		public NodeAttributes( string name, string category, string description, KeyCode shortcutKey, bool available, int sortOrderPriority, params Type[] castTypes )
+		public NodeAttributes( string name, string category, string description, KeyCode shortcutKey, bool available, int sortOrderPriority, int nodeAvailabilityFlags, params Type[] castTypes )
 		{
 			Name = name;
 			Description = description;
@@ -52,6 +64,8 @@ namespace AmplifyShaderEditor
 			ShortcutKey = shortcutKey;
 			Available = available;
 			SortOrderPriority = sortOrderPriority;
+			NodeAvailabilityFlags = nodeAvailabilityFlags;
+			NodeUrl = ( FromCommunity ? Constants.CommunityNodeCommonUrl : Constants.NodeCommonUrl ) + UIUtils.UrlReplaceInvalidStrings( Name );
 		}
 	}
 }

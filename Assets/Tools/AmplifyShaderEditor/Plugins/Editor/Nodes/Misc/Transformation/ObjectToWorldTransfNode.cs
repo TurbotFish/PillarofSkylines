@@ -10,7 +10,11 @@ namespace AmplifyShaderEditor
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
+#if UNITY_5_4_OR_NEWER
 			m_matrixName = "unity_ObjectToWorld";
+#else
+            m_matrixName = "_Object2World";
+#endif
 		}
 	}
 }

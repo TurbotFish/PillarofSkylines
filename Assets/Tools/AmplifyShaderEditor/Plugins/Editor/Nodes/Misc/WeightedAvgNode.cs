@@ -67,7 +67,9 @@ namespace AmplifyShaderEditor
 
 		protected void UpdateConnection( int portId )
 		{
-			m_inputPorts[ portId ].MatchPortToConnection();
+			if( m_inputPorts[ portId ].IsConnected )
+				m_inputPorts[ portId ].MatchPortToConnection();
+
 			if ( portId == 0 )
 			{
 				switch ( m_inputPorts[ 0 ].DataType )
@@ -135,7 +137,7 @@ namespace AmplifyShaderEditor
 
 		protected void GetInputData( ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
-			m_inputData[ 0 ] = m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, m_inputPorts[ 0 ].DataType, ignoreLocalvar );
+			m_inputData[ 0 ] = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 			for ( int i = 1; i < m_inputPorts.Count; i++ )
 			{
 				if ( m_inputPorts[ i ].Visible )
@@ -143,6 +145,12 @@ namespace AmplifyShaderEditor
 					m_inputData[ i ] = m_inputPorts[ i ].GenerateShaderForOutput( ref dataCollector, m_mainDataType, ignoreLocalvar, true );
 				}
 			}
+		}
+
+		public override void ReadInputDataFromString( ref string[] nodeParams )
+		{
+			base.ReadInputDataFromString( ref nodeParams );
+			UpdateConnection( 0 );
 		}
 	}
 }

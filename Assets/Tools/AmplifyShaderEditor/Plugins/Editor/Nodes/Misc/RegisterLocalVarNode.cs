@@ -16,23 +16,19 @@ namespace AmplifyShaderEditor
 		private const string OrderIndexStr = "Order Index";
 		private const string AutoOrderIndexStr = "Auto Order";
 
-		[SerializeField]
-		private string m_variableName = LocalDefaultNameStr;
 		private string m_oldName = string.Empty;
 		private bool m_reRegisterName = false;
+		private int m_autoOrderIndex = int.MaxValue;
+		private bool m_forceUpdate = true;
+
+		[SerializeField]
+		private string m_variableName = LocalDefaultNameStr;
 
 		[SerializeField]
 		private int m_orderIndex = -1;
 
 		[SerializeField]
 		private bool m_autoIndexActive = true;
-
-		private int m_autoOrderIndex = int.MaxValue;
-
-		private bool m_forceUpdate = true;
-
-		public delegate void PropagatePreviewChange();
-		public event PropagatePreviewChange OnPropagatePreviewChange;
 
 		protected override void CommonInit( int uniqueId )
 		{
@@ -47,13 +43,6 @@ namespace AmplifyShaderEditor
 			UpdateTitle();
 			m_previewShaderGUID = "5aaa1d3ea9e1fa64781647e035a82334";
 		}
-
-		//public override void MarkForPreviewUpdate()
-		//{
-		//	//base.MarkForPreviewUpdate();
-		//	if ( OnPropagatePreviewChange != null )
-		//		OnPropagatePreviewChange();
-		//}
 
 		public override void OnInputPortConnected( int portId, int otherNodeId, int otherPortId, bool activateNode = true )
 		{
@@ -74,7 +63,7 @@ namespace AmplifyShaderEditor
 			base.Destroy();
 
 			UIUtils.UnregisterLocalVarNode( this );
-			UIUtils.ReleaseLocalVariableName( m_uniqueId, m_variableName );
+			UIUtils.ReleaseLocalVariableName( UniqueId, m_variableName );
 		}
 
 		void UpdateTitle()
@@ -85,22 +74,22 @@ namespace AmplifyShaderEditor
 		public override void DrawProperties()
 		{
 			EditorGUI.BeginChangeCheck();
-			m_variableName = EditorGUILayout.TextField( LocalVarNameStr, m_variableName );
+			m_variableName = EditorGUILayoutTextField( LocalVarNameStr, m_variableName );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 
 				m_variableName = UIUtils.RemoveInvalidCharacters( m_variableName );
 				if ( string.IsNullOrEmpty( m_variableName ) )
 				{
-					m_variableName = LocalDefaultNameStr + m_uniqueId;
+					m_variableName = LocalDefaultNameStr + UniqueId;
 				}
 
 				if ( UIUtils.IsLocalvariableNameAvailable( m_variableName ) )
 				{
-					UIUtils.ReleaseLocalVariableName( m_uniqueId, m_oldName );
-					UIUtils.RegisterLocalVariableName( m_uniqueId, m_variableName );
+					UIUtils.ReleaseLocalVariableName( UniqueId, m_oldName );
+					UIUtils.RegisterLocalVariableName( UniqueId, m_variableName );
 					m_oldName = m_variableName;
-					UIUtils.UpdateLocalVarDataNode( m_uniqueId, m_variableName );
+					UIUtils.UpdateLocalVarDataNode( UniqueId, m_variableName );
 					UpdateTitle();
 					m_forceUpdate = true;
 				}
@@ -109,10 +98,6 @@ namespace AmplifyShaderEditor
 					m_variableName = m_oldName;
 				}
 			}
-			//m_autoIndexActive = EditorGUILayout.Toggle( AutoOrderIndexStr, m_autoIndexActive );
-
-			//if ( !m_autoIndexActive )
-			//	m_orderIndex = EditorGUILayout.IntField( OrderIndexStr, m_orderIndex );
 
 			DrawPrecisionProperty();
 		}
@@ -131,7 +116,7 @@ namespace AmplifyShaderEditor
 			if ( m_reRegisterName )
 			{
 				m_reRegisterName = false;
-				UIUtils.RegisterLocalVariableName( m_uniqueId, m_variableName );
+				UIUtils.RegisterLocalVariableName( UniqueId, m_variableName );
 			}
 
 			if ( m_forceUpdate )
@@ -152,20 +137,6 @@ namespace AmplifyShaderEditor
 			return m_variableName;
 		}
 
-		//public string CreateLocalVariable( ref MasterNodeDataCollector dataCollector )
-		//{
-		//	string type = UIUtils.FinalPrecisionWirePortToCgType( m_currentPrecisionType, m_outputPorts[ 0 ].DataType );
-		//	if ( m_inputPorts[ 0 ].IsConnected )
-		//	{
-		//		string result = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
-		//		return string.Format( Constants.LocalValueDec, type, m_variableName, result );
-		//	}
-		//	else
-		//	{
-		//		return string.Format( Constants.SimpleLocalValueDec, type, m_variableName );
-		//	}
-		//}
-
 		public override void ReadFromString( ref string[] nodeParams )
 		{
 			base.ReadFromString( ref nodeParams );
@@ -182,10 +153,10 @@ namespace AmplifyShaderEditor
 				m_autoIndexActive = false;
 			}
 
-			UIUtils.UpdateLocalVarDataNode( m_uniqueId, m_variableName );
+			UIUtils.UpdateLocalVarDataNode( UniqueId, m_variableName );
 
-			UIUtils.ReleaseLocalVariableName( m_uniqueId, m_oldName );
-			UIUtils.RegisterLocalVariableName( m_uniqueId, m_variableName );
+			UIUtils.ReleaseLocalVariableName( UniqueId, m_oldName );
+			UIUtils.RegisterLocalVariableName( UniqueId, m_variableName );
 
 			m_forceUpdate = true;
 		}
@@ -218,7 +189,7 @@ namespace AmplifyShaderEditor
 			base.ResetNodeData();
 			m_autoOrderIndex = int.MaxValue;
 		}
+
 		public override string DataToArray { get { return m_variableName; } }
-		//public int OrderIndex { get { return m_autoIndexActive ? m_autoOrderIndex : m_orderIndex; } }
 	}
 }

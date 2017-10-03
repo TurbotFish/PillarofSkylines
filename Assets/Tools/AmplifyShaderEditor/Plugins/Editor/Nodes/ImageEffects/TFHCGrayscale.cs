@@ -36,7 +36,7 @@ namespace AmplifyShaderEditor
 		{
 			base.DrawProperties();
 			EditorGUILayout.BeginVertical();
-			m_grayscaleStyle = EditorGUILayout.Popup( GrayscaleStyleStr, m_grayscaleStyle, _GrayscaleStyleValues );
+			m_grayscaleStyle = EditorGUILayoutPopup( GrayscaleStyleStr, m_grayscaleStyle, _GrayscaleStyleValues );
 			EditorGUILayout.EndVertical();
 			EditorGUILayout.HelpBox( "Grayscale Old:\n\n - In: Image to convert.\n - Grayscale Style: Select the grayscale style.\n\n - Out: Grayscale version of the image.", MessageType.None );
 		}

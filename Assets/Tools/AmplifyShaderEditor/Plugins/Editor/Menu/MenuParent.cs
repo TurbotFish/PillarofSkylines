@@ -29,7 +29,8 @@ namespace AmplifyShaderEditor
 
 	public class MenuParent
 	{
-		
+		protected AmplifyShaderEditorWindow m_parentWindow = null;
+
 		protected const float MinimizeButtonXSpacing = 5;
 		protected const float MinimizeButtonYSpacing = 5.5f;
 		protected const float ResizeAreaWidth = 5;
@@ -61,8 +62,9 @@ namespace AmplifyShaderEditor
 		protected GUIStyle m_resizeAreaStyle;
 		protected bool m_isMouseInside = false;
 		protected Vector2 m_currentScrollPos;
-		public MenuParent( float x, float y, float width, float height, string name, MenuAnchor anchor = MenuAnchor.NONE, MenuAutoSize autoSize = MenuAutoSize.NONE )
+		public MenuParent( AmplifyShaderEditorWindow parentWindow, float x, float y, float width, float height, string name, MenuAnchor anchor = MenuAnchor.NONE, MenuAutoSize autoSize = MenuAutoSize.NONE )
 		{
+			m_parentWindow = parentWindow;
 			m_anchor = anchor;
 			m_autoSize = autoSize;
 			m_maximizedArea = new Rect( x, y, width, height );
@@ -84,7 +86,7 @@ namespace AmplifyShaderEditor
 		{
 			if ( m_style == null )
 			{
-				m_style = new GUIStyle( UIUtils.CurrentWindow.CustomStylesInstance.TextArea );
+				m_style = new GUIStyle( UIUtils.TextArea );
 				m_style.stretchHeight = true;
 				m_style.stretchWidth = true;
 				m_style.fontSize = ( int ) Constants.DefaultTitleFontSize;
@@ -328,10 +330,10 @@ namespace AmplifyShaderEditor
 				}
 				else
 				{
-					float halfSizeWindow = 0.5f * UIUtils.CurrentWindow.position.width;
+					float halfSizeWindow = 0.5f * ParentWindow.position.width;
 					if ( m_realWidth > halfSizeWindow )
 					{
-						m_realWidth = 0.5f * UIUtils.CurrentWindow.position.width;
+						m_realWidth = 0.5f * ParentWindow.position.width;
 						if ( m_resizeDelta > 0 )
 						{
 							m_resizeDelta = m_realWidth - m_maximizedArea.width;
@@ -429,5 +431,7 @@ namespace AmplifyShaderEditor
 				}
 			}
 		}
+
+		public AmplifyShaderEditorWindow ParentWindow { get { return m_parentWindow; } set { m_parentWindow = value; } }
 	}
 }

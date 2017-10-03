@@ -23,7 +23,7 @@ namespace AmplifyShaderEditor
 			base.CommonInit( uniqueId );
 			AddInputPort( WirePortDataType.FLOAT, false, " " );
 			AddOutputPort( WirePortDataType.FLOAT, " " );
-			m_insideSize.Set(50,10);
+			m_insideSize.Set( 50, 10 );
 			m_autoWrapProperties = true;
 			m_previewShaderGUID = "6d8ec9d9dab62c44aa2dcc0e3987760d";
 		}
@@ -41,7 +41,7 @@ namespace AmplifyShaderEditor
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-			m_scaleFactor = EditorGUILayout.FloatField( ScaleFactorStr, m_scaleFactor );
+			m_scaleFactor = EditorGUILayoutFloatField( ScaleFactorStr, m_scaleFactor );
 		}
 
 		public override void OnInputPortConnected( int portId, int otherNodeId, int otherPortId, bool activateNode = true )
@@ -67,7 +67,7 @@ namespace AmplifyShaderEditor
 				m_propertyDrawPos.y = m_remainingBox.y + Constants.INPUT_PORT_DELTA_Y * drawInfo.InvertedZoom * 0.5f;
 				m_propertyDrawPos.width = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_WIDTH_FIELD_SIZE;
 				m_propertyDrawPos.height = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_HEIGHT_FIELD_SIZE;
-				UIUtils.DrawFloat( ref m_propertyDrawPos, ref m_scaleFactor, 1 );
+				UIUtils.DrawFloat( this, ref m_propertyDrawPos, ref m_scaleFactor, 1 );
 			}
 		}
 

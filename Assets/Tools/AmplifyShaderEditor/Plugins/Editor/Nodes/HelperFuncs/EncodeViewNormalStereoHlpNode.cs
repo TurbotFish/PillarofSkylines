@@ -16,5 +16,11 @@ namespace AmplifyShaderEditor
 			m_inputPorts[ 0 ].Name = "XYZ";
 			m_outputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT2, false );
 		}
+
+		protected override void OnUniqueIDAssigned()
+		{
+			base.OnUniqueIDAssigned();
+			m_localVarName = "encodeViewNormalStereo" + OutputId;
+		}
 	}
 }

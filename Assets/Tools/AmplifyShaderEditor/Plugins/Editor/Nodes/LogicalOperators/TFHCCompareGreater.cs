@@ -27,7 +27,7 @@ namespace AmplifyShaderEditor
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
 			GetInputData( ref dataCollector, ignoreLocalvar );
-			string strout = " ( ( " + m_inputDataPort0 + " > " + m_inputDataPort1 + " ) ? " + m_inputDataPort2 + " :  " + m_inputDataPort3  + " ) ";
+			string strout = "(( " + m_inputDataPort0 + " > " + m_inputDataPort1 + " ) ? " + m_inputDataPort2 + " :  " + m_inputDataPort3  + " )";
 			//Debug.Log(strout);
 			return CreateOutputLocalVariable( 0, strout, ref dataCollector );
 		}

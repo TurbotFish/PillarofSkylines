@@ -39,8 +39,8 @@ namespace AmplifyShaderEditor
 		public override void SetPreviewInputs()
 		{
 			base.SetPreviewInputs();
-			
-			if( m_currentSelected != null )
+
+			if ( m_currentSelected != null )
 			{
 				m_drawPreviewAsSphere = m_currentSelected.SpherePreview;
 				CheckSpherePreview();
@@ -52,23 +52,13 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		private void OnRegisterUpdate()
-		{
-			//MarkForPreviewUpdate();
-			m_drawPreviewAsSphere = m_currentSelected.SpherePreview;
-			CheckSpherePreview();
-		}
-
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
 			EditorGUI.BeginChangeCheck();
-			m_referenceId = EditorGUILayout.Popup( Constants.AvailableReferenceStr, m_referenceId, UIUtils.LocalVarNodeArr() );
+			m_referenceId = EditorGUILayoutPopup( Constants.AvailableReferenceStr, m_referenceId, UIUtils.LocalVarNodeArr() );
 			if ( EditorGUI.EndChangeCheck() )
 			{
-				if ( m_currentSelected != null )
-					m_currentSelected.OnPropagatePreviewChange -= OnRegisterUpdate;
-
 				m_currentSelected = UIUtils.GetLocalVarNode( m_referenceId );
 				if ( m_currentSelected != null )
 				{
@@ -76,8 +66,6 @@ namespace AmplifyShaderEditor
 					m_outputPorts[ 0 ].ChangeType( m_currentSelected.OutputPorts[ 0 ].DataType, false );
 					m_drawPreviewAsSphere = m_currentSelected.SpherePreview;
 					CheckSpherePreview();
-					m_currentSelected.OnPropagatePreviewChange -= OnRegisterUpdate;
-					m_currentSelected.OnPropagatePreviewChange += OnRegisterUpdate;
 				}
 
 				m_sizeIsDirty = true;
@@ -88,8 +76,6 @@ namespace AmplifyShaderEditor
 		public override void Destroy()
 		{
 			base.Destroy();
-			if( m_currentSelected != null )
-				m_currentSelected.OnPropagatePreviewChange -= OnRegisterUpdate;
 			m_currentSelected = null;
 		}
 
@@ -103,19 +89,12 @@ namespace AmplifyShaderEditor
 				{
 					m_currentSelected = UIUtils.GetNode( m_nodeId ) as RegisterLocalVarNode;
 					m_referenceId = UIUtils.GetLocalVarNodeRegisterId( m_nodeId );
-					if( m_currentSelected != null )
-					{
-						m_currentSelected.OnPropagatePreviewChange -= OnRegisterUpdate;
-						m_currentSelected.OnPropagatePreviewChange += OnRegisterUpdate;
-					}
 				}
 				else
 				{
 					m_currentSelected = UIUtils.GetLocalVarNode( m_referenceId );
 					if ( m_currentSelected != null )
 					{
-						m_currentSelected.OnPropagatePreviewChange -= OnRegisterUpdate;
-						m_currentSelected.OnPropagatePreviewChange += OnRegisterUpdate;
 						m_nodeId = m_currentSelected.UniqueId;
 					}
 				}
@@ -147,14 +126,9 @@ namespace AmplifyShaderEditor
 						m_referenceWidth = m_currentSelected.Position.width;
 						m_sizeIsDirty = true;
 					}
-					m_currentSelected.OnPropagatePreviewChange -= OnRegisterUpdate;
-					m_currentSelected.OnPropagatePreviewChange += OnRegisterUpdate;
-
 				}
 				else
 				{
-					if ( m_currentSelected != null )
-						m_currentSelected.OnPropagatePreviewChange -= OnRegisterUpdate;
 					m_referenceId = -1;
 					m_referenceWidth = -1;
 					m_additionalContent.text = string.Empty;
@@ -202,6 +176,13 @@ namespace AmplifyShaderEditor
 		{
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
 			IOUtils.AddFieldValueToString( ref nodeInfo, ( m_currentSelected != null ? m_currentSelected.UniqueId : -1 ) );
+		}
+		public override void OnNodeDoubleClicked( Vector2 currentMousePos2D )
+		{
+			if ( m_currentSelected != null )
+			{
+				UIUtils.FocusOnNode( m_currentSelected, 0, true );
+			}
 		}
 	}
 }

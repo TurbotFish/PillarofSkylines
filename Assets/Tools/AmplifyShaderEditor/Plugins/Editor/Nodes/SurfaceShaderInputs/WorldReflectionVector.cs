@@ -33,8 +33,8 @@ namespace AmplifyShaderEditor
 
 		public override void Destroy()
 		{
+			ContainerGraph.RemoveNormalDependentCount();
 			base.Destroy();
-			UIUtils.RemoveNormalDependentCount();
 		}
 
 		public override void PropagateNodeData( NodeData nodeData )
@@ -52,14 +52,14 @@ namespace AmplifyShaderEditor
 				if ( m_outputPorts[ 0 ].IsLocalValue )
 					return GetOutputVectorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue );
 
-				dataCollector.AddToInput( m_uniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_REFL ), true );
-				dataCollector.AddToInput( m_uniqueId, Constants.InternalData, false );
+				dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_REFL ), true );
+				dataCollector.AddToInput( UniqueId, Constants.InternalData, false );
 				
-				dataCollector.AddToLocalVariables(m_uniqueId,  string.Format("float3 worldPos = mul( unity_ObjectToWorld, {0}.vertex ).xyz;", Constants.VertexShaderInputStr));
-				dataCollector.AddToLocalVariables(m_uniqueId,  string.Format("float3 worldViewDir = UnityWorldSpaceViewDir( worldPos );"  , Constants.VertexShaderInputStr));
-				dataCollector.AddToLocalVariables( m_uniqueId, string.Format( "fixed3 worldNormal = UnityObjectToWorldNormal( {0}.normal );", Constants.VertexShaderInputStr ) );
+				dataCollector.AddToLocalVariables(UniqueId,  string.Format("float3 worldPos = mul( unity_ObjectToWorld, {0}.vertex ).xyz;", Constants.VertexShaderInputStr));
+				dataCollector.AddToLocalVariables(UniqueId,  string.Format("float3 worldViewDir = UnityWorldSpaceViewDir( worldPos );"  , Constants.VertexShaderInputStr));
+				dataCollector.AddToLocalVariables( UniqueId, string.Format( "fixed3 worldNormal = UnityObjectToWorldNormal( {0}.normal );", Constants.VertexShaderInputStr ) );
 
-				RegisterLocalVariable( 0, "reflect( -worldViewDir, worldNormal )", ref dataCollector, "worldRefl" + m_uniqueId );
+				RegisterLocalVariable( 0, "reflect( -worldViewDir, worldNormal )", ref dataCollector, "worldRefl" + OutputId );
 				
 				return GetOutputVectorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue );
 			}
@@ -69,8 +69,8 @@ namespace AmplifyShaderEditor
 					return GetOutputVectorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue );
 
 
-				dataCollector.AddToInput( m_uniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_REFL ), true );
-				dataCollector.AddToInput( m_uniqueId, Constants.InternalData, false );
+				dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_REFL ), true );
+				dataCollector.AddToInput( UniqueId, Constants.InternalData, false );
 				string result = string.Empty;
 				if ( m_inputPorts[ 0 ].IsConnected )
 				{
@@ -85,7 +85,7 @@ namespace AmplifyShaderEditor
 						result = "WorldReflectionVector( " + Constants.InputVarStr + " , float3(0,0,1) )";
 				}
 
-				RegisterLocalVariable( 0, result, ref dataCollector, "worldrefVec" + m_uniqueId );
+				RegisterLocalVariable( 0, result, ref dataCollector, "worldrefVec" + OutputId );
 				return GetOutputVectorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue );
 			}
 		}

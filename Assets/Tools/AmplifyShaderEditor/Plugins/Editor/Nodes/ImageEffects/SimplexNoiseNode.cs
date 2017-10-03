@@ -59,7 +59,7 @@ namespace AmplifyShaderEditor
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-			m_type = ( NoiseType ) EditorGUILayout.EnumPopup( NoiseTypeStr, m_type );
+			m_type = ( NoiseType ) EditorGUILayoutEnumPopup( NoiseTypeStr, m_type );
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )

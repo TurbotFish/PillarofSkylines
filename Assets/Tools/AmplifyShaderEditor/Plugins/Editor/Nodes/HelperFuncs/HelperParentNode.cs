@@ -13,6 +13,7 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		protected string m_funcType = string.Empty;
 
+		protected string m_localVarName = null;
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
@@ -27,7 +28,10 @@ namespace AmplifyShaderEditor
 		}
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
-			dataCollector.AddToIncludes( m_uniqueId, Constants.UnityCgLibFuncs );
+			if( m_outputPorts[0].IsLocalValue )
+				return m_outputPorts[0].LocalValue;
+
+			dataCollector.AddToIncludes( UniqueId, Constants.UnityCgLibFuncs );
 			string concatResults = string.Empty;
 			for ( int i = 0; i < m_inputPorts.Count; i++ )
 			{
@@ -46,7 +50,10 @@ namespace AmplifyShaderEditor
 					concatResults += " , ";
 			}
 			string finalResult = m_funcType + "( " + concatResults + " )";
-			return CreateOutputLocalVariable( 0, finalResult, ref dataCollector );
+
+			RegisterLocalVariable( 0, finalResult, ref dataCollector , m_localVarName );
+
+			return m_outputPorts[ 0 ].LocalValue;
 		}
 	}
 }

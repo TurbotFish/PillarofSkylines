@@ -55,7 +55,7 @@ namespace AmplifyShaderEditor
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-			m_useUnityBranch = EditorGUILayout.Toggle( UseUnityBranchesStr, m_useUnityBranch );
+			m_useUnityBranch = EditorGUILayoutToggle( UseUnityBranchesStr, m_useUnityBranch );
 		}
 
 
@@ -131,7 +131,7 @@ namespace AmplifyShaderEditor
 			m_results[ 1 ] = m_inputPorts[ 3 ].GenerateShaderForOutput( ref dataCollector, m_outputMainDataType, ignoreLocalvar, true );
 			m_results[ 2 ] = m_inputPorts[ 4 ].GenerateShaderForOutput( ref dataCollector, m_outputMainDataType, ignoreLocalvar, true );
 
-			string localVarName = "ifLocalVar" + m_uniqueId;
+			string localVarName = "ifLocalVar" + UniqueId;
 			string localVarDec = string.Format( "{0} {1} = 0;", UIUtils.FinalPrecisionWirePortToCgType( m_currentPrecisionType, m_outputPorts[ 0 ].DataType ), localVarName );
 
 			bool firstIf = true;
@@ -173,7 +173,7 @@ namespace AmplifyShaderEditor
 
 			for ( int i = 0; i < instructions.Count; i++ )
 			{
-				dataCollector.AddToLocalVariables( dataCollector.PortCategory, m_uniqueId, instructions[ i ] , true );
+				dataCollector.AddToLocalVariables( dataCollector.PortCategory, UniqueId, instructions[ i ] , true );
 			}
 			//dataCollector.AddInstructions( true, true, instructions.ToArray() );
 

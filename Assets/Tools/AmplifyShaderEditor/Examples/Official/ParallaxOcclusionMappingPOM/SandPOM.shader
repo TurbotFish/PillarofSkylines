@@ -19,6 +19,8 @@ Shader "ASESampleShaders/SandPom"
 		_CurvatureU("Curvature U", Range( 0 , 100)) = 0
 		_CurvatureV("Curvature V", Range( 0 , 30)) = 0
 		[HideInInspector] _texcoord( "", 2D ) = "white" {}
+		[Header(Parallax Occlusion Mapping)]
+		_CurvFix("Curvature Bias", Range( 0 , 1)) = 1
 	}
 
 	SubShader
@@ -48,14 +50,15 @@ Shader "ASESampleShaders/SandPom"
 			float3 worldPos;
 		};
 
+		uniform float _NormalScale;
+		uniform sampler2D _Normal;
 		uniform float4 _Albedo_ST;
 		uniform sampler2D _HeightMap;
 		uniform float _Scale;
+		uniform float _CurvFix;
 		uniform float _CurvatureU;
 		uniform float _CurvatureV;
 		uniform float4 _HeightMap_ST;
-		uniform float _NormalScale;
-		uniform sampler2D _Normal;
 		uniform sampler2D _Albedo;
 		uniform sampler2D _Metallic;
 		uniform float _RoughScale;
@@ -66,7 +69,6 @@ Shader "ASESampleShaders/SandPom"
 		inline float2 POM( sampler2D heightMap, float2 uvs, float2 dx, float2 dy, float3 normalWorld, float3 viewWorld, float3 viewDirTan, int minSamples, int maxSamples, float parallax, float refPlane, float2 tilling, float2 curv )
 		{
 			float3 result = 0;
-			//uvs += curv;
 			int stepIndex = 0;
 			int numSteps = ( int )lerp( maxSamples, minSamples, dot( normalWorld, viewWorld ) );
 			float layerHeight = 1.0 / numSteps;
@@ -81,13 +83,10 @@ Shader "ASESampleShaders/SandPom"
 			float currHeight = 0.0f;
 			float intersection = 0;
 			float2 finalTexOffset = 0;
-			//result.z = dot( curv, currTexOffset * currTexOffset );
 			while ( stepIndex < numSteps + 1 )
 			{
-				result.z = dot( curv, currTexOffset * currTexOffset ) * parallax;
-				currHeight = tex2Dgrad( heightMap, uvs + currTexOffset, dx, dy ).r - result.z;
-				result.z = currHeight;
-				//result.z = dot( curv / parallax, currTexOffset * currTexOffset );
+				result.z = dot( curv, currTexOffset * currTexOffset );
+				currHeight = tex2Dgrad( heightMap, uvs + currTexOffset, dx, dy ).r * ( 1 - result.z );
 				if ( currHeight > currRayZ )
 				{
 					stepIndex = numSteps + 1;
@@ -99,10 +98,10 @@ Shader "ASESampleShaders/SandPom"
 					prevRayZ = currRayZ;
 					prevHeight = currHeight;
 					currTexOffset += deltaTex;
-					currRayZ -= layerHeight;
+					currRayZ -= layerHeight * ( 1 - result.z ) * (1+_CurvFix);
 				}
 			}
-			/*int sectionSteps = 10;
+			int sectionSteps = 10;
 			int sectionIndex = 0;
 			float newZ = 0;
 			float newHeight = 0;
@@ -129,17 +128,17 @@ Shader "ASESampleShaders/SandPom"
 					layerHeight = ( 1 - intersection ) * layerHeight;
 				}
 				sectionIndex++;
-			}*/
+			}
 			#ifdef UNITY_PASS_SHADOWCASTER
 			if ( unity_LightShadowBias.z == 0.0 )
 			{
 			#endif
-				if ( result.z < 0 || result.z > 1)
+				if ( result.z > 1 )
 					clip( -1 );
 			#ifdef UNITY_PASS_SHADOWCASTER
 			}
 			#endif
-			return uvs + currTexOffset;
+			return uvs + finalTexOffset;
 		}
 
 
@@ -174,7 +173,6 @@ Shader "ASESampleShaders/SandPom"
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma target 3.0
-			#pragma multi_compile_instancing
 			#pragma multi_compile_shadowcaster
 			#pragma multi_compile UNITY_PASS_SHADOWCASTER
 			#pragma skip_variants FOG_LINEAR FOG_EXP FOG_EXP2
@@ -248,58 +246,30 @@ Shader "ASESampleShaders/SandPom"
 	CustomEditor "ASEMaterialInspector"
 }
 /*ASEBEGIN
-Version=5006
-438;92;1091;610;2209.769;294.2383;1.9;True;False
-Node;AmplifyShaderEditor.RangedFloatNode;25;204.7048,210.9306;Float;False;Property;_RoughScale;Rough Scale;5;0;0.5;0;0
-Node;AmplifyShaderEditor.WireNode;29;620.7496,395.8717;Float;False;0;FLOAT;0.0;False
-Node;AmplifyShaderEditor.StandardSurfaceOutputNode;0;780.7046,-269.0693;Float;False;True;4;Float;ASEMaterialInspector;Standard;ASESampleShaders/SandPom;False;False;False;False;False;False;False;False;False;False;False;False;Back;0;3;False;0;0;Opaque;0.5;True;True;0;False;Opaque;Geometry;ForwardOnly;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;False;0;255;255;0;0;0;0;False;0;4;10;25;False;0.5;True;0;Zero;Zero;0;Zero;Zero;Add;Add;0;False;0;0,0,0,0;VertexOffset;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT;0.0;False;4;FLOAT;0.0;False;5;FLOAT;0.0;False;6;FLOAT3;0,0,0;False;7;FLOAT3;0,0,0;False;8;FLOAT;0.0;False;9;FLOAT;0.0;False;10;OBJECT;0.0;False;11;FLOAT3;0.0,0,0;False;12;FLOAT3;0.0,0,0;False;13;OBJECT;0;False;14;FLOAT4;0,0,0,0;False;15;FLOAT3;0,0,0;False
-Node;AmplifyShaderEditor.SimpleMultiplyOpNode;26;396.7047,210.9306;Float;False;0;FLOAT;0.0;False;1;FLOAT;0.0;False
-Node;AmplifyShaderEditor.SamplerNode;11;60.70477,-301.0693;Float;True;Property;_Albedo;Albedo;0;0;None;True;0;False;white;Auto;False;Object;-1;Derivative;Texture2D;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;1.0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1.0;False
-Node;AmplifyShaderEditor.SamplerNode;14;60.70477,-125.0694;Float;True;Property;_Normal;Normal;1;0;None;True;0;True;bump;Auto;True;Object;-1;Derivative;Texture2D;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;1.0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1.0;False
-Node;AmplifyShaderEditor.TexturePropertyNode;9;-1729,0.5;Float;True;Property;_HeightMap;HeightMap;7;0;None;False;white;Auto
-Node;AmplifyShaderEditor.DdyOpNode;41;-655.7364,-88.30183;Float;False;0;FLOAT2;0.0,0;False
-Node;AmplifyShaderEditor.DdxOpNode;40;-661.1364,-156.5017;Float;False;0;FLOAT2;0.0,0;False
-Node;AmplifyShaderEditor.SamplerNode;23;60.70477,34.93072;Float;True;Property;_Metallic;Metallic;3;0;None;True;0;False;white;Auto;False;Object;-1;Derivative;Texture2D;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;1.0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1.0;False
-Node;AmplifyShaderEditor.SamplerNode;20;60.70477,306.9308;Float;True;Property;_Roughness;Roughness;4;0;None;True;0;False;white;Auto;False;Object;-1;Derivative;Texture2D;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;1.0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1.0;False
-Node;AmplifyShaderEditor.SamplerNode;21;60.70477,482.9311;Float;True;Property;_Occlusion;Occlusion;6;0;None;True;0;False;white;Auto;False;Object;-1;Derivative;Texture2D;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;1.0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1.0;False
-Node;AmplifyShaderEditor.TextureCoordinatesNode;10;-1384,-81.5;Float;False;0;11;2;0;FLOAT2;1,1;False;1;FLOAT2;0,0;False
-Node;AmplifyShaderEditor.RangedFloatNode;24;-292.5285,-343.4738;Float;False;Property;_NormalScale;Normal Scale;2;0;0.5;0;0
-Node;AmplifyShaderEditor.RegisterLocalVarNode;39;-693.8807,-232.9194;Float;False;customUVs;1;False;0;FLOAT2;0.0,0;False
-Node;AmplifyShaderEditor.RangedFloatNode;13;-1448,78.5;Float;False;Property;_Scale;Scale;8;0;0.4247461;0;1
-Node;AmplifyShaderEditor.OneMinusNode;42;532.664,38.29838;Float;False;0;FLOAT;0.0;False
-Node;AmplifyShaderEditor.RangedFloatNode;45;-1504,464;Float;False;Property;_CurvatureV;Curvature V;9;0;0;0;30
-Node;AmplifyShaderEditor.AppendNode;46;-1184,352;Float;False;FLOAT2;0;0;0;0;0;FLOAT;0.0;False;1;FLOAT;0.0;False;2;FLOAT;0.0;False;3;FLOAT;0.0;False
-Node;AmplifyShaderEditor.ViewDirInputsCoordNode;15;-1296,192;Float;False;Tangent
-Node;AmplifyShaderEditor.ParallaxOcclusionMappingNode;8;-1032.9,-21.1;Float;False;0;128;128;10;0.02;0;False;1,1;True;10,0;0;FLOAT2;0,0;False;1;SAMPLER2D;;False;2;FLOAT;0.0;False;3;FLOAT3;0,0,0;False;4;FLOAT;0.0;False;5;FLOAT2;0,0;False
-Node;AmplifyShaderEditor.RangedFloatNode;43;-1504,384;Float;False;Property;_CurvatureU;Curvature U;9;0;0;0;100
-WireConnection;29;0;21;1
-WireConnection;0;0;11;0
-WireConnection;0;1;14;0
-WireConnection;0;3;23;1
-WireConnection;0;4;42;0
-WireConnection;0;5;29;0
-WireConnection;26;0;25;0
-WireConnection;26;1;20;1
-WireConnection;11;1;39;0
-WireConnection;11;3;40;0
-WireConnection;11;4;41;0
-WireConnection;14;1;39;0
-WireConnection;14;3;40;0
-WireConnection;14;4;41;0
-WireConnection;14;5;24;0
-WireConnection;41;0;10;0
-WireConnection;40;0;10;0
-WireConnection;23;1;39;0
-WireConnection;23;3;40;0
-WireConnection;23;4;41;0
-WireConnection;20;1;39;0
-WireConnection;20;3;40;0
-WireConnection;20;4;41;0
-WireConnection;21;1;39;0
-WireConnection;21;3;40;0
-WireConnection;21;4;41;0
-WireConnection;39;0;8;0
-WireConnection;42;0;26;0
+Version=6101
+344;100;1180;639;2209.769;294.2383;1.9;True;False
+Node;AmplifyShaderEditor.RangedFloatNode;45;-1504,464;Float;False;Property;_CurvatureV;Curvature V;9;0;0;0;30;FLOAT
+Node;AmplifyShaderEditor.RangedFloatNode;43;-1504,384;Float;False;Property;_CurvatureU;Curvature U;9;0;0;0;100;FLOAT
+Node;AmplifyShaderEditor.RangedFloatNode;13;-1448,78.5;Float;False;Property;_Scale;Scale;8;0;0.4247461;0;1;FLOAT
+Node;AmplifyShaderEditor.TextureCoordinatesNode;10;-1384,-81.5;Float;False;0;11;2;0;FLOAT2;1,1;False;1;FLOAT2;0,0;False;FLOAT2;FLOAT;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.TexturePropertyNode;9;-1729,0.5;Float;True;Property;_HeightMap;HeightMap;7;0;None;False;white;Auto;SAMPLER2D
+Node;AmplifyShaderEditor.ViewDirInputsCoordNode;15;-1296,192;Float;False;Tangent;FLOAT3;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.AppendNode;46;-1184,352;Float;False;FLOAT2;0;0;0;0;0;FLOAT;0.0;False;1;FLOAT;0.0;False;2;FLOAT;0.0;False;3;FLOAT;0.0;False;FLOAT2
+Node;AmplifyShaderEditor.ParallaxOcclusionMappingNode;8;-1032.9,-21.1;Float;False;0;128;128;10;0.02;0;False;1,1;True;10,0;0;FLOAT2;0,0;False;1;SAMPLER2D;;False;2;FLOAT;0.0;False;3;FLOAT3;0,0,0;False;4;FLOAT;0.0;False;5;FLOAT2;0,0;False;FLOAT2
+Node;AmplifyShaderEditor.RegisterLocalVarNode;39;-693.8807,-232.9194;Float;False;customUVs;1;False;0;FLOAT2;0.0,0;False;FLOAT2
+Node;AmplifyShaderEditor.DdyOpNode;41;-655.7364,-88.30183;Float;False;0;FLOAT2;0.0,0;False;FLOAT2
+Node;AmplifyShaderEditor.DdxOpNode;40;-661.1364,-156.5017;Float;False;0;FLOAT2;0.0,0;False;FLOAT2
+Node;AmplifyShaderEditor.RangedFloatNode;25;204.7048,210.9306;Float;False;Property;_RoughScale;Rough Scale;5;0;0.5;0;0;FLOAT
+Node;AmplifyShaderEditor.SamplerNode;20;60.70477,306.9308;Float;True;Property;_Roughness;Roughness;4;0;None;True;0;False;white;Auto;False;Object;-1;Derivative;Texture2D;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;1.0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1.0;False;FLOAT4;FLOAT;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.SimpleMultiplyOpNode;26;396.7047,210.9306;Float;False;0;FLOAT;0.0;False;1;FLOAT;0.0;False;FLOAT
+Node;AmplifyShaderEditor.SamplerNode;21;60.70477,482.9311;Float;True;Property;_Occlusion;Occlusion;6;0;None;True;0;False;white;Auto;False;Object;-1;Derivative;Texture2D;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;1.0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1.0;False;FLOAT4;FLOAT;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.RangedFloatNode;24;-292.5285,-343.4738;Float;False;Property;_NormalScale;Normal Scale;2;0;0.5;0;0;FLOAT
+Node;AmplifyShaderEditor.WireNode;29;620.7496,395.8717;Float;False;0;FLOAT;0.0;False;FLOAT
+Node;AmplifyShaderEditor.SamplerNode;11;60.70477,-301.0693;Float;True;Property;_Albedo;Albedo;0;0;None;True;0;False;white;Auto;False;Object;-1;Derivative;Texture2D;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;1.0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1.0;False;FLOAT4;FLOAT;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.SamplerNode;14;60.70477,-125.0694;Float;True;Property;_Normal;Normal;1;0;None;True;0;True;bump;Auto;True;Object;-1;Derivative;Texture2D;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;1.0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1.0;False;FLOAT3;FLOAT;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.SamplerNode;23;60.70477,34.93072;Float;True;Property;_Metallic;Metallic;3;0;None;True;0;False;white;Auto;False;Object;-1;Derivative;Texture2D;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;1.0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1.0;False;FLOAT4;FLOAT;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.OneMinusNode;42;532.664,38.29838;Float;False;0;FLOAT;0.0;False;FLOAT
+Node;AmplifyShaderEditor.StandardSurfaceOutputNode;0;780.7046,-269.0693;Float;False;True;4;Float;ASEMaterialInspector;Standard;ASESampleShaders/SandPom;False;False;False;False;False;False;False;False;False;False;False;False;Back;0;3;False;0;0;Opaque;0.5;True;True;0;False;Opaque;Geometry;ForwardOnly;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;False;0;255;255;0;0;0;0;False;0;4;10;25;False;0.5;True;0;Zero;Zero;0;Zero;Zero;Add;Add;0;False;0;0,0,0,0;VertexOffset;False;Cylindrical;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT;0.0;False;4;FLOAT;0.0;False;5;FLOAT;0.0;False;6;FLOAT3;0,0,0;False;7;FLOAT3;0,0,0;False;8;FLOAT;0.0;False;9;FLOAT;0.0;False;10;OBJECT;0.0;False;11;FLOAT3;0.0,0,0;False;12;FLOAT3;0.0,0,0;False;13;OBJECT;0;False;14;FLOAT4;0,0,0,0;False;15;FLOAT3;0,0,0;False
 WireConnection;46;0;43;0
 WireConnection;46;1;45;0
 WireConnection;8;0;10;0
@@ -307,5 +277,33 @@ WireConnection;8;1;9;0
 WireConnection;8;2;13;0
 WireConnection;8;3;15;0
 WireConnection;8;5;46;0
+WireConnection;39;0;8;0
+WireConnection;41;0;10;0
+WireConnection;40;0;10;0
+WireConnection;20;1;39;0
+WireConnection;20;3;40;0
+WireConnection;20;4;41;0
+WireConnection;26;0;25;0
+WireConnection;26;1;20;1
+WireConnection;21;1;39;0
+WireConnection;21;3;40;0
+WireConnection;21;4;41;0
+WireConnection;29;0;21;1
+WireConnection;11;1;39;0
+WireConnection;11;3;40;0
+WireConnection;11;4;41;0
+WireConnection;14;1;39;0
+WireConnection;14;3;40;0
+WireConnection;14;4;41;0
+WireConnection;14;5;24;0
+WireConnection;23;1;39;0
+WireConnection;23;3;40;0
+WireConnection;23;4;41;0
+WireConnection;42;0;26;0
+WireConnection;0;0;11;0
+WireConnection;0;1;14;0
+WireConnection;0;3;23;1
+WireConnection;0;4;42;0
+WireConnection;0;5;29;0
 ASEEND*/
-//CHKSM=BEA79217013DFFC495CD77CE6332AF4EA2DB2C6C
+//CHKSM=105A063F4F084E9A52484279ADABBB0147863318

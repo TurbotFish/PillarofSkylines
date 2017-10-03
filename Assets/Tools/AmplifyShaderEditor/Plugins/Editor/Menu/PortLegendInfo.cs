@@ -7,9 +7,15 @@ using System.Collections.Generic;
 
 namespace AmplifyShaderEditor
 {
+	class NodeDescriptionInfo
+	{
+		public bool FoldoutValue;
+		public string Category;
+		public string[,] Contents;
+	}
+
 	public sealed class PortLegendInfo : EditorWindow
 	{
-	
 		private const string NoASEWindowWarning = "Please Open the ASE to get access to shortcut info";
 		private const float PixelSeparator = 5;
 		private const string EditorShortcutsTitle = "Editor Shortcuts";
@@ -17,21 +23,26 @@ namespace AmplifyShaderEditor
 		private const string NodesShortcutsTitle = "Nodes Shortcuts";
 		private const string PortShortcutsTitle = "Port Shortcuts";
 		private const string PortLegendTitle = "Port Legend";
+		private const string NodesDescTitle = "Node Info";
+		private const string CompatibleAssetsTitle = "Compatible Assets";
 
 		private const string KeyboardUsageTemplate = "[{0}] - {1}";
 		private const string m_lockedStr = "Locked Port";
-		
-		private const float WindowSizeX = 250;
+
+		private const float WindowSizeX = 350;
 		private const float WindowSizeY = 300;
 		private const float WindowPosX = 5;
 		private const float WindowPosY = 5;
 
+		private const int TitleLabelWidth = 150;
 		private Rect m_availableArea;
 
 		private bool m_portAreaFoldout = true;
 		private bool m_editorShortcutAreaFoldout = true;
 		private bool m_menuShortcutAreaFoldout = true;
 		private bool m_nodesShortcutAreaFoldout = true;
+		private bool m_nodesDescriptionAreaFoldout = true;
+		private bool m_compatibleAssetsFoldout = true;
 
 		private Vector2 m_currentScrollPos;
 
@@ -39,11 +50,18 @@ namespace AmplifyShaderEditor
 		private GUIStyle m_labelStyleBold;
 		private GUIStyle m_labelStyle;
 
+		private GUIStyle m_nodeInfoLabelStyleBold;
+		private GUIStyle m_nodeInfoLabelStyle;
+
+		private GUIStyle m_nodeInfoFoldoutStyle;
+
 		private GUIContent m_content = new GUIContent( "Helper", "Shows helper info for ASE users" );
 		private bool m_init = true;
 
 		private List<ShortcutItem> m_editorShortcuts = null;
 		private List<ShortcutItem> m_nodesShortcuts = null;
+		private List<NodeDescriptionInfo> m_nodeDescriptionsInfo = null;
+		private List<string[]> m_compatibleAssetsInfo = null;
 
 		public static PortLegendInfo OpenWindow()
 		{
@@ -74,6 +92,19 @@ namespace AmplifyShaderEditor
 			m_labelStyle.imagePosition = ImagePosition.TextOnly;
 			m_labelStyle.contentOffset = new Vector2( -10, 0 );
 			m_labelStyle.fontSize = ( int ) ( Constants.TextFieldFontSize );
+
+			m_nodeInfoLabelStyleBold = new GUIStyle( UIUtils.GetCustomStyle( CustomStyle.InputPortlabel ) );
+			m_nodeInfoLabelStyleBold.fontStyle = FontStyle.Bold;
+			m_nodeInfoLabelStyleBold.fontSize = ( int ) ( Constants.TextFieldFontSize );
+
+			m_nodeInfoLabelStyle = new GUIStyle( UIUtils.GetCustomStyle( CustomStyle.InputPortlabel ) );
+			m_nodeInfoLabelStyle.clipping = TextClipping.Clip;
+			m_nodeInfoLabelStyle.imagePosition = ImagePosition.TextOnly;
+			m_nodeInfoLabelStyle.fontSize = ( int ) ( Constants.TextFieldFontSize );
+			
+
+			m_nodeInfoFoldoutStyle = new GUIStyle( ( GUIStyle ) "foldout" );
+			m_nodeInfoFoldoutStyle.fontStyle = FontStyle.Bold;
 
 			if ( !EditorGUIUtility.isProSkin )
 			{
@@ -128,7 +159,7 @@ namespace AmplifyShaderEditor
 
 			if ( Event.current.type == EventType.MouseDrag && Event.current.button > 0 )
 			{
-				m_currentScrollPos.x += Constants.MenuDragSpeed* Event.current.delta.x;
+				m_currentScrollPos.x += Constants.MenuDragSpeed * Event.current.delta.x;
 				if ( m_currentScrollPos.x < 0 )
 				{
 					m_currentScrollPos.x = 0;
@@ -140,28 +171,35 @@ namespace AmplifyShaderEditor
 					m_currentScrollPos.y = 0;
 				}
 			}
-			
+
 			m_availableArea = new Rect( WindowPosX, WindowPosY, position.width - 2 * WindowPosX, position.height - 2 * WindowPosY );
 			GUILayout.BeginArea( m_availableArea );
 			{
-				m_currentScrollPos = EditorGUILayout.BeginScrollView( m_currentScrollPos, GUILayout.Width( 0 ), GUILayout.Height( 0 ) );
+				if ( GUILayout.Button( "Wiki Page" ) )
+				{
+					Application.OpenURL( Constants.HelpURL );
+				}
+
+				m_currentScrollPos = GUILayout.BeginScrollView( m_currentScrollPos );
 				{
 					EditorGUILayout.BeginVertical();
 					{
-						NodeUtils.DrawPropertyGroup( ref m_portAreaFoldout,PortLegendTitle, DrawPortInfo );
+						NodeUtils.DrawPropertyGroup( ref m_portAreaFoldout, PortLegendTitle, DrawPortInfo );
 						float currLabelWidth = EditorGUIUtility.labelWidth;
 						EditorGUIUtility.labelWidth = 1;
 						NodeUtils.DrawPropertyGroup( ref m_editorShortcutAreaFoldout, EditorShortcutsTitle, DrawEditorShortcuts );
 						NodeUtils.DrawPropertyGroup( ref m_menuShortcutAreaFoldout, MenuShortcutsTitle, DrawMenuShortcuts );
 						NodeUtils.DrawPropertyGroup( ref m_nodesShortcutAreaFoldout, NodesShortcutsTitle, DrawNodesShortcuts );
+						NodeUtils.DrawPropertyGroup( ref m_compatibleAssetsFoldout, CompatibleAssetsTitle, DrawCompatibleAssets );
+						NodeUtils.DrawPropertyGroup( ref m_nodesDescriptionAreaFoldout, NodesDescTitle, DrawNodeDescriptions );
 						EditorGUIUtility.labelWidth = currLabelWidth;
 					}
 					EditorGUILayout.EndVertical();
 				}
-				EditorGUILayout.EndScrollView();
+				GUILayout.EndScrollView();
 			}
 			GUILayout.EndArea();
-				
+
 		}
 
 		void DrawPortInfo()
@@ -200,7 +238,7 @@ namespace AmplifyShaderEditor
 				{
 					m_editorShortcuts = window.ShortcutManagerInstance.AvailableEditorShortcutsList;
 				}
-				
+
 				EditorGUI.indentLevel--;
 				int count = m_editorShortcuts.Count;
 				for ( int i = 0; i < count; i++ )
@@ -210,8 +248,10 @@ namespace AmplifyShaderEditor
 				DrawItem( "LMB Drag", "Box selection" );
 				DrawItem( "RMB Drag", "Camera Pan" );
 				DrawItem( "Alt + RMB Drag", "Scroll Menu" );
+				DrawItem( "Control + Node Drag", "Node move with snap" );
+				DrawItem( "Alt + Node Drag", "Auto-(Dis)Connect node on existing wire connection" );
 				EditorGUI.indentLevel++;
-				
+
 			}
 			else
 			{
@@ -235,12 +275,13 @@ namespace AmplifyShaderEditor
 				EditorGUILayout.LabelField( NoASEWindowWarning );
 			}
 		}
+
 		void DrawItem( string name, string description )
 		{
-			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField( name, m_labelStyleBold );
-			EditorGUILayout.LabelField( description, m_labelStyle );
-			EditorGUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			GUILayout.Label( name, m_labelStyleBold , GUILayout.Width( TitleLabelWidth ) );
+			GUILayout.Label( description, m_labelStyle );
+			GUILayout.EndHorizontal();
 			GUILayout.Space( PixelSeparator );
 		}
 
@@ -253,18 +294,135 @@ namespace AmplifyShaderEditor
 				{
 					m_nodesShortcuts = window.ShortcutManagerInstance.AvailableNodesShortcutsList;
 				}
-				
+
 				EditorGUI.indentLevel--;
 				int count = m_nodesShortcuts.Count;
 				for ( int i = 0; i < count; i++ )
 				{
-					EditorGUILayout.BeginHorizontal();
-					EditorGUILayout.LabelField( m_nodesShortcuts[ i ].Name, m_labelStyleBold );
-					EditorGUILayout.LabelField( m_nodesShortcuts[ i ].Description, m_labelStyle );
-					EditorGUILayout.EndHorizontal();
-					GUILayout.Space( PixelSeparator );
+					DrawItem( m_nodesShortcuts[ i ].Name, m_nodesShortcuts[ i ].Description );
 				}
 				EditorGUI.indentLevel++;
+			}
+			else
+			{
+				EditorGUILayout.LabelField( NoASEWindowWarning );
+			}
+		}
+		string CreateCompatibilityString( string source )
+		{
+			string[] split = source.Split( '.' );
+			if ( split != null && split.Length > 1 )
+			{
+				return split[ 1 ];
+			}
+			else
+			{
+				return source;
+			}
+		}
+		public void DrawCompatibleAssets()
+		{
+			AmplifyShaderEditorWindow window = UIUtils.CurrentWindow;
+			if ( window != null )
+			{
+				if ( m_compatibleAssetsInfo == null )
+				{
+					m_compatibleAssetsInfo = new List<string[]>();
+					List<ContextMenuItem> items = window.ContextMenuInstance.MenuItems;
+					int count = items.Count;
+					for ( int i = 0; i < count; i++ )
+					{
+						if ( items[ i ].NodeAttributes != null && items[ i ].NodeAttributes.CastType != null )
+						{
+							string types = string.Empty;
+							if ( items[ i ].NodeAttributes.CastType.Length > 1 )
+							{
+								for ( int j = 0; j < items[ i ].NodeAttributes.CastType.Length; j++ )
+								{
+									types += CreateCompatibilityString( items[ i ].NodeAttributes.CastType[ j ].ToString() );
+
+
+									if ( j < items[ i ].NodeAttributes.CastType.Length - 1 )
+									{
+										types += ", ";
+									}
+								}
+							}
+							else
+							{
+								types = CreateCompatibilityString( items[ i ].NodeAttributes.CastType[ 0 ].ToString() );
+							}
+							m_compatibleAssetsInfo.Add( new string[] { items[ i ].NodeAttributes.Name + ":   ", types } );
+						}
+					}
+				}
+				EditorGUI.indentLevel--;
+				int nodeCount = m_compatibleAssetsInfo.Count;
+				for ( int j = 0; j < nodeCount; j++ )
+				{
+					DrawItem( m_compatibleAssetsInfo[ j ][ 0 ], m_compatibleAssetsInfo[ j ][ 1 ] );
+				}
+				EditorGUI.indentLevel++;
+			}
+			else
+			{
+				EditorGUILayout.LabelField( NoASEWindowWarning );
+			}
+		}
+
+		public void DrawNodeDescriptions()
+		{
+			AmplifyShaderEditorWindow window = UIUtils.CurrentWindow;
+			if ( window != null )
+			{
+				if ( m_nodeDescriptionsInfo == null )
+				{
+					//fetch node info
+					m_nodeDescriptionsInfo = new List<NodeDescriptionInfo>();
+					Dictionary<string, PaletteFilterData> nodeData = window.CurrentPaletteWindow.BuildFullList();
+					var enumerator = nodeData.GetEnumerator();
+					while ( enumerator.MoveNext() )
+					{
+						List<ContextMenuItem> nodes = enumerator.Current.Value.Contents;
+						int count = nodes.Count;
+
+						NodeDescriptionInfo currInfo = new NodeDescriptionInfo();
+						currInfo.Contents = new string[ count, 2 ];
+						currInfo.Category = enumerator.Current.Key;
+
+						for ( int i = 0; i < count; i++ )
+						{
+							currInfo.Contents[ i, 0 ] = nodes[ i ].Name + ':';
+							currInfo.Contents[ i, 1 ] = nodes[ i ].Description;
+						}
+						m_nodeDescriptionsInfo.Add( currInfo );
+					}
+				}
+
+				//draw
+				{
+					GUILayout.Space( 5 );
+					int count = m_nodeDescriptionsInfo.Count;
+					EditorGUI.indentLevel--;
+					for ( int i = 0; i < count; i++ )
+					{
+						m_nodeDescriptionsInfo[ i ].FoldoutValue = EditorGUILayout.Foldout( m_nodeDescriptionsInfo[ i ].FoldoutValue, m_nodeDescriptionsInfo[ i ].Category, m_nodeInfoFoldoutStyle );
+						if ( m_nodeDescriptionsInfo[ i ].FoldoutValue )
+						{
+							EditorGUI.indentLevel++;
+							int nodeCount = m_nodeDescriptionsInfo[ i ].Contents.GetLength( 0 );
+							for ( int j = 0; j < nodeCount; j++ )
+							{
+								GUILayout.Label( m_nodeDescriptionsInfo[ i ].Contents[ j, 0 ], m_nodeInfoLabelStyleBold );
+								GUILayout.Label( m_nodeDescriptionsInfo[ i ].Contents[ j, 1 ], m_nodeInfoLabelStyle );
+								GUILayout.Space( PixelSeparator );
+							}
+							EditorGUI.indentLevel--;
+						}
+						GUILayout.Space( PixelSeparator );
+					}
+					EditorGUI.indentLevel++;
+				}
 			}
 			else
 			{
@@ -278,7 +436,20 @@ namespace AmplifyShaderEditor
 			m_editorShortcuts = null;
 			m_portStyle = null;
 			m_labelStyle = null;
+			m_labelStyleBold = null;
+			m_nodeInfoLabelStyle = null;
+			m_nodeInfoLabelStyleBold = null;
+			m_nodeInfoFoldoutStyle = null;
 			m_init = false;
+
+			if ( m_nodeDescriptionsInfo != null )
+			{
+				m_nodeDescriptionsInfo.Clear();
+				m_nodeDescriptionsInfo = null;
+			}
+
+			m_compatibleAssetsInfo.Clear();
+			m_compatibleAssetsInfo = null;
 		}
 	}
 }

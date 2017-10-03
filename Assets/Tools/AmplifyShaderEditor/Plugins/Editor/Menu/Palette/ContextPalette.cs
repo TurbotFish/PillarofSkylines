@@ -11,19 +11,18 @@ namespace AmplifyShaderEditor
 	{
 		private Vector3 m_position;
 		private Vector2 m_startDropPosition;
-		public ContextPalette( List<ContextMenuItem> items ) : base( items, 0, 0, 250, 250, string.Empty, MenuAnchor.NONE, MenuAutoSize.NONE )
+		public ContextPalette( AmplifyShaderEditorWindow parentWindow ) : base( parentWindow, 0, 0, 250, 250, string.Empty, MenuAnchor.NONE, MenuAutoSize.NONE )
 		{
 			m_isActive = false;
 			OnPaletteNodeCreateEvt += OnOptionSelected;
 			m_searchFilterControl += "CONTEXTPALETTE";
-			SortElements();
 		}
 
 		public override void OnEnterPressed()
 		{
 			if ( m_searchFilter.Length > 0 && m_currentItems.Count > 0 )
 			{
-				FireNodeCreateEvent( m_currentItems[ 0 ].NodeType, m_currentItems[ 0 ].Name );
+				FireNodeCreateEvent( m_currentItems[ 0 ].NodeType, m_currentItems[ 0 ].Name, m_currentItems[ 0 ].Function );
 			}
 			else
 			{
@@ -64,15 +63,17 @@ namespace AmplifyShaderEditor
 			m_focusOnSearch = true;
 		}
 
-		public override bool CheckButton( GUIContent content, GUIStyle style, int buttonId )
-		{
-			if ( buttonId != m_validButtonId )
-				return false;
 
-			return GUILayout.Button( content, style );
-		}
+		// This override is removing focus from our window ... need to figure out a workaround before re-using it
+		//public override bool CheckButton( GUIContent content, GUIStyle style, int buttonId )
+		//{
+		//	if ( buttonId != m_validButtonId )
+		//		return false;
 
-		void OnOptionSelected( Type type, string name )
+		//	return GUILayout.Button( content, style );
+		//}
+
+		void OnOptionSelected( Type type, string name, AmplifyShaderFunction function )
 		{
 			Disable();
 		}

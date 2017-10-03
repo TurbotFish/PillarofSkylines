@@ -34,7 +34,7 @@
 					if(_Connected == 0)
 						return float4(worldNormal, 1);
 
-					float3 tangent = normalize(float3( 1-f, p.y*0.01, p.x ));
+					float3 tangent = normalize(float3( (1-f)*2, p.y*0.01, p.x ));
 					float3 worldPos = mul(unity_ObjectToWorld, vertexPos).xyz;
 					float3 worldTangent = UnityObjectToWorldDir(tangent);
 					float tangentSign = -1;

@@ -10,6 +10,7 @@ namespace AmplifyShaderEditor
 		* Thick line drawing code: http://unifycommunity.com/wiki/index.php?title=VectorLine
 		*/
 		public static Material LineMaterial = null;
+		public static bool MultiLine = false;
 		private static Shader m_shader = null;
 		//private static bool m_clippingEnabled;
 		//private static Rect m_clippingBounds = new Rect();
@@ -24,6 +25,7 @@ namespace AmplifyShaderEditor
 		private static Vector3 Zero = new Vector3( 0, 0, 0 );
 
 		private static Vector2 aux1Vec2 = Vector2.zero;
+
 
 		//public static void BeginGroup( Rect position )
 		//{
@@ -56,7 +58,7 @@ namespace AmplifyShaderEditor
 				return;
 
 			CreateMaterial();
-			LineMaterial.SetPass( 0 );
+			LineMaterial.SetPass( (MultiLine ? 1 : 0) );
 
 			GL.Begin( GL.TRIANGLE_STRIP );
 			for ( int i = 0; i < allPoints.Length; i++ )
@@ -71,24 +73,27 @@ namespace AmplifyShaderEditor
 
 		}
 
-		public static Rect DrawBezier( Vector2 start, Vector2 startTangent, Vector2 end, Vector2 endTangent, Color color, float width )
+		public static Rect DrawBezier( Vector2 start, Vector2 startTangent, Vector2 end, Vector2 endTangent, Color color, float width, int type = 1 )
 		{
 			int segments = Mathf.FloorToInt( ( start - end ).magnitude / 20 ) * 3; // Three segments per distance of 20
-			return DrawBezier( start, startTangent, end, endTangent, color, width, segments );
+			return DrawBezier( start, startTangent, end, endTangent, color, width, segments, type );
 		}
 
-		public static Rect DrawBezier( Vector2 start, Vector2 startTangent, Vector2 end, Vector2 endTangent, Color color, float width, int segments )
+		public static Rect DrawBezier( Vector2 start, Vector2 startTangent, Vector2 end, Vector2 endTangent, Color color, float width, int segments, int type = 1 )
 		{
-			return DrawBezier( start, startTangent, end, endTangent, color, color, width, segments );
+			return DrawBezier( start, startTangent, end, endTangent, color, color, width, segments, type );
 		}
 
-		public static Rect DrawBezier( Vector2 start, Vector2 startTangent, Vector2 end, Vector2 endTangent, Color startColor, Color endColor, float width, int segments )
+		public static Rect DrawBezier( Vector2 start, Vector2 startTangent, Vector2 end, Vector2 endTangent, Color startColor, Color endColor, float width, int segments, int type = 1 )
 		{
 			int pointsCount = segments + 1;
 			int linesCount = segments;
 			allv3Points = Handles.MakeBezierPoints( start, end, startTangent, endTangent, pointsCount );
 			allColors = new Color[ pointsCount ];
 			allPerpendiculars = new Vector2[ pointsCount ];
+
+			startColor.a = ( type * 0.25f );
+			endColor.a = ( type * 0.25f );
 
 			allColors[ 0 ] = startColor;
 

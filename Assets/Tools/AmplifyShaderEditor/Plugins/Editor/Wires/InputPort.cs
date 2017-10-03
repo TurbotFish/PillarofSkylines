@@ -55,6 +55,15 @@ namespace AmplifyShaderEditor
 			UpdateInternalData();
 		}
 
+		public InputPort( int nodeId, int portId, WirePortDataType dataType, string name, string dataName, bool typeLocked, int orderId = -1, MasterNodePortCategory category = MasterNodePortCategory.Fragment ) : base( nodeId, portId, dataType, name, orderId )
+		{
+			m_dataName = dataName;
+			m_internalDataPropertyLabel = ( string.IsNullOrEmpty( name ) || name.Equals( Constants.EmptyPortValue ) ) ? InputDefaultNameStr : name;
+			m_typeLocked = typeLocked;
+			m_category = category;
+			UpdateInternalData();
+		}
+		
 		public override void FullDeleteConnections()
 		{
 			UIUtils.DeleteConnection( true, m_nodeId, m_portId, true, true );
@@ -330,7 +339,7 @@ namespace AmplifyShaderEditor
 			IOUtils.AddLineTerminator( ref myString );
 		}
 
-		public void ShowInternalData( bool useCustomLabel = false, string customLabel = null )
+		public void ShowInternalData( UndoParentNode owner, bool useCustomLabel = false, string customLabel = null )
 		{
 			string label = ( useCustomLabel == true && customLabel != null ) ? customLabel : m_internalDataPropertyLabel;
 			switch ( m_dataType )
@@ -338,22 +347,22 @@ namespace AmplifyShaderEditor
 				case WirePortDataType.OBJECT:
 				case WirePortDataType.FLOAT:
 				{
-					FloatInternalData = EditorGUILayout.FloatField( label, FloatInternalData );
+					FloatInternalData = owner.EditorGUILayoutFloatField( label, FloatInternalData );
 				}
 				break;
 				case WirePortDataType.FLOAT2:
 				{
-					Vector2InternalData = EditorGUILayout.Vector2Field( label, Vector2InternalData );
+					Vector2InternalData = owner.EditorGUILayoutVector2Field( label, Vector2InternalData );
 				}
 				break;
 				case WirePortDataType.FLOAT3:
 				{
-					Vector3InternalData = EditorGUILayout.Vector3Field( label, Vector3InternalData );
+					Vector3InternalData = owner.EditorGUILayoutVector3Field( label, Vector3InternalData );
 				}
 				break;
 				case WirePortDataType.FLOAT4:
 				{
-					Vector4InternalData = EditorGUILayout.Vector4Field( label, Vector4InternalData );
+					Vector4InternalData = owner.EditorGUILayoutVector4Field( label, Vector4InternalData );
 				}
 				break;
 				case WirePortDataType.FLOAT3x3:
@@ -364,7 +373,7 @@ namespace AmplifyShaderEditor
 					{
 						Vector4 currVec = matrix.GetRow( i );
 						EditorGUI.BeginChangeCheck();
-						currVec = EditorGUILayout.Vector4Field( label + "[ " + i + " ]", currVec );
+						currVec = owner.EditorGUILayoutVector4Field( label + "[ " + i + " ]", currVec );
 						if ( EditorGUI.EndChangeCheck() )
 						{
 							matrix.SetRow( i, currVec );
@@ -375,12 +384,12 @@ namespace AmplifyShaderEditor
 				break;
 				case WirePortDataType.COLOR:
 				{
-					ColorInternalData = EditorGUILayout.ColorField( label, ColorInternalData );
+					ColorInternalData = owner.EditorGUILayoutColorField( label, ColorInternalData );
 				}
 				break;
 				case WirePortDataType.INT:
 				{
-					IntInternalData = EditorGUILayout.IntField( label, IntInternalData );
+					IntInternalData = owner.EditorGUILayoutIntField( label, IntInternalData );
 				}
 				break;
 			}
@@ -408,7 +417,7 @@ namespace AmplifyShaderEditor
 					data = 0f;
 					FloatInternalData = data;
 					if ( DebugConsoleWindow.DeveloperMode )
-						Debug.LogError( e );
+						Debug.LogException( e );
 				}
 				return data;
 			}
@@ -429,7 +438,7 @@ namespace AmplifyShaderEditor
 					data = 0;
 					IntInternalData = data;
 					if ( DebugConsoleWindow.DeveloperMode )
-						Debug.LogError( e );
+						Debug.LogException( e );
 				}
 				return data;
 			}
@@ -454,7 +463,7 @@ namespace AmplifyShaderEditor
 						data = Vector2.zero;
 						Vector2InternalData = data;
 						if ( DebugConsoleWindow.DeveloperMode )
-							Debug.LogError( e );
+							Debug.LogException( e );
 					}
 				}
 				else
@@ -493,7 +502,7 @@ namespace AmplifyShaderEditor
 						data = Vector3.zero;
 						Vector3InternalData = data;
 						if ( DebugConsoleWindow.DeveloperMode )
-							Debug.LogError( e );
+							Debug.LogException( e );
 					}
 				}
 				else
@@ -533,7 +542,7 @@ namespace AmplifyShaderEditor
 						data = Vector4.zero;
 						Vector4InternalData = data;
 						if ( DebugConsoleWindow.DeveloperMode )
-							Debug.LogError( e );
+							Debug.LogException( e );
 					}
 				}
 				else
@@ -573,7 +582,7 @@ namespace AmplifyShaderEditor
 						data = Color.clear;
 						ColorInternalData = data;
 						if ( DebugConsoleWindow.DeveloperMode )
-							Debug.LogError( e );
+							Debug.LogException( e );
 					}
 				}
 				else
@@ -624,7 +633,7 @@ namespace AmplifyShaderEditor
 					{
 						Matrix4x4InternalData = data;
 						if ( DebugConsoleWindow.DeveloperMode )
-							Debug.LogError( e );
+							Debug.LogException( e );
 					}
 				}
 				else
@@ -834,7 +843,7 @@ namespace AmplifyShaderEditor
 
 			UIUtils.GetNode( NodeId ).PreviewMaterial.SetTexture( m_propertyName, m_inputPreviewTexture );
 		}
-
+		
 		public override void Destroy()
 		{
 			base.Destroy();
@@ -894,6 +903,36 @@ namespace AmplifyShaderEditor
 				m_name = value;
 				m_internalDataPropertyLabel = ( string.IsNullOrEmpty( value ) || value.Equals( Constants.EmptyPortValue ) ) ? InputDefaultNameStr : value;
 				m_dirtyLabelSize = true;
+			}
+		}
+
+		public string InternalDataName
+		{
+			get { return m_internalDataPropertyLabel; }
+			set	{ m_internalDataPropertyLabel = value; }
+		}
+
+		public bool ValidInternalData
+		{
+			get
+			{
+				switch ( m_dataType )
+				{
+					case WirePortDataType.FLOAT:
+					case WirePortDataType.FLOAT2:
+					case WirePortDataType.FLOAT3:
+					case WirePortDataType.FLOAT4:
+					case WirePortDataType.FLOAT3x3:
+					case WirePortDataType.FLOAT4x4:
+					case WirePortDataType.COLOR:
+					case WirePortDataType.INT:return true;
+					case WirePortDataType.OBJECT:
+					case WirePortDataType.SAMPLER1D:
+					case WirePortDataType.SAMPLER2D:
+					case WirePortDataType.SAMPLER3D:
+					case WirePortDataType.SAMPLERCUBE:
+					default:return false;
+				}
 			}
 		}
 

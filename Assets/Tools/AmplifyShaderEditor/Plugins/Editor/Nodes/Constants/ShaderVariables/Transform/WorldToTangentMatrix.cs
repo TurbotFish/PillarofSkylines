@@ -16,8 +16,8 @@ namespace AmplifyShaderEditor
 
 		public override void Destroy()
 		{
+			ContainerGraph.RemoveNormalDependentCount();
 			base.Destroy();
-			UIUtils.RemoveNormalDependentCount();
 		}
 
 		public override void PropagateNodeData( NodeData nodeData )
@@ -30,15 +30,12 @@ namespace AmplifyShaderEditor
 		{
 			dataCollector.ForceNormal = true;
 
-			dataCollector.AddToInput( m_uniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_NORMAL ), true );
-			dataCollector.AddToInput( m_uniqueId, Constants.InternalData, false );
+			dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_NORMAL ), true );
+			dataCollector.AddToInput( UniqueId, Constants.InternalData, false );
 
-			dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3, "worldTangent", "WorldNormalVector( "+Constants.InputVarStr + ", float3(1,0,0) )" );
-			dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3, "worldBitangent", "WorldNormalVector( " + Constants.InputVarStr + ", float3(0,1,0) )" );
-			dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3, "worldNormal", "WorldNormalVector( " + Constants.InputVarStr + ", float3(0,0,1) )" );
+			GeneratorUtils.GenerateWorldToTangentMatrix( ref dataCollector, UniqueId, m_currentPrecisionType );
 
-			dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3x3, "worldToTangent", "float3x3(worldTangent, worldBitangent, worldNormal)" );
-			return "worldToTangent";
+			return GeneratorUtils.WorldToTangentStr;
 		}
 	}
 }

@@ -23,10 +23,16 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
+			if ( dataCollector.TesselationActive )
+			{
+				UIUtils.ShowMessage( "Unable to use Vertex to Frag when Tessellation is active" );
+				return "0";
+			}
+
 			string tpName = UIUtils.FinalPrecisionWirePortToCgType( m_currentPrecisionType, m_inputPorts[ 0 ].DataType );
 
-			string interpName = "data" + m_uniqueId;
-			dataCollector.AddToInput( m_uniqueId, tpName + " " + interpName, true );
+			string interpName = "data" + UniqueId;
+			dataCollector.AddToInput( UniqueId, tpName + " " + interpName, true );
 
 			MasterNodePortCategory portCategory = dataCollector.PortCategory;
 			if ( dataCollector.PortCategory != MasterNodePortCategory.Vertex && dataCollector.PortCategory != MasterNodePortCategory.Tessellation )
@@ -34,19 +40,21 @@ namespace AmplifyShaderEditor
 
 			bool dirtyVertexVarsBefore = dataCollector.DirtyVertexVariables;
 
-			dataCollector.AddVertexInstruction( tpName + " interp" + m_uniqueId + " = " +
-			m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, m_inputPorts[ 0 ].DataType, true ), m_uniqueId );
+			ContainerGraph.ResetNodesLocalVariables( this );
 
+			string vertexVarValue = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector)+";";
+			dataCollector.AddLocalVariable( UniqueId, Constants.VertexShaderOutputStr + "." + interpName, vertexVarValue );
+			
 			dataCollector.PortCategory = portCategory;
 
 			if ( !dirtyVertexVarsBefore && dataCollector.DirtyVertexVariables )
 			{
-				dataCollector.AddVertexInstruction( UIUtils.CurrentDataCollector.VertexLocalVariables, m_uniqueId, false );
+				dataCollector.AddVertexInstruction( UIUtils.CurrentDataCollector.VertexLocalVariables, UniqueId, false );
 				UIUtils.CurrentDataCollector.ClearVertexLocalVariables();
-				UIUtils.CurrentWindow.CurrentGraph.ResetNodesLocalVariables( this );
+				ContainerGraph.ResetNodesLocalVariables( this );
 			}
 
-			dataCollector.AddVertexInstruction( Constants.VertexShaderOutputStr + "." + interpName + " = interp" + m_uniqueId, m_uniqueId );
+			//dataCollector.AddVertexInstruction( Constants.VertexShaderOutputStr + "." + interpName + " = interp" + m_uniqueId, m_uniqueId );
 			return Constants.InputVarStr + "." + interpName;
 
 		}

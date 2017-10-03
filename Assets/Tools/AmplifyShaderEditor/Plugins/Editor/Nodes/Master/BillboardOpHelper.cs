@@ -22,32 +22,34 @@ namespace AmplifyShaderEditor
 		private const string BillboardTypeStr = "Type";
 
 		public readonly string[] BillboardCylindricalInstructions = {	"//Calculate new billboard vertex position and normal",
-																		"float3 forwardCamVec = -normalize ( UNITY_MATRIX_V._m20_m21_m22 )",
 																		"float3 upCamVec = float3( 0, 1, 0 )",
-																		"float3 rightCamVec = normalize( UNITY_MATRIX_V._m00_m01_m02 )",
-																		"float4x4 rotationCamMatrix = float4x4( rightCamVec, 0, upCamVec, 0, forwardCamVec, 0, 0, 0, 0, 1 )",
-																		"v.vertex = mul( v.vertex , rotationCamMatrix )",
-																		"v.normal = normalize( mul( v.normal, rotationCamMatrix ))"};
+																		};
 
 		public readonly string[] BillboardSphericalInstructions = {   "//Calculate new billboard vertex position and normal",
-																		"float3 forwardCamVec = -normalize ( UNITY_MATRIX_V._m20_m21_m22 )",
-																		"float3 upCamVec = normalize ( UNITY_MATRIX_V._m10_m11_m12 )",
-																		"float3 rightCamVec = normalize( UNITY_MATRIX_V._m00_m01_m02 )",
-																		"float4x4 rotationCamMatrix = float4x4( rightCamVec, 0, upCamVec, 0, forwardCamVec, 0, 0, 0, 0, 1 )",
-																		"v.vertex = mul( v.vertex , rotationCamMatrix )",
-																		"v.normal = normalize( mul( v.normal, rotationCamMatrix ))"};
+																		"float3 upCamVec = normalize ( UNITY_MATRIX_V._m10_m11_m12 )"
+																		};
 
+
+		public readonly string[] BillboardCommonInstructions = {   	"float3 forwardCamVec = -normalize ( UNITY_MATRIX_V._m20_m21_m22 )",
+																	"float3 rightCamVec = normalize( UNITY_MATRIX_V._m00_m01_m02 )",
+																	"float4x4 rotationCamMatrix = float4x4( rightCamVec, 0, upCamVec, 0, forwardCamVec, 0, 0, 0, 0, 1 )",
+																	"//This unfortunately must be made to take non-uniform scaling into account",
+																	"//Transform to world coors, apply rotation and transform back to local",
+																	"v.vertex = mul( v.vertex , unity_ObjectToWorld )",
+																	"v.vertex = mul( v.vertex , rotationCamMatrix )",
+																	"v.vertex = mul( v.vertex , unity_WorldToObject )",
+																	"v.normal = normalize( mul( v.normal, rotationCamMatrix ))"};
 		[SerializeField]
 		private bool m_isBillboard = false;
 
 		[SerializeField]
 		private BillboardType m_billboardType = BillboardType.Cylindrical;
 
-		public void Draw()
+		public void Draw( UndoParentNode owner )
 		{
 			bool visible = EditorVariablesManager.ExpandedVertexOptions.Value;
 			bool enabled = m_isBillboard;
-			NodeUtils.DrawPropertyGroup( ref visible, ref m_isBillboard, BillboardTitleStr, () =>
+			NodeUtils.DrawPropertyGroup( owner, ref visible, ref m_isBillboard, BillboardTitleStr, () =>
 			{
 				m_billboardType = ( BillboardType ) EditorGUILayout.EnumPopup( BillboardTypeStr, m_billboardType );
 			} );
@@ -82,7 +84,11 @@ namespace AmplifyShaderEditor
 						}
 					}break;
 				}
-				
+
+				for ( int i = 0; i < BillboardCommonInstructions.Length; i++ )
+				{
+					dataCollector.AddVertexInstruction( BillboardCommonInstructions[ i ], -1, true );
+				}
 			}
 		}
 		

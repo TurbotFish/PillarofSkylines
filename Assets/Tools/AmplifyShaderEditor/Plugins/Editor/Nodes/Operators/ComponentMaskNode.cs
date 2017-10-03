@@ -187,7 +187,7 @@ namespace AmplifyShaderEditor
 			{
 				for ( int i = 0; i < count; i++ )
 				{
-					m_selection[ i ] = EditorGUILayout.ToggleLeft( m_labels[i], m_selection[ i ] );
+					m_selection[ i ] = EditorGUILayoutToggleLeft( m_labels[i], m_selection[ i ] );
 					m_labels[ i ] = UIUtils.GetComponentForPosition( i, m_inputPorts[ 0 ].DataType ).ToUpper();
 					if ( m_selection[ i ] )
 						activeCount += 1;
@@ -267,7 +267,7 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-			RegisterLocalVariable( outputId, value, ref dataCollector, OutputLocalVarName+m_uniqueId );
+			RegisterLocalVariable( outputId, value, ref dataCollector, OutputLocalVarName+OutputId );
 
 			return m_outputPorts[0].LocalValue;
 		}

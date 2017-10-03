@@ -67,7 +67,7 @@ namespace AmplifyShaderEditor
 				{
 					case DebugNodeState.CreateNode:
 					{
-						m_node = m_window.CreateNode( m_screenshotList[ 0 ].NodeType, Vector2.zero, false );
+						m_node = m_window.CreateNode( m_screenshotList[ 0 ].NodeType, Vector2.zero, null, false );
 						m_screenShotState = DebugNodeState.FocusOnNode;
 					}
 					break;

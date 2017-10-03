@@ -97,14 +97,14 @@ namespace AmplifyShaderEditor
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
 			m_currentInputDecStr = UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, m_currentInput );
-			dataCollector.AddToInput( m_uniqueId, m_currentInputDecStr, true );
+			dataCollector.AddToInput( UniqueId, m_currentInputDecStr, true );
 			switch ( m_currentInput )
 			{
 				case AvailableSurfaceInputs.VIEW_DIR:
 				case AvailableSurfaceInputs.WORLD_REFL:
 				case AvailableSurfaceInputs.WORLD_NORMAL:
 				{
-					dataCollector.AddToInput( m_uniqueId, Constants.InternalData, false );
+					dataCollector.AddToInput( UniqueId, Constants.InternalData, false );
 				}
 				break;
 				case AvailableSurfaceInputs.WORLD_POS:

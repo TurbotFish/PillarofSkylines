@@ -57,7 +57,7 @@ namespace AmplifyShaderEditor
 		{
 			base.DrawProperties();
 			EditorGUI.BeginChangeCheck();
-			m_viewDirSpace = ( ViewDirSpace ) EditorGUILayout.EnumPopup( SpaceStr, m_viewDirSpace );
+			m_viewDirSpace = ( ViewDirSpace ) EditorGUILayoutEnumPopup( SpaceStr, m_viewDirSpace );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				UpdateTitle();
@@ -88,7 +88,7 @@ namespace AmplifyShaderEditor
 				if ( m_addInstruction )
 				{
 					string precision = UIUtils.FinalPrecisionWirePortToCgType( m_currentPrecisionType, WirePortDataType.FLOAT3 );
-					dataCollector.AddVertexInstruction( precision + " viewDir = normalize( _WorldSpaceCameraPos - " + Constants.VertexShaderInputStr + ".vertex )", m_uniqueId );
+					dataCollector.AddVertexInstruction( precision + " viewDir = normalize( _WorldSpaceCameraPos - " + Constants.VertexShaderInputStr + ".vertex )", UniqueId );
 					m_addInstruction = false;
 				}
 
@@ -100,8 +100,8 @@ namespace AmplifyShaderEditor
 				{
 					if ( dataCollector.DirtyNormal )
 					{
-						dataCollector.AddToInput( m_uniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_POS ), true );
-						dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3, WorldDirVarStr, "normalize( UnityWorldSpaceViewDir( " + Constants.InputVarStr + ".worldPos ) )" );
+						dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_POS ), true );
+						dataCollector.AddToLocalVariables( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3, WorldDirVarStr, "normalize( UnityWorldSpaceViewDir( " + Constants.InputVarStr + ".worldPos ) )" );
 						return GetOutputVectorItem( 0, outputId, WorldDirVarStr );
 					}
 					else

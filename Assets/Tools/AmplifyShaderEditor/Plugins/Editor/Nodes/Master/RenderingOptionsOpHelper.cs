@@ -32,18 +32,18 @@ namespace AmplifyShaderEditor
 			m_codeGenerationDataList.Add( new CodeGenerationData( " No Add Pass", "noforwardadd" ) );
 		}
 
-		public void Draw( )
+		public void Draw( UndoParentNode owner )
 		{
 			bool value = EditorVariablesManager.ExpandedRenderingOptions.Value;
 			NodeUtils.DrawPropertyGroup( ref value, RenderingOptionsStr, () =>
-			 {
-				 int codeGenCount = m_codeGenerationDataList.Count;
-				// Starting from index 4 because other options are already contemplated with m_renderPath and add/receive shadows
-				for ( int i = 4; i < codeGenCount; i++ )
-				 {
-					 m_codeGenerationDataList[ i ].IsActive = EditorGUILayout.ToggleLeft( m_codeGenerationDataList[ i ].Name, m_codeGenerationDataList[ i ].IsActive );
-				 }
-			 } );
+			  {
+				  int codeGenCount = m_codeGenerationDataList.Count;
+				 // Starting from index 4 because other options are already contemplated with m_renderPath and add/receive shadows
+				 for ( int i = 4; i < codeGenCount; i++ )
+				  {
+					  m_codeGenerationDataList[ i ].IsActive = owner.EditorGUILayoutToggleLeft( m_codeGenerationDataList[ i ].Name, m_codeGenerationDataList[ i ].IsActive );
+				  }
+			  } );
 			EditorVariablesManager.ExpandedRenderingOptions.Value = value;
 		}
 

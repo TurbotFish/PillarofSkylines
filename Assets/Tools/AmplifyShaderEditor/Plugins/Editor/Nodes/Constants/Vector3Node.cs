@@ -40,14 +40,14 @@ namespace AmplifyShaderEditor
 
 		public override void DrawSubProperties()
 		{
-			m_defaultValue = EditorGUILayout.Vector3Field( Constants.DefaultValueLabel, m_defaultValue );
+			m_defaultValue = EditorGUILayoutVector3Field( Constants.DefaultValueLabel, m_defaultValue );
 		}
 
 		public override void DrawMaterialProperties()
 		{
 			EditorGUI.BeginChangeCheck();
 
-			m_materialValue = EditorGUILayout.Vector3Field( Constants.MaterialValueLabel, m_materialValue );
+			m_materialValue = EditorGUILayoutVector3Field( Constants.MaterialValueLabel, m_materialValue );
 
 			if ( EditorGUI.EndChangeCheck() )
 			{
@@ -88,13 +88,13 @@ namespace AmplifyShaderEditor
 					if ( m_materialMode && m_currentParameterType != PropertyType.Constant )
 					{
 						float val = m_materialValue[ i ];
-						UIUtils.DrawFloat( ref m_propertyDrawPos, ref val, LabelWidth * drawInfo.InvertedZoom );
+						UIUtils.DrawFloat( this, ref m_propertyDrawPos, ref val, LabelWidth * drawInfo.InvertedZoom );
 						m_materialValue[ i ] = val;
 					}
 					else
 					{
 						float val = m_defaultValue[ i ];
-						UIUtils.DrawFloat( ref m_propertyDrawPos, ref val, LabelWidth * drawInfo.InvertedZoom );
+						UIUtils.DrawFloat( this, ref m_propertyDrawPos, ref val, LabelWidth * drawInfo.InvertedZoom );
 						m_defaultValue[ i ] = val;
 					}
 				}
@@ -110,15 +110,7 @@ namespace AmplifyShaderEditor
 		public override void ConfigureLocalVariable( ref MasterNodeDataCollector dataCollector )
 		{
 			Vector3 value = m_defaultValue;
-			if ( dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation )
-			{
-				dataCollector.AddToVertexLocalVariables( m_uniqueId, CreateLocalVarDec( value.x + "," + value.y + "," + value.z ) );
-			}
-			else
-			{
-				dataCollector.AddToLocalVariables( m_uniqueId, CreateLocalVarDec( value.x + "," + value.y + "," + value.z ) );
-			}
-
+			dataCollector.AddLocalVariable( UniqueId, CreateLocalVarDec( value.x + "," + value.y + "," + value.z ) );
 			m_outputPorts[ 0 ].SetLocalValue( m_propertyName );
 			m_outputPorts[ 1 ].SetLocalValue( m_propertyName + ".x" );
 			m_outputPorts[ 2 ].SetLocalValue( m_propertyName + ".y" );
@@ -191,10 +183,10 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void SetMaterialMode( Material mat )
+		public override void SetMaterialMode( Material mat, bool fetchMaterialValues )
 		{
-			base.SetMaterialMode( mat );
-			if ( m_materialMode && UIUtils.IsProperty( m_currentParameterType ) && mat.HasProperty( m_propertyName ) )
+			base.SetMaterialMode( mat , fetchMaterialValues );
+			if ( fetchMaterialValues && m_materialMode && UIUtils.IsProperty( m_currentParameterType ) && mat.HasProperty( m_propertyName ) )
 			{
 				m_materialValue = mat.GetVector( m_propertyName );
 			}
@@ -220,6 +212,18 @@ namespace AmplifyShaderEditor
 			{
 				UIUtils.ShowMessage( "Incorrect number of float3 values", MessageSeverity.Error );
 			}
+		}
+
+		public override void ReadAdditionalClipboardData( ref string[] nodeParams )
+		{
+			base.ReadAdditionalClipboardData( ref nodeParams );
+			m_materialValue = IOUtils.StringToVector3( GetCurrentParam( ref nodeParams ) );
+		}
+
+		public override void WriteAdditionalClipboardData( ref string nodeInfo )
+		{
+			base.WriteAdditionalClipboardData( ref nodeInfo );
+			IOUtils.AddFieldValueToString( ref nodeInfo, IOUtils.Vector3ToString( m_materialValue ) );
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )

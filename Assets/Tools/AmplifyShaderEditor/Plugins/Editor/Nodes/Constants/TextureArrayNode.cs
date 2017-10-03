@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Texture Array", "Textures", "Texture Array" )]
+	[NodeAttributes( "Texture Array", "Textures", "Texture Array", KeyCode.None, true, 0, int.MaxValue, typeof( Texture2DArray ) )]
 	public class TextureArrayNode : PropertyNode
 	{
 		[SerializeField]
@@ -131,11 +131,11 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		void ShowDefaults()
+		new void ShowDefaults()
 		{
-			m_uvSet = EditorGUILayout.IntPopup( Constants.AvailableUVSetsLabel, m_uvSet, Constants.AvailableUVSetsStr, Constants.AvailableUVSets );
+			m_uvSet = EditorGUILayoutIntPopup( Constants.AvailableUVSetsLabel, m_uvSet, Constants.AvailableUVSetsStr, Constants.AvailableUVSets );
 
-			MipType newMipMode = ( MipType ) EditorGUILayout.Popup( "Mip Mode", ( int ) m_mipMode, m_mipOptions );
+			MipType newMipMode = ( MipType ) EditorGUILayoutPopup( "Mip Mode", ( int ) m_mipMode, m_mipOptions );
 			if ( newMipMode != m_mipMode )
 			{
 				m_mipMode = newMipMode;
@@ -152,19 +152,20 @@ namespace AmplifyShaderEditor
 
 			if ( !m_lodPort.IsConnected && m_lodPort.Visible )
 			{
-				m_lodPort.FloatInternalData = EditorGUILayout.FloatField( "Mip Level", m_lodPort.FloatInternalData );
+				m_lodPort.FloatInternalData = EditorGUILayoutFloatField( "Mip Level", m_lodPort.FloatInternalData );
 			}
 
 			if ( !m_indexPort.IsConnected )
 			{
-				m_indexPort.FloatInternalData = EditorGUILayout.FloatField( "Index", m_indexPort.FloatInternalData );
+				m_indexPort.FloatInternalData = EditorGUILayoutFloatField( "Index", m_indexPort.FloatInternalData );
 			}
 		}
 
 		public override void DrawMainPropertyBlock()
 		{
 			EditorGUI.BeginChangeCheck();
-			m_referenceType = ( TexReferenceType ) EditorGUILayout.EnumPopup( Constants.ReferenceTypeStr, m_referenceType );
+			//m_referenceType = ( TexReferenceType ) EditorGUILayout.EnumPopup( Constants.ReferenceTypeStr, m_referenceType );
+			m_referenceType = ( TexReferenceType ) EditorGUILayoutPopup( Constants.ReferenceTypeStr, ( int ) m_referenceType, Constants.ReferenceArrayLabels );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				if ( m_referenceType == TexReferenceType.Object )
@@ -209,7 +210,7 @@ namespace AmplifyShaderEditor
 					GUI.enabled = false;
 				}
 
-				m_referenceArrayId = EditorGUILayout.Popup( Constants.AvailableReferenceStr, m_referenceArrayId, arr );
+				m_referenceArrayId = EditorGUILayoutPopup( Constants.AvailableReferenceStr, m_referenceArrayId, arr );
 				GUI.enabled = guiEnabledBuffer;
 				ShowDefaults();
 
@@ -220,7 +221,7 @@ namespace AmplifyShaderEditor
 		public override void OnPropertyNameChanged()
 		{
 			base.OnPropertyNameChanged();
-			UIUtils.UpdateTextureArrayDataNode( m_uniqueId, PropertyInspectorName );
+			UIUtils.UpdateTextureArrayDataNode( UniqueId, PropertyInspectorName );
 		}
 
 		public override void DrawSubProperties()
@@ -230,7 +231,7 @@ namespace AmplifyShaderEditor
 			DrawSamplerOptions();
 
 			EditorGUI.BeginChangeCheck();
-			m_defaultTextureArray = EditorGUILayout.ObjectField( Constants.DefaultValueLabel, m_defaultTextureArray, typeof( Texture2DArray ), false ) as Texture2DArray;
+			m_defaultTextureArray = EditorGUILayoutObjectField( Constants.DefaultValueLabel, m_defaultTextureArray, typeof( Texture2DArray ), false ) as Texture2DArray;
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				CheckTextureImporter( true );
@@ -245,7 +246,7 @@ namespace AmplifyShaderEditor
 			DrawSamplerOptions();
 
 			EditorGUI.BeginChangeCheck();
-			m_materialTextureArray = EditorGUILayout.ObjectField( Constants.MaterialValueLabel, m_materialTextureArray, typeof( Texture2DArray ), false ) as Texture2DArray;
+			m_materialTextureArray = EditorGUILayoutObjectField( Constants.MaterialValueLabel, m_materialTextureArray, typeof( Texture2DArray ), false ) as Texture2DArray;
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				CheckTextureImporter( true );
@@ -257,7 +258,7 @@ namespace AmplifyShaderEditor
 		public void DrawSamplerOptions()
 		{
 			EditorGUI.BeginChangeCheck();
-			bool autoUnpackNormals = EditorGUILayout.Toggle( "Normal Map", m_autoUnpackNormals );
+			bool autoUnpackNormals = EditorGUILayoutToggle( "Normal Map", m_autoUnpackNormals );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				if ( m_autoUnpackNormals != autoUnpackNormals )
@@ -271,7 +272,7 @@ namespace AmplifyShaderEditor
 
 			if ( m_autoUnpackNormals && !m_normalPort.IsConnected )
 			{
-				m_normalPort.FloatInternalData = EditorGUILayout.FloatField( NormalScaleStr, m_normalPort.FloatInternalData );
+				m_normalPort.FloatInternalData = EditorGUILayoutFloatField( NormalScaleStr, m_normalPort.FloatInternalData );
 			}
 		}
 
@@ -324,10 +325,10 @@ namespace AmplifyShaderEditor
 			UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath( AssetDatabase.GetAssetPath( texture ), typeof( UnityEngine.Object ) );
 			SerializedObject serializedObject = new UnityEditor.SerializedObject( obj );
 
-			if( serializedObject != null )
+			if ( serializedObject != null )
 			{
 				SerializedProperty colorSpace = serializedObject.FindProperty( "m_ColorSpace" );
-				m_linearTexture = ( colorSpace.intValue == 0);
+				m_linearTexture = ( colorSpace.intValue == 0 );
 			}
 		}
 
@@ -372,12 +373,12 @@ namespace AmplifyShaderEditor
 			int fontSizeUpper = m_titleOverlay.fontSize;
 
 			Rect newRect = m_globalPosition;
-			newRect.width = ( 128 ) * drawInfo.InvertedZoom; 
-			newRect.height = ( 128 ) * drawInfo.InvertedZoom; 
+			newRect.width = ( 128 ) * drawInfo.InvertedZoom;
+			newRect.height = ( 128 ) * drawInfo.InvertedZoom;
 			newRect.x = m_previewRect.x;
 			newRect.y = m_previewRect.y;
 
-			m_titleOverlay.fontSize = ( int )( 9 * drawInfo.InvertedZoom );
+			m_titleOverlay.fontSize = ( int ) ( 9 * drawInfo.InvertedZoom );
 
 			Rect smallButton = newRect;
 			smallButton.height = 14 * drawInfo.InvertedZoom;
@@ -408,11 +409,11 @@ namespace AmplifyShaderEditor
 
 						Color temp = GUI.color;
 						GUI.color = Color.clear;
-						m_materialTextureArray = EditorGUI.ObjectField( newRect, m_materialTextureArray, typeof( Texture2DArray ), false ) as Texture2DArray;
+						m_materialTextureArray = EditorGUIObjectField( newRect, m_materialTextureArray, typeof( Texture2DArray ), false ) as Texture2DArray;
 						GUI.color = temp;
 
 						GUI.Button( smallButton, "Select", UIUtils.GetCustomStyle( CustomStyle.SamplerButton ) );
-						if ( UIUtils.CurrentWindow.CurrentGraph.LodLevel <= ParentGraph.NodeLOD.LOD2 )
+						if ( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD2 )
 							GUI.Label( newRect, "None (Texture2DArray)", UIUtils.ObjectFieldThumbOverlay );
 					}
 					else
@@ -435,7 +436,7 @@ namespace AmplifyShaderEditor
 							Event.current.type = EventType.ignore;
 						}
 
-						m_materialTextureArray = EditorGUI.ObjectField( newRect, m_materialTextureArray, typeof( Texture2DArray ), false ) as Texture2DArray;
+						m_materialTextureArray = EditorGUIObjectField( newRect, m_materialTextureArray, typeof( Texture2DArray ), false ) as Texture2DArray;
 						if ( restoreMouse )
 						{
 							Event.current.type = EventType.mouseDown;
@@ -458,11 +459,11 @@ namespace AmplifyShaderEditor
 
 						Color temp = GUI.color;
 						GUI.color = Color.clear;
-						m_defaultTextureArray = EditorGUI.ObjectField( newRect, m_defaultTextureArray, typeof( Texture2DArray ), false ) as Texture2DArray;
+						m_defaultTextureArray = EditorGUIObjectField( newRect, m_defaultTextureArray, typeof( Texture2DArray ), false ) as Texture2DArray;
 						GUI.color = temp;
 
 						GUI.Button( smallButton, "Select", UIUtils.GetCustomStyle( CustomStyle.SamplerButton ) );
-						if ( UIUtils.CurrentWindow.CurrentGraph.LodLevel <= ParentGraph.NodeLOD.LOD2 )
+						if ( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD2 )
 							GUI.Label( newRect, "None (Texture2DArray)", UIUtils.ObjectFieldThumbOverlay );
 					}
 					else
@@ -485,7 +486,7 @@ namespace AmplifyShaderEditor
 							Event.current.type = EventType.ignore;
 						}
 
-						m_defaultTextureArray = EditorGUI.ObjectField( newRect, m_defaultTextureArray, typeof( Texture2DArray ), false ) as Texture2DArray;
+						m_defaultTextureArray = EditorGUIObjectField( newRect, m_defaultTextureArray, typeof( Texture2DArray ), false ) as Texture2DArray;
 						if ( restoreMouse )
 						{
 							Event.current.type = EventType.mouseDown;
@@ -521,9 +522,15 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
+			if ( m_outputPorts[ 0 ].IsLocalValue )
+				return GetOutputVectorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue );
+
+
 			OnPropertyNameChanged();
 
 			CheckReference();
+
+			bool isVertex = ( dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation );
 
 			bool instanced = false;
 			if ( m_referenceType == TexReferenceType.Instance && m_referenceSampler != null )
@@ -538,6 +545,9 @@ namespace AmplifyShaderEditor
 				level = m_lodPort.GeneratePortInstructions( ref dataCollector );
 			}
 
+			if ( isVertex && !m_lodPort.Visible )
+				level = "0";
+
 
 			string uvs = string.Empty;
 			if ( m_uvPort.IsConnected )
@@ -546,7 +556,10 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				uvs = TexCoordVertexDataNode.GenerateFragUVs( ref dataCollector, m_uniqueId, m_uvSet, ( instanced ? m_referenceSampler.PropertyName : PropertyName ) );
+				if ( isVertex )
+					uvs = TexCoordVertexDataNode.GenerateVertexUVs( ref dataCollector, UniqueId, m_uvSet, ( instanced ? m_referenceSampler.PropertyName : PropertyName ) );
+				else
+					uvs = TexCoordVertexDataNode.GenerateFragUVs( ref dataCollector, UniqueId, m_uvSet, ( instanced ? m_referenceSampler.PropertyName : PropertyName ) );
 			}
 			string index = m_indexPort.GeneratePortInstructions( ref dataCollector );
 
@@ -581,7 +594,7 @@ namespace AmplifyShaderEditor
 				if ( isScaledNormal )
 				{
 					string scaleValue = m_normalPort.GeneratePortInstructions( ref dataCollector );
-					dataCollector.AddToIncludes( m_uniqueId, Constants.UnityStandardUtilsLibFuncs );
+					dataCollector.AddToIncludes( UniqueId, Constants.UnityStandardUtilsLibFuncs );
 					m_normalMapUnpackMode = "UnpackScaleNormal( {0} ," + scaleValue + " )";
 				}
 				else
@@ -590,20 +603,21 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-			string result = "UNITY_SAMPLE_TEX2DARRAY" + ( m_lodPort.Visible ? "_LOD" : "" ) + "(" + propertyName + ", float3(" + uvs + ", " + index + ") " + ( InputPorts[ 2 ].Visible ? ", " + level : "" ) + " )";
+			string result = "UNITY_SAMPLE_TEX2DARRAY" + ( m_lodPort.Visible || isVertex ? "_LOD" : "" ) + "(" + propertyName + ", float3(" + uvs + ", " + index + ") " + ( m_lodPort.Visible || isVertex ? ", " + level : "" ) + " )";
 			if ( m_autoUnpackNormals )
 				result = string.Format( m_normalMapUnpackMode, result );
 
-			if ( connectionNumber > 1 )
-			{
-				dataCollector.AddToLocalVariables( m_uniqueId, "float" + ( m_autoUnpackNormals ? "3" : "4" ) + " texArray" + m_uniqueId + " = " + result + ";" );
-				return GetOutputVectorItem( 0, outputId, "texArray" + m_uniqueId );
-			}
-			else
-			{
+			//if ( connectionNumber > 1 )
+			//{
+			RegisterLocalVariable( 0, result, ref dataCollector, "texArray" + OutputId );
+			//dataCollector.AddToLocalVariables( UniqueId, "float" + ( m_autoUnpackNormals ? "3" : "4" ) + " texArray" + m_uniqueId + " = " + result + ";" );
+			return GetOutputVectorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue );
+			//}
+			//else
+			//{
 
-				return GetOutputVectorItem( 0, outputId, result );
-			}
+			//	return GetOutputVectorItem( 0, outputId, result );
+			//}
 		}
 
 		public override string GetPropertyValue()
@@ -640,6 +654,8 @@ namespace AmplifyShaderEditor
 			ConfigureInputPorts();
 			ConfigureOutputPorts();
 
+			m_lodPort.Visible = ( m_mipMode == MipType.MipLevel );
+
 			UpdateHeaderColor();
 
 			if ( m_defaultTextureArray )
@@ -659,6 +675,20 @@ namespace AmplifyShaderEditor
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_autoUnpackNormals );
 		}
 
+		public override void ReadAdditionalClipboardData( ref string[] nodeParams )
+		{
+			base.ReadAdditionalClipboardData( ref nodeParams );
+			string textureName = GetCurrentParam( ref nodeParams );
+			m_materialTextureArray = AssetDatabase.LoadAssetAtPath<Texture2DArray>( textureName );
+		}
+
+		public override void WriteAdditionalClipboardData( ref string nodeInfo )
+		{
+			base.WriteAdditionalClipboardData( ref nodeInfo );
+			IOUtils.AddFieldValueToString( ref nodeInfo, ( m_materialTextureArray != null ) ? AssetDatabase.GetAssetPath( m_materialTextureArray ) : Constants.NoStringValue );
+		}
+
+
 		public override void UpdateMaterial( Material mat )
 		{
 			base.UpdateMaterial( mat );
@@ -672,10 +702,10 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void SetMaterialMode( Material mat )
+		public override void SetMaterialMode( Material mat , bool fetchMaterialValues )
 		{
-			base.SetMaterialMode( mat );
-			if ( m_materialMode && UIUtils.IsProperty( m_currentParameterType ) )
+			base.SetMaterialMode( mat , fetchMaterialValues );
+			if ( fetchMaterialValues && m_materialMode && UIUtils.IsProperty( m_currentParameterType ) )
 			{
 				if ( mat.HasProperty( PropertyName ) )
 				{
@@ -722,6 +752,29 @@ namespace AmplifyShaderEditor
 			}
 
 			return m_referenceSampler != null;
+		}
+
+		public override void SetupFromCastObject( UnityEngine.Object obj )
+		{
+			base.SetupFromCastObject( obj );
+			SetupFromObject( obj );
+		}
+
+		public override void OnObjectDropped( UnityEngine.Object obj )
+		{
+			SetupFromObject( obj );
+		}
+
+		void SetupFromObject( UnityEngine.Object obj )
+		{
+			if ( m_materialMode )
+			{
+				m_materialTextureArray = obj as Texture2DArray;
+			}
+			else
+			{
+				m_defaultTextureArray = obj as Texture2DArray;
+			}
 		}
 
 		public Texture2DArray TextureArray

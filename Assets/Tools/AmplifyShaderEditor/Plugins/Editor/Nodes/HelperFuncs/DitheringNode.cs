@@ -29,6 +29,7 @@ namespace AmplifyShaderEditor
 			AddOutputPort( WirePortDataType.FLOAT, Constants.EmptyPortValue );
 			m_textLabelWidth = 100;
 			m_autoWrapProperties = true;
+			GeneratePattern();
 		}
 
 		public override void DrawProperties()
@@ -36,7 +37,7 @@ namespace AmplifyShaderEditor
 			base.DrawProperties();
 			EditorGUILayout.BeginVertical();
 			EditorGUI.BeginChangeCheck();
-			m_selectedPatternInt = EditorGUILayout.Popup( "Pattern", m_selectedPatternInt, PatternsStr );
+			m_selectedPatternInt = EditorGUILayoutPopup( "Pattern", m_selectedPatternInt, PatternsStr );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				GeneratePattern();
@@ -50,6 +51,7 @@ namespace AmplifyShaderEditor
 			{
 				default:
 				case 0:
+				{
 					m_functionBody = string.Empty;
 					m_functionHeader = "Dither" + PatternsFuncStr[ m_selectedPatternInt ] + "( {0}, {1} )";
 					IOUtils.AddFunctionHeader( ref m_functionBody, "inline float Dither" + PatternsFuncStr[ m_selectedPatternInt ] + "( int x, int y )" );
@@ -62,8 +64,10 @@ namespace AmplifyShaderEditor
 					//same as dividing by 16
 					IOUtils.AddFunctionLine( ref m_functionBody, "return (dither[r]-1) / 15;" );
 					IOUtils.CloseFunctionBody( ref m_functionBody );
-					break;
+				}
+				break;
 				case 1:
+				{
 					m_functionBody = string.Empty;
 					m_functionHeader = "Dither" + PatternsFuncStr[ m_selectedPatternInt ] + "( {0}, {1} )";
 					IOUtils.AddFunctionHeader( ref m_functionBody, "inline float Dither" + PatternsFuncStr[ m_selectedPatternInt ] + "( int x, int y )" );
@@ -80,33 +84,57 @@ namespace AmplifyShaderEditor
 					//same as dividing by 64
 					IOUtils.AddFunctionLine( ref m_functionBody, "return (dither[r]-1) / 63;" );
 					IOUtils.CloseFunctionBody( ref m_functionBody );
-					break;
+				}
+				break;
 			}
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
-			dataCollector.AddToIncludes( m_uniqueId, Constants.UnityShaderVariables );
+			if ( m_outputPorts[ 0 ].IsLocalValue )
+				return m_outputPorts[ 0 ].LocalValue;
 
-			dataCollector.AddToInput( m_uniqueId, "float4 " + CustomScreenPosStr, true );
-			string vertexInstruction = Constants.VertexShaderOutputStr + "." + CustomScreenPosStr + " = ComputeScreenPos( UnityObjectToClipPos( " + Constants.VertexShaderInputStr + ".vertex ) )";
-			dataCollector.AddVertexInstruction( vertexInstruction, m_uniqueId );
+			dataCollector.AddToIncludes( UniqueId, Constants.UnityShaderVariables );
+			string varName = string.Empty;
+			bool isFragment = dataCollector.IsFragmentCategory;
+			if ( dataCollector.TesselationActive && isFragment )
+			{
+				varName = GeneratorUtils.GenerateClipPositionOnFrag( ref dataCollector, UniqueId, m_currentPrecisionType );
+			}
+			else
+			{
+				if ( isFragment )
+				{
+					dataCollector.AddToInput( UniqueId, "float4 " + CustomScreenPosStr, true );
+					string screenPos = GeneratorUtils.GenerateVertexScreenPosition( ref dataCollector, UniqueId, m_currentPrecisionType, false );
+					string vertexInstruction = Constants.VertexShaderOutputStr + "." + CustomScreenPosStr + " = " + screenPos+";";
+					dataCollector.AddToVertexLocalVariables( UniqueId, vertexInstruction );
+					varName = Constants.InputVarStr + "." + CustomScreenPosStr;
+				}
+				else
+				{
+					varName = GeneratorUtils.GenerateVertexScreenPosition( ref dataCollector, UniqueId, m_currentPrecisionType, false );
+				}
+			}
 
-			string surfInstruction = "( " + Constants.InputVarStr + "." + CustomScreenPosStr + ".xy / " + Constants.InputVarStr + "." + CustomScreenPosStr + ".w ) * _ScreenParams.xy";
-			dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, WirePortDataType.FLOAT2, "clipScreen" + m_uniqueId, surfInstruction );
+			string surfInstruction = "( " + varName + ".xy / " + varName + ".w ) * _ScreenParams.xy";
+			dataCollector.AddLocalVariable( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT2, "clipScreen" + OutputId, surfInstruction );
 
 			string functionResult = "";
 			switch ( m_selectedPatternInt )
 			{
 				default:
 				case 0:
-					functionResult = dataCollector.AddFunctions( m_functionHeader, m_functionBody, "fmod(" + "clipScreen" + m_uniqueId + ".x, 4)", "fmod(" + "clipScreen" + m_uniqueId + ".y, 4)" );
-					break;
+				functionResult = dataCollector.AddFunctions( m_functionHeader, m_functionBody, "fmod(" + "clipScreen" + OutputId + ".x, 4)", "fmod(" + "clipScreen" + UniqueId + ".y, 4)" );
+				break;
 				case 1:
-					functionResult = dataCollector.AddFunctions( m_functionHeader, m_functionBody, "fmod(" + "clipScreen" + m_uniqueId + ".x, 8)", "fmod(" + "clipScreen" + m_uniqueId + ".y, 8)" );
-					break;
+				functionResult = dataCollector.AddFunctions( m_functionHeader, m_functionBody, "fmod(" + "clipScreen" + OutputId + ".x, 8)", "fmod(" + "clipScreen" + UniqueId + ".y, 8)" );
+				break;
 			}
-			return CreateOutputLocalVariable( 0, functionResult, ref dataCollector );
+
+
+			RegisterLocalVariable( 0, functionResult, ref dataCollector, "dither" + OutputId );
+			return m_outputPorts[ 0 ].LocalValue;
 		}
 
 		public override void ReadFromString( ref string[] nodeParams )

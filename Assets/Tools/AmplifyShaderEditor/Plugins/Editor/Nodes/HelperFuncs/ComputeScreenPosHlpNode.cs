@@ -16,5 +16,11 @@ namespace AmplifyShaderEditor
 			m_outputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT4, false );
 			m_outputPorts[ 0 ].Name = "XYZW";
 		}
+
+		protected override void OnUniqueIDAssigned()
+		{
+			base.OnUniqueIDAssigned();
+			m_localVarName = "computeScreenPos" + OutputId;
+		}
 	}
 }

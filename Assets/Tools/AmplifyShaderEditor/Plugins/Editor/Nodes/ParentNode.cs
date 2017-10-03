@@ -19,7 +19,7 @@ namespace AmplifyShaderEditor
 	}
 
 	[Serializable]
-	public class ParentNode : ScriptableObject, ISerializationCallbackReceiver
+	public class ParentNode : UndoParentNode, ISerializationCallbackReceiver
 	{
 		private const double NodeClickTime = 0.2;
 		protected GUIContent PrecisionContante = new GUIContent( "Precision", "Changes the precision of internal calculations, using lower types saves some performance\nDefault: Float" );
@@ -32,6 +32,9 @@ namespace AmplifyShaderEditor
 		public delegate void OnNodeGenericEvent( ParentNode node );
 		public delegate void OnNodeReOrder( ParentNode node, int index );
 		public delegate void DrawPropertySection();
+
+		//[SerializeField]
+		protected ParentGraph m_containerGraph = null;
 
 		[SerializeField]
 		protected PrecisionType m_currentPrecisionType = PrecisionType.Float;
@@ -52,10 +55,13 @@ namespace AmplifyShaderEditor
 		public event OnNodeReOrder OnNodeReOrderEvent;
 
 		[SerializeField]
-		protected int m_uniqueId;
+		private int m_uniqueId;
 
 		[SerializeField]
 		protected Rect m_position;
+
+		[SerializeField]
+		protected Rect m_unpreviewedPosition;
 
 		[SerializeField]
 		protected GUIContent m_content;
@@ -92,11 +98,13 @@ namespace AmplifyShaderEditor
 
 		// Ports
 		[SerializeField]
-		protected List<InputPort> m_inputPorts;
+		protected List<InputPort> m_inputPorts = new List<InputPort>();
+
 		protected Dictionary<int, InputPort> m_inputPortsDict;
 
 		[SerializeField]
-		protected List<OutputPort> m_outputPorts;
+		protected List<OutputPort> m_outputPorts = new List<OutputPort>();
+
 		protected Dictionary<int, OutputPort> m_outputPortsDict;
 
 		[SerializeField]
@@ -105,7 +113,7 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		protected Rect m_headerPosition;
 
-		private Vector2 m_tooltipOffset;
+		//private Vector2 m_tooltipOffset;
 
 		[SerializeField]
 		protected bool m_sizeIsDirty = false;
@@ -118,9 +126,6 @@ namespace AmplifyShaderEditor
 
 		[SerializeField]
 		protected float m_fontHeight;
-
-		[SerializeField]
-		protected NodeAttributes m_nodeAttribs;
 
 		// Editor State save on Play Button
 		[SerializeField]
@@ -158,7 +163,7 @@ namespace AmplifyShaderEditor
 		protected GUIStyle m_textfieldStyle = null;
 		protected GUIStyle m_empty = new GUIStyle();
 		protected bool m_isVisible;
-		protected bool m_selected;
+		protected bool m_selected = false;
 		protected bool m_rmbIgnore;
 		protected GUIContent m_sizeContentAux;
 
@@ -169,6 +174,7 @@ namespace AmplifyShaderEditor
 		protected Vector2 m_accumDelta = Vector2.zero;
 		private bool m_isOnGrid = false;
 		protected bool m_useInternalPortData = false;
+		protected bool m_autoDrawInternalPortData = true;
 		protected DrawOrder m_drawOrder = DrawOrder.Default;
 
 		private bool m_movingInFrame = false;
@@ -184,6 +190,9 @@ namespace AmplifyShaderEditor
 		protected int m_category = 0;
 
 		protected double m_lastTimeSelected;
+		private double m_tooltipTimestamp;
+		private string m_tooltipText;
+		//private bool m_doDoubleClick = false;
 
 		protected Rect m_unscaledRemainingBox;
 		protected Rect m_remainingBox;
@@ -192,7 +201,7 @@ namespace AmplifyShaderEditor
 		private int m_visibleOutputs = 0;
 
 		private double m_doubleClickTimestamp;
-		private const double m_doubleClickTime = 0.25;
+		private const double DoubleClickTime = 0.25;
 
 		protected bool m_firstPreviewDraw = true;
 
@@ -220,6 +229,8 @@ namespace AmplifyShaderEditor
 		private float m_paddingTitleLeft = 0;
 		private float m_paddingTitleRight = 0;
 
+		protected float m_marginPreviewLeft = 0;
+
 		private Material m_previewMaterial = null;
 		private Shader m_previewShader = null;
 		//private bool m_hasPreviewShader = true;
@@ -239,7 +250,7 @@ namespace AmplifyShaderEditor
 		protected bool m_autoWrapProperties = false;
 		private bool m_internalDataFoldout = true;
 		protected bool m_propertiesFoldout = true;
-		private bool m_repopulateDictionaries = false;
+		protected bool m_repopulateDictionaries = true;
 
 		protected Vector2 m_lastInputBottomRight = Vector2.zero;
 		protected Vector2 m_lastOutputBottomLeft = Vector2.zero;
@@ -268,6 +279,12 @@ namespace AmplifyShaderEditor
 		public virtual void OnEnable()
 		{
 			hideFlags = HideFlags.DontSave;
+
+			if ( m_containerGraph == null )
+				m_containerGraph = UIUtils.CurrentWindow.CurrentGraph;
+
+			if ( m_containerGraph.ParentWindow == null )
+				m_containerGraph.ParentWindow = UIUtils.CurrentWindow;
 		}
 
 		protected virtual void CommonInit( int uniqueId )
@@ -287,7 +304,8 @@ namespace AmplifyShaderEditor
 			if ( m_nodeAttribs != null )
 			{
 				m_content.text = m_nodeAttribs.Name;
-				m_content.tooltip = m_nodeAttribs.Description;
+				//m_content.tooltip = m_nodeAttribs.Description;
+				m_tooltipText = m_nodeAttribs.Description;
 				m_selected = false;
 				m_headerColor = UIUtils.GetColorFromCategory( m_nodeAttribs.Category );
 				if ( m_nodeAttribs.Deprecated )
@@ -295,7 +313,7 @@ namespace AmplifyShaderEditor
 					UIUtils.ShowMessage( string.Format( DeprecatedMessageStr, m_nodeAttribs.Name, m_nodeAttribs.DeprecatedAlternative ), MessageSeverity.Normal, false );
 				}
 			}
-			
+
 			m_sizeContentAux = new GUIContent();
 			m_extraSize = new Vector2( 0, 0 );
 			m_insideSize = new Vector2( 0, 0 );
@@ -303,18 +321,12 @@ namespace AmplifyShaderEditor
 			m_initialized = true;
 			m_restictions = new NodeRestrictions();
 
-			m_tooltipOffset = new Vector2( 0, 10 );
+			//m_tooltipOffset = new Vector2( 0, 10 );
 
 			m_propertyDrawPos = new Rect();
 		}
 
-		//public bool HasPreviewShader()
-		//{
-		//	Shader shader = AssetDatabase.LoadAssetAtPath<Shader>( "Preview_" + GetType().Name );
-		//	return ( shader != null );
-		//}
-
-		public virtual void AfterCommit()
+		public virtual void AfterCommonInit()
 		{
 			if ( PreviewShader && !HasPreviewShader )
 			{
@@ -341,7 +353,8 @@ namespace AmplifyShaderEditor
 			OnNodeStoppedMovingEvent = null;
 			OnNodeChangeSizeEvent = null;
 			OnNodeReOrderEvent = null;
-			m_restictions.Destroy();
+			if( m_restictions != null )
+				m_restictions.Destroy();
 			m_restictions = null;
 			int inputCount = m_inputPorts.Count;
 			for ( int i = 0; i < inputCount; i++ )
@@ -414,7 +427,7 @@ namespace AmplifyShaderEditor
 			m_requireMaterialUpdate = false;
 		}
 
-		public virtual void SetMaterialMode( Material mat )
+		public virtual void SetMaterialMode( Material mat, bool fetchMaterialValues )
 		{
 			m_materialMode = ( mat != null );
 		}
@@ -476,7 +489,6 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-
 		public void RemoveOutputPort( int idx )
 		{
 			if ( idx < m_outputPorts.Count )
@@ -492,6 +504,15 @@ namespace AmplifyShaderEditor
 		public void AddInputPort( WirePortDataType type, bool typeLocked, string name, int orderId = -1, MasterNodePortCategory category = MasterNodePortCategory.Fragment, int uniquePortId = -1 )
 		{
 			InputPort port = new InputPort( m_uniqueId, ( uniquePortId < 0 ? m_inputPorts.Count : uniquePortId ), type, name, typeLocked, ( orderId != -1 ? orderId : m_inputPorts.Count ), category );
+			m_inputPorts.Add( port );
+			m_inputPortsDict.Add( port.PortId, port );
+			SetSaveIsDirty();
+			m_sizeIsDirty = true;
+		}
+
+		public void AddInputPort( WirePortDataType type, bool typeLocked, string name, string dataName, int orderId = -1, MasterNodePortCategory category = MasterNodePortCategory.Fragment, int uniquePortId = -1 )
+		{
+			InputPort port = new InputPort( m_uniqueId, ( uniquePortId < 0 ? m_inputPorts.Count : uniquePortId ), type, name, dataName, typeLocked, ( orderId != -1 ? orderId : m_inputPorts.Count ), category );
 			m_inputPorts.Add( port );
 			m_inputPortsDict.Add( port.PortId, port );
 			SetSaveIsDirty();
@@ -583,11 +604,11 @@ namespace AmplifyShaderEditor
 			return result;
 		}
 
-		public void AddOutputColorPorts( string name )
+		public void AddOutputColorPorts( string name, bool addAlpha = true )
 		{
 			m_sizeIsDirty = true;
 			//Main port
-			m_outputPorts.Add( new OutputPort( m_uniqueId, m_outputPorts.Count, WirePortDataType.COLOR, name ) );
+			m_outputPorts.Add( new OutputPort( m_uniqueId, m_outputPorts.Count, addAlpha ? WirePortDataType.COLOR : WirePortDataType.FLOAT3, name ) );
 			m_outputPortsDict.Add( m_outputPorts[ m_outputPorts.Count - 1 ].PortId, m_outputPorts[ m_outputPorts.Count - 1 ] );
 
 			//Color components port
@@ -603,9 +624,12 @@ namespace AmplifyShaderEditor
 			m_outputPortsDict.Add( m_outputPorts[ m_outputPorts.Count - 1 ].PortId, m_outputPorts[ m_outputPorts.Count - 1 ] );
 			m_outputPorts[ m_outputPorts.Count - 1 ].CustomColor = Color.blue;
 
-			m_outputPorts.Add( new OutputPort( m_uniqueId, m_outputPorts.Count, WirePortDataType.FLOAT, "A" ) );
-			m_outputPortsDict.Add( m_outputPorts[ m_outputPorts.Count - 1 ].PortId, m_outputPorts[ m_outputPorts.Count - 1 ] );
-			m_outputPorts[ m_outputPorts.Count - 1 ].CustomColor = Color.white;
+			if ( addAlpha )
+			{
+				m_outputPorts.Add( new OutputPort( m_uniqueId, m_outputPorts.Count, WirePortDataType.FLOAT, "A" ) );
+				m_outputPortsDict.Add( m_outputPorts[ m_outputPorts.Count - 1 ].PortId, m_outputPorts[ m_outputPorts.Count - 1 ] );
+				m_outputPorts[ m_outputPorts.Count - 1 ].CustomColor = Color.white;
+			}
 		}
 
 		public void ConvertFromVectorToColorPorts()
@@ -721,7 +745,7 @@ namespace AmplifyShaderEditor
 			return null;
 		}
 
-		virtual protected void ChangeSizeFinished() { /*MarkForPreviewUpdate();*/ }
+		virtual protected void ChangeSizeFinished() { m_firstPreviewDraw = true; /*MarkForPreviewUpdate();*/ }
 		protected void ChangeSize()
 		{
 			m_cachedPos = m_position;
@@ -770,6 +794,8 @@ namespace AmplifyShaderEditor
 					inSize.y = UIUtils.PortsSize.y;
 			}
 
+			inSize.x += m_marginPreviewLeft;
+
 			if ( maxOutString.Length > 0 )
 			{
 				m_sizeContentAux.text = maxOutString;
@@ -781,21 +807,21 @@ namespace AmplifyShaderEditor
 			}
 
 			if ( m_additionalContent.text.Length > 0 )
-				m_extraHeaderHeight = ( int )Constants.NODE_HEADER_EXTRA_HEIGHT;
+				m_extraHeaderHeight = ( int ) Constants.NODE_HEADER_EXTRA_HEIGHT;
 			else
 				m_extraHeaderHeight = 0;
 
 			float headerWidth = Mathf.Max( UIUtils.UnZoomedNodeTitleStyle.CalcSize( m_content ).x + m_paddingTitleLeft + m_paddingTitleRight, UIUtils.UnZoomedPropertyValuesTitleStyle.CalcSize( m_additionalContent ).x + m_paddingTitleLeft + m_paddingTitleRight );
 			m_position.width = Mathf.Max( headerWidth, Mathf.Max( MinInsideBoxWidth, m_insideSize.x ) + inSize.x + outSize.x ) + Constants.NODE_HEADER_LEFTRIGHT_MARGIN * 2;
 
-			m_position.width += m_extraSize.x;
+			//m_position.width += m_extraSize.x;
 
 			m_fontHeight = Mathf.Max( inSize.y, outSize.y );
 			m_position.height = Mathf.Max( inputCount, outputCount ) * ( m_fontHeight + Constants.INPUT_PORT_DELTA_Y );// + Constants.INPUT_PORT_DELTA_Y;
 			m_position.height = Mathf.Max( m_position.height, Mathf.Max( MinInsideBoxHeight, m_insideSize.y ) );
-			m_position.height += UIUtils.HeaderMaxHeight + m_extraHeaderHeight + Constants.INPUT_PORT_DELTA_Y + m_extraSize.y;
-			
+			m_position.height += UIUtils.HeaderMaxHeight + m_extraHeaderHeight + Constants.INPUT_PORT_DELTA_Y;// + m_extraSize.y;
 
+			m_unpreviewedPosition = m_position;
 			//UIUtils.CurrentWindow.CameraDrawInfo.InvertedZoom = cachedZoom;
 			if ( OnNodeChangeSizeEvent != null )
 			{
@@ -907,21 +933,21 @@ namespace AmplifyShaderEditor
 				m_lastPosition = m_position;
 			}
 
-			if ( m_isVisible )
-			{
-				//if ( _globalPosition.Contains( drawInfo.MousePosition ) )
-				//{
-				//	UIUtils.RecordObject( this );
-				//}
+			//if ( m_isVisible )
+			//{
+			//	//if ( _globalPosition.Contains( drawInfo.MousePosition ) )
+			//	//{
+			//	//	UIUtils.RecordObject( this );
+			//	//}
 
-				if ( !( drawInfo.MousePosition.x < m_globalPosition.x ||
-					drawInfo.MousePosition.x > ( m_globalPosition.x + m_globalPosition.width ) ||
-					 drawInfo.MousePosition.y < m_globalPosition.y ||
-					drawInfo.MousePosition.y > ( m_globalPosition.y + m_globalPosition.height ) ) )
-				{
-					UIUtils.RecordObject( this , "Hovering object");
-				}
-			}
+			//	if ( !( drawInfo.MousePosition.x < m_globalPosition.x ||
+			//		drawInfo.MousePosition.x > ( m_globalPosition.x + m_globalPosition.width ) ||
+			//		 drawInfo.MousePosition.y < m_globalPosition.y ||
+			//		drawInfo.MousePosition.y > ( m_globalPosition.y + m_globalPosition.height ) ) )
+			//	{
+			//		UIUtils.RecordObject( this, "Hovering object" );
+			//	}
+			//}
 		}
 
 		public void FireStoppedMovingEvent( bool testOnlySelected, InteractionMode interactionMode )
@@ -935,14 +961,16 @@ namespace AmplifyShaderEditor
 			FireStoppedMovingEvent( true, m_defaultInteractionMode );
 		}
 
-		protected void DrawPrecisionProperty() { m_currentPrecisionType = ( PrecisionType )EditorGUILayout.EnumPopup( PrecisionContante, m_currentPrecisionType ); }
+		protected void DrawPrecisionProperty() { m_currentPrecisionType = ( PrecisionType ) EditorGUILayoutEnumPopup( PrecisionContante, m_currentPrecisionType ); }
 
 		public virtual void DrawTitle( Rect titlePos )
 		{
-			if ( UIUtils.CurrentWindow.CameraDrawInfo.InvertedZoom > 0.1f )
+			if ( ContainerGraph.ParentWindow.CameraDrawInfo.InvertedZoom > 0.1f )
+			{
 				GUI.Label( titlePos, m_content, UIUtils.GetCustomStyle( CustomStyle.NodeTitle ) );
+			}
 		}
-		
+
 		public virtual void DrawPreview( DrawInfo drawInfo, Rect rect )
 		{
 			//if ( !m_drawPreview )
@@ -991,13 +1019,13 @@ namespace AmplifyShaderEditor
 			EditorGUI.DrawPreviewTexture( rect, PreviewTexture, UIUtils.LinearMaterial );
 
 			//Preview buttons
-			if( m_drawPreviewMaskButtons )
+			if ( m_drawPreviewMaskButtons )
 				DrawPreviewMaskButtons( drawInfo, rect );
 		}
 
 		protected void DrawPreviewMaskButtons( DrawInfo drawInfo, Rect rect )
 		{
-			if ( rect.Contains( drawInfo.MousePosition ) && m_channelNumber > 1 && UIUtils.CurrentWindow.CurrentGraph.LodLevel != ParentGraph.NodeLOD.LOD3 )
+			if ( rect.Contains( drawInfo.MousePosition ) && m_channelNumber > 1 && ContainerGraph.LodLevel != ParentGraph.NodeLOD.LOD3 )
 			{
 				Rect buttonRect = rect;
 				buttonRect.height = 14 * drawInfo.InvertedZoom;
@@ -1008,40 +1036,40 @@ namespace AmplifyShaderEditor
 				{
 					//UIUtils.MainSkin.customStyles[45] = GUI.skin.FindStyle( "minibuttonleft" );
 					//buttonRect.x += 48 * drawInfo.InvertedZoom;
-					m_previewChannels[ 0 ] = GUI.Toggle( buttonRect, m_previewChannels[ 0 ], "R", UIUtils.MainSkin.customStyles[ ( int )AmplifyShaderEditor.CustomStyle.MiniButtonTopMid ] );
+					m_previewChannels[ 0 ] = GUI.Toggle( buttonRect, m_previewChannels[ 0 ], "R", UIUtils.MainSkin.customStyles[ ( int ) AmplifyShaderEditor.CustomStyle.MiniButtonTopMid ] );
 					buttonRect.x += 14 * drawInfo.InvertedZoom;
-					m_previewChannels[ 1 ] = GUI.Toggle( buttonRect, m_previewChannels[ 1 ], "G", UIUtils.MainSkin.customStyles[ ( int )AmplifyShaderEditor.CustomStyle.MiniButtonTopRight ] );
+					m_previewChannels[ 1 ] = GUI.Toggle( buttonRect, m_previewChannels[ 1 ], "G", UIUtils.MainSkin.customStyles[ ( int ) AmplifyShaderEditor.CustomStyle.MiniButtonTopRight ] );
 				}
 				else if ( m_channelNumber == 3 )
 				{
 					//buttonRect.x += 40 * drawInfo.InvertedZoom;
-					m_previewChannels[ 0 ] = GUI.Toggle( buttonRect, m_previewChannels[ 0 ], "R", UIUtils.MainSkin.customStyles[ ( int )AmplifyShaderEditor.CustomStyle.MiniButtonTopMid ] );
+					m_previewChannels[ 0 ] = GUI.Toggle( buttonRect, m_previewChannels[ 0 ], "R", UIUtils.MainSkin.customStyles[ ( int ) AmplifyShaderEditor.CustomStyle.MiniButtonTopMid ] );
 					buttonRect.x += 14 * drawInfo.InvertedZoom;
-					m_previewChannels[ 1 ] = GUI.Toggle( buttonRect, m_previewChannels[ 1 ], "G", UIUtils.MainSkin.customStyles[ ( int )AmplifyShaderEditor.CustomStyle.MiniButtonTopMid ] );
+					m_previewChannels[ 1 ] = GUI.Toggle( buttonRect, m_previewChannels[ 1 ], "G", UIUtils.MainSkin.customStyles[ ( int ) AmplifyShaderEditor.CustomStyle.MiniButtonTopMid ] );
 					buttonRect.x += 14 * drawInfo.InvertedZoom;
-					m_previewChannels[ 2 ] = GUI.Toggle( buttonRect, m_previewChannels[ 2 ], "B", UIUtils.MainSkin.customStyles[ ( int )AmplifyShaderEditor.CustomStyle.MiniButtonTopRight ] );
+					m_previewChannels[ 2 ] = GUI.Toggle( buttonRect, m_previewChannels[ 2 ], "B", UIUtils.MainSkin.customStyles[ ( int ) AmplifyShaderEditor.CustomStyle.MiniButtonTopRight ] );
 				}
 				else if ( m_channelNumber == 4 )
 				{
 					//buttonRect.x += 32 * drawInfo.InvertedZoom;
-					m_previewChannels[ 0 ] = GUI.Toggle( buttonRect, m_previewChannels[ 0 ], "R", UIUtils.MainSkin.customStyles[ ( int )AmplifyShaderEditor.CustomStyle.MiniButtonTopMid ] );
+					m_previewChannels[ 0 ] = GUI.Toggle( buttonRect, m_previewChannels[ 0 ], "R", UIUtils.MainSkin.customStyles[ ( int ) AmplifyShaderEditor.CustomStyle.MiniButtonTopMid ] );
 					buttonRect.x += 14 * drawInfo.InvertedZoom;
-					m_previewChannels[ 1 ] = GUI.Toggle( buttonRect, m_previewChannels[ 1 ], "G", UIUtils.MainSkin.customStyles[ ( int )AmplifyShaderEditor.CustomStyle.MiniButtonTopMid ] );
+					m_previewChannels[ 1 ] = GUI.Toggle( buttonRect, m_previewChannels[ 1 ], "G", UIUtils.MainSkin.customStyles[ ( int ) AmplifyShaderEditor.CustomStyle.MiniButtonTopMid ] );
 					buttonRect.x += 14 * drawInfo.InvertedZoom;
-					m_previewChannels[ 2 ] = GUI.Toggle( buttonRect, m_previewChannels[ 2 ], "B", UIUtils.MainSkin.customStyles[ ( int )AmplifyShaderEditor.CustomStyle.MiniButtonTopMid ] );
+					m_previewChannels[ 2 ] = GUI.Toggle( buttonRect, m_previewChannels[ 2 ], "B", UIUtils.MainSkin.customStyles[ ( int ) AmplifyShaderEditor.CustomStyle.MiniButtonTopMid ] );
 					buttonRect.x += 14 * drawInfo.InvertedZoom;
-					m_previewChannels[ 3 ] = GUI.Toggle( buttonRect, m_previewChannels[ 3 ], "A", UIUtils.MainSkin.customStyles[ ( int )AmplifyShaderEditor.CustomStyle.MiniButtonTopRight ] );
+					m_previewChannels[ 3 ] = GUI.Toggle( buttonRect, m_previewChannels[ 3 ], "A", UIUtils.MainSkin.customStyles[ ( int ) AmplifyShaderEditor.CustomStyle.MiniButtonTopRight ] );
 				}
 			}
 		}
-		
+
 		public virtual void Draw( DrawInfo drawInfo )
 		{
-			if( !m_firstDraw )
+			if ( !m_firstDraw )
 			{
 				m_firstDraw = true;
 				CheckSpherePreview();
-				AfterCommit();
+				AfterCommonInit();
 			}
 
 			if ( m_repopulateDictionaries )
@@ -1088,7 +1116,7 @@ namespace AmplifyShaderEditor
 				m_visibleOutputs = 0;
 
 				if ( m_additionalContent.text.Length > 0 )
-					m_extraHeaderHeight = ( int )Constants.NODE_HEADER_EXTRA_HEIGHT;
+					m_extraHeaderHeight = ( int ) Constants.NODE_HEADER_EXTRA_HEIGHT;
 				else
 					m_extraHeaderHeight = 0;
 
@@ -1138,9 +1166,9 @@ namespace AmplifyShaderEditor
 						if ( GUI.Button( expandRect, "", ( m_showPreview ? UIUtils.PreviewCollapser : UIUtils.PreviewExpander ) ) )
 						{
 							m_showPreview = !m_showPreview;
-							m_firstPreviewDraw = true;
+							//m_firstPreviewDraw = true;
 							//MarkForPreviewUpdate();
-							//m_sizeIsDirty = true;
+							m_sizeIsDirty = true;
 						}
 					}
 
@@ -1201,7 +1229,7 @@ namespace AmplifyShaderEditor
 							if ( m_isVisible )
 							{
 								inputPortStyle.normal.textColor = Constants.PortTextColor;
-								if ( UIUtils.CurrentWindow.CurrentGraph.LodLevel != ParentGraph.NodeLOD.LOD4 )
+								if ( ContainerGraph.LodLevel != ParentGraph.NodeLOD.LOD4 )
 								{
 									if ( m_inputPorts[ i ].Draw( textPos, inputPortStyle ) )
 									{
@@ -1233,7 +1261,7 @@ namespace AmplifyShaderEditor
 								m_inputPorts[ i ].ActivePortArea = portPos;
 								if ( m_isVisible )
 								{
-									if ( UIUtils.CurrentWindow.Options.ColoredPorts )
+									if ( ContainerGraph.ParentWindow.Options.ColoredPorts )
 										GUI.color = UIUtils.GetColorForDataType( m_inputPorts[ i ].DataType, false, false );
 									else
 										GUI.color = m_inputPorts[ i ].HasCustomColor ? m_inputPorts[ i ].CustomColor : UIUtils.GetColorForDataType( m_inputPorts[ i ].DataType, true, true );
@@ -1252,7 +1280,7 @@ namespace AmplifyShaderEditor
 									if ( m_inputPorts[ i ].IsConnected )
 									{
 										double doubleTapTime = EditorApplication.timeSinceStartup;
-										bool doubleTap = ( doubleTapTime - m_doubleClickTimestamp ) < m_doubleClickTime;
+										bool doubleTap = ( doubleTapTime - m_doubleClickTimestamp ) < DoubleClickTime;
 										m_doubleClickTimestamp = doubleTapTime;
 
 										if ( doubleTap )
@@ -1365,7 +1393,7 @@ namespace AmplifyShaderEditor
 								//GUI.Box( portPos, string.Empty, UIUtils.CurrentWindow.CustomStylesInstance.Box );
 								if ( m_isVisible )
 								{
-									if ( UIUtils.CurrentWindow.Options.ColoredPorts )
+									if ( ContainerGraph.ParentWindow.Options.ColoredPorts )
 										GUI.color = UIUtils.GetColorForDataType( m_outputPorts[ i ].DataType, false, false );
 									else
 										GUI.color = m_outputPorts[ i ].HasCustomColor ? m_outputPorts[ i ].CustomColor : UIUtils.GetColorForDataType( m_outputPorts[ i ].DataType, true, false );
@@ -1405,15 +1433,17 @@ namespace AmplifyShaderEditor
 						m_lastOutputBottomLeft.y += m_fontHeight * m_visibleOutputs + Constants.INPUT_PORT_DELTA_Y * ( m_visibleOutputs - 1 );
 				}
 
+				m_lastInputBottomRight.x += m_marginPreviewLeft;
 
 				//Vector2 scaledLastOutputBottomLeft = ( m_lastOutputBottomLeft + drawInfo.CameraOffset ) * drawInfo.InvertedZoom;
 				//GUI.Box( new Rect( scaledLastOutputBottomLeft, Vector2.one * 2 ), string.Empty, UIUtils.CurrentWindow.CustomStylesInstance.Box );
 
+
 				GUI.color = colorBuffer;
-				m_unscaledRemainingBox.x = m_lastInputBottomRight.x;
-				m_unscaledRemainingBox.y = m_unscaledRemainingBox.y;
-				m_unscaledRemainingBox.width = m_lastOutputBottomLeft.x - m_lastInputBottomRight.x;
-				m_unscaledRemainingBox.height = Mathf.Max( m_lastOutputBottomLeft.y, m_lastInputBottomRight.y ) - m_unscaledRemainingBox.y;
+				m_unscaledRemainingBox.xMin = m_lastInputBottomRight.x;
+				//m_unscaledRemainingBox.yMin = m_lastInputBottomRight.y;
+				m_unscaledRemainingBox.xMax = m_lastOutputBottomLeft.x;
+				m_unscaledRemainingBox.yMax = Mathf.Max( m_lastOutputBottomLeft.y, m_lastInputBottomRight.y );
 
 				m_remainingBox.position = ( m_unscaledRemainingBox.position + drawInfo.CameraOffset ) * drawInfo.InvertedZoom;
 				m_remainingBox.size = m_unscaledRemainingBox.size * drawInfo.InvertedZoom;
@@ -1433,15 +1463,25 @@ namespace AmplifyShaderEditor
 
 				// Calculate preview area and adjust node accordingly
 				CalculatedPreviewArea( drawInfo );
+
+				//Rect debugrect = m_position;
+				//debugrect.xMin = debugrect.xMax;
+				////m_extraSize.x = 0;
+				//debugrect.width = m_extraSize.x;
+
+				//debugrect.position = ( debugrect.position + drawInfo.CameraOffset ) * drawInfo.InvertedZoom;
+				//debugrect.size = debugrect.size * drawInfo.InvertedZoom;
+				//GUI.Box( debugrect, string.Empty, UIUtils.CurrentWindow.CustomStylesInstance.Box );
 			}
 		}
 
 		private void CalculatedPreviewArea( DrawInfo drawInfo )
 		{
-			if ( UIUtils.CurrentWindow.GlobalPreview != m_globalShowPreview )
+			if ( ContainerGraph.ParentWindow.GlobalPreview != m_globalShowPreview )
 			{
-				m_globalShowPreview = UIUtils.CurrentWindow.GlobalPreview;
-				m_firstPreviewDraw = true;
+				m_globalShowPreview = ContainerGraph.ParentWindow.GlobalPreview;
+				//m_firstPreviewDraw = true;
+				m_sizeIsDirty = true;
 			}
 
 			float marginAround = 10;
@@ -1502,7 +1542,7 @@ namespace AmplifyShaderEditor
 
 				m_previewRect = m_unscaledPreviewRect;
 				m_previewRect.position = ( m_previewRect.position + drawInfo.CameraOffset ) * drawInfo.InvertedZoom;
-				m_auxVector2.Set( previewSize* drawInfo.InvertedZoom, previewSize * drawInfo.InvertedZoom );
+				m_auxVector2.Set( previewSize * drawInfo.InvertedZoom, previewSize * drawInfo.InvertedZoom );
 				m_previewRect.size = m_auxVector2;
 
 				if ( autoLocation == PreviewLocation.BottomCenter )
@@ -1522,7 +1562,7 @@ namespace AmplifyShaderEditor
 
 			}
 
-			if ( ( m_showPreview || m_globalShowPreview ) && m_drawPreview)
+			if ( ( m_showPreview || m_globalShowPreview ) && m_drawPreview )
 				DrawPreview( drawInfo, m_previewRect );
 
 			if ( m_firstPreviewDraw )
@@ -1532,39 +1572,40 @@ namespace AmplifyShaderEditor
 				{
 					if ( autoLocation == PreviewLocation.TopCenter )
 					{
+						//Debug.Log( m_unscaledPreviewRect.width+" "+ m_unscaledRemainingBox.width+" "+ m_lastInputBottomRight+" "+ m_lastOutputBottomLeft );
 						float fillWidth = m_unscaledRemainingBox.width - m_unscaledPreviewRect.width;
-						if ( fillWidth < 0 )
-							m_extraSize.x += Mathf.Abs( fillWidth );
+						//if ( fillWidth < 0 )
+						m_extraSize.x = Mathf.Max( -fillWidth, 0 );
 						float fillHeight = m_position.yMax - m_unscaledPreviewRect.yMax;
-						if ( fillHeight < 0 )
-							m_extraSize.y += Mathf.Abs( fillHeight );
+						//if ( fillHeight < 0 )
+						m_extraSize.y = Mathf.Max( -fillHeight, 0 );
 					}
 					if ( autoLocation == PreviewLocation.BottomCenter )
 					{
 						float fillWidth = m_position.width - m_unscaledPreviewRect.width;
-						if ( fillWidth < 0 )
-							m_extraSize.x += Mathf.Abs( fillWidth );
+						//if ( fillWidth < 0 )
+						m_extraSize.x = Mathf.Max( -fillWidth, 0 );
 						float fillHeight = m_position.yMax - m_unscaledPreviewRect.yMax;
-						if ( fillHeight < 0 )
-							m_extraSize.y += Mathf.Abs( fillHeight );
+						//if ( fillHeight < 0 )
+						m_extraSize.y = Mathf.Max( -fillHeight, 0 );
 					}
 					else if ( autoLocation == PreviewLocation.Left )
 					{
 						float fillWidth = m_lastOutputBottomLeft.x - m_unscaledPreviewRect.xMax;
-						if ( fillWidth < 0 )
-							m_extraSize.x += Mathf.Abs( fillWidth );
+						//if ( fillWidth < 0 )
+						m_extraSize.x = Mathf.Max( -fillWidth, 0 );
 						float fillHeight = m_position.yMax - m_unscaledPreviewRect.yMax;
-						if ( fillHeight < 0 )
-							m_extraSize.y += Mathf.Abs( fillHeight );
+						//if ( fillHeight < 0 )
+						m_extraSize.y = Mathf.Max( -fillHeight, 0 );
 					}
 					else if ( autoLocation == PreviewLocation.Right )
 					{
 						float fillWidth = m_position.xMax - m_unscaledPreviewRect.xMax;
-						if ( fillWidth < 0 )
-							m_extraSize.x += Mathf.Abs( fillWidth );
+						//if ( fillWidth < 0 )
+						m_extraSize.x = Mathf.Max( -fillWidth, 0 );
 						float fillHeight = m_position.yMax - m_unscaledPreviewRect.yMax;
-						if ( fillHeight < 0 )
-							m_extraSize.y += Mathf.Abs( fillHeight );
+						//if ( fillHeight < 0 )
+						m_extraSize.y = Mathf.Max( -fillHeight, 0 );
 					}
 				}
 				else if ( m_canExpand )
@@ -1573,7 +1614,14 @@ namespace AmplifyShaderEditor
 					m_extraSize.x = 0;
 				}
 
-				m_sizeIsDirty = true;
+
+				m_position.width = m_unpreviewedPosition.width + m_extraSize.x;
+				m_position.height = m_unpreviewedPosition.height + m_extraSize.y;
+				//if (m_extraSize.x > 0 )
+				//{
+				//	m_position.width = m_unpreviewedPosition.width + m_extraSize.x;
+				//}
+				//m_sizeIsDirty = true;
 			}
 		}
 
@@ -1588,7 +1636,8 @@ namespace AmplifyShaderEditor
 				if ( m_inputPorts[ i ].IsConnected && m_inputPorts[ i ].InputNodeHasPreview() )
 				{
 					m_inputPorts[ i ].SetPreviewInputTexture();
-				} else
+				}
+				else
 				{
 					m_inputPorts[ i ].SetPreviewInputValue();
 				}
@@ -1609,13 +1658,54 @@ namespace AmplifyShaderEditor
 			return false;
 		}
 
-		public void ShowTooltip()
+		public bool ShowTooltip( DrawInfo drawInfo )
 		{
-			Rect globalTooltipPos = m_globalPosition;
-			globalTooltipPos.x += m_tooltipOffset.x;
-			globalTooltipPos.y += m_tooltipOffset.y;
-			globalTooltipPos.height *= 1.2f;
-			GUI.Label( globalTooltipPos, GUI.tooltip );
+			if ( string.IsNullOrEmpty( m_tooltipText ) )
+				return false;
+
+			if ( m_globalPosition.Contains( drawInfo.MousePosition ) )
+			{
+				if ( m_tooltipTimestamp + 0.5f < Time.realtimeSinceStartup )
+				{
+					Rect globalTooltipPos = m_globalPosition;
+					GUIContent temp = new GUIContent( m_tooltipText /*m_content.tooltip*/ );
+					UIUtils.TooltipBox.wordWrap = false;
+					Vector2 optimal = UIUtils.TooltipBox.CalcSize( temp );
+					if ( optimal.x > 300f )
+					{
+
+						UIUtils.TooltipBox.wordWrap = true;
+						optimal.x = 300f;
+						optimal.y = UIUtils.TooltipBox.CalcHeight( temp, 300f );
+					}
+
+					globalTooltipPos.width = optimal.x;
+					globalTooltipPos.height = optimal.y;
+					globalTooltipPos.y += m_globalPosition.height + 10;
+					//globalTooltipPos.y = drawInfo.MousePosition.y+16;
+					//globalTooltipPos.x = drawInfo.MousePosition.x+16;
+					globalTooltipPos.x = m_globalPosition.x + m_globalPosition.width * 0.5f - globalTooltipPos.width * 0.5f;
+
+					if ( globalTooltipPos.x < 10 )
+						globalTooltipPos.x = 10;
+
+					if ( globalTooltipPos.x + globalTooltipPos.width > Screen.width - 10 )
+						globalTooltipPos.x = Screen.width - globalTooltipPos.width - 10;
+					if ( globalTooltipPos.y + globalTooltipPos.height > Screen.height - 32 )
+						globalTooltipPos.y = Screen.height - 35 - globalTooltipPos.height;
+
+					Rect link = globalTooltipPos;
+					link.yMin = link.yMax - 16;
+					GUI.Box( globalTooltipPos, temp, UIUtils.TooltipBox );
+					return true;
+				}
+			}
+			else
+			{
+				m_tooltipTimestamp = Time.realtimeSinceStartup;
+			}
+
+			return false;
 		}
 
 		public virtual bool SafeDrawProperties()
@@ -1642,58 +1732,61 @@ namespace AmplifyShaderEditor
 
 		public void PreDrawProperties()
 		{
-			if ( (object)m_buttonStyle == null )
+			if ( ( object ) m_buttonStyle == null )
 			{
-				m_buttonStyle = new GUIStyle( UIUtils.CurrentWindow.CustomStylesInstance.Button );
+				m_buttonStyle = UIUtils.Button;
 			}
 
-			if ( (object)m_labelStyle == null )
+			if ( ( object ) m_labelStyle == null )
 			{
-				m_labelStyle = UIUtils.CurrentWindow.CustomStylesInstance.Label;
+				m_labelStyle = UIUtils.Label;
 			}
 
-			if ( (object)m_toggleStyle == null )
+			if ( ( object ) m_toggleStyle == null )
 			{
-				m_toggleStyle = new GUIStyle( UIUtils.CurrentWindow.CustomStylesInstance.Toggle );
+				m_toggleStyle = UIUtils.Toggle;
 			}
 
-			if ( (object)m_textfieldStyle == null )
+			if ( ( object ) m_textfieldStyle == null )
 			{
-				m_textfieldStyle = UIUtils.CurrentWindow.CustomStylesInstance.Textfield;
+				m_textfieldStyle = UIUtils.Textfield;
 			}
 
-			if ( m_useInternalPortData )
+			if ( m_useInternalPortData && m_autoDrawInternalPortData )
 			{
-				bool drawInternalDataUI = false;
-				int inputCount = m_inputPorts.Count;
-				if ( inputCount > 0 )
-				{
-					for ( int i = 0; i < inputCount; i++ )
-					{
-						if ( m_inputPorts[ i ].Available && !m_inputPorts[ i ].IsConnected )
-						{
-							drawInternalDataUI = true;
-							break;
-						}
-					}
-				}
-
-				if ( drawInternalDataUI )
-					NodeUtils.DrawPropertyGroup( ref m_internalDataFoldout, Constants.InternalDataLabelStr, DrawInternalData );
+				DrawInternalDataGroup();
 			}
 		}
 
 		virtual public void DrawProperties() { }
 
-		void DrawInternalData()
+		protected void DrawInternalDataGroup()
 		{
-			for ( int i = 0; i < m_inputPorts.Count; i++ )
+			bool drawInternalDataUI = false;
+			int inputCount = m_inputPorts.Count;
+			if ( inputCount > 0 )
 			{
-				if ( !m_inputPorts[ i ].IsConnected && m_inputPorts[ i ].Visible )
+				for ( int i = 0; i < inputCount; i++ )
 				{
-					m_inputPorts[ i ].ShowInternalData();
+					if ( m_inputPorts[ i ].Available && m_inputPorts[ i ].ValidInternalData && !m_inputPorts[ i ].IsConnected )
+					{
+						drawInternalDataUI = true;
+						break;
+					}
 				}
 			}
+
+			if ( drawInternalDataUI )
+				NodeUtils.DrawPropertyGroup( ref m_internalDataFoldout, Constants.InternalDataLabelStr, () =>
+				{
+					for ( int i = 0; i < m_inputPorts.Count; i++ )
+					{
+						if ( m_inputPorts[ i ].ValidInternalData && !m_inputPorts[ i ].IsConnected && m_inputPorts[ i ].Visible )
+						{
+							m_inputPorts[ i ].ShowInternalData( this );
+						}
+					}
+				} );
 		}
 
 		protected void PickInput( WirePort port )
@@ -1928,7 +2021,7 @@ namespace AmplifyShaderEditor
 
 		public string CreateOutputLocalVariable( int outputId, string value, ref MasterNodeDataCollector dataCollector )
 		{
-			if ( dataCollector.DirtyNormal && UIUtils.CurrentWindow.CurrentGraph.IsNormalDependent )
+			if ( dataCollector.DirtyNormal && ContainerGraph.IsNormalDependent )
 				return value;
 
 			if ( m_outputPorts[ outputId ].IsLocalValue )
@@ -1955,11 +2048,21 @@ namespace AmplifyShaderEditor
 		{
 			bool vertexMode = dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation;
 			string localVar = m_outputPorts[ outputId ].ConfigOutputLocalValue( m_currentPrecisionType, value, customName, dataCollector.PortCategory );
-			if ( !vertexMode && ( UIUtils.GetCategoryInBitArray( Category, MasterNodePortCategory.Fragment ) || UIUtils.GetCategoryInBitArray( Category, MasterNodePortCategory.Debug ) ) )
-				dataCollector.AddToLocalVariables( m_uniqueId, localVar );
 
-			if ( vertexMode && UIUtils.GetCategoryInBitArray( Category, MasterNodePortCategory.Vertex ) || UIUtils.GetCategoryInBitArray( Category, MasterNodePortCategory.Tessellation ) )
+			//if ( !vertexMode && ( UIUtils.GetCategoryInBitArray( Category, MasterNodePortCategory.Fragment ) || UIUtils.GetCategoryInBitArray( Category, MasterNodePortCategory.Debug ) ) )
+			//	dataCollector.AddToLocalVariables( m_uniqueId, localVar );
+
+			//if ( vertexMode && ( UIUtils.GetCategoryInBitArray( Category, MasterNodePortCategory.Vertex ) || UIUtils.GetCategoryInBitArray( Category, MasterNodePortCategory.Tessellation )) )
+			//	dataCollector.AddToVertexLocalVariables( m_uniqueId, localVar );
+
+			if ( vertexMode )
+			{
 				dataCollector.AddToVertexLocalVariables( m_uniqueId, localVar );
+			}
+			else
+			{
+				dataCollector.AddToLocalVariables( m_uniqueId, localVar );
+			}
 		}
 
 		public void InvalidateConnections()
@@ -1978,32 +2081,44 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public virtual void OnClick( Vector2 currentMousePos2D )
+		public virtual bool OnClick( Vector2 currentMousePos2D )
 		{
+			bool singleClick = true;
 			if ( ( EditorApplication.timeSinceStartup - m_lastTimeSelected ) < NodeClickTime )
+			{
 				OnNodeDoubleClicked( currentMousePos2D );
+				singleClick = false;
+			}
 
 			m_lastTimeSelected = EditorApplication.timeSinceStartup;
+			return singleClick;
 		}
 
 		public virtual void OnNodeDoubleClicked( Vector2 currentMousePos2D )
 		{
-			UIUtils.CurrentWindow.ParametersWindow.IsMaximized = !UIUtils.CurrentWindow.ParametersWindow.IsMaximized;
+			ContainerGraph.ParentWindow.ParametersWindow.IsMaximized = !ContainerGraph.ParentWindow.ParametersWindow.IsMaximized;
 		}
+
 		public virtual void OnNodeSelected( bool value )
 		{
 			if ( !value )
 			{
-				int count = m_inputPorts.Count;
-				for ( int i = 0; i < count; i++ )
+				if ( m_inputPorts != null )
 				{
-					m_inputPorts[ i ].ResetEditing();
+					int count = m_inputPorts.Count;
+					for ( int i = 0; i < count; i++ )
+					{
+						m_inputPorts[ i ].ResetEditing();
+					}
 				}
 
-				count = m_outputPorts.Count;
-				for ( int i = 0; i < count; i++ )
+				if ( m_outputPorts != null )
 				{
-					m_outputPorts[ i ].ResetEditing();
+					int count = m_outputPorts.Count;
+					for ( int i = 0; i < count; i++ )
+					{
+						m_outputPorts[ i ].ResetEditing();
+					}
 				}
 			}
 		}
@@ -2015,6 +2130,9 @@ namespace AmplifyShaderEditor
 			{
 				m_outputPorts[ i ].ResetLocalValue();
 			}
+		}
+		public virtual void Rewire()
+		{
 		}
 
 		public int UniqueId
@@ -2040,6 +2158,18 @@ namespace AmplifyShaderEditor
 				OnUniqueIDAssigned();
 			}
 		}
+
+		public string OutputId
+		{
+			get
+			{
+				if ( ContainerGraph.GraphId > 0 )
+					return UniqueId + "_g" + ContainerGraph.GraphId;
+				else
+					return UniqueId.ToString();
+			}
+		}
+
 
 		public Rect Position { get { return m_position; } }
 
@@ -2146,24 +2276,33 @@ namespace AmplifyShaderEditor
 			m_position.y = Convert.ToSingle( posCoordinates[ 1 ] );
 
 			if ( UIUtils.CurrentShaderVersion() > 22 )
-				m_currentPrecisionType = ( PrecisionType )Enum.Parse( typeof( PrecisionType ), GetCurrentParam( ref nodeParams ) );
+				m_currentPrecisionType = ( PrecisionType ) Enum.Parse( typeof( PrecisionType ), GetCurrentParam( ref nodeParams ) );
 			if ( UIUtils.CurrentShaderVersion() > 5004 )
 				m_showPreview = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
 
 		}
 
-		//should be called last, after ReadFromString
-		public void ReadInputDataFromString( ref string[] nodeParams )
+		//should be called after ReadFromString
+		public virtual void ReadInputDataFromString( ref string[] nodeParams )
 		{
+			int count = 0;
+			if ( UIUtils.CurrentShaderVersion() > 7003 )
+			{
+				count = Convert.ToInt32( nodeParams[ m_currentReadParamIdx++ ] );
+			}
+			else
+			{
+				count = m_inputPorts.Count;
+			}
 
-			for ( int i = 0; i < m_inputPorts.Count && i < nodeParams.Length && m_currentReadParamIdx < nodeParams.Length; i++ )
+			for ( int i = 0; i < count && i < nodeParams.Length && m_currentReadParamIdx < nodeParams.Length; i++ )
 			{
 				if ( UIUtils.CurrentShaderVersion() < 5003 )
 				{
 					int newId = VersionConvertInputPortId( i );
 					if ( UIUtils.CurrentShaderVersion() > 23 )
 					{
-						m_inputPorts[ newId ].DataType = ( WirePortDataType )Enum.Parse( typeof( WirePortDataType ), nodeParams[ m_currentReadParamIdx++ ] );
+						m_inputPorts[ newId ].DataType = ( WirePortDataType ) Enum.Parse( typeof( WirePortDataType ), nodeParams[ m_currentReadParamIdx++ ] );
 					}
 
 					m_inputPorts[ newId ].InternalData = nodeParams[ m_currentReadParamIdx++ ];
@@ -2175,7 +2314,7 @@ namespace AmplifyShaderEditor
 				else
 				{
 					int portId = Convert.ToInt32( nodeParams[ m_currentReadParamIdx++ ] );
-					WirePortDataType DataType = ( WirePortDataType )Enum.Parse( typeof( WirePortDataType ), nodeParams[ m_currentReadParamIdx++ ] );
+					WirePortDataType DataType = ( WirePortDataType ) Enum.Parse( typeof( WirePortDataType ), nodeParams[ m_currentReadParamIdx++ ] );
 					string InternalData = nodeParams[ m_currentReadParamIdx++ ];
 					bool isEditable = Convert.ToBoolean( nodeParams[ m_currentReadParamIdx++ ] );
 					string Name = string.Empty;
@@ -2198,13 +2337,26 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public void ReadOutputDataFromString( ref string[] nodeParams )
+		public virtual void ReadOutputDataFromString( ref string[] nodeParams )
 		{
-			for ( int i = 0; i < m_outputPorts.Count && i < nodeParams.Length && m_currentReadParamIdx < nodeParams.Length; i++ )
+			int count = 0;
+			if ( UIUtils.CurrentShaderVersion() > 7003 )
+			{
+				count = Convert.ToInt32( nodeParams[ m_currentReadParamIdx++ ] );
+			}
+			else
+			{
+				count = m_outputPorts.Count;
+			}
+
+			for ( int i = 0; i < count && i < nodeParams.Length && m_currentReadParamIdx < nodeParams.Length; i++ )
 			{
 				m_outputPorts[ i ].DataType = ( WirePortDataType ) Enum.Parse( typeof( WirePortDataType ), nodeParams[ m_currentReadParamIdx++ ] );
 			}
 		}
+
+		public virtual void ReadAdditionalClipboardData( ref string[] nodeParams ) { }
+
 		protected string GetCurrentParam( ref string[] nodeParams )
 		{
 			if ( m_currentReadParamIdx < nodeParams.Length )
@@ -2244,6 +2396,7 @@ namespace AmplifyShaderEditor
 
 		public virtual void WriteInputDataToString( ref string nodeInfo )
 		{
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_inputPorts.Count );
 			for ( int i = 0; i < m_inputPorts.Count; i++ )
 			{
 				IOUtils.AddFieldValueToString( ref nodeInfo, m_inputPorts[ i ].PortId );
@@ -2259,11 +2412,15 @@ namespace AmplifyShaderEditor
 
 		public void WriteOutputDataToString( ref string nodeInfo )
 		{
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_outputPorts.Count );
 			for ( int i = 0; i < m_outputPorts.Count; i++ )
 			{
 				IOUtils.AddFieldValueToString( ref nodeInfo, m_outputPorts[ i ].DataType );
 			}
 		}
+
+		public virtual void WriteAdditionalClipboardData( ref string nodeInfo ) { }
+
 		public virtual string GetIncludes() { return string.Empty; }
 		public virtual void OnObjectDropped( UnityEngine.Object obj ) { }
 		public virtual void SetupFromCastObject( UnityEngine.Object obj ) { }
@@ -2339,7 +2496,7 @@ namespace AmplifyShaderEditor
 			if ( !newText.Equals( m_content.text ) )
 			{
 				m_content.text = newText;
-				m_firstPreviewDraw = true;
+				//m_firstPreviewDraw = true;
 				m_sizeIsDirty = true;
 			}
 		}
@@ -2349,7 +2506,7 @@ namespace AmplifyShaderEditor
 			if ( !newText.Equals( m_additionalContent.text ) )
 			{
 				m_additionalContent.text = newText;
-				m_firstPreviewDraw = true;
+				//m_firstPreviewDraw = true;
 				m_sizeIsDirty = true;
 			}
 		}
@@ -2509,17 +2666,47 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		//public virtual void MarkForPreviewUpdate()
-		//{
-		//	//if ( !UIUtils.CurrentWindow.CurrentGraph.NodePreviewList.Contains( this ) )
-		//	//	UIUtils.CurrentWindow.CurrentGraph.NodePreviewList.Add( this );
+		public void FullWriteToString( ref string nodesInfo, ref string connectionsInfo )
+		{
+			WriteToString( ref nodesInfo, ref connectionsInfo );
+			WriteInputDataToString( ref nodesInfo );
+			WriteOutputDataToString( ref nodesInfo );
+		}
 
-		//	//Maybe not necessary
-		//	for ( int i = 0; i < m_outputPorts.Count; i++ )
-		//	{
-		//		m_outputPorts[ i ].NotifyExternalRefencesOnChange();
-		//	}
-		//}
+		public void ClipboardFullWriteToString( ref string nodesInfo, ref string connectionsInfo )
+		{
+			FullWriteToString( ref nodesInfo, ref connectionsInfo );
+			WriteAdditionalClipboardData( ref nodesInfo );
+		}
+
+		public void FullReadFromString( ref string[] parameters )
+		{
+			try
+			{
+				ReadFromString( ref parameters );
+				ReadInputDataFromString( ref parameters );
+				ReadOutputDataFromString( ref parameters );
+			}
+			catch ( Exception e )
+			{
+				Debug.LogException( e );
+			}
+		}
+
+		public void ClipboardFullReadFromString( ref string[] parameters )
+		{
+			try
+			{
+				FullReadFromString( ref parameters );
+				ReadAdditionalClipboardData( ref parameters );
+			}
+			catch ( Exception e )
+			{
+				Debug.LogException( e );
+			}
+		}
+
+		public virtual void RefreshOnUndo() { }
 		public virtual void CalculateCustomGraphDepth() { }
 		public int GraphDepth { get { return m_graphDepth; } }
 
@@ -2587,6 +2774,20 @@ namespace AmplifyShaderEditor
 		{
 			get { return m_spherePreview; }
 			set { m_spherePreview = value; }
+		}
+
+		public virtual void SetContainerGraph( ParentGraph newgraph )
+		{
+			m_containerGraph = newgraph;
+		}
+
+		/// <summary>
+		/// It's the graph the node exists in, this is set after node creation and it's not available on CommonInit
+		/// </summary>
+		public ParentGraph ContainerGraph 
+		{
+			get { return m_containerGraph; }
+			set { m_containerGraph = value; }
 		}
 	}
 }

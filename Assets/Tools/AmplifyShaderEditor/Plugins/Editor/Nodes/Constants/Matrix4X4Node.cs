@@ -44,7 +44,7 @@ namespace AmplifyShaderEditor
 				EditorGUILayout.BeginHorizontal();
 				for ( int column = 0; column < 4; column++ )
 				{
-					m_defaultValue[ row, column ] = EditorGUILayout.FloatField( string.Empty, m_defaultValue[ row, column ], GUILayout.MaxWidth( 55 ) );
+					m_defaultValue[ row, column ] = EditorGUILayoutFloatField( string.Empty, m_defaultValue[ row, column ], GUILayout.MaxWidth( 55 ) );
 				}
 				EditorGUILayout.EndHorizontal();
 			}
@@ -61,7 +61,7 @@ namespace AmplifyShaderEditor
 				EditorGUILayout.BeginHorizontal();
 				for ( int column = 0; column < 4; column++ )
 				{
-					m_materialValue[ row, column ] = EditorGUILayout.FloatField( string.Empty, m_materialValue[ row, column ], GUILayout.MaxWidth( 55 ) );
+					m_materialValue[ row, column ] = EditorGUILayoutFloatField( string.Empty, m_materialValue[ row, column ], GUILayout.MaxWidth( 55 ) );
 				}
 				EditorGUILayout.EndHorizontal();
 			}
@@ -89,7 +89,7 @@ namespace AmplifyShaderEditor
 					for ( int column = 0; column < 4; column++ )
 					{
 						m_propertyDrawPos.position = m_remainingBox.position + Vector2.Scale( m_propertyDrawPos.size, new Vector2( column, row ) ) + new Vector2( Constants.FLOAT_WIDTH_SPACING * drawInfo.InvertedZoom * column, Constants.FLOAT_WIDTH_SPACING * drawInfo.InvertedZoom * row );
-						value[ row, column ] = EditorGUI.FloatField( m_propertyDrawPos, string.Empty, value[ row, column ], UIUtils.MainSkin.textField );
+						value[ row, column ] = EditorGUIFloatField( m_propertyDrawPos, string.Empty, value[ row, column ], UIUtils.MainSkin.textField );
 					}
 				}
 
@@ -136,10 +136,10 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void SetMaterialMode( Material mat )
+		public override void SetMaterialMode( Material mat , bool fetchMaterialValues )
 		{
-			base.SetMaterialMode( mat );
-			if ( m_materialMode && UIUtils.IsProperty( m_currentParameterType ) && mat.HasProperty( m_propertyName ) )
+			base.SetMaterialMode( mat , fetchMaterialValues );
+			if ( fetchMaterialValues && m_materialMode && UIUtils.IsProperty( m_currentParameterType ) && mat.HasProperty( m_propertyName ) )
 			{
 				m_materialValue = mat.GetMatrix( m_propertyName );
 			}
@@ -194,6 +194,19 @@ namespace AmplifyShaderEditor
 															m_defaultValue[ 2, 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + m_defaultValue[ 2, 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + m_defaultValue[ 2, 2 ].ToString() + IOUtils.VECTOR_SEPARATOR + m_defaultValue[ 2, 3 ].ToString() + IOUtils.VECTOR_SEPARATOR +
 															m_defaultValue[ 3, 0 ].ToString() + IOUtils.VECTOR_SEPARATOR + m_defaultValue[ 3, 1 ].ToString() + IOUtils.VECTOR_SEPARATOR + m_defaultValue[ 3, 2 ].ToString() + IOUtils.VECTOR_SEPARATOR + m_defaultValue[ 3, 3 ].ToString() );
 		}
+
+		public override void ReadAdditionalClipboardData( ref string[] nodeParams )
+		{
+			base.ReadAdditionalClipboardData( ref nodeParams );
+			m_materialValue = IOUtils.StringToMatrix4x4( GetCurrentParam( ref nodeParams ) );
+		}
+
+		public override void WriteAdditionalClipboardData( ref string nodeInfo )
+		{
+			base.WriteAdditionalClipboardData( ref nodeInfo );
+			IOUtils.AddFieldValueToString( ref nodeInfo, IOUtils.Matrix4x4ToString( m_materialValue ) );
+		}
+
 
 		public override string GetPropertyValStr()
 		{

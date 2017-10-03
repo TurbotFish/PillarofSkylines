@@ -2,6 +2,7 @@
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
 
 //https://www.shadertoy.com/view/XdS3RW
+//http://www.deepskycolors.com/archivo/2010/04/21/formulas-for-Photoshop-blending-modes.html
 
 using UnityEngine;
 using UnityEditor;
@@ -55,7 +56,7 @@ namespace AmplifyShaderEditor
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-			m_currentBlendOp = ( BlendOps ) EditorGUILayout.EnumPopup( BlendOpsModeStr, m_currentBlendOp );
+			m_currentBlendOp = ( BlendOps ) EditorGUILayoutEnumPopup( BlendOpsModeStr, m_currentBlendOp );
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )

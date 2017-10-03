@@ -63,7 +63,7 @@ namespace AmplifyShaderEditor
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-			m_selectedType = ( BuiltInShaderTransformTypes ) EditorGUILayout.Popup( MatrixLabelStr, ( int ) m_selectedType, ValuesStr );
+			m_selectedType = ( BuiltInShaderTransformTypes ) EditorGUILayoutPopup( MatrixLabelStr, ( int ) m_selectedType, ValuesStr );
 
 			if ( m_selectedType != m_oldVarType )
 			{

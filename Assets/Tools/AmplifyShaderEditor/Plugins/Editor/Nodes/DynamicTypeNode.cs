@@ -26,6 +26,24 @@ namespace AmplifyShaderEditor
 			AddInputPort( WirePortDataType.FLOAT, false, "A" );
 			AddInputPort( WirePortDataType.FLOAT, false, "B" );
 			AddOutputPort( WirePortDataType.FLOAT, Constants.EmptyPortValue );
+			m_inputPorts[0].CreatePortRestrictions( WirePortDataType.OBJECT,
+														WirePortDataType.FLOAT,
+														WirePortDataType.FLOAT2,
+														WirePortDataType.FLOAT3,
+														WirePortDataType.FLOAT4,
+														WirePortDataType.COLOR,
+														WirePortDataType.FLOAT3x3,
+														WirePortDataType.FLOAT4x4,
+														WirePortDataType.INT );
+			m_inputPorts[ 1 ].CreatePortRestrictions( WirePortDataType.OBJECT,
+														WirePortDataType.FLOAT,
+														WirePortDataType.FLOAT2,
+														WirePortDataType.FLOAT3,
+														WirePortDataType.FLOAT4,
+														WirePortDataType.COLOR,
+														WirePortDataType.FLOAT3x3,
+														WirePortDataType.FLOAT4x4,
+														WirePortDataType.INT );
 		}
 
 		public override void OnConnectedOutputNodeChanges( int inputPortId, int otherNodeId, int otherPortId, string name, WirePortDataType type )
@@ -134,12 +152,12 @@ namespace AmplifyShaderEditor
 			m_inputA = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 			if ( m_inputPorts[ 0 ].DataType != m_mainDataType )
 			{
-				m_inputA = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( m_uniqueId, outputId ), m_inputA, m_inputPorts[ 0 ].DataType, m_mainDataType, m_inputA );
+				m_inputA = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputA, m_inputPorts[ 0 ].DataType, m_mainDataType, m_inputA );
 			}
 			m_inputB = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
 			if ( m_inputPorts[ 1 ].DataType != m_mainDataType )
 			{
-				m_inputB = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( m_uniqueId, outputId ), m_inputB, m_inputPorts[ 1 ].DataType, m_mainDataType, m_inputB );
+				m_inputB = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputB, m_inputPorts[ 1 ].DataType, m_mainDataType, m_inputB );
 			}
 		}
 

@@ -92,18 +92,18 @@ namespace AmplifyShaderEditor
 			base.DrawProperties();
 
 			EditorGUI.BeginChangeCheck();
-			m_selectedChannelInt = EditorGUILayout.Popup( "Channel", m_selectedChannelInt, m_channelTypeStr );
+			m_selectedChannelInt = EditorGUILayoutPopup( "Channel", m_selectedChannelInt, m_channelTypeStr );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				UpdateSampler();
 				GeneratePOMfunction();
 			}
 
-			m_minSamples = EditorGUILayout.IntSlider( "Min Samples", m_minSamples, 1, 128 );
-			m_maxSamples = EditorGUILayout.IntSlider( "Max Samples", m_maxSamples, 1, 128 );
+			m_minSamples = EditorGUILayoutIntSlider( "Min Samples", m_minSamples, 1, 128 );
+			m_maxSamples = EditorGUILayoutIntSlider( "Max Samples", m_maxSamples, 1, 128 );
 			
 			EditorGUI.BeginChangeCheck();
-			m_sidewallSteps = EditorGUILayout.IntSlider( "Sidewall Steps", m_sidewallSteps, 0, 10 );
+			m_sidewallSteps = EditorGUILayoutIntSlider( "Sidewall Steps", m_sidewallSteps, 0, 10 );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				GeneratePOMfunction();
@@ -111,16 +111,16 @@ namespace AmplifyShaderEditor
 
 
 			EditorGUI.BeginDisabledGroup(m_scalePort.IsConnected );
-			m_defaultScale = EditorGUILayout.Slider( "Default Scale", m_defaultScale, 0, 1 );
+			m_defaultScale = EditorGUILayoutSlider( "Default Scale", m_defaultScale, 0, 1 );
 			EditorGUI.EndDisabledGroup();
 
 			EditorGUI.BeginDisabledGroup( m_refPlanePort.IsConnected );
-			m_defaultRefPlane = EditorGUILayout.Slider( "Default Ref Plane", m_defaultRefPlane, 0, 1 );
+			m_defaultRefPlane = EditorGUILayoutSlider( "Default Ref Plane", m_defaultRefPlane, 0, 1 );
 			EditorGUI.EndDisabledGroup();
 
 			//float cached = EditorGUIUtility.labelWidth;
 			//EditorGUIUtility.labelWidth = 70;
-			m_clipEnds = EditorGUILayout.Toggle( "Clip Edges", m_clipEnds );
+			m_clipEnds = EditorGUILayoutToggle( "Clip Edges", m_clipEnds );
 			//EditorGUIUtility.labelWidth = -1;
 			//EditorGUIUtility.labelWidth = 100;
 			//EditorGUILayout.BeginHorizontal();
@@ -131,7 +131,7 @@ namespace AmplifyShaderEditor
 			//EditorGUIUtility.labelWidth = cached;
 
 			EditorGUI.BeginChangeCheck();
-			m_useCurvature = EditorGUILayout.Toggle( "Clip Silhouette", m_useCurvature );
+			m_useCurvature = EditorGUILayoutToggle( "Clip Silhouette", m_useCurvature );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				GeneratePOMfunction();
@@ -139,13 +139,13 @@ namespace AmplifyShaderEditor
 			}
 
 			EditorGUI.BeginDisabledGroup( !(m_useCurvature && !m_curvaturePort.IsConnected) );
-			m_CurvatureVector = EditorGUILayout.Vector2Field( string.Empty, m_CurvatureVector );
+			m_CurvatureVector = EditorGUILayoutVector2Field( string.Empty, m_CurvatureVector );
 			EditorGUI.EndDisabledGroup();
 
-			EditorGUILayout.HelpBox( "Min and Max samples:\nControl the minimum and maximum number of layers extruded\n\nSidewall Steps:\nThe number of interpolations done to smooth the extrusion result on the side of the layer extrusions, min is used at steep angles while max is use at orthogonal angles\n\n"+
+			EditorGUILayout.HelpBox( "Min and Max samples:\nControl the minimum and maximum number of layers extruded\n\nSidewall Steps:\nThe number of interpolations done to smooth the extrusion result on the side of the layer extrusions, min is used at steep angles while max is used at orthogonal angles\n\n"+
 				"Ref Plane:\nReference plane lets you adjust the starting reference height, 0 = deepen ground, 1 = raise ground, any value above 0 might cause distortions at higher angles\n\n"+
 				"Clip Edges:\nThis will clip the ends of your uvs to give a more 3D look at the edges. It'll use the tilling given by your Heightmap input.\n\n"+
-				"Clip Silhouette:\nTurning this on allows you to use the UV coordinates to clip the effect curvature in X or V axis, useful for cylinders, works best with 'Clip Edges' turned OFF", MessageType.None );
+				"Clip Silhouette:\nTurning this on allows you to use the UV coordinates to clip the effect curvature in U or V axis, useful for cylinders, works best with 'Clip Edges' turned OFF", MessageType.None );
 		}
 
 		private void UpdateSampler()
@@ -182,7 +182,7 @@ namespace AmplifyShaderEditor
 					dataCollector.ForceNormal = true;
 
 				string inputViewDirTan = UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.VIEW_DIR );
-				dataCollector.AddToInput( m_uniqueId, inputViewDirTan, true );
+				dataCollector.AddToInput( UniqueId, inputViewDirTan, true );
 				viewDirTan = Constants.InputVarStr + "." + UIUtils.GetInputValueFromType( AvailableSurfaceInputs.VIEW_DIR );
 			} else
 			{
@@ -190,13 +190,14 @@ namespace AmplifyShaderEditor
 			}
 
 			//generate world normal
-			dataCollector.AddToInput( m_uniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_NORMAL ), true );
-			dataCollector.AddToInput( m_uniqueId, Constants.InternalData, false );
-			string normalWorld = "WorldNormalVector( " + Constants.InputVarStr + ", float3( 0, 0, 1 ) )";
+			dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_NORMAL ), true );
+			dataCollector.AddToInput( UniqueId, Constants.InternalData, false );
+			string normalWorld = GeneratorUtils.GenerateWorldNormal( ref dataCollector, UniqueId );
+			//string normalWorld = "WorldNormalVector( " + Constants.InputVarStr + ", float3( 0, 0, 1 ) )";
 
 			//generate viewDir in world space
-			dataCollector.AddToInput( m_uniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_POS ), true );
-			dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3, WorldDirVarStr, "normalize( UnityWorldSpaceViewDir( " + Constants.InputVarStr + ".worldPos ) )" );
+			dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_POS ), true );
+			dataCollector.AddToLocalVariables( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3, WorldDirVarStr, "normalize( UnityWorldSpaceViewDir( " + Constants.InputVarStr + ".worldPos ) )" );
 
 			//dataCollector.AddToInput( m_uniqueId, string.Format( WorldDirVarDecStr, UIUtils.FinalPrecisionWirePortToCgType( m_currentPrecisionType, WirePortDataType.FLOAT3 ), WorldDirVarStr ), false );
 			//dataCollector.AddVertexInstruction( WorldDirVarDefStr, m_uniqueId );
@@ -212,21 +213,21 @@ namespace AmplifyShaderEditor
 			string curvature = "float2("+ m_CurvatureVector.x + "," + m_CurvatureVector.y + ")";
 			if ( m_useCurvature )
 			{
-				UIUtils.CurrentDataCollector.AddToProperties( m_uniqueId, "[Header(Parallax Occlusion Mapping)]", 300 );
-				UIUtils.CurrentDataCollector.AddToProperties( m_uniqueId, "_CurvFix(\"Curvature Bias\", Range( 0 , 1)) = 1", 301 );
-				UIUtils.CurrentDataCollector.AddToUniforms( m_uniqueId, "uniform float _CurvFix;" );
+				UIUtils.CurrentDataCollector.AddToProperties( UniqueId, "[Header(Parallax Occlusion Mapping)]", 300 );
+				UIUtils.CurrentDataCollector.AddToProperties( UniqueId, "_CurvFix(\"Curvature Bias\", Range( 0 , 1)) = 1", 301 );
+				UIUtils.CurrentDataCollector.AddToUniforms( UniqueId, "uniform float _CurvFix;" );
 
 				if ( m_curvaturePort.IsConnected )
 					curvature = m_curvaturePort.GeneratePortInstructions( ref dataCollector );
 			}
 
 
-			string localVarName = "OffsetPOM" + m_uniqueId;
-			dataCollector.AddToUniforms(m_uniqueId, "uniform float4 "+ texture +"_ST;");
+			string localVarName = "OffsetPOM" + UniqueId;
+			dataCollector.AddToUniforms(UniqueId, "uniform float4 "+ texture +"_ST;");
 
 			string functionResult = dataCollector.AddFunctions( m_functionHeader, m_functionBody, texture, textcoords, dx, dy, normalWorld, WorldDirVarStr, viewDirTan, m_minSamples, m_maxSamples, scale, refPlane, texture+"_ST.xy", curvature );
 
-			dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, m_pomUVPort.DataType, localVarName, functionResult );
+			dataCollector.AddToLocalVariables( UniqueId, m_currentPrecisionType, m_pomUVPort.DataType, localVarName, functionResult );
 
 			return GetOutputVectorItem( 0, outputId, localVarName );
 		}

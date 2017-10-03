@@ -28,15 +28,18 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
+			if ( m_outputPorts[ 0 ].IsLocalValue )
+				return m_outputPorts[ 0 ].LocalValue;
+
 			string HeightMap = m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT, false, true );
 			string SplatMask = m_inputPorts[ 1 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT, false, true );
 			string Blend = m_inputPorts[ 2 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT, false, true );
 
-			string HeightMask = "float HeightMask" + m_uniqueId + " = saturate(pow(((" + HeightMap + "*" + SplatMask + ")*4)+(" + SplatMask + "*2)," + Blend + "));";
-			string result = "HeightMask" + m_uniqueId;
+			string HeightMask =  "saturate(pow(((" + HeightMap + "*" + SplatMask + ")*4)+(" + SplatMask + "*2)," + Blend + "));";
+			string varName = "HeightMask" + OutputId;
 
-			dataCollector.AddToLocalVariables( m_uniqueId, HeightMask );
-			return GetOutputVectorItem( 0, outputId, result ); ;
+			RegisterLocalVariable( 0, HeightMask, ref dataCollector , varName );
+			return m_outputPorts[ 0 ].LocalValue;
 		}
 		/*
          A = (heightMap * SplatMask)*4

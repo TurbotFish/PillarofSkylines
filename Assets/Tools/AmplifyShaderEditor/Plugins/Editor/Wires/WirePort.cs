@@ -39,7 +39,7 @@ namespace AmplifyShaderEditor
 		private bool m_isEditable = false;
 		private bool m_editingName = false;
 
-		private int m_portRestrictions = 0;
+		protected int m_portRestrictions = 0;
 
 		[SerializeField]
 		private Rect m_position;
@@ -93,8 +93,20 @@ namespace AmplifyShaderEditor
 			m_externalReferences = null;
 		}
 
+		public void AddPortRestrictions( params WirePortDataType[] validTypes )
+		{
+			if ( validTypes != null )
+			{
+				for ( int i = 0; i < validTypes.Length; i++ )
+				{
+					m_portRestrictions = m_portRestrictions | (int)validTypes[ i ];
+				}
+			}
+		}
+
 		public void CreatePortRestrictions( params WirePortDataType[] validTypes )
 		{
+			m_portRestrictions = 0;
 			if ( validTypes != null )
 			{
 				for ( int i = 0; i < validTypes.Length; i++ )

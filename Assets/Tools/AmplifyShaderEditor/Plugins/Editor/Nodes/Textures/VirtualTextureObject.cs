@@ -35,18 +35,18 @@ namespace AmplifyShaderEditor
 	public class VirtualTexturePropertyNode : TexturePropertyNode
 	{
 		protected const string VirtualPresetStr = "Layout Preset";
-		protected const string VirtualChannelStr = "Virtual Channel";
+		protected const string VirtualChannelStr = "Virtual Layer";
 
 		private readonly string[] ChannelTypeStr = {
-			"Albedo		- Channel 0 - RGBA",
-			"Base	- Channel 0 - RGBA",
-			"Normal		- Channel 1 - GA     ",
-			"Height		- Channel 1 - B        ",
-			"Occlusion	- Channel 1 - R        ",
-			"Displacement	- Channel 1 - B        ",
-			"Specular	- Channel 2 - RGBA",
-			"Specular|Metallic	- Channel 2 - RGBA",
-			"Material	- Channel 2 - RGBA",};
+			"Albedo - D.RGBA",
+			"Base - D.RGBA",
+			"Normal - N.GA",
+			"Height - N.B",
+			"Occlusion - N.R",
+			"Displacement - N.B",
+			"Specular - S.RGBA",
+			"Specular|Metallic - S.RGBA",
+			"Material - S.RGBA",};
 
 		private readonly string[] Dummy = { string.Empty };
 		private string[] m_channelTypeStr;
@@ -63,11 +63,8 @@ namespace AmplifyShaderEditor
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
-			m_channelTypeStr = Dummy;
-			m_virtualChannel = GetChannel( 0 );
-			ChangeChannels();
 			UIUtils.AddVirtualTextureCount();
-			m_channelTypeStr = Dummy;
+			ChangeChannels();
 		}
 
 		public override void DrawSubProperties()
@@ -84,17 +81,17 @@ namespace AmplifyShaderEditor
 			base.DrawMaterialProperties();
 		}
 
-		void ShowDefaults()
+		new void ShowDefaults()
 		{
 			EditorGUI.BeginChangeCheck();
-			m_virtualPreset = ( VirtualPreset )EditorGUILayout.EnumPopup( VirtualPresetStr, m_virtualPreset );
+			m_virtualPreset = ( VirtualPreset )EditorGUILayoutEnumPopup( VirtualPresetStr, m_virtualPreset );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				ChangeChannels();
 			}
 
 			EditorGUI.BeginChangeCheck();
-			m_selectedChannelInt = EditorGUILayout.Popup( VirtualChannelStr, m_selectedChannelInt, m_channelTypeStr );
+			m_selectedChannelInt = EditorGUILayoutPopup( VirtualChannelStr, m_selectedChannelInt, m_channelTypeStr );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				m_virtualChannel = GetChannel( m_selectedChannelInt );
@@ -112,10 +109,10 @@ namespace AmplifyShaderEditor
 				default:
 				case VirtualPreset.Unity5:
 				case VirtualPreset.UBER:
-					remapInt = popupInt == 0 ? 0 : popupInt == 1 ? 2 : popupInt == 2 ? 3 : popupInt == 3 ? 4 : popupInt == 4 ? 7 : 0;
+					remapInt = popupInt == 0 ? 0 : popupInt == 1 ? 7 : popupInt == 2 ? 2 : popupInt == 3 ? 3 : popupInt == 4 ? 4 : 0;
 					break;
 				case VirtualPreset.Alloy:
-					remapInt = popupInt == 0 ? 1 : popupInt == 1 ? 2 : popupInt == 2 ? 3 : popupInt == 3 ? 8 : 0;
+					remapInt = popupInt == 0 ? 1 : popupInt == 1 ? 2 : popupInt == 2 ? 8 : popupInt == 3 ? 3 : 0;
 					break;
 				case VirtualPreset.Skyshop:
 				case VirtualPreset.Lux:
@@ -137,10 +134,10 @@ namespace AmplifyShaderEditor
 				default:
 				case VirtualPreset.Unity5:
 				case VirtualPreset.UBER:
-					m_channelTypeStr = new string[] { ChannelTypeStr[ 0 ], ChannelTypeStr[ 2 ], ChannelTypeStr[ 3 ], ChannelTypeStr[ 4 ], ChannelTypeStr[ 7 ] };
+					m_channelTypeStr = new string[] { ChannelTypeStr[ 0 ], ChannelTypeStr[ 7 ], ChannelTypeStr[ 2 ], ChannelTypeStr[ 3 ], ChannelTypeStr[ 4 ] };
 					break;
 				case VirtualPreset.Alloy:
-					m_channelTypeStr = new string[] { ChannelTypeStr[ 1 ], ChannelTypeStr[ 2 ], ChannelTypeStr[ 3 ], ChannelTypeStr[ 8 ] };
+					m_channelTypeStr = new string[] { ChannelTypeStr[ 1 ], ChannelTypeStr[ 2 ], ChannelTypeStr[ 8 ], ChannelTypeStr[ 3 ] };
 					break;
 				case VirtualPreset.Skyshop:
 				case VirtualPreset.Lux:
@@ -152,7 +149,7 @@ namespace AmplifyShaderEditor
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
 			base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalVar );
-			dataCollector.AddToProperties( m_uniqueId, "[HideInInspector] _VTInfoBlock( \"VT( auto )\", Vector ) = ( 0, 0, 0, 0 )", -1 );
+			dataCollector.AddToProperties( UniqueId, "[HideInInspector] _VTInfoBlock( \"VT( auto )\", Vector ) = ( 0, 0, 0, 0 )", -1 );
 
 			return PropertyName;
 		}
@@ -198,8 +195,8 @@ namespace AmplifyShaderEditor
 			m_autocastMode = ( AutoCastType )Enum.Parse( typeof( AutoCastType ), GetCurrentParam( ref nodeParams ) );
 			m_virtualPreset = ( VirtualPreset )Enum.Parse( typeof( VirtualPreset ), GetCurrentParam( ref nodeParams ) );
 			m_selectedChannelInt = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
-			m_virtualChannel = GetChannel( m_selectedChannelInt );
 			ChangeChannels();
+			m_virtualChannel = GetChannel( m_selectedChannelInt );
 
 			m_forceNodeUpdate = true;
 
@@ -223,31 +220,31 @@ namespace AmplifyShaderEditor
 
 		public override void WriteAdditionalToString( ref string nodeInfo, ref string connectionsInfo ) { }
 
-		public override string PropertyName
-		{
-			get
-			{
-				string propertyName = string.Empty;
-				switch ( m_virtualChannel )
-				{
-					default:
-					case VirtualChannel.Albedo:
-					case VirtualChannel.Base:
-						propertyName = "_MainTex";
-						break;
-					case VirtualChannel.Normal:
-						propertyName = "_BumpMap";
-						break;
-					case VirtualChannel.SpecMet:
-						propertyName = "_MetallicGlossMap";
-						break;
-					case VirtualChannel.Occlusion:
-						propertyName = "_OcclusionMap";
-						break;
-				}
-				return propertyName;
-			}
-		}
+		//public override string PropertyName
+		//{
+		//	get
+		//	{
+		//		string propertyName = string.Empty;
+		//		switch ( m_virtualChannel )
+		//		{
+		//			default:
+		//			case VirtualChannel.Albedo:
+		//			case VirtualChannel.Base:
+		//				propertyName = "_MainTex";
+		//				break;
+		//			case VirtualChannel.Normal:
+		//				propertyName = "_BumpMap";
+		//				break;
+		//			case VirtualChannel.SpecMet:
+		//				propertyName = "_MetallicGlossMap";
+		//				break;
+		//			case VirtualChannel.Occlusion:
+		//				propertyName = "_OcclusionMap";
+		//				break;
+		//		}
+		//		return propertyName;
+		//	}
+		//}
 
 		public override void Destroy()
 		{
