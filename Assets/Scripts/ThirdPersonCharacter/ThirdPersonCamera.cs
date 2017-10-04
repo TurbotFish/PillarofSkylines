@@ -56,7 +56,7 @@ public class ThirdPersonCamera : MonoBehaviour {
     Transform my;
 
     float yaw, pitch;
-    float maxDistance, defaultDistance, idealDistance;
+    float maxDistance, idealDistance;
     
     void Start() {
         camera = GetComponent<Camera>();
@@ -69,7 +69,7 @@ public class ThirdPersonCamera : MonoBehaviour {
         pitch = angles.x;
         camPosition = transform.position;
 
-        defaultDistance = idealDistance = distance;
+        //defaultDistance = idealDistance = distance;
         maxDistance = canZoom ? zoomDistance.max : idealDistance;
     }
 
@@ -138,7 +138,7 @@ public class ThirdPersonCamera : MonoBehaviour {
     float lastHitDistance;
     void CheckForCollision() {
         negDistance.z = -idealDistance;
-        Vector3 idealPosition = camRotation * negDistance + target.position; // Virtually ideal position that does not take offset into account to avoid infinite back and forth
+        //Vector3 idealPosition = camRotation * negDistance + target.position; // Virtually ideal position that does not take offset into account to avoid infinite back and forth
         Vector3 targetPos = target.position; // Same for the target
         targetPos.y += offsetClose.y;
 
