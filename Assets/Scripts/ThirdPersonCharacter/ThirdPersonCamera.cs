@@ -68,8 +68,7 @@ public class ThirdPersonCamera : MonoBehaviour {
         yaw = angles.y;
         pitch = angles.x;
         camPosition = transform.position;
-
-        //defaultDistance = idealDistance = distance;
+        
         maxDistance = canZoom ? zoomDistance.max : idealDistance;
     }
 
@@ -103,9 +102,7 @@ public class ThirdPersonCamera : MonoBehaviour {
         negDistance.z = -distance;
         Vector3 targetWithOffset = targetPosition + my.right * offset.x + my.up * offset.y;
         camPosition = camRotation * negDistance + targetWithOffset;
-
-        //my.LookAt(targetWithOffset);
-
+        
         SmoothMovement();
 
         target.rotation = Quaternion.Euler(0, yaw, 0); // Reoriente the character's rotator
@@ -126,7 +123,7 @@ public class ThirdPersonCamera : MonoBehaviour {
 
         camRotation = Quaternion.Euler(pitch, yaw, 0);
 
-        idealDistance = distanceBasedOnPitch.Lerp(distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
+        idealDistance = distanceBasedOnPitch.Lerp(distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch))); // prevents Zoom
         camera.fieldOfView = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
 
         //Changer la rotation de la caméra pendant l'Éclipse
@@ -134,22 +131,27 @@ public class ThirdPersonCamera : MonoBehaviour {
     }
 
     bool blockedByAWall;
-    float sphereRadius = 1f;
+    float sphereRadius = 0.1f;
     float lastHitDistance;
     void CheckForCollision() {
         negDistance.z = -idealDistance;
-        //Vector3 idealPosition = camRotation * negDistance + target.position; // Virtually ideal position that does not take offset into account to avoid infinite back and forth
         Vector3 targetPos = target.position; // Same for the target
-        targetPos.y += offsetClose.y;
+
+        Vector3 rayStart = target.position + my.right * offsetClose.x + my.up * offsetClose.y;
+        negDistance.z = -distance;
+        Vector3 rayEnd = camRotation * negDistance + (target.position + my.right * offsetFar.x + my.up * offsetFar.y);
 
         int layerMask = ~(1 << 10); // ignore Layer #10 : "DontBlockCamera"
         
         RaycastHit hit;
-        blockedByAWall = Physics.SphereCast(targetPos, sphereRadius, my.position - targetPos, out hit, distance, layerMask);
+        blockedByAWall = Physics.Raycast(rayStart, rayEnd - targetPos, out hit, maxDistance, layerMask);
         Debug.DrawLine(targetPos, my.position, Color.yellow);
 
         if (blockedByAWall && hit.distance > 0) // If we hit something, hitDistance cannot be 0, nor higher than idealDistance
             lastHitDistance = Mathf.Min(hit.distance, idealDistance);
+
+        if (blockedByAWall)
+            print(hit.collider);
 
         float fixedDistance = blockedByAWall ? lastHitDistance : idealDistance;
         
