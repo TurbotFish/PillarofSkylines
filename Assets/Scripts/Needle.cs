@@ -22,7 +22,6 @@ public class Needle : MonoBehaviour {
     void OnTriggerStay(Collider col) {
 
         if (col.tag == "Player" && eclipseManager.isEclipseActive == false) {
-            print("Press F to take noodle");
 			F.SetActive (true);
 			F.GetComponent<TextMeshProUGUI> ().SetText("[F] : Take Needle");
 
