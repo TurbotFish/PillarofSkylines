@@ -34,6 +34,8 @@ public class ThirdPersonCamera : MonoBehaviour {
     public MinMax fovBasedOnPitch = new MinMax(60, 75);
     public AnimationCurve fovFromRotation;
 
+    public float rayRadius = .2f;
+
     public bool smoothMovement = true;
     public float smoothDamp = .1f; // this name is bad
 
@@ -111,6 +113,7 @@ public class ThirdPersonCamera : MonoBehaviour {
 		negDistance.z = -currentDistance;
 		Vector3 targetWithOffset = targetPosition + my.right * offset.x + my.up * offset.y;
 		camPosition = camRotation * negDistance + targetWithOffset;
+
 		SmoothMovement();
 
         target.rotation = Quaternion.Euler(0, yaw, 0); // Reoriente the character's rotator
@@ -143,26 +146,30 @@ public class ThirdPersonCamera : MonoBehaviour {
     }
 
     bool blockedByAWall;
-    float sphereRadius = .4f;
     float lastHitDistance;
     void CheckForCollision() {
-        negDistance.z = -idealDistance;
         Vector3 targetPos = target.position; // Same for the target
-		targetPos.y += offsetClose.y; // Change that during eclipse
+        Vector3 startPos = targetPos;
 
-        Vector3 rayEnd = camRotation * negDistance + (target.position + my.right * offsetFar.x + my.up * offsetFar.y);
-
+        negDistance.z = -idealDistance;
+        Vector3 rayEnd = camRotation * negDistance + (targetPos + my.right * offsetFar.x + my.up * offsetFar.y);
+        
         int layerMask = ~(1 << 10); // ignore Layer #10 : "DontBlockCamera"
 		
 		RaycastHit hit;
-		blockedByAWall = Physics.SphereCast(targetPos, sphereRadius, rayEnd - targetPos, out hit, idealDistance, layerMask);
-        Debug.DrawLine(targetPos, rayEnd, Color.yellow);
+		blockedByAWall = Physics.SphereCast(startPos, rayRadius, rayEnd - startPos, out hit, idealDistance, layerMask);
+        Debug.DrawLine(startPos, rayEnd, Color.yellow);
 
 
 		if (blockedByAWall && hit.distance > 0) { // If we hit something, hitDistance cannot be 0, nor higher than idealDistance
-			lastHitDistance = Mathf.Min(hit.distance, idealDistance);
-			//camPosition = hit.point;
-		}
+			lastHitDistance = Mathf.Min(hit.distance - rayRadius, idealDistance);
+
+            Debug.DrawLine(hit.point - new Vector3(0, .2f, 0), hit.point + new Vector3(0, .2f, 0), Color.red);
+
+            Debug.DrawLine(hit.point - new Vector3(.2f, 0, 0), hit.point + new Vector3(.2f, 0, 0), Color.red);
+
+            //camPosition = hit.point;
+        }
 
         float fixedDistance = blockedByAWall ? lastHitDistance : idealDistance;
         
