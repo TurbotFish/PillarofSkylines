@@ -10,17 +10,6 @@ public class ThirdPersonCamera : MonoBehaviour {
     public Vector2 offsetFar = new Vector2(0, 2),
                    offsetClose = new Vector2(2, 0);
 
-    #region Temporary Offset
-        Vector2 _tempOffset;
-        bool offsetOverriden;
-        public Vector2 temporaryOffset {
-            set {
-                _tempOffset = value;
-                offsetOverriden = true;
-            }
-        }
-    #endregion
-
     [Header("Movement")]
     public Bool3 invertAxis;
     public Vector2 maxRotationSpeed = new Vector2(15, 15);
@@ -37,18 +26,8 @@ public class ThirdPersonCamera : MonoBehaviour {
     public float rayRadius = .2f;
 
     public bool smoothMovement = true;
-    public float smoothDamp = .1f; // this name is bad
-
-    #region Zoom
-    [Header("Zoom")]
-    public bool canZoom;
-    public float zoomSpeed = 5;
-    public MinMax zoomDistance = new MinMax(2, 12);
-
-    void Zoom(float value) {
-        if (value != 0) idealDistance = zoomDistance.Clamp(currentDistance - value * zoomSpeed);
-    }
-	#endregion
+    public float smoothDamp = .1f;
+    public float collisionDamp = .5f;
 
 	[Header("Panorama Mode")]
 	public bool enablePanoramaMode = true;
@@ -66,6 +45,8 @@ public class ThirdPersonCamera : MonoBehaviour {
     float yaw, pitch;
     float maxDistance, currentDistance, idealDistance;
 	float deltaTime;
+
+    #region MonoBehaviour
 
     void Start() {
         camera = GetComponent<Camera>();
@@ -122,6 +103,41 @@ public class ThirdPersonCamera : MonoBehaviour {
 			DoPanorama();
     }
 
+    #endregion
+
+    #region Zoom
+    [Header("Zoom")]
+    public bool canZoom;
+    public float zoomSpeed = 5;
+    public MinMax zoomDistance = new MinMax(2, 12);
+
+    void Zoom(float value) {
+        if (value != 0) idealDistance = zoomDistance.Clamp(currentDistance - value * zoomSpeed);
+    }
+    #endregion
+
+    #region Panorama Mode
+    float panoramaTimer = 0;
+    bool inPanorama = false;
+
+    void DoPanorama() {
+        if (!Input.anyKey && Input.GetAxis("Mouse X") == 0 && Input.GetAxis("Mouse Y") == 0)
+            panoramaTimer += deltaTime;
+        else {
+            panoramaTimer = 0;
+            if (inPanorama) {
+                idealDistance = distance;
+                inPanorama = false;
+            }
+        }
+
+        if (panoramaTimer >= timeToTriggerPanorama && idealDistance <= panoramaDistance) {
+            idealDistance += deltaTime * panoramaDezoomSpeed;
+            inPanorama = true;
+        }
+    }
+    #endregion
+
     void DoRotation() {
         rotationSpeed.x = Mathf.Lerp(minRotationSpeed.x, maxRotationSpeed.x, currentDistance / maxDistance);
         rotationSpeed.y = Mathf.Lerp(minRotationSpeed.y, maxRotationSpeed.y, currentDistance / maxDistance);
@@ -139,7 +155,7 @@ public class ThirdPersonCamera : MonoBehaviour {
 
 
         //idealDistance = Mathf.Lerp(1, maxDistance, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch))); // prevents Zoom
-        camera.fieldOfView = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
+        //camera.fieldOfView = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
 
         //Changer la rotation de la caméra pendant l'Éclipse
         //camRotation = Quaternion.AngleAxis(90, Vector3.forward) * camRotation;
@@ -167,13 +183,13 @@ public class ThirdPersonCamera : MonoBehaviour {
             Debug.DrawLine(hit.point - new Vector3(0, .2f, 0), hit.point + new Vector3(0, .2f, 0), Color.red);
 
             Debug.DrawLine(hit.point - new Vector3(.2f, 0, 0), hit.point + new Vector3(.2f, 0, 0), Color.red);
-
-            //camPosition = hit.point;
         }
 
         float fixedDistance = blockedByAWall ? lastHitDistance : idealDistance;
         
-        currentDistance = Mathf.Lerp(currentDistance, fixedDistance, deltaTime / smoothDamp);
+        //we want collisionDamp to be proportional to the distance between fixedDistance and currentDistance
+
+        currentDistance = Mathf.Lerp(currentDistance, fixedDistance, deltaTime / collisionDamp);
     }
 
     void SmoothMovement() {
@@ -182,6 +198,17 @@ public class ThirdPersonCamera : MonoBehaviour {
         my.rotation = Quaternion.Lerp(my.rotation, camRotation, t);
     }
 
+    #region Temporary Offset
+    Vector2 _tempOffset;
+    bool offsetOverriden;
+    public Vector2 temporaryOffset {
+        set {
+            _tempOffset = value;
+            offsetOverriden = true;
+        }
+    }
+    #endregion
+
     public static float ClampAngle(float angle, float min, float max) {
         if (angle < -360F)
             angle += 360F;
@@ -189,24 +216,4 @@ public class ThirdPersonCamera : MonoBehaviour {
             angle -= 360F;
         return Mathf.Clamp(angle, min, max);
     }
-	
-	float panoramaTimer = 0;
-	bool inPanorama = false;
-
-	void DoPanorama() {
-		if (Input.GetAxis("Mouse X") == 0 && Input.GetAxis("Mouse Y") == 0)
-			panoramaTimer += deltaTime;
-		else {
-			panoramaTimer = 0;
-			if (inPanorama) {
-				idealDistance = distance;
-				inPanorama = false;
-			}
-		}
-
-		if (panoramaTimer >= timeToTriggerPanorama && idealDistance <= panoramaDistance) {
-			idealDistance += deltaTime * panoramaDezoomSpeed;
-			inPanorama = true;
-		}
-	}
 }
