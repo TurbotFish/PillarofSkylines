@@ -49,8 +49,10 @@ public class CharacControllerRecu : MonoBehaviour {
 	/// </summary>
 	int collisionNumber;
 
-	//To integrate
-	public float maxAngleBeforeFall = 45f;
+	/// <summary>
+	/// The max walkable slope angle.
+	/// </summary>
+	[Tooltip("The max walkable slope angle.")]
 	public float maxSlopeAngle = 45f;
 
 	void Start(){
@@ -73,13 +75,19 @@ public class CharacControllerRecu : MonoBehaviour {
 		//Update collision informations
 		CollisionUpdate (_velocity);
 
+		//Reorient velocity along the slope, accelerate down slopes and decelerate up.
+		if (collisions.below) {
+			_velocity = Vector3.ProjectOnPlane (_velocity, collisions.currentGroundNormal);
+			_velocity *= Vector3.Angle (myTransform.forward, Vector3.ProjectOnPlane(myTransform.forward, collisions.currentGroundNormal)) * (Vector3.Dot(myTransform.forward, collisions.currentGroundNormal) > 0 ? 1 : -1)/90 +1;
+		}
+
 		//Recursively check if the movement meets obstacles
 		_velocity = CollisionDetection (_velocity, myTransform.position + center, new RaycastHit());
 
 		/// Check if calculated movement will end up in a wall, if so cancel movement
 		if (!Physics.CheckCapsule (myTransform.position + center + _velocity - capsuleHeightModifier, myTransform.position + center + _velocity + capsuleHeightModifier, radius, collisionMask)) {
 			myTransform.Translate (_velocity, Space.World);
-		}
+		} 
 	}
 
 
@@ -88,6 +96,11 @@ public class CharacControllerRecu : MonoBehaviour {
 		//Send casts to check if there's stuff around the player and sets bools depending on the results
 		if (myTransform.InverseTransformDirection(velocity).y < 0) {
 			collisions.below = Physics.SphereCast (myTransform.position + center - capsuleHeightModifier, radius, -myTransform.up, out hit, velocity.magnitude + skinWidth, collisionMask);
+			if (collisions.below) {
+				collisions.onSteepSlope = Vector3.Angle (myTransform.up, hit.normal) > maxSlopeAngle;
+				collisions.currentGroundNormal = hit.normal;
+			}
+
 		} else {
 			collisions.above = Physics.SphereCast (myTransform.position + center + capsuleHeightModifier, radius * .9f, myTransform.up, out hit, velocity.magnitude + skinWidth, collisionMask);
 		}
@@ -97,7 +110,7 @@ public class CharacControllerRecu : MonoBehaviour {
 
 	//Recursively check if the movement meets obstacles
 	Vector3 CollisionDetection(Vector3 velocity, Vector3 position, RaycastHit oldHit){
-		
+
 		Vector3 movementVector = Vector3.zero;
 		RaycastHit hit;
 		Vector3 veloNorm = velocity.normalized;
@@ -107,6 +120,7 @@ public class CharacControllerRecu : MonoBehaviour {
 		//Send a first capsule cast in the direction of the velocity
 		if (Physics.CapsuleCast (newOrigin - capsuleHeightModifier, newOrigin + capsuleHeightModifier, radius, velocity, out hit, rayLength, collisionMask)) {
 			collisionNumber++;
+
 
 			//When an obstacle is met, remember the amount of movement needed to get to the obstacle
 			movementVector += veloNorm * (hit.distance - ((skinWidth < hit.distance)? skinWidth : hit.distance));
@@ -121,7 +135,11 @@ public class CharacControllerRecu : MonoBehaviour {
 				//if it's not the first, project on the line parallel to both the current obstacle and the previous one
 				//once the extra velocity has been projected, Call the function once more to check if this new velocity meets obstacle and do everything again
 				if (collisionNumber > 1) {
-					reflection = CollisionDetection (Vector3.Project(extraVelocity, Vector3.Cross(hit.normal, oldHit.normal)), position + movementVector, hit);
+					if (Vector3.Dot (hit.normal, oldHit.normal) < 0) {
+						reflection = CollisionDetection (Vector3.Project (extraVelocity, Vector3.Cross (hit.normal, oldHit.normal)), position + movementVector, hit);
+					} else {
+						reflection = CollisionDetection (Vector3.ProjectOnPlane(extraVelocity, hit.normal), position + movementVector, hit);
+					}
 				} else {
 					reflection = CollisionDetection (Vector3.ProjectOnPlane(extraVelocity, hit.normal), position + movementVector, hit);
 				}
@@ -142,11 +160,14 @@ public class CharacControllerRecu : MonoBehaviour {
 	/// </summary>
 	public struct CollisionInfo{
 		public bool above, below;
-		public bool side;
+		public bool side, onSteepSlope;
+
+		public Vector3 currentGroundNormal;
 
 		public void Reset(){
 			above = below = false;
-			side = false;
+			side = onSteepSlope = false;
+			currentGroundNormal = Vector3.zero;
 		}
 
 	}
