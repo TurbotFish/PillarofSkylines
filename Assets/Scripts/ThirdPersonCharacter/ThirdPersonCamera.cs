@@ -3,7 +3,9 @@
 [AddComponentMenu("Camera/Third Person Camera")]
 [RequireComponent(typeof(Camera))]
 public class ThirdPersonCamera : MonoBehaviour {
-    
+
+    public LayerMask blockingLayer;
+
     [Header("Position")]
     public Transform target;
     public float distance = 10;
@@ -169,11 +171,9 @@ public class ThirdPersonCamera : MonoBehaviour {
 
         negDistance.z = -idealDistance;
         Vector3 rayEnd = camRotation * negDistance + (targetPos + my.right * offsetFar.x + my.up * offsetFar.y);
-        
-        int layerMask = ~(1 << 10); // ignore Layer #10 : "DontBlockCamera"
 		
 		RaycastHit hit;
-		blockedByAWall = Physics.SphereCast(startPos, rayRadius, rayEnd - startPos, out hit, idealDistance, layerMask);
+		blockedByAWall = Physics.SphereCast(startPos, rayRadius, rayEnd - startPos, out hit, idealDistance, blockingLayer);
         Debug.DrawLine(startPos, rayEnd, Color.yellow);
 
 
