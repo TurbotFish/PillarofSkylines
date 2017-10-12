@@ -104,6 +104,12 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	CharacControllerRecu controller;
 
+	[Space(20)]
+	/// <summary>
+	/// The rotator used to turn the player.
+	/// </summary>
+	public Transform rotator;
+
 	void Start(){
 		controller = GetComponent<CharacControllerRecu> ();
 
@@ -119,14 +125,15 @@ public class Player : MonoBehaviour {
 
 		//Get the input of the player
 		Vector3 input = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical"));
+		float targetRotation = Vector3.Angle(Vector3.forward, rotator.forward) * (Vector3.Dot(rotator.forward, Vector3.right) > 0 ? 1 : -1);
+		Vector3 inputToCamera = Quaternion.Euler (0, targetRotation, 0) * input;
 		//Calculate input dependent of the player's up axis
-		Vector3 inputDir = (Quaternion.AngleAxis(angle, Vector3.Cross(Vector3.up, transform.up))) * input;
+		Vector3 inputDir = (Quaternion.AngleAxis(angle, Vector3.Cross(Vector3.up, transform.up))) * inputToCamera;
 
 		//Turn the player in the direction of the input and decelerating when turning back
 		#region turning the player 
 		if (input != Vector3.zero) {
 
-			float targetRotation = Mathf.Atan2 (input.x, input.z) * Mathf.Rad2Deg;
 
 			//If the input is at the opposite side of the player's forward, turn instantly and slow down the player
 			turnSmoothTime = Vector3.Dot (transform.forward, inputDir) < -.75f ? turnSmoothTime_uTurn : turnSmoothTime_default;
@@ -159,9 +166,10 @@ public class Player : MonoBehaviour {
 		currentSpeed = Mathf.SmoothDamp (currentSpeed, targetSpeed, ref speedSmoothVelocity, (controller.collisions.below ? speedSmoothTimeGround : speedSmoothTimeAir));
 
 		//Combine speed and direction to calculate horizontal components of the velocity vector
-		Vector3 forwCamera = Vector3.ProjectOnPlane (Camera.main.transform.forward, transform.up);
-		velocity.z = Vector3.ProjectOnPlane(transform.forward, Camera.main.transform.right).magnitude * currentSpeed * (Vector3.Dot(transform.forward, forwCamera) > 0 ? 1 : -1);
-		velocity.x = Vector3.ProjectOnPlane(transform.forward, forwCamera).magnitude * currentSpeed * (Vector3.Dot(transform.forward, Camera.main.transform.right) > 0 ? 1 : -1);
+		velocity.x = Vector3.ProjectOnPlane(transform.forward, rotator.forward).magnitude * currentSpeed * (Vector3.Dot(transform.forward, rotator.right) > 0 ? 1 : -1);
+		velocity.z = Vector3.ProjectOnPlane(transform.forward, rotator.right).magnitude * currentSpeed * (Vector3.Dot(transform.forward, rotator.forward) > 0 ? 1 : -1);
+
+		velocity = Quaternion.Euler (0, targetRotation, 0) * velocity;
 
 		//Reset vertical velocity if the player is on the ground or hitting the ceiling
 		if (controller.collisions.below || controller.collisions.above) {

@@ -3,7 +3,13 @@
 public class CharacControllerRecu : MonoBehaviour {
 
 
-	#region cast variables
+
+	#region collider properties
+	/// <summary>
+	/// The center of the capsule used as the player collider.
+	/// </summary>
+	[Tooltip("The center of the capsule used as the player collider.")]
+	public Vector3 center = new Vector3(0f, 0f, 0f);
 	/// <summary>
 	/// The radius of the capsule used as the player collider.
 	/// </summary>
@@ -12,8 +18,11 @@ public class CharacControllerRecu : MonoBehaviour {
 	/// <summary>
 	/// The height difference between the position and the center of the upper sphere of the capsule.
 	/// </summary>
-	[Tooltip("The height difference between the position and the center of the upper sphere of the capsule.")]
-	public float halfheight = .5f;
+	[Tooltip("The height of the capsule.")]
+	public float height = 1f;
+	#endregion collider properties
+
+	#region cast variables
 	/// <summary>
 	/// The height difference between the two points of the capsule.
 	/// </summary>
@@ -51,24 +60,24 @@ public class CharacControllerRecu : MonoBehaviour {
 
 	public void Move(Vector3 _velocity){
 		//Set the vector between the points of the capsule on this frame.
-		capsuleHeightModifier = myTransform.up * halfheight;
+		capsuleHeightModifier = myTransform.up * height/2;
 
 		//resets collisions
 		collisionNumber = 0;
 		collisions.Reset ();
 
 		#if UNITY_EDITOR
-		Debug.DrawRay (myTransform.position, _velocity*10, Color.green);
+		Debug.DrawRay (myTransform.position + center, _velocity*10, Color.green);
 		#endif
 
 		//Update collision informations
 		CollisionUpdate (_velocity);
 
 		//Recursively check if the movement meets obstacles
-		_velocity = CollisionDetection (_velocity, myTransform.position, new RaycastHit());
+		_velocity = CollisionDetection (_velocity, myTransform.position + center, new RaycastHit());
 
 		/// Check if calculated movement will end up in a wall, if so cancel movement
-		if (!Physics.CheckCapsule (myTransform.position + _velocity - capsuleHeightModifier, myTransform.position + _velocity + capsuleHeightModifier, radius, collisionMask)) {
+		if (!Physics.CheckCapsule (myTransform.position + center + _velocity - capsuleHeightModifier, myTransform.position + center + _velocity + capsuleHeightModifier, radius, collisionMask)) {
 			myTransform.Translate (_velocity, Space.World);
 		}
 	}
@@ -78,11 +87,11 @@ public class CharacControllerRecu : MonoBehaviour {
 		RaycastHit hit;
 		//Send casts to check if there's stuff around the player and sets bools depending on the results
 		if (myTransform.InverseTransformDirection(velocity).y < 0) {
-			collisions.below = Physics.SphereCast (myTransform.position - capsuleHeightModifier, radius, -myTransform.up, out hit, velocity.magnitude + skinWidth, collisionMask);
+			collisions.below = Physics.SphereCast (myTransform.position + center - capsuleHeightModifier, radius, -myTransform.up, out hit, velocity.magnitude + skinWidth, collisionMask);
 		} else {
-			collisions.above = Physics.SphereCast (myTransform.position + capsuleHeightModifier, radius * .9f, myTransform.up, out hit, velocity.magnitude + skinWidth, collisionMask);
+			collisions.above = Physics.SphereCast (myTransform.position + center + capsuleHeightModifier, radius * .9f, myTransform.up, out hit, velocity.magnitude + skinWidth, collisionMask);
 		}
-		collisions.side = Physics.SphereCast (myTransform.position, radius, Vector3.ProjectOnPlane(velocity, myTransform.up), out hit, velocity.magnitude + skinWidth, collisionMask);
+		collisions.side = Physics.SphereCast (myTransform.position + center, radius, Vector3.ProjectOnPlane(velocity, myTransform.up), out hit, velocity.magnitude + skinWidth, collisionMask);
 	}
 
 
@@ -140,6 +149,15 @@ public class CharacControllerRecu : MonoBehaviour {
 			side = false;
 		}
 
+	}
+
+	void OnDrawGizmosSelected()
+	{
+		Gizmos.color = new Color(1, 0, 1, 0.75F);
+		Vector3 upPosition = transform.position + center + new Vector3 (0, height / 2, 0);
+		Vector3 downPosition = transform.position + center - new Vector3 (0, height / 2, 0);
+		Gizmos.DrawWireSphere(upPosition, radius);
+		Gizmos.DrawWireSphere(downPosition, radius);
 	}
 
 }
