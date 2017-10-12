@@ -20,7 +20,6 @@ public class Needle : MonoBehaviour {
     }
 
     void OnTriggerStay(Collider col) {
-
         if (col.tag == "Player" && eclipseManager.isEclipseActive == false) {
 			F.SetActive (true);
 			F.GetComponent<TextMeshProUGUI> ().SetText("[F] : Take Needle");
@@ -33,19 +32,14 @@ public class Needle : MonoBehaviour {
 				needle.SetActive (false);
 				gameObject.SetActive(false);
 				F.SetActive (false);
-
-
             }
         }
     }
 
-	void OnTriggerExit(Collider col)
-	{
+	void OnTriggerExit(Collider col) {
 		if (col.tag == "Player" && eclipseManager.isEclipseActive == false) {
 			anim.SetBool ("Needle_approach", false);
 			F.SetActive (false);
-
 		}
 	}
-
 }
