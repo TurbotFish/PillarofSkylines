@@ -60,8 +60,9 @@ public class CharacControllerRecu : MonoBehaviour {
 	}
 
 
-	public void Move(Vector3 _velocity){
+	public Vector3 Move(Vector3 _velocity){
 
+		//Debug.Log("movement : " + _velocity/Time.deltaTime);
 		Quaternion playerAngle = (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
 
 		//Set the vector between the points of the capsule on this frame.
@@ -74,6 +75,7 @@ public class CharacControllerRecu : MonoBehaviour {
 		#if UNITY_EDITOR
 		Debug.DrawRay (myTransform.position + playerAngle * center, _velocity*10, Color.green);
 		#endif
+
 
 		//Update collision informations
 		CollisionUpdate (_velocity);
@@ -90,7 +92,11 @@ public class CharacControllerRecu : MonoBehaviour {
 		/// Check if calculated movement will end up in a wall, if so cancel movement
 		if (!Physics.CheckCapsule (myTransform.position + playerAngle * center + _velocity - capsuleHeightModifier, myTransform.position + playerAngle * center + _velocity + capsuleHeightModifier, radius, collisionMask)) {
 			myTransform.Translate (_velocity, Space.World);
-		} 
+			//Debug.Log ("controller : " + _velocity/Time.deltaTime);
+			return (Quaternion.AngleAxis (Vector3.Angle (transform.up, Vector3.up), Vector3.Cross (Vector3.up, transform.up))) * _velocity / Time.deltaTime;
+		} else {
+			return Vector3.zero;
+		}
 	}
 
 
@@ -120,6 +126,7 @@ public class CharacControllerRecu : MonoBehaviour {
 		Vector3 veloNorm = velocity.normalized;
 		float rayLength = velocity.magnitude;
 		Vector3 newOrigin = position;
+
 
 		//Send a first capsule cast in the direction of the velocity
 		if (Physics.CapsuleCast (newOrigin - capsuleHeightModifier, newOrigin + capsuleHeightModifier, radius, velocity, out hit, rayLength, collisionMask)) {
@@ -152,7 +159,7 @@ public class CharacControllerRecu : MonoBehaviour {
 			}
 		} else {
 			//if no obstacle is met, add the reamining velocity to the movement vector
-			movementVector += velocity - (veloNorm * ((skinWidth < velocity.magnitude)?skinWidth:velocity.magnitude));
+			movementVector += velocity;
 		}
 		//return the movement vector calculated
 		return movementVector;

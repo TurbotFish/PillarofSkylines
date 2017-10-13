@@ -135,13 +135,8 @@ public class Player : MonoBehaviour {
 
 		float angle = Vector3.Angle (Vector3.up, transform.up);
 
-		//Get the input of the player
-		//Vector3 input = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical"));
+		//Get the input of the player and translate it into the camera angle
 		Vector3 input = rotator.forward * Input.GetAxisRaw ("Vertical") + rotator.right * Input.GetAxisRaw ("Horizontal");
-		//float targetRotation = Vector3.Angle(Vector3.forward, rotator.forward) * (Vector3.Dot(rotator.forward, Vector3.right) > 0 ? 1 : -1);
-		//Calculate input dependent of the player's up axis
-		//Vector3 inputDir = (Quaternion.AngleAxis(-angle, Vector3.Cross(Vector3.up, transform.up))) * input;
-		//Debug.Log (input);
 
 		//Turn the player in the direction of the input and decelerating when turning back
 		#region turning the player 
@@ -182,14 +177,15 @@ public class Player : MonoBehaviour {
 		velocity.x = Vector3.ProjectOnPlane(transform.forward, rotator.forward).magnitude * currentSpeed * (Vector3.Dot(transform.forward, rotator.right) > 0 ? 1 : -1);
 		velocity.z = Vector3.ProjectOnPlane(transform.forward, rotator.right).magnitude * currentSpeed * (Vector3.Dot(transform.forward, rotator.forward) > 0 ? 1 : -1);
 
+		//Translate the forward of the camera in a standard plane to rotate the horizontal velocity accordingly
 		Vector3 inputDir = (Quaternion.AngleAxis(-angle, Vector3.Cross(Vector3.up, transform.up))) * rotator.forward;
 		float targetRotation = Vector3.Angle(Vector3.forward, inputDir) * (Vector3.Dot(inputDir, Vector3.right) > 0 ? 1 : -1);
 		velocity = Quaternion.Euler (0, targetRotation, 0) * velocity;
 
 
 		//Reset vertical velocity if the player is on the ground or hitting the ceiling
-		if (controller.collisions.below || controller.collisions.above) {
-			velocity.y = 0;
+		if ((!controller.collisions.below && !controller.collisions.above) || controller.collisions.onSteepSlope) {
+			velocity.y += gravity * Time.deltaTime;
 		}
 		if(!controller.collisions.onSteepSlope)
 			graviPente = 0;
@@ -205,6 +201,11 @@ public class Player : MonoBehaviour {
 				velocity.y = maxJumpVelocity;
 			}
 		}
+
+		//graviPente += graviPenteCoeff;
+
+		//Adds the gravity to the velocity
+
 		//Detects the release of the jump button and sets the vertical velocity to its minimum
 		if (Input.GetButtonUp ("Jump")) {
 			if (velocity.y > minJumpVelocity) {
@@ -213,15 +214,12 @@ public class Player : MonoBehaviour {
 		}
 		#endregion
 
-		graviPente += graviPenteCoeff;
 
-		//Adds the gravity to the velocity
-		velocity.y += (gravity - graviPente) * Time.deltaTime;
+		//Debug.Log (velocity.y);
 
-		Debug.Log (velocity);
 
 		//Calls the controller to check if the calculated velocity will run into walls and stuff
-		controller.Move ((Quaternion.AngleAxis(angle, Vector3.Cross(Vector3.up, transform.up))) * velocity * Time.deltaTime);
+		velocity = controller.Move ((Quaternion.AngleAxis(angle, Vector3.Cross(Vector3.up, transform.up))) * velocity * Time.deltaTime);
 	}
 
 }
