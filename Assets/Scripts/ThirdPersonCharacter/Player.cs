@@ -136,11 +136,12 @@ public class Player : MonoBehaviour {
 		float angle = Vector3.Angle (Vector3.up, transform.up);
 
 		//Get the input of the player
-		Vector3 input = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical"));
-		float targetRotation = Vector3.Angle(Vector3.forward, rotator.forward) * (Vector3.Dot(rotator.forward, Vector3.right) > 0 ? 1 : -1);
-		Vector3 inputToCamera = Quaternion.Euler (0, targetRotation, 0) * input;
+		//Vector3 input = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical"));
+		Vector3 input = rotator.forward * Input.GetAxisRaw ("Vertical") + rotator.right * Input.GetAxisRaw ("Horizontal");
+		//float targetRotation = Vector3.Angle(Vector3.forward, rotator.forward) * (Vector3.Dot(rotator.forward, Vector3.right) > 0 ? 1 : -1);
 		//Calculate input dependent of the player's up axis
-		Vector3 inputDir = (Quaternion.AngleAxis(angle, Vector3.Cross(Vector3.up, transform.up))) * inputToCamera;
+		//Vector3 inputDir = (Quaternion.AngleAxis(-angle, Vector3.Cross(Vector3.up, transform.up))) * input;
+		//Debug.Log (input);
 
 		//Turn the player in the direction of the input and decelerating when turning back
 		#region turning the player 
@@ -148,8 +149,8 @@ public class Player : MonoBehaviour {
 
 
 			//If the input is at the opposite side of the player's forward, turn instantly and slow down the player
-			turnSmoothTime = Vector3.Dot (transform.forward, inputDir) < -.75f ? turnSmoothTime_uTurn : turnSmoothTime_default;
-			if (Vector3.Dot (transform.forward, inputDir) < -.75f) {
+			turnSmoothTime = Vector3.Dot (transform.forward, input) < -.75f ? turnSmoothTime_uTurn : turnSmoothTime_default;
+			if (Vector3.Dot (transform.forward, input) < -.75f) {
 				if (!suddenStop) {
 					currentSpeed = -currentSpeed;
 					speedSmoothTimeGround = groundAccelerationSmoothTime_uTurn;
@@ -162,7 +163,7 @@ public class Player : MonoBehaviour {
 				speedSmoothTimeGround = groundAccelerationSmoothTime_default;
 			}
 
-			Vector3 direction = Vector3.SmoothDamp (transform.forward, inputDir, ref turnSmoothVelocity, turnSmoothTime);
+			Vector3 direction = Vector3.SmoothDamp (transform.forward, input, ref turnSmoothVelocity, turnSmoothTime);
 
 			transform.rotation = Quaternion.LookRotation (direction, transform.up);
 
@@ -181,6 +182,8 @@ public class Player : MonoBehaviour {
 		velocity.x = Vector3.ProjectOnPlane(transform.forward, rotator.forward).magnitude * currentSpeed * (Vector3.Dot(transform.forward, rotator.right) > 0 ? 1 : -1);
 		velocity.z = Vector3.ProjectOnPlane(transform.forward, rotator.right).magnitude * currentSpeed * (Vector3.Dot(transform.forward, rotator.forward) > 0 ? 1 : -1);
 
+		Vector3 inputDir = (Quaternion.AngleAxis(-angle, Vector3.Cross(Vector3.up, transform.up))) * rotator.forward;
+		float targetRotation = Vector3.Angle(Vector3.forward, inputDir) * (Vector3.Dot(inputDir, Vector3.right) > 0 ? 1 : -1);
 		velocity = Quaternion.Euler (0, targetRotation, 0) * velocity;
 
 
@@ -211,12 +214,11 @@ public class Player : MonoBehaviour {
 		#endregion
 
 		graviPente += graviPenteCoeff;
-		Debug.Log (graviPente);
 
 		//Adds the gravity to the velocity
 		velocity.y += (gravity - graviPente) * Time.deltaTime;
 
-		
+		Debug.Log (velocity);
 
 		//Calls the controller to check if the calculated velocity will run into walls and stuff
 		controller.Move ((Quaternion.AngleAxis(angle, Vector3.Cross(Vector3.up, transform.up))) * velocity * Time.deltaTime);
