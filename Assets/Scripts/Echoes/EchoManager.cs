@@ -38,7 +38,7 @@ public class EchoManager : MonoBehaviour {
 
     void Start() {
 		camera = FindObjectOfType<ThirdPersonCamera>().GetComponent<EchoCameraEffect>();
-        player = FindObjectOfType<ThirdPersonController>().transform;
+        player = FindObjectOfType<ThirdPersonController>()?.transform ?? FindObjectOfType<Player>().transform; //to fix
         pool = new GameObject().transform;
         pool.name = "Echo Pool";
     }

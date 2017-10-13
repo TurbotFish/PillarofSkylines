@@ -29,13 +29,16 @@ public class ThirdPersonCamera : MonoBehaviour {
 
     public bool smoothMovement = true;
     public float smoothDamp = .1f;
-    public float collisionDamp = .5f;
+    public float collisionDamp = .1f;
 
 	[Header("Panorama Mode")]
 	public bool enablePanoramaMode = true;
 	public float panoramaDistance = 15;
 	public float timeToTriggerPanorama = 10;
 	public float panoramaDezoomSpeed = 1f;
+
+    [Header("Eclipse")]
+    public bool isEclipse = false;
 
     new Camera camera;
     Vector3 camPosition, negDistance;
@@ -99,7 +102,18 @@ public class ThirdPersonCamera : MonoBehaviour {
 
 		SmoothMovement();
 
-        target.rotation = Quaternion.Euler(0, yaw, 0); // Reoriente the character's rotator
+        // DEBUG POUR ECLISPE
+        if (Input.GetKeyUp(KeyCode.G)) {
+            isEclipse ^= true;
+            if (isEclipse)
+                target.transform.parent.Rotate(0, 0, 90, Space.World);
+            else
+                target.transform.parent.Rotate(0, 0, -90, Space.World);
+        }
+
+        // FIN DEBUG
+
+        target.rotation = Quaternion.Euler(isEclipse ? yaw * Vector3.left : yaw * Vector3.up); // Reoriente the character's rotator
 
 		if (enablePanoramaMode)
 			DoPanorama();
@@ -160,7 +174,8 @@ public class ThirdPersonCamera : MonoBehaviour {
         //camera.fieldOfView = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
 
         //Changer la rotation de la caméra pendant l'Éclipse
-        //camRotation = Quaternion.AngleAxis(90, Vector3.forward) * camRotation;
+        if (isEclipse)
+            camRotation = Quaternion.AngleAxis(90, Vector3.forward) * camRotation;
     }
 
     bool blockedByAWall;
