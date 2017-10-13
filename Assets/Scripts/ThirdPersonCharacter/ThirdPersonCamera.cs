@@ -110,10 +110,10 @@ public class ThirdPersonCamera : MonoBehaviour {
             else
                 target.transform.parent.Rotate(0, 0, -90, Space.World);
         }
-
         // FIN DEBUG
 
-        target.rotation = Quaternion.Euler(isEclipse ? yaw * Vector3.left : yaw * Vector3.up); // Reoriente the character's rotator
+        target.rotation = Quaternion.Euler(isEclipse ? yaw * Vector3.left + 90 * Vector3.forward : (yaw * Vector3.up)  ); // Reoriente the character's rotator
+        // change that later
 
 		if (enablePanoramaMode)
 			DoPanorama();
