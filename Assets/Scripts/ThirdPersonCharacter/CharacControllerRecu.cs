@@ -69,7 +69,7 @@ public class CharacControllerRecu : MonoBehaviour {
 		collisions.Reset ();
 
 		#if UNITY_EDITOR
-		Debug.DrawRay (myTransform.position + center, _velocity*10, Color.green);
+		Debug.DrawRay (myTransform.position + (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * center, _velocity*10, Color.green);
 		#endif
 
 		//Update collision informations
@@ -82,10 +82,10 @@ public class CharacControllerRecu : MonoBehaviour {
 		}
 
 		//Recursively check if the movement meets obstacles
-		_velocity = CollisionDetection (_velocity, myTransform.position + center, new RaycastHit());
+		_velocity = CollisionDetection (_velocity, myTransform.position + (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * center, new RaycastHit());
 
 		/// Check if calculated movement will end up in a wall, if so cancel movement
-		if (!Physics.CheckCapsule (myTransform.position + center + _velocity - capsuleHeightModifier, myTransform.position + center + _velocity + capsuleHeightModifier, radius, collisionMask)) {
+		if (!Physics.CheckCapsule (myTransform.position + (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * center + _velocity - capsuleHeightModifier, myTransform.position + (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * center + _velocity + capsuleHeightModifier, radius, collisionMask)) {
 			myTransform.Translate (_velocity, Space.World);
 		} 
 	}
@@ -95,16 +95,16 @@ public class CharacControllerRecu : MonoBehaviour {
 		RaycastHit hit;
 		//Send casts to check if there's stuff around the player and sets bools depending on the results
 		if (myTransform.InverseTransformDirection(velocity).y < 0) {
-			collisions.below = Physics.SphereCast (myTransform.position + center - capsuleHeightModifier, radius, -myTransform.up, out hit, velocity.magnitude + skinWidth, collisionMask);
+			collisions.below = Physics.SphereCast (myTransform.position + (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * center - capsuleHeightModifier, radius, -myTransform.up, out hit, velocity.magnitude + skinWidth, collisionMask);
 			if (collisions.below) {
 				collisions.onSteepSlope = Vector3.Angle (myTransform.up, hit.normal) > maxSlopeAngle;
 				collisions.currentGroundNormal = hit.normal;
 			}
 
 		} else {
-			collisions.above = Physics.SphereCast (myTransform.position + center + capsuleHeightModifier, radius * .9f, myTransform.up, out hit, velocity.magnitude + skinWidth, collisionMask);
+			collisions.above = Physics.SphereCast (myTransform.position + (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * center + capsuleHeightModifier, radius * .9f, myTransform.up, out hit, velocity.magnitude + skinWidth, collisionMask);
 		}
-		collisions.side = Physics.SphereCast (myTransform.position + center, radius, Vector3.ProjectOnPlane(velocity, myTransform.up), out hit, velocity.magnitude + skinWidth, collisionMask);
+		collisions.side = Physics.SphereCast (myTransform.position + (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * center, radius, Vector3.ProjectOnPlane(velocity, myTransform.up), out hit, velocity.magnitude + skinWidth, collisionMask);
 	}
 
 
@@ -175,8 +175,8 @@ public class CharacControllerRecu : MonoBehaviour {
 	void OnDrawGizmosSelected()
 	{
 		Gizmos.color = new Color(1, 0, 1, 0.75F);
-		Vector3 upPosition = transform.position + center + new Vector3 (0, height / 2, 0);
-		Vector3 downPosition = transform.position + center - new Vector3 (0, height / 2, 0);
+		Vector3 upPosition = transform.position + (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * (center + (new Vector3 (0, height / 2, 0)));
+		Vector3 downPosition = transform.position + (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * (center - (new Vector3 (0, height / 2, 0)));
 		Gizmos.DrawWireSphere(upPosition, radius);
 		Gizmos.DrawWireSphere(downPosition, radius);
 	}

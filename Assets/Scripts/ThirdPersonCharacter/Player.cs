@@ -183,6 +183,7 @@ public class Player : MonoBehaviour {
 
 		velocity = Quaternion.Euler (0, targetRotation, 0) * velocity;
 
+
 		//Reset vertical velocity if the player is on the ground or hitting the ceiling
 		if (controller.collisions.below || controller.collisions.above) {
 			velocity.y = 0;
