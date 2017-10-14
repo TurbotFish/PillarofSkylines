@@ -30,6 +30,7 @@ public class ThirdPersonCamera : MonoBehaviour {
     public bool smoothMovement = true;
     public float smoothDamp = .1f;
     public float collisionDamp = .1f;
+    public float noCollisionDamp = .6f;
 
 	[Header("Panorama Mode")]
 	public bool enablePanoramaMode = true;
@@ -202,9 +203,9 @@ public class ThirdPersonCamera : MonoBehaviour {
 
         float fixedDistance = blockedByAWall ? lastHitDistance : idealDistance;
         
-        //we want collisionDamp to be proportional to the distance between fixedDistance and currentDistance
-
-        currentDistance = Mathf.Lerp(currentDistance, fixedDistance, deltaTime / collisionDamp);
+		// If collide, use collisionDamp to quickly get in position and not be blocked by a wall
+		// If not colliding, slowly get back to the idealPosition using noCollisionDamp
+        currentDistance = Mathf.Lerp(currentDistance, fixedDistance, blockedByAWall ? deltaTime / collisionDamp : deltaTime / noCollisionDamp);
     }
 
     void SmoothMovement() {
