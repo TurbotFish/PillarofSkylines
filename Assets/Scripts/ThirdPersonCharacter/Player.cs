@@ -34,6 +34,11 @@ public class Player : MonoBehaviour {
 	[Tooltip("The speed at which the player's speed changes in the air.")]
 	public float airSpeedSmoothTime = .3f;
 	/// <summary>
+	/// The value by which the speed is multiplied when the player sprints.
+	/// </summary>
+	[Tooltip("The value by which the speed is multiplied when the player sprints.")]
+	public float sprintCoeff = 2f;
+	/// <summary>
 	/// Variable used in the speed smooth damp.
 	/// </summary>
 	float speedSmoothVelocity;
@@ -85,7 +90,23 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	[Tooltip("The time it takes for the player to reach their jump apex.")]
 	public float timeToJumpApex = .4f;
+	[Header("Aerial Jumps")]
+	/// <summary>
+	/// The number of jumps the player can do while in the air.
+	/// </summary>
+	[Tooltip("The number of jumps the player can do while in the air.")]
+	public int numberOfAerialJumps = 0;
+	/// <summary>
+	/// The efficiency of the aerial jump compared to the regular jump (2 makes it 2 times stronger, 0.5 makes it 2 times weaker (not really, play around with it)).
+	/// </summary>
+	[Tooltip("The efficiency of the aerial jump compared to the regular jump (2 makes it 2 times stronger, 0.5 makes it 2 times weaker (not really, play around with it)).")]
+	public float coeffAerialJumpEfficiency = 1f;
 
+
+	/// <summary>
+	/// The current number of aerial jumps remaining to the player.
+	/// </summary>
+	int rmngAerialJumps;
 	/// <summary>
 	/// Calculated at the start from maxJumpHeight and timeToJumpApex.
 	/// </summary>
@@ -98,6 +119,25 @@ public class Player : MonoBehaviour {
 	/// The minimum jump velocity calculated at the start.
 	/// </summary>
 	float minJumpVelocity;
+	/// <summary>
+	/// The maximum aerial jump velocity calculated at the start.
+	/// </summary>
+	float maxAerialJumpVelocity;
+	/// <summary>
+	/// The minimum aerial jump velocity calculated at the start.
+	/// </summary>
+	float minAerialJumpVelocity;
+	/// <summary>
+	/// States if the last jump is an aerial one or a regular one.
+	/// </summary>
+	bool lastJumpAerial = false;
+
+	#region glide variables
+
+	[Header("Glide")]
+	bool isGliding = false;
+
+	#endregion glide variables
 	#endregion jump variables
 
 	/// <summary>
@@ -109,12 +149,17 @@ public class Player : MonoBehaviour {
 	/// The gravi pente.
 	/// </summary>
 	float graviPente;
-	public float graviPenteCoeff = .2f;
+	//public float graviPenteCoeff = .2f;
 
 	/// <summary>
 	/// The controller checking if there's collisions on the way.
 	/// </summary>
 	CharacControllerRecu controller;
+
+	/// <summary>
+	/// The animator of the character.
+	/// </summary>
+	Animator animator;
 
 	[Space(20)]
 	/// <summary>
@@ -124,12 +169,13 @@ public class Player : MonoBehaviour {
 
 	void Start(){
 		controller = GetComponent<CharacControllerRecu> ();
-
+		animator = GetComponent<Animator> ();
 		gravity = -(2 * maxJumpHeight) / Mathf.Pow (timeToJumpApex, 2);
 		maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
 		minJumpVelocity = Mathf.Sqrt (2 * Mathf.Abs (gravity) * minJumpHeight);
+		maxAerialJumpVelocity = maxJumpVelocity * coeffAerialJumpEfficiency;
+		minAerialJumpVelocity = minJumpVelocity * coeffAerialJumpEfficiency;
 	}
-
 
 	void Update(){
 
@@ -169,8 +215,8 @@ public class Player : MonoBehaviour {
 		#endregion turning the player
 
 		#region update velocity
-		// Calculate current speed of the player
-		float targetSpeed = characSpeed * Mathf.Clamp01(input.magnitude);
+		// Calculate current speed of the player and detects if the player is sprinting
+		float targetSpeed = characSpeed * Mathf.Clamp01(input.magnitude) * (Input.GetButton("Sprint") ? sprintCoeff : 1);
 		currentSpeed = Mathf.SmoothDamp (currentSpeed, targetSpeed, ref speedSmoothVelocity, (controller.collisions.below ? speedSmoothTimeGround : airSpeedSmoothTime));
 
 		//Combine speed and direction to calculate horizontal components of the velocity vector
@@ -183,36 +229,60 @@ public class Player : MonoBehaviour {
 		velocity = Quaternion.Euler (0, targetRotation, 0) * velocity;
 
 
-		//Reset vertical velocity if the player is on the ground or hitting the ceiling
-		if ((!controller.collisions.below && !controller.collisions.above) || controller.collisions.onSteepSlope) {
-			velocity.y += gravity * Time.deltaTime;
-		}
+		//Adds the gravity to the velocity
+		velocity.y += gravity * Time.deltaTime;
+
 		if(!controller.collisions.onSteepSlope)
 			graviPente = 0;
 		
 		#endregion update velocity
 
-		#region Jump controls
+		#region jump controls
+
+		//Resets the number of aerial jumps remaining when the player is on the ground
+		if (controller.collisions.below){
+			rmngAerialJumps = numberOfAerialJumps;
+		}
+
 		//Detects jump input from the player and adds vertical velocity
-		if (Input.GetButtonDown ("Jump") && controller.collisions.below) {
-			if (controller.collisions.onSteepSlope){
-				velocity.y = maxJumpVelocity;
-			} else {
-				velocity.y = maxJumpVelocity;
+		if (Input.GetButtonDown ("Jump")) {
+			if (controller.collisions.below){
+				lastJumpAerial = false;
+				if (controller.collisions.onSteepSlope){
+					//MAYBE TODO: change behavior of jump when on a steep slope
+					velocity.y = maxJumpVelocity;
+				} else {
+					velocity.y = maxJumpVelocity;
+				}
+			} else if (rmngAerialJumps > 0) {
+				lastJumpAerial = true;
+				rmngAerialJumps--;
+				velocity.y = maxAerialJumpVelocity;
 			}
 		}
 
 		//graviPente += graviPenteCoeff;
 
-		//Adds the gravity to the velocity
-
 		//Detects the release of the jump button and sets the vertical velocity to its minimum
 		if (Input.GetButtonUp ("Jump")) {
-			if (velocity.y > minJumpVelocity) {
-				velocity.y = minJumpVelocity;
+			if (lastJumpAerial){
+				if (velocity.y > minAerialJumpVelocity) {
+					velocity.y = minAerialJumpVelocity;
+				}
+			}
+			else {
+				if (velocity.y > minJumpVelocity) {
+					velocity.y = minJumpVelocity;
+				}
 			}
 		}
-		#endregion
+
+		if (Input.GetButton ("Jump") && velocity.y < 0){
+			isGliding = true;
+			velocity.y /= 5;
+		}
+
+		#endregion jump controls
 
 
 		//Debug.Log (velocity.y);
@@ -220,6 +290,21 @@ public class Player : MonoBehaviour {
 
 		//Calls the controller to check if the calculated velocity will run into walls and stuff
 		velocity = controller.Move ((Quaternion.AngleAxis(angle, Vector3.Cross(Vector3.up, transform.up))) * velocity * Time.deltaTime);
+
+		#region update animator
+		float keyHalf = 0.5f;
+		float m_RunCycleLegOffset = 0.2f;
+
+		animator.SetBool ("OnGround", controller.collisions.below);
+		animator.SetFloat ("Forward", input.magnitude);
+		animator.SetFloat ("Turn", Vector3.Dot (transform.right, input));
+		animator.SetFloat ("Jump", velocity.y/5);
+		float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
+		float jumpLeg = (runCycle < keyHalf ? 1 : -1) * input.magnitude;
+		if (controller.collisions.below) {
+			animator.SetFloat("JumpLeg", jumpLeg);
+		}
+		#endregion update animator
 	}
 
 }

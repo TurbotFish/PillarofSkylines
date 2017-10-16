@@ -101,11 +101,13 @@ public class CharacControllerRecu : MonoBehaviour {
 
 
 	void CollisionUpdate(Vector3 velocity){
+		//Debug.Log ("magnitude : " + velocity.magnitude + " w/ skinwidth : " + (velocity.magnitude + skinWidth));
 		RaycastHit hit;
 		Quaternion playerAngle = (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
 		//Send casts to check if there's stuff around the player and sets bools depending on the results
 		if (myTransform.InverseTransformDirection(velocity).y < 0) {
-			collisions.below = Physics.SphereCast (myTransform.position + playerAngle * center - capsuleHeightModifier, radius, -myTransform.up, out hit, velocity.magnitude + skinWidth, collisionMask);
+			collisions.below = Physics.SphereCast (myTransform.position + playerAngle * center - capsuleHeightModifier, radius, -myTransform.up, out hit, skinWidth, collisionMask);
+			Debug.DrawRay(myTransform.position + playerAngle * center - capsuleHeightModifier, -myTransform.up * (skinWidth), Color.magenta);
 			if (collisions.below) {
 				collisions.onSteepSlope = Vector3.Angle (myTransform.up, hit.normal) > maxSlopeAngle;
 				collisions.currentGroundNormal = hit.normal;
