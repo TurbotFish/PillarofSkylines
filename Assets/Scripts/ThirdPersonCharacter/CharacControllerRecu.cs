@@ -41,7 +41,7 @@ public class CharacControllerRecu : MonoBehaviour {
 
 
 	public CollisionInfo collisions;
-
+	public CapsuleCollider favourCollider;
 	Transform myTransform;
 
 	/// <summary>
@@ -56,7 +56,11 @@ public class CharacControllerRecu : MonoBehaviour {
 	public float maxSlopeAngle = 45f;
 
 	void Start(){
+		favourCollider = GetComponentInChildren<CapsuleCollider> ();
 		myTransform = transform;
+		favourCollider.center = center;
+		favourCollider.radius = radius;
+		favourCollider.height = height + radius*2;
 	}
 
 
