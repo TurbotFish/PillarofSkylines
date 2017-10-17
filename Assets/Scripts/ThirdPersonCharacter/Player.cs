@@ -285,11 +285,13 @@ public class Player : MonoBehaviour {
 		//Get the input of the player and translate it into the camera angle
 		Vector3 input = rotator.forward * Input.GetAxisRaw ("Vertical") + rotator.right * Input.GetAxisRaw ("Horizontal");
 
+		//Detect input for dash and trigger it if it is available
 		if (Input.GetButtonDown ("Dash") && dashTimer < 0f) {
 			velocity = Vector3.zero;
 			isDashing = true;
 			dashDuration = dashSpeed;
 		}
+
 
 		if (isDashing) {
 
@@ -306,7 +308,7 @@ public class Player : MonoBehaviour {
 			dashTimer -= Time.deltaTime;
 			// Updates the gliding attitude of the player depending of the player's input
 			if (isGliding) {
-				Vector3 inputGlide = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical") + glideDrag);
+				Vector3 inputGlide = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, Mathf.Clamp(Input.GetAxisRaw ("Vertical") + glideDrag, -.9f, .9f));
 				//                                                                                                                              coming back from left/right       tilting left/right
 				glideAttitude = new Vector3 (Mathf.Lerp (glideAttitude.x, inputGlide.x, (glideAttitude.sqrMagnitude > inputGlide.sqrMagnitude ? glideLRAttitudeRecoverSpeed : glideLRAttitudeTiltingSpeed) * Time.deltaTime)
 				//                                                                                                           coming back from forward           tilting forward
