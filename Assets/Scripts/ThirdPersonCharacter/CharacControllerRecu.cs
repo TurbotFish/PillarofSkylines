@@ -66,7 +66,6 @@ public class CharacControllerRecu : MonoBehaviour {
 
 	public Vector3 Move(Vector3 _velocity){
 
-		//Debug.Log("movement : " + _velocity/Time.deltaTime);
 		Quaternion playerAngle = (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
 
 		//Set the vector between the points of the capsule on this frame.
