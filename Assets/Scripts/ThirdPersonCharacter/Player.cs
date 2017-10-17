@@ -133,6 +133,8 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	bool lastJumpAerial = false;
 
+	#endregion jump variables
+
 	#region glide variables
 
 	[Header("Glide")]
@@ -140,11 +142,61 @@ public class Player : MonoBehaviour {
 	/// The glide speed.
 	/// </summary>
 	public float glideSpeed = 5f;
+	/// <summary>
+	/// The speed that can be added when the player tilts forward.
+	/// </summary>
+	[Tooltip("The speed that can be added when the player tilts forward.")]
 	public float glideMaxSpeed = 3f;
-	public float glideAttitudeTiltingSpeed = .2f;
-	public float glideAttitudeRecoverSpeed = 2f;
+	/// <summary>
+	/// The speed at which the avatar adjusts his Left and Right tilt to follow the player input.
+	/// </summary>
+	[Tooltip("The speed at which the avatar adjusts his Left and Right tilt to follow the player input.")]
+	public float glideLRAttitudeTiltingSpeed = .2f;
+	/// <summary>
+	/// The speed at which the avatar comes back to a plane attitude after being tilted Left or Right.
+	/// </summary>
+	[Tooltip("The speed at which the avatar comes back to a plane attitude after being tilted Left or Right.")]
+	public float glideLRAttitudeRecoverSpeed = 2.5f;
+	/// <summary>
+	/// The speed at which the avatar adjusts his Forward tilt to follow the player input.
+	/// </summary>
+	[Tooltip("The speed at which the avatar adjusts his Forward tilt to follow the player input.")]
+	public float glideForwardAttitudeTiltingSpeed = 2f;
+	/// <summary>
+	/// The speed at which the avatar comes back to a plane attitude after being tilted Forward.
+	/// </summary>
+	[Tooltip("The speed at which the avatar comes back to a plane attitude after being tilted Forward.")]
+	public float glideForwardAttitudeRecoverSpeed = 1f;
+	/// <summary>
+	/// The speed at which the avatar adjusts his Backward tilt to follow the player input.
+	/// </summary>
+	[Tooltip("The speed at which the avatar adjusts his Backward tilt to follow the player input.")]
+	public float glideBackwardAttitudeTiltingSpeed = .5f;
+	/// <summary>
+	/// The speed at which the avatar comes back to a plane attitude after being tilted Backward.
+	/// </summary>
+	[Tooltip("The speed at which the avatar comes back to a plane attitude after being tilted Backward.")]
+	public float glideBackwardAttitudeRecoverSpeed = 2f;
+	/// <summary>
+	/// The maximum turn amount when gliding.
+	/// </summary>
+	[Tooltip("The maximum turn amount when gliding.")]
 	public float glideMaxTurn = 1f;
+	/// <summary>
+	/// How much does gliding slow down the speed.
+	/// </summary>
+	[Tooltip("How much does gliding slow down the speed.")]
 	public float glideDrag = .2f;
+	/// <summary>
+	/// The speed at which the velocity is evolving when gliding.
+	/// </summary>
+	[Tooltip("The speed at which the velocity is going up when gliding.")]
+	public float glideAccelerate;
+	/// <summary>
+	/// The speed at which the velocity is evolving when gliding.
+	/// </summary>
+	[Tooltip("The speed at which the velocity is slowing down when gliding.")]
+	public float glideDecelerate;
 	/// <summary>
 	/// Is the player gliding ?
 	/// </summary>
@@ -152,9 +204,16 @@ public class Player : MonoBehaviour {
 	/// <summary>
 	/// The current attitude when the player is gliding.
 	/// </summary>
-	Vector2 glideAttitude;
+	Vector3 glideAttitude;
 	#endregion glide variables
-	#endregion jump variables
+
+	#region dash variables
+
+	[Header("Dash")]
+
+	bool isDashing;
+
+	#endregion dash variables
 
 	/// <summary>
 	/// The velocity calculated each frame and sent to the controller.
@@ -190,7 +249,7 @@ public class Player : MonoBehaviour {
 
 	void Start(){
 		controller = GetComponent<CharacControllerRecu> ();
-		animator = GetComponent<Animator> ();
+		animator = GetComponentInChildren<Animator> ();
 		PlayerMod = GetComponent<PlayerModel> ();
 		gravity = -(2 * maxJumpHeight) / Mathf.Pow (timeToJumpApex, 2);
 		maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
@@ -206,19 +265,26 @@ public class Player : MonoBehaviour {
 		//Get the input of the player and translate it into the camera angle
 		Vector3 input = rotator.forward * Input.GetAxisRaw ("Vertical") + rotator.right * Input.GetAxisRaw ("Horizontal");
 
+		if (Input.GetButtonDown ("Dash")) {
+			//isDashing = true;
+		}
+
+		// Updates the gliding attitude of the player depending of the player's input
 		if (isGliding) {
-			//TERMINER LE GLIDE------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-			Vector2 inputGlide = new Vector2 (Input.GetAxisRaw ("Horizontal"), Input.GetAxisRaw ("Vertical"));
-			glideAttitude = new Vector2(Mathf.Lerp (glideAttitude.x, inputGlide.x, (glideAttitude.sqrMagnitude > inputGlide.sqrMagnitude ? glideAttitudeRecoverSpeed : glideAttitudeTiltingSpeed) * Time.deltaTime)
-				                      , Mathf.Lerp (glideAttitude.y, inputGlide.y, (glideAttitude.sqrMagnitude > inputGlide.sqrMagnitude ? glideAttitudeRecoverSpeed : glideAttitudeTiltingSpeed) * Time.deltaTime));
-			Debug.Log ("après : " + glideAttitude);
+			Vector3 inputGlide = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical"));
+			//                                                                                                                            coming back from left/right    tilting left/right
+			glideAttitude = new Vector3(Mathf.Lerp (glideAttitude.x, inputGlide.x, (glideAttitude.sqrMagnitude > inputGlide.sqrMagnitude ? glideLRAttitudeRecoverSpeed : glideLRAttitudeTiltingSpeed) * Time.deltaTime)
+				//                                                                                                            coming back from forward     tilting forward
+				,0, Mathf.Lerp (glideAttitude.z, inputGlide.z, (glideAttitude.z > 0 ? (glideAttitude.z > inputGlide.z ? glideForwardAttitudeRecoverSpeed : glideForwardAttitudeTiltingSpeed) 
+					//                                                                                                      coming back from backward    tilting backward
+					                                                              : (glideAttitude.z < inputGlide.z? glideBackwardAttitudeRecoverSpeed : glideBackwardAttitudeTiltingSpeed)) * Time.deltaTime));
 		} else {
 			glideAttitude = Vector2.zero;
 		}
 
 		//Turn the player in the direction of the input and decelerating when turning back
 		#region turning the player 
-		if (input != Vector3.zero && !isGliding) {
+		if (input != Vector3.zero && !isGliding && !isDashing) {
 
 
 			//If the input is at the opposite side of the player's forward, turn instantly and slow down the player
@@ -245,6 +311,7 @@ public class Player : MonoBehaviour {
 			speedSmoothTimeGround = groundDecelerationSmoothTime_default;
 		}
 
+		//Case when the player is gliding
 		if (isGliding) {
 			Debug.Log("assiette : " + glideAttitude);
 			Vector3 direction = Vector3.SmoothDamp (transform.forward, glideAttitude.x * glideMaxTurn * transform.right * 0.1f + transform.forward, ref turnSmoothVelocity, turnSmoothTime);
@@ -253,23 +320,27 @@ public class Player : MonoBehaviour {
 		#endregion turning the player
 
 		#region update velocity
-		// Calculate current speed of the player and detects if the player is sprinting
-		float targetSpeed = characSpeed * Mathf.Clamp01(input.magnitude) * (Input.GetButton("Sprint") ? sprintCoeff : 1);
-		if (isGliding)
-			targetSpeed = glideSpeed;
-		currentSpeed = Mathf.SmoothDamp (currentSpeed, targetSpeed, ref speedSmoothVelocity, (controller.collisions.below ? speedSmoothTimeGround : airSpeedSmoothTime));
 
-		//Combine speed and direction to calculate horizontal components of the velocity vector
-		velocity.x = Vector3.ProjectOnPlane(transform.forward, rotator.forward).magnitude * currentSpeed * (Vector3.Dot(transform.forward, rotator.right) > 0 ? 1 : -1);
-		velocity.z = Vector3.ProjectOnPlane(transform.forward, rotator.right).magnitude * currentSpeed * (Vector3.Dot(transform.forward, rotator.forward) > 0 ? 1 : -1);
+		if (!isGliding) {
+			// Calculate current speed of the player and detects if the player is sprinting
+			float targetSpeed = characSpeed * Mathf.Clamp01(input.magnitude) * ((Input.GetButton("Sprint") && controller.collisions.below) ? sprintCoeff : 1);
 
-		//Translate the forward of the camera in a standard plane to rotate the horizontal velocity accordingly
-		Vector3 inputDir = (Quaternion.AngleAxis(-angle, Vector3.Cross(Vector3.up, transform.up))) * rotator.forward;
-		float targetRotation = Vector3.Angle(Vector3.forward, inputDir) * (Vector3.Dot(inputDir, Vector3.right) > 0 ? 1 : -1);
-		velocity = Quaternion.Euler (0, targetRotation, 0) * velocity;
+			
+			currentSpeed = Mathf.SmoothDamp (currentSpeed, targetSpeed, ref speedSmoothVelocity, (controller.collisions.below ? speedSmoothTimeGround : airSpeedSmoothTime));
 
+			//Combine speed and direction to calculate horizontal components of the velocity vector
+			velocity.x = Vector3.ProjectOnPlane(transform.forward, rotator.forward).magnitude * currentSpeed * (Vector3.Dot(transform.forward, rotator.right) > 0 ? 1 : -1);
+			velocity.z = Vector3.ProjectOnPlane(transform.forward, rotator.right).magnitude * currentSpeed * (Vector3.Dot(transform.forward, rotator.forward) > 0 ? 1 : -1);
+		
+			//Translate the forward of the camera in a standard plane to rotate the horizontal velocity accordingly
+			Vector3 inputDir = (Quaternion.AngleAxis(-angle, Vector3.Cross(Vector3.up, transform.up))) * rotator.forward;
+			float targetRotation = Vector3.Angle(Vector3.forward, inputDir) * (Vector3.Dot(inputDir, Vector3.right) > 0 ? 1 : -1);
+			velocity = Quaternion.Euler (0, targetRotation, 0) * velocity;
+		}
 
 		//Adds the gravity to the velocity
+		if (isGliding)
+			velocity = Vector3.zero;
 		velocity.y += gravity * Time.deltaTime;
 
 		if(!controller.collisions.onSteepSlope)
@@ -301,8 +372,6 @@ public class Player : MonoBehaviour {
 			}
 		}
 
-		//graviPente += graviPenteCoeff;
-
 		//Detects the release of the jump button and sets the vertical velocity to its minimum
 		if (Input.GetButtonUp ("Jump")) {
 			if (lastJumpAerial){
@@ -317,19 +386,37 @@ public class Player : MonoBehaviour {
 			}
 		}
 
+		//Glide
 		if (Input.GetButton ("Jump") && velocity.y < 0 && !controller.collisions.below){
-			//CHANGER PEUT ETRE DES TRUCS ICI POUR LE GLIDE
 			isGliding = true;
-			velocity.y *= glideDrag;
-			velocity += glideMaxSpeed * glideAttitude.y * Vector3.Lerp (transform.forward, -transform.up, glideAttitude.y);
+
+			float targetSpeed = glideSpeed + (glideMaxSpeed * glideAttitude.z);
+
+			currentSpeed = Mathf.SmoothDamp (currentSpeed, targetSpeed, ref speedSmoothVelocity, (currentSpeed < targetSpeed) ? glideAccelerate : glideDecelerate);
+			Debug.Log ("speed : " + currentSpeed + " target  : " + targetSpeed);
+
+			velocity += Vector3.LerpUnclamped(transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
+			animator.transform.LookAt(transform.position + velocity, transform.up + transform.right*glideAttitude.x);
+			/*
+			velocity *= glideDrag;
+			Debug.Log("glide : " + (glideSpeed + glideMaxSpeed * glideAttitude.z) * Vector3.Lerp (transform.forward, -transform.up, glideAttitude.y));
+			velocity += (glideSpeed + glideMaxSpeed * glideAttitude.y) * Vector3.Lerp (transform.forward, -transform.up, glideAttitude.y);
+
+			float targetGlideVelocity = (glideSpeed + glideMaxSpeed * glideAttitude.z);
+
+
+			velocity *= glideDrag;
+			currentSpeed = Mathf.SmoothDamp (currentSpeed, targetGlideVelocity, ref speedSmoothVelocity, glideSpeedSmoothVelocity);
+			velocity = velocity.normalized * currentSpeed;
+			velocity = Vector3.Reflect (velocity, transform.up + glideAttitude.z * transform.forward);*/
+
+
 		} else {
 			isGliding = false;
+			animator.transform.LookAt(transform.position + transform.forward, transform.up);
 		}
 
 		#endregion jump controls
-
-
-		//Debug.Log (velocity.y);
 
 
 		//Calls the controller to check if the calculated velocity will run into walls and stuff
