@@ -15,6 +15,7 @@
 
 			CGPROGRAM
 
+			#define ALO_BRDF_PBS BRDF2_Unity_PBS
 			#pragma target 3.0
 			#pragma vertex VertexProgram
 			#pragma fragment FragmentProgram

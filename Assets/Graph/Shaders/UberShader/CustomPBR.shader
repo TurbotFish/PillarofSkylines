@@ -95,16 +95,6 @@ Shader "Alo/PBR/CustomPBR" {
 			float _ShadowStrength;
 			#endif
 
-			#if defined(_SSS)
-			float _DistortionSSS;
-			float _ScaleSSS;
-			float _PowerSSS;
-			sampler2D _ThicknessMap;
-			float _AttenuationSSS;
-			float _AmbientSSS;
-			float3 _DiffuseSSS;
-			#endif
-
 			#include "LightingCustomPBR.cginc"
 
 
@@ -138,16 +128,6 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
 
-			#if defined(_SSS)
-			float _DistortionSSS;
-			float _ScaleSSS;
-			float _PowerSSS;
-			sampler2D _ThicknessMap;
-			float _AttenuationSSS;
-			float _AmbientSSS;
-			float3 _DiffuseSSS;
-			#endif
-
 			#include "LightingCustomPBR.cginc"
 
 			ENDCG
@@ -174,6 +154,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 			#pragma shader_feature _ _RENDERING_CUTOUT
+			#pragma shader_feature _ _SSS
 
 			#pragma shader_feature _ _CELSHADED
 
@@ -183,12 +164,6 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma fragment MyFragmentProgram
 
 			#define DEFERRED_PASS
-			//#define INITEN
-
-			#if defined(_CELSHADED)
-				float _ShadowTransition;
-				float _ShadowStrength;
-			#endif
 
 			#include "LightingCustomPBR.cginc"
 
