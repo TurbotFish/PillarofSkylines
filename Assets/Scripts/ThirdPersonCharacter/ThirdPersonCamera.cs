@@ -3,7 +3,9 @@
 [AddComponentMenu("Camera/Third Person Camera")]
 [RequireComponent(typeof(Camera))]
 public class ThirdPersonCamera : MonoBehaviour {
-    
+
+    public LayerMask blockingLayer;
+
     [Header("Position")]
     public Transform target;
     public float distance = 10;
@@ -27,7 +29,8 @@ public class ThirdPersonCamera : MonoBehaviour {
 
     public bool smoothMovement = true;
     public float smoothDamp = .1f;
-    public float collisionDamp = .5f;
+    public float collisionDamp = .1f;
+    public float noCollisionDamp = .6f;
 
 	[Header("Panorama Mode")]
 	public bool enablePanoramaMode = true;
@@ -35,9 +38,13 @@ public class ThirdPersonCamera : MonoBehaviour {
 	public float timeToTriggerPanorama = 10;
 	public float panoramaDezoomSpeed = 1f;
 
+    [Header("Eclipse")]
+    public bool isEclipse = false;
+
     new Camera camera;
     Vector3 camPosition, negDistance;
     Quaternion camRotation;
+    Vector2 input;
     Vector2 rotationSpeed;
     Vector2 offset;
     Transform my;
@@ -71,7 +78,10 @@ public class ThirdPersonCamera : MonoBehaviour {
     void LateUpdate() {
         if (!target || GameState.isPaused) return;
 
-		deltaTime = Time.deltaTime;
+        input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
+        input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
+        
+        deltaTime = Time.deltaTime;
         DoRotation();
 
         if (canZoom) Zoom(Input.GetAxis("Mouse ScrollWheel"));
@@ -97,7 +107,18 @@ public class ThirdPersonCamera : MonoBehaviour {
 
 		SmoothMovement();
 
-        target.rotation = Quaternion.Euler(0, yaw, 0); // Reoriente the character's rotator
+        // DEBUG POUR ECLISPE
+        if (Input.GetKeyUp(KeyCode.G)) {
+            isEclipse ^= true;
+            if (isEclipse)
+                target.transform.parent.Rotate(0, 0, 90, Space.World);
+            else
+                target.transform.parent.Rotate(0, 0, -90, Space.World);
+        }
+        // FIN DEBUG
+
+        target.rotation = Quaternion.Euler(isEclipse ? yaw * Vector3.left + 90 * Vector3.forward : (yaw * Vector3.up)  ); // Reoriente the character's rotator
+        // change that later
 
 		if (enablePanoramaMode)
 			DoPanorama();
@@ -121,7 +142,7 @@ public class ThirdPersonCamera : MonoBehaviour {
     bool inPanorama = false;
 
     void DoPanorama() {
-        if (!Input.anyKey && Input.GetAxis("Mouse X") == 0 && Input.GetAxis("Mouse Y") == 0)
+        if (!Input.anyKey && input.magnitude == 0)
             panoramaTimer += deltaTime;
         else {
             panoramaTimer = 0;
@@ -142,11 +163,11 @@ public class ThirdPersonCamera : MonoBehaviour {
         rotationSpeed.x = Mathf.Lerp(minRotationSpeed.x, maxRotationSpeed.x, currentDistance / maxDistance);
         rotationSpeed.y = Mathf.Lerp(minRotationSpeed.y, maxRotationSpeed.y, currentDistance / maxDistance);
 
-        float clampedX = Mathf.Clamp(Input.GetAxis("Mouse X") * (idealDistance / currentDistance), -mouseSpeedLimit.x, mouseSpeedLimit.x); // Avoid going too fast (makes weird lerp)
+        float clampedX = Mathf.Clamp(input.x * (idealDistance / currentDistance), -mouseSpeedLimit.x, mouseSpeedLimit.x); // Avoid going too fast (makes weird lerp)
         if (invertAxis.x) clampedX = -clampedX;
         yaw += clampedX * rotationSpeed.x * deltaTime;
 
-        float clampedY = Mathf.Clamp(Input.GetAxis("Mouse Y") * (idealDistance / currentDistance), -mouseSpeedLimit.y, mouseSpeedLimit.y); // Avoid going too fast (makes weird lerp)
+        float clampedY = Mathf.Clamp(input.y * (idealDistance / currentDistance), -mouseSpeedLimit.y, mouseSpeedLimit.y); // Avoid going too fast (makes weird lerp)
         if (invertAxis.y) clampedY = -clampedY;
         pitch -= clampedY * rotationSpeed.y * deltaTime;
         pitch = pitchRotationLimit.Clamp(pitch);
@@ -158,7 +179,8 @@ public class ThirdPersonCamera : MonoBehaviour {
         //camera.fieldOfView = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
 
         //Changer la rotation de la caméra pendant l'Éclipse
-        //camRotation = Quaternion.AngleAxis(90, Vector3.forward) * camRotation;
+        if (isEclipse)
+            camRotation = Quaternion.AngleAxis(90, Vector3.forward) * camRotation;
     }
 
     bool blockedByAWall;
@@ -169,11 +191,9 @@ public class ThirdPersonCamera : MonoBehaviour {
 
         negDistance.z = -idealDistance;
         Vector3 rayEnd = camRotation * negDistance + (targetPos + my.right * offsetFar.x + my.up * offsetFar.y);
-        
-        int layerMask = ~(1 << 10); // ignore Layer #10 : "DontBlockCamera"
 		
 		RaycastHit hit;
-		blockedByAWall = Physics.SphereCast(startPos, rayRadius, rayEnd - startPos, out hit, idealDistance, layerMask);
+		blockedByAWall = Physics.SphereCast(startPos, rayRadius, rayEnd - startPos, out hit, idealDistance, blockingLayer);
         Debug.DrawLine(startPos, rayEnd, Color.yellow);
 
 
@@ -187,9 +207,9 @@ public class ThirdPersonCamera : MonoBehaviour {
 
         float fixedDistance = blockedByAWall ? lastHitDistance : idealDistance;
         
-        //we want collisionDamp to be proportional to the distance between fixedDistance and currentDistance
-
-        currentDistance = Mathf.Lerp(currentDistance, fixedDistance, deltaTime / collisionDamp);
+		// If collide, use collisionDamp to quickly get in position and not be blocked by a wall
+		// If not colliding, slowly get back to the idealPosition using noCollisionDamp
+        currentDistance = Mathf.Lerp(currentDistance, fixedDistance, fixedDistance < currentDistance + .1f /* temp buffer */ ? deltaTime / collisionDamp : deltaTime / noCollisionDamp);
     }
 
     void SmoothMovement() {

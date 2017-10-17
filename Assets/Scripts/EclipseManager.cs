@@ -31,8 +31,8 @@ public class EclipseManager : MonoBehaviour {
         echoes = EchoManager.instance;
         needle = FindObjectOfType<Needle>();
         needle.transform.parent = pillar;
-        player = FindObjectOfType<ThirdPersonController>().transform;
-	}
+        player = FindObjectOfType<ThirdPersonController>()?.transform ?? FindObjectOfType<Player>().transform; //to fix
+    }
 	
     public void StartEclipse() {
         PlaceAllObjectsInPillar();
