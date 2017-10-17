@@ -23,6 +23,11 @@ namespace Game.Player.UI
         AbilityMenuController abilityMenuController;
 
 
+        [SerializeField]
+        float timeScaleChangeTime = 0.5f;
+
+
+
 
         eUiState currentState = eUiState.HUD;
         Dictionary<eUiState, IUiState> uiStates = new Dictionary<eUiState, IUiState>();
@@ -48,15 +53,17 @@ namespace Game.Player.UI
         // Update is called once per frame
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.X))
+            if (Input.GetButtonDown("AbilityMenuButton"))
             {
                 switch (this.currentState)
                 {
                     case eUiState.HUD:
                         SwitchState(eUiState.AbilityMenu);
+                        StartCoroutine(ChangeTimeScaleRoutine(0, this.timeScaleChangeTime));
                         break;
                     case eUiState.AbilityMenu:
                         SwitchState(eUiState.HUD);
+                        StartCoroutine(ChangeTimeScaleRoutine(1, this.timeScaleChangeTime));
                         break;
                     default:
                         throw new NotImplementedException();
@@ -79,5 +86,26 @@ namespace Game.Player.UI
             this.currentState = newState;
             this.uiStates[this.currentState].Activate();
         }
+
+        IEnumerator ChangeTimeScaleRoutine(float targetValue, float changeTime)
+        {
+            float changePerSecond = (targetValue - Time.timeScale) / changeTime;
+
+            while (Time.timeScale > 0)
+            {
+                float newTimeScale = Time.timeScale - (Time.deltaTime * changePerSecond);
+
+                if (newTimeScale < 0)
+                {
+                    newTimeScale = 0;
+                }
+
+                Time.timeScale = newTimeScale;
+
+                yield return null;
+            }
+        }
+
+        //###########################################################
     }
 } //end of namespace
