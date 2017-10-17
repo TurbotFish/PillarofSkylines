@@ -24,17 +24,17 @@ namespace Game.Player
     /// </summary>
     public class PlayerModel : MonoBehaviour
     {
+        //ability data
         [SerializeField]
         AbilitySystem.AbilityData abilityData;
 
         public AbilitySystem.AbilityData AbilityData { get { return this.abilityData; } }
 
 
+
+        //
         List<eAbilityGroup> unlockedAbilityGroups = new List<eAbilityGroup>();
         List<eAbilityType> activatedAbilities = new List<eAbilityType>();
-
-
-
         public int Favours { get; set; }
 
         //###########################################################
