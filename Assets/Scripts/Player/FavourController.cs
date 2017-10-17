@@ -4,66 +4,84 @@ using UnityEngine;
 
 namespace Game.Player
 {
-	[RequireComponent (typeof(Collider))]
-	public class FavourController : MonoBehaviour
-	{
-		[SerializeField]
-		PlayerModel playerModel;
+    [RequireComponent(typeof(Collider))]
+    public class FavourController : MonoBehaviour
+    {
+        [SerializeField]
+        PlayerModel playerModel;
 
-		bool favourPickUpInRange = false;
-		Collider favourPickUpCollider;
+        [SerializeField]
+        UI.HudController hudController;
 
-		// Use this for initialization
-		void Start ()
-		{
-			
-		}
-	
-		// Update is called once per frame
-		void Update ()
-		{
-			if (this.favourPickUpInRange && Input.GetButtonDown ("PickUpButton")) {
-				this.favourPickUpCollider.enabled = false;
-				this.playerModel.Favours++;
+        bool favourPickUpInRange = false;
+        Collider favourPickUpCollider;
 
-				LeaveFavourPickUpZone ();
-			}
-		}
+        // Use this for initialization
+        void Start()
+        {
 
-		void OnTriggerEnter (Collider other)
-		{
-			if (other.gameObject.layer == LayerMask.GetMask ("PickUps")) {
-				switch (other.tag) {
-					case "favour":
-						this.favourPickUpInRange = true;
-						this.favourPickUpCollider = other;
-						break;
-					default:
-						break;
-				}
-			}
-		}
+        }
 
-		void OnTriggerExit (Collider other)
-		{
-			if (other.gameObject.layer == LayerMask.GetMask ("PickUps")) {
-				switch (other.tag) {
-					case "favour":
-						LeaveFavourPickUpZone ();
-						break;
-					default:
-						break;
-				}
-			}
-		}
+        // Update is called once per frame
+        void Update()
+        {
+            if (this.favourPickUpInRange && Input.GetKeyDown(KeyCode.F))
+            {
+                this.favourPickUpCollider.enabled = false;
+                this.playerModel.Favours++;
 
-		void LeaveFavourPickUpZone ()
-		{
-			this.favourPickUpInRange = false;
-			this.favourPickUpCollider = null;
+                LeaveFavourPickUpZone();
+            }
+        }
 
-			//hide UI text
-		}
-	}
+        void OnTriggerEnter(Collider other)
+        {
+            if (other.gameObject.layer == LayerMask.GetMask("PickUps"))
+            {
+                switch (other.tag)
+                {
+                    case "favour":
+                        this.favourPickUpInRange = true;
+                        this.favourPickUpCollider = other;
+
+                        //show UI text
+                        if (this.hudController != null)
+                        {
+                            this.hudController.ShowMessage("Press [F] to pick up favour!");
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        void OnTriggerExit(Collider other)
+        {
+            if (other.gameObject.layer == LayerMask.GetMask("PickUps"))
+            {
+                switch (other.tag)
+                {
+                    case "favour":
+                        LeaveFavourPickUpZone();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        void LeaveFavourPickUpZone()
+        {
+            this.favourPickUpInRange = false;
+            this.favourPickUpCollider = null;
+
+            //hide UI text
+            if (this.hudController != null)
+            {
+                this.hudController.HideMessage();
+            }
+        }
+    }
 }
 //end of namespace
