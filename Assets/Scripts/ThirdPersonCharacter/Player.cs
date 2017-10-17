@@ -139,13 +139,14 @@ public class Player : MonoBehaviour {
 
 	[Header("Glide")]
 	/// <summary>
-	/// The glide speed.
+	/// The minimal speed at the start of the glide.
 	/// </summary>
-	public float glideSpeed = 5f;
+	[Tooltip("The minimal speed at the start of the glide")]
+	public float glideMinimalInitialSpeed = 5f;
 	/// <summary>
-	/// The speed that can be added when the player tilts forward.
+	/// The maximal speed when gliding.
 	/// </summary>
-	[Tooltip("The speed that can be added when the player tilts forward.")]
+	[Tooltip("The maximal speed when gliding.")]
 	public float glideMaxSpeed = 3f;
 	/// <summary>
 	/// The speed at which the avatar adjusts his Left and Right tilt to follow the player input.
@@ -188,15 +189,29 @@ public class Player : MonoBehaviour {
 	[Tooltip("How much does gliding slow down the speed.")]
 	public float glideDrag = .2f;
 	/// <summary>
-	/// The speed at which the velocity is evolving when gliding.
+	/// The speed at which the velocity is evolving when gliding (The higher it is, the slower it goes).
 	/// </summary>
-	[Tooltip("The speed at which the velocity is going up when gliding.")]
+	[Tooltip("The speed at which the velocity is going up when gliding (The higher it is, the slower it goes).")]
 	public float glideAccelerate;
 	/// <summary>
-	/// The speed at which the velocity is evolving when gliding.
+	/// The speed at which the velocity is evolving when gliding (The higher it is, the slower it goes).
 	/// </summary>
-	[Tooltip("The speed at which the velocity is slowing down when gliding.")]
+	[Tooltip("The speed at which the velocity is slowing down when gliding (The higher it is, the slower it goes).")]
 	public float glideDecelerate;
+	/// <summary>
+	/// The speed minimum speed required to continue gliding.
+	/// </summary>
+	[Tooltip("The speed minimum speed required to continue gliding.")]
+	public float glideLimitSpeed = 2;
+	/// <summary>
+	/// The time the player has to wait after failing a glide (by going too slow).
+	/// </summary>
+	[Tooltip("The time the player has to wait after failing a glide (by going too slow).")]
+	public float timeBetweenGlides = 3f;
+	/// <summary>
+	/// The timer after the player failed a glide.
+	/// </summary>
+	float glideTimer = 0f;
 	/// <summary>
 	/// Is the player gliding ?
 	/// </summary>
@@ -271,7 +286,7 @@ public class Player : MonoBehaviour {
 
 		// Updates the gliding attitude of the player depending of the player's input
 		if (isGliding) {
-			Vector3 inputGlide = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical"));
+			Vector3 inputGlide = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical")+glideDrag);
 			//                                                                                                                            coming back from left/right    tilting left/right
 			glideAttitude = new Vector3(Mathf.Lerp (glideAttitude.x, inputGlide.x, (glideAttitude.sqrMagnitude > inputGlide.sqrMagnitude ? glideLRAttitudeRecoverSpeed : glideLRAttitudeTiltingSpeed) * Time.deltaTime)
 				//                                                                                                            coming back from forward     tilting forward
@@ -313,7 +328,6 @@ public class Player : MonoBehaviour {
 
 		//Case when the player is gliding
 		if (isGliding) {
-			Debug.Log("assiette : " + glideAttitude);
 			Vector3 direction = Vector3.SmoothDamp (transform.forward, glideAttitude.x * glideMaxTurn * transform.right * 0.1f + transform.forward, ref turnSmoothVelocity, turnSmoothTime);
 			transform.rotation = Quaternion.LookRotation (direction, transform.up);
 		}
@@ -387,34 +401,88 @@ public class Player : MonoBehaviour {
 		}
 
 		//Glide
-		if (Input.GetButton ("Jump") && velocity.y < 0 && !controller.collisions.below){
+
+		if (controller.collisions.below && isGliding){
+			isGliding = false;
+			animator.transform.LookAt(transform.position + transform.forward, transform.up);
+		}
+
+		if (Input.GetButtonDown ("Sprint")) {
+			if (!controller.collisions.below && isGliding){
+				isGliding = false;
+				animator.transform.LookAt(transform.position + transform.forward, transform.up);
+			} else if (!controller.collisions.below && !isGliding){
+				if (velocity.y < -glideMinimalInitialSpeed) {
+					currentSpeed = -velocity.y;
+				} else {
+					currentSpeed = glideMinimalInitialSpeed;
+				}
+				glideAttitude.z = .5f;
+				isGliding = true;
+			}
+		}
+
+		if (isGliding) {
+			currentSpeed += ((glideAttitude.z - glideDrag)/ (glideAttitude.z < 0 ? glideDecelerate : glideAccelerate)) * Time.deltaTime * 60;
+
+			currentSpeed = Mathf.Clamp (currentSpeed, 0, glideMaxSpeed);
+
+			velocity += Vector3.LerpUnclamped(transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
+			animator.transform.LookAt(transform.position + velocity, transform.up + transform.right*glideAttitude.x);
+			if (currentSpeed < glideLimitSpeed){
+				isGliding = false;
+				glideTimer = timeBetweenGlides;
+				Debug.Log("YOU4RE 2 SLOW");
+			}
+		} else {
+			glideTimer -= Time.deltaTime;
+		}
+
+		#region version bouton enfoncé
+		/*
+		if (Input.GetButtonDown ("Sprint") && velocity.y < 0 && !controller.collisions.below && glideTimer < 0f){
+			if (!isGliding){
+				if (velocity.y < -glideMinimalInitialSpeed) {
+					currentSpeed = -velocity.y;
+				} else {
+					currentSpeed = glideMinimalInitialSpeed;
+				}
+				glideAttitude.z = .5f;
+			}
 			isGliding = true;
 
-			float targetSpeed = glideSpeed + (glideMaxSpeed * glideAttitude.z);
+
+			currentSpeed += ((glideAttitude.z - glideDrag)/ (glideAttitude.z < 0 ? glideDecelerate : glideAccelerate)) * Time.deltaTime * 60;
+
+			currentSpeed = Mathf.Clamp (currentSpeed, 0, glideMaxSpeed);
+
+			velocity += Vector3.LerpUnclamped(transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
+			animator.transform.LookAt(transform.position + velocity, transform.up + transform.right*glideAttitude.x);
+			if (currentSpeed < glideLimitSpeed){
+				isGliding = false;
+				glideTimer = timeBetweenGlides;
+				Debug.Log("YOU4RE 2 SLOW");
+			}
+
+			/*                            v WORKING but other version v
+			float targetSpeed = glideMinimalInitialSpeed + (glideMaxSpeed * glideAttitude.z);
 
 			currentSpeed = Mathf.SmoothDamp (currentSpeed, targetSpeed, ref speedSmoothVelocity, (currentSpeed < targetSpeed) ? glideAccelerate : glideDecelerate);
 			Debug.Log ("speed : " + currentSpeed + " target  : " + targetSpeed);
 
 			velocity += Vector3.LerpUnclamped(transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
 			animator.transform.LookAt(transform.position + velocity, transform.up + transform.right*glideAttitude.x);
-			/*
-			velocity *= glideDrag;
-			Debug.Log("glide : " + (glideSpeed + glideMaxSpeed * glideAttitude.z) * Vector3.Lerp (transform.forward, -transform.up, glideAttitude.y));
-			velocity += (glideSpeed + glideMaxSpeed * glideAttitude.y) * Vector3.Lerp (transform.forward, -transform.up, glideAttitude.y);
+			if (currentSpeed < glideLimitSpeed){
+				isGliding = false;
+			}*/
 
-			float targetGlideVelocity = (glideSpeed + glideMaxSpeed * glideAttitude.z);
-
-
-			velocity *= glideDrag;
-			currentSpeed = Mathf.SmoothDamp (currentSpeed, targetGlideVelocity, ref speedSmoothVelocity, glideSpeedSmoothVelocity);
-			velocity = velocity.normalized * currentSpeed;
-			velocity = Vector3.Reflect (velocity, transform.up + glideAttitude.z * transform.forward);*/
-
-
+		/*
 		} else {
+			glideTimer -= Time.deltaTime;
 			isGliding = false;
 			animator.transform.LookAt(transform.position + transform.forward, transform.up);
-		}
+		}*/
+	    #endregion version bouton enfoncé
 
 		#endregion jump controls
 
