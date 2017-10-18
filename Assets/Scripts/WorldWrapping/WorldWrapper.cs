@@ -62,6 +62,8 @@ public class WorldWrapper : MonoBehaviour {
             Component comp = components[i];
             if (!typesToCopy.Contains(comp.GetType()))
                 DestroyImmediate(comp);
+            else if (comp.GetType().BaseType == typeof(Renderer))
+                comp.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
     }
 

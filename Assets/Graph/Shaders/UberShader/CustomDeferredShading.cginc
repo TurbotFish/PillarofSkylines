@@ -1,6 +1,13 @@
 	#if !defined(CUSTOM_DEFERRED_SHADING)
 	#define CUSTOM_DEFERRED_SHADING
-	#include "AloPBSLighting.cginc"
+	//#include "AloPBSLighting.cginc"
+
+	#include "UnityShaderVariables.cginc"
+	#include "UnityStandardConfig.cginc"
+	#include "UnityLightingCommon.cginc"
+	#include "UnityGBuffer.cginc"
+	#include "AloGlobalIllumination.cginc"
+	#include "AloStandardBRDF.cginc"
 
 	struct VertexData
 	{
@@ -136,15 +143,18 @@
 		float3 smoothness = tex2D(_CameraGBufferTexture1, uv).a;
 		float3 normal = tex2D(_CameraGBufferTexture2, uv).rgb * 2 - 1;
 		float oneMinusReflectivity = 1 - SpecularStrength(specularTint);
+		float thickness = tex2D(_CameraGBufferTexture0, uv).a;
 
 		UnityLight light = CreateLight(uv, worldPos, viewPos.z);
 		UnityIndirect indirectLight;
 		indirectLight.diffuse = 0;
 		indirectLight.specular = 0;
 
+
+
 		float4 color = ALO_BRDF_PBS(
 			albedo, specularTint, oneMinusReflectivity, smoothness,
-			normal, viewDir, light, indirectLight, float2(0,0)
+			normal, viewDir, light, indirectLight, thickness
 		);
 
 		#if !defined(UNITY_HDR_ON)
