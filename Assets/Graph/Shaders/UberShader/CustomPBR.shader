@@ -33,7 +33,7 @@ Shader "Alo/PBR/CustomPBR" {
 
 		_AlphaCutoff ("Alpha Cutoff", Range(0,1)) = 0.5
 
-		_ThicknessMap ("Thickness Map", 2D) = "white" {}
+		_ThicknessMap ("Thickness Map", 2D) = "black" {}
 		_DistortionSSS ("Distortion", Range(0,1)) = 1
 		_ScaleSSS ("Scale", Range(0,10)) = 1
 		_PowerSSS ("Power", Range(0,10)) = 1
@@ -48,7 +48,8 @@ Shader "Alo/PBR/CustomPBR" {
 
 	CGINCLUDE
 
-	#define BINORMAL_PER_FRAGMENT
+
+	//#define BINORMAL_PER_FRAGMENT
 	#define FOG_DISTANCE
 
 	ENDCG

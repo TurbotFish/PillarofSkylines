@@ -457,7 +457,8 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
 
 
     //SSS
-    //color += saturate(float3(0.97,0.2,0.2) * light.color) * I;
+    color += saturate(float3(0.97,0.2,0.2) * light.color) * I;
+   //color += saturate(float3(1.0,1.0,1.0) * light.color) * I;
     
     return half4(color, 1);
 }
