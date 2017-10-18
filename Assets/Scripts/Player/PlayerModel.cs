@@ -39,7 +39,7 @@ namespace Game.Player
         //
         List<eAbilityGroup> unlockedAbilityGroups = new List<eAbilityGroup>();
         List<eAbilityType> activatedAbilities = new List<eAbilityType>();
-        List<eAbilityType> blockedAbilities = new List<eAbilityType>();
+        List<eAbilityType> flaggedAbilities = new List<eAbilityType>();
 
 
         //###########################################################
@@ -49,7 +49,11 @@ namespace Game.Player
         // Use this for initialization
         void Start()
         {
+            UnlockAbilityGroup(eAbilityGroup.test);
 
+            ActivateAbility(eAbilityType.Dash);
+            ActivateAbility(eAbilityType.DoubleJump);
+            ActivateAbility(eAbilityType.Glide);
         }
 
         // Update is called once per frame
@@ -122,7 +126,7 @@ namespace Game.Player
                 foreach (var abilityType in abilitiesToDeactivate)
                 {
                     this.activatedAbilities.Remove(abilityType);
-                    this.blockedAbilities.Remove(abilityType);
+                    this.flaggedAbilities.Remove(abilityType);
                 }
 
                 return true;
@@ -192,7 +196,7 @@ namespace Game.Player
             {
                 return true;
             }
-            else if (!this.blockedAbilities.Contains(abilityType))
+            else if (!this.flaggedAbilities.Contains(abilityType))
             {
                 this.Favours += ability.ActivationPrice;
                 this.activatedAbilities.Remove(abilityType);
@@ -209,15 +213,15 @@ namespace Game.Player
         //###########################################################
         //###########################################################
 
-        #region ability blocking methods
+        #region ability flagging methods
 
         /// <summary>
         /// This method checks if an ability is currently in use by the player.
         /// </summary>
-        /// <returns>Returns true if the ability is blocked, false otherwise.</returns>
-        public bool CheckAbilityBlocked(eAbilityType abilityType)
+        /// <returns>Returns true if the ability is flagged, false otherwise.</returns>
+        public bool CheckAbilityFlagged(eAbilityType abilityType)
         {
-            if (this.blockedAbilities.Contains(abilityType))
+            if (this.flaggedAbilities.Contains(abilityType))
             {
                 return true;
             }
@@ -230,16 +234,16 @@ namespace Game.Player
         /// <summary>
         /// This method flags an ability as in use by the player. This means that it cannot be deactivated in the ability menu.
         /// </summary>
-        /// <returns>Returns true if the ability is now blocked, false otherwise.</returns>
-        public bool BlockAbility(eAbilityType abilityType)
+        /// <returns>Returns true if the ability is now flagged, false otherwise.</returns>
+        public bool FlagAbility(eAbilityType abilityType)
         {
-            if (this.blockedAbilities.Contains(abilityType))
+            if (this.flaggedAbilities.Contains(abilityType))
             {
                 return true;
             }
             else if (this.activatedAbilities.Contains(abilityType))
             {
-                this.blockedAbilities.Add(abilityType);
+                this.flaggedAbilities.Add(abilityType);
                 return true;
             }
             else
@@ -251,12 +255,12 @@ namespace Game.Player
         /// <summary>
         /// This method flags an ability as NOT in use by the player. This means that it CAN be deactivated in the ability menu.
         /// </summary>
-        /// <returns>Returns true if the ability is now unblocked, false otherwise.</returns>
-        public bool UnblockAbility(eAbilityType abilityType)
+        /// <returns>Returns true if the ability is now unflagged, false otherwise.</returns>
+        public bool UnflagAbility(eAbilityType abilityType)
         {
-            if (this.blockedAbilities.Contains(abilityType))
+            if (this.flaggedAbilities.Contains(abilityType))
             {
-                this.blockedAbilities.Remove(abilityType);
+                this.flaggedAbilities.Remove(abilityType);
                 return true;
             }
             else
@@ -265,7 +269,7 @@ namespace Game.Player
             }
         }
 
-        #endregion ability usage methods
+        #endregion ability flagging methods
 
         //###########################################################
     }
