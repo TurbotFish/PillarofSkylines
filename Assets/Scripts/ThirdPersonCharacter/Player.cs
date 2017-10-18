@@ -259,7 +259,7 @@ public class Player : MonoBehaviour {
 	/// <summary>
 	/// The script to get info about abilities.
 	/// </summary>
-	PlayerModel PlayerMod;
+	PlayerModel playerMod;
 
 	[Space(20)]
 	/// <summary>
@@ -270,7 +270,7 @@ public class Player : MonoBehaviour {
 	void Start(){
 		controller = GetComponent<CharacControllerRecu> ();
 		animator = GetComponentInChildren<Animator> ();
-		PlayerMod = GetComponent<PlayerModel> ();
+		playerMod = GetComponent<PlayerModel> ();
 		gravity = -(2 * maxJumpHeight) / Mathf.Pow (timeToJumpApex, 2);
 		maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
 		minJumpVelocity = Mathf.Sqrt (2 * Mathf.Abs (gravity) * minJumpHeight);
@@ -285,8 +285,8 @@ public class Player : MonoBehaviour {
 		//Get the input of the player and translate it into the camera angle
 		Vector3 input = rotator.forward * Input.GetAxisRaw ("Vertical") + rotator.right * Input.GetAxisRaw ("Horizontal");
 
-		//Detect input for dash and trigger it if it is available
-		if (Input.GetButtonDown ("Dash") && dashTimer < 0f) {
+		//Detect dash input and trigger it if it is available
+		if (Input.GetButtonDown ("Dash") && dashTimer < 0f && playerMod.CheckAbilityActive(eAbilityType.Dash)) {
 			velocity = Vector3.zero;
 			isDashing = true;
 			dashDuration = dashSpeed;
@@ -398,7 +398,7 @@ public class Player : MonoBehaviour {
 					} else {
 						velocity.y = maxJumpVelocity;
 					}
-				} else if (rmngAerialJumps > 0) {
+				} else if (rmngAerialJumps > 0 && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)) {
 					lastJumpAerial = true;
 					rmngAerialJumps--;
 					velocity.y = maxAerialJumpVelocity;
@@ -431,7 +431,7 @@ public class Player : MonoBehaviour {
 				if (!controller.collisions.below && isGliding) {
 					isGliding = false;
 					animator.transform.LookAt (transform.position + transform.forward, transform.up);
-				} else if (!controller.collisions.below && !isGliding) {
+				} else if (!controller.collisions.below && !isGliding && playerMod.CheckAbilityActive(eAbilityType.Glide)) {
 					if (velocity.y < -glideMinimalInitialSpeed) {
 						currentSpeed = -velocity.y;
 					} else {
@@ -452,6 +452,7 @@ public class Player : MonoBehaviour {
 				if (currentSpeed < glideLimitSpeed) {
 					isGliding = false;
 					glideTimer = timeBetweenGlides;
+					animator.transform.LookAt (transform.position + transform.forward, transform.up);
 					Debug.Log ("YOU4RE 2 SLOW");
 				}
 			} else {
