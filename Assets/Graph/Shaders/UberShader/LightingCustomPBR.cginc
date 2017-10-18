@@ -65,7 +65,7 @@
 			float4 tangent : TEXCOORD2;
 		#else
 			float3 tangent : TEXCOORD2;
-			float4 binormal : TEXCOORD3;
+			float3 binormal : TEXCOORD3;
 		#endif
 
 		#if FOG_DEPTH
@@ -115,10 +115,10 @@
 
 	float GetThickness(Interpolators i){
 		#if defined(_SSS)
-			float thickness = tex2D(_ThicknessMap, i.uv).r;
+			float thickness = 1.0 - tex2D(_ThicknessMap, i.uv).r;
 			return thickness;
 		#else
-			return 0;
+			return 1.0;
 		#endif
 	}
 

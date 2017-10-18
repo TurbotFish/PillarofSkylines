@@ -143,7 +143,7 @@
 		float3 smoothness = tex2D(_CameraGBufferTexture1, uv).a;
 		float3 normal = tex2D(_CameraGBufferTexture2, uv).rgb * 2 - 1;
 		float oneMinusReflectivity = 1 - SpecularStrength(specularTint);
-		float thickness = tex2D(_CameraGBufferTexture0, uv).a;
+		float thickness = 1.0 - tex2D(_CameraGBufferTexture0, uv).a;
 
 		UnityLight light = CreateLight(uv, worldPos, viewPos.z);
 		UnityIndirect indirectLight;
