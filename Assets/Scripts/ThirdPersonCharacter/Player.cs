@@ -286,7 +286,7 @@ public class Player : MonoBehaviour {
 		Vector3 input = rotator.forward * Input.GetAxisRaw ("Vertical") + rotator.right * Input.GetAxisRaw ("Horizontal");
 
 		//Detect dash input and trigger it if it is available
-		if (Input.GetButtonDown ("Dash") && dashTimer < 0f && playerMod.CheckAbilityActive(eAbilityType.Dash)) {
+		if (Input.GetButtonDown ("Dash") && dashTimer < 0f) {
 			velocity = Vector3.zero;
 			isDashing = true;
 			dashDuration = dashSpeed;
@@ -398,7 +398,7 @@ public class Player : MonoBehaviour {
 					} else {
 						velocity.y = maxJumpVelocity;
 					}
-				} else if (rmngAerialJumps > 0 && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)) {
+				} else if (rmngAerialJumps > 0 ) {
 					lastJumpAerial = true;
 					rmngAerialJumps--;
 					velocity.y = maxAerialJumpVelocity;
@@ -431,7 +431,7 @@ public class Player : MonoBehaviour {
 				if (!controller.collisions.below && isGliding) {
 					isGliding = false;
 					animator.transform.LookAt (transform.position + transform.forward, transform.up);
-				} else if (!controller.collisions.below && !isGliding && playerMod.CheckAbilityActive(eAbilityType.Glide)) {
+				} else if (!controller.collisions.below && !isGliding ) {
 					if (velocity.y < -glideMinimalInitialSpeed) {
 						currentSpeed = -velocity.y;
 					} else {
