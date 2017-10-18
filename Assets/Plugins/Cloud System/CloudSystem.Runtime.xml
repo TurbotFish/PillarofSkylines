@@ -1,0 +1,2490 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CloudSystem.Runtime</name>
+    </assembly>
+    <members>
+        <member name="T:Edelweiss.CloudSystem.Cloud`3">
+            <summary>
+            Generic base class of <see cref="T:CS_Cloud" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when an editor only operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.Cloud`3.verticalColors">
+            <summary>
+            Vertical colors are used by renderers which support that specific functionality.
+            If the size of this array is changed or any <see cref="F:Edelweiss.CloudSystem.CS_VerticalColor.verticalFactor" />
+            in it, you have to call
+            <see cref="M:Edelweiss.CloudSystem.Cloud`3.RecalculateVerticalColorFactors" /> to get valid results. If the
+            vertical colors are not sorted, it is necessary to call
+            <see cref="M:Edelweiss.CloudSystem.Cloud`3.SortVerticalColors" /> first.
+            There always have to be at least two element. One with a
+            <see cref="F:Edelweiss.CloudSystem.CS_VerticalColor.verticalFactor" /> of 0.0f,
+            and one with a <see cref="F:Edelweiss.CloudSystem.CS_VerticalColor.verticalFactor" /> of 1.0f.
+            All other <see cref="F:Edelweiss.CloudSystem.CS_VerticalColor.verticalFactor">vertical factors</see> have to be
+            values from [0.0f, 1.0f]. It is not allowed that there are two identical
+            <see cref="F:Edelweiss.CloudSystem.CS_VerticalColor.verticalFactor">vertical factors</see>.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.Cloud`3.shadingGroups">
+            <summary>
+            Shading groups are used by renderers which support that specific functionality.
+            Every particle belongs to a shading group, that's why you have to make sure, that
+            this array contains enough shading groups.
+            If you manipulate the <see cref="F:Edelweiss.CloudSystem.CS_ShadingGroup.center" />
+            of a shading group, you need to update the
+            <see cref="F:Edelweiss.CloudSystem.CS_ShadingGroup.scaledCenter" /> too. Use
+            <see cref="M:Edelweiss.CloudSystem.CS_ShadingGroup.RecalculateScaledCenter(Edelweiss.CloudSystem.CloudBase)" /> for that.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.Cloud`3.shadingColors">
+            <summary>
+            Shading colors are used by renderers which support shading groups.
+            if the size of this array is changed or any <see cref="F:Edelweiss.CloudSystem.CS_ShadingColor.shadingFactor" />
+            in it, you have to call <see cref="M:Edelweiss.CloudSystem.Cloud`3.RecalculateShadingColorFactors" />
+            to get valid results. If the shading colors are not sorted, it is necessary to call
+            <see cref="M:Edelweiss.CloudSystem.Cloud`3.SortShadingColors" /> first.
+            There always have to be at least two elements. One with a
+            <see cref="F:Edelweiss.CloudSystem.CS_ShadingColor.shadingFactor" /> of -1.0f,
+            and one with a <see cref="F:Edelweiss.CloudSystem.CS_ShadingColor.shadingFactor" />
+            of 1.0f. All other <see cref="F:Edelweiss.CloudSystem.CS_ShadingColor.shadingFactor">shading factors</see>
+            have to be values from [-1.0f, 1.0f]. It is not allowed that there are two identical
+            <see cref="F:Edelweiss.CloudSystem.CS_ShadingColor.shadingFactor">shading factors</see>.
+            </summary>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.ParticleData">
+            <summary>
+            Particles are structs and can not be serialized directly in Unity.
+            That's the reason why we have this particle data. It is only intended
+            to be used in the editor and for the initialization at runtime.
+            </summary>
+            <value>
+            The particle data.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.CloudRendererData">
+            <summary>
+            Gets the cloud renderer data for multithreading.
+            </summary>
+            <value>
+            The cloud renderer data.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.CreatorData">
+            <summary>
+            All kinds of data, that is only used in the Editor to create the
+            clouds, is available in here.
+            </summary>
+            <value>
+            The creator data.
+            </value>
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.CloudRendererType">
+            <summary>
+            Special enum for the renderer type. It is only used in the Editor.
+            </summary>
+            <value>
+            The type of the cloud renderer.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.CloudRenderer">
+            <summary>
+            Renderer that is used for this cloud. It is not possible to
+            change the renderer at runtime. It needs to be changed in the
+            Editor.
+            </summary>
+            <value>
+            The cloud renderer.
+            </value>
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.IsInitialized">
+            <summary>
+            Gets a value indicating whether this instance is initialized.
+            </summary>
+            <value>
+                <c>true</c> if this instance is initialized; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.SupportsNonSquaredParticles">
+            <summary>
+            Gets a value indicating whether this <see cref="T:Edelweiss.CloudSystem.Cloud`3" /> supports non squared particles.
+            </summary>
+            <value>
+                <c>true</c> if supports non squared particles; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.SupportsVerticalColors">
+            <summary>
+            Gets a value indicating whether this <see cref="T:Edelweiss.CloudSystem.Cloud`3" /> supports vertical colors.
+            </summary>
+            <value>
+                <c>true</c> if supports vertical colors; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.SupportsShadingGroups">
+            <summary>
+            Gets a value indicating whether this <see cref="T:Edelweiss.CloudSystem.Cloud`3" /> supports shading groups.
+            </summary>
+            <value>
+                <c>true</c> if supports shading groups; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.SupportsTint">
+            <summary>
+            Gets a value indicating whether this <see cref="T:Edelweiss.CloudSystem.Cloud`3" /> supports tint.
+            </summary>
+            <value>
+                <c>true</c> if supports tint; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.ParticleMaterial">
+            <summary>
+            Material used to render the particles.
+            </summary>
+            <value>
+            The particle material.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.XTile">
+            <summary>
+            The number of columns into which the particle material is splitted.
+            This value has to be strictly greater than zero.
+            </summary>
+            <value>
+            The X tile.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.YTile">
+            <summary>
+            The number of rows into which the particle material is splitted.
+            This has to be strictly greater than zero.
+            </summary>
+            <value>
+            The Y tile.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.TileCount">
+            <summary>
+            The number of particle sprites that are available in the particle material.
+            </summary>
+            <value>
+            The tile count.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.Tint">
+            <summary>
+            Base color of the cloud.
+            If this value is changed, all particles are going to be recalculated.
+            </summary>
+            <value>
+            The tint.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.UseParticleColor">
+            <summary>
+            Gets or sets a value indicating whether the <see cref="F:Edelweiss.CloudSystem.CloudParticle.particleColor" />
+            should be used for the cloud shading.
+            </summary>
+            <value>
+                <c>true</c> if use particle color; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.VerticalShadingInfluence">
+            <summary>
+            For renderers which support both vertical colors and shading groups, you may
+            change the amount by which they are visible.
+            This value has to be in the range [0.0f, 1.0f]. By changing this value, the
+            other influence factor gets manipulated too, such that the sum of them is
+            exactly one.
+            If this value is changed, all particles are going to be recalculated.
+            </summary>
+            <value>
+            The vertical shading influence.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.ShadingGroupInfluence">
+            <summary>
+            For renderers which support both vertical colors and shading groups, you may
+            change the amount by which they are visible.
+            This value has to be in the range [0.0f, 1.0f]. By changing this value, the
+            other influence factor gets manipulated too, such that the sum of them is
+            exactly one.
+            If this value is changed, all particles are going to be recalculated.
+            </summary>
+            <value>
+            The shading group influence.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.Scale">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when the setter is called while the application is playing.
+            </exception>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.Fading">
+            <summary>
+            A simple fading factor for the cloud. I has to be in [0.0f, 1.0f].
+            By changing this value, both the core particle transparency and the
+            non core particle transparency are going to be changed.
+            If this value is changed, all particles are going to be recalculated.
+            </summary>
+            <value>
+            The fading.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.CoreParticleTransparency">
+            <summary>
+            The core particle transparency controls the visibility of particles
+            which have the core flag set to true. The value has to be in the
+            range [0.0f, 1.0f].
+            Changing this value overrides any previous setting made using
+            <see cref="P:Edelweiss.CloudSystem.Cloud`3.Fading" />.
+            If this value is changed, all particles are going to be recalculated.
+            </summary>
+            <value>
+            The core particle transparency.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.NonCoreParticleTransparency">
+            <summary>
+            The non core particle transparency controls the visibility of particles
+            which have the core flag set to false. The value has to be in the
+            range [0.0f, 1.0f].
+            Changing this value overrides any previous setting made using
+            <see cref="P:Edelweiss.CloudSystem.Cloud`3.Fading" />.
+            If this value is changed, all particles are going to be recalculated.
+            </summary>
+            <value>
+            The non core particle transparency.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.CachedTransform">
+            <summary>
+            Cached transform to slightly increase the performance.
+            </summary>
+            <value>
+            The cached transform.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.MeshScale">
+            <summary>
+            Gets the mesh scale for the workaround.
+            </summary>
+            <value>
+            The mesh scale.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.ParticleSystemScale">
+            <summary>
+            Gets the particle system scale for the workaround.
+            </summary>
+            <value>
+            The particle system scale.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.BoundingBox">
+            <summary>
+            Bounding box of the cloud in local space.
+            </summary>
+            <value>
+            The bounding box.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.Sun">
+            <summary>
+            Transform of the object that is used as sun for the shading group rendering.
+            This reference is not allowed to be null, if a renderer is used that supports
+            shading groups.
+            </summary>
+            <value>
+            The sun.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Cloud`3.ParticleCount">
+            <summary>
+            Number of particles this cloud consists of.
+            This value is intended to be used at runtime.
+            </summary>
+            <value>
+            The particle count.
+            </value>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.TransformMatrix">
+            <summary>
+            Transform matrix that is used by the custom renderers.
+            </summary>
+            <returns>
+            The transform matrix of this cloud.
+            A <see cref="T:Matrix4x4" /></returns>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.UnscaledTransformMatrix">
+            <summary>
+            Unscaled transform matrix of the cloud.
+            </summary>
+            <returns>
+            The unscaled transform matrix of this cloud.
+            A <see cref="T:Matrix4x4" /></returns>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.RecalculateBoundingBox">
+            <summary>
+            If the particle position or size is changed, such that the current
+            bounding box is not anymore valid, this method has to be called in
+            order to get correct visual results.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.SetParticleSystemHasChanged">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.AreVerticalColorsSorted">
+            <summary>
+            Checks if the <see cref="F:Edelweiss.CloudSystem.Cloud`3.verticalColors" /> array is sorted.
+            </summary>
+            <returns>
+            Returns <c>true</c>, if <see cref="F:Edelweiss.CloudSystem.Cloud`3.verticalColors" /> is sorted.
+            A <see cref="T:System.Boolean" /></returns>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.SortVerticalColors">
+            <summary>
+            Sort the <see cref="F:Edelweiss.CloudSystem.Cloud`3.verticalColors" /> array.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.HeightToVerticalFactor(System.Single)">
+            <summary>
+            Convert a scaled height within the cloud to a vertical factor that can be
+            used to calculate a vertical color.
+            It is necessary that the bounding box of this cloud had a height that was strictly
+            greater than zero when <see cref="M:Edelweiss.CloudSystem.Cloud`3.RecalculateBoundingBox" />
+            was called the last time.
+            </summary>
+            <param name="a_Height">
+            Height within the cloud. The height should be within the bounding box in order to get
+            a valid result.
+            A <see cref="T:System.Single" /></param>
+            <returns>
+            Factor that is usable to calculate the actual color at the height using
+            <see cref="M:Edelweiss.CloudSystem.Cloud`3.VerticalColorAt" />.
+            If a height is a valid height in the bounding box, the result is going to be in [0.0f, 1.0f].
+            A <see cref="T:System.Single" /></returns>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.VerticalColorAt(System.Single)">
+            <summary>
+            The color we get for the given vertical factor using the <see cref="F:Edelweiss.CloudSystem.Cloud`3.verticalColors" /> array.
+            It is necessary that <see cref="F:Edelweiss.CloudSystem.Cloud`3.verticalColors" /> was set up correctly in order to get valid results.
+            </summary>
+            <param name="a_VerticalFactor">
+            Height factor that can be calculated using <see cref="M:Edelweiss.CloudSystem.Cloud`3.HeightToVerticalFactor" />. This value
+            has to be in [0.0f, 1.0f].
+            A <see cref="T:System.Single" /></param>
+            <returns>
+            Color for the given vertical factor.
+            A <see cref="T:Color" /></returns>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.RecalculateVerticalColorFactors">
+            <summary>
+            Recalculate factors that are based on <see cref="F:Edelweiss.CloudSystem.Cloud`3.verticalColors" />
+            and are needed for the correct results. This operation is only allowed to be called, if
+            <see cref="F:Edelweiss.CloudSystem.Cloud`3.verticalColors" /> is valid according to its
+            description.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.AreShadingColorsSorted">
+            <summary>
+            Checks if the <see cref="F:Edelweiss.CloudSystem.Cloud`3.shadingColors" /> array is sorted.
+            </summary>
+            <returns>
+            Returns true, if <see cref="F:Edelweiss.CloudSystem.Cloud`3.shadingColors" /> is sorted.
+            A <see cref="T:System.Boolean" /></returns>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.SortShadingColors">
+            <summary>
+            Sort the <see cref="F:Edelweiss.CloudSystem.Cloud`3.shadingColors" /> array.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.ShadingColorAt(System.Single)">
+            <summary>
+            The color we get for the given shading factor using the
+            <see cref="F:Edelweiss.CloudSystem.Cloud`3.shadingColors" /> array.
+            It is necessary that <see cref="F:Edelweiss.CloudSystem.Cloud`3.shadingColors" /> was
+            set up correctly in order to get valid results.
+            </summary>
+            <param name="a_ShadingFactor">
+            Shading factor is intended to be calculated in the renderer. It is the scalar product of the
+            normalized sun direction with the normalized vector from the scaled shading group center to
+            a certain position in the cloud, for which the color is calculated.
+            This valud has to be in [-1.0f, 1.0f].
+            A <see cref="T:System.Single" /></param>
+            <returns>
+            Color for the given shading factor.
+            A <see cref="T:UnityEngine.Color" /></returns>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.RecalculateShadingColorFactors">
+            <summary>
+            Recalculate factors that are based on <see cref="F:Edelweiss.CloudSystem.Cloud`3.shadingColors" /> and are needed for the correct results.
+            This operation is only allowed to be called, if <see cref="F:Edelweiss.CloudSystem.Cloud`3.shadingColors" /> is valid according to its
+            description.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.RecalculateScaledShadingGroupCenters">
+            <summary>
+            Recalculate the scaled centers for all shading groups.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.ParticleAt(System.Int32)">
+            <summary>
+            Returns the particle from this cloud at index.
+            This method is indended to be used at runtime only.
+            Editor scripts preferably use <see cref="P:Edelweiss.CloudSystem.Cloud`3.ParticleData" /> instead.
+            </summary>
+            <param name="a_Index">
+            The position at which the wanted particle is. This value has to be in
+            [0, <see cref="P:Edelweiss.CloudSystem.Cloud`3.ParticleCount" /> - 1].
+            A <see cref="T:System.Int32" /></param>
+            <returns>
+            Particle at index from this cloud.
+            A <see cref="T:Edelweiss.CloudSystem.CloudParticle" /></returns>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.SetParticleAt(System.Int32,Edelweiss.CloudSystem.CloudParticle)">
+            <summary>
+            Set the particle to this cloud at index.
+            This method is intended to be used at runtime only.
+            Editor scripts preferably use
+            <see cref="P:Edelweiss.CloudSystem.Cloud`3.ParticleData" /> instead.
+            </summary>
+            <param name="a_Index">
+            The position at which the particle is set. This value has to be in
+            [0, ParticleCount - 1].
+            A <see cref="T:System.Int32" /></param>
+            <param name="a_Particle">
+            The particle that has to be set at index.
+            A <see cref="T:Edelweiss.CloudSystem.CloudParticle" /></param>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.OnEnable">
+            <summary>
+            Raises the enable event.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.InitializeRendererComponents">
+            <summary>
+            Initializes the renderer components.
+            </summary>
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.PrepareMaterialAndTiling">
+            <summary>
+            Prepares the material and tiling.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.Cloud`3.CreatePrefabData">
+            <summary>
+            Creates the prefab data. This method can only be called in the editor.
+            </summary>
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CloudBase">
+            <summary>
+            Base class for the generic <see cref="T:Edelweiss.CloudSystem.Cloud`3" /> class.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CloudBase.Scale">
+            <summary>
+            Scale of this cloud. You can not change this value at runtime.
+            Instead you have to iterate through all particles and multiply the
+            position and particle size by the needed factor.
+            The scale is not allowed to be smaller than zero.
+            </summary>
+            <value>
+            The scale.
+            </value>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudBase.SetParticleSystemHasChanged">
+            <summary>
+            This method tells the renderer that all particles need to
+            be recalculated. It is mostly called automatically, such that
+            you don't have to deal with it.
+            But there are two exceptions. If you make changes in 'verticalColors'
+            or 'shadingColors', you have to call this method in order to update
+            the cloud's particles.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CloudParticle">
+            <summary>
+            Particles for the Cloud System.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudParticle.originalIndex">
+            <summary>
+            The original index.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudParticle.position">
+            <summary>
+            The local position.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudParticle.rotation">
+            <summary>
+            The z rotation.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudParticle.size">
+            <summary>
+            The size.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudParticle.uvIndex">
+            <summary>
+            The index of the uv.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudParticle.isSquared">
+            <summary>
+            Is the particle squared?
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudParticle.isCoreParticle">
+            <summary>
+            Is this a core particle?
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudParticle.shadingGroupIndex">
+            <summary>
+            The index of the shading group.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudParticle.distanceToCamera">
+            <summary>
+            The distance to the camera.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudParticle.particleColor">
+            <summary>
+            The color of the particle. It is only take into account if
+            the cloud <see cref="P:Edelweiss.CloudSystem.Cloud`3.UseParticleColor">uses particle colors</see>.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudParticle.InitializeValues">
+            <summary>
+            Initializes the values.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudParticle.Radius">
+            <summary>
+            The radius of the particle.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudParticle.CompareTo(Edelweiss.CloudSystem.CloudParticle)">
+            <summary>
+            Compares the current object with another object of the same type.
+            </summary>
+            <returns>
+            Less than zero: This object is less than the parameter.
+            Zero: This object is equal to the parameter.
+            Greater than zero: This object is greater than the parameter.
+            </returns>
+            <param name="a_Other">
+            An object to compare with this object.
+            </param>
+        </member>
+        <member name="T:CS_Cloud">
+            <summary>
+            Central class for the Cloud System.
+            </summary>
+        </member>
+        <member name="T:CS_ParticleData">
+            <summary>
+            Particle data serialization.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CS_ShadingColor">
+            <summary>
+            Shading color for renderers that support shading groups.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ShadingColor.isPermanent">
+            <summary>
+            Is this instance a required entry of <see cref="F:Edelweiss.CloudSystem.Cloud`3.shadingColors" />?
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ShadingColor.shadingFactor">
+            <summary>
+            The shading factor. This value has to be in [-1.0f, 1.0f].
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ShadingColor.color">
+            <summary>
+            The color for the corresponding <see cref="F:Edelweiss.CloudSystem.CS_ShadingColor.shadingFactor" />.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CS_ShadingColor.CompareTo(Edelweiss.CloudSystem.CS_ShadingColor)">
+            <summary>
+            Compares the current object with another object of the same type.
+            </summary>
+            <returns>
+            Less than zero: This object is less than the parameter.
+            Zero: This object is equal to the parameter.
+            Greater than zero: This object is greater than the parameter.
+            </returns>
+            <param name="a_Other">
+            An object to compare with this object.
+            </param>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CS_ShadingGroup">
+            <summary>
+            Shading groups are used for that special kind of rendering.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CS_ShadingGroup.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Edelweiss.CloudSystem.CS_ShadingGroup" /> class.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ShadingGroup.name">
+            <summary>
+            The name for the identification in the inspector.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ShadingGroup.center">
+            <summary>
+            Center of this shading group. If you modify this value at runtime, you
+            need to recalculate <see cref="F:Edelweiss.CloudSystem.CS_ShadingGroup.scaledCenter" /> too.
+            <see cref="M:Edelweiss.CloudSystem.CS_ShadingGroup.RecalculateScaledCenter(Edelweiss.CloudSystem.CloudBase)" /> can be used for that.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ShadingGroup.scaledCenter">
+            <summary>
+            The center which takes the scaling of the cloud into account.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ShadingGroup.shapeColor">
+            <summary>
+            The color of the shape in the scene view.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CS_ShadingGroup.RecalculateScaledCenter(Edelweiss.CloudSystem.CloudBase)">
+            <summary>
+            Recalculates the <see cref="F:Edelweiss.CloudSystem.CS_ShadingGroup.scaledCenter" />.
+            </summary>
+            <param name="a_Cloud">
+            The cloud.
+            </param>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CS_VerticalColor">
+            <summary>
+            Vertical colors for renderers that support vertical colors.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_VerticalColor.isPermanent">
+            <summary>
+            Is this instance a required entry of <see cref="F:Edelweiss.CloudSystem.Cloud`3.verticalColors" />?
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_VerticalColor.verticalFactor">
+            <summary>
+            The vertical factor, meaning the height within the cloud. This value has to be in [0.0f, 1.0f].
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_VerticalColor.color">
+            <summary>
+            The color for the corresponding <see cref="F:Edelweiss.CloudSystem.CS_VerticalColor.verticalFactor" />.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CS_VerticalColor.CompareTo(Edelweiss.CloudSystem.CS_VerticalColor)">
+            <summary>
+            Compares the current object with another object of the same type.
+            </summary>
+            <returns>
+            Less than zero: This object is less than the parameter.
+            Zero: This object is equal to the parameter.
+            Greater than zero: This object is greater than the parameter.
+            </returns>
+            <param name="a_Other">
+            An object to compare with this object.
+            </param>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.Edition">
+            <summary>
+            Edition information.
+            </summary>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.Edition.IsCloudSystemFree">
+            <summary>
+            Gets a value indicating whether this is Cloud System Free.
+            </summary>
+            <value>
+                <c>true</c> if this is Cloud System Free; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.ParticleData`3">
+            <summary>
+            Generic base class of <see cref="T:CS_ParticleData" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.ParticleDataBase">
+            <summary>
+            Base class for the generic <see cref="T:Edelweiss.CloudSystem.ParticleData`3" /> class.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when an editor only operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ParticleDataBase.Item(System.Int32)">
+            <summary>
+            Gets or sets the <see cref="T:Edelweiss.CloudSystem.ParticleDataBase" /> with the specified a_Index.
+            Setting the particle data is only possible in the editor.
+            </summary>
+            <param name="a_Index">
+            The index.
+            </param>
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when the setter is called while the application is playing.
+            </exception>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ParticleDataBase.Count">
+            <summary>
+            Gets the particle count.
+            </summary>
+            <value>
+            The count.
+            </value>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ParticleDataBase.Clear">
+            <summary>
+            Clear this particle data.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ParticleDataBase.Resize(System.Int32)">
+            <summary>
+            Resize the arrays to a_NewCount.
+            </summary>
+            <param name="a_NewCount">
+            The new count.
+            </param>
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ParticleDataBase.Add(Edelweiss.CloudSystem.CloudParticle)">
+            <summary>
+            Add the specified a_Particle. Calling this method is only valid in the editor.
+            </summary>
+            <param name="a_Particle">
+            The particle.
+            </param>
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ParticleDataBase.RemoveAt(System.Int32)">
+            <summary>
+            Removes the particle at a_Index.
+            </summary>
+            <param name="a_Index">
+            The index has to be in [0, <see cref="P:Edelweiss.CloudSystem.ParticleDataBase.Count" /> - 1].
+            </param>
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CreatorData`3">
+            <summary>
+            Generic base class of <see cref="T:CS_CreatorData" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CreatorData`3.density">
+            <summary>
+            Create the cloud particles with this density which is a valie from [0.0f, 1.0f].
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CreatorData`3.boxShapes">
+            <summary>
+            The cloud particles are created within those shapes.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CreatorData`3.particleGroups">
+            <summary>
+            The particle groups define which kind and amount of particles are created.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CreatorDataBase">
+            <summary>
+            Base class for the generic <see cref="T:Edelweiss.CloudSystem.CreatorData`3" /> class.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+        </member>
+        <member name="T:CS_CreatorData">
+            <summary>
+            Data only needed by the cloud creator. It has no direct runtime impact.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CS_ParticleGroup">
+            <summary>
+            Collection of particle types needed by the cloud creator.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CS_ParticleGroup.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Edelweiss.CloudSystem.CS_ParticleGroup" /> class.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ParticleGroup.name">
+            <summary>
+            The name for an identification in the inspector.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ParticleGroup.shapeColor">
+            <summary>
+            The color of the shape in the scene view.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ParticleGroup.particleTypes">
+            <summary>
+            The particle types.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CS_ParticleType">
+            <summary>
+            Particle type definitions used for the cloud creation.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CS_ParticleType.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Edelweiss.CloudSystem.CS_ParticleType" /> class.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CS_ParticleType.#ctor(Edelweiss.CloudSystem.CS_ParticleType)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Edelweiss.CloudSystem.CS_ParticleType" /> class.
+            </summary>
+            <param name="a_Other">
+            The new instance becomes a copy of this parameter.
+            </param>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ParticleType.uvIndex">
+            <summary>
+            The index of the uv.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ParticleType.minimumRotation">
+            <summary>
+            The minimum rotation.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ParticleType.maximumRotation">
+            <summary>
+            The maximum rotation.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ParticleType.squared">
+            <summary>
+            Is the particle squared?
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ParticleType.minimumXSize">
+            <summary>
+            The minimum horizontal size.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ParticleType.maximumXSize">
+            <summary>
+            The maximum horizontal size.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ParticleType.minimumYSize">
+            <summary>
+            The minimum vertical size.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ParticleType.maximumYSize">
+            <summary>
+            The maximum vertical size.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_ParticleType.creationProbability">
+            <summary>
+            The creation probability.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CS_Shape">
+            <summary>
+            Boxes to build the cloud shape needed by the cloud creator.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CS_Shape.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Edelweiss.CloudSystem.CS_Shape" /> class.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_Shape.particleCount">
+            <summary>
+            The maximal number of particles that is created by the cloud creator for this shape.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_Shape.position">
+            <summary>
+            The position of this shape in local space.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_Shape.rotation">
+            <summary>
+            The rotation of this shape in local space.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_Shape.scale">
+            <summary>
+            The scale of this shape in local space.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_Shape.particleGroupIndex">
+            <summary>
+            The index of the particle group based on which the particles are created.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CS_Shape.shadingGroupIndex">
+            <summary>
+            The index of the shading group to which the created particles will belong.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CS_Shape.Copy">
+            <summary>
+            Copy this instance.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CS_Shape.LocalTransformMatrix">
+            <summary>
+            Local to world matrix of this shape.
+            </summary>
+            <returns>
+            The resulting matrix.
+            </returns>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CloudParticleRenderer`3">
+            <summary>
+            Abstract definition for a cloud renderer that uses CS_Particle's internally.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudParticleRenderer`3.m_Particles">
+            <summary>
+            The particles.
+            </summary>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CloudParticleRenderer`3.Count">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudParticleRenderer`3.ParticleAt(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudParticleRenderer`3.SetParticleAt(System.Int32,Edelweiss.CloudSystem.CloudParticle)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CloudRenderer`3">
+            <summary>
+            Abstract definition for a cloud renderer.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRenderer`3.m_Cloud">
+            <summary>
+            The cloud.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRenderer`3.m_NormalizedSunDirection">
+            <summary>
+            Normalized sun direction in cloud space.
+            Only used for renderers that support shading groups.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRenderer`3.m_CurrentSunRotation">
+            <summary>
+            The current sun rotation.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRenderer`3.m_HasParticleSystemChanged">
+            <summary>
+            Has the particle system changed?
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRenderer`3.useParticleColor">
+            <summary>
+            Use the <see cref="F:Edelweiss.CloudSystem.CloudParticle.particleColor" /> for the shading.
+            </summary>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CloudRenderer`3.Cloud">
+            <summary>
+            Gets the cloud.
+            </summary>
+            <value>
+            The cloud.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CloudRenderer`3.HasParticleSystemChanged">
+            <summary>
+            Gets a value indicating whether the particle system has changed.
+            </summary>
+            <value>
+                <c>true</c> if this particle system has changed; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CloudRenderer`3.IsSupportedInCloudSystemFree">
+            <summary>
+            Gets a value indicating whether this instance is supported in Cloud System Free.
+            </summary>
+            <value>
+                <c>true</c> if this instance is supported in Cloud System Free; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CloudRenderer`3.SupportsNonSquaredParticles">
+            <summary>
+            Gets a value indicating whether this <see cref="T:Edelweiss.CloudSystem.CloudRenderer`3" /> supports non squared particles.
+            </summary>
+            <value>
+                <c>true</c> if supports non squared particles; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CloudRenderer`3.SupportsVerticalColors">
+            <summary>
+            Gets a value indicating whether this <see cref="T:Edelweiss.CloudSystem.CloudRenderer`3" /> supports vertical colors.
+            </summary>
+            <value>
+                <c>true</c> if supports vertical colors; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CloudRenderer`3.SupportsShadingGroups">
+            <summary>
+            Gets a value indicating whether this <see cref="T:Edelweiss.CloudSystem.CloudRenderer`3" /> supports shading groups.
+            </summary>
+            <value>
+                <c>true</c> if supports shading groups; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CloudRenderer`3.SupportsTint">
+            <summary>
+            Gets a value indicating whether this <see cref="T:Edelweiss.CloudSystem.CloudRenderer`3" /> supports tint.
+            </summary>
+            <value>
+                <c>true</c> if supports tint; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CloudRenderer`3.Count">
+            <summary>
+            Gets the number of cloud particles.
+            </summary>
+            <value>
+            The count.
+            </value>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.OnEnable">
+            <summary>
+            Raises the enable event.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.InitializeRendererComponents">
+            <summary>
+            Initializes the renderer components.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.DestroyRendererComponents">
+            <summary>
+            Destroies the renderer components.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.DestroyResources">
+            <summary>
+            Destroies the resources.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.InitializeWithParticleData(Edelweiss.CloudSystem.ParticleDataBase)">
+            <summary>
+            Initializes this instance with particle data.
+            </summary>
+            <param name="a_ParticleData">
+            The particle data.
+            </param>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.RecalculateTiling">
+            <summary>
+            Recalculates the tiling.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.ParticleAt(System.Int32)">
+            <summary>
+            Particle at a_Index.
+            </summary>
+            <returns>
+            The <see cref="T:Edelweiss.CloudSystem.CloudParticle" />.
+            </returns>
+            <param name="a_Index">
+            The index.
+            </param>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.SetParticleAt(System.Int32,Edelweiss.CloudSystem.CloudParticle)">
+            <summary>
+            Sets the particle at a_Index to a_Particle.
+            </summary>
+            <param name="a_Index">
+            The index.
+            </param>
+            <param name="a_Particle">
+            The particle.
+            </param>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.ChangedMaterial">
+            <summary>
+            Calling this method indicates that the material has changed.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.HideAuxiliaryComponents">
+            <summary>
+            Hides the auxiliary components in the inspector.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.UpdateCurrentSunTransform">
+            <summary>
+            Updates the current sun transform.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.UpdatePreviousSunTransform">
+            <summary>
+            Updates the previous sun transform.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.HasSunTransformChanged">
+            <summary>
+            Determines whether the sun transform has changed.
+            </summary>
+            <returns>
+                <c>true</c> if the sun transform has changed; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.SetParticleSystemHasChanged">
+            <summary>
+            Sets the flag that the particle system has changed.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.UpdateParticlesIfNeeded(System.Boolean)">
+            <summary>
+            Updates the particles if needed.
+            REMARK: The enabling parameter is only used to prevent a Unity crash bug for custom renderers!
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.BoundingBoxUpdated">
+            <summary>
+            Called when boundings box of cloud was updated.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CloudRenderer`3.ScreenCoverageFactor(UnityEngine.Camera)">
+            <summary>
+            The amount of space the cloud covers on the screen. Off screen parts are included as well.
+            </summary>
+            <returns>
+            The cloud coverage factor.
+            </returns>
+            <param name="a_Camera">
+            The camera.
+            </param>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CloudRendererData">
+            <summary>
+            All cloud data that is needed by the renderers for multithreading.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.ColoredCloudParticleRenderer`3">
+            <summary>
+            Abstract definition for a cloud renderers that are using <see cref="T:Edelweiss.CloudSystem.ColoredCloudParticle" /> instances internally.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.ColoredCloudParticleRenderer`3.m_Particles">
+            <summary>
+            The colored particles.
+            </summary>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ColoredCloudParticleRenderer`3.Count">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ColoredCloudParticleRenderer`3.ParticleAt(System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ColoredCloudParticleRenderer`3.SetParticleAt(System.Int32,Edelweiss.CloudSystem.CloudParticle)">
+            <inheritdoc />
+        </member>
+        <member name="T:CS_CustomShadingGroupRenderer">
+            <summary>
+            Custom cloud renderer that uses shading groups to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:CS_CustomTintRenderer">
+            <summary>
+            Custom cloud renderer that only uses tint to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:CS_CustomVerticalColorRenderer">
+            <summary>
+            Custom cloud renderer that uses vertical colors to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:CS_CustomVerticalColorWithShadingGroupRenderer">
+            <summary>
+            Custom cloud renderer that uses vertical colors and shading groups to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CustomCloudRenderer`3">
+            <summary>
+            Abstract definition for a custom cloud renderer.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when an editor only operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CustomCloudRenderer`3.m_UVLookupTable">
+            <summary>
+            The UV lookup table.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CustomCloudRenderer`3.m_CloudToCameraSpaceMatrix">
+            <summary>
+            The cloud to camera space matrix.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CustomCloudRenderer`3.m_ParticleToCameraSpaceMatrix">
+            <summary>
+            The particle to camera space matrix.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CustomCloudRenderer`3.m_Mesh">
+            <summary>
+            The mesh.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CustomCloudRenderer`3.m_Vertices">
+            <summary>
+            The vertices.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CustomCloudRenderer`3.m_UVs">
+            <summary>
+            The UVs.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CustomCloudRenderer`3.m_VertexColors">
+            <summary>
+            The vertex colors.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CustomCloudRenderer`3.m_Triangles">
+            <summary>
+            The triangles.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CustomCloudRenderer`3.InitializeRendererComponents">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CustomCloudRenderer`3.DestroyRendererComponents">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CustomCloudRenderer`3.HideAuxiliaryComponents">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CustomCloudRenderer`3.DestroyResources">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CustomCloudRenderer`3.InitializeWithParticleData(Edelweiss.CloudSystem.ParticleDataBase)">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CustomCloudRenderer`3.RecalculateTiling">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CustomCloudRenderer`3.ChangedMaterial">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CustomCloudRenderer`3.UpdateParticlesIfNeeded(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CustomCloudRenderer`3.BoundingBoxUpdated">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CustomCloudRenderer`3.UpdateMesh(System.Object)">
+            <summary>
+            Updates the mesh.
+            </summary>
+            <param name="a_State">
+            The required data.
+            </param>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CustomRendererArguments">
+            <summary>
+            Arguments for a thread of the multithreaded custom renderer.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CustomRendererArguments.#ctor(System.Int32,System.Int32,System.Threading.AutoResetEvent)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Edelweiss.CloudSystem.CustomRendererArguments" /> class.
+            </summary>
+            <param name="a_LeftIndex">
+            A left index.
+            </param>
+            <param name="a_RightIndex">
+            A right index.
+            </param>
+            <param name="a_AutoResetEvent">
+            A auto reset event.
+            </param>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CustomRendererArguments.leftIndex">
+            <summary>
+            Lower particle index.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CustomRendererArguments.rightIndex">
+            <summary>
+            Upper particle index.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CustomRendererArguments.autoResetEvent">
+            <summary>
+            The auto reset event.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CustomShadingGroupRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_CustomShadingGroupRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomShadingGroupRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomShadingGroupRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomShadingGroupRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomShadingGroupRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomShadingGroupRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CustomShadingGroupRenderer`3.UpdateMesh(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CustomTintRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_CustomTintRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomTintRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomTintRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomTintRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomTintRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomTintRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CustomTintRenderer`3.UpdateMesh(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CustomVerticalColorRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_CustomVerticalColorRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomVerticalColorRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomVerticalColorRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomVerticalColorRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomVerticalColorRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomVerticalColorRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CustomVerticalColorRenderer`3.UpdateMesh(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CustomVerticalColorWithShadingGroupRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_CustomVerticalColorWithShadingGroupRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomVerticalColorWithShadingGroupRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomVerticalColorWithShadingGroupRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomVerticalColorWithShadingGroupRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomVerticalColorWithShadingGroupRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.CustomVerticalColorWithShadingGroupRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.CustomVerticalColorWithShadingGroupRenderer`3.UpdateMesh(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CloudRendererEnum">
+            <summary>
+            Cloud renderer enum.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererEnum.Custom">
+            <summary>
+            Constant custom.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererEnum.SimpleCustom">
+            <summary>
+            Constant simple custom.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererEnum.Shuriken">
+            <summary>
+            Constant shuriken.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererEnum.Legacy">
+            <summary>
+            Constant legacy.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CloudRendererTypeEnum">
+            <summary>
+            Cloud renderer type enum.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.CustomTintRenderer">
+            <summary>
+            Constant custom tint renderer.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.CustomVerticalColorRenderer">
+            <summary>
+            Constant custom vertical color renderer.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.CustomShadingGroupRenderer">
+            <summary>
+            Constant custom shading group renderer.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.CustomVerticalColorWithShadingGroupRenderer">
+            <summary>
+            Constant custom vertical color with shading group renderer.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.SimpleCustomTintRenderer">
+            <summary>
+            Constant simple custom tint renderer.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.SimpleCustomVerticalColorRenderer">
+            <summary>
+            Constant simple custom vertical color renderer.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.SimpleCustomShadingGroupRenderer">
+            <summary>
+            Constant simple custom shading group renderer.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.SimpleCustomVerticalColorWithShadingGroupRenderer">
+            <summary>
+            Constant simple custom vertical color with shading group renderer.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.LegacyTintRenderer">
+            <summary>
+            Constant legacy tint renderer.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.LegacyVerticalColorRenderer">
+            <summary>
+            Constant legacy vertical color renderer.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.LegacyShadingGroupRenderer">
+            <summary>
+            Constant legacy shading group renderer.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.LegacyVerticalColorWithShadingGroupRenderer">
+            <summary>
+            Constant legacy vertical color with shading group renderer.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.ShurikenTintRenderer">
+            <summary>
+            Constant shuriken tint renderer.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.ShurikenVerticalColorRenderer">
+            <summary>
+            Constant shuriken vertical color renderer.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.ShurikenShadingGroupRenderer">
+            <summary>
+            Constant shuriken shading group renderer.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRendererTypeEnum.ShurikenVerticalColorWithShadingGroupRenderer">
+            <summary>
+            Constant shuriken vertical color with shading group renderer.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.CloudRenderingMethodEnum">
+            <summary>
+            Cloud rendering method enum.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRenderingMethodEnum.Tint">
+            <summary>
+            Constant tint.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRenderingMethodEnum.VerticalColor">
+            <summary>
+            Constant vertical color.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRenderingMethodEnum.ShadingGroup">
+            <summary>
+            Constant shading group.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.CloudRenderingMethodEnum.VerticalColorWithShadingGroup">
+            <summary>
+            Constant vertical color with shading group.
+            </summary>
+        </member>
+        <member name="T:CS_ShurikenShadingGroupRenderer">
+            <summary>
+            Shuriken cloud renderer that uses shading groups to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:CS_ShurikenTintRenderer">
+            <summary>
+            Shuriken cloud renderer that only uses tint to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:CS_ShurikenVerticalColorRenderer">
+            <summary>
+            Shuriken cloud renderer that uses vertical colors to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:CS_ShurikenVerticalColorWithShadingGroupRenderer">
+            <summary>
+            Shuriken cloud renderer that uses vertical colors and shading groups to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.ShurikenCloudRenderer`3">
+            <summary>
+            Abstract definition for a Shuriken particle system cloud renderer.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when an editor only operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ShurikenCloudRenderer`3.OnEnable">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ShurikenCloudRenderer`3.InitializeRendererComponents">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ShurikenCloudRenderer`3.DestroyRendererComponents">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ShurikenCloudRenderer`3.HideAuxiliaryComponents">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ShurikenCloudRenderer`3.DestroyResources">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ShurikenCloudRenderer`3.InitializeWithParticleData(Edelweiss.CloudSystem.ParticleDataBase)">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ShurikenCloudRenderer`3.RecalculateTiling">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ShurikenCloudRenderer`3.ChangedMaterial">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ShurikenCloudRenderer`3.ConvertParticle(Edelweiss.CloudSystem.CloudParticle)">
+            <summary>
+            Converts the cloud particle into a particle for Unity's Shuriken particle system.
+            </summary>
+            <returns>
+            The shuriken particle.
+            </returns>
+            <param name="a_Particle">
+            A cloud particle.
+            </param>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ShurikenCloudRenderer`3.UpdateParticlesIfNeeded(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.ShurikenShadingGroupRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_ShurikenShadingGroupRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenShadingGroupRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenShadingGroupRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenShadingGroupRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenShadingGroupRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenShadingGroupRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ShurikenShadingGroupRenderer`3.ConvertParticle(Edelweiss.CloudSystem.CloudParticle)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.ShurikenTintRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_ShurikenTintRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenTintRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenTintRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenTintRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenTintRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenTintRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ShurikenTintRenderer`3.ConvertParticle(Edelweiss.CloudSystem.CloudParticle)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.ShurikenVerticalColorRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_ShurikenVerticalColorRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenVerticalColorRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenVerticalColorRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenVerticalColorRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenVerticalColorRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenVerticalColorRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ShurikenVerticalColorRenderer`3.ConvertParticle(Edelweiss.CloudSystem.CloudParticle)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.ShurikenVerticalColorWithShadingGroupRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_ShurikenVerticalColorWithShadingGroupRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenVerticalColorWithShadingGroupRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenVerticalColorWithShadingGroupRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenVerticalColorWithShadingGroupRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenVerticalColorWithShadingGroupRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ShurikenVerticalColorWithShadingGroupRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ShurikenVerticalColorWithShadingGroupRenderer`3.ConvertParticle(Edelweiss.CloudSystem.CloudParticle)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.ColoredCloudParticle">
+            <summary>
+            Colored particles for the Cloud System, used for the fast custom particle system.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.ColoredCloudParticle.particle">
+            <summary>
+            The particle.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.ColoredCloudParticle.color">
+            <summary>
+            The color.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ColoredCloudParticle.InitializeValues">
+            <summary>
+            Initializes the values.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.ColoredCloudParticle.CompareTo(Edelweiss.CloudSystem.ColoredCloudParticle)">
+            <summary>
+            Compares the current object with another object of the same type.
+            </summary>
+            <returns>
+            Less than zero: This object is less than the parameter.
+            Zero: This object is equal to the parameter.
+            Greater than zero: This object is greater than the parameter.
+            </returns>
+            <param name="a_Other">
+            An object to compare with this object.
+            </param>
+        </member>
+        <member name="T:CS_SimpleCustomShadingGroupRenderer">
+            <summary>
+            Simple custom cloud renderer that uses shading groups to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:CS_SimpleCustomTintRenderer">
+            <summary>
+            Simple custom cloud renderer that only uses tint to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:CS_SimpleCustomVerticalColorRenderer">
+            <summary>
+            Simple custom cloud renderer that uses vertical colors to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:CS_SimpleCustomVerticalColorWithShadingGroupRenderer">
+            <summary>
+            Simple custom cloud renderer that uses vertical colors and shading groups to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.SimpleCustomCloudRenderer`3">
+            <summary>
+            Abstract definition for a simple custom cloud renderer.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when an editor only operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.SimpleCustomCloudRenderer`3.InitializeRendererComponents">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.SimpleCustomCloudRenderer`3.DestroyRendererComponents">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.SimpleCustomCloudRenderer`3.HideAuxiliaryComponents">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.SimpleCustomCloudRenderer`3.DestroyResources">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.SimpleCustomCloudRenderer`3.InitializeWithParticleData(Edelweiss.CloudSystem.ParticleDataBase)">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.SimpleCustomCloudRenderer`3.RecalculateTiling">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.SimpleCustomCloudRenderer`3.ChangedMaterial">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.SimpleCustomCloudRenderer`3.UpdateParticlesIfNeeded(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.SimpleCustomCloudRenderer`3.BoundingBoxUpdated">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.SimpleCustomCloudRenderer`3.UpdateParticleColors(System.Object)">
+            <summary>
+            Updates the particle colors.
+            </summary>
+            <param name="a_State">
+            The required data.
+            </param>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.SimpleCustomShadingGroupRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_SimpleCustomShadingGroupRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomShadingGroupRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomShadingGroupRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomShadingGroupRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomShadingGroupRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomShadingGroupRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.SimpleCustomShadingGroupRenderer`3.UpdateParticleColors(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.SimpleCustomTintRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_SimpleCustomTintRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomTintRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomTintRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomTintRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomTintRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomTintRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.SimpleCustomTintRenderer`3.UpdateParticleColors(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.SimpleCustomVerticalColorRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_SimpleCustomVerticalColorRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomVerticalColorRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomVerticalColorRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomVerticalColorRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomVerticalColorRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomVerticalColorRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.SimpleCustomVerticalColorRenderer`3.UpdateParticleColors(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.SimpleCustomVerticalColorWithShadingGroupRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_SimpleCustomVerticalColorWithShadingGroupRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomVerticalColorWithShadingGroupRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomVerticalColorWithShadingGroupRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomVerticalColorWithShadingGroupRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomVerticalColorWithShadingGroupRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.SimpleCustomVerticalColorWithShadingGroupRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.SimpleCustomVerticalColorWithShadingGroupRenderer`3.UpdateParticleColors(System.Object)">
+            <inheritdoc />
+        </member>
+        <member name="T:CS_UnityParticleSystemShadingGroupRenderer">
+            <summary>
+            Unity particle system cloud renderer that uses shading groups to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:CS_UnityParticleSystemTintRenderer">
+            <summary>
+            Unity particle system cloud renderer that only uses tint to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:CS_UnityParticleSystemVerticalColorRenderer">
+            <summary>
+            Unity particle system cloud renderer that uses vertical colors to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:CS_UnityParticleSystemVerticalColorWithShadingGroupRenderer">
+            <summary>
+            Unity particle system cloud renderer that uses vertical colors and shading groups to calculate the particle colors.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.UnityParticleSystemCloudRenderer`3">
+            <summary>
+            Abstract definition for a unity particle system cloud renderer.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when an editor only operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.UnityParticleSystemCloudRenderer`3.OnEnable">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.UnityParticleSystemCloudRenderer`3.InitializeRendererComponents">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.UnityParticleSystemCloudRenderer`3.DestroyRendererComponents">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.UnityParticleSystemCloudRenderer`3.HideAuxiliaryComponents">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.UnityParticleSystemCloudRenderer`3.DestroyResources">
+            <inheritdoc />
+            <exception cref="T:System.InvalidOperationException">
+            Is thrown when this operation is called while the application is playing.
+            </exception>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.UnityParticleSystemCloudRenderer`3.InitializeWithParticleData(Edelweiss.CloudSystem.ParticleDataBase)">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.UnityParticleSystemCloudRenderer`3.RecalculateTiling">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.UnityParticleSystemCloudRenderer`3.ChangedMaterial">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.UnityParticleSystemCloudRenderer`3.ConvertParticle(Edelweiss.CloudSystem.CloudParticle)">
+            <summary>
+            Converts the cloud particle into a Unity particle for the legacy particle system.
+            </summary>
+            <returns>
+            The legacy particle.
+            </returns>
+            <param name="a_Particle">
+            A cloud particle.
+            </param>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.UnityParticleSystemCloudRenderer`3.UpdateParticlesIfNeeded(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.UnityParticleSystemShadingGroupRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_UnityParticleSystemShadingGroupRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemShadingGroupRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemShadingGroupRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemShadingGroupRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemShadingGroupRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemShadingGroupRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.UnityParticleSystemShadingGroupRenderer`3.ConvertParticle(Edelweiss.CloudSystem.CloudParticle)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.UnityParticleSystemTintRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_UnityParticleSystemTintRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemTintRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemTintRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemTintRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemTintRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemTintRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.UnityParticleSystemTintRenderer`3.ConvertParticle(Edelweiss.CloudSystem.CloudParticle)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.UnityParticleSystemVerticalColorRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_UnityParticleSystemVerticalColorRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemVerticalColorRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemVerticalColorRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemVerticalColorRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemVerticalColorRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemVerticalColorRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.UnityParticleSystemVerticalColorRenderer`3.ConvertParticle(Edelweiss.CloudSystem.CloudParticle)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.UnityParticleSystemVerticalColorWithShadingGroupRenderer`3">
+            <summary>
+            Generic base class of <see cref="T:CS_UnityParticleSystemVerticalColorWithShadingGroupRenderer" />.
+            This class was created to preserve the compatibility with clouds created before the Cloud System dll's were used.
+            </summary>
+            <typeparam name="C">
+            The cloud's type.
+            </typeparam>
+            <typeparam name="PD">
+            The particle data's type.
+            </typeparam>
+            <typeparam name="CD">
+            The creator data's type.
+            </typeparam>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemVerticalColorWithShadingGroupRenderer`3.IsSupportedInCloudSystemFree">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemVerticalColorWithShadingGroupRenderer`3.SupportsNonSquaredParticles">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemVerticalColorWithShadingGroupRenderer`3.SupportsVerticalColors">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemVerticalColorWithShadingGroupRenderer`3.SupportsShadingGroups">
+            <inheritdoc />
+        </member>
+        <member name="P:Edelweiss.CloudSystem.UnityParticleSystemVerticalColorWithShadingGroupRenderer`3.SupportsTint">
+            <inheritdoc />
+        </member>
+        <member name="M:Edelweiss.CloudSystem.UnityParticleSystemVerticalColorWithShadingGroupRenderer`3.ConvertParticle(Edelweiss.CloudSystem.CloudParticle)">
+            <inheritdoc />
+        </member>
+        <member name="T:Edelweiss.CloudSystem.ExceptionSupport">
+            <summary>
+            Exception support.
+            </summary>
+        </member>
+        <member name="F:Edelweiss.CloudSystem.ExceptionSupport.c_EditorOnlyExceptionText">
+            <summary>
+            Editor only exception text.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.AvailableThreads">
+            <summary>
+            Needed to make number of available threads lockable among the different threads.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.QuickSort`1">
+            <summary>
+            Threaded and sequential quick sort.
+            </summary>
+            <typeparam name="T">
+            The comparable type which's instances are going to be sorted.
+            </typeparam>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.QuickSort`1.ThreadedSort(T[])">
+            <summary>
+            Threaded quick sort.
+            </summary>
+            <param name="a_Array">
+            A_ array.
+            </param>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.QuickSort`1.PrepareThreading">
+            <summary>
+            All objects that are needed for multithreading are reused to make the life of the
+            garbage collector easier.
+            </summary>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.QuickSort`1.ThreadedSort(System.Object)">
+            <summary>
+            Threaded quick sort for a certain range.
+            </summary>
+            <param name="a_State">
+            This has to be a <see cref="T:Edelweiss.CloudSystem.QuickSortThreadArguments`1" /> instance with valid members. <see cref="T:System.Object" /></param>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.QuickSort`1.Sort(T[])">
+            <summary>
+            Sequential quick sort.
+            </summary>
+            <param name="a_Array">
+            Array to be sorted. It is not allowed to be null.
+            </param>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.QuickSort`1.SequentialSort(T[],System.Int32,System.Int32)">
+            <summary>
+            Sequential quick sort for a certain range.
+            </summary>
+            <param name="a_Array">
+            Array to be sorted. It is not allowed to be null. <see cref="T:`0[]" /></param>
+            <param name="a_LeftIndex">
+            Smallest index of the range that is sorted. It has to be a valid index of the array. <see cref="T:System.Int32" /></param>
+            <param name="a_RightIndex">
+            Greatest index of the range that is sorted. It has to be a valid index of the array. <see cref="T:System.Int32" /></param>
+        </member>
+        <member name="M:Edelweiss.CloudSystem.QuickSort`1.SwapElements(T[],System.Int32,System.Int32)">
+            <summary>
+            Swap two elements of the array.
+            </summary>
+            <param name="a_Array">
+            Array in which the elements are swapped. It is not allowed to be null. <see cref="T:`0[]" /></param>
+            <param name="a_Index1">
+            First index of an element that is swapped. It has to be a valid index of the array. <see cref="T:System.Int32" /></param>
+            <param name="a_Index2">
+            Second index of an element that is swapped. It has to be a valid index of the array. <see cref="T:System.Int32" /></param>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.QuickSortThreadArguments`1">
+            <summary>
+            Arguments need to be bundled for the threading.
+            </summary>
+        </member>
+        <member name="T:Edelweiss.CloudSystem.ThreadingManager">
+            <summary>
+            High level threading control.
+            </summary>
+            <exception cref="T:System.ArgumentException">
+            Is thrown when an invalid number of processors should be used.
+            </exception>
+        </member>
+        <member name="P:Edelweiss.CloudSystem.ThreadingManager.ProcessorUseCount">
+            <summary>
+            Gets or sets the processor use count.
+            </summary>
+            <value>
+            The processor use count.
+            </value>
+            <exception cref="T:System.ArgumentException">
+            Is thrown when the passed value is smaller than zero.
+            </exception>
+        </member>
+    </members>
+</doc>

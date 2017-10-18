@@ -11,9 +11,11 @@ public class ThirdPersonCamera : MonoBehaviour {
     public float distance = 10;
     public Vector2 offsetFar = new Vector2(0, 2),
                    offsetClose = new Vector2(2, 0);
+    public float defaultPitch = 15;
 
     [Header("Movement")]
     public Bool3 invertAxis;
+    public bool followBehind;
     public Vector2 maxRotationSpeed = new Vector2(15, 15);
     public Vector2 minRotationSpeed = new Vector2(10, 10);
     public Vector2 mouseSpeedLimit = new Vector2(10, 10);
@@ -53,7 +55,7 @@ public class ThirdPersonCamera : MonoBehaviour {
     float yaw, pitch;
     float maxDistance, currentDistance, idealDistance;
 	float deltaTime;
-    float targetYaw;
+    float targetYaw, targetPitch;
     bool resetting;
 
     #region MonoBehaviour
@@ -83,7 +85,10 @@ public class ThirdPersonCamera : MonoBehaviour {
 
         input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
         input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
-        
+
+        if (input.magnitude != 0)
+            resetting = false;
+
         deltaTime = Time.deltaTime;
         DoRotation();
 
@@ -180,9 +185,18 @@ public class ThirdPersonCamera : MonoBehaviour {
             resetting = true;
         }
 
+        if (followBehind) {
+            targetYaw = isEclipse ? -target.parent.eulerAngles.x : target.parent.eulerAngles.y;
+            float targetPitch = (my.position - target.position).x; // CHANGE WHEN ECLIPSE
+            yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / resetDamp);
+            //pitch = Mathf.LerpAngle(pitch, targetPitch , deltaTime / resetDamp);
+
+        }
+
         if (resetting) {
             yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / resetDamp);
-            if (Mathf.Abs(yaw - targetYaw) < .1f/* temp buffer */)
+            pitch = Mathf.LerpAngle(pitch, defaultPitch, deltaTime / resetDamp);
+            if (Mathf.Abs(yaw - targetYaw) < .1f && Mathf.Abs(pitch - defaultPitch) < .1f/* temp buffer */)
                 resetting = false;
         }
 
