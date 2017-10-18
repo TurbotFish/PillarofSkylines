@@ -190,7 +190,6 @@ public class ThirdPersonCamera : MonoBehaviour {
             float targetPitch = (my.position - target.position).x; // CHANGE WHEN ECLIPSE
             yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / resetDamp);
             //pitch = Mathf.LerpAngle(pitch, targetPitch , deltaTime / resetDamp);
-
         }
 
         if (resetting) {
@@ -222,8 +221,7 @@ public class ThirdPersonCamera : MonoBehaviour {
 		RaycastHit hit;
 		blockedByAWall = Physics.SphereCast(startPos, rayRadius, rayEnd - startPos, out hit, idealDistance, blockingLayer);
         Debug.DrawLine(startPos, rayEnd, Color.yellow);
-
-
+        
 		if (blockedByAWall && hit.distance > 0) { // If we hit something, hitDistance cannot be 0, nor higher than idealDistance
 			lastHitDistance = Mathf.Min(hit.distance - rayRadius, idealDistance);
 
