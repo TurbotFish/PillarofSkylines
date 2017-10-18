@@ -175,7 +175,7 @@ public class CharacControllerRecu : MonoBehaviour {
 			Vector3 extraVelocity = (velocity - movementVector);
 
 			//Check if this extra velocity isn't too small
-			if (extraVelocity.magnitude > .001f) {
+			if (extraVelocity.magnitude > .001f && collisionNumber < 5) {
 				Vector3 reflection = new Vector3();
 				//if it's the first obstacle met on this frame, project the extra velocity on the plane parallel to this obstacle
 				//if it's not the first, project on the line parallel to both the current obstacle and the previous one

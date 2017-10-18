@@ -289,6 +289,7 @@ public class Player : MonoBehaviour {
 		if (Input.GetButtonDown ("Dash") && dashTimer < 0f && playerMod.CheckAbilityActive(eAbilityType.Dash)) {
 			velocity = Vector3.zero;
 			isDashing = true;
+			playerMod.FlagAbility (eAbilityType.Dash);
 			dashDuration = dashSpeed;
 		}
 
@@ -302,6 +303,7 @@ public class Player : MonoBehaviour {
 			if (dashDuration <= 0) {
 				isDashing = false;
 				dashTimer = dashCooldown;
+				playerMod.UnflagAbility (eAbilityType.Dash);
 			}
 
 		} else {
@@ -422,21 +424,29 @@ public class Player : MonoBehaviour {
 
 			#region glide
 			//Détection et fonctionnement du glide (sauf la rotation qui est dans la region turn player)
+
+			//atterir quand on glide et touche un sol
 			if (controller.collisions.below && isGliding) {
 				isGliding = false;
 				animator.transform.LookAt (transform.position + transform.forward, transform.up);
 			}
 
+			//detecter l'input de glide
 			if (Input.GetButtonDown ("Sprint")) {
-				if (!controller.collisions.below && isGliding) {
+				//si le joueur est en train de glider, arrêter le glide
+				if (isGliding) {
 					isGliding = false;
+					playerMod.UnflagAbility(eAbilityType.Glide);
 					animator.transform.LookAt (transform.position + transform.forward, transform.up);
+				//si le joueur est dans les airs et qu'il tente de glider
 				} else if (!controller.collisions.below && !isGliding && playerMod.CheckAbilityActive(eAbilityType.Glide)) {
+					//appliquer une vitesse minimale si sa chute n'est pas assez rapide
 					if (velocity.y < -glideMinimalInitialSpeed) {
 						currentSpeed = -velocity.y;
 					} else {
 						currentSpeed = glideMinimalInitialSpeed;
 					}
+					playerMod.FlagAbility(eAbilityType.Glide);
 					glideAttitude.z = .5f;
 					isGliding = true;
 				}
@@ -452,6 +462,7 @@ public class Player : MonoBehaviour {
 				if (currentSpeed < glideLimitSpeed) {
 					isGliding = false;
 					glideTimer = timeBetweenGlides;
+					playerMod.UnflagAbility(eAbilityType.Glide);
 					animator.transform.LookAt (transform.position + transform.forward, transform.up);
 					Debug.Log ("YOU4RE 2 SLOW");
 				}
