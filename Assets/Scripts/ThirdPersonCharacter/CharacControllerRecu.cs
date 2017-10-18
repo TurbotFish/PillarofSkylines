@@ -162,9 +162,9 @@ public class CharacControllerRecu : MonoBehaviour {
 		//Send a first capsule cast in the direction of the velocity
 		if (Physics.CapsuleCast (newOrigin - capsuleHeightModifier, newOrigin + capsuleHeightModifier, radius, velocity, out hit, rayLength, collisionMask)) {
 			if (hit.collider.CompareTag("cloud") && velocity.y > 0){
-				Debug.Log ("slt");
 				return velocity;
 			}
+			Debug.Log ("touché : " + hit.collider.name);
 			collisionNumber++;
 
 
