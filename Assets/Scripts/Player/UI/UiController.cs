@@ -11,7 +11,8 @@ namespace Game.Player.UI
         enum eUiState
         {
             HUD,
-            AbilityMenu
+            AbilityMenu,
+            Intro
         }
 
         //###########################################################
@@ -19,9 +20,12 @@ namespace Game.Player.UI
         [SerializeField]
         HudController hudController;
 
+        public HudController Hud { get { return this.hudController; } }
+
         [SerializeField]
         AbilityMenuController abilityMenuController;
 
+        public AbilityMenuController AbilityMenu { get { return this.abilityMenuController; } }
 
         [SerializeField]
         float timeScaleChangeTime = 0.5f;
@@ -89,15 +93,17 @@ namespace Game.Player.UI
 
         IEnumerator ChangeTimeScaleRoutine(float targetValue, float changeTime)
         {
-            float changePerSecond = (targetValue - Time.timeScale) / changeTime;
+            float initialValue = Time.timeScale;
+            float changePerSecond = (targetValue - initialValue) / changeTime;
 
-            while (Time.timeScale > 0)
+            while (Time.timeScale != targetValue)
             {
                 float newTimeScale = Time.timeScale - (Time.deltaTime * changePerSecond);
 
-                if (newTimeScale < 0)
+                if ((initialValue < targetValue) && (newTimeScale > targetValue) ||
+                    (initialValue > targetValue) && (newTimeScale < targetValue))
                 {
-                    newTimeScale = 0;
+                    newTimeScale = targetValue;
                 }
 
                 Time.timeScale = newTimeScale;
