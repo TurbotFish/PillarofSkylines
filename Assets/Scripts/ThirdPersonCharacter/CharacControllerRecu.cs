@@ -37,17 +37,28 @@ public class CharacControllerRecu : MonoBehaviour {
 	/// </summary>
 	[Tooltip("The layer mask used to detect obstacles.")]
 	public LayerMask collisionMask;
+	/// <summary>
+	/// The layer mask used to detect obstacles (doesn't detect clouds).
+	/// </summary>
+	[Tooltip("The layer mask used to detect obstacles (doesn't detect clouds).")]
+	public LayerMask collisionMaskNoCloud;
 	#endregion cast variables
 
 
 	public CollisionInfo collisions;
-
+	public CapsuleCollider favourCollider;
 	Transform myTransform;
+	Player myPlayer;
 
 	/// <summary>
 	/// The number of collisions detected on this frame.
 	/// </summary>
 	int collisionNumber;
+
+	/// <summary>
+	/// The cloud the player is currently on (null if not on a cloud).
+	/// </summary>
+	Cloud currentCloud;
 
 	/// <summary>
 	/// The max walkable slope angle.
@@ -56,13 +67,17 @@ public class CharacControllerRecu : MonoBehaviour {
 	public float maxSlopeAngle = 45f;
 
 	void Start(){
+		favourCollider = GetComponentInChildren<CapsuleCollider> ();
 		myTransform = transform;
+		myPlayer = GetComponent<Player>();
+		favourCollider.center = center;
+		favourCollider.radius = radius;
+		favourCollider.height = height + radius*2;
 	}
 
 
 	public Vector3 Move(Vector3 _velocity){
 
-		//Debug.Log("movement : " + _velocity/Time.deltaTime);
 		Quaternion playerAngle = (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
 
 		//Set the vector between the points of the capsule on this frame.
@@ -90,29 +105,45 @@ public class CharacControllerRecu : MonoBehaviour {
 		_velocity = CollisionDetection (_velocity, myTransform.position + playerAngle * center, new RaycastHit());
 
 		/// Check if calculated movement will end up in a wall, if so cancel movement
-		if (!Physics.CheckCapsule (myTransform.position + playerAngle * center + _velocity - capsuleHeightModifier, myTransform.position + playerAngle * center + _velocity + capsuleHeightModifier, radius, collisionMask)) {
+		if (!Physics.CheckCapsule (myTransform.position + playerAngle * center + _velocity - capsuleHeightModifier, myTransform.position + playerAngle * center + _velocity + capsuleHeightModifier, radius, collisionMaskNoCloud)) {
 			myTransform.Translate (_velocity, Space.World);
 			//Debug.Log ("controller : " + _velocity/Time.deltaTime);
 			return (Quaternion.AngleAxis (Vector3.Angle (transform.up, Vector3.up), Vector3.Cross (Vector3.up, transform.up))) * _velocity / Time.deltaTime;
 		} else {
+			Debug.LogWarning ("Oh oh, t'es dans un mur.");
 			return Vector3.zero;
 		}
 	}
 
 
 	void CollisionUpdate(Vector3 velocity){
+		//Debug.Log ("magnitude : " + velocity.magnitude + " w/ skinwidth : " + (velocity.magnitude + skinWidth));
 		RaycastHit hit;
 		Quaternion playerAngle = (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
 		//Send casts to check if there's stuff around the player and sets bools depending on the results
 		if (myTransform.InverseTransformDirection(velocity).y < 0) {
-			collisions.below = Physics.SphereCast (myTransform.position + playerAngle * center - capsuleHeightModifier, radius, -myTransform.up, out hit, velocity.magnitude + skinWidth, collisionMask);
+			collisions.below = Physics.SphereCast (myTransform.position + playerAngle * center - capsuleHeightModifier, radius, -myTransform.up, out hit, skinWidth, collisionMask);
+			Debug.DrawRay(myTransform.position + playerAngle * center - capsuleHeightModifier, -myTransform.up * (skinWidth), Color.magenta);
 			if (collisions.below) {
 				collisions.onSteepSlope = Vector3.Angle (myTransform.up, hit.normal) > maxSlopeAngle;
 				collisions.currentGroundNormal = hit.normal;
+				if (currentCloud == null && hit.collider.CompareTag ("cloud")) {
+					currentCloud = hit.collider.GetComponent<Cloud> ();
+					currentCloud.AddPlayer (myPlayer);
+				} 
+			} else {
+				if (currentCloud != null) {
+					currentCloud.RemovePlayer ();
+					currentCloud = null;
+				}
 			}
 
 		} else {
 			collisions.above = Physics.SphereCast (myTransform.position + playerAngle * center + capsuleHeightModifier, radius * .9f, myTransform.up, out hit, velocity.magnitude + skinWidth, collisionMask);
+			if (collisions.above && hit.collider.CompareTag ("cloud")) {
+				Debug.Log ("slt collision");
+				collisions.above = false;
+			}
 		}
 		collisions.side = Physics.SphereCast (myTransform.position + playerAngle * center, radius, Vector3.ProjectOnPlane(velocity, myTransform.up), out hit, velocity.magnitude + skinWidth, collisionMask);
 	}
@@ -130,6 +161,10 @@ public class CharacControllerRecu : MonoBehaviour {
 
 		//Send a first capsule cast in the direction of the velocity
 		if (Physics.CapsuleCast (newOrigin - capsuleHeightModifier, newOrigin + capsuleHeightModifier, radius, velocity, out hit, rayLength, collisionMask)) {
+			if (hit.collider.CompareTag("cloud") && velocity.y > 0){
+				Debug.Log ("slt");
+				return velocity;
+			}
 			collisionNumber++;
 
 
