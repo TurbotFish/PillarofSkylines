@@ -257,7 +257,7 @@ half4 BRDF1_Alo_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity
 
 	//ALO:use this for cool cel-shading
     //half nl = clamp(step(_ShadowTransition,saturate(dot(normal, light.dir))), _ShadowStrength,1.0);
-#if (defined(FORWARD_BASE_PASS) || defined(DEFERRED_PASS)) && defined(_CELSHADED)
+#if defined(FORWARD_BASE_PASS) && defined(_CELSHADED)
 	
 		#if defined(INITEN)
 		    half temp = step(_ShadowTransition, saturate(dot(normal, light.dir)));
@@ -357,22 +357,16 @@ half4 BRDF1_Alo_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity
 }
 
 
-// Based on Minimalist CookTorrance BRDF
-// Implementation is slightly different from original derivation: http://www.thetenthplanet.de/archives/255
-//
-// * NDF (depending on UNITY_BRDF_GGX):
-//  a) BlinnPhong
-//  b) [Modified] GGX
-// * Modified Kelemen and Szirmay-​Kalos for Visibility term
-// * Fresnel approximated with 1/LdotH
 half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity, half smoothness,
     half3 normal, half3 viewDir,
-    UnityLight light, UnityIndirect gi)
+    UnityLight light, UnityIndirect gi, half thickness)
 {
     half3 halfDir = Unity_SafeNormalize (light.dir + viewDir);
 
-    //half nl = saturate(dot(normal, light.dir));
-    half nl = clamp(step(0.4,saturate(dot(normal, light.dir))), 0.7,1.0);
+    half nl = saturate(dot(normal, light.dir));
+
+
+    //half nl = clamp(step(0.4,saturate(dot(normal, light.dir))), 0.7,1.0);//celshading
     half nh = saturate(dot(normal, halfDir));
     half nv = saturate(dot(normal, viewDir));
     half lh = saturate(dot(light.dir, halfDir));
@@ -442,6 +436,18 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
     half surfaceReduction = (0.6-0.08*perceptualRoughness);
 #endif
 
+	
+	//SSS
+	float3 L = light.dir;
+	float3 VD = viewDir;
+	float3 N = normal;
+
+	float3 H = normalize(L+N*0.8);
+	float VDdotH = pow(saturate(dot(VD,-H)), 1.13) * 3.2;
+	float I = thickness * (VDdotH + 1) * 1;
+
+
+
     surfaceReduction = 1.0 - roughness*perceptualRoughness*surfaceReduction;
 
     half grazingTerm = saturate(smoothness + (1-oneMinusReflectivity));
@@ -449,60 +455,14 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
                     + gi.diffuse * diffColor
                     + surfaceReduction * gi.specular * FresnelLerpFast (specColor, grazingTerm, nv);
 
+
+    //SSS
+    //color += saturate(float3(0.97,0.2,0.2) * light.color) * I;
+    
     return half4(color, 1);
 }
 
-sampler2D unity_NHxRoughness;
-half3 BRDF3_Direct(half3 diffColor, half3 specColor, half rlPow4, half smoothness)
-{
-    half LUT_RANGE = 16.0; // must match range in NHxRoughness() function in GeneratedTextures.cpp
-    // Lookup texture to save instructions
-    half specular = tex2D(unity_NHxRoughness, half2(rlPow4, SmoothnessToPerceptualRoughness(smoothness))).UNITY_ATTEN_CHANNEL * LUT_RANGE;
-#if defined(_SPECULARHIGHLIGHTS_OFF)
-    specular = 0.0;
-#endif
 
-    return diffColor + specular * specColor;
-}
-
-half3 BRDF3_Indirect(half3 diffColor, half3 specColor, UnityIndirect indirect, half grazingTerm, half fresnelTerm)
-{
-    half3 c = indirect.diffuse * diffColor;
-    c += indirect.specular * lerp (specColor, grazingTerm, fresnelTerm);
-    return c;
-}
-
-// Old school, not microfacet based Modified Normalized Blinn-Phong BRDF
-// Implementation uses Lookup texture for performance
-//
-// * Normalized BlinnPhong in RDF form
-// * Implicit Visibility term
-// * No Fresnel term
-//
-// TODO: specular is too weak in Linear rendering mode
-half4 BRDF3_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity, half smoothness,
-    half3 normal, half3 viewDir,
-    UnityLight light, UnityIndirect gi)
-{
-    half3 reflDir = reflect (viewDir, normal);
-
-    //nl = saturate(dot(normal, light.dir));
-    half nl = clamp(step(0.4,saturate(dot(normal, light.dir))), 0.7,1.0);
-    half nv = saturate(dot(normal, viewDir));
-
-    // Vectorize Pow4 to save instructions
-    half2 rlPow4AndFresnelTerm = Pow4 (half2(dot(reflDir, light.dir), 1-nv));  // use R.L instead of N.H to save couple of instructions
-    half rlPow4 = rlPow4AndFresnelTerm.x; // power exponent must match kHorizontalWarpExp in NHxRoughness() function in GeneratedTextures.cpp
-    half fresnelTerm = rlPow4AndFresnelTerm.y;
-
-    half grazingTerm = saturate(smoothness + (1-oneMinusReflectivity));
-
-    half3 color = BRDF3_Direct(diffColor, specColor, rlPow4, smoothness);
-    color *= light.color * nl;
-    color += BRDF3_Indirect(diffColor, specColor, gi, grazingTerm, fresnelTerm);
-
-    return half4(color, 1);
-}
 
 // Include deprecated function
 #define INCLUDE_UNITY_STANDARD_BRDF_DEPRECATED

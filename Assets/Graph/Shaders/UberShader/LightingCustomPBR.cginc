@@ -27,6 +27,16 @@
 
 	float _AlphaCutoff;
 
+	#if defined(_SSS)
+		float _DistortionSSS;
+		float _ScaleSSS;
+		float _PowerSSS;
+		sampler2D _ThicknessMap;
+		float _AttenuationSSS;
+		float _AmbientSSS;
+		float3 _DiffuseSSS;
+	#endif
+
 	//#include "UnityPBSLighting.cginc"
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
@@ -101,6 +111,15 @@
 			albedo = lerp(albedo, albedo * details, GetDetailMask(i));
 		#endif
 		return albedo; 
+	}
+
+	float GetThickness(Interpolators i){
+		#if defined(_SSS)
+			float thickness = tex2D(_ThicknessMap, i.uv).r;
+			return thickness;
+		#else
+			return 0;
+		#endif
 	}
 
 	float GetSmoothness(Interpolators i){
@@ -374,7 +393,7 @@
 				oneMinusReflectivity, GetSmoothness(i),
 				i.normal, viewDir,
 				CreateLight(i), CreateIndirectLight(i, viewDir),
-				i.uv //pass uv to texture shadows cf initen
+				i.uv
 		);
 		color.rgb += GetEmission(i);
 
@@ -389,23 +408,19 @@
 				color.rgb = exp2(-color.rgb);
 			#endif
 			output.gBuffer0.rgb = albedo;
-			output.gBuffer0.a = GetOcclusion(i);
+			output.gBuffer0.a = GetThickness(i);
 			output.gBuffer1.rgb = specularTint;
 			output.gBuffer1.a = GetSmoothness(i);
-			output.gBuffer2 = float4(i.normal * 0.5 + 0.5, 1);
+			output.gBuffer2.rgba = float4(i.normal * 0.5 + 0.5, 1);
+			//output.gBuffer2.a = GetThickness(i);
 			output.gBuffer3 = color;
+
+
 		#else
 			output.color = ApplyFog(color, i);
 		#endif
 
 		return output;
-
-		//return UNITY_BRDF_PBS(
-		//		albedo, specularTint,
-		//		oneMinusReflectivity, _Smoothness,
-		//		i.normal, viewDir,
-		//		CreateLight(i), CreateIndirectLight(i, viewDir)
-		//);
 	}
 
 	#endif
