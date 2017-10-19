@@ -274,23 +274,22 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	Animator animator;
 
-	/// <summary>
-	/// The script to get info about abilities.
-	/// </summary>
-	PlayerModel playerMod;
-
 	[Space(20)]
 	/// <summary>
 	/// The rotator used to turn the player.
 	/// </summary>
 	public Transform rotator;
 
+	/// <summary>
+	/// The script to get info about abilities.
+	/// </summary>
+	public PlayerModel playerMod;
+
 	bool readingInputs = true;
 
 	void Start(){
 		controller = GetComponent<CharacControllerRecu> ();
 		animator = GetComponentInChildren<Animator> ();
-		playerMod = GetComponent<PlayerModel> ();
 		gravity = -(2 * maxJumpHeight) / Mathf.Pow (timeToJumpApex, 2);
 		maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
 		minJumpVelocity = Mathf.Sqrt (2 * Mathf.Abs (gravity) * minJumpHeight);
@@ -461,7 +460,7 @@ public class Player : MonoBehaviour {
 					} else {
 						velocity.y = maxJumpVelocity;
 					}
-				} else if (rmngAerialJumps > 0 && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)) {
+				} else if (rmngAerialJumps > 0/* && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)*/) {
 					lastJumpAerial = true;
 					rmngAerialJumps--;
 					velocity.y = maxAerialJumpVelocity;
