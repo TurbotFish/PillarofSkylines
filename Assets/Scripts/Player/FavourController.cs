@@ -16,12 +16,14 @@ namespace Game.Player
         // Use this for initialization
         void Start()
         {
-
+            
         }
 
         // Update is called once per frame
         void Update()
         {
+
+
             if (this.favourPickUpInRange && Input.GetButton("Sprint"))
             {
                 this.favourPickUpCollider.enabled = false;
@@ -33,11 +35,17 @@ namespace Game.Player
 
         void OnTriggerEnter(Collider other)
         {
-            if (other.gameObject.layer == LayerMask.GetMask("PickUps"))
+            Debug.LogFormat("trigger enter: name={0}, layer={1}, tag={2}, pickUpLayerId={3}", other.name, other.gameObject.layer, other.tag, LayerMask.NameToLayer("PickUps"));
+
+            if (other.gameObject.layer == LayerMask.NameToLayer("PickUps"))
             {
+                Debug.LogFormat("trigger enter check 1");
+
                 switch (other.tag)
                 {
                     case "Favour":
+                        Debug.LogFormat("trigger enter check 2");
+
                         this.favourPickUpInRange = true;
                         this.favourPickUpCollider = other;
 

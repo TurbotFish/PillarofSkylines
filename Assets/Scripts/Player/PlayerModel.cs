@@ -59,10 +59,6 @@ namespace Game.Player
         void Start()
         {
             UnlockAbilityGroup(eAbilityGroup.test);
-
-            ActivateAbility(eAbilityType.Dash);
-            ActivateAbility(eAbilityType.DoubleJump);
-            ActivateAbility(eAbilityType.Glide);
         }
 
         // Update is called once per frame

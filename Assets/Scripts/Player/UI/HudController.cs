@@ -64,6 +64,8 @@ namespace Game.Player.UI
 
         void OnShowHudMessageEventHandler(object sender, Utilities.EventManager.OnShowHudMessageEventArgs args)
         {
+            Debug.LogFormat("showHudMessageEvent: show={0}, message={1}", args.Show.ToString(), args.Message);
+
             if (args.Show)
             {
                 this.messageView.gameObject.SetActive(true);
