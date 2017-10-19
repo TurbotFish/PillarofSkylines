@@ -121,5 +121,31 @@ namespace Game.Utilities
         #endregion ui events
 
         //***********************************************************
+        //***********************************************************
+
+        #region model events
+
+        public class OnFavourAmountChangedEventArgs: EventArgs
+        {
+            public int FavourAmount { get; private set; }
+
+            public OnFavourAmountChangedEventArgs(int favourAmount)
+            {
+                this.FavourAmount = favourAmount;
+            }
+        }
+
+        public delegate void OnFavourAmountChangedEventHandler(object sender, OnFavourAmountChangedEventArgs args);
+
+        public static event OnFavourAmountChangedEventHandler OnFavourAmountChangedEvent;
+
+        public static void SendOnFavourAmountChangedEvent(object sender, OnFavourAmountChangedEventArgs args)
+        {
+            OnFavourAmountChangedEvent?.Invoke(sender, args);
+        }
+
+#endregion model events
+
+        //***********************************************************
     }
 } //end of namespace

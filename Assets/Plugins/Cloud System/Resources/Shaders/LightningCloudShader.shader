@@ -37,8 +37,6 @@ Shader "Cloud/Lightning Cloud" {
 		void vert (inout appdata_full v, out Input o) {
 			o.vertexColor.rgb = v.color.rgb;
 			o.vertexColor.a = v.color.a;
-
-			o.uv_MainTex = 0; //added this so unity would stop pestering me with errors - Alois
 			
 			v.normal = normalize (v.vertex);
 			v.tangent = float4 (0, 0, 0, 0);

@@ -6,6 +6,8 @@ namespace Game.Player.UI
 {
     public class IntroMenuController : MonoBehaviour, IUiState
     {
+        PlayerModel playerModel;
+
         public bool IsActive { get; private set; }
 
         //###########################################################
@@ -27,6 +29,11 @@ namespace Game.Player.UI
         #endregion monobehaviour methods
 
         //###########################################################
+
+        void IUiState.Initialize(PlayerModel playerModel)
+        {
+            this.playerModel = playerModel;
+        }
 
         void IUiState.Activate()
         {
