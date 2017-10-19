@@ -413,7 +413,9 @@ public class Player : MonoBehaviour {
 			if (isGliding)
 				velocity = Vector3.zero;
 			velocity.y += gravity * Time.deltaTime;
-		
+
+			velocity.y = Mathf.Clamp(velocity.y, -200, 200);
+
 			#endregion update velocity
 
 			#region jump controls
