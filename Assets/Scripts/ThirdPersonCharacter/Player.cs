@@ -40,6 +40,11 @@ public class Player : MonoBehaviour {
 	[Tooltip("The value by which the speed is multiplied when the player sprints.")]
 	public float sprintCoeff = 2f;
 	/// <summary>
+	/// The maximum falling speed of the player (and upward falling).
+	/// </summary>
+	[Tooltip("The maximum falling speed of the player (and upward falling).")]
+	public float maxVerticalSpeed = 200f;
+	/// <summary>
 	/// Variable used in the speed smooth damp.
 	/// </summary>
 	float speedSmoothVelocity;
@@ -254,7 +259,6 @@ public class Player : MonoBehaviour {
 	public ParticlesManager windParticles; 
 	public ParticlesManager glideParticles; 
 	public GameObject jumpParticles;
-	public ParticlesManager dashParticles;
 	/// <summary>
 	/// The velocity calculated each frame and sent to the controller.
 	/// </summary>
@@ -322,12 +326,11 @@ public class Player : MonoBehaviour {
 			input = Vector3.zero;
 
 		//Detect dash input and trigger it if it is available
-		if (Input.GetButtonDown ("Dash") && readingInputs && dashTimer < 0f/* && playerMod.CheckAbilityActive(eAbilityType.Dash)*/) {
+		if (Input.GetButtonDown ("Dash") && readingInputs && dashTimer < 0f && playerMod.CheckAbilityActive(eAbilityType.Dash)) {
 			velocity = Vector3.zero;
 			isDashing = true;
 			playerMod.FlagAbility (eAbilityType.Dash);
 			dashDuration = dashSpeed;
-			dashParticles.Play ();
 		}
 
 
@@ -434,7 +437,7 @@ public class Player : MonoBehaviour {
 				velocity = Vector3.zero;
 			velocity.y += gravity * Time.deltaTime;
 
-			velocity.y = Mathf.Clamp(velocity.y, -200, 200);
+			velocity.y = Mathf.Clamp(velocity.y, -maxVerticalSpeed, maxVerticalSpeed);
 
 			#endregion update velocity
 
@@ -462,11 +465,7 @@ public class Player : MonoBehaviour {
 					} else {
 						velocity.y = maxJumpVelocity;
 					}
-<<<<<<< HEAD
-				} else if (rmngAerialJumps > 0/* && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)*/) {
-=======
-				} else if (rmngAerialJumps > 0 /*&& playerMod.CheckAbilityActive(eAbilityType.DoubleJump)*/) {
->>>>>>> origin/Antoine
+				} else if (rmngAerialJumps > 0 && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)) {
 					lastJumpAerial = true;
 					rmngAerialJumps--;
 					velocity.y = maxAerialJumpVelocity;
@@ -508,7 +507,7 @@ public class Player : MonoBehaviour {
 					playerMod.UnflagAbility(eAbilityType.Glide);
 					animator.transform.LookAt (transform.position + transform.forward, transform.up);
 				//si le joueur est dans les airs et qu'il tente de glider
-				} else if (!controller.collisions.below && !isGliding/* && playerMod.CheckAbilityActive(eAbilityType.Glide)*/) {
+				} else if (!controller.collisions.below && !isGliding && playerMod.CheckAbilityActive(eAbilityType.Glide)) {
 					//appliquer une vitesse minimale si sa chute n'est pas assez rapide
 					glideParticles.Play();
 					if (velocity.y < -glideMinimalInitialSpeed) {
