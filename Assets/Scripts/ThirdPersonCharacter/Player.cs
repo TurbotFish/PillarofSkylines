@@ -91,6 +91,12 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	[Tooltip("The time it takes for the player to reach their jump apex.")]
 	public float timeToJumpApex = .4f;
+	[Tooltip("How many seconds after falling can the avatar still jump.")]
+	/// <summary>
+	/// The time during which the avatar can still jump after falling off.
+	/// </summary>
+	public float canStillJumpTime = .12f;
+
 	[Header("Aerial Jumps")]
 	/// <summary>
 	/// The number of jumps the player can do while in the air.
@@ -132,6 +138,8 @@ public class Player : MonoBehaviour {
 	/// States if the last jump is an aerial one or a regular one.
 	/// </summary>
 	bool lastJumpAerial = false;
+
+	float permissiveJumpTime;
 
 	#endregion jump variables
 
@@ -267,26 +275,38 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	Animator animator;
 
-	/// <summary>
-	/// The script to get info about abilities.
-	/// </summary>
-	PlayerModel playerMod;
-
 	[Space(20)]
 	/// <summary>
 	/// The rotator used to turn the player.
 	/// </summary>
 	public Transform rotator;
 
+	/// <summary>
+	/// The script to get info about abilities.
+	/// </summary>
+	public PlayerModel playerMod;
+
+	bool readingInputs = true;
+
 	void Start(){
 		controller = GetComponent<CharacControllerRecu> ();
 		animator = GetComponentInChildren<Animator> ();
-		playerMod = GetComponent<PlayerModel> ();
 		gravity = -(2 * maxJumpHeight) / Mathf.Pow (timeToJumpApex, 2);
 		maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
 		minJumpVelocity = Mathf.Sqrt (2 * Mathf.Abs (gravity) * minJumpHeight);
 		maxAerialJumpVelocity = maxJumpVelocity * coeffAerialJumpEfficiency;
 		minAerialJumpVelocity = minJumpVelocity * coeffAerialJumpEfficiency;
+		permissiveJumpTime = canStillJumpTime;
+
+		Game.Utilities.EventManager.OnMenuOpenedEvent += HandleEventMenuOpened;
+		Game.Utilities.EventManager.OnMenuClosedEvent += HandleEventMenuClosed;
+	}
+
+	void HandleEventMenuOpened (object sender, Game.Utilities.EventManager.OnMenuOpenedEventArgs args){
+		readingInputs = false;
+	}
+	void HandleEventMenuClosed (object sender, Game.Utilities.EventManager.OnMenuClosedEventArgs args){
+		readingInputs = true;
 	}
 
 	void Update(){
@@ -298,8 +318,11 @@ public class Player : MonoBehaviour {
 		//Get the input of the player and translate it into the camera angle
 		Vector3 input = rotator.forward * Input.GetAxisRaw ("Vertical") + rotator.right * Input.GetAxisRaw ("Horizontal");
 
+		if (!readingInputs)
+			input = Vector3.zero;
+
 		//Detect dash input and trigger it if it is available
-		if (Input.GetButtonDown ("Dash") && dashTimer < 0f/* && playerMod.CheckAbilityActive(eAbilityType.Dash)*/) {
+		if (Input.GetButtonDown ("Dash") && readingInputs && dashTimer < 0f/* && playerMod.CheckAbilityActive(eAbilityType.Dash)*/) {
 			velocity = Vector3.zero;
 			isDashing = true;
 			playerMod.FlagAbility (eAbilityType.Dash);
@@ -326,6 +349,8 @@ public class Player : MonoBehaviour {
 			// Updates the gliding attitude of the player depending of the player's input
 			if (isGliding) {
 				Vector3 inputGlide = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, Mathf.Clamp(Input.GetAxisRaw ("Vertical") + glideDrag, -.9f, .9f));
+				if (!readingInputs)
+					inputGlide = Vector3.zero;
 				//                                                                                                                              coming back from left/right       tilting left/right
 				glideAttitude = new Vector3 (Mathf.Lerp (glideAttitude.x, inputGlide.x, (glideAttitude.sqrMagnitude > inputGlide.sqrMagnitude ? glideLRAttitudeRecoverSpeed : glideLRAttitudeTiltingSpeed) * Time.deltaTime)
 				//                                                                                                           coming back from forward           tilting forward
@@ -338,6 +363,8 @@ public class Player : MonoBehaviour {
 
 			if (isSliding) {
 				Vector3 inputSlide = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, controller.collisions.currentGroundNormal), Vector3.Cross(Vector3.up, controller.collisions.currentGroundNormal))) * input;
+				if (!readingInputs)
+					inputSlide = Vector3.zero;
 			}
 
 			//Turn the player in the direction of the input and decelerating when turning back
@@ -386,7 +413,7 @@ public class Player : MonoBehaviour {
 			#region update velocity
 			if (!isGliding && !isSliding) {
 				// Calculate current speed of the player and detects if the player is sprinting
-				float targetSpeed = characSpeed * Mathf.Clamp01 (input.magnitude) * ((Input.GetButton ("Sprint") && controller.collisions.below) ? sprintCoeff : 1);
+				float targetSpeed = characSpeed * Mathf.Clamp01 (input.magnitude) * ((Input.GetButton ("Sprint") && readingInputs && controller.collisions.below) ? sprintCoeff : 1);
 
 
 				//currentSpeed = Mathf.SmoothDamp (currentSpeed, targetSpeed, ref speedSmoothVelocity, (controller.collisions.below ? speedSmoothTimeGround : airSpeedSmoothTime));
@@ -406,7 +433,9 @@ public class Player : MonoBehaviour {
 			if (isGliding)
 				velocity = Vector3.zero;
 			velocity.y += gravity * Time.deltaTime;
-		
+
+			velocity.y = Mathf.Clamp(velocity.y, -200, 200);
+
 			#endregion update velocity
 
 			#region jump controls
@@ -414,11 +443,17 @@ public class Player : MonoBehaviour {
 			//Resets the number of aerial jumps remaining when the player is on the ground
 			if (controller.collisions.below) {
 				rmngAerialJumps = numberOfAerialJumps;
+				permissiveJumpTime = permissiveJumpTime == canStillJumpTime ? permissiveJumpTime : canStillJumpTime;
+			}
+
+			//Timer to control time during which the avatar can still jump after falling off
+			if(!controller.collisions.below && permissiveJumpTime > 0f){
+				permissiveJumpTime = permissiveJumpTime < 0 ? 0 : permissiveJumpTime - Time.deltaTime;
 			}
 
 			//Detects jump input from the player and adds vertical velocity
-			if (Input.GetButtonDown ("Jump")) {
-				if (controller.collisions.below) {
+			if (Input.GetButtonDown ("Jump") && readingInputs) {
+				if (controller.collisions.below || permissiveJumpTime > 0f) {
 					lastJumpAerial = false;
 					controller.jumpedOnThisFrame = true;
 					if (controller.collisions.onSteepSlope) {
@@ -436,7 +471,7 @@ public class Player : MonoBehaviour {
 			}
 
 			//Detects the release of the jump button and sets the vertical velocity to its minimum
-			if (Input.GetButtonUp ("Jump")) {
+			if (Input.GetButtonUp ("Jump") && readingInputs) {
 				if (lastJumpAerial) {
 					if (velocity.y > minAerialJumpVelocity) {
 						velocity.y = minAerialJumpVelocity;
@@ -461,7 +496,7 @@ public class Player : MonoBehaviour {
 			}
 
 			//detecter l'input de glide
-			if (Input.GetButtonDown ("Sprint")) {
+			if (Input.GetButtonDown ("Sprint") && readingInputs) {
 				//si le joueur est en train de glider, arrêter le glide
 				if (isGliding) {
 					glideParticles.Stop();

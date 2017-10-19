@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Game.Player.UI.AbilityMenu;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -41,8 +42,34 @@ namespace Game.Player.UI
 
 
 
+        PlayerModel playerModel;
+
         eUiState currentState = eUiState.HUD;
         Dictionary<eUiState, IUiState> uiStates = new Dictionary<eUiState, IUiState>();
+
+        bool menuButtonDown = false;
+
+        //###########################################################
+
+        public void InitializeUi(PlayerModel playerModel)
+        {
+            this.playerModel = playerModel;
+
+            //
+            this.uiStates.Clear();
+
+            this.uiStates.Add(eUiState.HUD, this.hudController);
+            this.uiStates.Add(eUiState.AbilityMenu, this.abilityMenuController);
+            this.uiStates.Add(eUiState.Intro, this.introMenuController);
+
+            foreach (var uiState in uiStates.Values)
+            {
+                uiState.Initialize(playerModel);
+                uiState.Deactivate();
+            }
+
+            (this.hudController as IUiState).Activate();
+        }
 
         //###########################################################
 
@@ -51,22 +78,12 @@ namespace Game.Player.UI
         // Use this for initialization
         void Start()
         {
-            this.uiStates.Add(eUiState.HUD, this.hudController);
-            this.uiStates.Add(eUiState.AbilityMenu, this.abilityMenuController);
-            this.uiStates.Add(eUiState.Intro, this.introMenuController);
-
-            foreach (var uiState in uiStates.Values)
-            {
-                uiState.Deactivate();
-            }
-
-            StartCoroutine(ShowIntroRoutine());
         }
 
         // Update is called once per frame
         void Update()
         {
-            if (Input.GetButtonDown("MenuButton"))
+            if (Input.GetButton("MenuButton") && !this.menuButtonDown)
             {
                 switch (this.currentState)
                 {
@@ -84,6 +101,12 @@ namespace Game.Player.UI
                     default:
                         throw new NotImplementedException();
                 }
+
+                this.menuButtonDown = true;
+            }
+            if (!Input.GetButton("MenuButton"))
+            {
+                this.menuButtonDown = false;
             }
         }
 

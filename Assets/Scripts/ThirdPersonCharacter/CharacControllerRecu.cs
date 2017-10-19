@@ -84,6 +84,7 @@ public class CharacControllerRecu : MonoBehaviour {
 		favourCollider.center = center;
 		favourCollider.radius = radius;
 		favourCollider.height = height + radius*2;
+
 	}
 
 
@@ -146,9 +147,7 @@ public class CharacControllerRecu : MonoBehaviour {
 		if (collisions.below) {
 			collisions.onSteepSlope = Vector3.Angle (myTransform.up, hit.normal) > maxSlopeAngle;
 			collisions.currentGroundNormal = hit.normal;
-			Debug.Log ("slt je susi sur le sol");
 			if (collisions.onSteepSlope) {
-				Debug.Log ("et même sur une pente");
 			}
 			if (currentCloud == null && hit.collider.CompareTag ("cloud")) {
 				currentCloud = hit.collider.GetComponent<Cloud> ();
