@@ -421,7 +421,7 @@ public class Player : MonoBehaviour {
 					} else {
 						velocity.y = maxJumpVelocity;
 					}
-				} else if (rmngAerialJumps > 0 ) {
+				} else if (rmngAerialJumps > 0 && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)) {
 					lastJumpAerial = true;
 					rmngAerialJumps--;
 					velocity.y = maxAerialJumpVelocity;

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 namespace Game.Player.UI
 {
@@ -11,6 +12,9 @@ namespace Game.Player.UI
 
         public bool IsActive { get; private set; }
 
+        List<HudMessageRequest> hudMessageRequestList = new List<HudMessageRequest>();
+        HudMessageRequest currentHudMessageRequest = null;
+
         //###########################################################
 
         #region monobehaviour methods
@@ -18,7 +22,8 @@ namespace Game.Player.UI
         // Use this for initialization
         void Start()
         {
-
+            this.messageView.gameObject.SetActive(false);
+            Utilities.EventManager.OnShowHudMessageEvent += OnShowHudMessageEventHandler;
         }
 
         // Update is called once per frame
@@ -52,14 +57,63 @@ namespace Game.Player.UI
 
         //###########################################################
 
-        public void ShowMessage(string message)
+        void OnShowHudMessageEventHandler(object sender, Utilities.EventManager.OnShowHudMessageEventArgs args)
         {
-            this.messageView.text = message;
+            if (args.Show)
+            {
+                if (this.currentHudMessageRequest == null)
+                {
+                    this.currentHudMessageRequest = new HudMessageRequest(sender, args);
+
+                    this.messageView.gameObject.SetActive(true);
+                    this.messageView.text = args.Message;
+                }
+                else
+                {
+                    this.hudMessageRequestList.Add(new HudMessageRequest(sender, args));
+                }
+            }
+            else
+            {
+                var requests = from item in this.hudMessageRequestList where item.sender == sender select item;
+
+                foreach (var request in requests)
+                {
+                    this.hudMessageRequestList.Remove(request);
+                }
+
+                if (this.currentHudMessageRequest.sender == sender)
+                {
+                    if (this.hudMessageRequestList.Count > 0)
+                    {
+                        this.currentHudMessageRequest = this.hudMessageRequestList[0];
+                        this.hudMessageRequestList.RemoveAt(0);
+
+                        this.messageView.text = this.currentHudMessageRequest.args.Message;
+                    }
+                    else
+                    {
+                        this.currentHudMessageRequest = null;
+
+                        this.messageView.text = "";
+                        this.messageView.gameObject.SetActive(false);
+                    }
+                }
+            }
         }
 
-        public void HideMessage()
+        //###########################################################
+
+        class HudMessageRequest
         {
-            this.messageView.text = "";
+            public object sender;
+            public Utilities.EventManager.OnShowHudMessageEventArgs args;
+
+            public HudMessageRequest(object sender, Utilities.EventManager.OnShowHudMessageEventArgs args)
+            {
+                this.sender = sender;
+                this.args = args;
+            }
         }
     }
 } //end of namespace
