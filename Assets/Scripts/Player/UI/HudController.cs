@@ -10,6 +10,8 @@ namespace Game.Player.UI
         [SerializeField]
         TMPro.TextMeshProUGUI messageView;
 
+        PlayerModel playerModel;
+
         public bool IsActive { get; private set; }
 
         List<HudMessageRequest> hudMessageRequestList = new List<HudMessageRequest>();
@@ -35,6 +37,11 @@ namespace Game.Player.UI
         #endregion monobehaviour methods
 
         //###########################################################
+
+        void IUiState.Initialize(PlayerModel playerModel)
+        {
+            this.playerModel = playerModel;
+        }
 
         void IUiState.Activate()
         {

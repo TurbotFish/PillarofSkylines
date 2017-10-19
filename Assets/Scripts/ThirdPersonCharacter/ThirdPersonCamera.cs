@@ -171,7 +171,7 @@ public class ThirdPersonCamera : MonoBehaviour {
         rotationSpeed.x = Mathf.Lerp(minRotationSpeed.x, maxRotationSpeed.x, currentDistance / maxDistance);
         rotationSpeed.y = Mathf.Lerp(minRotationSpeed.y, maxRotationSpeed.y, currentDistance / maxDistance);
 
-        print(currentDistance / maxDistance);
+        //print(currentDistance / maxDistance);
 
         float clampedX = Mathf.Clamp(input.x * (idealDistance / currentDistance), -mouseSpeedLimit.x, mouseSpeedLimit.x); // Avoid going too fast (makes weird lerp)
         if (invertAxis.x) clampedX = -clampedX;

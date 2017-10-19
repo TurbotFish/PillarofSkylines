@@ -37,7 +37,7 @@ namespace Game.Player
             {
                 switch (other.tag)
                 {
-                    case "favour":
+                    case "Favour":
                         this.favourPickUpInRange = true;
                         this.favourPickUpCollider = other;
 
