@@ -253,7 +253,7 @@ public class Player : MonoBehaviour {
 	[Header("FX")]
 	public ParticlesManager windParticles; 
 	public ParticlesManager glideParticles; 
-
+	public GameObject jumpParticles;
 	/// <summary>
 	/// The velocity calculated each frame and sent to the controller.
 	/// </summary>
@@ -465,6 +465,7 @@ public class Player : MonoBehaviour {
 					lastJumpAerial = true;
 					rmngAerialJumps--;
 					velocity.y = maxAerialJumpVelocity;
+					Instantiate (jumpParticles, transform.position, Quaternion.identity, transform);
 				}
 			}
 
