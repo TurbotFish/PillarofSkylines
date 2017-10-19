@@ -34,7 +34,16 @@ namespace Game.Player
 
 
         //
-        public int Favours { get; set; }
+        int favours = 0;
+        public int Favours
+        {
+            get { return this.favours; }
+            set
+            {
+                this.favours = value;
+                Utilities.EventManager.SendOnFavourAmountChangedEvent(this, new Utilities.EventManager.OnFavourAmountChangedEventArgs(this.favours));
+            }
+        }
 
         //
         List<eAbilityGroup> unlockedAbilityGroups = new List<eAbilityGroup>();
