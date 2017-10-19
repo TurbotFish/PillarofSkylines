@@ -62,12 +62,12 @@ public class Player : MonoBehaviour {
 	/// The default time it takes for the player to turn towards the player's input.
 	/// </summary>
 	[Tooltip("The default time it takes for the player to turn towards the player's input.")]
-	public float turnSmoothTime_default = .11f;
+	public float turnSmoothTime_default = 10f;
 	/// <summary>
 	/// The time it takes for the player to turn towards the player's input when turning back (make it instant).
 	/// </summary>
 	[Tooltip("The time it takes for the player to turn towards the player's input when turning back (make it instant).")]
-	public float turnSmoothTime_uTurn = .01f;
+	public float turnSmoothTime_uTurn = 60f;
 	/// <summary>
 	/// Is the input at the opposite side of the player's forward vector.
 	/// </summary>
@@ -184,6 +184,11 @@ public class Player : MonoBehaviour {
 	[Tooltip("The maximum turn amount when gliding.")]
 	public float glideMaxTurn = 1f;
 	/// <summary>
+	/// The speed at which the player turns when gliding.
+	/// </summary>
+	[Tooltip("The speed at which the player turns when gliding.")]
+	public float glideTurnSpeed = 10f;
+	/// <summary>
 	/// How much does gliding slow down the speed.
 	/// </summary>
 	[Tooltip("How much does gliding slow down the speed.")]
@@ -241,10 +246,9 @@ public class Player : MonoBehaviour {
 	Vector3 velocity;
 
 	/// <summary>
-	/// The gravi pente.
+	/// The player is sliding.
 	/// </summary>
-	float graviPente;
-	//public float graviPenteCoeff = .2f;
+	bool isSliding;
 
 	/// <summary>
 	/// The controller checking if there's collisions on the way.
@@ -280,28 +284,33 @@ public class Player : MonoBehaviour {
 
 	void Update(){
 
+		isSliding = controller.collisions.onSteepSlope;
+		Vector3 flatVelocity = Vector3.ProjectOnPlane (velocity, transform.up);
 		float angle = Vector3.Angle (Vector3.up, transform.up);
 
 		//Get the input of the player and translate it into the camera angle
 		Vector3 input = rotator.forward * Input.GetAxisRaw ("Vertical") + rotator.right * Input.GetAxisRaw ("Horizontal");
 
 		//Detect dash input and trigger it if it is available
-		if (Input.GetButtonDown ("Dash") && dashTimer < 0f) {
+		if (Input.GetButtonDown ("Dash") && dashTimer < 0f/* && playerMod.CheckAbilityActive(eAbilityType.Dash)*/) {
 			velocity = Vector3.zero;
 			isDashing = true;
+			playerMod.FlagAbility (eAbilityType.Dash);
 			dashDuration = dashSpeed;
 		}
+
 
 
 		if (isDashing) {
 
 			velocity = transform.forward * ((dashRange/dashSpeed)/Time.deltaTime);
-
+			currentSpeed = ((dashRange / dashSpeed) / Time.deltaTime);
 			dashDuration -= Time.deltaTime;
 
 			if (dashDuration <= 0) {
 				isDashing = false;
 				dashTimer = dashCooldown;
+				playerMod.UnflagAbility (eAbilityType.Dash);
 			}
 
 		} else {
@@ -319,16 +328,22 @@ public class Player : MonoBehaviour {
 				glideAttitude = Vector2.zero;
 			}
 
+			if (isSliding) {
+				Debug.Log ("ouais la glissade");
+				Vector3 inputSlide = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, controller.collisions.currentGroundNormal), Vector3.Cross(Vector3.up, controller.collisions.currentGroundNormal))) * input;
+			}
+
 			//Turn the player in the direction of the input and decelerating when turning back
 			#region turning the player 
-			if (input != Vector3.zero && !isGliding && !isDashing) {
+			if (input != Vector3.zero && !isGliding && !isDashing && !isSliding) {
 
+				Debug.Log("je me tourne");
 
 				//If the input is at the opposite side of the player's forward, turn instantly and slow down the player
 				turnSmoothTime = Vector3.Dot (transform.forward, input) < -.75f ? turnSmoothTime_uTurn : turnSmoothTime_default;
 				if (Vector3.Dot (transform.forward, input) < -.75f) {
 					if (!suddenStop) {
-						currentSpeed = -currentSpeed;
+						//currentSpeed = -currentSpeed;
 						speedSmoothTimeGround = groundAccelerationSmoothTime_uTurn;
 						suddenStop = true;
 					} else {
@@ -339,7 +354,8 @@ public class Player : MonoBehaviour {
 					speedSmoothTimeGround = groundAccelerationSmoothTime_default;
 				}
 
-				Vector3 direction = Vector3.SmoothDamp (transform.forward, input, ref turnSmoothVelocity, turnSmoothTime);
+				//Vector3 direction = Vector3.SmoothDamp (transform.forward, input, ref turnSmoothVelocity, turnSmoothTime);
+				Vector3 direction = Vector3.Lerp (transform.forward, input, turnSmoothTime * Time.deltaTime /(flatVelocity.magnitude/4));
 
 				transform.rotation = Quaternion.LookRotation (direction, transform.up);
 
@@ -350,19 +366,25 @@ public class Player : MonoBehaviour {
 
 			//Case when the player is gliding
 			if (isGliding) {
-				Vector3 direction = Vector3.SmoothDamp (transform.forward, glideAttitude.x * glideMaxTurn * transform.right * 0.1f + transform.forward, ref turnSmoothVelocity, turnSmoothTime);
+				//Vector3 direction = Vector3.SmoothDamp (transform.forward, glideAttitude.x * glideMaxTurn * transform.right * 0.1f + transform.forward, ref turnSmoothVelocity, turnSmoothTime);
+				Vector3 direction = Vector3.Lerp (transform.forward, glideAttitude.x * glideMaxTurn * 0.1f * transform.right + transform.forward, glideTurnSpeed * Time.deltaTime);
+				transform.rotation = Quaternion.LookRotation (direction, transform.up);
+			}
+
+			if (isSliding) {
+				Vector3 direction = Vector3.ProjectOnPlane(controller.collisions.currentGroundNormal, transform.up);
 				transform.rotation = Quaternion.LookRotation (direction, transform.up);
 			}
 			#endregion turning the player
 
 			#region update velocity
-
-			if (!isGliding) {
+			if (!isGliding && !isSliding) {
 				// Calculate current speed of the player and detects if the player is sprinting
 				float targetSpeed = characSpeed * Mathf.Clamp01 (input.magnitude) * ((Input.GetButton ("Sprint") && controller.collisions.below) ? sprintCoeff : 1);
 
-			
-				currentSpeed = Mathf.SmoothDamp (currentSpeed, targetSpeed, ref speedSmoothVelocity, (controller.collisions.below ? speedSmoothTimeGround : airSpeedSmoothTime));
+
+				//currentSpeed = Mathf.SmoothDamp (currentSpeed, targetSpeed, ref speedSmoothVelocity, (controller.collisions.below ? speedSmoothTimeGround : airSpeedSmoothTime));
+				currentSpeed = Mathf.Lerp (currentSpeed, targetSpeed, (controller.collisions.below ? speedSmoothTimeGround : airSpeedSmoothTime) * Time.deltaTime);
 
 				//Combine speed and direction to calculate horizontal components of the velocity vector
 				velocity.x = Vector3.ProjectOnPlane (transform.forward, rotator.forward).magnitude * currentSpeed * (Vector3.Dot (transform.forward, rotator.right) > 0 ? 1 : -1);
@@ -392,13 +414,14 @@ public class Player : MonoBehaviour {
 			if (Input.GetButtonDown ("Jump")) {
 				if (controller.collisions.below) {
 					lastJumpAerial = false;
+					controller.jumpedOnThisFrame = true;
 					if (controller.collisions.onSteepSlope) {
 						//MAYBE TODO: change behavior of jump when on a steep slope
 						velocity.y = maxJumpVelocity;
 					} else {
 						velocity.y = maxJumpVelocity;
 					}
-				} else if (rmngAerialJumps > 0 ) {
+				} else if (rmngAerialJumps > 0 && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)) {
 					lastJumpAerial = true;
 					rmngAerialJumps--;
 					velocity.y = maxAerialJumpVelocity;
@@ -422,21 +445,30 @@ public class Player : MonoBehaviour {
 
 			#region glide
 			//Détection et fonctionnement du glide (sauf la rotation qui est dans la region turn player)
+
+			//atterir quand on glide et touche un sol
 			if (controller.collisions.below && isGliding) {
 				isGliding = false;
 				animator.transform.LookAt (transform.position + transform.forward, transform.up);
 			}
 
+			//detecter l'input de glide
 			if (Input.GetButtonDown ("Sprint")) {
-				if (!controller.collisions.below && isGliding) {
+				//si le joueur est en train de glider, arrêter le glide
+				if (isGliding) {
 					isGliding = false;
+					playerMod.UnflagAbility(eAbilityType.Glide);
 					animator.transform.LookAt (transform.position + transform.forward, transform.up);
-				} else if (!controller.collisions.below && !isGliding ) {
+				//si le joueur est dans les airs et qu'il tente de glider
+				} else if (!controller.collisions.below && !isGliding/* && playerMod.CheckAbilityActive(eAbilityType.Glide)*/) {
+					//appliquer une vitesse minimale si sa chute n'est pas assez rapide
+					Debug.Log("c parti le vol");
 					if (velocity.y < -glideMinimalInitialSpeed) {
 						currentSpeed = -velocity.y;
 					} else {
 						currentSpeed = glideMinimalInitialSpeed;
 					}
+					playerMod.FlagAbility(eAbilityType.Glide);
 					glideAttitude.z = .5f;
 					isGliding = true;
 				}
@@ -452,6 +484,7 @@ public class Player : MonoBehaviour {
 				if (currentSpeed < glideLimitSpeed) {
 					isGliding = false;
 					glideTimer = timeBetweenGlides;
+					playerMod.UnflagAbility(eAbilityType.Glide);
 					animator.transform.LookAt (transform.position + transform.forward, transform.up);
 					Debug.Log ("YOU4RE 2 SLOW");
 				}
