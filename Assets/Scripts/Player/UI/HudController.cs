@@ -14,8 +14,6 @@ namespace Game.Player.UI
 
         public bool IsActive { get; private set; }
 
-        List<HudMessageRequest> hudMessageRequestList = new List<HudMessageRequest>();
-        HudMessageRequest currentHudMessageRequest = null;
 
         //###########################################################
 
@@ -68,59 +66,16 @@ namespace Game.Player.UI
         {
             if (args.Show)
             {
-                if (this.currentHudMessageRequest == null)
-                {
-                    this.currentHudMessageRequest = new HudMessageRequest(sender, args);
-
-                    this.messageView.gameObject.SetActive(true);
-                    this.messageView.text = args.Message;
-                }
-                else
-                {
-                    this.hudMessageRequestList.Add(new HudMessageRequest(sender, args));
-                }
+                this.messageView.gameObject.SetActive(true);
+                this.messageView.text = args.Message;
             }
             else
             {
-                var requests = from item in this.hudMessageRequestList where item.sender == sender select item;
-
-                foreach (var request in requests)
-                {
-                    this.hudMessageRequestList.Remove(request);
-                }
-
-                if (this.currentHudMessageRequest.sender == sender)
-                {
-                    if (this.hudMessageRequestList.Count > 0)
-                    {
-                        this.currentHudMessageRequest = this.hudMessageRequestList[0];
-                        this.hudMessageRequestList.RemoveAt(0);
-
-                        this.messageView.text = this.currentHudMessageRequest.args.Message;
-                    }
-                    else
-                    {
-                        this.currentHudMessageRequest = null;
-
-                        this.messageView.text = "";
-                        this.messageView.gameObject.SetActive(false);
-                    }
-                }
+                this.messageView.text = "";
+                this.messageView.gameObject.SetActive(false);
             }
         }
 
         //###########################################################
-
-        class HudMessageRequest
-        {
-            public object sender;
-            public Utilities.EventManager.OnShowHudMessageEventArgs args;
-
-            public HudMessageRequest(object sender, Utilities.EventManager.OnShowHudMessageEventArgs args)
-            {
-                this.sender = sender;
-                this.args = args;
-            }
-        }
     }
 } //end of namespace

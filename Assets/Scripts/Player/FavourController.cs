@@ -22,7 +22,7 @@ namespace Game.Player
         // Update is called once per frame
         void Update()
         {
-            if (this.favourPickUpInRange && Input.GetKeyDown(KeyCode.F))
+            if (this.favourPickUpInRange && Input.GetButton("Sprint"))
             {
                 this.favourPickUpCollider.enabled = false;
                 this.playerModel.Favours++;
@@ -42,7 +42,7 @@ namespace Game.Player
                         this.favourPickUpCollider = other;
 
                         //show UI text
-                        Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [F] to pick up favour!"));
+                        Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [RT] to pick up favour!"));
                         break;
                     default:
                         break;
