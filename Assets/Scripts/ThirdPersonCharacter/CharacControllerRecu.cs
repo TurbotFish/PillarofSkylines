@@ -84,6 +84,7 @@ public class CharacControllerRecu : MonoBehaviour {
 		favourCollider.center = center;
 		favourCollider.radius = radius;
 		favourCollider.height = height + radius*2;
+
 	}
 
 

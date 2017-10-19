@@ -285,6 +285,8 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	public Transform rotator;
 
+	bool readingInputs = true;
+
 	void Start(){
 		controller = GetComponent<CharacControllerRecu> ();
 		animator = GetComponentInChildren<Animator> ();
@@ -295,6 +297,16 @@ public class Player : MonoBehaviour {
 		maxAerialJumpVelocity = maxJumpVelocity * coeffAerialJumpEfficiency;
 		minAerialJumpVelocity = minJumpVelocity * coeffAerialJumpEfficiency;
 		permissiveJumpTime = canStillJumpTime;
+
+		Game.Utilities.EventManager.OnMenuOpenedEvent += HandleEventMenuOpened;
+		Game.Utilities.EventManager.OnMenuClosedEvent += HandleEventMenuClosed;
+	}
+
+	void HandleEventMenuOpened (object sender, Game.Utilities.EventManager.OnMenuOpenedEventArgs args){
+		readingInputs = false;
+	}
+	void HandleEventMenuClosed (object sender, Game.Utilities.EventManager.OnMenuClosedEventArgs args){
+		readingInputs = true;
 	}
 
 	void Update(){
@@ -305,6 +317,9 @@ public class Player : MonoBehaviour {
 
 		//Get the input of the player and translate it into the camera angle
 		Vector3 input = rotator.forward * Input.GetAxisRaw ("Vertical") + rotator.right * Input.GetAxisRaw ("Horizontal");
+
+		if (!readingInputs)
+			input = Vector3.zero;
 
 		//Detect dash input and trigger it if it is available
 		if (Input.GetButtonDown ("Dash") && dashTimer < 0f/* && playerMod.CheckAbilityActive(eAbilityType.Dash)*/) {
@@ -333,6 +348,8 @@ public class Player : MonoBehaviour {
 			// Updates the gliding attitude of the player depending of the player's input
 			if (isGliding) {
 				Vector3 inputGlide = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, Mathf.Clamp(Input.GetAxisRaw ("Vertical") + glideDrag, -.9f, .9f));
+				if (!readingInputs)
+					inputGlide = Vector3.zero;
 				//                                                                                                                              coming back from left/right       tilting left/right
 				glideAttitude = new Vector3 (Mathf.Lerp (glideAttitude.x, inputGlide.x, (glideAttitude.sqrMagnitude > inputGlide.sqrMagnitude ? glideLRAttitudeRecoverSpeed : glideLRAttitudeTiltingSpeed) * Time.deltaTime)
 				//                                                                                                           coming back from forward           tilting forward
@@ -345,6 +362,8 @@ public class Player : MonoBehaviour {
 
 			if (isSliding) {
 				Vector3 inputSlide = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, controller.collisions.currentGroundNormal), Vector3.Cross(Vector3.up, controller.collisions.currentGroundNormal))) * input;
+				if (!readingInputs)
+					inputSlide = Vector3.zero;
 			}
 
 			//Turn the player in the direction of the input and decelerating when turning back
