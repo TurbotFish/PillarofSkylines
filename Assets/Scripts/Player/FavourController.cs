@@ -16,13 +16,15 @@ namespace Game.Player
         // Use this for initialization
         void Start()
         {
-
+            
         }
 
         // Update is called once per frame
         void Update()
         {
-            if (this.favourPickUpInRange && Input.GetKeyDown(KeyCode.F))
+
+
+            if (this.favourPickUpInRange && Input.GetButton("Sprint"))
             {
                 this.favourPickUpCollider.enabled = false;
                 this.playerModel.Favours++;
@@ -33,16 +35,22 @@ namespace Game.Player
 
         void OnTriggerEnter(Collider other)
         {
-            if (other.gameObject.layer == LayerMask.GetMask("PickUps"))
+            Debug.LogFormat("trigger enter: name={0}, layer={1}, tag={2}, pickUpLayerId={3}", other.name, other.gameObject.layer, other.tag, LayerMask.NameToLayer("PickUps"));
+
+            if (other.gameObject.layer == LayerMask.NameToLayer("PickUps"))
             {
+                Debug.LogFormat("trigger enter check 1");
+
                 switch (other.tag)
                 {
                     case "Favour":
+                        Debug.LogFormat("trigger enter check 2");
+
                         this.favourPickUpInRange = true;
                         this.favourPickUpCollider = other;
 
                         //show UI text
-                        Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [F] to pick up favour!"));
+                        Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [RT] to pick up favour!"));
                         break;
                     default:
                         break;

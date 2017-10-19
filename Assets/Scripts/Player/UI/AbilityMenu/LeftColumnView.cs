@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Game.Player.UI.AbilityMenu
@@ -29,24 +30,25 @@ namespace Game.Player.UI.AbilityMenu
 
         }
 
-        public void SetAbilityActive(AbilitySystem.Ability ability)
+        public void SetAbilityActive(AbilitySystem.Ability ability, bool active)
         {
-            foreach (var abilityElement in this.abilityElements)
-            {
-                if (abilityElement.AbilityType == ability.Type)
-                {
-                    abilityElement.SetActivated();
-                }
-            }
+            var abilities = from abilityElement in this.abilityElements where abilityElement.AbilityType == ability.Type select abilityElement;
 
-            this.selectedAbilityView.ShowAbilityInfo(ability);
+            if (active)
+            {
+                abilities.First().SetActivated();
+            }
+            else
+            {
+                abilities.First().SetDeactivated();
+            }
         }
 
-        public void SetAbilitySelected(eAbilityType abilityType)
+        public void SetAbilitySelected(AbilitySystem.Ability ability)
         {
             foreach(var abilityElement in this.abilityElements)
             {
-                if(abilityElement.AbilityType == abilityType)
+                if(abilityElement.AbilityType == ability.Type)
                 {
                     abilityElement.SetSelected(true);
                 }
@@ -55,6 +57,8 @@ namespace Game.Player.UI.AbilityMenu
                     abilityElement.SetSelected(false);
                 }
             }
+
+            this.selectedAbilityView.ShowAbilityInfo(ability);
         }
 
         public void CreateAbilityElement(AbilitySystem.Ability ability, bool unlocked)

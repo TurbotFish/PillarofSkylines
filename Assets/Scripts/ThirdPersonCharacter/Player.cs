@@ -321,7 +321,7 @@ public class Player : MonoBehaviour {
 			input = Vector3.zero;
 
 		//Detect dash input and trigger it if it is available
-		if (Input.GetButtonDown ("Dash") && dashTimer < 0f/* && playerMod.CheckAbilityActive(eAbilityType.Dash)*/) {
+		if (Input.GetButtonDown ("Dash") && readingInputs && dashTimer < 0f/* && playerMod.CheckAbilityActive(eAbilityType.Dash)*/) {
 			velocity = Vector3.zero;
 			isDashing = true;
 			playerMod.FlagAbility (eAbilityType.Dash);
@@ -411,7 +411,7 @@ public class Player : MonoBehaviour {
 			#region update velocity
 			if (!isGliding && !isSliding) {
 				// Calculate current speed of the player and detects if the player is sprinting
-				float targetSpeed = characSpeed * Mathf.Clamp01 (input.magnitude) * ((Input.GetButton ("Sprint") && controller.collisions.below) ? sprintCoeff : 1);
+				float targetSpeed = characSpeed * Mathf.Clamp01 (input.magnitude) * ((Input.GetButton ("Sprint") && readingInputs && controller.collisions.below) ? sprintCoeff : 1);
 
 
 				//currentSpeed = Mathf.SmoothDamp (currentSpeed, targetSpeed, ref speedSmoothVelocity, (controller.collisions.below ? speedSmoothTimeGround : airSpeedSmoothTime));
@@ -450,7 +450,7 @@ public class Player : MonoBehaviour {
 			}
 
 			//Detects jump input from the player and adds vertical velocity
-			if (Input.GetButtonDown ("Jump")) {
+			if (Input.GetButtonDown ("Jump") && readingInputs) {
 				if (controller.collisions.below || permissiveJumpTime > 0f) {
 					lastJumpAerial = false;
 					controller.jumpedOnThisFrame = true;
@@ -469,7 +469,7 @@ public class Player : MonoBehaviour {
 			}
 
 			//Detects the release of the jump button and sets the vertical velocity to its minimum
-			if (Input.GetButtonUp ("Jump")) {
+			if (Input.GetButtonUp ("Jump") && readingInputs) {
 				if (lastJumpAerial) {
 					if (velocity.y > minAerialJumpVelocity) {
 						velocity.y = minAerialJumpVelocity;
@@ -494,7 +494,7 @@ public class Player : MonoBehaviour {
 			}
 
 			//detecter l'input de glide
-			if (Input.GetButtonDown ("Sprint")) {
+			if (Input.GetButtonDown ("Sprint") && readingInputs) {
 				//si le joueur est en train de glider, arrêter le glide
 				if (isGliding) {
 					glideParticles.Stop();
