@@ -146,12 +146,14 @@ public class CharacControllerRecu : MonoBehaviour {
 		if (collisions.below) {
 			collisions.onSteepSlope = Vector3.Angle (myTransform.up, hit.normal) > maxSlopeAngle;
 			collisions.currentGroundNormal = hit.normal;
+			Debug.Log ("slt je susi sur le som");
 			if (currentCloud == null && hit.collider.CompareTag ("cloud")) {
 				currentCloud = hit.collider.GetComponent<Cloud> ();
 				currentCloud.AddPlayer (myPlayer);
-			} 
+			}
 		} else {
 			if (currentCloud != null) {
+				Debug.Log ("byebye nuage");
 				currentCloud.RemovePlayer ();
 				currentCloud = null;
 			}
@@ -176,8 +178,15 @@ public class CharacControllerRecu : MonoBehaviour {
 
 		//Send a first capsule cast in the direction of the velocity
 		if (Physics.CapsuleCast (newOrigin - capsuleHeightModifier, newOrigin + capsuleHeightModifier, radius, velocity, out hit, rayLength, collisionMask)) {
-			if (hit.collider.CompareTag("cloud") && velocity.y > 0){
-				return velocity;
+			//if (Vector3.Angle(hit.normal, velocity) > myPlayer.wallMaxAngle)
+			if (hit.collider.CompareTag("cloud")){
+				if (velocity.y > 0)
+					return velocity;
+
+				if (currentCloud == null) {
+					currentCloud = hit.collider.GetComponent<Cloud> ();
+					currentCloud.AddPlayer (myPlayer);
+				}
 			}
 			collisionNumber++;
 
