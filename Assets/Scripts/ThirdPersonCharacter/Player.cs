@@ -453,6 +453,7 @@ public class Player : MonoBehaviour {
 			//atterir quand on glide et touche un sol
 			if (controller.collisions.below && isGliding) {
 				isGliding = false;
+				glideParticles.Stop();
 				animator.transform.LookAt (transform.position + transform.forward, transform.up);
 			}
 
@@ -564,7 +565,10 @@ public class Player : MonoBehaviour {
 			animator.SetFloat("JumpLeg", jumpLeg);
 		}
 
-	windParticles.SetVelocity(velocity);
+		windParticles.SetVelocity(velocity);
+		glideParticles.SetVelocity(velocity);
+
+
 		#endregion update animator
 	}
  
