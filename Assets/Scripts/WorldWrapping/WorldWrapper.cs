@@ -54,7 +54,8 @@ public class WorldWrapper : MonoBehaviour {
     System.Type[] typesToCopy = {
         typeof(Transform),
         typeof(MeshFilter), typeof(MeshRenderer), typeof(SkinnedMeshRenderer),
-        typeof(ParticleSystem),  typeof(ParticleSystemRenderer)
+        typeof(ParticleSystem), typeof(ParticleSystemRenderer),
+        typeof(Cloud)
     };
     void RemoveUselessComponents(Transform transform) {
         Component[] components = transform.GetComponentsInChildren<Component>();
@@ -62,6 +63,8 @@ public class WorldWrapper : MonoBehaviour {
             Component comp = components[i];
             if (!typesToCopy.Contains(comp.GetType()))
                 DestroyImmediate(comp);
+            else if (comp.GetType().BaseType == typeof(Renderer))
+                comp.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
     }
 

@@ -1,0 +1,102 @@
+Cloud System Release Notes
+
+Version 1.8
+- Unity 4 required.
+-> Several stability improvements could be made.
+- Resolved: Shuriken clouds not displayed.
+- Resolved: Workaround for a Unity crash bug. (Reported by Enno)
+
+Version 1.7.1
+- Resolved: Bounding Box Recalculation does not pass the new bounding box to the mesh renderers (Custom and Simple Custom)!
+- Resolved: UseParticleColors can now be set for cloud references.
+
+Version 1.7
+- Made demos usable on mobiles.
+-> Added (scalable) touchable buttons.
+-> Changed the cloud material from SoftCloudMaterial to CloudMaterial.
+- Each particle has now its own color. So far this is only supported at runtime.
+- Updated demo scenes and added modified versions that look good in the free version as well.
+- Box shapes have now a better 3d look. The backface lines and planes are now more transparent and are painted first.
+- Resolved: Null reference exception if a cloud based on Shuriken was selected when hitting play.
+- Resolved: Cloud System Free compilable for mobiles.
+- Removed hard edges and other glitches from the cloud texture.
+
+Version 1.6.1
+- Resolved: Particle colors of Simple Custom renderers were not updated in all the needed cases.
+- Updated Readme.txt und Getting Started.pdf to take the new folder structure from version 1.6 into account.
+
+Version 1.6
+- Changed default texture size of CloudTexture.png to 256.
+- Moved all core files into Plugins folder, which makes them accessible for all programming languages.
+- Core functionality is now bundled in dll's.
+- Source code can be found in CloudSystemSource.unitypackage.
+- Replaced Debug.LogError calls with exceptions.
+- Moved QuickSort and ThreadingManager into Edelweiss.CloudSystem namespace.
+- Resolved: Null reference exception due to uninitialized serialized object.
+
+Version 1.5.1
+- Resolved: Editor freeze/errors as Shading Colors are added.
+- Resolved: Editor freeze/errors as Vertical Colors are added.
+
+Version 1.5
+- Lightning shaders have now the default cloud shader as fallback.
+- Added mobile lightning cloud shader (Experimental).
+- Slightly optimized all surface shaders.
+- Shuriken is now shown correctly from the very beginning when changing the cloud renderer.
+- Accelerated matrix math by using MultiplyPoint3x4 instead of MultiplyPoint.
+- Editor code refactoring to increase the readablility and maintainability.
+-> Extracted CloudSystemPrefs, CloudSystemIcons and CloudSystemPreviewTextures.
+-> No more unnecessary leaked textures warning.
+
+Version 1.4.1
+- Integrated partial workaround for a Unity bug that freezes the scene view.
+
+Version 1.4
+- Added Shuriken as Cloud Renderer.
+- Renamed Unity Particle System cloud renderers to Legacy in inspector.
+- Added a basic cloud lightning shader and the corresponding material.
+- Added demos.
+- Changing the cloud renderer does not anymore apply it to the prefab.
+- Preview textures in inspector are now drawn with GUI.DrawTextureWithTexCoords.
+- Splitted Renderer selection in Cloud Mode into Renderer and Rendering Method.
+- Improved handling of meshes for Unity 3.5 to avoid leaking warnings.
+- Removed conditional compilation sections for older Unity versions.
+- Fixed bug: Particles in custom particle system were not always sorted.
+- Updated documentation.
+
+Version 1.3
+- Major refactoring for the updating of the clouds in the editor.
+- Shape moving now supports local space.
+- Renamed CS_Cloud.Transform to CS_Cloud.CachedTransform.
+- Removed context click functionality.
+- Improved inspector gui layout.
+- Removed "Cast Shadow" as there is no way for semi-transparent objects to do that.
+- Removed Tools from Shape and Particle Mode.
+-> Removed Vertex and Edge Based Editing of cloud shapes.
+-> Face selection in Shape Mode is now the same as resizing colliders in Unity (using the shift key).
+- Made access modifiers as strong as possible.
+- Avoid "Obsolete" warnings in Unity 3.5.
+- Updated and improved documentation.
+
+Version 1.2.1
+- Loading and calculating of the texture previews when a new cloud is selected is not anymore necessary.
+- Texture previews are now always activated.
+- Updated documentation accordingly.
+- QuickSort had a case that prevented an optimal usage of all available threads.
+
+Version 1.2
+- Multithreading for custom renderers.
+- Added namespaces for as many classes as possible to avoid name clashed (reverse compatible).
+- Removed CS_ prefix for as many classes as possible, such that the reverse compatibility is guaranteed.
+
+Version 1.1.1
+- Added warnings if particles should be created but
+-> there is no shape.
+-> most particles for a certain particle type could not be created because they are too big.
+
+Version 1.1
+- Improved backward compatibility.
+-> Code now compiles with Unity 3.3.
+
+Version 1.0
+- Initial release.

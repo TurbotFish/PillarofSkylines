@@ -11,9 +11,11 @@ public class ThirdPersonCamera : MonoBehaviour {
     public float distance = 10;
     public Vector2 offsetFar = new Vector2(0, 2),
                    offsetClose = new Vector2(2, 0);
+    public float defaultPitch = 15;
 
     [Header("Movement")]
     public Bool3 invertAxis;
+    public bool followBehind;
     public Vector2 maxRotationSpeed = new Vector2(15, 15);
     public Vector2 minRotationSpeed = new Vector2(10, 10);
     public Vector2 mouseSpeedLimit = new Vector2(10, 10);
@@ -31,8 +33,9 @@ public class ThirdPersonCamera : MonoBehaviour {
     public float smoothDamp = .1f;
     public float collisionDamp = .1f;
     public float noCollisionDamp = .6f;
+    public float resetDamp = .6f;
 
-	[Header("Panorama Mode")]
+    [Header("Panorama Mode")]
 	public bool enablePanoramaMode = true;
 	public float panoramaDistance = 15;
 	public float timeToTriggerPanorama = 10;
@@ -52,6 +55,8 @@ public class ThirdPersonCamera : MonoBehaviour {
     float yaw, pitch;
     float maxDistance, currentDistance, idealDistance;
 	float deltaTime;
+    float targetYaw, targetPitch;
+    bool resetting;
 
     #region MonoBehaviour
 
@@ -80,7 +85,10 @@ public class ThirdPersonCamera : MonoBehaviour {
 
         input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
         input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
-        
+
+        if (input.magnitude != 0)
+            resetting = false;
+
         deltaTime = Time.deltaTime;
         DoRotation();
 
@@ -117,7 +125,7 @@ public class ThirdPersonCamera : MonoBehaviour {
         }
         // FIN DEBUG
 
-        target.rotation = Quaternion.Euler(isEclipse ? yaw * Vector3.left + 90 * Vector3.forward : (yaw * Vector3.up)  ); // Reoriente the character's rotator
+        target.rotation = Quaternion.Euler(isEclipse ? yaw * Vector3.left + 90 * Vector3.forward : (yaw * Vector3.up) ); // Reoriente the character's rotator
         // change that later
 
 		if (enablePanoramaMode)
@@ -163,6 +171,8 @@ public class ThirdPersonCamera : MonoBehaviour {
         rotationSpeed.x = Mathf.Lerp(minRotationSpeed.x, maxRotationSpeed.x, currentDistance / maxDistance);
         rotationSpeed.y = Mathf.Lerp(minRotationSpeed.y, maxRotationSpeed.y, currentDistance / maxDistance);
 
+        //print(currentDistance / maxDistance);
+
         float clampedX = Mathf.Clamp(input.x * (idealDistance / currentDistance), -mouseSpeedLimit.x, mouseSpeedLimit.x); // Avoid going too fast (makes weird lerp)
         if (invertAxis.x) clampedX = -clampedX;
         yaw += clampedX * rotationSpeed.x * deltaTime;
@@ -171,11 +181,29 @@ public class ThirdPersonCamera : MonoBehaviour {
         if (invertAxis.y) clampedY = -clampedY;
         pitch -= clampedY * rotationSpeed.y * deltaTime;
         pitch = pitchRotationLimit.Clamp(pitch);
-		
-		camRotation = Quaternion.Euler(pitch, yaw, 0);
 
+        if (Input.GetButton("ResetCamera")) {
+            targetYaw = isEclipse ? -target.parent.eulerAngles.x : target.parent.eulerAngles.y;
+            resetting = true;
+        }
 
-        //idealDistance = Mathf.Lerp(1, maxDistance, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch))); // prevents Zoom
+        if (followBehind) {
+            targetYaw = isEclipse ? -target.parent.eulerAngles.x : target.parent.eulerAngles.y;
+            float targetPitch = (my.position - target.position).x; // CHANGE WHEN ECLIPSE
+            yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / resetDamp);
+            //pitch = Mathf.LerpAngle(pitch, targetPitch , deltaTime / resetDamp);
+        }
+
+        if (resetting) {
+            yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / resetDamp);
+            pitch = Mathf.LerpAngle(pitch, defaultPitch, deltaTime / resetDamp);
+            if (Mathf.Abs(yaw - targetYaw) < .1f && Mathf.Abs(pitch - defaultPitch) < .1f/* temp buffer */)
+                resetting = false;
+        }
+
+        camRotation = Quaternion.Euler(pitch, yaw, 0);
+        
+        idealDistance = Mathf.Lerp(1, maxDistance, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch))); // prevents Zoom
         //camera.fieldOfView = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
 
         //Changer la rotation de la caméra pendant l'Éclipse
@@ -195,8 +223,7 @@ public class ThirdPersonCamera : MonoBehaviour {
 		RaycastHit hit;
 		blockedByAWall = Physics.SphereCast(startPos, rayRadius, rayEnd - startPos, out hit, idealDistance, blockingLayer);
         Debug.DrawLine(startPos, rayEnd, Color.yellow);
-
-
+        
 		if (blockedByAWall && hit.distance > 0) { // If we hit something, hitDistance cannot be 0, nor higher than idealDistance
 			lastHitDistance = Mathf.Min(hit.distance - rayRadius, idealDistance);
 
@@ -228,12 +255,5 @@ public class ThirdPersonCamera : MonoBehaviour {
         }
     }
     #endregion
-
-    public static float ClampAngle(float angle, float min, float max) {
-        if (angle < -360F)
-            angle += 360F;
-        if (angle > 360F)
-            angle -= 360F;
-        return Mathf.Clamp(angle, min, max);
-    }
+    
 }
