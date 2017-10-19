@@ -171,6 +171,8 @@ public class ThirdPersonCamera : MonoBehaviour {
         rotationSpeed.x = Mathf.Lerp(minRotationSpeed.x, maxRotationSpeed.x, currentDistance / maxDistance);
         rotationSpeed.y = Mathf.Lerp(minRotationSpeed.y, maxRotationSpeed.y, currentDistance / maxDistance);
 
+        print(currentDistance / maxDistance);
+
         float clampedX = Mathf.Clamp(input.x * (idealDistance / currentDistance), -mouseSpeedLimit.x, mouseSpeedLimit.x); // Avoid going too fast (makes weird lerp)
         if (invertAxis.x) clampedX = -clampedX;
         yaw += clampedX * rotationSpeed.x * deltaTime;
@@ -190,7 +192,6 @@ public class ThirdPersonCamera : MonoBehaviour {
             float targetPitch = (my.position - target.position).x; // CHANGE WHEN ECLIPSE
             yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / resetDamp);
             //pitch = Mathf.LerpAngle(pitch, targetPitch , deltaTime / resetDamp);
-
         }
 
         if (resetting) {
@@ -222,8 +223,7 @@ public class ThirdPersonCamera : MonoBehaviour {
 		RaycastHit hit;
 		blockedByAWall = Physics.SphereCast(startPos, rayRadius, rayEnd - startPos, out hit, idealDistance, blockingLayer);
         Debug.DrawLine(startPos, rayEnd, Color.yellow);
-
-
+        
 		if (blockedByAWall && hit.distance > 0) { // If we hit something, hitDistance cannot be 0, nor higher than idealDistance
 			lastHitDistance = Mathf.Min(hit.distance - rayRadius, idealDistance);
 

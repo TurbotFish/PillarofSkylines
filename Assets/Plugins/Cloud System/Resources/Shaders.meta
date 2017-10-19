@@ -1,7 +1,13 @@
 fileFormatVersion: 2
+<<<<<<< HEAD
+guid: b3d0f804213265949bad9823e6172abf
+folderAsset: yes
+timeCreated: 1508333500
+=======
 guid: 5737934ba63a4944cb7102a7ec0e3272
 folderAsset: yes
 timeCreated: 1508320865
+>>>>>>> grr
 licenseType: Pro
 DefaultImporter:
   userData: 
