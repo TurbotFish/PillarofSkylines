@@ -329,15 +329,12 @@ public class Player : MonoBehaviour {
 			}
 
 			if (isSliding) {
-				Debug.Log ("ouais la glissade");
 				Vector3 inputSlide = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, controller.collisions.currentGroundNormal), Vector3.Cross(Vector3.up, controller.collisions.currentGroundNormal))) * input;
 			}
 
 			//Turn the player in the direction of the input and decelerating when turning back
 			#region turning the player 
 			if (input != Vector3.zero && !isGliding && !isDashing && !isSliding) {
-
-				Debug.Log("je me tourne");
 
 				//If the input is at the opposite side of the player's forward, turn instantly and slow down the player
 				turnSmoothTime = Vector3.Dot (transform.forward, input) < -.75f ? turnSmoothTime_uTurn : turnSmoothTime_default;
@@ -462,7 +459,6 @@ public class Player : MonoBehaviour {
 				//si le joueur est dans les airs et qu'il tente de glider
 				} else if (!controller.collisions.below && !isGliding/* && playerMod.CheckAbilityActive(eAbilityType.Glide)*/) {
 					//appliquer une vitesse minimale si sa chute n'est pas assez rapide
-					Debug.Log("c parti le vol");
 					if (velocity.y < -glideMinimalInitialSpeed) {
 						currentSpeed = -velocity.y;
 					} else {
