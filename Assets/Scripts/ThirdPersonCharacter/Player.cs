@@ -237,9 +237,14 @@ public class Player : MonoBehaviour {
 	public float wallMaxAngle = 20f;
 	float dashTimer = 0f;
 	float dashDuration = 0f;
-	bool isDashing;
+	[HideInInspector]
+	public bool isDashing;
 
 	#endregion dash variables
+
+	[Header("FX")]
+	public ParticlesManager windParticles; 
+	public ParticlesManager glideParticles; 
 
 	/// <summary>
 	/// The velocity calculated each frame and sent to the controller.
@@ -338,20 +343,21 @@ public class Player : MonoBehaviour {
 			if (input != Vector3.zero && !isGliding && !isDashing && !isSliding) {
 
 				//If the input is at the opposite side of the player's forward, turn instantly and slow down the player
-				turnSmoothTime = Vector3.Dot (transform.forward, input) < -.75f ? turnSmoothTime_uTurn : turnSmoothTime_default;
-				if (Vector3.Dot (transform.forward, input) < -.75f) {
-					if (!suddenStop) {
-						//currentSpeed = -currentSpeed;
-						speedSmoothTimeGround = groundAccelerationSmoothTime_uTurn;
-						suddenStop = true;
+				if (controller.collisions.below) {
+					turnSmoothTime = Vector3.Dot (transform.forward, input) < -.75f ? turnSmoothTime_uTurn : turnSmoothTime_default;
+					if (Vector3.Dot (transform.forward, input) < -.75f) {
+						if (!suddenStop) {
+							//currentSpeed = -currentSpeed;
+							speedSmoothTimeGround = groundAccelerationSmoothTime_uTurn;
+							suddenStop = true;
+						} else {
+							speedSmoothTimeGround = Mathf.Clamp (speedSmoothTimeGround - Time.deltaTime, groundAccelerationSmoothTime_default, groundAccelerationSmoothTime_uTurn);
+						}
 					} else {
-						speedSmoothTimeGround = Mathf.Clamp (speedSmoothTimeGround - Time.deltaTime, groundAccelerationSmoothTime_default, groundAccelerationSmoothTime_uTurn);
+						suddenStop = false;
+						speedSmoothTimeGround = groundAccelerationSmoothTime_default;
 					}
-				} else {
-					suddenStop = false;
-					speedSmoothTimeGround = groundAccelerationSmoothTime_default;
 				}
-
 				//Vector3 direction = Vector3.SmoothDamp (transform.forward, input, ref turnSmoothVelocity, turnSmoothTime);
 				Vector3 direction = Vector3.Lerp (transform.forward, input, turnSmoothTime * Time.deltaTime /(flatVelocity.magnitude/4));
 
@@ -454,12 +460,14 @@ public class Player : MonoBehaviour {
 			if (Input.GetButtonDown ("Sprint")) {
 				//si le joueur est en train de glider, arrêter le glide
 				if (isGliding) {
+					glideParticles.Stop();
 					isGliding = false;
 					playerMod.UnflagAbility(eAbilityType.Glide);
 					animator.transform.LookAt (transform.position + transform.forward, transform.up);
 				//si le joueur est dans les airs et qu'il tente de glider
 				} else if (!controller.collisions.below && !isGliding/* && playerMod.CheckAbilityActive(eAbilityType.Glide)*/) {
 					//appliquer une vitesse minimale si sa chute n'est pas assez rapide
+					glideParticles.Play();
 					if (velocity.y < -glideMinimalInitialSpeed) {
 						currentSpeed = -velocity.y;
 					} else {
@@ -479,6 +487,7 @@ public class Player : MonoBehaviour {
 				velocity += Vector3.LerpUnclamped (transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
 				animator.transform.LookAt (transform.position + velocity, transform.up + transform.right * glideAttitude.x);
 				if (currentSpeed < glideLimitSpeed) {
+					glideParticles.Stop();
 					isGliding = false;
 					glideTimer = timeBetweenGlides;
 					playerMod.UnflagAbility(eAbilityType.Glide);
@@ -554,7 +563,15 @@ public class Player : MonoBehaviour {
 		if (controller.collisions.below) {
 			animator.SetFloat("JumpLeg", jumpLeg);
 		}
+
+	windParticles.SetVelocity(velocity);
 		#endregion update animator
 	}
-
+ 
+public void CancelDash(){
+	dashDuration = 0f;
+	isDashing = false;
+	dashTimer = dashCooldown;
+	playerMod.UnflagAbility (eAbilityType.Dash);
+    }
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WindParticles : MonoBehaviour {
+public class ParticlesManager : MonoBehaviour {
 
 	public Vector3 velocity;
 	public float maxVelocity;

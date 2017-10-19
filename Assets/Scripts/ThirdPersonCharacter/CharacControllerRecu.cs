@@ -146,14 +146,16 @@ public class CharacControllerRecu : MonoBehaviour {
 		if (collisions.below) {
 			collisions.onSteepSlope = Vector3.Angle (myTransform.up, hit.normal) > maxSlopeAngle;
 			collisions.currentGroundNormal = hit.normal;
-			Debug.Log ("slt je susi sur le som");
+			Debug.Log ("slt je susi sur le sol");
+			if (collisions.onSteepSlope) {
+				Debug.Log ("et même sur une pente");
+			}
 			if (currentCloud == null && hit.collider.CompareTag ("cloud")) {
 				currentCloud = hit.collider.GetComponent<Cloud> ();
 				currentCloud.AddPlayer (myPlayer);
 			}
 		} else {
 			if (currentCloud != null) {
-				Debug.Log ("byebye nuage");
 				currentCloud.RemovePlayer ();
 				currentCloud = null;
 			}
@@ -178,7 +180,10 @@ public class CharacControllerRecu : MonoBehaviour {
 
 		//Send a first capsule cast in the direction of the velocity
 		if (Physics.CapsuleCast (newOrigin - capsuleHeightModifier, newOrigin + capsuleHeightModifier, radius, velocity, out hit, rayLength, collisionMask)) {
-			//if (Vector3.Angle(hit.normal, velocity) > myPlayer.wallMaxAngle)
+			if (90 - Vector3.Angle (hit.normal, velocity) > myPlayer.wallMaxAngle && myPlayer.isDashing) {
+				myPlayer.isDashing = false;
+			}
+				
 			if (hit.collider.CompareTag("cloud")){
 				if (velocity.y > 0)
 					return velocity;
@@ -219,6 +224,11 @@ public class CharacControllerRecu : MonoBehaviour {
 			//if no obstacle is met, add the reamining velocity to the movement vector
 			movementVector += velocity;
 		}
+
+		if (collisionNumber > 4) {
+			Debug.LogWarning ("whoa that was a lot of collisions there (" + collisionNumber + ").");
+		}
+
 		//return the movement vector calculated
 		return movementVector;
 	}
