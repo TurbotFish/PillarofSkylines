@@ -59,10 +59,6 @@ namespace Game.Player
         void Start()
         {
             UnlockAbilityGroup(eAbilityGroup.test);
-
-            ActivateAbility(eAbilityType.Dash);
-            ActivateAbility(eAbilityType.DoubleJump);
-            ActivateAbility(eAbilityType.Glide);
         }
 
         // Update is called once per frame
@@ -170,9 +166,9 @@ namespace Game.Player
         }
 
         /// <summary>
-        /// This method activates an ability and removes favours equal to its activation price
+        /// This method activates an ability and removes favours equal to its activation price.
+        /// Returns true if the ability is now activated, false otherwise.
         /// </summary>
-        /// <returns>Returns true if the ability is now activated, false otherwise.</returns>
         public bool ActivateAbility(eAbilityType abilityType)
         {
             var ability = this.abilityData.GetAbility(abilityType);
@@ -195,8 +191,8 @@ namespace Game.Player
 
         /// <summary>
         /// This method deactivates an ability and gives the player back the amount of favours it cost to activate it.
+        /// Returns true if the ability is now deactivated, false otherwise.
         /// </summary>
-        /// <returns>Returns true if the ability is now deactivated, false otherwise.</returns>
         public bool DeactivateAbility(eAbilityType abilityType)
         {
             var ability = this.abilityData.GetAbility(abilityType);

@@ -67,6 +67,8 @@ namespace Game.Player.UI
                 uiState.Initialize(playerModel);
                 uiState.Deactivate();
             }
+
+            (this.hudController as IUiState).Activate();
         }
 
         //###########################################################

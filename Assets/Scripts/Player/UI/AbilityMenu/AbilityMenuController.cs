@@ -21,6 +21,7 @@ namespace Game.Player.UI.AbilityMenu
 
         List<eAbilityType> abilityOrder = new List<eAbilityType>();
         int selectedAbilityIndex = 0;
+        eAbilityType selectedAbility { get { return this.abilityOrder[this.selectedAbilityIndex]; } }
 
         float selectionDelayTimer = 0;
         bool activationButtonDown = false;
@@ -43,23 +44,43 @@ namespace Game.Player.UI.AbilityMenu
                 return;
             }
 
+            //###########################################################
+
             float stickValue = Input.GetAxis("Vertical");
 
             if (Input.GetButton("Jump") && !this.activationButtonDown)
             {
+                if(!this.playerModel.CheckAbilityActive(this.selectedAbility) && this.playerModel.ActivateAbility(this.selectedAbility))
+                {
+                    this.leftColumnView.SetAbilityActive(this.playerModel.AbilityData.GetAbility(this.selectedAbility), true);
+                }
+                else if(this.playerModel.CheckAbilityActive(this.selectedAbility) && this.playerModel.DeactivateAbility(this.selectedAbility))
+                {
+                    this.leftColumnView.SetAbilityActive(this.playerModel.AbilityData.GetAbility(this.selectedAbility), false);
+                }
+
                 this.activationButtonDown = true;
-                this.leftColumnView.SetAbilityActive(this.playerModel.AbilityData.GetAbility(this.abilityOrder[this.selectedAbilityIndex]));
             }
             else if (!Input.GetButton("Jump"))
             {
                 this.activationButtonDown = false;
             }
 
+            //###########################################################
+            //###########################################################
+
+            Debug.LogFormat("selectionDelayTimer={0}", selectionDelayTimer);
+
+            if (Mathf.Approximately(stickValue, 0f))
+            {
+                this.selectionDelayTimer = 0f;
+            }
+
             if (this.selectionDelayTimer > 0)
             {
-                this.selectionDelayTimer -= Time.deltaTime;
+                this.selectionDelayTimer -= Time.unscaledDeltaTime;
 
-                if (this.selectionDelayTimer < 0)
+                if (this.selectionDelayTimer <= 0)
                 {
                     this.selectionDelayTimer = 0;
                 }
@@ -75,9 +96,9 @@ namespace Game.Player.UI.AbilityMenu
                         this.selectedAbilityIndex = 0;
                     }
 
-                    this.leftColumnView.SetAbilitySelected(this.abilityOrder[this.selectedAbilityIndex]);
+                    this.leftColumnView.SetAbilitySelected(this.playerModel.AbilityData.GetAbility(this.selectedAbility));
 
-                    this.defaultSelectionDelay += this.defaultSelectionDelay;
+                    this.selectionDelayTimer += this.defaultSelectionDelay;
                 }
                 else if (stickValue > 0.8f)
                 {
@@ -88,11 +109,13 @@ namespace Game.Player.UI.AbilityMenu
                         this.selectedAbilityIndex = this.abilityOrder.Count - 1;
                     }
 
-                    this.leftColumnView.SetAbilitySelected(this.abilityOrder[this.selectedAbilityIndex]);
+                    this.leftColumnView.SetAbilitySelected(this.playerModel.AbilityData.GetAbility(this.selectedAbility));
 
                     this.selectionDelayTimer += this.defaultSelectionDelay;
                 }
             }
+
+            //###########################################################
         }
 
         #endregion monobehaviour methods
@@ -111,7 +134,7 @@ namespace Game.Player.UI.AbilityMenu
                 this.leftColumnView.CreateAbilityElement(ability, playerModel.CheckAbilityGroupUnlocked(ability.Group));
             }
 
-            this.leftColumnView.SetAbilitySelected(this.abilityOrder[this.selectedAbilityIndex]);
+            this.leftColumnView.SetAbilitySelected(this.playerModel.AbilityData.GetAbility(this.selectedAbility));
         }
 
         void IUiState.Activate()
