@@ -254,6 +254,7 @@ public class Player : MonoBehaviour {
 	public ParticlesManager windParticles; 
 	public ParticlesManager glideParticles; 
 	public GameObject jumpParticles;
+	public ParticlesManager dashParticles;
 	/// <summary>
 	/// The velocity calculated each frame and sent to the controller.
 	/// </summary>
@@ -326,6 +327,7 @@ public class Player : MonoBehaviour {
 			isDashing = true;
 			playerMod.FlagAbility (eAbilityType.Dash);
 			dashDuration = dashSpeed;
+			dashParticles.Play ();
 		}
 
 
@@ -460,7 +462,11 @@ public class Player : MonoBehaviour {
 					} else {
 						velocity.y = maxJumpVelocity;
 					}
+<<<<<<< HEAD
 				} else if (rmngAerialJumps > 0/* && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)*/) {
+=======
+				} else if (rmngAerialJumps > 0 /*&& playerMod.CheckAbilityActive(eAbilityType.DoubleJump)*/) {
+>>>>>>> origin/Antoine
 					lastJumpAerial = true;
 					rmngAerialJumps--;
 					velocity.y = maxAerialJumpVelocity;
