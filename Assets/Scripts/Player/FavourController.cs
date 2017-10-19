@@ -10,9 +10,6 @@ namespace Game.Player
         [SerializeField]
         PlayerModel playerModel;
 
-        [SerializeField]
-        UI.HudController hudController;
-
         bool favourPickUpInRange = false;
         Collider favourPickUpCollider;
 
@@ -45,10 +42,7 @@ namespace Game.Player
                         this.favourPickUpCollider = other;
 
                         //show UI text
-                        if (this.hudController != null)
-                        {
-                            this.hudController.ShowMessage("Press [F] to pick up favour!");
-                        }
+                        Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [F] to pick up favour!"));
                         break;
                     default:
                         break;
@@ -77,10 +71,7 @@ namespace Game.Player
             this.favourPickUpCollider = null;
 
             //hide UI text
-            if (this.hudController != null)
-            {
-                this.hudController.HideMessage();
-            }
+            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
         }
     }
 }
