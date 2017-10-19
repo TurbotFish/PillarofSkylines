@@ -45,11 +45,11 @@ public class EchoManager : MonoBehaviour {
 
 	void Update () {
         if (!eclipse && !AI) {
-            if (Input.GetKeyUp(KeyCode.A)) 
+            if (Input.GetButtonUp("Drift")) 
                 Drift();
-            if (Input.GetKeyUp(KeyCode.E)) 
+            if (Input.GetButtonUp("Echo")) 
                 CreateEcho();
-        } else if (Input.GetKeyUp(KeyCode.A)) {
+        } else if (Input.GetButtonUp("Drift")) {
                 StopEclipse();
         }
 	}
