@@ -6,6 +6,7 @@ public class ParticlesManager : MonoBehaviour {
 
 	public Vector3 velocity;
 	public float maxVelocity;
+	public bool autoOnOff;
 	public List<ParticleSystem> particles;
 	public List<Vector3> thresholds;
 
@@ -19,22 +20,25 @@ public class ParticlesManager : MonoBehaviour {
 		float _velmag = velocity.magnitude;
 		float _ratio = _velmag / maxVelocity;
 
-		for (int i = 0; i < thresholds.Count; i++) {
-			if (i < particles.Count) {
+		if (autoOnOff) {
+			for (int i = 0; i < thresholds.Count; i++) {
+				if (i < particles.Count) {
 
-				if (_ratio > thresholds [i].x) {
-					if(!particles[i].isPlaying)
-					{
-						particles [i].Play ();
-						//Debug.Log ("play : " + i);
+					if (_ratio > thresholds [i].x) {
+						if(!particles[i].isPlaying)
+						{
+							particles [i].Play ();
+							//Debug.Log ("play : " + i);
+						}
+
+					} else if (particles[i].isPlaying) {
+						particles [i].Stop ();
+						//Debug.Log ("stop : " + i);
 					}
-		
-				} else if (particles[i].isPlaying) {
-					particles [i].Stop ();
-					//Debug.Log ("stop : " + i);
 				}
 			}
 		}
+
 
 		for (int i = 0; i < thresholds.Count; i++) {
 			if (i < particles.Count) {
