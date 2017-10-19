@@ -4,7 +4,7 @@ public class Heatwave : MonoBehaviour {
 
 	public float growSpeed;
 	public float fadeSpeed;
-    
+	public bool faceCamera = false;
 	Material _mat;
     Transform _my, _camera;
 
@@ -16,8 +16,10 @@ public class Heatwave : MonoBehaviour {
     }
 	
     void LookAtCamera() {
-		_my.LookAt(_camera);
-        _my.Rotate(90, 0, 0);
+		if (faceCamera) {
+			_my.LookAt(_camera);
+			_my.Rotate(90, 0, 0);
+		}
     }
 
 	void Update () {
