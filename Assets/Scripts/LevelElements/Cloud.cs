@@ -34,10 +34,10 @@ public class Cloud : MonoBehaviour {
 	void Update () {
 
 		#region movement
-		transform.position += transform.up * speed * Time.deltaTime;
+		transform.position += Vector3.up * speed * Time.deltaTime;
 		//move the player too if he's on the cloud
 		if (player != null)
-			player.transform.position += transform.up * speed * Time.deltaTime;
+			player.transform.position += Vector3.up * speed * Time.deltaTime;
 
 
 		timerToDestination -= Time.deltaTime;
