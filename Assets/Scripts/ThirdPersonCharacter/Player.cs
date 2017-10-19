@@ -91,6 +91,12 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	[Tooltip("The time it takes for the player to reach their jump apex.")]
 	public float timeToJumpApex = .4f;
+	[Tooltip("How many seconds after falling can the avatar still jump.")]
+	/// <summary>
+	/// The time during which the avatar can still jump after falling off.
+	/// </summary>
+	public float canStillJumpTime = .12f;
+
 	[Header("Aerial Jumps")]
 	/// <summary>
 	/// The number of jumps the player can do while in the air.
@@ -132,6 +138,8 @@ public class Player : MonoBehaviour {
 	/// States if the last jump is an aerial one or a regular one.
 	/// </summary>
 	bool lastJumpAerial = false;
+
+	float permissiveJumpTime;
 
 	#endregion jump variables
 
@@ -286,6 +294,7 @@ public class Player : MonoBehaviour {
 		minJumpVelocity = Mathf.Sqrt (2 * Mathf.Abs (gravity) * minJumpHeight);
 		maxAerialJumpVelocity = maxJumpVelocity * coeffAerialJumpEfficiency;
 		minAerialJumpVelocity = minJumpVelocity * coeffAerialJumpEfficiency;
+		permissiveJumpTime = canStillJumpTime;
 	}
 
 	void Update(){
@@ -412,11 +421,17 @@ public class Player : MonoBehaviour {
 			//Resets the number of aerial jumps remaining when the player is on the ground
 			if (controller.collisions.below) {
 				rmngAerialJumps = numberOfAerialJumps;
+				permissiveJumpTime = permissiveJumpTime == canStillJumpTime ? permissiveJumpTime : canStillJumpTime;
+			}
+
+			//Timer to control time during which the avatar can still jump after falling off
+			if(!controller.collisions.below && permissiveJumpTime > 0f){
+				permissiveJumpTime = permissiveJumpTime < 0 ? 0 : permissiveJumpTime - Time.deltaTime;
 			}
 
 			//Detects jump input from the player and adds vertical velocity
 			if (Input.GetButtonDown ("Jump")) {
-				if (controller.collisions.below) {
+				if (controller.collisions.below || permissiveJumpTime > 0f) {
 					lastJumpAerial = false;
 					controller.jumpedOnThisFrame = true;
 					if (controller.collisions.onSteepSlope) {
