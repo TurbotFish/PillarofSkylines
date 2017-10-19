@@ -234,6 +234,7 @@ public class Player : MonoBehaviour {
 	public float dashSpeed = 1f;
 	public float dashRange = 5f;
 	public float dashCooldown = 1f;
+	public float wallMaxAngle = 20f;
 	float dashTimer = 0f;
 	float dashDuration = 0f;
 	bool isDashing;
