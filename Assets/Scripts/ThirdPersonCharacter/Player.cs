@@ -498,6 +498,7 @@ public class Player : MonoBehaviour {
 			if (controller.collisions.below && isGliding) {
 				isGliding = false;
 				glideParticles.Stop();
+				playerMod.UnflagAbility(eAbilityType.Glide);
 				velocity += Vector3.LerpUnclamped (transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
 				animator.transform.LookAt (transform.position + transform.forward, transform.up);
 			}

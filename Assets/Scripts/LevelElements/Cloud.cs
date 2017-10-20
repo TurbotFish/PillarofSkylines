@@ -34,6 +34,7 @@ public class Cloud : MonoBehaviour {
 		}
 		//assign Cloud_CS to cloud gameObject
 		myCloudCS = transform.GetChild(0).transform.GetComponentInChildren<CS_Cloud> ();
+		Debug.Log(transform.GetChild(0));
 		initialCloudFade = myCloudCS.Fading;
 	}
 

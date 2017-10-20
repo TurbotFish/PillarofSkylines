@@ -54,8 +54,7 @@ public class WorldWrapper : MonoBehaviour {
     System.Type[] typesToCopy = {
         typeof(Transform),
         typeof(MeshFilter), typeof(MeshRenderer), typeof(SkinnedMeshRenderer),
-        typeof(ParticleSystem), typeof(ParticleSystemRenderer),
-        typeof(Cloud)
+        typeof(ParticleSystem), typeof(ParticleSystemRenderer)
     };
     void RemoveUselessComponents(Transform transform) {
         Component[] components = transform.GetComponentsInChildren<Component>();
