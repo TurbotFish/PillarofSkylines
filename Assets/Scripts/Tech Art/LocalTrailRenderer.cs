@@ -1,9 +1,13 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 [RequireComponent(typeof(LineRenderer))]
 public class LocalTrailRenderer : MonoBehaviour {
 
 	public int vertices = 200;
+	public Transform target;
+	Transform _parent;
+	//bool testBool;
 
 	public Material material {
 		get { return line.material; }
@@ -40,6 +44,7 @@ public class LocalTrailRenderer : MonoBehaviour {
 
 	void Awake() {
 		_transform = transform;
+		_parent = transform.parent;
 		line = GetComponent<LineRenderer>();
 		line.positionCount = vertices;
 		positions = new Vector3[vertices];
@@ -48,13 +53,22 @@ public class LocalTrailRenderer : MonoBehaviour {
 		line.useWorldSpace = false;
 	}
 
+
+
 	void LateUpdate () {
-		for (int i = 0; i < vertices - 1; i++)
+
+		_transform.position = target.position;
+		for (int i = 0; i < vertices - 1; i++) {
 			SetPosition(i, positions[i + 1]);
+		}
 		SetPosition(vertices - 1, _transform.localPosition);
+
+
 	}
 
 	void OnDestroy() {
 		Destroy(line);
 	}
+
+
 }
