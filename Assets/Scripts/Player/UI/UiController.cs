@@ -100,7 +100,14 @@ namespace Game.Player.UI
                         SwitchState(eUiState.HUD);
                         break;
                     case eUiState.End:
-                        Application.Quit();
+                        if (Application.isEditor)
+                        {
+                            UnityEditor.EditorApplication.isPlaying = false;
+                        }
+                        else
+                        {
+                            Application.Quit();
+                        }
                         break;
                     default:
                         throw new NotImplementedException();
