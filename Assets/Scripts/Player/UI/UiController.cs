@@ -10,7 +10,8 @@ namespace Game.Player.UI
     {
         HUD,
         AbilityMenu,
-        Intro
+        Intro,
+        End
     }
 
     public class UiController : MonoBehaviour
@@ -33,11 +34,11 @@ namespace Game.Player.UI
 
         public IntroMenuController IntroMenuController { get { return this.introMenuController; } }
 
+        //end menu controller
         [SerializeField]
-        float timeScaleChangeTime = 0.5f;
+        EndMenuController endMenuController;
 
-        [SerializeField]
-        float menuTimescale = 0.1f;
+        public EndMenuController EndMenuController { get { return this.endMenuController; } }
 
 
 
@@ -51,7 +52,7 @@ namespace Game.Player.UI
 
         //###########################################################
 
-        public void InitializeUi(PlayerModel playerModel)
+        public void InitializeUi(PlayerModel playerModel, eUiState startingUiState)
         {
             this.playerModel = playerModel;
 
@@ -61,6 +62,7 @@ namespace Game.Player.UI
             this.uiStates.Add(eUiState.HUD, this.hudController);
             this.uiStates.Add(eUiState.AbilityMenu, this.abilityMenuController);
             this.uiStates.Add(eUiState.Intro, this.introMenuController);
+            this.uiStates.Add(eUiState.End, this.endMenuController);
 
             foreach (var uiState in uiStates.Values)
             {
@@ -68,7 +70,7 @@ namespace Game.Player.UI
                 uiState.Deactivate();
             }
 
-            (this.hudController as IUiState).Activate();
+            SwitchState(startingUiState);
         }
 
         //###########################################################
@@ -78,6 +80,7 @@ namespace Game.Player.UI
         // Use this for initialization
         void Start()
         {
+            Utilities.EventManager.OnShowMenuEvent += OnShowMenuEventHandler;
         }
 
         // Update is called once per frame
@@ -89,14 +92,22 @@ namespace Game.Player.UI
                 {
                     case eUiState.HUD:
                         SwitchState(eUiState.AbilityMenu);
-                        StartCoroutine(ChangeTimeScaleRoutine(this.menuTimescale, this.timeScaleChangeTime));
                         break;
                     case eUiState.AbilityMenu:
                         SwitchState(eUiState.HUD);
-                        StartCoroutine(ChangeTimeScaleRoutine(1, this.timeScaleChangeTime));
                         break;
                     case eUiState.Intro:
                         SwitchState(eUiState.HUD);
+                        break;
+                    case eUiState.End:
+                        if (Application.isEditor)
+                        {
+                            UnityEditor.EditorApplication.isPlaying = false;
+                        }
+                        else
+                        {
+                            Application.Quit();
+                        }
                         break;
                     default:
                         throw new NotImplementedException();
@@ -116,54 +127,23 @@ namespace Game.Player.UI
 
         void SwitchState(eUiState newState)
         {
-            if (this.currentState == newState)
-            {
-                return;
-            }
+            //if (this.currentState == newState)
+            //{
+            //    return;
+            //}
+
+            eUiState previousState = this.currentState;
 
             this.uiStates[this.currentState].Deactivate();
             this.currentState = newState;
             this.uiStates[this.currentState].Activate();
+
+            Utilities.EventManager.SendOnMenuSwitchedEvent(this, new Utilities.EventManager.OnMenuSwitchedEventArgs(newState, previousState));
         }
 
-        IEnumerator ChangeTimeScaleRoutine(float targetValue, float changeTime)
+        private void OnShowMenuEventHandler(object sender, Utilities.EventManager.OnShowMenuEventArgs args)
         {
-            if (targetValue < 0)
-            {
-                targetValue = 0;
-            }
-
-            float initialValue = Time.timeScale;
-            float changePerSecond = (targetValue - initialValue) / changeTime;
-
-            //Debug.LogFormat("ChangeTimeScaleRoutine: initialValue={0}, targetValue={1}, changePerSecond={2}", initialValue, targetValue, changePerSecond);
-
-            while (Time.timeScale != targetValue)
-            {
-                float newTimeScale = Time.timeScale + (Time.deltaTime * changePerSecond);
-
-                if ((initialValue < targetValue) && (newTimeScale > targetValue) ||
-                    (initialValue > targetValue) && (newTimeScale < targetValue))
-                {
-                    newTimeScale = targetValue;
-                }
-                else if (newTimeScale < 0)
-                {
-                    newTimeScale = 0;
-                }
-
-                //Debug.LogFormat("ChangeTimeScaleRoutine: newTimeScale={0}", newTimeScale);
-                Time.timeScale = newTimeScale;
-
-                yield return null;
-            }
-        }
-
-        IEnumerator ShowIntroRoutine()
-        {
-            yield return null;
-
-            SwitchState(eUiState.Intro);
+            SwitchState(args.Menu);
         }
 
         //###########################################################

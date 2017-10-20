@@ -15,6 +15,9 @@ public class Cloud : MonoBehaviour {
 	float timerDowntime;
 	public float ratioBeforeCollider = .8f;
 
+	CS_Cloud myCloudCS;
+	float initialCloudFade;
+
 	Player player;
 	Collider myCollider;
 	Renderer myRenderer;
@@ -29,6 +32,9 @@ public class Cloud : MonoBehaviour {
 		if (!endless) {
 			timerToDestination = timeToDestination;
 		}
+		//assign Cloud_CS to cloud gameObject
+		myCloudCS = transform.GetChild(0).transform.GetComponentInChildren<CS_Cloud> ();
+		initialCloudFade = myCloudCS.Fading;
 	}
 
 	void Update () {
@@ -51,12 +57,14 @@ public class Cloud : MonoBehaviour {
 		#region dissipation cycle
 		if (dissipating) {
 			timerToDissipate -= Time.deltaTime;
-			myRenderer.material.color = new Color (.2f, .2f, .2f, (timerToDissipate / timeToDissipate)+.1f);
+			//myRenderer.material.color = new Color (.2f, .2f, .2f, (timerToDissipate / timeToDissipate)+.1f);
+			myCloudCS.Fading = (timerToDissipate / timeToDissipate) * initialCloudFade;
 			if (timerToDissipate <= (1 - ratioBeforeCollider) * timeToDissipate) {
 				myCollider.enabled = false;
 			}
 			if (timerToDissipate <= 0) {
-				myRenderer.material.color = new Color (.2f, .2f, .2f, .1f);
+				//myRenderer.material.color = new Color (.2f, .2f, .2f, .1f);
+				myCloudCS.Fading = 0;
 				dissipating = false;
 				dissipated = true;
 				timerDowntime = downtime;
@@ -73,9 +81,11 @@ public class Cloud : MonoBehaviour {
 
 		if (reappearing) {
 			timerToDissipate -= Time.deltaTime;
-			myRenderer.material.color = new Color (1f, 1f, 1f, ((1-timerToDissipate)/ timeToDissipate)+.1f);
+			//myRenderer.material.color = new Color (1f, 1f, 1f, ((1-timerToDissipate)/ timeToDissipate)+.1f);
+			myCloudCS.Fading = ((timeToDissipate-timerToDissipate)/ timeToDissipate) * initialCloudFade;
 			if (timerToDissipate <= 0) {
-				myRenderer.material.color = new Color (1f, 1f, 1f, 1f);
+				//myRenderer.material.color = new Color (1f, 1f, 1f, 1f);
+				myCloudCS.Fading = initialCloudFade;
 				reappearing = false;
 				myCollider.enabled = true;
 			}
