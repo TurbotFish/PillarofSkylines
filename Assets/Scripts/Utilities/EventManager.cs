@@ -15,52 +15,28 @@ namespace Game.Utilities
 
         #region menu opened event
 
-        public class OnMenuOpenedEventArgs : EventArgs
+        public class OnMenuSwitchedEventArgs : EventArgs
         {
-            public Player.UI.eUiState Menu { get; private set; }
+            public Player.UI.eUiState NewUiState { get; private set; }
+            public Player.UI.eUiState PreviousUiState { get; private set; }
 
-            public OnMenuOpenedEventArgs(Player.UI.eUiState menu)
+            public OnMenuSwitchedEventArgs(Player.UI.eUiState newUiState, Player.UI.eUiState previousUiState)
             {
-                this.Menu = menu;
+                this.NewUiState = newUiState;
+                this.PreviousUiState = previousUiState;
             }
         }
 
-        public delegate void OnMenuOpenedEventHandler(object sender, OnMenuOpenedEventArgs args);
+        public delegate void OnMenuSwitchedEventHandler(object sender, OnMenuSwitchedEventArgs args);
 
-        public static event OnMenuOpenedEventHandler OnMenuOpenedEvent;
+        public static event OnMenuSwitchedEventHandler OnMenuSwitchedEvent;
 
-        public static void SendOnMenuOpenedEvent(object sender, OnMenuOpenedEventArgs args)
+        public static void SendOnMenuSwitchedEvent(object sender, OnMenuSwitchedEventArgs args)
         {
-            OnMenuOpenedEvent?.Invoke(sender, args);
+            OnMenuSwitchedEvent?.Invoke(sender, args);
         }
 
         #endregion menu opened event
-
-        //###########################################################
-        //###########################################################
-
-        #region menu closed event
-
-        public class OnMenuClosedEventArgs : EventArgs
-        {
-            public Player.UI.eUiState Menu { get; private set; }
-
-            public OnMenuClosedEventArgs(Player.UI.eUiState menu)
-            {
-                this.Menu = menu;
-            }
-        }
-
-        public delegate void OnMenuClosedEventHandler(object sender, OnMenuClosedEventArgs args);
-
-        public static event OnMenuClosedEventHandler OnMenuClosedEvent;
-
-        public static void SendOnMenuClosedEvent(object sender, OnMenuClosedEventArgs args)
-        {
-            OnMenuClosedEvent?.Invoke(sender, args);
-        }
-
-        #endregion menu closed event
 
         //###########################################################
         //###########################################################
@@ -125,7 +101,7 @@ namespace Game.Utilities
 
         #region model events
 
-        public class OnFavourAmountChangedEventArgs: EventArgs
+        public class OnFavourAmountChangedEventArgs : EventArgs
         {
             public int FavourAmount { get; private set; }
 
@@ -144,7 +120,7 @@ namespace Game.Utilities
             OnFavourAmountChangedEvent?.Invoke(sender, args);
         }
 
-#endregion model events
+        #endregion model events
 
         //***********************************************************
     }

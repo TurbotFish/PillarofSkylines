@@ -42,6 +42,8 @@ public class LocalTrailRenderer : MonoBehaviour {
 		line.SetPosition(index, _transform.InverseTransformPoint(_transform.parent.TransformPoint(position)));
 	}
 
+
+
 	void Awake() {
 		_transform = transform;
 		_parent = transform.parent;

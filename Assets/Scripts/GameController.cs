@@ -17,7 +17,8 @@ namespace Game
         void Start()
         {
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
-            SceneManager.LoadSceneAsync("UiScene", LoadSceneMode.Additive);
+
+            StartCoroutine(LoadUiSceneRoutine());
         }
 
         // Update is called once per frame
@@ -26,10 +27,15 @@ namespace Game
 
         }
 
-        private void OnSceneLoadedEventHandler(Scene scene, LoadSceneMode mode)
+        IEnumerator LoadUiSceneRoutine()
         {
-            SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
+            yield return null;
+            
+            SceneManager.LoadSceneAsync("UiScene", LoadSceneMode.Additive);
+        }
 
+        void OnSceneLoadedEventHandler(Scene scene, LoadSceneMode mode)
+        {
             if (scene.name == "UiScene")
             {
                 var list = new List<Player.UI.UiController>();
@@ -40,8 +46,7 @@ namespace Game
                 }
 
                 this.UiController = list[0];
-
-                this.UiController.InitializeUi(this.playerModel);
+                this.UiController.InitializeUi(this.playerModel, Player.UI.eUiState.Intro);
             }
         }
     }
