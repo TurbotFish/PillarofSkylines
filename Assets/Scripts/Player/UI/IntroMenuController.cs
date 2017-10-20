@@ -44,9 +44,6 @@ namespace Game.Player.UI
 
             this.IsActive = true;
             this.gameObject.SetActive(true);
-
-            Utilities.EventManager.SendOnMenuOpenedEvent(this, new Utilities.EventManager.OnMenuOpenedEventArgs(eUiState.Intro));
-            Time.timeScale = 0.1f;
         }
 
         void IUiState.Deactivate()
@@ -55,12 +52,6 @@ namespace Game.Player.UI
 
             this.IsActive = false;
             this.gameObject.SetActive(false);
-
-            if (wasActive)
-            {
-                Utilities.EventManager.SendOnMenuClosedEvent(this, new Utilities.EventManager.OnMenuClosedEventArgs(eUiState.Intro));
-                Time.timeScale = 1;
-            }
         }
 
         //###########################################################

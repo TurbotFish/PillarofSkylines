@@ -298,15 +298,18 @@ public class Player : MonoBehaviour {
 		minAerialJumpVelocity = minJumpVelocity * coeffAerialJumpEfficiency;
 		permissiveJumpTime = canStillJumpTime;
 
-		Game.Utilities.EventManager.OnMenuOpenedEvent += HandleEventMenuOpened;
-		Game.Utilities.EventManager.OnMenuClosedEvent += HandleEventMenuClosed;
+		Game.Utilities.EventManager.OnMenuSwitchedEvent += HandleEventMenuSwitched;
 	}
 
-	void HandleEventMenuOpened (object sender, Game.Utilities.EventManager.OnMenuOpenedEventArgs args){
-		readingInputs = false;
-	}
-	void HandleEventMenuClosed (object sender, Game.Utilities.EventManager.OnMenuClosedEventArgs args){
-		readingInputs = true;
+	void HandleEventMenuSwitched (object sender, Game.Utilities.EventManager.OnMenuSwitchedEventArgs args){
+        if (args.NewUiState == Game.Player.UI.eUiState.HUD)
+        {
+            readingInputs = true;
+        }
+        else
+        {
+            readingInputs = false;
+        }
 	}
 
 	void Update(){
