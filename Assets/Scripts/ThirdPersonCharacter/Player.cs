@@ -376,8 +376,8 @@ public class Player : MonoBehaviour {
 
 				//If the input is at the opposite side of the player's forward, turn instantly and slow down the player
 				if (controller.collisions.below) {
-					turnSmoothTime = Vector3.Dot (transform.forward, input) < -.75f ? turnSmoothTime_uTurn : turnSmoothTime_default;
-					if (Vector3.Dot (transform.forward, input) < -.75f) {
+					turnSmoothTime = (Vector3.Dot (transform.forward, input) < -.75f && currentSpeed <= characSpeed * sprintCoeff) ? turnSmoothTime_uTurn : turnSmoothTime_default;
+					if (Vector3.Dot (transform.forward, input) < -.75f && currentSpeed <= characSpeed * sprintCoeff) {
 						if (!suddenStop) {
 							//currentSpeed = -currentSpeed;
 							speedSmoothTimeGround = groundAccelerationSmoothTime_uTurn;
@@ -447,6 +447,7 @@ public class Player : MonoBehaviour {
 			//Resets the number of aerial jumps remaining when the player is on the ground
 			if (controller.collisions.below) {
 				rmngAerialJumps = numberOfAerialJumps;
+				playerMod.UnflagAbility(eAbilityType.DoubleJump);
 				permissiveJumpTime = permissiveJumpTime == canStillJumpTime ? permissiveJumpTime : canStillJumpTime;
 			}
 
@@ -469,6 +470,7 @@ public class Player : MonoBehaviour {
 				} else if (rmngAerialJumps > 0 /*&& playerMod.CheckAbilityActive(eAbilityType.DoubleJump)*/ && !isGliding) {
 					lastJumpAerial = true;
 					rmngAerialJumps--;
+					playerMod.FlagAbility(eAbilityType.DoubleJump);
 					velocity.y = maxAerialJumpVelocity;
 					Instantiate (jumpParticles, transform.position, Quaternion.identity, transform);
 				}
@@ -496,6 +498,7 @@ public class Player : MonoBehaviour {
 			if (controller.collisions.below && isGliding) {
 				isGliding = false;
 				glideParticles.Stop();
+				velocity += Vector3.LerpUnclamped (transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
 				animator.transform.LookAt (transform.position + transform.forward, transform.up);
 			}
 
@@ -507,7 +510,6 @@ public class Player : MonoBehaviour {
 					isGliding = false;
 					playerMod.UnflagAbility(eAbilityType.Glide);
 					velocity += Vector3.LerpUnclamped (transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
-					Debug.Log("byebye glide " + velocity);
 					animator.transform.LookAt (transform.position + transform.forward, transform.up);
 				//si le joueur est dans les airs et qu'il tente de glider
 				} else if (!controller.collisions.below && !isGliding/* && playerMod.CheckAbilityActive(eAbilityType.Glide)*/) {
@@ -592,7 +594,6 @@ public class Player : MonoBehaviour {
 			#endregion glide
 
 		}
-		Debug.Log ("velocity sent = " + velocity);
 		//Calls the controller to check if the calculated velocity will run into walls and stuff
 	velocity = controller.Move ((Quaternion.AngleAxis(angle, Vector3.Cross(Vector3.up, transform.up))) * velocity * Time.deltaTime);
 
