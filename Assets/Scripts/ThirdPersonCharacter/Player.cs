@@ -325,7 +325,7 @@ public class Player : MonoBehaviour {
 			input = Vector3.zero;
 
 		//Detect dash input and trigger it if it is available
-		if (Input.GetButtonDown ("Dash") && readingInputs && dashTimer < 0f && playerMod.CheckAbilityActive(eAbilityType.Dash)) {
+		if (Input.GetButtonDown ("Dash") && readingInputs && dashTimer < 0f/* && playerMod.CheckAbilityActive(eAbilityType.Dash)*/ && !isGliding) {
 			velocity = Vector3.zero;
 			isDashing = true;
 			playerMod.FlagAbility (eAbilityType.Dash);
@@ -372,12 +372,12 @@ public class Player : MonoBehaviour {
 
 			//Turn the player in the direction of the input and decelerating when turning back
 			#region turning the player 
-			if (input != Vector3.zero && !isGliding && !isDashing && !isSliding/* && controller.collisions.below*/) {
+			if (input != Vector3.zero && !isGliding && !isDashing && !isSliding) {
 
 				//If the input is at the opposite side of the player's forward, turn instantly and slow down the player
 				if (controller.collisions.below) {
-					turnSmoothTime = Vector3.Dot (transform.forward, input) < -.75f ? turnSmoothTime_uTurn : turnSmoothTime_default;
-					if (Vector3.Dot (transform.forward, input) < -.75f) {
+					turnSmoothTime = (Vector3.Dot (transform.forward, input) < -.75f && currentSpeed <= characSpeed * sprintCoeff) ? turnSmoothTime_uTurn : turnSmoothTime_default;
+					if (Vector3.Dot (transform.forward, input) < -.75f && currentSpeed <= characSpeed * sprintCoeff) {
 						if (!suddenStop) {
 							//currentSpeed = -currentSpeed;
 							speedSmoothTimeGround = groundAccelerationSmoothTime_uTurn;
@@ -415,27 +415,22 @@ public class Player : MonoBehaviour {
 
 			#region update velocity
 			if (!isGliding && !isSliding) {
-				//if (controller.collisions.below) {
-					// Calculate current speed of the player and detects if the player is sprinting
-					float targetSpeed = characSpeed * Mathf.Clamp01 (input.magnitude) * ((Input.GetButton ("Sprint") && readingInputs && controller.collisions.below) ? sprintCoeff : 1);
+				// Calculate current speed of the player and detects if the player is sprinting
+				float targetSpeed = characSpeed * Mathf.Clamp01 (input.magnitude) * ((Input.GetButton ("Sprint") && readingInputs && controller.collisions.below) ? sprintCoeff : 1);
 
 
-					//currentSpeed = Mathf.SmoothDamp (currentSpeed, targetSpeed, ref speedSmoothVelocity, (controller.collisions.below ? speedSmoothTimeGround : airSpeedSmoothTime));
-					currentSpeed = Mathf.Lerp (currentSpeed, targetSpeed, (controller.collisions.below ? speedSmoothTimeGround : airSpeedSmoothTime) * Time.deltaTime);
+				//currentSpeed = Mathf.SmoothDamp (currentSpeed, targetSpeed, ref speedSmoothVelocity, (controller.collisions.below ? speedSmoothTimeGround : airSpeedSmoothTime));
+				currentSpeed = Mathf.Lerp (currentSpeed, targetSpeed, (controller.collisions.below ? speedSmoothTimeGround : airSpeedSmoothTime) * Time.deltaTime);
 
-					//Combine speed and direction to calculate horizontal components of the velocity vector
-					velocity.x = Vector3.ProjectOnPlane (transform.forward, rotator.forward).magnitude * currentSpeed * (Vector3.Dot (transform.forward, rotator.right) > 0 ? 1 : -1);
-					velocity.z = Vector3.ProjectOnPlane (transform.forward, rotator.right).magnitude * currentSpeed * (Vector3.Dot (transform.forward, rotator.forward) > 0 ? 1 : -1);
-			
-					//Translate the forward of the camera in a standard plane to rotate the horizontal velocity accordingly
-					Vector3 inputDir = (Quaternion.AngleAxis (-angle, Vector3.Cross (Vector3.up, transform.up))) * rotator.forward;
-					float targetRotation = Vector3.Angle (Vector3.forward, inputDir) * (Vector3.Dot (inputDir, Vector3.right) > 0 ? 1 : -1);
-					velocity = Quaternion.Euler (0, targetRotation, 0) * velocity;
-				/*} else {
-					//Debug.Log("lu");
-					Vector3 targetVelocity = characSpeed * input;
-					velocity = Vector3.Lerp(velocity, targetVelocity, airSpeedSmoothTime * Time.deltaTime);
-				}*/
+				//Combine speed and direction to calculate horizontal components of the velocity vector
+				velocity.x = Vector3.ProjectOnPlane (transform.forward, rotator.forward).magnitude * currentSpeed * (Vector3.Dot (transform.forward, rotator.right) > 0 ? 1 : -1);
+				velocity.z = Vector3.ProjectOnPlane (transform.forward, rotator.right).magnitude * currentSpeed * (Vector3.Dot (transform.forward, rotator.forward) > 0 ? 1 : -1);
+		
+				//Translate the forward of the camera in a standard plane to rotate the horizontal velocity accordingly
+				Vector3 inputDir = (Quaternion.AngleAxis (-angle, Vector3.Cross (Vector3.up, transform.up))) * rotator.forward;
+				float targetRotation = Vector3.Angle (Vector3.forward, inputDir) * (Vector3.Dot (inputDir, Vector3.right) > 0 ? 1 : -1);
+				velocity = Quaternion.Euler (0, targetRotation, 0) * velocity;
+
 			}
 
 			//Adds the gravity to the velocity, in case the player is gliding, reset the gravity to zero (the speed is remembered in the currentSpeed variable)
@@ -452,6 +447,7 @@ public class Player : MonoBehaviour {
 			//Resets the number of aerial jumps remaining when the player is on the ground
 			if (controller.collisions.below) {
 				rmngAerialJumps = numberOfAerialJumps;
+				playerMod.UnflagAbility(eAbilityType.DoubleJump);
 				permissiveJumpTime = permissiveJumpTime == canStillJumpTime ? permissiveJumpTime : canStillJumpTime;
 			}
 
@@ -471,9 +467,10 @@ public class Player : MonoBehaviour {
 					} else {
 						velocity.y = maxJumpVelocity;
 					}
-				} else if (rmngAerialJumps > 0 && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)) {
+				} else if (rmngAerialJumps > 0 /*&& playerMod.CheckAbilityActive(eAbilityType.DoubleJump)*/ && !isGliding) {
 					lastJumpAerial = true;
 					rmngAerialJumps--;
+					playerMod.FlagAbility(eAbilityType.DoubleJump);
 					velocity.y = maxAerialJumpVelocity;
 					Instantiate (jumpParticles, transform.position, Quaternion.identity, transform);
 				}
@@ -501,6 +498,7 @@ public class Player : MonoBehaviour {
 			if (controller.collisions.below && isGliding) {
 				isGliding = false;
 				glideParticles.Stop();
+				velocity += Vector3.LerpUnclamped (transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
 				animator.transform.LookAt (transform.position + transform.forward, transform.up);
 			}
 
@@ -512,14 +510,13 @@ public class Player : MonoBehaviour {
 					isGliding = false;
 					playerMod.UnflagAbility(eAbilityType.Glide);
 					velocity += Vector3.LerpUnclamped (transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
-					Debug.Log("byebye glide " + velocity);
 					animator.transform.LookAt (transform.position + transform.forward, transform.up);
 				//si le joueur est dans les airs et qu'il tente de glider
-				} else if (!controller.collisions.below && !isGliding && playerMod.CheckAbilityActive(eAbilityType.Glide)) {
+				} else if (!controller.collisions.below && !isGliding/* && playerMod.CheckAbilityActive(eAbilityType.Glide)*/) {
 					//appliquer une vitesse minimale si sa chute n'est pas assez rapide
 					glideParticles.Play();
-					if (velocity.y < -glideMinimalInitialSpeed) {
-						currentSpeed = -velocity.y;
+					if (velocity.magnitude < -glideMinimalInitialSpeed) {
+						currentSpeed = velocity.magnitude;
 					} else {
 						currentSpeed = glideMinimalInitialSpeed;
 					}
@@ -597,7 +594,6 @@ public class Player : MonoBehaviour {
 			#endregion glide
 
 		}
-		Debug.Log ("velocity sent = " + velocity);
 		//Calls the controller to check if the calculated velocity will run into walls and stuff
 	velocity = controller.Move ((Quaternion.AngleAxis(angle, Vector3.Cross(Vector3.up, transform.up))) * velocity * Time.deltaTime);
 

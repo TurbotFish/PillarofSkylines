@@ -10,7 +10,8 @@ namespace Game.Player.UI
     {
         HUD,
         AbilityMenu,
-        Intro
+        Intro,
+        End
     }
 
     public class UiController : MonoBehaviour
@@ -32,6 +33,12 @@ namespace Game.Player.UI
         IntroMenuController introMenuController;
 
         public IntroMenuController IntroMenuController { get { return this.introMenuController; } }
+
+        //end menu controller
+        [SerializeField]
+        EndMenuController endMenuController;
+
+        public EndMenuController EndMenuController { get { return this.endMenuController; } }
 
 
 
@@ -55,6 +62,7 @@ namespace Game.Player.UI
             this.uiStates.Add(eUiState.HUD, this.hudController);
             this.uiStates.Add(eUiState.AbilityMenu, this.abilityMenuController);
             this.uiStates.Add(eUiState.Intro, this.introMenuController);
+            this.uiStates.Add(eUiState.End, this.endMenuController);
 
             foreach (var uiState in uiStates.Values)
             {
@@ -72,6 +80,7 @@ namespace Game.Player.UI
         // Use this for initialization
         void Start()
         {
+            Utilities.EventManager.OnShowMenuEvent += OnShowMenuEventHandler;
         }
 
         // Update is called once per frame
@@ -89,6 +98,9 @@ namespace Game.Player.UI
                         break;
                     case eUiState.Intro:
                         SwitchState(eUiState.HUD);
+                        break;
+                    case eUiState.End:
+                        Application.Quit();
                         break;
                     default:
                         throw new NotImplementedException();
@@ -120,6 +132,11 @@ namespace Game.Player.UI
             this.uiStates[this.currentState].Activate();
 
             Utilities.EventManager.SendOnMenuSwitchedEvent(this, new Utilities.EventManager.OnMenuSwitchedEventArgs(newState, previousState));
+        }
+
+        private void OnShowMenuEventHandler(object sender, Utilities.EventManager.OnShowMenuEventArgs args)
+        {
+            SwitchState(args.Menu);
         }
 
         //###########################################################
