@@ -165,6 +165,11 @@ namespace Game.Player
             }
         }
 
+        public List<eAbilityType> GetAllActiveAbilities()
+        {
+            return new List<eAbilityType>(this.activatedAbilities);
+        }
+
         /// <summary>
         /// This method activates an ability and removes favours equal to its activation price.
         /// Returns true if the ability is now activated, false otherwise.

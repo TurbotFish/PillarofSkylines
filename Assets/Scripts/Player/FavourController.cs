@@ -35,16 +35,16 @@ namespace Game.Player
 
         void OnTriggerEnter(Collider other)
         {
-            Debug.LogFormat("trigger enter: name={0}, layer={1}, tag={2}, pickUpLayerId={3}", other.name, other.gameObject.layer, other.tag, LayerMask.NameToLayer("PickUps"));
+            //Debug.LogFormat("trigger enter: name={0}, layer={1}, tag={2}, pickUpLayerId={3}", other.name, other.gameObject.layer, other.tag, LayerMask.NameToLayer("PickUps"));
 
             if (other.gameObject.layer == LayerMask.NameToLayer("PickUps"))
             {
-                Debug.LogFormat("trigger enter check 1");
+                //Debug.LogFormat("trigger enter check 1");
 
                 switch (other.tag)
                 {
                     case "Favour":
-                        Debug.LogFormat("trigger enter check 2");
+                        //Debug.LogFormat("trigger enter check 2");
 
                         this.favourPickUpInRange = true;
                         this.favourPickUpCollider = other;
@@ -53,7 +53,11 @@ namespace Game.Player
                         Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [RT] to pick up favour!"));
                         break;
                     case "Pillar":
-
+                        if(this.playerModel.GetAllActiveAbilities().Count + this.playerModel.Favours >= 3)
+                        {
+                            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.End));
+                        }
+                        break;
                     default:
                         break;
                 }
