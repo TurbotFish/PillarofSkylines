@@ -30,17 +30,20 @@ public class LocalTrailRenderer : MonoBehaviour {
 	}
 
 	LineRenderer line;
-	Vector3[] positions;
-	Transform _transform;
+	Vector3[] positions, fixedPositions;
+	Transform _transform, _parent;
 
 	void SetPosition(int index, Vector3 position) {
-		positions[index] = position;
-		line.SetPosition(index, _transform.InverseTransformPoint(_transform.parent.TransformPoint(position)));
-	}
-
+        positions[index] = position;
+        position = _transform.InverseTransformPoint(_parent ? _parent.TransformPoint(position) : position);
+        fixedPositions[index] = position;
+        line.SetPosition(index, position);
+    }
+    
 	void Awake() {
 		_transform = transform;
-		line = GetComponent<LineRenderer>();
+        _parent = _transform.parent;
+        line = GetComponent<LineRenderer>();
 		line.positionCount = vertices;
 		positions = new Vector3[vertices];
 		for (int i = 0; i < vertices; i++)
