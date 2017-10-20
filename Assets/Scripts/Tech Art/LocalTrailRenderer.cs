@@ -30,28 +30,37 @@ public class LocalTrailRenderer : MonoBehaviour {
 	}
 
 	LineRenderer line;
-	Vector3[] positions;
-	Transform _transform;
+	Vector3[] positions, fixedPositions;
+	Transform _transform, _parent;
 
 	void SetPosition(int index, Vector3 position) {
-		positions[index] = position;
-		line.SetPosition(index, _transform.InverseTransformPoint(_transform.parent.TransformPoint(position)));
-	}
+        positions[index] = position;
+        position = _transform.InverseTransformPoint(_parent ? _parent.TransformPoint(position) : position);
+        fixedPositions[index] = position;
+        line.SetPosition(index, position);
+    }
+    
+    void SetToNextPosition(int index) {
+        line.SetPosition(index, fixedPositions[index + 1]);
+    }
 
 	void Awake() {
 		_transform = transform;
-		line = GetComponent<LineRenderer>();
+        _parent = _transform.parent;
+        line = GetComponent<LineRenderer>();
 		line.positionCount = vertices;
 		positions = new Vector3[vertices];
-		for (int i = 0; i < vertices; i++)
+        fixedPositions = new Vector3[vertices];
+        for (int i = 0; i < vertices; i++)
 			SetPosition(i, _transform.localPosition);
 		line.useWorldSpace = false;
 	}
 
 	void LateUpdate () {
-		for (int i = 0; i < vertices - 1; i++)
-			SetPosition(i, positions[i + 1]);
-		SetPosition(vertices - 1, _transform.localPosition);
+        for (int i = 0; i < vertices - 1; i++)
+            SetToNextPosition(i);//SetPosition(i, positions[i + 1]);;
+
+        SetPosition(vertices - 1, _transform.localPosition);
 	}
 
 	void OnDestroy() {
