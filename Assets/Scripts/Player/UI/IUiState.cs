@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IUiState
-{
-    bool IsActive { get; }
+namespace Game.Player.UI {
+    public interface IUiState
+    {
+        bool IsActive { get; }
 
-    void Activate();
-    void Deactivate();
+        void Initialize(PlayerModel playerModel);
+        void Activate();
+        void Deactivate();
+    }
 }

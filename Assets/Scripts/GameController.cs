@@ -8,12 +8,15 @@ namespace Game
     public class GameController : MonoBehaviour
     {
         [SerializeField]
-        Camera mainCamera;
-        
+        Player.PlayerModel playerModel;
+
+        public Player.UI.UiController UiController { get; private set; }
+
 
         // Use this for initialization
         void Start()
         {
+            SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
             SceneManager.LoadSceneAsync("UiScene", LoadSceneMode.Additive);
         }
 
@@ -21,6 +24,25 @@ namespace Game
         void Update()
         {
 
+        }
+
+        private void OnSceneLoadedEventHandler(Scene scene, LoadSceneMode mode)
+        {
+            SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
+
+            if (scene.name == "UiScene")
+            {
+                var list = new List<Player.UI.UiController>();
+
+                foreach (var gameObject in scene.GetRootGameObjects())
+                {
+                    list.Add(gameObject.transform.GetComponentInChildren<Player.UI.UiController>());
+                }
+
+                this.UiController = list[0];
+
+                this.UiController.InitializeUi(this.playerModel);
+            }
         }
     }
 } //end of namespace

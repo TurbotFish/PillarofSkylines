@@ -8,6 +8,7 @@ namespace Game.Player.AbilitySystem
     [Serializable]
     public class DoubleJump : Ability
     {
+        public override eAbilityType Type { get { return eAbilityType.DoubleJump; } }
 
         //###########################################################
 

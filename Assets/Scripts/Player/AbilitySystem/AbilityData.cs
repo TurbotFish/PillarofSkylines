@@ -45,6 +45,16 @@ namespace Game.Player.AbilitySystem
             }
         }
 
+        public List<Ability> GetAllAbilities()
+        {
+            return new List<Ability>()
+            {
+                this.doubleJump,
+                this.glide,
+                this.dash
+            };
+        }
+
         #endregion methods
 
         //###########################################################
