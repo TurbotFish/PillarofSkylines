@@ -40,21 +40,27 @@ public class LocalTrailRenderer : MonoBehaviour {
         line.SetPosition(index, position);
     }
     
+    void SetToNextPosition(int index) {
+        line.SetPosition(index, fixedPositions[index + 1]);
+    }
+
 	void Awake() {
 		_transform = transform;
         _parent = _transform.parent;
         line = GetComponent<LineRenderer>();
 		line.positionCount = vertices;
 		positions = new Vector3[vertices];
-		for (int i = 0; i < vertices; i++)
+        fixedPositions = new Vector3[vertices];
+        for (int i = 0; i < vertices; i++)
 			SetPosition(i, _transform.localPosition);
 		line.useWorldSpace = false;
 	}
 
 	void LateUpdate () {
-		for (int i = 0; i < vertices - 1; i++)
-			SetPosition(i, positions[i + 1]);
-		SetPosition(vertices - 1, _transform.localPosition);
+        for (int i = 0; i < vertices - 1; i++)
+            SetToNextPosition(i);//SetPosition(i, positions[i + 1]);;
+
+        SetPosition(vertices - 1, _transform.localPosition);
 	}
 
 	void OnDestroy() {

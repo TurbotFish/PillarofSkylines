@@ -69,7 +69,7 @@ namespace Game.Player.UI.AbilityMenu
             //###########################################################
             //###########################################################
 
-            Debug.LogFormat("selectionDelayTimer={0}", selectionDelayTimer);
+            //Debug.LogFormat("selectionDelayTimer={0}", selectionDelayTimer);
 
             if (Mathf.Approximately(stickValue, 0f))
             {
@@ -147,20 +147,20 @@ namespace Game.Player.UI.AbilityMenu
             this.IsActive = true;
             this.gameObject.SetActive(true);
 
-            Utilities.EventManager.SendOnMenuOpenedEvent(this, new Utilities.EventManager.OnMenuOpenedEventArgs(eUiState.AbilityMenu));
+            
         }
 
         void IUiState.Deactivate()
         {
-            bool wasActive = this.IsActive;
+            //bool wasActive = this.IsActive;
 
             this.IsActive = false;
             this.gameObject.SetActive(false);
 
-            if (wasActive)
-            {
-                Utilities.EventManager.SendOnMenuClosedEvent(this, new Utilities.EventManager.OnMenuClosedEventArgs(eUiState.AbilityMenu));
-            }
+            //if (wasActive)
+            //{
+            //    Utilities.EventManager.SendOnMenuClosedEvent(this, new Utilities.EventManager.OnMenuClosedEventArgs(eUiState.AbilityMenu));
+            //}
         }
 
         //###########################################################

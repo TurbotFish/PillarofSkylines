@@ -52,6 +52,8 @@ namespace Game.Player
                         //show UI text
                         Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [RT] to pick up favour!"));
                         break;
+                    case "Pillar":
+
                     default:
                         break;
                 }
