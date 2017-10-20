@@ -160,6 +160,7 @@ public class ThirdPersonCamera : MonoBehaviour {
             }
         }
 
+        //print(panoramaTimer + " & " + timeToTriggerPanorama + " | " + idealDistance + " < " + panoramaDistance);
         if (panoramaTimer >= timeToTriggerPanorama && idealDistance <= panoramaDistance) {
             idealDistance += deltaTime * panoramaDezoomSpeed;
             inPanorama = true;
@@ -203,7 +204,9 @@ public class ThirdPersonCamera : MonoBehaviour {
 
         camRotation = Quaternion.Euler(pitch, yaw, 0);
         
-        idealDistance = Mathf.Lerp(1, maxDistance, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch))); // prevents Zoom
+        //idealDistance = Mathf.Lerp(1, maxDistance, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch))); // prevents Zoom
+        // Changer le fonctionnement d'idealDistance pour avoir des modificateurs séparés et indépendants (exemple : angleModifier, panoramaModifier, etc)
+
         //camera.fieldOfView = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
 
         //Changer la rotation de la caméra pendant l'Éclipse
