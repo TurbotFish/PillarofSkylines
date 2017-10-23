@@ -359,7 +359,7 @@ half4 BRDF1_Alo_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity
 
 half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity, half smoothness,
     half3 normal, half3 viewDir,
-    UnityLight light, UnityIndirect gi, half thickness)
+    UnityLight light, UnityIndirect gi, half thickness, half3 diffuseSSS)
 {
     half3 halfDir = Unity_SafeNormalize (light.dir + viewDir);
 
@@ -457,8 +457,8 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
 
 
     //SSS
-    color += saturate(float3(0.97,0.2,0.2) * light.color) * I;
-   //color += saturate(float3(1.0,1.0,1.0) * light.color) * I;
+    color += saturate(diffuseSSS * light.color) * I;
+   //color += saturate(float3(0.0,0.8,0.3) * light.color) * I;
     
     return half4(color, 1);
 }

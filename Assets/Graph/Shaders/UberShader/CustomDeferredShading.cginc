@@ -141,7 +141,30 @@
 		float3 albedo = tex2D(_CameraGBufferTexture0, uv).rgb;
 		float3 specularTint = tex2D(_CameraGBufferTexture1, uv).rgb;
 		float3 smoothness = tex2D(_CameraGBufferTexture1, uv).a;
-		float3 normal = tex2D(_CameraGBufferTexture2, uv).rgb * 2 - 1;
+
+		//float3 normal = tex2D(_CameraGBufferTexture2, uv).rgb * 2 - 1;
+
+		float3 gBuffer2 = tex2D(_CameraGBufferTexture2, uv).xyz;
+
+		float2 fenc = gBuffer2.xy * 4 - 2;
+		float f = dot(fenc, fenc);
+		float g = sqrt(1 - f/4);
+		float3 normal;
+		normal.xy = fenc * g;
+		normal.z = 1 - f/2;
+		normal.xyz = clamp(-1,1, normal);
+
+		float temp = gBuffer2.z;
+		float _DiffuseSSS10 = temp * 10;
+		float _DiffuseSSS100 = temp * 100;
+		float _GreenSSS = (_DiffuseSSS10 - frac(_DiffuseSSS10)) * 0.1;
+		float _RedSSS = frac(_DiffuseSSS10) - frac(_DiffuseSSS100) * 0.1;
+		float _BlueSSS = frac(_DiffuseSSS100);
+
+		float3 _DiffuseSSS = float3(_RedSSS, _GreenSSS, _BlueSSS);
+		//float3 _DiffuseSSS = float3(temp,saturate(temp -0.1), saturate(temp +0.1));
+		//float3 _DiffuseSSS = float3(0.87,0.5,0.9);
+
 		float oneMinusReflectivity = 1 - SpecularStrength(specularTint);
 		float thickness = 1.0 - tex2D(_CameraGBufferTexture0, uv).a;
 
@@ -154,7 +177,7 @@
 
 		float4 color = ALO_BRDF_PBS(
 			albedo, specularTint, oneMinusReflectivity, smoothness,
-			normal, viewDir, light, indirectLight, thickness
+			normal, viewDir, light, indirectLight, thickness, _DiffuseSSS
 		);
 
 		#if !defined(UNITY_HDR_ON)

@@ -104,6 +104,18 @@
 		#endif
 	}
 
+	float GetPackedDiffuseSSS(){
+		float _PackedColour = 0;
+		#if defined(_SSS)
+			float _Green = floor(_DiffuseSSS.g * 10) * 0.1;
+			float _Red = floor(_DiffuseSSS.r * 10) * 0.01;
+			float _Blue = floor(_DiffuseSSS.b * 10) * 0.001;
+			_PackedColour = saturate(_Green + _Red + _Blue);
+		#endif
+
+		return _PackedColour;
+	}
+
 	float3 GetAlbedo(Interpolators i){
 		float3 albedo = tex2D(_MainTex, i.uv.xy).rgb * _Tint.rgb;
 		#if defined(_DETAIL_ALBEDO_MAP)
@@ -411,8 +423,12 @@
 			output.gBuffer0.a = GetThickness(i);
 			output.gBuffer1.rgb = specularTint;
 			output.gBuffer1.a = GetSmoothness(i);
-			output.gBuffer2.rgba = float4(i.normal * 0.5 + 0.5, 1);
-			//output.gBuffer2.a = GetThickness(i);
+			//output.gBuffer2.rgba = float4(i.normal * 0.5 + 0.5, 1);
+
+			//output.gBuffer2.rgba = float4(i.normal.xy * 0.5 + 0.5, 0.825, 0);// * 0.5 + 0.5);
+			output.gBuffer2.rgba = float4((i.normal.xy / sqrt(i.normal.z * 8 + 8)) + 0.5, GetPackedDiffuseSSS(), 0);
+
+
 			output.gBuffer3 = color;
 
 
