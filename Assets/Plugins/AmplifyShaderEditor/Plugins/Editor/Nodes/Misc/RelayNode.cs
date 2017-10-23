@@ -4,7 +4,7 @@ using UnityEngine;
 namespace AmplifyShaderEditor
 {
     [Serializable]
-    [NodeAttributes( "Relay", "Misc", "Relay" )]
+    [NodeAttributes( "Relay", "Miscellaneous", "Relay" )]
     public sealed class RelayNode : ParentNode
     {
         protected override void CommonInit( int uniqueId )

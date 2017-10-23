@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Object To View Pos", "Vertex Transform", "Transforms a point from object space to view space" )]
+	[NodeAttributes( "Object To View Pos", "Object Transform", "Transforms a point from object space to view space" )]
 	public sealed class UnityObjToViewPosHlpNode : HelperParentNode
 	{
 		protected override void CommonInit( int uniqueId )

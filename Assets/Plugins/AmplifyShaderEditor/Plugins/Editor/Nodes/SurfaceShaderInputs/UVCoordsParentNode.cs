@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "[Old]Texture Coordinates", "Surface Standard Inputs", "Texture UV coordinates set", null, KeyCode.U, false )]
+	[NodeAttributes( "[Old]Texture Coordinates", "Surface Data", "Texture UV coordinates set", null, KeyCode.U, false )]
 	public sealed class UVCoordsParentNode : ParentNode
 	{
 		private const string TilingStr = "Tiling";

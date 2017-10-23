@@ -6,13 +6,13 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Face", "Various", "Indicates whether the rendered surface is facing the camera (>0), or facing away from the camera(=0)" )]
+	[NodeAttributes( "Face", "Vertex Data", "Indicates whether the rendered surface is facing the camera (1), or facing away from the camera(-1)" )]
 	public class FaceVariableNode : ParentNode
 	{
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
-			AddOutputPort( WirePortDataType.FLOAT, Constants.EmptyPortValue );
+			AddOutputPort( WirePortDataType.FLOAT, "Out" );
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
@@ -35,10 +35,16 @@ namespace AmplifyShaderEditor
 					UIUtils.ShowMessage( m_nodeAttribs.Name + " does not work propery on Vertex ports" );
 				}
 			}
-			
-			dataCollector.AddToInput( UniqueId, Constants.VFaceInput, true);
-			string variable =  ( dataCollector.PortCategory == MasterNodePortCategory.Vertex)?Constants.VertexShaderOutputStr: Constants.InputVarStr;
-			return variable + "." + Constants.VFaceVariable;
+			if ( dataCollector.IsTemplate )
+			{
+				return dataCollector.TemplateDataCollectorInstance.GetVFace();
+			}
+			else
+			{
+				dataCollector.AddToInput( UniqueId, Constants.VFaceInput, true );
+				string variable = ( dataCollector.PortCategory == MasterNodePortCategory.Vertex ) ? Constants.VertexShaderOutputStr : Constants.InputVarStr;
+				return variable + "." + Constants.VFaceVariable;
+			}
 		}
 	}
 }

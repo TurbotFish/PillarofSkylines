@@ -186,24 +186,21 @@ namespace AmplifyShaderEditor
 
 		private readonly static string[] FadeModeOptions = { "Opaque", "Masked", "Transparent", "Translucent", "Alpha Premultipled", "Custom" };
 		private const string VertexModeStr = "Vertex Output";
-		private const string GeneralFoldoutStr = " General";
 		private const string CustomInspectorStr = "Custom Editor";
 		private readonly static GUIContent RenderPathContent = new GUIContent( "Render Path", "Selects and generates passes for the supported rendering paths\nDefault: All" );
 		private const string ShaderModelStr = "Shader Model";
-		private const string LightModelStr = "Light Model";
 		private readonly static GUIContent LightModelContent = new GUIContent( "Light Model", "Surface shader lighting model defines how the surface reflects light\nDefault: Standard" );
-		private readonly static GUIContent ShaderLODContent = new GUIContent( "LOD", "Shader LOD" );
+		private readonly static GUIContent ShaderLODContent = new GUIContent( "Shader LOD", "Shader LOD" );
 		private readonly static GUIContent CullModeContent = new GUIContent( "Cull Mode", "Polygon culling mode prevents rendering of either back-facing or front-facing polygons to save performance, turn it off if you want to render both sides\nDefault: Back" );
 		private const string ZWriteModeStr = "ZWrite Mode";
 		private const string ZTestModeStr = "ZTest Mode";
-		private const string ShaderNameStr = "Shader Name";
 
 		private const string DiscardStr = "Opacity Mask";
 		private const string VertexDisplacementStr = "Local Vertex Offset";
 		private const string VertexPositionStr = "Local Vertex Position";
 		private const string VertexDataStr = "VertexData";
 		private const string VertexNormalStr = "Local Vertex Normal";
-		private const string CustomLightModelStr = "C. Light Model";
+		//private const string CustomLightModelStr = "C. Light Model";
 		private const string AlbedoStr = "Albedo";
 		private const string NormalStr = "Normal";
 		private const string EmissionStr = "Emission";
@@ -229,8 +226,7 @@ namespace AmplifyShaderEditor
 		private readonly static GUIContent RenderQueueContent = new GUIContent( "Render Queue", "Base rendering queue index\n(Background = 1000, Geometry = 2000, AlphaTest = 2450, Transparent = 3000, Overlay = 4000)\nDefault: Geometry" );
 		private readonly static GUIContent RenderTypeContent = new GUIContent( "Render Type", "Categorizes shaders into several predefined groups, usually to be used with screen shader effects\nDefault: Opaque" );
 
-		private GUIContent m_shaderNameContent;
-		private const string DefaultShaderName = "MyNewShader";
+		private const string DefaultShaderName = "New AmplifyShader";
 
 		private const string ShaderInputOrderStr = "Shader Input Order";
 		private const string PropertyOderFoldoutStr = " Material Properties";
@@ -264,6 +260,15 @@ namespace AmplifyShaderEditor
 
 		[SerializeField]
 		private FallbackPickerHelper m_fallbackHelper = null;
+
+		[SerializeField]
+		private AdditionalIncludesHelper m_additionalIncludes = new AdditionalIncludesHelper();
+
+		[SerializeField]
+		private AdditionalPragmasHelper m_additionalPragmas = new AdditionalPragmasHelper();
+
+		[SerializeField]
+		private CustomTagsHelper m_customTagsHelper = new CustomTagsHelper();
 
 		[SerializeField]
 		private StandardShaderLightModel m_currentLightModel;
@@ -342,7 +347,7 @@ namespace AmplifyShaderEditor
 		private GUIStyle m_inspectorFoldoutStyle;
 		private GUIStyle m_inspectorToolbarStyle;
 		private GUIStyle m_inspectorTooldropdownStyle;
-		
+
 
 		private bool m_customBlendAvailable = false;
 
@@ -390,7 +395,6 @@ namespace AmplifyShaderEditor
 			m_currentLightModel = m_lastLightModel = StandardShaderLightModel.Standard;
 			m_textLabelWidth = 120;
 			base.CommonInit( uniqueId );
-			m_shaderNameContent = new GUIContent( ShaderNameStr, string.Empty );
 			m_zBufferHelper.ParentSurface = this;
 			m_tessOpHelper.ParentSurface = this;
 		}
@@ -428,20 +432,20 @@ namespace AmplifyShaderEditor
 					AddInputPort( WirePortDataType.FLOAT, false, OcclusionLabelStr, OcclusionDataStr, index++, MasterNodePortCategory.Fragment, 5 );
 				}
 				break;
+				//case StandardShaderLightModel.CustomLighting:
+				//{
+				//	AddInputPort( WirePortDataType.FLOAT3, false, AlbedoStr, 1, MasterNodePortCategory.Fragment, 0 );
+				//	m_inputPorts[ m_inputPorts.Count - 1 ].Locked = true;
+				//	AddInputPort( WirePortDataType.FLOAT3, false, NormalStr, 0, MasterNodePortCategory.Fragment, 1 );
+				//	m_inputPorts[ m_inputPorts.Count - 1 ].Locked = true;
+				//	AddInputPort( WirePortDataType.FLOAT3, false, EmissionStr, index++, MasterNodePortCategory.Fragment, 2 );
+				//	AddInputPort( WirePortDataType.FLOAT, false, SpecularStr, index++, MasterNodePortCategory.Fragment, 3 );
+				//	m_inputPorts[ m_inputPorts.Count - 1 ].Locked = true;
+				//	AddInputPort( WirePortDataType.FLOAT, false, GlossStr, index++, MasterNodePortCategory.Fragment, 4 );
+				//	m_inputPorts[ m_inputPorts.Count - 1 ].Locked = true;
+				//}
+				//break;
 				case StandardShaderLightModel.CustomLighting:
-				{
-					AddInputPort( WirePortDataType.FLOAT3, false, AlbedoStr, 1, MasterNodePortCategory.Fragment, 0 );
-					m_inputPorts[ m_inputPorts.Count - 1 ].Locked = true;
-					AddInputPort( WirePortDataType.FLOAT3, false, NormalStr, 0, MasterNodePortCategory.Fragment, 1 );
-					m_inputPorts[ m_inputPorts.Count - 1 ].Locked = true;
-					AddInputPort( WirePortDataType.FLOAT3, false, EmissionStr, index++, MasterNodePortCategory.Fragment, 2 );
-					m_inputPorts[ m_inputPorts.Count - 1 ].Locked = true;
-					AddInputPort( WirePortDataType.FLOAT, false, SpecularStr, index++, MasterNodePortCategory.Fragment, 3 );
-					m_inputPorts[ m_inputPorts.Count - 1 ].Locked = true;
-					AddInputPort( WirePortDataType.FLOAT, false, GlossStr, index++, MasterNodePortCategory.Fragment, 4 );
-					m_inputPorts[ m_inputPorts.Count - 1 ].Locked = true;
-				}
-				break;
 				case StandardShaderLightModel.Unlit:
 				{
 					AddInputPort( WirePortDataType.FLOAT3, false, AlbedoStr, 1, MasterNodePortCategory.Fragment, 0 );
@@ -476,11 +480,11 @@ namespace AmplifyShaderEditor
 			}
 
 			AddInputPort( WirePortDataType.FLOAT3, false, TransmissionStr, index++, MasterNodePortCategory.Fragment, 6 );
-			m_transmissionPort = m_inputPorts[m_inputPorts.Count - 1];
+			m_transmissionPort = m_inputPorts[ m_inputPorts.Count - 1 ];
 			m_inputPorts[ m_inputPorts.Count - 1 ].Locked = ( m_currentLightModel == StandardShaderLightModel.Standard ) || ( m_currentLightModel == StandardShaderLightModel.StandardSpecular ) ? false : true;
 
 			AddInputPort( WirePortDataType.FLOAT3, false, TranslucencyStr, index++, MasterNodePortCategory.Fragment, 7 );
-			m_translucencyPort = m_inputPorts[m_inputPorts.Count - 1];
+			m_translucencyPort = m_inputPorts[ m_inputPorts.Count - 1 ];
 			m_inputPorts[ m_inputPorts.Count - 1 ].Locked = ( m_currentLightModel == StandardShaderLightModel.Standard ) || ( m_currentLightModel == StandardShaderLightModel.StandardSpecular ) ? false : true;
 
 			AddInputPort( WirePortDataType.FLOAT, false, RefractionStr, index + 2, MasterNodePortCategory.Fragment, 8 );
@@ -493,8 +497,10 @@ namespace AmplifyShaderEditor
 			m_inputPorts[ m_inputPorts.Count - 1 ].Locked = ( m_alphaMode == AlphaMode.Opaque || m_alphaMode == AlphaMode.Masked );
 
 			AddInputPort( WirePortDataType.OBJECT, false, DiscardStr, index++, MasterNodePortCategory.Fragment, 10 );
+			m_inputPorts[ m_inputPorts.Count - 1 ].Locked = ( m_alphaMode != AlphaMode.Masked && m_alphaMode != AlphaMode.Custom );
 			m_discardPortId = m_inputPorts.Count - 1;
 
+			// This is done to take the index + 2 from refraction port into account and not overlap indexes 
 			index++;
 
 			////////////////////////////////////////////////////////////////////////////////////////////////
@@ -504,10 +510,10 @@ namespace AmplifyShaderEditor
 			m_tessOpHelper.VertexOffsetIndexPort = m_vertexPortId;
 			AddInputPort( WirePortDataType.FLOAT3, false, ( m_vertexMode == VertexMode.Relative ? VertexDisplacementStr : VertexPositionStr ), VertexDataStr, index++, MasterNodePortCategory.Vertex, 11 );
 			AddInputPort( WirePortDataType.FLOAT3, false, VertexNormalStr, index++, MasterNodePortCategory.Vertex, 12 );
-			
-			AddInputPort( WirePortDataType.FLOAT3, false, CustomLightModelStr, index++, MasterNodePortCategory.Fragment, 13 );
-			m_inputPorts[ m_inputPorts.Count - 1 ].Locked = !(m_currentLightModel == StandardShaderLightModel.CustomLighting);
-			
+
+			//AddInputPort( WirePortDataType.FLOAT3, false, CustomLightModelStr, index++, MasterNodePortCategory.Fragment, 13 );
+			//m_inputPorts[ m_inputPorts.Count - 1 ].Locked = true;// !(m_currentLightModel == StandardShaderLightModel.CustomLighting);
+
 			AddInputPort( WirePortDataType.FLOAT4, false, TessellationOpHelper.TessellationPortStr, index++, MasterNodePortCategory.Tessellation, 14 );
 			m_tessellationPort = m_inputPorts[ m_inputPorts.Count - 1 ];
 			m_tessOpHelper.MasterNodeIndexPort = m_tessellationPort.PortId;
@@ -521,7 +527,7 @@ namespace AmplifyShaderEditor
 			}
 			m_sizeIsDirty = true;
 		}
-		
+
 		public override void ForcePortType()
 		{
 			int portId = 0;
@@ -584,7 +590,7 @@ namespace AmplifyShaderEditor
 			//Vertex Normal
 			m_inputPorts[ portId++ ].ChangeType( WirePortDataType.FLOAT3, false );
 			//Custom Light
-			m_inputPorts[ portId++ ].ChangeType( WirePortDataType.FLOAT3, false );
+			//m_inputPorts[ portId++ ].ChangeType( WirePortDataType.FLOAT3, false );
 			//Tessellation
 			m_inputPorts[ portId++ ].ChangeType( WirePortDataType.FLOAT4, false );
 			//Debug
@@ -646,7 +652,7 @@ namespace AmplifyShaderEditor
 					if ( node != null )
 					{
 						ReordenatorNode rnode = nodes[ i ] as ReordenatorNode;
-						if ( (rnode == null || !rnode.IsInside) && ( !m_propertyNodes.Exists( x => x.PropertyName.Equals( node.PropertyName ) ) ) )
+						if ( ( rnode == null || !rnode.IsInside ) && ( !m_propertyNodes.Exists( x => x.PropertyName.Equals( node.PropertyName ) ) ) )
 							m_propertyNodes.Add( node );
 					}
 				}
@@ -688,7 +694,7 @@ namespace AmplifyShaderEditor
 			EditorGUILayout.EndVertical();
 		}
 
-		private void ReorderList(ref List<ParentNode> nodes )
+		private void ReorderList( ref List<ParentNode> nodes )
 		{
 			for ( int i = 0; i < nodes.Count; i++ )
 			{
@@ -705,7 +711,7 @@ namespace AmplifyShaderEditor
 				ReordenatorNode renode = m_propertyNodes[ i ] as ReordenatorNode;
 				if ( renode != null )
 				{
-					if( !renode.IsInside )
+					if ( !renode.IsInside )
 					{
 						m_propertyNodes[ i ].OrderIndex = count + propoffset;// - renodeoffset;
 
@@ -724,11 +730,13 @@ namespace AmplifyShaderEditor
 							}
 						}
 						count++;
-					} else
+					}
+					else
 					{
 						m_propertyNodes[ i ].OrderIndex = 0;
 					}
-				} else
+				}
+				else
 				{
 					m_propertyNodes[ i ].OrderIndex = count + propoffset;// - renodeoffset;
 					count++;
@@ -755,10 +763,22 @@ namespace AmplifyShaderEditor
 			}
 			m_shaderNameContent.tooltip = m_shaderName;
 
-			m_currentShaderType = ( AvailableShaderTypes ) EditorGUILayoutEnumPopup( m_shaderTypeLabel, m_currentShaderType );
+			DrawCurrentShaderType();
 
-			//m_currentLightModel = ( StandardShaderLightModel ) EditorGUILayoutEnumPopup( LightModelContent, m_currentLightModel );
-			m_currentLightModel = (StandardShaderLightModel)EditorGUILayoutPopup( LightModelContent.text, (int) m_currentLightModel, new string[] { "Standard", "Standard Specular", "Lambert", "BlinnPhong", "Unlit" } );
+			EditorGUI.BeginChangeCheck();
+			m_currentLightModel = ( StandardShaderLightModel ) EditorGUILayoutEnumPopup( LightModelContent, m_currentLightModel );
+			if ( EditorGUI.EndChangeCheck() )
+			{
+				ContainerGraph.ChangedLightingModel = true;
+				if ( m_currentLightModel == StandardShaderLightModel.CustomLighting )
+				{
+					ContainerGraph.ParentWindow.CurrentNodeAvailability = NodeAvailability.CustomLighting;
+				}
+				else
+				{
+					ContainerGraph.ParentWindow.CurrentNodeAvailability = NodeAvailability.SurfaceShader;
+				}
+			}
 
 			m_shaderModelIdx = EditorGUILayoutPopup( ShaderModelStr, m_shaderModelIdx, ShaderModelTypeArr );
 
@@ -785,6 +805,7 @@ namespace AmplifyShaderEditor
 			}
 
 			m_shaderLOD = Mathf.Clamp( EditorGUILayoutIntField( ShaderLODContent, m_shaderLOD ), 0, Shader.globalMaximumLOD );
+			////m_lodCrossfade = EditorGUILayoutToggle( LODCrossfadeContent, m_lodCrossfade );
 			m_fallbackHelper.Draw( this );
 			DrawInspectorProperty();
 
@@ -897,7 +918,7 @@ namespace AmplifyShaderEditor
 						else
 							m_alphaMode = AlphaMode.Custom;
 
-						
+
 						UpdateFromBlendMode();
 					}
 
@@ -925,9 +946,7 @@ namespace AmplifyShaderEditor
 
 					if ( !m_customBlendAvailable )
 					{
-						EditorGUI.indentLevel--;
 						EditorGUILayout.HelpBox( "Advanced options are only available for Custom blend modes", MessageType.Warning );
-						EditorGUI.indentLevel++;
 					}
 
 					EditorGUI.BeginDisabledGroup( !m_customBlendAvailable );
@@ -941,13 +960,15 @@ namespace AmplifyShaderEditor
 				}
 
 				m_stencilBufferHelper.Draw( this, m_inspectorToolbarStyle );
-				m_tessOpHelper.Draw( this, m_inspectorToolbarStyle, m_currentMaterial, m_inputPorts[ m_tessOpHelper.MasterNodeIndexPort ].IsConnected );
+				m_tessOpHelper.Draw( this, m_inspectorToolbarStyle, m_currentMaterial, m_tessellationPort.IsConnected );
 				m_outlineHelper.Draw( this, m_inspectorToolbarStyle, m_currentMaterial );
 				m_billboardOpHelper.Draw( this );
 				m_zBufferHelper.Draw( this, m_inspectorToolbarStyle, m_customBlendAvailable );
 				m_renderingOptionsOpHelper.Draw( this );
 				m_renderingPlatformOpHelper.Draw( this );
-
+				m_additionalIncludes.Draw( this );
+				m_additionalPragmas.Draw( this );
+				m_customTagsHelper.Draw( this );
 				DrawMaterialInputs( m_inspectorToolbarStyle );
 			}
 
@@ -962,32 +983,40 @@ namespace AmplifyShaderEditor
 				ConnectFromCache();
 			}
 		}
-		
-		public override void Draw(DrawInfo drawInfo)
-		{
-			base.Draw(drawInfo);
 
-			if( m_initialize )
+		public override void Draw( DrawInfo drawInfo )
+		{
+			base.Draw( drawInfo );
+
+			if( drawInfo.CurrentEventType == EventType.Repaint )
+			{
+				if ( m_containerGraph.IsInstancedShader || m_renderingOptionsOpHelper.EnableInstancing )
+				{
+					DrawInstancedIcon( drawInfo );
+				}
+			}
+
+			if ( m_initialize )
 			{
 				m_initialize = false;
 
-				if( m_dummyProperty == null )
+				if ( m_dummyProperty == null )
 				{
 					m_dummyProperty = ScriptableObject.CreateInstance<PropertyNode>();
 					m_dummyProperty.ContainerGraph = ContainerGraph;
 				}
 			}
 
-			if (m_transmissionPort != null && m_transmissionPort.IsConnected && m_renderPath != RenderPath.ForwardOnly)
+			if ( m_transmissionPort != null && m_transmissionPort.IsConnected && m_renderPath != RenderPath.ForwardOnly )
 			{
 				m_renderPath = RenderPath.ForwardOnly;
-				UIUtils.ShowMessage("Render Path changed to Forward Only since transmission only works in forward rendering");
+				UIUtils.ShowMessage( "Render Path changed to Forward Only since transmission only works in forward rendering" );
 			}
 
-			if (m_translucencyPort != null && m_translucencyPort.IsConnected && m_renderPath!= RenderPath.ForwardOnly)
+			if ( m_translucencyPort != null && m_translucencyPort.IsConnected && m_renderPath != RenderPath.ForwardOnly )
 			{
 				m_renderPath = RenderPath.ForwardOnly;
-				UIUtils.ShowMessage("Render Path changed to Forward Only since translucency only works in forward rendering");
+				UIUtils.ShowMessage( "Render Path changed to Forward Only since translucency only works in forward rendering" );
 			}
 
 			if ( m_translucencyPort.IsConnected != m_previousTranslucencyOn )
@@ -1080,7 +1109,7 @@ namespace AmplifyShaderEditor
 						UIUtils.UnregisterPropertyNode( m_tessellationReorder );
 				}
 
-				if ( m_alphaMode == AlphaMode.Masked || m_alphaMode == AlphaMode.Custom )
+				if ( m_inputPorts[ m_discardPortId ].Available /*( m_alphaMode == AlphaMode.Masked || m_alphaMode == AlphaMode.Custom )*/)
 				{
 					if ( m_maskClipReorder == null )
 					{
@@ -1088,7 +1117,7 @@ namespace AmplifyShaderEditor
 						m_maskClipReorder = ScriptableObject.CreateInstance<ReordenatorNode>();
 						m_maskClipReorder.ContainerGraph = ContainerGraph;
 						m_maskClipReorder.OrderIndex = m_maskClipOrderIndex;
-						m_maskClipReorder.Init( "_MaskClipValue", "Mask Clip Value", null );
+						m_maskClipReorder.Init( "_Cutoff", "Mask Clip Value", null );
 					}
 
 					UIUtils.RegisterPropertyNode( m_maskClipReorder );
@@ -1138,9 +1167,9 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void SetMaterialMode( Material mat , bool fetchMaterialValues )
+		public override void SetMaterialMode( Material mat, bool fetchMaterialValues )
 		{
-			base.SetMaterialMode( mat , fetchMaterialValues );
+			base.SetMaterialMode( mat, fetchMaterialValues );
 			if ( m_alphaMode == AlphaMode.Masked || m_alphaMode == AlphaMode.Custom )
 			{
 				if ( fetchMaterialValues && m_materialMode && mat.HasProperty( IOUtils.MaskClipValueName ) )
@@ -1176,22 +1205,22 @@ namespace AmplifyShaderEditor
 		public string CreateInstructionsForVertexPort( InputPort port )
 		{
 			//Vertex displacement and per vertex custom data
-			UIUtils.CurrentDataCollector.PortCategory = MasterNodePortCategory.Vertex;
+			m_currentDataCollector.PortCategory = MasterNodePortCategory.Vertex;
 			WireReference connection = port.GetConnection();
 			ParentNode node = UIUtils.GetNode( connection.NodeId );
 
-			string vertexInstructions = node.GetValueFromOutputStr( connection.PortId, port.DataType, ref UIUtils.CurrentDataCollector, false );
+			string vertexInstructions = node.GetValueFromOutputStr( connection.PortId, port.DataType, ref m_currentDataCollector, false );
 
-			if ( UIUtils.CurrentDataCollector.DirtySpecialLocalVariables )
+			if ( m_currentDataCollector.DirtySpecialLocalVariables )
 			{
-				UIUtils.CurrentDataCollector.AddVertexInstruction( UIUtils.CurrentDataCollector.SpecialLocalVariables, UniqueId, false );
-				UIUtils.CurrentDataCollector.ClearSpecialLocalVariables();
+				m_currentDataCollector.AddVertexInstruction( m_currentDataCollector.SpecialLocalVariables, UniqueId, false );
+				m_currentDataCollector.ClearSpecialLocalVariables();
 			}
 
-			if ( UIUtils.CurrentDataCollector.DirtyVertexVariables )
+			if ( m_currentDataCollector.DirtyVertexVariables )
 			{
-				UIUtils.CurrentDataCollector.AddVertexInstruction( UIUtils.CurrentDataCollector.VertexLocalVariables, UniqueId, false );
-				UIUtils.CurrentDataCollector.ClearVertexLocalVariables();
+				m_currentDataCollector.AddVertexInstruction( m_currentDataCollector.VertexLocalVariables, UniqueId, false );
+				m_currentDataCollector.ClearVertexLocalVariables();
 			}
 
 			return vertexInstructions;
@@ -1202,61 +1231,38 @@ namespace AmplifyShaderEditor
 			WireReference connection = port.GetConnection();
 			ParentNode node = UIUtils.GetNode( connection.NodeId );
 
-			string newInstruction = node.GetValueFromOutputStr( connection.PortId, port.DataType, ref UIUtils.CurrentDataCollector, ignoreLocalVar );
+			string newInstruction = node.GetValueFromOutputStr( connection.PortId, port.DataType, ref m_currentDataCollector, ignoreLocalVar );
 
-			if ( UIUtils.CurrentDataCollector.DirtySpecialLocalVariables )
+			if ( m_currentDataCollector.DirtySpecialLocalVariables )
 			{
-				UIUtils.CurrentDataCollector.AddInstructions( UIUtils.CurrentDataCollector.SpecialLocalVariables );
-				UIUtils.CurrentDataCollector.ClearSpecialLocalVariables();
+				m_currentDataCollector.AddInstructions( m_currentDataCollector.SpecialLocalVariables );
+				m_currentDataCollector.ClearSpecialLocalVariables();
 			}
 
-			if ( UIUtils.CurrentDataCollector.DirtyVertexVariables )
+			if ( m_currentDataCollector.DirtyVertexVariables )
 			{
-				UIUtils.CurrentDataCollector.AddVertexInstruction( UIUtils.CurrentDataCollector.VertexLocalVariables, port.NodeId, false );
-				UIUtils.CurrentDataCollector.ClearVertexLocalVariables();
+				m_currentDataCollector.AddVertexInstruction( m_currentDataCollector.VertexLocalVariables, port.NodeId, false );
+				m_currentDataCollector.ClearVertexLocalVariables();
 			}
 
-			if ( UIUtils.CurrentDataCollector.ForceNormal && !normalIsConnected )
+			if ( m_currentDataCollector.ForceNormal && !normalIsConnected )
 			{
-				UIUtils.CurrentDataCollector.AddToStartInstructions( "\t\t\t" + Constants.OutputVarStr + ".Normal = float3(0,0,1);\n" );
-				UIUtils.CurrentDataCollector.DirtyNormal = true;
-				UIUtils.CurrentDataCollector.ForceNormal = false;
+				m_currentDataCollector.AddToStartInstructions( "\t\t\t" + Constants.OutputVarStr + ".Normal = float3(0,0,1);\n" );
+				m_currentDataCollector.DirtyNormal = true;
+				m_currentDataCollector.ForceNormal = false;
 			}
 
-			UIUtils.CurrentDataCollector.AddInstructions( addCustomDelimiters ? customDelimiterIn : ( "\t\t\t" + portName + " = " ) );
-			UIUtils.CurrentDataCollector.AddInstructions( newInstruction );
-			UIUtils.CurrentDataCollector.AddInstructions( addCustomDelimiters ? customDelimiterOut : ";\n" );
-		}
-
-		public void GenerateTags()
-		{
-			bool hasVirtualTexture = UIUtils.HasVirtualTexture();
-
-			string tags = "\"RenderType\" = \"{0}\"  \"Queue\" = \"{1}\"";
-			tags = string.Format( tags, m_renderType, ( m_renderQueue + ( ( m_queueOrder >= 0 ) ? "+" : string.Empty ) + m_queueOrder ) );
-			//if ( !m_customBlendMode )
-			{
-				if ( m_alphaMode == AlphaMode.Transparent || m_alphaMode == AlphaMode.Premultiply || m_alphaMode == AlphaMode.Translucent )
-				{
-					tags += " \"IgnoreProjector\" = \"True\"";
-				}
-			}
-
-			//add virtual texture support
-			if ( hasVirtualTexture )
-			{
-				tags += " \"Amplify\" = \"True\" ";
-			}
-
-			tags = "Tags{ " + tags + " }";
+			m_currentDataCollector.AddInstructions( addCustomDelimiters ? customDelimiterIn : ( "\t\t\t" + portName + " = " ) );
+			m_currentDataCollector.AddInstructions( newInstruction );
+			m_currentDataCollector.AddInstructions( addCustomDelimiters ? customDelimiterOut : ";\n" );
 		}
 
 		public override Shader Execute( string pathname, bool isFullPath )
 		{
 			ForcePortType();
 			base.Execute( pathname, isFullPath );
-			
-			bool isInstancedShader = UIUtils.IsInstancedShader();
+
+			bool isInstancedShader = m_renderingOptionsOpHelper.EnableInstancing || UIUtils.IsInstancedShader();
 			bool hasVirtualTexture = UIUtils.HasVirtualTexture();
 			bool hasTranslucency = false;
 			bool hasTransmission = false;
@@ -1264,25 +1270,33 @@ namespace AmplifyShaderEditor
 			bool hasOpacity = false;
 			bool hasRefraction = false;
 			bool hasVertexOffset = false;
+			//bool hasCustomLightingAlpha = false;
+			bool hasCustomLightingMask = false;
 
 			string customLightingCode = string.Empty;
+			string customLightingAlphaCode = string.Empty;
+			string customLightingMaskCode = string.Empty;
 			string customLightingInstructions = string.Empty;
 
 			string refractionCode = string.Empty;
 			string refractionInstructions = string.Empty;
 			string refractionFix = string.Empty;
+			
+			m_currentDataCollector.TesselationActive = m_tessOpHelper.EnableTesselation;
+			m_currentDataCollector.CurrentRenderPath = m_renderPath;
 
-			UIUtils.CurrentDataCollector = new MasterNodeDataCollector( this )
+
+			if ( isInstancedShader )
 			{
-				TesselationActive = m_tessOpHelper.EnableTesselation
-			};
+				m_currentDataCollector.AddToPragmas( UniqueId, IOUtils.InstancedPropertiesHeader );
+			}
 
 			// See if each node is being used on frag and/or vert ports
 			SetupNodeCategories();
 			if ( m_refractionPort.IsConnected || m_inputPorts[ m_inputPorts.Count - 1 ].IsConnected )
 			{
-				UIUtils.CurrentDataCollector.DirtyNormal = true;
-				UIUtils.CurrentDataCollector.ForceNormal = true;
+				m_currentDataCollector.DirtyNormal = true;
+				m_currentDataCollector.ForceNormal = true;
 			}
 			//this.PropagateNodeData( nodeData );
 
@@ -1292,16 +1306,25 @@ namespace AmplifyShaderEditor
 			{
 				if ( m_alphaMode == AlphaMode.Transparent || m_alphaMode == AlphaMode.Premultiply )
 				{
-					tags += " \"IgnoreProjector\" = \"True\"";
+					//tags += " \"IgnoreProjector\" = \"True\"";
+					if ( !m_renderingOptionsOpHelper.IgnoreProjectorValue )
+					{
+						Debug.Log( string.Format( "Setting Ignore Projector to True since it's requires by Blend Mode {0}.", m_alphaMode ) );
+						m_renderingOptionsOpHelper.IgnoreProjectorValue = true;
+					}
 				}
 			}
+
+			tags += m_renderingOptionsOpHelper.IgnoreProjectorTag;
+			tags += m_renderingOptionsOpHelper.ForceNoShadowCastingTag;
+			tags += m_renderingOptionsOpHelper.DisableBatchingTag;
 
 			//add virtual texture support
 			if ( hasVirtualTexture )
 			{
 				tags += " \"Amplify\" = \"True\" ";
 			}
-
+			
 			//tags = "Tags{ " + tags + " }";
 
 			string outputStruct = "";
@@ -1317,18 +1340,18 @@ namespace AmplifyShaderEditor
 
 			if ( m_currentLightModel == StandardShaderLightModel.CustomLighting )
 			{
-				UIUtils.CurrentDataCollector.AddToIncludes( UniqueId, Constants.UnityPBSLightingLib );
+				m_currentDataCollector.AddToIncludes( UniqueId, Constants.UnityPBSLightingLib );
 
-				UIUtils.CurrentDataCollector.ChangeCustomInputHeader( m_currentLightModel.ToString() + Constants.CustomLightStructStr );
-				UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "fixed3 Albedo", true );
-				UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "fixed3 Normal", true );
-				UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "half3 Emission", true );
-				UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "half Metallic", true );
-				UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "half Smoothness", true );
-				UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "half Occlusion", true );
-				UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "fixed Alpha", true );
-				UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "Input SurfInput", true );
-				UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "UnityGIInput GIData", true );
+				m_currentDataCollector.ChangeCustomInputHeader( m_currentLightModel.ToString() + Constants.CustomLightStructStr );
+				m_currentDataCollector.AddToCustomInput( UniqueId, "fixed3 Albedo", true );
+				m_currentDataCollector.AddToCustomInput( UniqueId, "fixed3 Normal", true );
+				m_currentDataCollector.AddToCustomInput( UniqueId, "half3 Emission", true );
+				m_currentDataCollector.AddToCustomInput( UniqueId, "half Metallic", true );
+				m_currentDataCollector.AddToCustomInput( UniqueId, "half Smoothness", true );
+				m_currentDataCollector.AddToCustomInput( UniqueId, "half Occlusion", true );
+				m_currentDataCollector.AddToCustomInput( UniqueId, "fixed Alpha", true );
+				m_currentDataCollector.AddToCustomInput( UniqueId, "Input SurfInput", true );
+				m_currentDataCollector.AddToCustomInput( UniqueId, "UnityGIInput GIData", true );
 			}
 
 			// Need to sort before creating local vars so they can inspect the normal port correctly
@@ -1344,7 +1367,7 @@ namespace AmplifyShaderEditor
 			if ( m_inputPorts[ m_inputPorts.Count - 1 ].IsConnected )
 			{
 				//Debug Port active
-				UIUtils.CurrentDataCollector.PortCategory = MasterNodePortCategory.Debug;
+				m_currentDataCollector.PortCategory = MasterNodePortCategory.Debug;
 				InputPort debugPort = m_inputPorts[ m_inputPorts.Count - 1 ];
 
 				CreateInstructionsForPort( debugPort, Constants.OutputVarStr + ".Emission", false, null, null, false, false );
@@ -1360,7 +1383,7 @@ namespace AmplifyShaderEditor
 					{
 						if ( i == 0 )// Normal Map is Connected
 						{
-							UIUtils.CurrentDataCollector.DirtyNormal = true;
+							m_currentDataCollector.DirtyNormal = true;
 						}
 						if ( sortedPorts[ i ].Name.Equals( TranslucencyStr ) )
 						{
@@ -1387,21 +1410,30 @@ namespace AmplifyShaderEditor
 
 						if ( hasRefraction )
 						{
-							UIUtils.CurrentDataCollector.AddToInput( UniqueId, "float4 screenPos", true );
-							UIUtils.CurrentDataCollector.AddToInput( UniqueId, "float3 worldPos", true );
+							m_currentDataCollector.AddToInput( UniqueId, "float4 screenPos", true );
+							m_currentDataCollector.AddToInput( UniqueId, "float3 worldPos", true );
 
 							//not necessary, just being safe
-							UIUtils.CurrentDataCollector.DirtyNormal = true;
-							UIUtils.CurrentDataCollector.ForceNormal = true;
+							m_currentDataCollector.DirtyNormal = true;
+							m_currentDataCollector.ForceNormal = true;
 
-							UIUtils.CurrentDataCollector.AddGrabPass( "RefractionGrab" + m_grabOrder );
-							UIUtils.CurrentDataCollector.AddToUniforms( UniqueId, "uniform sampler2D RefractionGrab" + m_grabOrder + ";" );
-							UIUtils.CurrentDataCollector.AddToUniforms( UniqueId, "uniform float _ChromaticAberration;" );
+							if ( m_grabOrder != 0 )
+							{
+								m_currentDataCollector.AddGrabPass( "RefractionGrab" + m_grabOrder );
+								m_currentDataCollector.AddToUniforms( UniqueId, "uniform sampler2D RefractionGrab" + m_grabOrder + ";" );
+							}
+							else
+							{
+								m_currentDataCollector.AddGrabPass( "" );
+								m_currentDataCollector.AddToUniforms( UniqueId, "uniform sampler2D _GrabTexture;" );
+							}
 
-							UIUtils.CurrentDataCollector.AddToProperties( UniqueId, "[Header(Refraction)]", m_refractionReorder.OrderIndex );
-							UIUtils.CurrentDataCollector.AddToProperties( UniqueId, "_ChromaticAberration(\"Chromatic Aberration\", Range( 0 , 0.3)) = 0.1", m_refractionReorder.OrderIndex + 1 );
+							m_currentDataCollector.AddToUniforms( UniqueId, "uniform float _ChromaticAberration;" );
 
-							UIUtils.CurrentDataCollector.AddToPragmas( UniqueId, "multi_compile _ALPHAPREMULTIPLY_ON" );
+							m_currentDataCollector.AddToProperties( UniqueId, "[Header(Refraction)]", m_refractionReorder.OrderIndex );
+							m_currentDataCollector.AddToProperties( UniqueId, "_ChromaticAberration(\"Chromatic Aberration\", Range( 0 , 0.3)) = 0.1", m_refractionReorder.OrderIndex + 1 );
+
+							m_currentDataCollector.AddToPragmas( UniqueId, "multi_compile _ALPHAPREMULTIPLY_ON" );
 						}
 
 						if ( hasTranslucency || hasTransmission )
@@ -1409,24 +1441,24 @@ namespace AmplifyShaderEditor
 							//Translucency and Transmission Generation
 
 							//Add properties and uniforms
-							UIUtils.CurrentDataCollector.AddToIncludes( UniqueId, Constants.UnityPBSLightingLib );
+							m_currentDataCollector.AddToIncludes( UniqueId, Constants.UnityPBSLightingLib );
 
 							if ( hasTranslucency )
 							{
-								UIUtils.CurrentDataCollector.AddToProperties( UniqueId, "[Header(Translucency)]", m_translucencyReorder.OrderIndex );
-								UIUtils.CurrentDataCollector.AddToProperties( UniqueId, "_Translucency(\"Strength\", Range( 0 , 50)) = 1", m_translucencyReorder.OrderIndex + 1 );
-								UIUtils.CurrentDataCollector.AddToProperties( UniqueId, "_TransNormalDistortion(\"Normal Distortion\", Range( 0 , 1)) = 0.1", m_translucencyReorder.OrderIndex + 2 );
-								UIUtils.CurrentDataCollector.AddToProperties( UniqueId, "_TransScattering(\"Scaterring Falloff\", Range( 1 , 50)) = 2", m_translucencyReorder.OrderIndex + 3 );
-								UIUtils.CurrentDataCollector.AddToProperties( UniqueId, "_TransDirect(\"Direct\", Range( 0 , 1)) = 1", m_translucencyReorder.OrderIndex + 4 );
-								UIUtils.CurrentDataCollector.AddToProperties( UniqueId, "_TransAmbient(\"Ambient\", Range( 0 , 1)) = 0.2", m_translucencyReorder.OrderIndex + 5 );
-								UIUtils.CurrentDataCollector.AddToProperties( UniqueId, "_TransShadow(\"Shadow\", Range( 0 , 1)) = 0.9", m_translucencyReorder.OrderIndex + 6 );
+								m_currentDataCollector.AddToProperties( UniqueId, "[Header(Translucency)]", m_translucencyReorder.OrderIndex );
+								m_currentDataCollector.AddToProperties( UniqueId, "_Translucency(\"Strength\", Range( 0 , 50)) = 1", m_translucencyReorder.OrderIndex + 1 );
+								m_currentDataCollector.AddToProperties( UniqueId, "_TransNormalDistortion(\"Normal Distortion\", Range( 0 , 1)) = 0.1", m_translucencyReorder.OrderIndex + 2 );
+								m_currentDataCollector.AddToProperties( UniqueId, "_TransScattering(\"Scaterring Falloff\", Range( 1 , 50)) = 2", m_translucencyReorder.OrderIndex + 3 );
+								m_currentDataCollector.AddToProperties( UniqueId, "_TransDirect(\"Direct\", Range( 0 , 1)) = 1", m_translucencyReorder.OrderIndex + 4 );
+								m_currentDataCollector.AddToProperties( UniqueId, "_TransAmbient(\"Ambient\", Range( 0 , 1)) = 0.2", m_translucencyReorder.OrderIndex + 5 );
+								m_currentDataCollector.AddToProperties( UniqueId, "_TransShadow(\"Shadow\", Range( 0 , 1)) = 0.9", m_translucencyReorder.OrderIndex + 6 );
 
-								UIUtils.CurrentDataCollector.AddToUniforms( UniqueId, "uniform half _Translucency;" );
-								UIUtils.CurrentDataCollector.AddToUniforms( UniqueId, "uniform half _TransNormalDistortion;" );
-								UIUtils.CurrentDataCollector.AddToUniforms( UniqueId, "uniform half _TransScattering;" );
-								UIUtils.CurrentDataCollector.AddToUniforms( UniqueId, "uniform half _TransDirect;" );
-								UIUtils.CurrentDataCollector.AddToUniforms( UniqueId, "uniform half _TransAmbient;" );
-								UIUtils.CurrentDataCollector.AddToUniforms( UniqueId, "uniform half _TransShadow;" );
+								m_currentDataCollector.AddToUniforms( UniqueId, "uniform half _Translucency;" );
+								m_currentDataCollector.AddToUniforms( UniqueId, "uniform half _TransNormalDistortion;" );
+								m_currentDataCollector.AddToUniforms( UniqueId, "uniform half _TransScattering;" );
+								m_currentDataCollector.AddToUniforms( UniqueId, "uniform half _TransDirect;" );
+								m_currentDataCollector.AddToUniforms( UniqueId, "uniform half _TransAmbient;" );
+								m_currentDataCollector.AddToUniforms( UniqueId, "uniform half _TransShadow;" );
 							}
 
 							//Add custom struct
@@ -1437,33 +1469,33 @@ namespace AmplifyShaderEditor
 								outputStruct = "SurfaceOutput" + m_currentLightModel.ToString() + Constants.CustomLightStructStr; break;
 							}
 
-							UIUtils.CurrentDataCollector.ChangeCustomInputHeader( m_currentLightModel.ToString() + Constants.CustomLightStructStr );
-							UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "fixed3 Albedo", true );
-							UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "fixed3 Normal", true );
-							UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "half3 Emission", true );
+							m_currentDataCollector.ChangeCustomInputHeader( m_currentLightModel.ToString() + Constants.CustomLightStructStr );
+							m_currentDataCollector.AddToCustomInput( UniqueId, "fixed3 Albedo", true );
+							m_currentDataCollector.AddToCustomInput( UniqueId, "fixed3 Normal", true );
+							m_currentDataCollector.AddToCustomInput( UniqueId, "half3 Emission", true );
 							switch ( m_currentLightModel )
 							{
 								case StandardShaderLightModel.Standard:
-								UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "half Metallic", true );
+								m_currentDataCollector.AddToCustomInput( UniqueId, "half Metallic", true );
 								break;
 								case StandardShaderLightModel.StandardSpecular:
-								UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "fixed3 Specular", true );
+								m_currentDataCollector.AddToCustomInput( UniqueId, "fixed3 Specular", true );
 								break;
 							}
-							UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "half Smoothness", true );
-							UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "half Occlusion", true );
-							UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "fixed Alpha", true );
+							m_currentDataCollector.AddToCustomInput( UniqueId, "half Smoothness", true );
+							m_currentDataCollector.AddToCustomInput( UniqueId, "half Occlusion", true );
+							m_currentDataCollector.AddToCustomInput( UniqueId, "fixed Alpha", true );
 							if ( hasTranslucency )
-								UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "fixed3 Translucency", true );
+								m_currentDataCollector.AddToCustomInput( UniqueId, "fixed3 Translucency", true );
 
 							if ( hasTransmission )
-								UIUtils.CurrentDataCollector.AddToCustomInput( UniqueId, "fixed3 Transmission", true );
+								m_currentDataCollector.AddToCustomInput( UniqueId, "fixed3 Transmission", true );
 						}
 
 						if ( sortedPorts[ i ].Name.Equals( DiscardStr ) )
 						{
 							//Discard Op Node
-							UIUtils.CurrentDataCollector.PortCategory = MasterNodePortCategory.Fragment;
+							m_currentDataCollector.PortCategory = MasterNodePortCategory.Fragment;
 							string opacityValue = "0.0";
 							switch ( sortedPorts[ i ].ConnectionType() )
 							{
@@ -1492,151 +1524,225 @@ namespace AmplifyShaderEditor
 								}
 								break;
 							}
-							CreateInstructionsForPort( sortedPorts[ i ], Constants.OutputVarStr + "." + sortedPorts[ i ].DataName, true, "\t\t\tclip( ", " - " + opacityValue + " );\n", false, normalIsConnected );
+
+							if ( m_currentLightModel == StandardShaderLightModel.CustomLighting )
+							{
+								hasCustomLightingMask = true;
+								m_currentDataCollector.UsingCustomOutput = true;
+								WireReference connection = sortedPorts[ i ].GetConnection();
+								ParentNode node = UIUtils.GetNode( connection.NodeId );
+
+								customLightingMaskCode = node.GetValueFromOutputStr( connection.PortId, WirePortDataType.FLOAT, ref m_currentDataCollector, false );
+								customLightingMaskCode = "clip( " + customLightingMaskCode + " - " + opacityValue + " )";
+								customLightingInstructions = m_currentDataCollector.CustomOutput;
+
+								m_currentDataCollector.UsingCustomOutput = false;
+								continue;
+							} else
+							{
+								CreateInstructionsForPort( sortedPorts[ i ], Constants.OutputVarStr + "." + sortedPorts[ i ].DataName, true, "\t\t\tclip( ", " - " + opacityValue + " );\n", false, normalIsConnected );
+							}
 						}
 						else if ( sortedPorts[ i ].DataName.Equals( VertexDataStr ) )
 						{
 							hasVertexOffset = true;
-							ContainerGraph.ResetNodesLocalVariables();
+							ContainerGraph.ResetNodesLocalVariablesIfNot( MasterNodePortCategory.Vertex );
 							string vertexInstructions = CreateInstructionsForVertexPort( sortedPorts[ i ] );
-							UIUtils.CurrentDataCollector.AddToVertexDisplacement( vertexInstructions, m_vertexMode );
+							m_currentDataCollector.AddToVertexDisplacement( vertexInstructions, m_vertexMode );
 						}
 						else if ( sortedPorts[ i ].DataName.Equals( VertexNormalStr ) )
 						{
 							if ( !hasVertexOffset )
-								ContainerGraph.ResetNodesLocalVariables();
+								ContainerGraph.ResetNodesLocalVariablesIfNot( MasterNodePortCategory.Vertex );
 
 							string vertexInstructions = CreateInstructionsForVertexPort( sortedPorts[ i ] );
-							UIUtils.CurrentDataCollector.AddToVertexNormal( vertexInstructions );
+							m_currentDataCollector.AddToVertexNormal( vertexInstructions );
 						}
 						else if ( m_tessOpHelper.EnableTesselation && m_tessOpHelper.IsTessellationPort( sortedPorts[ i ].PortId ) )
 						{
-							ContainerGraph.ResetNodesLocalVariables();
+							ContainerGraph.ResetNodesLocalVariablesIfNot( MasterNodePortCategory.Vertex );
 							//Vertex displacement and per vertex custom data
-							UIUtils.CurrentDataCollector.PortCategory = MasterNodePortCategory.Tessellation;
+							m_currentDataCollector.PortCategory = MasterNodePortCategory.Tessellation;
 							WireReference connection = sortedPorts[ i ].GetConnection();
 							ParentNode node = UIUtils.GetNode( connection.NodeId );
 
-							string vertexInstructions = node.GetValueFromOutputStr( connection.PortId, sortedPorts[ i ].DataType, ref UIUtils.CurrentDataCollector, false );
+							string vertexInstructions = node.GetValueFromOutputStr( connection.PortId, sortedPorts[ i ].DataType, ref m_currentDataCollector, false );
 
-							if ( UIUtils.CurrentDataCollector.DirtySpecialLocalVariables )
+							if ( m_currentDataCollector.DirtySpecialLocalVariables )
 							{
-								m_tessOpHelper.AddAdditionalData( UIUtils.CurrentDataCollector.SpecialLocalVariables );
-								UIUtils.CurrentDataCollector.ClearSpecialLocalVariables();
+								m_tessOpHelper.AddAdditionalData( m_currentDataCollector.SpecialLocalVariables );
+								m_currentDataCollector.ClearSpecialLocalVariables();
 							}
 
-							if ( UIUtils.CurrentDataCollector.DirtyVertexVariables )
+							if ( m_currentDataCollector.DirtyVertexVariables )
 							{
-								m_tessOpHelper.AddAdditionalData( UIUtils.CurrentDataCollector.VertexLocalVariables );
-								UIUtils.CurrentDataCollector.ClearVertexLocalVariables();
+								m_tessOpHelper.AddAdditionalData( m_currentDataCollector.VertexLocalVariables );
+								m_currentDataCollector.ClearVertexLocalVariables();
 							}
-							
+
 							m_tessOpHelper.AddCustomFunction( vertexInstructions );
 						}
 						else if ( sortedPorts[ i ].Name.Equals( RefractionStr ) )
 						{
 							ContainerGraph.ResetNodesLocalVariables();
-							UIUtils.CurrentDataCollector.UsingCustomOutput = true;
+							m_currentDataCollector.UsingCustomOutput = true;
 
 							refractionFix = " + 0.00001 * i.screenPos * i.worldPos";
-							UIUtils.CurrentDataCollector.AddInstructions( "\t\t\to.Normal = o.Normal" + refractionFix + ";\n" );
+							m_currentDataCollector.AddInstructions( "\t\t\to.Normal = o.Normal" + refractionFix + ";\n" );
 							WireReference connection = sortedPorts[ i ].GetConnection();
 							ParentNode node = UIUtils.GetNode( connection.NodeId );
 
-							refractionCode = node.GetValueFromOutputStr( connection.PortId, sortedPorts[ i ].DataType, ref UIUtils.CurrentDataCollector, true );
-							refractionInstructions = UIUtils.CurrentDataCollector.CustomOutput;
+							refractionCode = node.GetValueFromOutputStr( connection.PortId, sortedPorts[ i ].DataType, ref m_currentDataCollector, true );
+							refractionInstructions = m_currentDataCollector.CustomOutput;
 
-							UIUtils.CurrentDataCollector.UsingCustomOutput = false;
+							m_currentDataCollector.UsingCustomOutput = false;
 						}
-						else if ( sortedPorts[ i ].Name.Equals( CustomLightModelStr ) )
+						else if ( sortedPorts[ i ].Name.Equals( EmissionStr ) && m_currentLightModel == StandardShaderLightModel.CustomLighting )
 						{
-							ContainerGraph.ResetNodesLocalVariables();
-							UIUtils.CurrentDataCollector.UsingCustomOutput = true;
+							//if ( !hasCustomLightingAlpha )
+							//	ContainerGraph.ResetNodesLocalVariables();
 
-							UIUtils.CurrentDataCollector.AddInstructions( "\t\t\t" + Constants.OutputVarStr + ".SurfInput = " + Constants.InputVarStr + ";\n" );
+							m_currentDataCollector.UsingCustomOutput = true;
 							WireReference connection = sortedPorts[ i ].GetConnection();
 							ParentNode node = UIUtils.GetNode( connection.NodeId );
 
-							customLightingCode = node.GetValueFromOutputStr( connection.PortId, WirePortDataType.FLOAT3, ref UIUtils.CurrentDataCollector, false );
-							customLightingInstructions = UIUtils.CurrentDataCollector.CustomOutput;
+							customLightingCode = node.GetValueFromOutputStr( connection.PortId, WirePortDataType.FLOAT3, ref m_currentDataCollector, false );
+							customLightingInstructions = m_currentDataCollector.CustomOutput;
 
-							UIUtils.CurrentDataCollector.UsingCustomOutput = false;
+							if ( m_currentDataCollector.ForceNormal )
+							{
+								m_currentDataCollector.AddToStartInstructions( "\t\t\t" + Constants.OutputVarStr + ".Normal = float3(0,0,1);\n" );
+								m_currentDataCollector.DirtyNormal = true;
+								m_currentDataCollector.ForceNormal = false;
+							}
+
+							if( m_currentDataCollector.DirtyVertexVariables )
+							{
+								m_currentDataCollector.AddVertexInstruction( m_currentDataCollector.VertexLocalVariables, UniqueId, false );
+								m_currentDataCollector.ClearVertexLocalVariables();
+							}
+
+							m_currentDataCollector.UsingCustomOutput = false;
+						}
+						else if ( sortedPorts[ i ].Name.Equals( AlphaStr ) && m_currentLightModel == StandardShaderLightModel.CustomLighting )
+						{
+							//hasCustomLightingAlpha = true;
+							//ContainerGraph.ResetNodesLocalVariables();
+							m_currentDataCollector.UsingCustomOutput = true;
+
+							WireReference connection = sortedPorts[ i ].GetConnection();
+							ParentNode node = UIUtils.GetNode( connection.NodeId );
+
+							customLightingAlphaCode = node.GetValueFromOutputStr( connection.PortId, WirePortDataType.FLOAT, ref m_currentDataCollector, false );
+							customLightingInstructions = m_currentDataCollector.CustomOutput;
+
+							if( m_currentDataCollector.ForceNormal )
+							{
+								m_currentDataCollector.AddToStartInstructions( "\t\t\t" + Constants.OutputVarStr + ".Normal = float3(0,0,1);\n" );
+								m_currentDataCollector.DirtyNormal = true;
+								m_currentDataCollector.ForceNormal = false;
+							}
+
+							if( m_currentDataCollector.DirtyVertexVariables )
+							{
+								m_currentDataCollector.AddVertexInstruction( m_currentDataCollector.VertexLocalVariables, UniqueId, false );
+								m_currentDataCollector.ClearVertexLocalVariables();
+							}
+
+							m_currentDataCollector.UsingCustomOutput = false;
 						}
 						else
 						{
 							// Surface shader instruccions
-							UIUtils.CurrentDataCollector.PortCategory = MasterNodePortCategory.Fragment;
+							m_currentDataCollector.PortCategory = MasterNodePortCategory.Fragment;
 							// if working on normals and have normal dependent node then ignore local var generation
-							bool ignoreLocalVar = ( i == 0 && UIUtils.IsNormalDependent() );
+							//bool ignoreLocalVar = ( i == 0 && UIUtils.IsNormalDependent() );
 
-							CreateInstructionsForPort( sortedPorts[ i ], Constants.OutputVarStr + "." + sortedPorts[ i ].DataName, false, null, null, ignoreLocalVar, normalIsConnected );
+							CreateInstructionsForPort( sortedPorts[ i ], Constants.OutputVarStr + "." + sortedPorts[ i ].DataName, false, null, null, false, normalIsConnected );
 						}
 					}
 					else if ( sortedPorts[ i ].Name.Equals( AlphaStr ) )
 					{
-						UIUtils.CurrentDataCollector.AddInstructions( string.Format( "\t\t\t{0}.{1} = 1;\n", Constants.OutputVarStr, sortedPorts[ i ].DataName ) );
+						if ( m_currentLightModel != StandardShaderLightModel.CustomLighting )
+						{
+							m_currentDataCollector.AddInstructions( string.Format( "\t\t\t{0}.{1} = 1;\n", Constants.OutputVarStr, sortedPorts[ i ].DataName ) );
+						}
 					}
 				}
 
-				m_billboardOpHelper.FillDataCollector( ref UIUtils.CurrentDataCollector );
+				m_billboardOpHelper.FillDataCollectorWithInternalData( ref m_currentDataCollector );
 			}
 
 
-			if ( ( m_castShadows && hasOpacity ) || ( m_castShadows && ( UIUtils.CurrentDataCollector.UsingWorldNormal || UIUtils.CurrentDataCollector.UsingWorldReflection || UIUtils.CurrentDataCollector.UsingViewDirection ) ) )
+			if ( ( m_castShadows && hasOpacity ) || ( m_castShadows && ( m_currentDataCollector.UsingWorldNormal || m_currentDataCollector.UsingWorldReflection || m_currentDataCollector.UsingViewDirection ) ) )
 				m_customShadowCaster = true;
 			else
 				m_customShadowCaster = false;
 
+			//m_customShadowCaster = false;
 
 			for ( int i = 0; i < 4; i++ )
 			{
-				if ( UIUtils.CurrentDataCollector.GetChannelUsage( i ) == TextureChannelUsage.Required )
+				if ( m_currentDataCollector.GetChannelUsage( i ) == TextureChannelUsage.Required )
 				{
 					string channelName = UIUtils.GetChannelName( i );
-					UIUtils.CurrentDataCollector.AddToProperties( -1, UIUtils.GetTex2DProperty( channelName, TexturePropertyValues.white ), -1 );
+					m_currentDataCollector.AddToProperties( -1, UIUtils.GetTex2DProperty( channelName, TexturePropertyValues.white ), -1 );
 				}
 			}
 
-			UIUtils.CurrentDataCollector.AddToProperties( -1, IOUtils.DefaultASEDirtyCheckProperty, -2 );
-			if ( m_alphaMode == AlphaMode.Masked || m_alphaMode == AlphaMode.Custom/*&& !m_customBlendMode*/ )
+			m_currentDataCollector.AddToProperties( -1, IOUtils.DefaultASEDirtyCheckProperty, -2 );
+			if ( m_inputPorts[ m_discardPortId ].Available /*m_alphaMode == AlphaMode.Masked || m_alphaMode == AlphaMode.Custom*/ )
 			{
-				UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( IOUtils.MaskClipValueProperty, OpacityMaskClipValueStr, m_opacityMaskClipValue ), m_maskClipReorder.OrderIndex );
-				UIUtils.CurrentDataCollector.AddToUniforms( -1, string.Format( IOUtils.MaskClipValueUniform, m_opacityMaskClipValue ) );
+				m_currentDataCollector.AddToProperties( -1, string.Format( IOUtils.MaskClipValueProperty, OpacityMaskClipValueStr, m_opacityMaskClipValue ), ( m_maskClipReorder != null ) ? m_maskClipReorder.OrderIndex : -1 );
+				m_currentDataCollector.AddToUniforms( -1, string.Format( IOUtils.MaskClipValueUniform, m_opacityMaskClipValue ) );
 			}
 
-			if ( !UIUtils.CurrentDataCollector.DirtyInputs )
-				UIUtils.CurrentDataCollector.AddToInput( UniqueId, "fixed filler", true );
-
+			if ( !m_currentDataCollector.DirtyInputs )
+				m_currentDataCollector.AddToInput( UniqueId, "fixed filler", true );
+			
 			if ( m_currentLightModel == StandardShaderLightModel.BlinnPhong )
-				UIUtils.CurrentDataCollector.AddToProperties( -1, "[HideInInspector]_SpecColor(\"SpecularColor\",Color)=(1,1,1,1)", -1 );
+				m_currentDataCollector.AddToProperties( -1, "[HideInInspector]_SpecColor(\"SpecularColor\",Color)=(1,1,1,1)", -1 );
 
 			//Tesselation
 			if ( m_tessOpHelper.EnableTesselation )
 			{
-				m_tessOpHelper.AddToDataCollector( ref UIUtils.CurrentDataCollector, m_tessellationReorder != null ? m_tessellationReorder.OrderIndex : -1 );
-				if ( !UIUtils.CurrentDataCollector.DirtyPerVertexData )
+				m_tessOpHelper.AddToDataCollector( ref m_currentDataCollector, m_tessellationReorder != null ? m_tessellationReorder.OrderIndex : -1 );
+				if ( !m_currentDataCollector.DirtyPerVertexData )
 				{
-					UIUtils.CurrentDataCollector.OpenPerVertexHeader( false );
+					m_currentDataCollector.OpenPerVertexHeader( false );
 				}
 			}
+
 			if ( m_outlineHelper.EnableOutline )
 			{
-				m_outlineHelper.AddToDataCollector( ref UIUtils.CurrentDataCollector );
+				m_outlineHelper.AddToDataCollector( ref m_currentDataCollector );
 			}
 
-			UIUtils.CurrentDataCollector.CloseInputs();
-			UIUtils.CurrentDataCollector.CloseCustomInputs();
-			UIUtils.CurrentDataCollector.CloseProperties();
-			UIUtils.CurrentDataCollector.ClosePerVertexHeader();
+#if !UNITY_2017_1_OR_NEWER
+			if ( m_renderingOptionsOpHelper.LodCrossfade )
+			{
+				m_currentDataCollector.AddToPragmas( UniqueId, "multi_compile _ LOD_FADE_CROSSFADE" );
+				m_currentDataCollector.AddToStartInstructions( "\t\t\tUNITY_APPLY_DITHER_CROSSFADE(i);\n" );
+				m_currentDataCollector.AddToInput( UniqueId, "UNITY_DITHER_CROSSFADE_COORDS", false );
+				m_currentDataCollector.AddVertexInstruction( "UNITY_TRANSFER_DITHER_CROSSFADE( " + Constants.VertexShaderOutputStr + ", " + Constants.VertexShaderInputStr + ".vertex )", UniqueId, true );
+			}
+#endif
+			m_additionalIncludes.AddToDataCollector( ref m_currentDataCollector );
+			m_additionalPragmas.AddToDataCollector( ref m_currentDataCollector );
+
+			m_currentDataCollector.CloseInputs();
+			m_currentDataCollector.CloseCustomInputs();
+			m_currentDataCollector.CloseProperties();
+			m_currentDataCollector.ClosePerVertexHeader();
 
 			//build Shader Body
 			string ShaderBody = string.Empty;
 			OpenShaderBody( ref ShaderBody, m_shaderName );
 			{
 				//set properties
-				if ( UIUtils.CurrentDataCollector.DirtyProperties )
+				if ( m_currentDataCollector.DirtyProperties )
 				{
-					ShaderBody += UIUtils.CurrentDataCollector.BuildPropertiesString();
+					ShaderBody += m_currentDataCollector.BuildPropertiesString();
 				}
 				//set subshader
 				OpenSubShaderBody( ref ShaderBody );
@@ -1644,7 +1750,7 @@ namespace AmplifyShaderEditor
 					// Add optionalPasses
 					if ( m_outlineHelper.EnableOutline )
 					{
-						AddMultilineBody( ref ShaderBody, m_outlineHelper.OutlineFunctionBody( isInstancedShader, m_customShadowCaster, UIUtils.RemoveInvalidCharacters( ShaderName ), ( m_billboardOpHelper.IsBillboard ? m_billboardOpHelper.BillboardCylindricalInstructions : null ) ) );
+						AddMultilineBody( ref ShaderBody, m_outlineHelper.OutlineFunctionBody( isInstancedShader, m_customShadowCaster, UIUtils.RemoveInvalidCharacters( ShaderName ), ( m_billboardOpHelper.IsBillboard ? m_billboardOpHelper.GetInternalMultilineInstructions() : null ) ) );
 					}
 
 					//Add SubShader tags
@@ -1652,6 +1758,8 @@ namespace AmplifyShaderEditor
 					{
 						tags += " \"IsEmissive\" = \"true\" ";
 					}
+
+					tags += m_customTagsHelper.GenerateCustomTags();
 
 					tags = "Tags{ " + tags + " }";
 					AddRenderTags( ref ShaderBody, tags );
@@ -1679,9 +1787,9 @@ namespace AmplifyShaderEditor
 					//ShaderBody += "\t\tZTest " + _zTestMode + '\n';
 
 					//Add GrabPass
-					if ( UIUtils.CurrentDataCollector.DirtyGrabPass )
+					if ( m_currentDataCollector.DirtyGrabPass )
 					{
-						ShaderBody += UIUtils.CurrentDataCollector.GrabPass;
+						ShaderBody += m_currentDataCollector.GrabPass;
 					}
 
 					// build optional parameters
@@ -1701,11 +1809,11 @@ namespace AmplifyShaderEditor
 						//Add Includes
 						if ( m_customShadowCaster )
 						{
-							UIUtils.CurrentDataCollector.AddToIncludes( UniqueId, Constants.UnityPBSLightingLib );
-							UIUtils.CurrentDataCollector.AddToIncludes( UniqueId, "Lighting.cginc" );
+							m_currentDataCollector.AddToIncludes( UniqueId, Constants.UnityPBSLightingLib );
+							m_currentDataCollector.AddToIncludes( UniqueId, "Lighting.cginc" );
 						}
-						if ( UIUtils.CurrentDataCollector.DirtyIncludes )
-							ShaderBody += UIUtils.CurrentDataCollector.Includes;
+						if ( m_currentDataCollector.DirtyIncludes )
+							ShaderBody += m_currentDataCollector.Includes;
 
 						//define as surface shader and specify lighting model
 						if ( UIUtils.GetTextureArrayNodeAmount() > 0 && m_shaderModelIdx < 3 )
@@ -1722,36 +1830,32 @@ namespace AmplifyShaderEditor
 						}
 
 						// if translucency is ON change render path
-						if (hasTranslucency && m_renderPath != RenderPath.ForwardOnly)
+						if ( hasTranslucency && m_renderPath != RenderPath.ForwardOnly )
 						{
-							Debug.Log("Automatically changing Render Path to Forward Only since translucency only works in forward rendering.");
+							Debug.Log( "Automatically changing Render Path to Forward Only since translucency only works in forward rendering." );
 							m_renderPath = RenderPath.ForwardOnly;
 						}
 
 						// if transmission is ON change render path
-						if (hasTransmission && m_renderPath != RenderPath.ForwardOnly)
+						if ( hasTransmission && m_renderPath != RenderPath.ForwardOnly )
 						{
-							Debug.Log("Automatically changing Render Path to Forward Only since transmission only works in forward rendering.");
+							Debug.Log( "Automatically changing Render Path to Forward Only since transmission only works in forward rendering." );
 							m_renderPath = RenderPath.ForwardOnly;
 						}
 
 						// if refraction is ON change render path
-						if (hasRefraction && m_renderPath != RenderPath.ForwardOnly)
+						if ( hasRefraction && m_renderPath != RenderPath.ForwardOnly )
 						{
-							Debug.Log("Automatically changing Render Path to Forward Only since refraction only works in forward rendering.");
+							Debug.Log( "Automatically changing Render Path to Forward Only since refraction only works in forward rendering." );
 							m_renderPath = RenderPath.ForwardOnly;
 						}
 
 						ShaderBody += string.Format( IOUtils.PragmaTargetHeader, ShaderModelTypeArr[ m_shaderModelIdx ] );
 
-						if ( isInstancedShader )
-						{
-							ShaderBody += IOUtils.InstancedPropertiesHeader;
-						}
 
-						//Add pragmas
-						if ( UIUtils.CurrentDataCollector.DirtyPragmas && !m_customShadowCaster )
-							ShaderBody += UIUtils.CurrentDataCollector.Pragmas;
+						//Add pragmas (needs check to see if all pragmas work with custom shadow caster)
+						if ( m_currentDataCollector.DirtyPragmas/* && !m_customShadowCaster */)
+							ShaderBody += m_currentDataCollector.Pragmas;
 
 						//if ( !m_customBlendMode )
 						{
@@ -1810,12 +1914,12 @@ namespace AmplifyShaderEditor
 						if ( !m_customShadowCaster )
 						{
 							string customLightSurface = string.Empty;
-							if( hasTranslucency || hasTransmission )
+							if ( hasTranslucency || hasTransmission )
 								customLightSurface = "Custom";
 							m_renderingPlatformOpHelper.SetRenderingPlatforms( ref ShaderBody );
 
 							//Check if Custom Vertex is being used and add tag
-							if ( UIUtils.CurrentDataCollector.DirtyPerVertexData )
+							if ( m_currentDataCollector.DirtyPerVertexData )
 								OptionalParameters += "vertex:" + Constants.VertexDataFunc + Constants.OptionalParametersSep;
 
 							if ( m_tessOpHelper.EnableTesselation )
@@ -1827,10 +1931,8 @@ namespace AmplifyShaderEditor
 						}
 						else
 						{
-							if ( UIUtils.CurrentDataCollector.UsingWorldNormal || UIUtils.CurrentDataCollector.UsingInternalData )
+							if ( /*m_currentDataCollector.UsingWorldNormal ||*/ m_currentDataCollector.UsingInternalData )
 							{
-								//ShaderBody += "\t\t#if UNITY_PASS_SHADOWCASTER\n";
-
 								ShaderBody += "\t\t#ifdef UNITY_PASS_SHADOWCASTER\n";
 								ShaderBody += "\t\t\t#undef INTERNAL_DATA\n";
 								ShaderBody += "\t\t\t#undef WorldReflectionVector\n";
@@ -1842,7 +1944,7 @@ namespace AmplifyShaderEditor
 							}
 						}
 
-						if ( UIUtils.CurrentDataCollector.UsingHigherSizeTexcoords )
+						if ( m_currentDataCollector.UsingHigherSizeTexcoords )
 						{
 							ShaderBody += "\t\t#undef TRANSFORM_TEX\n";
 							ShaderBody += "\t\t#define TRANSFORM_TEX(tex,name) float4(tex.xy * name##_ST.xy + name##_ST.zw, tex.z, tex.w)\n";
@@ -1850,8 +1952,8 @@ namespace AmplifyShaderEditor
 
 
 						// Add Input struct
-						if ( UIUtils.CurrentDataCollector.DirtyInputs )
-							ShaderBody += UIUtils.CurrentDataCollector.Inputs + "\n\n";
+						if ( m_currentDataCollector.DirtyInputs )
+							ShaderBody += m_currentDataCollector.Inputs + "\n\n";
 
 						if ( m_tessOpHelper.EnableTesselation )
 						{
@@ -1859,23 +1961,32 @@ namespace AmplifyShaderEditor
 						}
 
 						// Add Custom Lighting struct
-						if ( UIUtils.CurrentDataCollector.DirtyCustomInput )
-							ShaderBody += UIUtils.CurrentDataCollector.CustomInput + "\n\n";
+						if ( m_currentDataCollector.DirtyCustomInput )
+							ShaderBody += m_currentDataCollector.CustomInput + "\n\n";
 
 						//Add Uniforms
-						if ( UIUtils.CurrentDataCollector.DirtyUniforms )
-							ShaderBody += UIUtils.CurrentDataCollector.Uniforms + "\n";
+						if ( m_currentDataCollector.DirtyUniforms )
+							ShaderBody += m_currentDataCollector.Uniforms + "\n";
 
-
-						//Add Instanced Properties
-						if ( isInstancedShader && UIUtils.CurrentDataCollector.DirtyInstancedProperties )
+						// Add Array Derivatives Macros
+						if ( m_currentDataCollector.UsingArrayDerivatives )
 						{
-							UIUtils.CurrentDataCollector.SetupInstancePropertiesBlock( UIUtils.RemoveInvalidCharacters( ShaderName ) );
-							ShaderBody += UIUtils.CurrentDataCollector.InstancedProperties + "\n";
+							ShaderBody += "\t\t#if defined(UNITY_COMPILER_HLSL2GLSL) || defined(SHADER_TARGET_SURFACE_ANALYSIS)\n";
+							ShaderBody += "\t\t\t#define ASE_SAMPLE_TEX2DARRAY_GRAD(tex,coord,dx,dy) tex2DArray (tex,coord)\n";
+							ShaderBody += "\t\t#else\n";
+							ShaderBody += "\t\t\t#define ASE_SAMPLE_TEX2DARRAY_GRAD(tex,coord,dx,dy) tex.SampleGrad (sampler##tex,coord,dx,dy)\n";
+							ShaderBody += "\t\t#endif\n\n";
 						}
 
-						if ( UIUtils.CurrentDataCollector.DirtyFunctions )
-							ShaderBody += UIUtils.CurrentDataCollector.Functions + "\n";
+						//Add Instanced Properties
+						if ( isInstancedShader && m_currentDataCollector.DirtyInstancedProperties )
+						{
+							m_currentDataCollector.SetupInstancePropertiesBlock( UIUtils.RemoveInvalidCharacters( ShaderName ) );
+							ShaderBody += m_currentDataCollector.InstancedProperties + "\n";
+						}
+
+						if ( m_currentDataCollector.DirtyFunctions )
+							ShaderBody += m_currentDataCollector.Functions + "\n";
 
 
 						//Tesselation
@@ -1885,9 +1996,9 @@ namespace AmplifyShaderEditor
 						}
 
 						//Add Custom Vertex Data
-						if ( UIUtils.CurrentDataCollector.DirtyPerVertexData )
+						if ( m_currentDataCollector.DirtyPerVertexData )
 						{
-							ShaderBody += UIUtils.CurrentDataCollector.VertexData;
+							ShaderBody += m_currentDataCollector.VertexData;
 						}
 
 						if ( m_currentLightModel == StandardShaderLightModel.Unlit )
@@ -1904,12 +2015,30 @@ namespace AmplifyShaderEditor
 							ShaderBody += "\t\tinline half4 LightingStandard" + m_currentLightModel.ToString() + "( inout " + outputStruct + " " + Constants.CustomLightOutputVarStr + ", half3 viewDir, UnityGI gi )\n\t\t{\n";
 							ShaderBody += "\t\t\tUnityGIInput data = s.GIData;\n";
 							ShaderBody += "\t\t\tInput i = s.SurfInput;\n";
+							ShaderBody += "\t\t\thalf4 c = 0;\n";
+							if ( m_currentDataCollector.UsingLightAttenuation )
+							{
+								ShaderBody += "\t\t\t#if DIRECTIONAL\n";
+								ShaderBody += "\t\t\tfloat ase_lightAtten = data.atten;\n";
+								ShaderBody += "\t\t\tif( _LightColor0.a == 0)\n";
+								ShaderBody += "\t\t\tase_lightAtten = 0;\n";
+								ShaderBody += "\t\t\t#else\n";
+								ShaderBody += "\t\t\tfloat3 ase_lightAttenRGB = gi.light.color / ( ( _LightColor0.rgb ) + 0.000001 );\n";
+								ShaderBody += "\t\t\tfloat ase_lightAtten = max( max( ase_lightAttenRGB.r, ase_lightAttenRGB.g ), ase_lightAttenRGB.b );\n";
+								ShaderBody += "\t\t\t#endif\n";
+							}
+
+							//if( m_currentDataCollector.dirtyc )
 							ShaderBody += customLightingInstructions;
-							ShaderBody += "\t\t\treturn half4("+ customLightingCode + ",1);\n";
+							ShaderBody += "\t\t\tc.rgb = " + ( !string.IsNullOrEmpty( customLightingCode ) ? customLightingCode : "0" ) + ";\n";
+							ShaderBody += "\t\t\tc.a = " + ( !string.IsNullOrEmpty( customLightingAlphaCode ) ? customLightingAlphaCode : "1" ) + ";\n";
+							if ( hasCustomLightingMask )
+								ShaderBody += "\t\t\t"+customLightingMaskCode+";\n";
+							ShaderBody += "\t\t\treturn c;\n";
 							ShaderBody += "\t\t}\n\n";
 
 							//Add GI function
-							ShaderBody += "\t\tinline void LightingStandard" + m_currentLightModel.ToString() + "_GI( inout "+ outputStruct + " " + Constants.CustomLightOutputVarStr + ", UnityGIInput data, inout UnityGI gi )\n\t\t{\n";
+							ShaderBody += "\t\tinline void LightingStandard" + m_currentLightModel.ToString() + "_GI( inout " + outputStruct + " " + Constants.CustomLightOutputVarStr + ", UnityGIInput data, inout UnityGI gi )\n\t\t{\n";
 							ShaderBody += "\t\t\ts.GIData = data;\n";
 							//ShaderBody += "\t\t\tUNITY_GI(gi, " + Constants.CustomLightOutputVarStr + ", data);\n";
 							ShaderBody += "\t\t}\n\n";
@@ -1924,7 +2053,7 @@ namespace AmplifyShaderEditor
 								ShaderBody += "\t\t\t#if !DIRECTIONAL\n";
 								ShaderBody += "\t\t\tfloat3 lightAtten = gi.light.color;\n";
 								ShaderBody += "\t\t\t#else\n";
-								ShaderBody += "\t\t\tfloat3 lightAtten = lerp( _LightColor0, gi.light.color, _TransShadow );\n";
+								ShaderBody += "\t\t\tfloat3 lightAtten = lerp( _LightColor0.rgb, gi.light.color, _TransShadow );\n";
 								ShaderBody += "\t\t\t#endif\n";
 								ShaderBody += "\t\t\thalf3 lightDir = gi.light.dir + " + Constants.CustomLightOutputVarStr + ".Normal * _TransNormalDistortion;\n";
 								ShaderBody += "\t\t\thalf transVdotL = pow( saturate( dot( viewDir, -lightDir ) ), _TransScattering );\n";
@@ -1982,9 +2111,13 @@ namespace AmplifyShaderEditor
 							ShaderBody += "\t\t\tfloat3 worldViewDir = normalize( UnityWorldSpaceViewDir( " + Constants.InputVarStr + ".worldPos ) );\n";
 							ShaderBody += "\t\t\tfloat3 refractionOffset = ( ( ( ( indexOfRefraction - 1.0 ) * mul( UNITY_MATRIX_V, float4( worldNormal, 0.0 ) ) ) * ( 1.0 / ( screenPos.z + 1.0 ) ) ) * ( 1.0 - dot( worldNormal, worldViewDir ) ) );\n";
 							ShaderBody += "\t\t\tfloat2 cameraRefraction = float2( refractionOffset.x, -( refractionOffset.y * _ProjectionParams.x ) );\n";
-							ShaderBody += "\t\t\tfloat4 redAlpha = tex2D( RefractionGrab" + m_grabOrder + ", ( projScreenPos + cameraRefraction ) );\n";
-							ShaderBody += "\t\t\tfloat green = tex2D( RefractionGrab" + m_grabOrder + ", ( projScreenPos + ( cameraRefraction * ( 1.0 - chomaticAberration ) ) ) ).g;\n";
-							ShaderBody += "\t\t\tfloat blue = tex2D( RefractionGrab" + m_grabOrder + ", ( projScreenPos + ( cameraRefraction * ( 1.0 + chomaticAberration ) ) ) ).b;\n";
+
+							string grabpass = "_GrabTexture";
+							if ( m_grabOrder != 0 )
+								grabpass = "RefractionGrab" + m_grabOrder;
+							ShaderBody += "\t\t\tfloat4 redAlpha = tex2D( " + grabpass + ", ( projScreenPos + cameraRefraction ) );\n";
+							ShaderBody += "\t\t\tfloat green = tex2D( " + grabpass + ", ( projScreenPos + ( cameraRefraction * ( 1.0 - chomaticAberration ) ) ) ).g;\n";
+							ShaderBody += "\t\t\tfloat blue = tex2D( " + grabpass + ", ( projScreenPos + ( cameraRefraction * ( 1.0 + chomaticAberration ) ) ) ).b;\n";
 							ShaderBody += "\t\t\treturn float4( redAlpha.r, green, blue, redAlpha.a );\n";
 							ShaderBody += "\t\t}\n\n";
 
@@ -2001,13 +2134,17 @@ namespace AmplifyShaderEditor
 						//Add Surface Shader body
 						ShaderBody += "\t\tvoid surf( Input " + Constants.InputVarStr + " , inout " + outputStruct + " " + Constants.OutputVarStr + " )\n\t\t{\n";
 						{
+							// Pass input information to custom lighting function
+							if ( m_currentLightModel == StandardShaderLightModel.CustomLighting )
+								ShaderBody += "\t\t\t" + Constants.OutputVarStr + ".SurfInput = " + Constants.InputVarStr + ";\n";
+
 							//add local vars
-							if ( UIUtils.CurrentDataCollector.DirtyLocalVariables )
-								ShaderBody += UIUtils.CurrentDataCollector.LocalVariables;
+							if ( m_currentDataCollector.DirtyLocalVariables )
+								ShaderBody += m_currentDataCollector.LocalVariables;
 
 							//add nodes ops
-							if ( UIUtils.CurrentDataCollector.DirtyInstructions )
-								ShaderBody += UIUtils.CurrentDataCollector.Instructions;
+							if ( m_currentDataCollector.DirtyInstructions )
+								ShaderBody += m_currentDataCollector.Instructions;
 						}
 						ShaderBody += "\t\t}\n";
 					}
@@ -2022,15 +2159,15 @@ namespace AmplifyShaderEditor
 						m_renderingPlatformOpHelper.SetRenderingPlatforms( ref ShaderBody );
 
 						//Check if Custom Vertex is being used and add tag
-						if ( UIUtils.CurrentDataCollector.DirtyPerVertexData )
+						if ( m_currentDataCollector.DirtyPerVertexData )
 							OptionalParameters += "vertex:" + Constants.VertexDataFunc + Constants.OptionalParametersSep;
 
 						if ( m_tessOpHelper.EnableTesselation )
 						{
 							m_tessOpHelper.WriteToOptionalParams( ref OptionalParameters );
 						}
-						if ( hasRefraction )
-							ShaderBody += "\t\t#pragma multi_compile _ALPHAPREMULTIPLY_ON\n";
+						//if ( hasRefraction )
+						//	ShaderBody += "\t\t#pragma multi_compile _ALPHAPREMULTIPLY_ON\n";
 
 						AddShaderPragma( ref ShaderBody, "surface surf " + standardCustomLighting + m_currentLightModel.ToString() + customLightSurface + Constants.OptionalParametersSep + OptionalParameters );
 						CloseCGProgram( ref ShaderBody );
@@ -2043,7 +2180,7 @@ namespace AmplifyShaderEditor
 						ShaderBody += "\t\t\tCGPROGRAM\n";
 						ShaderBody += "\t\t\t#pragma vertex vert\n";
 						ShaderBody += "\t\t\t#pragma fragment frag\n";
-						ShaderBody += "\t\t\t#pragma target 3.0\n";
+						ShaderBody += "\t\t\t#pragma target "+ ShaderModelTypeArr[ m_shaderModelIdx ] + "\n";
 						//ShaderBody += "\t\t\t#pragma multi_compile_instancing\n";
 						ShaderBody += "\t\t\t#pragma multi_compile_shadowcaster\n";
 						ShaderBody += "\t\t\t#pragma multi_compile UNITY_PASS_SHADOWCASTER\n";
@@ -2060,16 +2197,22 @@ namespace AmplifyShaderEditor
 						ShaderBody += "\t\t\tstruct v2f\n";
 						ShaderBody += "\t\t\t{\n";
 						ShaderBody += "\t\t\t\tV2F_SHADOW_CASTER;\n";
-						ShaderBody += "\t\t\t\tfloat3 worldPos : TEXCOORD6;\n";
-						if ( UIUtils.CurrentDataCollector.UsingWorldNormal || UIUtils.CurrentDataCollector.UsingWorldPosition || UIUtils.CurrentDataCollector.UsingInternalData || UIUtils.CurrentDataCollector.DirtyNormal )
+						if( !m_currentDataCollector.UsingInternalData )
+							ShaderBody += "\t\t\t\tfloat3 worldPos : TEXCOORD6;\n";
+						if( m_currentDataCollector.UsingScreenPos )
+							ShaderBody += "\t\t\t\tfloat4 screenPos : TEXCOORD7;\n";
+						if ( /*m_currentDataCollector.UsingWorldNormal || m_currentDataCollector.UsingWorldPosition ||*/ m_currentDataCollector.UsingInternalData || m_currentDataCollector.DirtyNormal )
 						{
 							ShaderBody += "\t\t\t\tfloat4 tSpace0 : TEXCOORD1;\n";
 							ShaderBody += "\t\t\t\tfloat4 tSpace1 : TEXCOORD2;\n";
 							ShaderBody += "\t\t\t\tfloat4 tSpace2 : TEXCOORD3;\n";
+						} else if( !m_currentDataCollector.UsingInternalData && m_currentDataCollector.UsingWorldNormal )
+						{
+							ShaderBody += "\t\t\t\tfloat3 worldNormal : TEXCOORD1;\n";
 						}
-						if ( UIUtils.CurrentDataCollector.UsingTexcoord0 || UIUtils.CurrentDataCollector.UsingTexcoord1 )
+						if ( m_currentDataCollector.UsingTexcoord0 || m_currentDataCollector.UsingTexcoord1 )
 							ShaderBody += "\t\t\t\tfloat4 texcoords01 : TEXCOORD4;\n";
-						if ( UIUtils.CurrentDataCollector.UsingTexcoord2 || UIUtils.CurrentDataCollector.UsingTexcoord3 )
+						if ( m_currentDataCollector.UsingTexcoord2 || m_currentDataCollector.UsingTexcoord3 )
 							ShaderBody += "\t\t\t\tfloat4 texcoords23 : TEXCOORD5;\n";
 #if UNITY_5_5_OR_NEWER
 						ShaderBody += "\t\t\t\tUNITY_VERTEX_INPUT_INSTANCE_ID\n";
@@ -2086,17 +2229,17 @@ namespace AmplifyShaderEditor
 						ShaderBody += "\t\t\t\tUNITY_INITIALIZE_OUTPUT( v2f, o );\n";
 						ShaderBody += "\t\t\t\tUNITY_TRANSFER_INSTANCE_ID( v, o );\n";
 
-						
-						if ( UIUtils.CurrentDataCollector.DirtyPerVertexData )
+
+						if ( m_currentDataCollector.DirtyPerVertexData )
 						{
 							ShaderBody += "\t\t\t\tInput customInputData;\n";
 
-							ShaderBody += "\t\t\t\tvertexDataFunc( v" + ( UIUtils.CurrentDataCollector.TesselationActive ? "" : ", customInputData" ) + " );\n";
+							ShaderBody += "\t\t\t\tvertexDataFunc( v" + ( m_currentDataCollector.TesselationActive ? "" : ", customInputData" ) + " );\n";
 						}
 
 						ShaderBody += "\t\t\t\tfloat3 worldPos = mul( unity_ObjectToWorld, v.vertex ).xyz;\n";
-						ShaderBody += "\t\t\t\thalf3 worldNormal = UnityObjectToWorldNormal( v.normal );\n";
-						if ( UIUtils.CurrentDataCollector.UsingInternalData || UIUtils.CurrentDataCollector.DirtyNormal )
+						ShaderBody += "\t\t\t\tfixed3 worldNormal = UnityObjectToWorldNormal( v.normal );\n";
+						if ( m_currentDataCollector.UsingInternalData || m_currentDataCollector.DirtyNormal )
 						{
 							ShaderBody += "\t\t\t\tfixed3 worldTangent = UnityObjectToWorldDir( v.tangent.xyz );\n";
 							ShaderBody += "\t\t\t\tfixed tangentSign = v.tangent.w * unity_WorldTransformParams.w;\n";
@@ -2105,14 +2248,22 @@ namespace AmplifyShaderEditor
 							ShaderBody += "\t\t\t\to.tSpace1 = float4( worldTangent.y, worldBinormal.y, worldNormal.y, worldPos.y );\n";
 							ShaderBody += "\t\t\t\to.tSpace2 = float4( worldTangent.z, worldBinormal.z, worldNormal.z, worldPos.z );\n";
 						}
-						if ( UIUtils.CurrentDataCollector.UsingTexcoord0 || UIUtils.CurrentDataCollector.UsingTexcoord1 )
+						else if( !m_currentDataCollector.UsingInternalData && m_currentDataCollector.UsingWorldNormal )
+						{
+							ShaderBody += "\t\t\t\to.worldNormal = worldNormal;\n";
+						}
+
+						if ( m_currentDataCollector.UsingTexcoord0 || m_currentDataCollector.UsingTexcoord1 )
 							ShaderBody += "\t\t\t\to.texcoords01 = float4( v.texcoord.xy, v.texcoord1.xy );\n";
-						if ( UIUtils.CurrentDataCollector.UsingTexcoord2 || UIUtils.CurrentDataCollector.UsingTexcoord3 )
+						if ( m_currentDataCollector.UsingTexcoord2 || m_currentDataCollector.UsingTexcoord3 )
 							ShaderBody += "\t\t\t\to.texcoords23 = float4( v.texcoord2.xy, v.texcoord3.xy );\n";
 
-						//if ( UIUtils.CurrentDataCollector.UsingWorldPosition && !UIUtils.CurrentDataCollector.UsingInternalData )
-						ShaderBody += "\t\t\t\to.worldPos = worldPos;\n";
+						//if ( m_currentDataCollector.UsingWorldPosition && !m_currentDataCollector.UsingInternalData )
+						if( !m_currentDataCollector.UsingInternalData )
+							ShaderBody += "\t\t\t\to.worldPos = worldPos;\n";
 						ShaderBody += "\t\t\t\tTRANSFER_SHADOW_CASTER_NORMALOFFSET( o )\n";
+						if( m_currentDataCollector.UsingScreenPos )
+							ShaderBody += "\t\t\t\to.screenPos = ComputeScreenPos( o.pos );\n";
 
 						ShaderBody += "\t\t\t\treturn o;\n";
 						ShaderBody += "\t\t\t}\n";
@@ -2126,44 +2277,46 @@ namespace AmplifyShaderEditor
 						ShaderBody += "\t\t\t\tUNITY_SETUP_INSTANCE_ID( IN );\n";
 						ShaderBody += "\t\t\t\tInput surfIN;\n";
 						ShaderBody += "\t\t\t\tUNITY_INITIALIZE_OUTPUT( Input, surfIN );\n";
-						if ( UIUtils.CurrentDataCollector.UsingTexcoord0 )
-							ShaderBody += "\t\t\t\tsurfIN.uv_texcoord = IN.texcoords01.xy;\n";
-						if ( UIUtils.CurrentDataCollector.UsingTexcoord1 )
-							ShaderBody += "\t\t\t\tsurfIN.uv2_texcoord2 = IN.texcoords01.zw;\n";
-						if ( UIUtils.CurrentDataCollector.UsingTexcoord2 )
-							ShaderBody += "\t\t\t\tsurfIN.uv3_texcoord3 = IN.texcoords23.xy;\n";
-						if ( UIUtils.CurrentDataCollector.UsingTexcoord3 )
-							ShaderBody += "\t\t\t\tsurfIN.uv4_texcoord4 = IN.texcoords23.zw;\n";
+						if ( m_currentDataCollector.UsingTexcoord0 )
+							ShaderBody += "\t\t\t\tsurfIN.uv_texcoord.xy = IN.texcoords01.xy;\n";
+						if ( m_currentDataCollector.UsingTexcoord1 )
+							ShaderBody += "\t\t\t\tsurfIN.uv2_texcoord2.xy = IN.texcoords01.zw;\n";
+						if ( m_currentDataCollector.UsingTexcoord2 )
+							ShaderBody += "\t\t\t\tsurfIN.uv3_texcoord3.xy = IN.texcoords23.xy;\n";
+						if ( m_currentDataCollector.UsingTexcoord3 )
+							ShaderBody += "\t\t\t\tsurfIN.uv4_texcoord4.xy = IN.texcoords23.zw;\n";
 
-						if ( UIUtils.CurrentDataCollector.UsingInternalData )
+						if ( m_currentDataCollector.UsingInternalData )
 							ShaderBody += "\t\t\t\tfloat3 worldPos = float3( IN.tSpace0.w, IN.tSpace1.w, IN.tSpace2.w );\n";
 						else
 							ShaderBody += "\t\t\t\tfloat3 worldPos = IN.worldPos;\n";
 						ShaderBody += "\t\t\t\tfixed3 worldViewDir = normalize( UnityWorldSpaceViewDir( worldPos ) );\n";
 
-						//fixed3 worldViewDir = normalize( UnityWorldSpaceViewDir( worldPos ) );
-						//fixed3 viewDir = IN.tSpace0.xyz * worldViewDir.x + IN.tSpace1.xyz * worldViewDir.y + IN.tSpace2.xyz * worldViewDir.z;
-
-						if ( UIUtils.CurrentDataCollector.UsingViewDirection && !UIUtils.CurrentDataCollector.DirtyNormal )
+						if ( m_currentDataCollector.UsingViewDirection && !m_currentDataCollector.DirtyNormal )
 							ShaderBody += "\t\t\t\tsurfIN.viewDir = worldViewDir;\n";
-						else if ( UIUtils.CurrentDataCollector.UsingViewDirection )
+						else if ( m_currentDataCollector.UsingViewDirection )
 							ShaderBody += "\t\t\t\tsurfIN.viewDir = IN.tSpace0.xyz * worldViewDir.x + IN.tSpace1.xyz * worldViewDir.y + IN.tSpace2.xyz * worldViewDir.z;\n";
 
-						if ( UIUtils.CurrentDataCollector.UsingWorldPosition )
+						if ( m_currentDataCollector.UsingWorldPosition )
 							ShaderBody += "\t\t\t\tsurfIN.worldPos = worldPos;\n";
 
-						if ( UIUtils.CurrentDataCollector.UsingWorldNormal )
+						if ( m_currentDataCollector.UsingWorldNormal && m_currentDataCollector.UsingInternalData )
 							ShaderBody += "\t\t\t\tsurfIN.worldNormal = float3( IN.tSpace0.z, IN.tSpace1.z, IN.tSpace2.z );\n";
+						else if( !m_currentDataCollector.UsingInternalData && m_currentDataCollector.UsingWorldNormal )
+							ShaderBody += "\t\t\t\tsurfIN.worldNormal = IN.worldNormal;\n";
 
-						if ( UIUtils.CurrentDataCollector.UsingWorldReflection )
+						if ( m_currentDataCollector.UsingWorldReflection )
 							ShaderBody += "\t\t\t\tsurfIN.worldRefl = -worldViewDir;\n";
 
-						if ( UIUtils.CurrentDataCollector.UsingInternalData )
+						if ( m_currentDataCollector.UsingInternalData )
 						{
 							ShaderBody += "\t\t\t\tsurfIN.internalSurfaceTtoW0 = IN.tSpace0.xyz;\n";
 							ShaderBody += "\t\t\t\tsurfIN.internalSurfaceTtoW1 = IN.tSpace1.xyz;\n";
 							ShaderBody += "\t\t\t\tsurfIN.internalSurfaceTtoW2 = IN.tSpace2.xyz;\n";
 						}
+
+						if( m_currentDataCollector.UsingScreenPos )
+							ShaderBody += "\t\t\t\tsurfIN.screenPos = IN.screenPos;\n";
 
 						ShaderBody += "\t\t\t\t" + outputStruct + " o;\n";
 						ShaderBody += "\t\t\t\tUNITY_INITIALIZE_OUTPUT( " + outputStruct + ", o )\n";
@@ -2186,7 +2339,7 @@ namespace AmplifyShaderEditor
 
 						ShaderBody += "\t\t}\n";
 					}
-					
+
 				}
 				CloseSubShaderBody( ref ShaderBody );
 
@@ -2194,8 +2347,7 @@ namespace AmplifyShaderEditor
 				{
 					ShaderBody += m_fallbackHelper.CreateFallbackShader();
 				}
-
-				if ( m_castShadows )
+				else if ( m_castShadows || m_receiveShadows )
 				{
 					AddShaderProperty( ref ShaderBody, "Fallback", "Diffuse" );
 				}
@@ -2239,17 +2391,23 @@ namespace AmplifyShaderEditor
 				if ( m_currentMaterial != null )
 				{
 					m_currentMaterial.shader = m_currentShader;
-					UIUtils.CurrentDataCollector.UpdateMaterialOnPropertyNodes( m_currentMaterial );
+#if UNITY_5_6_OR_NEWER
+					if ( isInstancedShader )
+					{
+						m_currentMaterial.enableInstancing = true;
+					}
+#endif
+					m_currentDataCollector.UpdateMaterialOnPropertyNodes( m_currentMaterial );
 					UpdateMaterialEditor();
 					// need to always get asset datapath because a user can change and asset location from the project window
 					AssetDatabase.ImportAsset( AssetDatabase.GetAssetPath( m_currentMaterial ) );
 				}
 
-				UIUtils.CurrentDataCollector.UpdateShaderOnPropertyNodes( ref m_currentShader );
+				m_currentDataCollector.UpdateShaderOnPropertyNodes( ref m_currentShader );
 			}
 
-			UIUtils.CurrentDataCollector.Destroy();
-			UIUtils.CurrentDataCollector = null;
+			m_currentDataCollector.Destroy();
+			m_currentDataCollector = null;
 
 			return m_currentShader;
 		}
@@ -2262,7 +2420,7 @@ namespace AmplifyShaderEditor
 			}
 			CurrentShader = newShader;
 		}
-		
+
 		public override void Destroy()
 		{
 			base.Destroy();
@@ -2281,6 +2439,16 @@ namespace AmplifyShaderEditor
 
 			m_renderingOptionsOpHelper.Destroy();
 			m_renderingOptionsOpHelper = null;
+
+			m_additionalIncludes.Destroy();
+			m_additionalIncludes = null;
+
+			m_additionalPragmas.Destroy();
+			m_additionalPragmas = null;
+
+			m_customTagsHelper.Destroy();
+			m_customTagsHelper = null;
+
 			m_renderingPlatformOpHelper = null;
 			m_inspectorDefaultStyle = null;
 			m_inspectorFoldoutStyle = null;
@@ -2383,6 +2551,26 @@ namespace AmplifyShaderEditor
 				}
 			}
 
+			//removed custom lighting port
+			if ( UIUtils.CurrentShaderVersion() < 10003 )
+			{
+				switch ( m_currentLightModel )
+				{
+					case StandardShaderLightModel.Standard:
+					case StandardShaderLightModel.StandardSpecular:
+					if ( portId >= 13 )
+						newPort -= 1;
+					break;
+					case StandardShaderLightModel.CustomLighting:
+					case StandardShaderLightModel.Unlit:
+					case StandardShaderLightModel.Lambert:
+					case StandardShaderLightModel.BlinnPhong:
+					if ( portId >= 12 )
+						newPort -= 1;
+					break;
+				}
+			}
+
 			return newPort;
 		}
 
@@ -2392,6 +2580,10 @@ namespace AmplifyShaderEditor
 			{
 				base.ReadFromString( ref nodeParams );
 				m_currentLightModel = ( StandardShaderLightModel ) Enum.Parse( typeof( StandardShaderLightModel ), GetCurrentParam( ref nodeParams ) );
+				if ( m_currentLightModel == StandardShaderLightModel.CustomLighting )
+				{
+					ContainerGraph.ParentWindow.CurrentNodeAvailability = NodeAvailability.CustomLighting;
+				}
 				//if ( _shaderCategory.Length > 0 )
 				//	_shaderCategory = UIUtils.RemoveInvalidCharacters( _shaderCategory );
 				ShaderName = GetCurrentParam( ref nodeParams );
@@ -2497,6 +2689,21 @@ namespace AmplifyShaderEditor
 					m_tessellationOrderIndex = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 				}
 
+				if ( UIUtils.CurrentShaderVersion() > 10010 )
+				{
+					m_additionalIncludes.ReadFromString( ref m_currentReadParamIdx, ref nodeParams );
+				}
+
+				if ( UIUtils.CurrentShaderVersion() > 11006 )
+				{
+					m_customTagsHelper.ReadFromString( ref m_currentReadParamIdx, ref nodeParams );
+				}
+
+				if( UIUtils.CurrentShaderVersion() > 13102 )
+				{
+					m_additionalPragmas.ReadFromString( ref m_currentReadParamIdx, ref nodeParams );
+				}
+
 				m_lastLightModel = m_currentLightModel;
 				DeleteAllInputConnections( true );
 				AddMasterPorts();
@@ -2543,9 +2750,12 @@ namespace AmplifyShaderEditor
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_shaderLOD );
 			m_fallbackHelper.WriteToString( ref nodeInfo );
 			IOUtils.AddFieldValueToString( ref nodeInfo, ( m_maskClipReorder != null ) ? m_maskClipReorder.OrderIndex : -1 );
-			IOUtils.AddFieldValueToString( ref nodeInfo, ( m_translucencyReorder != null ) ? m_translucencyReorder.OrderIndex : - 1 );
-			IOUtils.AddFieldValueToString( ref nodeInfo, ( m_refractionReorder != null ) ? m_refractionReorder.OrderIndex : -1  );
+			IOUtils.AddFieldValueToString( ref nodeInfo, ( m_translucencyReorder != null ) ? m_translucencyReorder.OrderIndex : -1 );
+			IOUtils.AddFieldValueToString( ref nodeInfo, ( m_refractionReorder != null ) ? m_refractionReorder.OrderIndex : -1 );
 			IOUtils.AddFieldValueToString( ref nodeInfo, ( m_tessellationReorder != null ) ? m_tessellationReorder.OrderIndex : -1 );
+			m_additionalIncludes.WriteToString( ref nodeInfo );
+			m_customTagsHelper.WriteToString( ref nodeInfo );
+			m_additionalPragmas.WriteToString( ref nodeInfo );
 		}
 
 		private bool TestCustomBlendMode()
@@ -2585,7 +2795,7 @@ namespace AmplifyShaderEditor
 		{
 			m_checkChanges = true;
 			bool lockRefractionPort = false;
-			if ( m_currentLightModel == StandardShaderLightModel.Unlit || m_currentLightModel == StandardShaderLightModel.CustomLighting)
+			if ( m_currentLightModel == StandardShaderLightModel.Unlit || m_currentLightModel == StandardShaderLightModel.CustomLighting )
 			{
 				lockRefractionPort = true;
 			}

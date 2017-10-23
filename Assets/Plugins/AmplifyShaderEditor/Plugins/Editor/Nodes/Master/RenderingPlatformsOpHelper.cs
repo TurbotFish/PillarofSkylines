@@ -42,7 +42,7 @@ namespace AmplifyShaderEditor
 		{
 			bool value = EditorVariablesManager.ExpandedRenderingPlatforms.Value;
 			NodeUtils.DrawPropertyGroup( ref value, RenderingPlatformsStr, () =>
-			 {
+			{
 				 for ( int i = 0; i < m_renderingPlatformValues.Length; i++ )
 				 {
 					 m_renderingPlatformValues[ i ] = owner.EditorGUILayoutToggleLeft( RenderingPlatformsLabels[ i ], m_renderingPlatformValues[ i ] );

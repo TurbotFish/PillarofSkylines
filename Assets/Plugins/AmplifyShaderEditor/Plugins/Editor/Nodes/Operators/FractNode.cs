@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Fract", "Operators", "Fractional portion of a scalar or each vector component" )]
+	[NodeAttributes( "Fract", "Math Operators", "Fractional portion of a scalar or each vector component" )]
 	public sealed class FractNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

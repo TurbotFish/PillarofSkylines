@@ -12,8 +12,8 @@ namespace AmplifyShaderEditor
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
-			AddInputPort( WirePortDataType.FLOAT3, false, "A" );
-			AddInputPort( WirePortDataType.FLOAT3, false, "B" );
+			AddInputPort( WirePortDataType.FLOAT3, false, "Normal A" );
+			AddInputPort( WirePortDataType.FLOAT3, false, "Normal B" );
 			AddOutputPort( WirePortDataType.FLOAT3, "XYZ" );
 			m_useInternalPortData = true;
 			m_previewShaderGUID = "bcdf750ff5f70444f98b8a3efa50dc6f";

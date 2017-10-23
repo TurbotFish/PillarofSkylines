@@ -9,7 +9,7 @@ public static class WindowHelper
 	private class R_EditorWindow
 	{
 		private EditorWindow m_instance;
-		private Type m_type;
+		private System.Type m_type;
 
 		public R_EditorWindow( EditorWindow instance )
 		{
@@ -30,7 +30,7 @@ public static class WindowHelper
 	private class R_DockArea
 	{
 		private object m_instance;
-		private Type m_type;
+		private System.Type m_type;
 
 		public R_DockArea( object instance )
 		{
@@ -58,7 +58,7 @@ public static class WindowHelper
 
 		public void AddTab( EditorWindow pane )
 		{
-			var method = m_type.GetMethod( "AddTab", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof( EditorWindow ) }, null );
+			var method = m_type.GetMethod( "AddTab", BindingFlags.Instance | BindingFlags.Public, null, new System.Type[] { typeof( EditorWindow ) }, null );
 			method.Invoke( m_instance, new object[] { pane } );
 		}
 	}
@@ -66,7 +66,7 @@ public static class WindowHelper
 	private class R_ContainerWindow
 	{
 		private object m_instance;
-		private Type m_type;
+		private System.Type m_type;
 
 		public R_ContainerWindow( object instance )
 		{
@@ -88,7 +88,7 @@ public static class WindowHelper
 	private class R_SplitView
 	{
 		private object m_instance;
-		private Type m_type;
+		private System.Type m_type;
 
 		public R_SplitView( object instance )
 		{

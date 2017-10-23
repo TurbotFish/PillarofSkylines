@@ -23,10 +23,12 @@
 
 			float4 frag(v2f_img i) : SV_Target
 			{
-				float time = _EditorTime;
+				float multiplier = tex2D ( _C, i.uv ).r;
+				float time = _EditorTime*multiplier;
+				
 				if ( _UsingEditor == 0 ) 
 				{
-					time = tex2D( _C, i.uv ).r;
+					time = multiplier;
 				}
 
 				float cosT = cos( time );

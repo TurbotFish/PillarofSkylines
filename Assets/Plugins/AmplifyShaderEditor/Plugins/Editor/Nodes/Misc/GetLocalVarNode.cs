@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Get Local Var", "Misc", "Use a registered local variable" )]
+	[NodeAttributes( "Get Local Var", "Miscellaneous", "Use a registered local variable" )]
 	public class GetLocalVarNode : ParentNode
 	{
 		[SerializeField]
@@ -23,9 +23,11 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private RegisterLocalVarNode m_currentSelected = null;
 
-		private bool m_forceNodeUpdate = false;
-
 		private int m_cachedPropertyId = -1;
+
+		private string m_previousLabel = string.Empty;
+
+		bool m_refSelect = false;
 
 		protected override void CommonInit( int uniqueId )
 		{
@@ -33,6 +35,7 @@ namespace AmplifyShaderEditor
 			AddOutputPort( WirePortDataType.OBJECT, Constants.EmptyPortValue );
 			m_textLabelWidth = 80;
 			m_autoWrapProperties = true;
+			m_hasLeftDropdown = true;
 			m_previewShaderGUID = "f21a6e44c7d7b8543afacd19751d24c6";
 		}
 
@@ -42,8 +45,12 @@ namespace AmplifyShaderEditor
 
 			if ( m_currentSelected != null )
 			{
-				m_drawPreviewAsSphere = m_currentSelected.SpherePreview;
-				CheckSpherePreview();
+				if ( m_drawPreviewAsSphere != m_currentSelected.SpherePreview )
+				{
+					m_drawPreviewAsSphere = m_currentSelected.SpherePreview;
+					OnNodeChange();
+				}
+				//CheckSpherePreview();
 
 				if ( m_cachedPropertyId == -1 )
 					m_cachedPropertyId = Shader.PropertyToID( "_A" );
@@ -59,18 +66,23 @@ namespace AmplifyShaderEditor
 			m_referenceId = EditorGUILayoutPopup( Constants.AvailableReferenceStr, m_referenceId, UIUtils.LocalVarNodeArr() );
 			if ( EditorGUI.EndChangeCheck() )
 			{
-				m_currentSelected = UIUtils.GetLocalVarNode( m_referenceId );
-				if ( m_currentSelected != null )
-				{
-					m_nodeId = m_currentSelected.UniqueId;
-					m_outputPorts[ 0 ].ChangeType( m_currentSelected.OutputPorts[ 0 ].DataType, false );
-					m_drawPreviewAsSphere = m_currentSelected.SpherePreview;
-					CheckSpherePreview();
-				}
-
-				m_sizeIsDirty = true;
-				m_isDirty = true;
+				UpdateFromSelected();
 			}
+		}
+
+		void UpdateFromSelected()
+		{
+			m_currentSelected = UIUtils.GetLocalVarNode( m_referenceId );
+			if ( m_currentSelected != null )
+			{
+				m_nodeId = m_currentSelected.UniqueId;
+				m_outputPorts[ 0 ].ChangeType( m_currentSelected.OutputPorts[ 0 ].DataType, false );
+				m_drawPreviewAsSphere = m_currentSelected.SpherePreview;
+				CheckSpherePreview();
+			}
+
+			m_sizeIsDirty = true;
+			m_isDirty = true;
 		}
 
 		public override void Destroy()
@@ -82,37 +94,59 @@ namespace AmplifyShaderEditor
 		public override void Draw( DrawInfo drawInfo )
 		{
 			base.Draw( drawInfo );
-			if ( m_forceNodeUpdate )
-			{
-				m_forceNodeUpdate = false;
-				if ( UIUtils.CurrentShaderVersion() > 15 )
-				{
-					m_currentSelected = UIUtils.GetNode( m_nodeId ) as RegisterLocalVarNode;
-					m_referenceId = UIUtils.GetLocalVarNodeRegisterId( m_nodeId );
-				}
-				else
-				{
-					m_currentSelected = UIUtils.GetLocalVarNode( m_referenceId );
-					if ( m_currentSelected != null )
-					{
-						m_nodeId = m_currentSelected.UniqueId;
-					}
-				}
 
-				if ( m_currentSelected != null )
+			if ( m_dropdownEditing )
+			{
+				EditorGUI.BeginChangeCheck();
+				m_referenceId = EditorGUIPopup( m_dropdownRect, m_referenceId, UIUtils.LocalVarNodeArr(), UIUtils.PropertyPopUp );
+				if ( EditorGUI.EndChangeCheck() )
 				{
-					m_outputPorts[ 0 ].ChangeType( m_currentSelected.OutputPorts[ 0 ].DataType, false );
+					UpdateFromSelected();
+					UpdateLocalVar();
+					m_dropdownEditing = false;
 				}
 			}
+		}
+
+		public override void OnNodeRepaint( DrawInfo drawInfo )
+		{
+			base.OnNodeRepaint( drawInfo );
 
 			UpdateLocalVar();
+
+			if( m_isVisible && m_refSelect && !m_selected )
+			{
+				GUI.color = Constants.SpecialSelectionColor;
+				GUI.Label( m_globalPosition, string.Empty, UIUtils.GetCustomStyle( CustomStyle.NodeWindowOn ) );
+				GUI.color = m_colorBuffer;
+			}
 		}
 
 		void UpdateLocalVar()
 		{
+			m_refSelect = false;
 			if ( m_referenceId > -1 )
 			{
-				m_currentSelected = UIUtils.GetLocalVarNode( m_referenceId );
+				ParentNode newNode = UIUtils.GetLocalVarNode( m_referenceId );
+				if ( newNode != null )
+				{
+					if ( newNode.UniqueId != m_nodeId )
+					{
+						m_currentSelected = null;
+						int count = UIUtils.LocalVarNodeAmount();
+						for ( int i = 0; i < count; i++ )
+						{
+							ParentNode node = UIUtils.GetLocalVarNode( i );
+							if ( node.UniqueId == m_nodeId )
+							{
+								m_currentSelected = node as RegisterLocalVarNode;
+								m_referenceId = i;
+								break;
+							}
+						}
+					}
+				}
+
 				if ( m_currentSelected != null )
 				{
 					if ( m_currentSelected.OutputPorts[ 0 ].DataType != m_outputPorts[ 0 ].DataType )
@@ -120,18 +154,26 @@ namespace AmplifyShaderEditor
 						m_outputPorts[ 0 ].ChangeType( m_currentSelected.OutputPorts[ 0 ].DataType, false );
 					}
 
-					m_additionalContent.text = string.Format( Constants.PropertyValueLabel, m_currentSelected.DataToArray );
+					if( m_previousLabel != m_currentSelected.DataToArray )
+					{
+						m_previousLabel = m_currentSelected.DataToArray;
+						SetAdditonalTitleText( string.Format( Constants.SubTitleVarNameFormatStr, m_currentSelected.DataToArray ) );
+					}
 					if ( m_referenceWidth != m_currentSelected.Position.width )
 					{
 						m_referenceWidth = m_currentSelected.Position.width;
 						m_sizeIsDirty = true;
 					}
+
+					if( m_currentSelected.Selected )
+						m_refSelect = true;
 				}
 				else
 				{
+					m_nodeId = -1;
 					m_referenceId = -1;
 					m_referenceWidth = -1;
-					m_additionalContent.text = string.Empty;
+					SetAdditonalTitleText( string.Empty );
 				}
 			}
 		}
@@ -149,12 +191,12 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public override void PropagateNodeData( NodeData nodeData )
+		public override void PropagateNodeData( NodeData nodeData, ref MasterNodeDataCollector dataCollector )
 		{
-			base.PropagateNodeData( nodeData );
+			base.PropagateNodeData( nodeData, ref dataCollector );
 			if ( m_currentSelected != null )
 			{
-				m_currentSelected.PropagateNodeData( nodeData );
+				m_currentSelected.PropagateNodeData( nodeData, ref dataCollector );
 			}
 		}
 
@@ -169,7 +211,6 @@ namespace AmplifyShaderEditor
 			{
 				m_referenceId = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 			}
-			m_forceNodeUpdate = true;
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
@@ -177,6 +218,7 @@ namespace AmplifyShaderEditor
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
 			IOUtils.AddFieldValueToString( ref nodeInfo, ( m_currentSelected != null ? m_currentSelected.UniqueId : -1 ) );
 		}
+
 		public override void OnNodeDoubleClicked( Vector2 currentMousePos2D )
 		{
 			if ( m_currentSelected != null )
@@ -184,5 +226,30 @@ namespace AmplifyShaderEditor
 				UIUtils.FocusOnNode( m_currentSelected, 0, true );
 			}
 		}
+
+		public override void RefreshExternalReferences()
+		{
+			base.RefreshExternalReferences();
+			if ( UIUtils.CurrentShaderVersion() > 15 )
+			{
+				m_currentSelected = UIUtils.GetNode( m_nodeId ) as RegisterLocalVarNode;
+				m_referenceId = UIUtils.GetLocalVarNodeRegisterId( m_nodeId );
+			}
+			else
+			{
+				m_currentSelected = UIUtils.GetLocalVarNode( m_referenceId );
+				if ( m_currentSelected != null )
+				{
+					m_nodeId = m_currentSelected.UniqueId;
+				}
+			}
+
+			if ( m_currentSelected != null )
+			{
+				m_outputPorts[ 0 ].ChangeType( m_currentSelected.OutputPorts[ 0 ].DataType, false );
+			}
+		}
+
+		public RegisterLocalVarNode CurrentSelected { get { return m_currentSelected; } }
 	}
 }

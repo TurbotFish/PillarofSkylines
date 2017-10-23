@@ -15,6 +15,8 @@ namespace AmplifyShaderEditor
 			ChangeOutputProperties( 0, Constants.EmptyPortValue, WirePortDataType.FLOAT4 );
 			AddOutputPort( WirePortDataType.FLOAT3, "Dir/Pos" );
 			AddOutputPort( WirePortDataType.FLOAT, "Type" );
+			m_previewShaderGUID = "2292a614672283c41a367b22cdde4620";
+			m_drawPreviewAsSphere = true;
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )

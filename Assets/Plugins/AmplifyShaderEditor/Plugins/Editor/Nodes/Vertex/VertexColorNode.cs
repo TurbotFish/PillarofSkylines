@@ -7,8 +7,8 @@ namespace AmplifyShaderEditor
 	[NodeAttributes( "Vertex Color", "Vertex Data", "Vertex color interpolated on fragment" )]
 	public sealed class VertexColorNode : VertexDataNode
 	{
-		private const string _inputColorStr = "float4 vertexColor : COLOR";
-		private const string _colorValueStr = ".vertexColor";
+		private const string m_inputColorStr = "float4 vertexColor : COLOR";
+		private const string m_colorValueStr = ".vertexColor";
 		
 		protected override void CommonInit( int uniqueId )
 		{
@@ -22,14 +22,20 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
+			if ( dataCollector.MasterNodeCategory == AvailableShaderTypes.Template )
+			{
+				string color = dataCollector.TemplateDataCollectorInstance.GetVertexColor();
+				return GetOutputColorItem( 0, outputId, color );
+			}
+
 			if ( dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation )
 			{
 				return base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalVar );
 			}
 			else
 			{
-				dataCollector.AddToInput( UniqueId, _inputColorStr, true );
-				string result = Constants.InputVarStr + _colorValueStr;
+				dataCollector.AddToInput( UniqueId, m_inputColorStr, true );
+				string result = Constants.InputVarStr + m_colorValueStr;
 				switch ( outputId )
 				{
 					case 1: result += ".r"; break;

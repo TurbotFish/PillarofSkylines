@@ -4,7 +4,7 @@
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "FWidth", "Operators", "Sum of approximate window-space partial derivatives magnitudes" )]
+	[NodeAttributes( "FWidth", "Math Operators", "Sum of approximate window-space partial derivatives magnitudes" )]
 	public sealed class FWidthOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )
@@ -19,7 +19,7 @@ namespace AmplifyShaderEditor
 														WirePortDataType.FLOAT4,
 														WirePortDataType.COLOR ,
 														WirePortDataType.INT);
-			m_inputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT4, false );
+			//m_inputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT4, false );
 		}
 	}
 }

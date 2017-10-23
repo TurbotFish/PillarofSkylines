@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Tanh", "Trigonometry", "Hyperbolic tangent of scalars and vectors" )]
+	[NodeAttributes( "Tanh", "Trigonometry Operators", "Hyperbolic tangent of scalars and vectors" )]
 	public sealed class TanhOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

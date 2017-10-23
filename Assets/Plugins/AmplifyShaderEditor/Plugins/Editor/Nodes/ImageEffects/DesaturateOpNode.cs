@@ -10,14 +10,15 @@ namespace AmplifyShaderEditor
 	[NodeAttributes( "Desaturate", "Image Effects", "Generic desaturation operation" )]
 	public sealed class DesaturateOpNode : ParentNode
 	{
-		private const string GenericDesaturateOp = "lerp( {0},dot({0},float3(0.299,0.587,0.114)),{1})";
+		private const string GenericDesaturateOp = "lerp( {0},dot({0},float3(0.299,0.587,0.114)).xxx,{1})";
 
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
-			AddInputPort( WirePortDataType.FLOAT3, false, Constants.EmptyPortValue );
+			AddInputPort( WirePortDataType.FLOAT3, false, "RGB" );
 			AddInputPort( WirePortDataType.FLOAT, false, "Fraction" );
 			AddOutputPort( WirePortDataType.FLOAT3, Constants.EmptyPortValue );
+			m_useInternalPortData = true;
 		}
 
 		void UpdatePorts( int portId )

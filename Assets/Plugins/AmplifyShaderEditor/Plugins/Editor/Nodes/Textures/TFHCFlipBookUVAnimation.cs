@@ -12,7 +12,7 @@ namespace AmplifyShaderEditor
 {
 
 	[Serializable]
-	[NodeAttributes( "Flipbook UV Animation", "Textures", "Animate a Flipbook Texture Modifying UV Coordinates.", null, KeyCode.None, true, false, null, null, true )]
+	[NodeAttributes( "Flipbook UV Animation", "UV Coordinates", "Animate a Flipbook Texture Modifying UV Coordinates.", null, KeyCode.None, true, false, null, null, "The Four Headed Cat - @fourheadedcat" )]
 	public sealed class TFHCFlipBookUVAnimation : ParentNode
 
 	{
@@ -97,38 +97,38 @@ namespace AmplifyShaderEditor
 
 			string vcomment1 = "// *** BEGIN Flipbook UV Animation vars ***";
 			string vcomment2 = "// Total tiles of Flipbook Texture";
-			string vtotaltiles = "float fbtotaltiles" + UniqueId + " = " + columns + " * " + rows + ";";
+			string vtotaltiles = "float fbtotaltiles" + OutputId + " = " + columns + " * " + rows + ";";
 			string vcomment3 = "// Offsets for cols and rows of Flipbook Texture";
-			string vcolsoffset = "float fbcolsoffset" + UniqueId + " = 1.0f / " + columns + ";";
-			string vrowssoffset = "float fbrowsoffset" + UniqueId + " = 1.0f / " + rows + ";";
+			string vcolsoffset = "float fbcolsoffset" + OutputId + " = 1.0f / " + columns + ";";
+			string vrowssoffset = "float fbrowsoffset" + OutputId + " = 1.0f / " + rows + ";";
 			string vcomment4 = "// Speed of animation";
-			string vspeed = "float fbspeed" + UniqueId + " = _Time[1] * " + speed + ";";
+			string vspeed = "float fbspeed" + OutputId + " = _Time[1] * " + speed + ";";
 			string vcomment5 = "// UV Tiling (col and row offset)";
-			string vtiling = "float2 fbtiling" + UniqueId + " = float2(fbcolsoffset" + UniqueId + ", fbrowsoffset" + UniqueId + ");";
+			string vtiling = "float2 fbtiling" + OutputId + " = float2(fbcolsoffset" + OutputId + ", fbrowsoffset" + OutputId + ");";
 			string vcomment6 = "// UV Offset - calculate current tile linear index, and convert it to (X * coloffset, Y * rowoffset)";
 			string vcomment7 = "// Calculate current tile linear index";
 			//float fbcurrenttileindex1 = round( fmod( fbspeed1 + _Float0, fbtotaltiles1 ) );
-			string vcurrenttileindex = "float fbcurrenttileindex" + UniqueId + " = round( fmod( fbspeed" + UniqueId + " + " + startframe + ", fbtotaltiles" + UniqueId + ") );";
-			vcurrenttileindex += "\n\t\t\tfbcurrenttileindex" + UniqueId + " += ( fbcurrenttileindex" + UniqueId + " < 0) ? fbtotaltiles" + UniqueId + " : 0;";
+			string vcurrenttileindex = "float fbcurrenttileindex" + OutputId + " = round( fmod( fbspeed" + OutputId + " + " + startframe + ", fbtotaltiles" + OutputId + ") );";
+			string  vcurrenttileindex1 = "fbcurrenttileindex" + OutputId + " += ( fbcurrenttileindex" + OutputId + " < 0) ? fbtotaltiles" + OutputId + " : 0;";
 			//fbcurrenttileindex1 += ( fbcurrenttileindex1 < 0 ) ? fbtotaltiles1 : 0;
 			//string vcurrenttileindex = "int fbcurrenttileindex" + m_uniqueId + " = (int)fmod( fbspeed" + m_uniqueId + ", fbtotaltiles" + m_uniqueId + ") + " + startframe + ";";
 			string vcomment8 = "// Obtain Offset X coordinate from current tile linear index";
 
 			//float fblinearindextox1 = round( fmod( fbcurrenttileindex1, 5.0 ) );
 			//string voffsetx1 = "int fblinearindextox" + m_uniqueId + " = fbcurrenttileindex" + m_uniqueId + " % (int)" + columns + ";";
-			string voffsetx1 = "float fblinearindextox" + UniqueId + " = round ( fmod ( fbcurrenttileindex" + UniqueId + ", " + columns + " ) );";
+			string voffsetx1 = "float fblinearindextox" + OutputId + " = round ( fmod ( fbcurrenttileindex" + OutputId + ", " + columns + " ) );";
 			string vcomment9 = String.Empty;
 			string voffsetx2 = String.Empty;
 			if ( _negativeSpeedBehavior != 0 )
 			{
 				vcomment9 = "// Reverse X animation if speed is negative";
-				voffsetx2 = "fblinearindextox" + UniqueId + " = (" + speed + " > 0 ? fblinearindextox" + UniqueId + " : (int)" + columns + " - fblinearindextox" + UniqueId + ");";
+				voffsetx2 = "fblinearindextox" + OutputId + " = (" + speed + " > 0 ? fblinearindextox" + OutputId + " : (int)" + columns + " - fblinearindextox" + OutputId + ");";
 			}
 			string vcomment10 = "// Multiply Offset X by coloffset";
-			string voffsetx3 = "float fboffsetx" + UniqueId + " = fblinearindextox" + UniqueId + " * fbcolsoffset" + UniqueId + ";";
+			string voffsetx3 = "float fboffsetx" + OutputId + " = fblinearindextox" + OutputId + " * fbcolsoffset" + OutputId + ";";
 			string vcomment11 = "// Obtain Offset Y coordinate from current tile linear index";
 			//float fblinearindextoy1 = round( fmod( ( fbcurrenttileindex1 - fblinearindextox1 ) / 5.0, 5.0 ) );
-			string voffsety1 = "float fblinearindextoy" + UniqueId + " = round( fmod( ( fbcurrenttileindex" + UniqueId + " - fblinearindextox" + UniqueId + " ) / " + columns + ", " + rows + " ) );";
+			string voffsety1 = "float fblinearindextoy" + OutputId + " = round( fmod( ( fbcurrenttileindex" + OutputId + " - fblinearindextox" + OutputId + " ) / " + columns + ", " + rows + " ) );";
 			//string voffsety1 = "int fblinearindextoy" + m_uniqueId + " = (int)( ( fbcurrenttileindex" + m_uniqueId + " - fblinearindextox" + m_uniqueId + " ) / " + columns + " ) % (int)" + rows + ";";
 			//string vcomment10 = "// Reverse Y to get from Top to Bottom";
 			//string voffsety2 = "fblinearindextoy" + m_uniqueId + " = (int)" + rows + " - fblinearindextoy" + m_uniqueId + ";";
@@ -139,7 +139,7 @@ namespace AmplifyShaderEditor
 				if ( _selectedTextureVerticalDirection == 0 )
 				{
 					vcomment12 = "// Reverse Y to get tiles from Top to Bottom";
-					voffsety2 = "fblinearindextoy" + UniqueId + " = (int)(" + rows + "-1) - fblinearindextoy" + UniqueId + ";";
+					voffsety2 = "fblinearindextoy" + OutputId + " = (int)(" + rows + "-1) - fblinearindextoy" + OutputId + ";";
 				}
 			}
 			else
@@ -155,17 +155,17 @@ namespace AmplifyShaderEditor
 					vcomment12 = "// Reverse Y animation if speed is negative";
 					reverseanimationoperator = " > ";
 				}
-				voffsety2 = "fblinearindextoy" + UniqueId + " = (" + speed + reverseanimationoperator + " 0 ? fblinearindextoy" + UniqueId + " : (int)" + rows + " - fblinearindextoy" + UniqueId + ");";
+				voffsety2 = "fblinearindextoy" + OutputId + " = (" + speed + reverseanimationoperator + " 0 ? fblinearindextoy" + OutputId + " : (int)" + rows + " - fblinearindextoy" + OutputId + ");";
 			}
 			string vcomment13 = "// Multiply Offset Y by rowoffset";
-			string voffsety3 = "float fboffsety" + UniqueId + " = fblinearindextoy" + UniqueId + " * fbrowsoffset" + UniqueId + ";";
+			string voffsety3 = "float fboffsety" + OutputId + " = fblinearindextoy" + OutputId + " * fbrowsoffset" + OutputId + ";";
 			string vcomment14 = "// UV Offset";
-			string voffset = "float2 fboffset" + UniqueId + " = float2(fboffsetx" + UniqueId + ", fboffsety" + UniqueId + ");";
-			//string voffset = "float2 fboffset" + m_uniqueId + " = float2( ( ( (int)fmod( fbspeed" + m_uniqueId + " , fbtotaltiles" +  m_uniqueId + ") % (int)" + columns + " ) * fbcolsoffset" + m_uniqueId + " ) , ( ( (int)" + rows + " - ( (int)( ( (int)fmod( fbspeed" + m_uniqueId + " , fbtotaltiles" + m_uniqueId + " ) - ( (int)fmod( fbspeed" + m_uniqueId + " , fbtotaltiles" + m_uniqueId + " ) % (int)" + columns + " ) ) / " + columns + " ) % (int)" + rows + " ) ) * fbrowsoffset" + m_uniqueId + " ) );";
+			string voffset = "float2 fboffset" + OutputId + " = float2(fboffsetx" + OutputId + ", fboffsety" + OutputId + ");";
+			//string voffset = "float2 fboffset" + m_uniqueId + " = float2( ( ( (int)fmod( fbspeed" + m_uniqueId + " , fbtotaltiles" +  m_uniqueId + ") % (int)" + columns + " ) * fbcolsoffset" + m_OutputId + " ) , ( ( (int)" + rows + " - ( (int)( ( (int)fmod( fbspeed" + m_uniqueId + " , fbtotaltiles" + m_uniqueId + " ) - ( (int)fmod( fbspeed" + m_uniqueId + " , fbtotaltiles" + m_uniqueId + " ) % (int)" + columns + " ) ) / " + columns + " ) % (int)" + rows + " ) ) * fbrowsoffset" + m_uniqueId + " ) );";
 			string vcomment15 = "// Flipbook UV";
-			string vfbuv = "half2 fbuv" + UniqueId + " = " + uv + " * fbtiling" + UniqueId + " + fboffset" + UniqueId + ";";
+			string vfbuv = "half2 fbuv" + OutputId + " = " + uv + " * fbtiling" + OutputId + " + fboffset" + OutputId + ";";
 			string vcomment16 = "// *** END Flipbook UV Animation vars ***";
-			string result = "fbuv" + UniqueId;
+			string result = "fbuv" + OutputId;
 
 			dataCollector.AddToLocalVariables( UniqueId, vcomment1 );
 			dataCollector.AddToLocalVariables( UniqueId, vcomment2 );
@@ -180,6 +180,7 @@ namespace AmplifyShaderEditor
 			dataCollector.AddToLocalVariables( UniqueId, vcomment6 );
 			dataCollector.AddToLocalVariables( UniqueId, vcomment7 );
 			dataCollector.AddToLocalVariables( UniqueId, vcurrenttileindex );
+			dataCollector.AddToLocalVariables( UniqueId, vcurrenttileindex1 );
 			dataCollector.AddToLocalVariables( UniqueId, vcomment8 );
 			dataCollector.AddToLocalVariables( UniqueId, voffsetx1 );
 			if ( _negativeSpeedBehavior != 0 )

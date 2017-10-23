@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Component Mask", "Misc", "Mask certain channels from vectors/color components" )]
+	[NodeAttributes( "Component Mask", "Vector Operators", "Mask certain channels from vectors/color components" )]
 	public sealed class ComponentMaskNode : ParentNode
 	{
 		private const string OutputLocalVarName = "componentMask";
@@ -34,6 +34,7 @@ namespace AmplifyShaderEditor
 			m_selectedLocation = PreviewLocation.TopCenter;
 			m_labels = new string[] { "X", "Y", "Z", "W" };
 			m_previewShaderGUID = "b78e2b295c265cd439c80d218fb3e88e";
+			SetAdditonalTitleText( "Value( XYZW )" );
 		}
 
 		public override void SetPreviewInputs()
@@ -85,12 +86,20 @@ namespace AmplifyShaderEditor
 		{
 			base.OnInputPortConnected( portId, otherNodeId, otherPortId, activateNode );
 			UpdatePorts();
+			UpdateTitle();
 		}
 
 		public override void OnConnectedOutputNodeChanges( int outputPortId, int otherNodeId, int otherPortId, string name, WirePortDataType type )
 		{
 			base.OnConnectedOutputNodeChanges( outputPortId, otherNodeId, otherPortId, name, type );
 			UpdatePorts();
+			UpdateTitle();
+		}
+
+		public override void OnInputPortDisconnected( int portId )
+		{
+			base.OnInputPortDisconnected( portId );
+			UpdateTitle();
 		}
 
 		void UpdatePorts()
@@ -146,11 +155,61 @@ namespace AmplifyShaderEditor
 			
 		}
 		
+		private void UpdateTitle()
+		{
+			int count = 0;
+			string additionalText = string.Empty;
+			switch ( m_inputPorts[ 0 ].DataType )
+			{
+				case WirePortDataType.FLOAT4:
+				case WirePortDataType.OBJECT:
+				case WirePortDataType.COLOR:
+				{
+					count = 4;
+				}
+				break;
+				case WirePortDataType.FLOAT3:
+				{
+					count = 3;
+				}
+				break;
+				case WirePortDataType.FLOAT2:
+				{
+					count = 2;
+				}
+				break;
+				case WirePortDataType.FLOAT:
+				case WirePortDataType.INT:
+				{
+					count = 0;
+				}
+				break;
+				case WirePortDataType.FLOAT3x3:
+				case WirePortDataType.FLOAT4x4:
+				{ }
+				break;
+			}
+
+			if ( count > 0 )
+			{
+				for ( int i = 0; i < count; i++ )
+				{
+					if ( m_selection[ i ] )
+					{
+						additionalText += UIUtils.GetComponentForPosition( i, m_inputPorts[ 0 ].DataType ).ToUpper();
+					}
+				}
+			}
+
+			if ( additionalText.Length > 0 )
+				SetAdditonalTitleText( "Value( " + additionalText + " )" );
+			else
+				SetAdditonalTitleText( string.Empty );
+		}
+
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-
-			//EditorGUI.BeginChangeCheck();
 
 			EditorGUILayout.BeginVertical();
 
@@ -190,7 +249,9 @@ namespace AmplifyShaderEditor
 					m_selection[ i ] = EditorGUILayoutToggleLeft( m_labels[i], m_selection[ i ] );
 					m_labels[ i ] = UIUtils.GetComponentForPosition( i, m_inputPorts[ 0 ].DataType ).ToUpper();
 					if ( m_selection[ i ] )
+					{
 						activeCount += 1;
+					}
 				}
 			}
 
@@ -205,15 +266,11 @@ namespace AmplifyShaderEditor
 					case 3: ChangeOutputType( WirePortDataType.FLOAT3, false ); break;
 					case 4: ChangeOutputType( m_inputPorts[ 0 ].DataType, false ); break;
 				}
+				UpdateTitle();
 				SetSaveIsDirty();
 			}
 
 			EditorGUILayout.EndVertical();
-
-			//if( EditorGUI.EndChangeCheck())
-			//{
-			//	//MarkForPreviewUpdate();
-			//}
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
@@ -303,7 +360,7 @@ namespace AmplifyShaderEditor
 			{
 				m_selection[ i ] = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
 			}
-
+			UpdateTitle();
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )

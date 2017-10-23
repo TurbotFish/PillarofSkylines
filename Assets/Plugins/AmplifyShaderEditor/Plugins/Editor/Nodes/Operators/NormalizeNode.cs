@@ -7,7 +7,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Normalize", "Vector", "Normalizes a vector", null, KeyCode.N )]
+	[NodeAttributes( "Normalize", "Vector Operators", "Normalizes a vector", null, KeyCode.N )]
 	public sealed class NormalizeNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )
@@ -18,8 +18,10 @@ namespace AmplifyShaderEditor
 			m_inputPorts[ 0 ].CreatePortRestrictions( WirePortDataType.FLOAT, WirePortDataType.FLOAT2, WirePortDataType.FLOAT3, WirePortDataType.FLOAT4, WirePortDataType.COLOR, WirePortDataType.OBJECT, WirePortDataType.INT );
 			m_previewShaderGUID = "a51b11dfb6b32884e930595e5f9defa8";
 		}
-		public override string GenerateShaderForOutput( int outputId,  ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
+		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
+			if ( m_outputPorts[ 0 ].IsLocalValue )
+				return m_outputPorts[ 0 ].LocalValue;
 
 			string result = string.Empty;
 			switch ( m_inputPorts[ 0 ].DataType )
@@ -31,8 +33,9 @@ namespace AmplifyShaderEditor
 				case WirePortDataType.OBJECT:
 				case WirePortDataType.COLOR:
 				{
-					result =  "normalize( " + m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, m_inputPorts[ 0 ].DataType, ignoreLocalvar ) + " )";
-				}break;
+					result = "normalize( " + m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, m_inputPorts[ 0 ].DataType, ignoreLocalvar ) + " )";
+				}
+				break;
 				case WirePortDataType.INT:
 				{
 					return m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, m_inputPorts[ 0 ].DataType, ignoreLocalvar );
@@ -44,7 +47,9 @@ namespace AmplifyShaderEditor
 				}
 				break;
 			}
-			return CreateOutputLocalVariable( 0, result, ref dataCollector );
+			RegisterLocalVariable( 0, result, ref dataCollector, "normalizeResult" + OutputId );
+
+			return m_outputPorts[ 0 ].LocalValue;
 		}
 	}
 }

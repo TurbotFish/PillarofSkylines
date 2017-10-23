@@ -14,7 +14,7 @@ namespace AmplifyShaderEditor
 		View
 	}
 	[Serializable]
-	[NodeAttributes( "Transform Vector", "Operators", "Transforma a vector into another", null, KeyCode.None, false )]
+	[NodeAttributes( "Transform Vector", "Math Operators", "Transforma a vector into another", null, KeyCode.None, false )]
 	public sealed class TransformVectorOpNode : ParentNode
 	{
 		[SerializeField]

@@ -1,4 +1,4 @@
-﻿Shader "Hidden/LinearMaterial"
+Shader "Hidden/LinearMaterial"
 {
 	Properties
 	{ 
@@ -28,7 +28,7 @@
 			uniform float4 _BackGround_ST;
 			float _DrawSphere;
 			float _InvertedZoom;
-			float _IsLinear;
+			//float _IsLinear;
 			float4 _Mask;
 
 			uniform float4x4 unity_GUIClipTextureMatrix;
@@ -69,7 +69,7 @@
 				c = tex2D( _MainTex, i.texcoord );
 				c.rgb *= _Mask.rgb;
 
-				if ( _IsLinear == 1 )
+				if ( !IsGammaSpace() )
 					c.rgb = LinearToGammaSpace( c.rgb );
 				if(_Mask.w == 1)
 					c.rgb = lerp( back, c.rgb, c.a * alpha);

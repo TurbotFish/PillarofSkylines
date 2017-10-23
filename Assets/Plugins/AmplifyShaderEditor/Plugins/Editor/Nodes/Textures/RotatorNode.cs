@@ -1,17 +1,13 @@
 // Amplify Shader Editor - Visual Shader Editing Tool
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
-//
-// Custom Node Rotator
-// Donated by kebrus
 
 using UnityEngine;
-using UnityEditor;
 using System;
 
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Rotator", "Textures", "Rotates UVs with time but can also be used to rotate other Vector2 values", null, KeyCode.None, true, false, null, null, true )]
+	[NodeAttributes( "Rotator", "UV Coordinates", "Rotates UVs or any Vector2 value from an Anchor point for a specified Time value")]
 	public sealed class RotatorNode : ParentNode
 	{
 		private int m_cachedUsingEditorId = -1;
@@ -24,6 +20,8 @@ namespace AmplifyShaderEditor
 			AddInputPort( WirePortDataType.FLOAT, false, "Time" );
 			AddOutputPort( WirePortDataType.FLOAT2, "Out" );
 			m_useInternalPortData = true;
+			m_inputPorts[ 2 ].FloatInternalData = 1;
+			m_textLabelWidth = 50;
 			m_previewShaderGUID = "e21408a1c7f12f14bbc2652f69bce1fc";
 		}
 
@@ -37,45 +35,48 @@ namespace AmplifyShaderEditor
 			PreviewMaterial.SetFloat( m_cachedUsingEditorId, (m_inputPorts[ 2 ].IsConnected ? 0 : 1 ) );
 		}
 
-		public override void DrawProperties()
-		{
-			base.DrawProperties();
-			EditorGUILayout.HelpBox("Rotates UVs but can also be used to rotate other Vector2 values\n\nAnchor is the rotation point in UV space from which you rotate the UVs\nAngle is the amount of rotation applied [0,1], if left unconnected it will use time as the default value", MessageType.None);
-		}
+		//public override void DrawProperties()
+		//{
+		//	base.DrawProperties();
+		//	EditorGUILayout.HelpBox("Rotates UVs but can also be used to rotate other Vector2 values\n\nAnchor is the rotation point in UV space from which you rotate the UVs\nTime is the amount of rotation applied [0,1], if left unconnected it will use time as the default value", MessageType.None);
+		//}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
-
-			if( m_outputPorts[0].IsLocalValue )
-				return GetOutputVectorItem( 0, outputId, m_outputPorts[ 0 ].LocalValue );
+			if( m_outputPorts[ 0 ].IsLocalValue )
+				return m_outputPorts[ 0 ].LocalValue;
 
 			string result = string.Empty;
-			string uv = m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT4, false );
-			string anchor = m_inputPorts[ 1 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT2, false );
+			string uv = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
+			string anchor = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
 
-			string time = string.Empty;
-			if ( m_inputPorts[ 2 ].IsConnected )
-			{
-				time = m_inputPorts[ 2 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT, false );
-			}
-			else
+			string time = m_inputPorts[ 2 ].GeneratePortInstructions( ref dataCollector );
+			if ( !m_inputPorts[ 2 ].IsConnected )
 			{
 				dataCollector.AddToIncludes( UniqueId, Constants.UnityShaderVariables );
-				time = "_Time[1]";
+				time += " * _Time.y";
 			}
 
 			result += uv;
 
-			string cosVar = "cos" + UniqueId;
-			string sinVar = "sin" + UniqueId;
+			string cosVar = "cos" + OutputId;
+			string sinVar = "sin" + OutputId;
 			dataCollector.AddLocalVariable( UniqueId, "float " + cosVar + " = cos( "+time+" );");
 			dataCollector.AddLocalVariable( UniqueId, "float " + sinVar + " = sin( "+time+" );");
+			
+			string value =  "mul( " + result + " - " + anchor + " , float2x2( "+cosVar+" , -"+sinVar+" , "+sinVar+" , "+cosVar+" )) + "+anchor;
+			RegisterLocalVariable( 0, value, ref dataCollector, "rotator" + OutputId );
 
+			return m_outputPorts[ 0 ].LocalValue;
+		}
 
-			string rotatorVar = "rotator" + UniqueId;
-			dataCollector.AddLocalVariable( UniqueId, "float2 " + rotatorVar + " = mul(" + result + " - "+anchor+", float2x2("+cosVar+",-"+sinVar+","+sinVar+","+cosVar+")) + "+anchor+";" );
-
-			return GetOutputVectorItem( 0, outputId, rotatorVar );
+		public override void RefreshExternalReferences()
+		{
+			base.RefreshExternalReferences();
+			if( UIUtils.CurrentShaderVersion() < 13107 )
+			{
+				m_inputPorts[ 2 ].FloatInternalData = 1;
+			}
 		}
 	}
 }

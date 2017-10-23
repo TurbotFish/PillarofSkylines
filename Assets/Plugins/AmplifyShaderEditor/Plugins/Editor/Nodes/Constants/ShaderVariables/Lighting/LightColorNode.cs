@@ -1,25 +1,54 @@
 // Amplify Shader Editor - Visual Shader Editing Tool
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
 
+using UnityEngine;
+
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Light Color", "Light", "Light Color" )]
+	[NodeAttributes( "Light Color", "Light", "Light Color, RGB value already contains light intensity while A only contains light intensity" )]
 	public sealed class LightColorNode : ShaderVariablesNode
 	{
 		private const string m_lightColorValue = "_LightColor0";
-		//private const string m_lightColorDeclaration = "uniform float4 LightColor0;";
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
 			ChangeOutputProperties( 0, "RGBA", WirePortDataType.COLOR );
+			AddOutputPort( WirePortDataType.FLOAT3, "Color" );
+			AddOutputPort( WirePortDataType.FLOAT, "Intensity" );
+			m_previewShaderGUID = "43f5d3c033eb5044e9aeb40241358349";
 		}
 
-		public override string GenerateShaderForOutput( int outputId,  ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
+		public override void RenderNodePreview()
 		{
+			if( !m_initialized )
+				return;
+
+			int count = m_outputPorts.Count;
+			for( int i = 0; i < count; i++ )
+			{
+				RenderTexture temp = RenderTexture.active;
+				RenderTexture.active = m_outputPorts[ i ].OutputPreviewTexture;
+				Graphics.Blit( null, m_outputPorts[ i ].OutputPreviewTexture, PreviewMaterial, i );
+				RenderTexture.active = temp;
+			}
+		}
+
+		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
+		{
+			if ( dataCollector.IsTemplate )
+				dataCollector.AddToIncludes( -1, Constants.UnityLightingLib );
+
 			base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
-			//dataCollector.AddToUniforms( m_uniqueId, m_lightColorDeclaration );
-			return m_lightColorValue;
+
+			switch( outputId )
+			{
+				default:
+				case 0:	return m_lightColorValue;
+				case 1: return m_lightColorValue+".rgb";
+				case 2: return m_lightColorValue+".a";
+
+			}
 		}
 	}
 }

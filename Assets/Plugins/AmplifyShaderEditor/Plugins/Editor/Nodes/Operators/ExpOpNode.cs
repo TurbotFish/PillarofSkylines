@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Exp", "Operators", "Base-e exponential of scalars and vectors" )]
+	[NodeAttributes( "Exp", "Math Operators", "Base-e exponential of scalars and vectors" )]
 	public sealed class ExpOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

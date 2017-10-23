@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Step", "Operators", "Step function returning either zero or one" )]
+	[NodeAttributes( "Step", "Math Operators", "Step function returning either zero or one" )]
 	public sealed class StepOpNode : DynamicTypeNode
 	{
 		protected override void CommonInit( int uniqueId )

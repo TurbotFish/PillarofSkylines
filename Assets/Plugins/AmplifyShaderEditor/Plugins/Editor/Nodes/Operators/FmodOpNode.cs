@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Fmod", "Operators", "Remainder of x/y with the same sign as x" )]
+	[NodeAttributes( "Fmod", "Math Operators", "Floating point remainder of x/y with the same sign as x" )]
 	public sealed class FmodOpNode : DynamicTypeNode
 	{
 		protected override void CommonInit( int uniqueId )
@@ -17,24 +17,12 @@ namespace AmplifyShaderEditor
 
 		public override string BuildResults( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
-			base.BuildResults( outputId,  ref dataCollector, ignoreLocalvar );
-			switch ( m_outputPorts[ 0 ].DataType )
-			{
-				case WirePortDataType.FLOAT:
-				case WirePortDataType.FLOAT2:
-				case WirePortDataType.FLOAT3:
-				case WirePortDataType.FLOAT4:
-				case WirePortDataType.INT:
-				case WirePortDataType.COLOR:
-				case WirePortDataType.OBJECT:
-				{
-					return "fmod( " + m_inputA + " , " + m_inputB + " )";
-				}
-				case WirePortDataType.FLOAT3x3:
-				case WirePortDataType.FLOAT4x4: { } break;
-			}
+			if ( m_outputPorts[ 0 ].IsLocalValue )
+				return m_outputPorts[ 0 ].LocalValue;
 
-			return UIUtils.InvalidParameter( this );
+			base.BuildResults( outputId,  ref dataCollector, ignoreLocalvar );
+			string result = "fmod( " + m_inputA + " , " + m_inputB + " )";
+			return CreateOutputLocalVariable( 0, result, ref dataCollector );
 		}
 	}
 }

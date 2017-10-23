@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Decode Float RG", "Generic", "Decodes a previously-encoded RG float" )]
+	[NodeAttributes( "Decode Float RG", "Miscellaneous", "Decodes a previously-encoded RG float" )]
 	public sealed class DecodeFloatRGHlpNode : HelperParentNode
 	{
 		protected override void CommonInit( int uniqueId )

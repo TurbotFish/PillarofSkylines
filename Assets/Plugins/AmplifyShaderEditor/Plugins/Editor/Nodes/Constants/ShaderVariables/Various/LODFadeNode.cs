@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "LOD Fade", "Various", "LODFadeNode" )]
+	[NodeAttributes( "LOD Fade", "Miscellaneous", "LODFadeNode" )]
 	public sealed class LODFadeNode : ConstVecShaderVariable
 	{
 		protected override void CommonInit( int uniqueId )

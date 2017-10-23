@@ -4,7 +4,7 @@
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "DDY", "Operators", "Approximate partial derivative with respect to window-space Y" )]
+	[NodeAttributes( "DDY", "Math Operators", "Approximate partial derivative with respect to window-space Y" )]
 	public sealed class DdyOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )
