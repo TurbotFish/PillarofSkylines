@@ -1,9 +1,13 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 [RequireComponent(typeof(LineRenderer))]
 public class LocalTrailRenderer : MonoBehaviour {
 
 	public int vertices = 200;
+	public Transform target;
+	Transform _parent;
+	//bool testBool;
 
 	public Material material {
 		get { return line.material; }
@@ -30,40 +34,43 @@ public class LocalTrailRenderer : MonoBehaviour {
 	}
 
 	LineRenderer line;
-	Vector3[] positions, fixedPositions;
-	Transform _transform, _parent;
+	Vector3[] positions;
+	Transform _transform;
 
 	void SetPosition(int index, Vector3 position) {
-        positions[index] = position;
-        position = _transform.InverseTransformPoint(_parent ? _parent.TransformPoint(position) : position);
-        fixedPositions[index] = position;
-        line.SetPosition(index, position);
-    }
-    
-    void SetToNextPosition(int index) {
-        line.SetPosition(index, fixedPositions[index + 1]);
-    }
+		positions[index] = position;
+		line.SetPosition(index, _transform.InverseTransformPoint(_transform.parent.TransformPoint(position)));
+	}
+
+
 
 	void Awake() {
 		_transform = transform;
-        _parent = _transform.parent;
-        line = GetComponent<LineRenderer>();
+		_parent = transform.parent;
+		line = GetComponent<LineRenderer>();
 		line.positionCount = vertices;
 		positions = new Vector3[vertices];
-        fixedPositions = new Vector3[vertices];
-        for (int i = 0; i < vertices; i++)
+		for (int i = 0; i < vertices; i++)
 			SetPosition(i, _transform.localPosition);
 		line.useWorldSpace = false;
 	}
 
-	void LateUpdate () {
-        for (int i = 0; i < vertices - 1; i++)
-            SetToNextPosition(i);//SetPosition(i, positions[i + 1]);;
 
-        SetPosition(vertices - 1, _transform.localPosition);
+
+	void LateUpdate () {
+
+		_transform.position = target.position;
+		for (int i = 0; i < vertices - 1; i++) {
+			SetPosition(i, positions[i + 1]);
+		}
+		SetPosition(vertices - 1, _transform.localPosition);
+
+
 	}
 
 	void OnDestroy() {
 		Destroy(line);
 	}
+
+
 }

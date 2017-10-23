@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using PlayMaker;
 
 namespace Game.Player
 {
@@ -30,6 +31,14 @@ namespace Game.Player
                 {
                     this.favourPickUpCollider.enabled = false;
                     this.playerModel.Favours++;
+
+					//favourPickUpCollider.transform.parent.GetComponent<PlayMakerFSM>().Fsm.f
+					PlayMakerFSM[] temp = favourPickUpCollider.transform.parent.GetComponents<PlayMakerFSM>();
+					foreach (var fsm in temp) {
+						if (fsm.FsmName == "Faveur_activation") {
+							fsm.FsmVariables.GetFsmBool ("Fav_activated").Value = true;
+						}
+					}
 
                     LeaveFavourPickUpZone();
                 }

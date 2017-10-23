@@ -325,7 +325,7 @@ public class Player : MonoBehaviour {
 			input = Vector3.zero;
 
 		//Detect dash input and trigger it if it is available
-		if (Input.GetButtonDown ("Dash") && readingInputs && dashTimer < 0f/* && playerMod.CheckAbilityActive(eAbilityType.Dash)*/ && !isGliding) {
+		if (Input.GetButtonDown ("Dash") && readingInputs && dashTimer < 0f && playerMod.CheckAbilityActive(eAbilityType.Dash) && !isGliding) {
 			velocity = Vector3.zero;
 			isDashing = true;
 			playerMod.FlagAbility (eAbilityType.Dash);
@@ -467,7 +467,7 @@ public class Player : MonoBehaviour {
 					} else {
 						velocity.y = maxJumpVelocity;
 					}
-				} else if (rmngAerialJumps > 0 /*&& playerMod.CheckAbilityActive(eAbilityType.DoubleJump)*/ && !isGliding) {
+				} else if (rmngAerialJumps > 0 && playerMod.CheckAbilityActive(eAbilityType.DoubleJump) && !isGliding) {
 					lastJumpAerial = true;
 					rmngAerialJumps--;
 					playerMod.FlagAbility(eAbilityType.DoubleJump);
@@ -498,6 +498,7 @@ public class Player : MonoBehaviour {
 			if (controller.collisions.below && isGliding) {
 				isGliding = false;
 				glideParticles.Stop();
+				playerMod.UnflagAbility(eAbilityType.Glide);
 				velocity += Vector3.LerpUnclamped (transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
 				animator.transform.LookAt (transform.position + transform.forward, transform.up);
 			}
@@ -512,7 +513,7 @@ public class Player : MonoBehaviour {
 					velocity += Vector3.LerpUnclamped (transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
 					animator.transform.LookAt (transform.position + transform.forward, transform.up);
 				//si le joueur est dans les airs et qu'il tente de glider
-				} else if (!controller.collisions.below && !isGliding/* && playerMod.CheckAbilityActive(eAbilityType.Glide)*/) {
+				} else if (!controller.collisions.below && !isGliding && playerMod.CheckAbilityActive(eAbilityType.Glide)) {
 					//appliquer une vitesse minimale si sa chute n'est pas assez rapide
 					glideParticles.Play();
 					if (velocity.magnitude < -glideMinimalInitialSpeed) {
