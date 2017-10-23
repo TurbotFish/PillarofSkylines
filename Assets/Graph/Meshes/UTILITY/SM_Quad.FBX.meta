@@ -1,57 +1,15 @@
 fileFormatVersion: 2
-guid: 8e5c4f892b1f2dc458193a0481ce1a5e
-timeCreated: 1507751028
-licenseType: Free
+guid: 2c36ee5abe8ad5a47ad195cf8a478c7a
+timeCreated: 1495013488
+licenseType: Pro
 ModelImporter:
   serializedVersion: 21
   fileIDToRecycleName:
     100000: //RootNode
-    100002: Box001
-    100004: Box002
-    100006: Box003
-    100008: Cylinder001
-    100010: Cylinder002
-    100012: Cylinder003
-    100014: Cylinder004
-    100016: Cylinder005
-    100018: Pyramid001
     400000: //RootNode
-    400002: Box001
-    400004: Box002
-    400006: Box003
-    400008: Cylinder001
-    400010: Cylinder002
-    400012: Cylinder003
-    400014: Cylinder004
-    400016: Cylinder005
-    400018: Pyramid001
-    2300000: Box001
-    2300002: Box002
-    2300004: Box003
-    2300006: Cylinder001
-    2300008: Cylinder002
-    2300010: Cylinder003
-    2300012: Cylinder004
-    2300014: Cylinder005
-    2300016: Pyramid001
-    3300000: Box001
-    3300002: Box002
-    3300004: Box003
-    3300006: Cylinder001
-    3300008: Cylinder002
-    3300010: Cylinder003
-    3300012: Cylinder004
-    3300014: Cylinder005
-    3300016: Pyramid001
-    4300000: Box001
-    4300002: Cylinder001
-    4300004: Cylinder002
-    4300006: Cylinder003
-    4300008: Box002
-    4300010: Cylinder004
-    4300012: Cylinder005
-    4300014: Pyramid001
-    4300016: Box003
+    2300000: //RootNode
+    3300000: //RootNode
+    4300000: QuadCool
     9500000: //RootNode
   materials:
     importMaterials: 0
@@ -83,10 +41,10 @@ ModelImporter:
     globalScale: 1
     meshCompression: 0
     addColliders: 0
-    importVisibility: 1
+    importVisibility: 0
     importBlendShapes: 1
-    importCameras: 1
-    importLights: 1
+    importCameras: 0
+    importLights: 0
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
@@ -102,7 +60,7 @@ ModelImporter:
     normalSmoothAngle: 60
     normalImportMode: 0
     tangentImportMode: 3
-    normalCalculationMode: 4
+    normalCalculationMode: 0
   importAnimation: 1
   copyAvatar: 0
   humanDescription:
