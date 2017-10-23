@@ -11,10 +11,6 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	public float characSpeed = 5f;
 	/// <summary>
-	/// The speed at which the player's speed changes on the ground.
-	/// </summary>
-	float speedSmoothTimeGround;
-	/// <summary>
 	/// The default time it takes for the player to get to their maximum speed.
 	/// </summary>
 	[Tooltip("The default time it takes for the player to get to  maximum speed.")]
@@ -33,7 +29,12 @@ public class Player : MonoBehaviour {
 	/// The speed at which the player's speed changes in the air.
 	/// </summary>
 	[Tooltip("The speed at which the player's speed changes in the air.")]
-	public float airSpeedSmoothTime = .3f;
+	public float airControl = .3f;
+	/// <summary>
+	/// The speed at which the player's speed changes in the air.
+	/// </summary>
+	[Tooltip("The speed at which the player's speed changes in the air.")]
+	public float groundControl = .8f;
 	/// <summary>
 	/// The value by which the speed is multiplied when the player sprints.
 	/// </summary>
@@ -87,15 +88,14 @@ public class Player : MonoBehaviour {
 	[Tooltip("The maximum height of the jump.")]
 	public float maxJumpHeight = 6f;
 	/// <summary>
-	/// The time it takes for the player to reach their jump apex.
-	/// </summary>
-	[Tooltip("The time it takes for the player to reach their jump apex.")]
-	public float timeToJumpApex = .4f;
-	[Tooltip("How many seconds after falling can the avatar still jump.")]
-	/// <summary>
 	/// The time during which the avatar can still jump after falling off.
 	/// </summary>
+	[Tooltip("How many seconds after falling can the avatar still jump.")]
 	public float canStillJumpTime = .12f;
+	/// <summary>
+	/// Calculated at the start from maxJumpHeight and timeToJumpApex.
+	/// </summary>
+	public float gravity;
 
 	[Header("Aerial Jumps")]
 	/// <summary>
@@ -109,15 +109,10 @@ public class Player : MonoBehaviour {
 	[Tooltip("The efficiency of the aerial jump compared to the regular jump (2 makes it 2 times stronger, 0.5 makes it 2 times weaker (not really, play around with it)).")]
 	public float coeffAerialJumpEfficiency = 1f;
 
-
 	/// <summary>
 	/// The current number of aerial jumps remaining to the player.
 	/// </summary>
 	int rmngAerialJumps;
-	/// <summary>
-	/// Calculated at the start from maxJumpHeight and timeToJumpApex.
-	/// </summary>
-	float gravity;
 	/// <summary>
 	/// The maximum jump velocity calculated at the start.
 	/// </summary>
@@ -255,15 +250,20 @@ public class Player : MonoBehaviour {
 	public ParticlesManager glideParticles; 
 	public GameObject jumpParticles;
 	public ParticlesManager dashParticles;
+
+
 	/// <summary>
 	/// The velocity calculated each frame and sent to the controller.
 	/// </summary>
-	Vector3 velocity;
+	Vector3 velocity = Vector3.zero;
 
 	/// <summary>
 	/// The player is sliding.
 	/// </summary>
 	bool isSliding;
+	[Space(20)]
+
+	public ePlayerState currentPlayerState;
 
 	/// <summary>
 	/// The controller checking if there's collisions on the way.
@@ -275,7 +275,6 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	Animator animator;
 
-	[Space(20)]
 	/// <summary>
 	/// The rotator used to turn the player.
 	/// </summary>
@@ -291,338 +290,138 @@ public class Player : MonoBehaviour {
 	void Start(){
 		controller = GetComponent<CharacControllerRecu> ();
 		animator = GetComponentInChildren<Animator> ();
-		gravity = -(2 * maxJumpHeight) / Mathf.Pow (timeToJumpApex, 2);
-		maxJumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
-		minJumpVelocity = Mathf.Sqrt (2 * Mathf.Abs (gravity) * minJumpHeight);
+
+		currentPlayerState = ePlayerState.inAir;
+
+		maxJumpVelocity = maxJumpHeight;
+		minJumpVelocity = minJumpHeight;
 		maxAerialJumpVelocity = maxJumpVelocity * coeffAerialJumpEfficiency;
 		minAerialJumpVelocity = minJumpVelocity * coeffAerialJumpEfficiency;
 		permissiveJumpTime = canStillJumpTime;
+
+		velocity = Vector3.zero;
 
 		Game.Utilities.EventManager.OnMenuSwitchedEvent += HandleEventMenuSwitched;
 	}
 
 	void HandleEventMenuSwitched (object sender, Game.Utilities.EventManager.OnMenuSwitchedEventArgs args){
-        if (args.NewUiState == Game.Player.UI.eUiState.HUD)
-        {
-            readingInputs = true;
-        }
-        else
-        {
-            readingInputs = false;
-        }
+		if (args.NewUiState == Game.Player.UI.eUiState.HUD)
+		{
+			readingInputs = true;
+		}
+		else
+		{
+			readingInputs = false;
+		}
 	}
 
 	void Update(){
 
-		isSliding = controller.collisions.onSteepSlope;
-		Vector3 flatVelocity = Vector3.ProjectOnPlane (velocity, transform.up);
-		float angle = Vector3.Angle (Vector3.up, transform.up);
+		#region input detection
 
-		//Get the input of the player and translate it into the camera angle
-		Vector3 input = rotator.forward * Input.GetAxisRaw ("Vertical") + rotator.right * Input.GetAxisRaw ("Horizontal");
+		Vector3 inputRaw = new Vector3(Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical"));
+		Vector3 inputToCamera = rotator.forward * Input.GetAxisRaw ("Vertical") + rotator.right * Input.GetAxisRaw ("Horizontal");
+		Vector3 flatVelocity = velocity;
+		flatVelocity.y = 0;
 
-		if (!readingInputs)
-			input = Vector3.zero;
+		#endregion input detection
 
-		//Detect dash input and trigger it if it is available
-		if (Input.GetButtonDown ("Dash") && readingInputs && dashTimer < 0f && playerMod.CheckAbilityActive(eAbilityType.Dash) && !isGliding) {
-			velocity = Vector3.zero;
-			isDashing = true;
-			playerMod.FlagAbility (eAbilityType.Dash);
-			dashDuration = dashSpeed;
-			dashParticles.Play ();
+
+		#region direction
+
+		Vector3 targetVelocity = Vector3.zero;
+		Debug.Log("state : " + currentPlayerState);
+		switch (currentPlayerState) {
+		default:
+			Debug.LogWarning ("pas de player state >:c");
+			break;
+
+
+		case ePlayerState.inAir:
+			targetVelocity = inputToCamera * characSpeed;
+			velocity.y -= gravity * Time.deltaTime;
+			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, airControl * Time.deltaTime);
+			if (Input.GetButtonUp ("Jump")) {
+				if (velocity.y > minJumpVelocity) {
+					velocity.y = minJumpVelocity;
+				}
+			}
+			break;
+
+
+		case ePlayerState.onGround:
+			flatVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, controller.collisions.currentGroundNormal), Vector3.Cross(controller.collisions.currentGroundNormal, transform.up))) * velocity;
+			Debug.Log("velocity : " + velocity + " to normal : " + flatVelocity);
+			velocity.y = 0f;
+			targetVelocity = inputToCamera * characSpeed;
+			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, groundControl * Time.deltaTime);
+			flatVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, controller.collisions.currentGroundNormal), Vector3.Cross(transform.up, controller.collisions.currentGroundNormal))) * flatVelocity;
+
+			if (Input.GetButtonDown("Jump")) {
+				velocity.y = maxJumpVelocity;
+				currentPlayerState = ePlayerState.inAir;
+			}
+			break;
+
+
+		case ePlayerState.dashing:
+			velocity.y -= gravity;
+			velocity = Vector3.Lerp(velocity, targetVelocity, airControl);
+			break;
+
+
+		case ePlayerState.gliding:
+			velocity.y -= gravity;
+			velocity = Vector3.Lerp(velocity, targetVelocity, airControl);
+			break;
+
+
+		case ePlayerState.sliding:
+			velocity.y -= gravity;
+			velocity = Vector3.Lerp(velocity, targetVelocity, airControl);
+			break;
 		}
+		#endregion direction
 
-
-
-		if (isDashing) {
-
-			velocity = transform.forward * ((dashRange/dashSpeed)/Time.deltaTime);
-			currentSpeed = ((dashRange / dashSpeed) / Time.deltaTime);
-			dashDuration -= Time.deltaTime;
-
-			if (dashDuration <= 0) {
-				isDashing = false;
-				dashTimer = dashCooldown;
-				playerMod.UnflagAbility (eAbilityType.Dash);
-			}
-
-		} else {
-			dashTimer -= Time.deltaTime;
-			// Updates the gliding attitude of the player depending of the player's input
-			if (isGliding) {
-				Vector3 inputGlide = new Vector3 (Input.GetAxisRaw ("Horizontal"), 0, Mathf.Clamp(Input.GetAxisRaw ("Vertical") + glideDrag, -.9f, .9f));
-				if (!readingInputs)
-					inputGlide = Vector3.zero;
-				//                                                                                                                              coming back from left/right       tilting left/right
-				glideAttitude = new Vector3 (Mathf.Lerp (glideAttitude.x, inputGlide.x, (glideAttitude.sqrMagnitude > inputGlide.sqrMagnitude ? glideLRAttitudeRecoverSpeed : glideLRAttitudeTiltingSpeed) * Time.deltaTime)
-				//                                                                                                           coming back from forward           tilting forward
-				, 0, Mathf.Lerp (glideAttitude.z, inputGlide.z, (glideAttitude.z > 0 ? (glideAttitude.z > inputGlide.z ? glideForwardAttitudeRecoverSpeed : glideForwardAttitudeTiltingSpeed) 
-				//                                                                                                       coming back from backward              tilting backward
-					                                                              : (glideAttitude.z < inputGlide.z ? glideBackwardAttitudeRecoverSpeed : glideBackwardAttitudeTiltingSpeed)) * Time.deltaTime));
-			} else {
-				glideAttitude = Vector2.zero;
-			}
-
-			if (isSliding) {
-				Vector3 inputSlide = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, controller.collisions.currentGroundNormal), Vector3.Cross(Vector3.up, controller.collisions.currentGroundNormal))) * input;
-				if (!readingInputs)
-					inputSlide = Vector3.zero;
-			}
-
-			//Turn the player in the direction of the input and decelerating when turning back
-			#region turning the player 
-			if (input != Vector3.zero && !isGliding && !isDashing && !isSliding) {
-
-				//If the input is at the opposite side of the player's forward, turn instantly and slow down the player
-				if (controller.collisions.below) {
-					turnSmoothTime = (Vector3.Dot (transform.forward, input) < -.75f && currentSpeed <= characSpeed * sprintCoeff) ? turnSmoothTime_uTurn : turnSmoothTime_default;
-					if (Vector3.Dot (transform.forward, input) < -.75f && currentSpeed <= characSpeed * sprintCoeff) {
-						if (!suddenStop) {
-							//currentSpeed = -currentSpeed;
-							speedSmoothTimeGround = groundAccelerationSmoothTime_uTurn;
-							suddenStop = true;
-						} else {
-							speedSmoothTimeGround = Mathf.Clamp (speedSmoothTimeGround - Time.deltaTime, groundAccelerationSmoothTime_default, groundAccelerationSmoothTime_uTurn);
-						}
-					} else {
-						suddenStop = false;
-						speedSmoothTimeGround = groundAccelerationSmoothTime_default;
-					}
-				}
-				//Vector3 direction = Vector3.SmoothDamp (transform.forward, input, ref turnSmoothVelocity, turnSmoothTime);
-				Vector3 direction = Vector3.Lerp (transform.forward, input, turnSmoothTime * Time.deltaTime /(flatVelocity.magnitude/4));
-
-				transform.rotation = Quaternion.LookRotation (direction, transform.up);
-
-			} else {
-				suddenStop = false;
-				speedSmoothTimeGround = groundDecelerationSmoothTime_default;
-			}
-
-			//Case when the player is gliding
-			if (isGliding) {
-				//Vector3 direction = Vector3.SmoothDamp (transform.forward, glideAttitude.x * glideMaxTurn * transform.right * 0.1f + transform.forward, ref turnSmoothVelocity, turnSmoothTime);
-				Vector3 direction = Vector3.Lerp (transform.forward, glideAttitude.x * glideMaxTurn * 0.1f * transform.right + transform.forward, glideTurnSpeed * Time.deltaTime);
-				transform.rotation = Quaternion.LookRotation (direction, transform.up);
-			}
-
-			if (isSliding) {
-				Vector3 direction = Vector3.ProjectOnPlane(controller.collisions.currentGroundNormal, transform.up);
-				transform.rotation = Quaternion.LookRotation (direction, transform.up);
-			}
-			#endregion turning the player
-
-			#region update velocity
-			if (!isGliding && !isSliding) {
-				// Calculate current speed of the player and detects if the player is sprinting
-				float targetSpeed = characSpeed * Mathf.Clamp01 (input.magnitude) * ((Input.GetButton ("Sprint") && readingInputs && controller.collisions.below) ? sprintCoeff : 1);
-
-
-				//currentSpeed = Mathf.SmoothDamp (currentSpeed, targetSpeed, ref speedSmoothVelocity, (controller.collisions.below ? speedSmoothTimeGround : airSpeedSmoothTime));
-				currentSpeed = Mathf.Lerp (currentSpeed, targetSpeed, (controller.collisions.below ? speedSmoothTimeGround : airSpeedSmoothTime) * Time.deltaTime);
-
-				//Combine speed and direction to calculate horizontal components of the velocity vector
-				velocity.x = Vector3.ProjectOnPlane (transform.forward, rotator.forward).magnitude * currentSpeed * (Vector3.Dot (transform.forward, rotator.right) > 0 ? 1 : -1);
-				velocity.z = Vector3.ProjectOnPlane (transform.forward, rotator.right).magnitude * currentSpeed * (Vector3.Dot (transform.forward, rotator.forward) > 0 ? 1 : -1);
-		
-				//Translate the forward of the camera in a standard plane to rotate the horizontal velocity accordingly
-				Vector3 inputDir = (Quaternion.AngleAxis (-angle, Vector3.Cross (Vector3.up, transform.up))) * rotator.forward;
-				float targetRotation = Vector3.Angle (Vector3.forward, inputDir) * (Vector3.Dot (inputDir, Vector3.right) > 0 ? 1 : -1);
-				velocity = Quaternion.Euler (0, targetRotation, 0) * velocity;
-
-			}
-
-			//Adds the gravity to the velocity, in case the player is gliding, reset the gravity to zero (the speed is remembered in the currentSpeed variable)
-			if (isGliding)
-				velocity = Vector3.zero;
-			velocity.y += gravity * Time.deltaTime;
-
-			velocity.y = Mathf.Clamp(velocity.y, -200, 200);
-
-			#endregion update velocity
-
-			#region jump controls
-
-			//Resets the number of aerial jumps remaining when the player is on the ground
-			if (controller.collisions.below) {
-				rmngAerialJumps = numberOfAerialJumps;
-				playerMod.UnflagAbility(eAbilityType.DoubleJump);
-				permissiveJumpTime = permissiveJumpTime == canStillJumpTime ? permissiveJumpTime : canStillJumpTime;
-			}
-
-			//Timer to control time during which the avatar can still jump after falling off
-			if(!controller.collisions.below && permissiveJumpTime > 0f){
-				permissiveJumpTime = permissiveJumpTime < 0 ? 0 : permissiveJumpTime - Time.deltaTime;
-			}
-
-			//Detects jump input from the player and adds vertical velocity
-			if (Input.GetButtonDown ("Jump") && readingInputs) {
-				if (controller.collisions.below || permissiveJumpTime > 0f) {
-					lastJumpAerial = false;
-					controller.jumpedOnThisFrame = true;
-					if (controller.collisions.onSteepSlope) {
-						//MAYBE TODO: change behavior of jump when on a steep slope
-						velocity.y = maxJumpVelocity;
-					} else {
-						velocity.y = maxJumpVelocity;
-					}
-				} else if (rmngAerialJumps > 0 && playerMod.CheckAbilityActive(eAbilityType.DoubleJump) && !isGliding) {
-					lastJumpAerial = true;
-					rmngAerialJumps--;
-					playerMod.FlagAbility(eAbilityType.DoubleJump);
-					velocity.y = maxAerialJumpVelocity;
-					Instantiate (jumpParticles, transform.position, Quaternion.identity, transform);
-				}
-			}
-
-			//Detects the release of the jump button and sets the vertical velocity to its minimum
-			if (Input.GetButtonUp ("Jump") && readingInputs) {
-				if (lastJumpAerial) {
-					if (velocity.y > minAerialJumpVelocity) {
-						velocity.y = minAerialJumpVelocity;
-					}
-				} else {
-					if (velocity.y > minJumpVelocity) {
-						velocity.y = minJumpVelocity;
-					}
-				}
-			}
-
-			#endregion jump controls
-
-			#region glide
-			//Détection et fonctionnement du glide (sauf la rotation qui est dans la region turn player)
-
-			//atterir quand on glide et touche un sol
-			if (controller.collisions.below && isGliding) {
-				isGliding = false;
-				glideParticles.Stop();
-				playerMod.UnflagAbility(eAbilityType.Glide);
-				velocity += Vector3.LerpUnclamped (transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
-				animator.transform.LookAt (transform.position + transform.forward, transform.up);
-			}
-
-			//detecter l'input de glide
-			if (Input.GetButtonDown ("Sprint") && readingInputs) {
-				//si le joueur est en train de glider, arrêter le glide
-				if (isGliding) {
-					glideParticles.Stop();
-					isGliding = false;
-					playerMod.UnflagAbility(eAbilityType.Glide);
-					velocity += Vector3.LerpUnclamped (transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
-					animator.transform.LookAt (transform.position + transform.forward, transform.up);
-				//si le joueur est dans les airs et qu'il tente de glider
-				} else if (!controller.collisions.below && !isGliding && playerMod.CheckAbilityActive(eAbilityType.Glide)) {
-					//appliquer une vitesse minimale si sa chute n'est pas assez rapide
-					glideParticles.Play();
-					if (velocity.magnitude < -glideMinimalInitialSpeed) {
-						currentSpeed = velocity.magnitude;
-					} else {
-						currentSpeed = glideMinimalInitialSpeed;
-					}
-					playerMod.FlagAbility(eAbilityType.Glide);
-					glideAttitude.z = .5f;
-					isGliding = true;
-				}
-			}
-
-			if (isGliding) {
-				currentSpeed += ((glideAttitude.z - glideDrag) / (glideAttitude.z < 0 ? glideDecelerate : glideAccelerate)) * Time.deltaTime * 60;
-
-				currentSpeed = Mathf.Clamp (currentSpeed, 0, glideMaxSpeed);
-
-				velocity += Vector3.LerpUnclamped (transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
-				animator.transform.LookAt (transform.position + velocity, transform.up + transform.right * glideAttitude.x);
-				if (currentSpeed < glideLimitSpeed) {
-					glideParticles.Stop();
-					isGliding = false;
-					glideTimer = timeBetweenGlides;
-					playerMod.UnflagAbility(eAbilityType.Glide);
-					animator.transform.LookAt (transform.position + transform.forward, transform.up);
-					Debug.Log ("YOU4RE 2 SLOW");
-				}
-			} else {
-				glideTimer -= Time.deltaTime;
-			}
-
-			#region version bouton enfoncé
-			/*
-		if (Input.GetButtonDown ("Sprint") && velocity.y < 0 && !controller.collisions.below && glideTimer < 0f){
-			if (!isGliding){
-				if (velocity.y < -glideMinimalInitialSpeed) {
-					currentSpeed = -velocity.y;
-				} else {
-					currentSpeed = glideMinimalInitialSpeed;
-				}
-				glideAttitude.z = .5f;
-			}
-			isGliding = true;
-
-
-			currentSpeed += ((glideAttitude.z - glideDrag)/ (glideAttitude.z < 0 ? glideDecelerate : glideAccelerate)) * Time.deltaTime * 60;
-
-			currentSpeed = Mathf.Clamp (currentSpeed, 0, glideMaxSpeed);
-
-			velocity += Vector3.LerpUnclamped(transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
-			animator.transform.LookAt(transform.position + velocity, transform.up + transform.right*glideAttitude.x);
-			if (currentSpeed < glideLimitSpeed){
-				isGliding = false;
-				glideTimer = timeBetweenGlides;
-				Debug.Log("YOU4RE 2 SLOW");
-			}
-
-			/*                            v WORKING but other version v
-			float targetSpeed = glideMinimalInitialSpeed + (glideMaxSpeed * glideAttitude.z);
-
-			currentSpeed = Mathf.SmoothDamp (currentSpeed, targetSpeed, ref speedSmoothVelocity, (currentSpeed < targetSpeed) ? glideAccelerate : glideDecelerate);
-			Debug.Log ("speed : " + currentSpeed + " target  : " + targetSpeed);
-
-			velocity += Vector3.LerpUnclamped(transform.forward, -transform.up, glideAttitude.z) * currentSpeed;
-			animator.transform.LookAt(transform.position + velocity, transform.up + transform.right*glideAttitude.x);
-			if (currentSpeed < glideLimitSpeed){
-				isGliding = false;
-			}*/
-
-			/*
-		} else {
-			glideTimer -= Time.deltaTime;
-			isGliding = false;
-			animator.transform.LookAt(transform.position + transform.forward, transform.up);
-		}*/
-			#endregion version bouton enfoncé
-
-			#endregion glide
-
-		}
+		velocity = new Vector3(0, velocity.y, 0);
+		velocity += flatVelocity;
 		//Calls the controller to check if the calculated velocity will run into walls and stuff
-	velocity = controller.Move ((Quaternion.AngleAxis(angle, Vector3.Cross(Vector3.up, transform.up))) * velocity * Time.deltaTime);
+		velocity = controller.Move ((Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * velocity / 10f);
 
 		#region update animator
 		float keyHalf = 0.5f;
 		float m_RunCycleLegOffset = 0.2f;
 
+		animator.transform.LookAt(transform.position + flatVelocity, transform.up);
 		animator.SetBool ("OnGround", controller.collisions.below);
-		animator.SetFloat ("Forward", input.magnitude);
-		animator.SetFloat ("Turn", Vector3.Dot (transform.right, input));
+		animator.SetFloat ("Forward", inputRaw.magnitude);
+		animator.SetFloat ("Turn", Vector3.Dot (transform.right, inputRaw));
 		animator.SetFloat ("Jump", velocity.y/5);
 		float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
-		float jumpLeg = (runCycle < keyHalf ? 1 : -1) * input.magnitude;
+		float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputRaw.magnitude;
 		if (controller.collisions.below) {
 			animator.SetFloat("JumpLeg", jumpLeg);
 		}
 
 		windParticles.SetVelocity(velocity);
 		glideParticles.SetVelocity(velocity);
-
-
 		#endregion update animator
+
 	}
- 
-public void CancelDash(){
-	dashDuration = 0f;
-	isDashing = false;
-	dashTimer = dashCooldown;
-	playerMod.UnflagAbility (eAbilityType.Dash);
-    }
+
+	public void CancelDash(){
+		dashDuration = 0f;
+		isDashing = false;
+		dashTimer = dashCooldown;
+		playerMod.UnflagAbility (eAbilityType.Dash);
+	}
+
+
+	public enum ePlayerState {
+		onGround,
+		inAir,
+		gliding,
+		dashing,
+		sliding
+	}
 }
