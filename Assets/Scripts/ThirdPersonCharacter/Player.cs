@@ -41,6 +41,11 @@ public class Player : MonoBehaviour {
 	[Tooltip("The value by which the speed is multiplied when the player sprints.")]
 	public float sprintCoeff = 2f;
 	/// <summary>
+	/// The max walkable slope angle.
+	/// </summary>
+	[Tooltip("The max walkable slope angle.")]
+	public float maxSlopeAngle = 45f;
+	/// <summary>
 	/// Variable used in the speed smooth damp.
 	/// </summary>
 	float speedSmoothVelocity;
@@ -285,7 +290,11 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	public PlayerModel playerMod;
 
+	#region input bools
 	bool readingInputs = true;
+	bool pressedJump = false;
+	bool releasedJump = false;
+	#endregion input bools
 
 	void Start(){
 		controller = GetComponent<CharacControllerRecu> ();
@@ -319,10 +328,23 @@ public class Player : MonoBehaviour {
 
 		#region input detection
 
+		pressedJump = false;
+		releasedJump = false;
+
 		Vector3 inputRaw = new Vector3(Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical"));
 		Vector3 inputToCamera = rotator.forward * Input.GetAxisRaw ("Vertical") + rotator.right * Input.GetAxisRaw ("Horizontal");
+		inputToCamera = (Quaternion.AngleAxis (Vector3.Angle (transform.up, Vector3.up), Vector3.Cross (transform.up, Vector3.up))) * inputToCamera;
 		Vector3 flatVelocity = velocity;
 		flatVelocity.y = 0;
+
+		if (Input.GetButtonDown ("Jump")) {
+			pressedJump = true;
+		}
+
+		if (Input.GetButtonUp ("Jump")) {
+			releasedJump = true;
+		}
+
 
 		#endregion input detection
 
@@ -341,7 +363,8 @@ public class Player : MonoBehaviour {
 			targetVelocity = inputToCamera * characSpeed;
 			velocity.y -= gravity * Time.deltaTime;
 			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, airControl * Time.deltaTime);
-			if (Input.GetButtonUp ("Jump")) {
+			if (releasedJump) {
+				releasedJump = false;
 				if (velocity.y > minJumpVelocity) {
 					velocity.y = minJumpVelocity;
 				}
@@ -351,13 +374,13 @@ public class Player : MonoBehaviour {
 
 		case ePlayerState.onGround:
 			flatVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, controller.collisions.currentGroundNormal), Vector3.Cross(controller.collisions.currentGroundNormal, transform.up))) * velocity;
-			Debug.Log("velocity : " + velocity + " to normal : " + flatVelocity);
 			velocity.y = 0f;
 			targetVelocity = inputToCamera * characSpeed;
 			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, groundControl * Time.deltaTime);
 			flatVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, controller.collisions.currentGroundNormal), Vector3.Cross(transform.up, controller.collisions.currentGroundNormal))) * flatVelocity;
-
-			if (Input.GetButtonDown("Jump")) {
+			flatVelocity *= Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (90 * 5) + 1;
+			if (pressedJump) {
+				pressedJump = false;
 				velocity.y = maxJumpVelocity;
 				currentPlayerState = ePlayerState.inAir;
 			}
@@ -377,7 +400,9 @@ public class Player : MonoBehaviour {
 
 
 		case ePlayerState.sliding:
-			velocity.y -= gravity;
+			float speed = Mathf.Lerp(gravity, 0, Vector3.Dot(transform.up, controller.collisions.currentGroundNormal));
+			//targetVelocity = rotation normale via cross (normal, trans.up) de 90
+			targetVelocity = Quaternion.AngleAxis(90f, Vector3.Cross(transform.up, controller.collisions.currentGroundNormal)) * controller.collisions.currentGroundNormal * speed;
 			velocity = Vector3.Lerp(velocity, targetVelocity, airControl);
 			break;
 		}
@@ -388,11 +413,25 @@ public class Player : MonoBehaviour {
 		//Calls the controller to check if the calculated velocity will run into walls and stuff
 		velocity = controller.Move ((Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * velocity / 10f);
 
+		transform.LookAt (transform.position + Vector3.ProjectOnPlane((Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * velocity, transform.up), transform.up);
+
+
+		#region update state
+		if (controller.collisions.below) {
+			if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle){
+				currentPlayerState = Player.ePlayerState.sliding;
+			} else {
+				currentPlayerState = Player.ePlayerState.onGround;
+			}
+		} else {
+			currentPlayerState = Player.ePlayerState.inAir;
+		}
+		#endregion update state
+
 		#region update animator
 		float keyHalf = 0.5f;
 		float m_RunCycleLegOffset = 0.2f;
 
-		animator.transform.LookAt(transform.position + flatVelocity, transform.up);
 		animator.SetBool ("OnGround", controller.collisions.below);
 		animator.SetFloat ("Forward", inputRaw.magnitude);
 		animator.SetFloat ("Turn", Vector3.Dot (transform.right, inputRaw));

@@ -62,12 +62,6 @@ public class CharacControllerRecu : MonoBehaviour {
 
 	[HideInInspector]
 	public bool jumpedOnThisFrame;
-
-	/// <summary>
-	/// The max walkable slope angle.
-	/// </summary>
-	[Tooltip("The max walkable slope angle.")]
-	public float maxSlopeAngle = 45f;
 	/// <summary>
 	/// The slide speed.
 	/// </summary>
@@ -78,6 +72,9 @@ public class CharacControllerRecu : MonoBehaviour {
 	public float slideDamp = 0.2f;
 
 	Quaternion playerAngle;
+	Vector3 initialVelocity;
+	RaycastHit hit;
+	Vector3 wallDir;
 
 	void Start(){
 		favourCollider = GetComponentInChildren<CapsuleCollider> ();
@@ -92,6 +89,7 @@ public class CharacControllerRecu : MonoBehaviour {
 
 	public Vector3 Move(Vector3 velocity){
 		playerAngle = (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
+		initialVelocity = velocity;
 
 		#if UNITY_EDITOR
 		Debug.DrawRay (myTransform.position + playerAngle * center, velocity*10, Color.green);
@@ -101,40 +99,62 @@ public class CharacControllerRecu : MonoBehaviour {
 		//Recursively check if the movement meets obstacles
 		velocity = CollisionDetection (velocity, myTransform.position + playerAngle * center, new RaycastHit());
 
+
+		Vector3 finalVelocity = Vector3.zero;
+		/// Check if calculated movement will end up in a wall, if so cancel movement
+		if (!Physics.CheckCapsule (myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + velocity, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + velocity, radius, collisionMaskNoCloud)) {
+			myTransform.Translate (velocity, Space.World);
+			finalVelocity = (Quaternion.AngleAxis (Vector3.Angle (transform.up, Vector3.up), Vector3.Cross (transform.up, Vector3.up))) * velocity * 10f;
+		} else {
+			wallDir = Vector3.zero;
+			Debug.LogWarning ("Oh oh, tu vas dans un mur. " + collisions.below);
+			if (collisions.below) {
+				wallDir = collisions.currentGroundNormal;
+
+			} else if (collisions.side) {
+				wallDir = collisions.currentWallNormal;
+			} else if (Physics.Raycast (transform.position + playerAngle * center, initialVelocity, out hit, initialVelocity.magnitude + radius + height / 2 + skinWidth, collisionMask)) {
+				wallDir = hit.normal;
+			}
+			if (Physics.Raycast (transform.position + playerAngle * center + initialVelocity, -wallDir, out hit, radius + height / 2 + skinWidth, collisionMask)) {
+				Vector3 destination = (hit.point + (hit.normal * (Mathf.Abs (Vector3.Dot (transform.up, hit.normal)) * height / 2 + radius + skinWidth))) - myTransform.up * (height / 2 + radius); 
+				//Debug.Log ("de : " + myTransform.position + " à " + destination + ", à " + (hit.normal * (Mathf.Abs(Vector3.Dot (transform.up, hit.normal)) * height / 2 + radius)) + " du mur.");
+				if (!Physics.CheckCapsule (myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + (destination - myTransform.position)
+					, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + (destination - myTransform.position), radius, collisionMaskNoCloud)) {
+					//velocity = destination - myTransform.position;
+					myTransform.Translate (destination - myTransform.position, Space.World);
+					finalVelocity = (Quaternion.AngleAxis (Vector3.Angle (transform.up, Vector3.up), Vector3.Cross (transform.up, Vector3.up))) * (velocity) * 10f;
+					Debug.Log ("adjusted position");
+				}
+			} else {
+				finalVelocity = Vector3.zero;
+			}
+		}
 		//Update collision informations
 		CollisionUpdate (velocity);
 
-
-		/// Check if calculated movement will end up in a wall, if so cancel movement
-		if (!Physics.CheckCapsule (myTransform.position + playerAngle * (center - capsuleHeightModifier/2) + velocity, myTransform.position + playerAngle * (center + capsuleHeightModifier/2) + velocity, radius*.9f, collisionMaskNoCloud)) {
-			myTransform.Translate (velocity, Space.World);
-			//Debug.Log ("controller : " + _velocity/Time.deltaTime);
-			return (Quaternion.AngleAxis (Vector3.Angle (transform.up, Vector3.up), Vector3.Cross (Vector3.up, transform.up))) * velocity * 10f;
-		} else {
-			Debug.LogWarning ("Oh oh, tu vas dans un mur. " + collisions.below);
-			return Vector3.zero;
-		}
+		return finalVelocity;
 	}
 
 
 	void CollisionUpdate(Vector3 velocity){
-		RaycastHit hit;
 		//Send casts to check if there's stuff around the player and sets bools depending on the results
 		collisions.below = Physics.SphereCast (myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier/2) + myTransform.up * skinWidth*2, radius, -myTransform.up, out hit, skinWidth*4, collisionMask);
 		Debug.DrawRay(myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier/2), -myTransform.up * (skinWidth) * 10f, Color.cyan);
-		Debug.Log ("below = " + collisions.below + " start : " + (myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier/2)) + 
-			" end : " + ((myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier/2)) - myTransform.up * skinWidth*4));
 		if (collisions.below) {
-			myPlayer.currentPlayerState = Player.ePlayerState.onGround;
 			collisions.currentGroundNormal = hit.normal;
 		} else {
-			myPlayer.currentPlayerState = Player.ePlayerState.inAir;
+			collisions.currentGroundNormal = Vector3.zero;
 		}
-		collisions.above = Physics.SphereCast (myTransform.position + playerAngle * center + capsuleHeightModifier, radius * .9f, myTransform.up, out hit, velocity.magnitude + skinWidth, collisionMask);
+		collisions.above = Physics.SphereCast (myTransform.position + velocity + playerAngle * (center + capsuleHeightModifier/2) - myTransform.up * skinWidth*2, radius, myTransform.up, out hit, skinWidth*4, collisionMask);
 		if (collisions.above && hit.collider.CompareTag ("cloud")) {
 			collisions.above = false;
 		}
-		collisions.side = Physics.SphereCast (myTransform.position + playerAngle * center, radius, Vector3.ProjectOnPlane(velocity, myTransform.up), out hit, velocity.magnitude + skinWidth, collisionMask);
+		collisions.side = Physics.SphereCast (myTransform.position + velocity + playerAngle * center - (initialVelocity.normalized * skinWidth*2), radius, Vector3.ProjectOnPlane(initialVelocity, myTransform.up), out hit, skinWidth*4, collisionMask);
+		if (collisions.side) {
+			Debug.Log ("ya un mur");
+			collisions.currentWallNormal = hit.normal;
+		}
 	}
 
 
@@ -148,8 +168,12 @@ public class CharacControllerRecu : MonoBehaviour {
 		Vector3 newOrigin = position;
 
 
+		/*if (collisions.side) {
+			velocity = Vector3.ProjectOnPlane (velocity, collisions.currentWallNormal);
+		}*/
+
 		//Send a first capsule cast in the direction of the velocity
-		if (Physics.CapsuleCast (newOrigin - capsuleHeightModifier/2, newOrigin + capsuleHeightModifier/2, radius, velocity, out hit, rayLength, collisionMask)) {
+		if (Physics.CapsuleCast (newOrigin - (playerAngle * capsuleHeightModifier/2), newOrigin + (playerAngle * capsuleHeightModifier/2), radius, velocity, out hit, rayLength, collisionMask)) {
 			collisionNumber++;
 
 			//When an obstacle is met, remember the amount of movement needed to get to the obstacle
@@ -163,6 +187,7 @@ public class CharacControllerRecu : MonoBehaviour {
 				Vector3 reflection = new Vector3();
 				//if it's the first obstacle met on this frame, project the extra velocity on the plane parallel to this obstacle
 				//if it's not the first, project on the line parallel to both the current obstacle and the previous one
+				//if the player is on the ground, count the ground as a first collision
 				//once the extra velocity has been projected, Call the function once more to check if this new velocity meets obstacle and do everything again
 				if (collisionNumber > 1) {
 					if (Vector3.Dot (hit.normal, oldHit.normal) < 0) {
@@ -171,7 +196,11 @@ public class CharacControllerRecu : MonoBehaviour {
 						reflection = CollisionDetection (Vector3.ProjectOnPlane(extraVelocity, hit.normal), position + movementVector, hit);
 					}
 				} else {
-					reflection = CollisionDetection (Vector3.ProjectOnPlane(extraVelocity, hit.normal), position + movementVector, hit);
+					if (collisions.below && Vector3.Dot (hit.normal, collisions.currentGroundNormal) < 0) {
+						reflection = CollisionDetection (Vector3.Project (extraVelocity, Vector3.Cross (hit.normal, collisions.currentGroundNormal)), position + movementVector, hit);
+					} else {
+						reflection = CollisionDetection (Vector3.ProjectOnPlane (extraVelocity, hit.normal), position + movementVector, hit);
+					}
 				}
 				//Add all the reflections calculated together
 				movementVector += reflection;
@@ -181,11 +210,12 @@ public class CharacControllerRecu : MonoBehaviour {
 			movementVector += velocity;
 		}
 
+		Debug.Log (collisionNumber);
 		if (collisionNumber > 4) {
 			Debug.LogWarning ("whoa that was a lot of collisions there (" + collisionNumber + ").");
 		}
-		Debug.Log ("nb coll " + collisionNumber);
 		Debug.DrawRay (newOrigin, movementVector, Color.red);
+
 
 		//return the movement vector calculated
 		return movementVector;
@@ -200,11 +230,13 @@ public class CharacControllerRecu : MonoBehaviour {
 		public bool side, onSteepSlope;
 
 		public Vector3 currentGroundNormal;
+		public Vector3 currentWallNormal;
 
 		public void Reset(){
 			above = below = false;
 			side = onSteepSlope = false;
 			currentGroundNormal = Vector3.zero;
+			currentWallNormal = Vector3.zero;
 		}
 
 	}
