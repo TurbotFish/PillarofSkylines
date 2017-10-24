@@ -153,6 +153,7 @@
 		float3 normal;
 		normal.xy = fenc * g;
 		normal.z = 1 - f/2;
+		//normal.z = clamp(abs(normal.z), 0.0, 1.0) * sign(normal.z);
 
 		//unpack sss colour
 		float _PackedNormalZ = gBuffer2.z;
