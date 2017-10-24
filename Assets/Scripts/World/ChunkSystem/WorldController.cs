@@ -8,9 +8,11 @@ namespace Game.World.ChunkSystem
     {
         [SerializeField]
         Vector3 worldSize;
+        public Vector3 WorldSize { get { return this.worldSize; } }
 
         [SerializeField]
         Bool3 repeatAxes;
+        public Bool3 RepeatAxes { get { return this.repeatAxes; } }
 
         [SerializeField]
         int numberOfRepetitions;
@@ -67,7 +69,7 @@ namespace Game.World.ChunkSystem
                             {
                                 continue;
                             }
-                            else if(x == 0 && y == 0 && z == 0)
+                            else if (x == 0 && y == 0 && z == 0)
                             {
                                 continue;
                             }
