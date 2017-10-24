@@ -6,11 +6,11 @@ Shader "ASESampleShaders/Transparency"
 {
 	Properties
 	{
+		[HideInInspector] __dirty( "", Int ) = 1
 		_UVOffset1("UVOffset1", Vector) = (-0.1,-0.1,-0.1,0)
 		_TextureSample3("Texture Sample 3", CUBE) = "white" {}
-		_Smoothness("Smoothness", Range( 0 , 1)) = 0
-		[HideInInspector] __dirty( "", Int ) = 1
 		_Opacity("Opacity", Range( 0 , 1)) = 1
+		_Smoothness("Smoothness", Range( 0 , 1)) = 0
 		_TextureSample1("Texture Sample 1", CUBE) = "white" {}
 		_char_woodman_normals("char_woodman_normals", 2D) = "bump" {}
 		_Cubemap("Cubemap", CUBE) = "white" {}
@@ -54,11 +54,12 @@ Shader "ASESampleShaders/Transparency"
 		void surf( Input i , inout SurfaceOutputStandard o )
 		{
 			float2 uv_char_woodman_normals = i.uv_texcoord * _char_woodman_normals_ST.xy + _char_woodman_normals_ST.zw;
-			o.Normal = UnpackNormal( tex2D( _char_woodman_normals,uv_char_woodman_normals) );
+			o.Normal = UnpackNormal( tex2D( _char_woodman_normals, uv_char_woodman_normals ) );
 			o.Albedo = float4(1,1,1,0).rgb;
-			float3 tex2DNode10 = UnpackNormal( tex2D( _char_woodman_normals,uv_char_woodman_normals) );
-			float4 appendResult31 = float4( texCUBE( _TextureSample1,( WorldReflectionVector( i , tex2DNode10 ) + _UVOffset0 )).r , texCUBE( _Cubemap,WorldReflectionVector( i , tex2DNode10 )).g , texCUBE( _TextureSample3,( WorldReflectionVector( i , tex2DNode10 ) + _UVOffset1 )).b , 0 );
-			o.Emission = ( 1.0 * appendResult31 ).xyz;
+			float3 tex2DNode10 = UnpackNormal( tex2D( _char_woodman_normals, uv_char_woodman_normals ) );
+			float3 worldrefVec9 = WorldReflectionVector( i , tex2DNode10 );
+			float3 appendResult32 = (float3(texCUBE( _TextureSample1, ( worldrefVec9 + _UVOffset0 ) ).r , texCUBE( _Cubemap, worldrefVec9 ).g , texCUBE( _TextureSample3, ( worldrefVec9 + _UVOffset1 ) ).b));
+			o.Emission = appendResult32;
 			o.Metallic = 1.0;
 			o.Smoothness = _Smoothness;
 			o.Alpha = _Opacity;
@@ -66,7 +67,7 @@ Shader "ASESampleShaders/Transparency"
 
 		ENDCG
 		CGPROGRAM
-		#pragma surface surf Standard alpha:fade keepalpha 
+		#pragma surface surf Standard alpha:fade keepalpha fullforwardshadows 
 
 		ENDCG
 		Pass
@@ -78,12 +79,11 @@ Shader "ASESampleShaders/Transparency"
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma target 3.0
-			#pragma multi_compile_instancing
 			#pragma multi_compile_shadowcaster
 			#pragma multi_compile UNITY_PASS_SHADOWCASTER
 			#pragma skip_variants FOG_LINEAR FOG_EXP FOG_EXP2
 			# include "HLSLSupport.cginc"
-			#if ( SHADER_API_D3D11 || SHADER_API_GLCORE || SHADER_API_GLES3 )
+			#if ( SHADER_API_D3D11 || SHADER_API_GLCORE || SHADER_API_GLES3 || SHADER_API_METAL || SHADER_API_VULKAN )
 				#define CAN_SKIP_VPOS
 			#endif
 			#include "UnityCG.cginc"
@@ -128,7 +128,7 @@ Shader "ASESampleShaders/Transparency"
 				UNITY_SETUP_INSTANCE_ID( IN );
 				Input surfIN;
 				UNITY_INITIALIZE_OUTPUT( Input, surfIN );
-				surfIN.uv_texcoord = IN.texcoords01.xy;
+				surfIN.uv_texcoord.xy = IN.texcoords01.xy;
 				float3 worldPos = float3( IN.tSpace0.w, IN.tSpace1.w, IN.tSpace2.w );
 				fixed3 worldViewDir = normalize( UnityWorldSpaceViewDir( worldPos ) );
 				surfIN.worldRefl = -worldViewDir;
@@ -152,43 +152,41 @@ Shader "ASESampleShaders/Transparency"
 	CustomEditor "ASEMaterialInspector"
 }
 /*ASEBEGIN
-Version=5002
-339;92;1190;590;341.4149;177.2558;1;True;False
-Node;AmplifyShaderEditor.SamplerNode;10;-1193.5,-7.000012;Float;Property;_char_woodman_normals;char_woodman_normals;-1;0;None;True;0;True;bump;Auto;True;Object;-1;Auto;Texture2D;SAMPLER2D;0,0;FLOAT2;1.0;FLOAT;1.0;FLOAT2;0,0;FLOAT2;0,0;FLOAT;1.0
-Node;AmplifyShaderEditor.SamplerNode;20;-566.8156,525.7439;Float;Property;_TextureSample3;Texture Sample 3;-1;0;None;True;0;False;white;Auto;False;Object;-1;Auto;Cube;SAMPLER2D;0,0;FLOAT2;1.0;FLOAT;1.0;FLOAT2;0,0;FLOAT2;0,0;FLOAT;1.0
-Node;AmplifyShaderEditor.WorldReflectionVector;9;-1042.699,194.6001;Float;FLOAT3;0,0,0
-Node;AmplifyShaderEditor.SimpleAddOpNode;26;-741.8156,623.7439;Float;FLOAT3;0,0,0;FLOAT3;0.0,0,0
-Node;AmplifyShaderEditor.SimpleMultiplyOpNode;7;47.89995,31.40003;Float;FLOAT;0.0;FLOAT4;0.0
-Node;AmplifyShaderEditor.ColorNode;16;94.68337,-258.8558;Float;Constant;_Color0;Color 0;-1;0;1,1,1,0
-Node;AmplifyShaderEditor.RangedFloatNode;17;158.6833,358.1439;Float;Constant;_Metallic;Metallic;-1;0;1;0;1
-Node;AmplifyShaderEditor.RangedFloatNode;4;-306.5,52;Float;Constant;_Float0;Float 0;-1;0;1;0;0
-Node;AmplifyShaderEditor.AppendNode;31;-159.3181,274.3439;Float;FLOAT4;0;0;0;0;FLOAT;0.0;FLOAT;0.0;FLOAT;0.0;FLOAT;0.0
-Node;AmplifyShaderEditor.Vector3Node;24;-1001.816,470.7439;Float;Property;_UVOffset0;UVOffset0;-1;0;0.07,0.1,0.1
-Node;AmplifyShaderEditor.Vector3Node;25;-1009.816,641.7439;Float;Property;_UVOffset1;UVOffset1;-1;0;-0.1,-0.1,-0.1
-Node;AmplifyShaderEditor.SimpleAddOpNode;23;-726.8156,352.7439;Float;FLOAT3;0,0,0;FLOAT3;0.0,0,0
-Node;AmplifyShaderEditor.SamplerNode;1;-559.5,152;Float;Property;_Cubemap;Cubemap;-1;0;None;True;0;False;white;Auto;False;Object;-1;Auto;Cube;SAMPLER2D;0,0;FLOAT2;1.0;FLOAT;1.0;FLOAT2;0,0;FLOAT2;0,0;FLOAT;1.0
-Node;AmplifyShaderEditor.SamplerNode;19;-573.8156,343.7439;Float;Property;_TextureSample1;Texture Sample 1;-1;0;None;True;0;False;white;Auto;False;Object;-1;Auto;Cube;SAMPLER2D;0,0;FLOAT2;1.0;FLOAT;1.0;FLOAT2;0,0;FLOAT2;0,0;FLOAT;1.0
-Node;AmplifyShaderEditor.RangedFloatNode;14;7.680939,452.8441;Float;Property;_Opacity;Opacity;-1;0;1;0;1
-Node;AmplifyShaderEditor.StandardSurfaceOutputNode;0;559.4,-96.99998;Float;True;2;Float;ASEMaterialInspector;Standard;ASESampleShaders/Transparency;False;False;False;False;False;False;False;False;False;False;False;False;Back;0;3;False;0;0;Transparent;0.5;True;True;0;False;Transparent;Transparent;All;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;False;0;255;255;0;0;0;0;False;0;4;10;25;False;0.5;True;0;Zero;Zero;0;Zero;Zero;Add;Add;0;FLOAT3;0,0,0;FLOAT3;0.0;FLOAT3;0.0;FLOAT;0.0;FLOAT;0.0;FLOAT;0.0;FLOAT3;0.0;FLOAT3;0.0;FLOAT;0.0;FLOAT;0,0,0;OBJECT;0,0,0;FLOAT3;0,0,0;FLOAT3;0.0,0,0;OBJECT;0;FLOAT4;0,0,0,0;FLOAT3;0,0,0
-Node;AmplifyShaderEditor.RangedFloatNode;18;113.6833,157.1439;Float;Property;_Smoothness;Smoothness;-1;0;0;0;1
-WireConnection;20;1;26;0
+Version=12003
+0;92;1541;926;1371.115;369.9559;1.6;False;False
+Node;AmplifyShaderEditor.SamplerNode;10;-1400.201,-39.50001;Float;True;Property;_char_woodman_normals;char_woodman_normals;-1;0;None;True;0;True;bump;Auto;True;Object;-1;Auto;Texture2D;6;0;SAMPLER2D;0,0;False;1;FLOAT2;0,0;False;2;FLOAT;1.0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1.0;False;5;FLOAT3;FLOAT;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.WorldReflectionVector;9;-1042.699,194.6001;Float;False;1;0;FLOAT3;0,0,0;False;4;FLOAT3;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.Vector3Node;25;-1009.816,641.7439;Float;False;Property;_UVOffset1;UVOffset1;-1;0;-0.1,-0.1,-0.1;0;4;FLOAT3;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.Vector3Node;24;-1001.816,470.7439;Float;False;Property;_UVOffset0;UVOffset0;-1;0;0.07,0.1,0.1;0;4;FLOAT3;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.SimpleAddOpNode;26;-741.8156,623.7439;Float;False;2;2;0;FLOAT3;0,0,0;False;1;FLOAT3;0.0,0,0;False;1;FLOAT3
+Node;AmplifyShaderEditor.SimpleAddOpNode;23;-742.4155,168.1439;Float;False;2;2;0;FLOAT3;0,0,0;False;1;FLOAT3;0.0,0,0;False;1;FLOAT3
+Node;AmplifyShaderEditor.SamplerNode;1;-568.5999,323.5997;Float;True;Property;_Cubemap;Cubemap;-1;0;None;True;0;False;white;Auto;False;Object;-1;Auto;Cube;6;0;SAMPLER2D;0,0;False;1;FLOAT3;1.0;False;2;FLOAT;1.0;False;3;FLOAT3;0,0,0;False;4;FLOAT3;0,0,0;False;5;FLOAT;1.0;False;5;FLOAT4;FLOAT;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.SamplerNode;20;-566.8156,525.7439;Float;True;Property;_TextureSample3;Texture Sample 3;-1;0;None;True;0;False;white;Auto;False;Object;-1;Auto;Cube;6;0;SAMPLER2D;0,0;False;1;FLOAT3;1.0;False;2;FLOAT;1.0;False;3;FLOAT3;0,0,0;False;4;FLOAT3;0,0,0;False;5;FLOAT;1.0;False;5;FLOAT4;FLOAT;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.SamplerNode;19;-554.3158,130.5439;Float;True;Property;_TextureSample1;Texture Sample 1;-1;0;None;True;0;False;white;Auto;False;Object;-1;Auto;Cube;6;0;SAMPLER2D;0,0;False;1;FLOAT3;1.0;False;2;FLOAT;1.0;False;3;FLOAT3;0,0,0;False;4;FLOAT3;0,0,0;False;5;FLOAT;1.0;False;5;FLOAT4;FLOAT;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.DynamicAppendNode;32;-158.3146,278.6447;Float;False;FLOAT3;4;0;FLOAT;0.0;False;1;FLOAT;0.0;False;2;FLOAT;0.0;False;3;FLOAT;0.0;False;1;FLOAT3
+Node;AmplifyShaderEditor.RangedFloatNode;17;67.48333,164.5437;Float;False;Constant;_Metallic;Metallic;-1;0;1;0;1;0;1;FLOAT
+Node;AmplifyShaderEditor.WireNode;33;57.68502,89.24414;Float;False;1;0;FLOAT3;0.0;False;1;FLOAT3
+Node;AmplifyShaderEditor.ColorNode;16;94.68337,-258.8558;Float;False;Constant;_Color0;Color 0;-1;0;1,1,1,0;0;5;COLOR;FLOAT;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.RangedFloatNode;18;75.28323,256.344;Float;False;Property;_Smoothness;Smoothness;-1;0;0;0;1;0;1;FLOAT
+Node;AmplifyShaderEditor.RangedFloatNode;14;82.88092,353.6438;Float;False;Property;_Opacity;Opacity;-1;0;1;0;1;0;1;FLOAT
+Node;AmplifyShaderEditor.StandardSurfaceOutputNode;0;559.4,-96.99998;Float;False;True;2;Float;ASEMaterialInspector;0;Standard;ASESampleShaders/Transparency;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;False;False;Back;0;3;False;0;0;Transparent;0.5;True;True;0;False;Transparent;Transparent;All;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;False;0;255;255;0;0;0;0;False;0;4;10;25;False;0.5;True;0;Zero;Zero;0;Zero;Zero;Add;Add;0;False;0;0,0,0,0;VertexOffset;False;Cylindrical;False;Relative;0;;-1;-1;-1;-1;0;0;15;0;FLOAT3;0,0,0;False;1;FLOAT3;0.0;False;2;FLOAT3;0.0;False;3;FLOAT;0.0;False;4;FLOAT;0.0;False;5;FLOAT;0.0;False;6;FLOAT3;0.0;False;7;FLOAT3;0.0;False;8;FLOAT;0.0;False;9;FLOAT;0,0,0;False;10;OBJECT;0,0,0;False;11;FLOAT3;0,0,0;False;12;FLOAT3;0,0,0;False;14;FLOAT4;0,0,0,0;False;15;FLOAT3;0,0,0;False;0
 WireConnection;9;0;10;0
 WireConnection;26;0;9;0
 WireConnection;26;1;25;0
-WireConnection;7;0;4;0
-WireConnection;7;1;31;0
-WireConnection;31;0;19;1
-WireConnection;31;1;1;2
-WireConnection;31;2;20;3
 WireConnection;23;0;9;0
 WireConnection;23;1;24;0
 WireConnection;1;1;9;0
+WireConnection;20;1;26;0
 WireConnection;19;1;23;0
+WireConnection;32;0;19;1
+WireConnection;32;1;1;2
+WireConnection;32;2;20;3
+WireConnection;33;0;32;0
 WireConnection;0;0;16;0
 WireConnection;0;1;10;0
-WireConnection;0;2;7;0
+WireConnection;0;2;33;0
 WireConnection;0;3;17;0
 WireConnection;0;4;18;0
 WireConnection;0;9;14;0
 ASEEND*/
-//CHKSM=128341908B333BAE9CB7A91C57DAA328EF54A1DC
+//CHKSM=EA918958D151C229CBAECAFC7F62CCF6E9541F85

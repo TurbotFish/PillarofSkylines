@@ -19,6 +19,16 @@ namespace AmplifyShaderEditor
 			Undo.RecordObject( objectToUndo, name );
 		}
 
+		public string EditorGUILayoutStringField( string name, string value, params GUILayoutOption[] options )
+		{
+			string newValue = EditorGUILayout.TextField( name, value, options );
+			if ( !newValue.Equals( value ) )
+			{
+				UndoRecordObject( this, string.Format( MessageFormat, "EditorGUILayoutStringField", ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
+			}
+			return newValue;
+		}
+
 		public string EditorGUILayoutTextField( GUIContent label, string text, params GUILayoutOption[] options )
 		{
 			string newValue = EditorGUILayout.TextField( label, text, options );
@@ -44,17 +54,19 @@ namespace AmplifyShaderEditor
 			Enum newValue = EditorGUILayout.EnumPopup( label, selected, options );
 			if ( !newValue.ToString().Equals( selected.ToString() ) )
 			{
-				UndoRecordObject( this, string.Format( MessageFormat, label, ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
+				UndoRecordObject( this, string.Concat( "Changing value ", label, " on node ", ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
+				//UndoRecordObject( this, string.Format( MessageFormat, label, ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
 			}
 			return newValue;
 		}
-		
+
 		public Enum EditorGUILayoutEnumPopup( string label, Enum selected, params GUILayoutOption[] options )
 		{
 			Enum newValue = EditorGUILayout.EnumPopup( label, selected, options );
 			if ( !newValue.ToString().Equals( selected.ToString() ) )
 			{
-				UndoRecordObject( this, string.Format( MessageFormat, label, ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
+				UndoRecordObject( this, string.Concat( "Changing value ", label, " on node ", ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
+				//UndoRecordObject( this, string.Format( MessageFormat, label, ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
 			}
 			return newValue;
 		}
@@ -64,7 +76,8 @@ namespace AmplifyShaderEditor
 			Enum newValue = EditorGUILayout.EnumPopup( selected, options );
 			if ( !newValue.ToString().Equals( selected.ToString() ) )
 			{
-				UndoRecordObject( this, string.Format( MessageFormat, "EditorGUILayoutEnumPopup", ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
+				UndoRecordObject( this, string.Concat( "Changing value EditorGUILayoutEnumPopup on node ", ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
+				//UndoRecordObject( this, string.Format( MessageFormat, "EditorGUILayoutEnumPopup", ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
 			}
 			return newValue;
 		}
@@ -79,6 +92,7 @@ namespace AmplifyShaderEditor
 			return newValue;
 		}
 
+
 		public int EditorGUILayoutPopup( string label, int selectedIndex, string[] displayedOptions, GUIStyle style, params GUILayoutOption[] options )
 		{
 			int newValue = EditorGUILayout.Popup( label, selectedIndex, displayedOptions, style, options );
@@ -89,6 +103,27 @@ namespace AmplifyShaderEditor
 			return newValue;
 		}
 
+
+		public int EditorGUILayoutPopup( GUIContent label, int selectedIndex, GUIContent[] displayedOptions, params GUILayoutOption[] options )
+		{
+			int newValue = EditorGUILayout.Popup( label, selectedIndex, displayedOptions, options );
+			if ( newValue != selectedIndex )
+			{
+				UndoRecordObject( this, string.Format( MessageFormat, label, ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
+			}
+			return newValue;
+		}
+		
+		public int EditorGUILayoutPopup( GUIContent label, int selectedIndex, GUIContent[] displayedOptions, GUIStyle style, params GUILayoutOption[] options )
+		{
+			int newValue = EditorGUILayout.Popup( label, selectedIndex, displayedOptions, style, options );
+			if ( newValue != selectedIndex )
+			{
+				UndoRecordObject( this, string.Format( MessageFormat, label, ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
+			}
+			return newValue;
+		}
+		
 		public int EditorGUILayoutPopup( int selectedIndex, string[] displayedOptions, params GUILayoutOption[] options )
 		{
 			int newValue = EditorGUILayout.Popup( selectedIndex, displayedOptions, options );
@@ -196,10 +231,19 @@ namespace AmplifyShaderEditor
 			{
 				UndoRecordObject( this, string.Format( MessageFormat, label, ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
 			}
-
 			return newValue;
 		}
 
+		public Color EditorGUILayoutColorField( GUIContent label, Color value, bool showEyedropper, bool showAlpha, bool hdr, ColorPickerHDRConfig hdrConfig, params GUILayoutOption[] options )
+		{
+			Color newValue = EditorGUILayout.ColorField( label, value, showEyedropper, showAlpha, hdr, hdrConfig, options );
+			if ( newValue != value )
+			{
+				UndoRecordObject( this, string.Format( MessageFormat, label, ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
+			}
+			return newValue;
+		}
+		
 		public float EditorGUILayoutSlider( string label, float value, float leftValue, float rightValue, params GUILayoutOption[] options )
 		{
 			float newValue = EditorGUILayout.Slider( label, value, leftValue, rightValue, options );
@@ -219,7 +263,7 @@ namespace AmplifyShaderEditor
 			}
 			return newValue;
 		}
-		public UnityEngine.Object EditorGUILayoutObjectField( string label, UnityEngine.Object obj, Type objType, bool allowSceneObjects, params GUILayoutOption[] options )
+		public UnityEngine.Object EditorGUILayoutObjectField( string label, UnityEngine.Object obj, System.Type objType, bool allowSceneObjects, params GUILayoutOption[] options )
 		{
 			UnityEngine.Object newValue = EditorGUILayout.ObjectField( label, obj, objType, allowSceneObjects, options );
 			if ( newValue != obj )
@@ -279,6 +323,16 @@ namespace AmplifyShaderEditor
 		}
 
 		public bool EditorGUILayoutToggleLeft( string label, bool value, params GUILayoutOption[] options )
+		{
+			bool newValue = EditorGUILayout.ToggleLeft( label, value, options );
+			if ( newValue != value )
+			{
+				UndoRecordObject( this, string.Format( MessageFormat, label, ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
+			}
+			return newValue;
+		}
+
+		public bool EditorGUILayoutToggleLeft( GUIContent label, bool value, params GUILayoutOption[] options )
 		{
 			bool newValue = EditorGUILayout.ToggleLeft( label, value, options );
 			if ( newValue != value )
@@ -364,12 +418,43 @@ namespace AmplifyShaderEditor
 			Enum newValue = EditorGUI.EnumPopup( position, selected, style );
 			if ( !newValue.ToString().Equals( selected.ToString() ) )
 			{
+				UndoRecordObject( this, string.Concat( "Changing value EditorGUIEnumPopup on node ", ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
+				//UndoRecordObject( this, string.Format( MessageFormat, "EditorGUIEnumPopup", ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
+			}
+			return newValue;
+		}
+
+		public int EditorGUIIntPopup( Rect position, int selectedValue, GUIContent[] displayedOptions, int[] optionValues, [UnityEngine.Internal.DefaultValue( "EditorStyles.popup" )] GUIStyle style )
+		{
+			int newValue = EditorGUI.IntPopup( position, selectedValue, displayedOptions, optionValues, style );
+			if ( newValue != selectedValue )
+			{
+				UndoRecordObject( this, string.Format( MessageFormat, "EditorGUIIntEnumPopup", ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
+			}
+			return newValue;
+		}
+
+		public int EditorGUIPopup( Rect position, int selectedIndex, GUIContent[] displayedOptions, [UnityEngine.Internal.DefaultValue( "EditorStyles.popup" )] GUIStyle style )
+		{
+			int newValue = EditorGUI.Popup( position, selectedIndex, displayedOptions, style );
+			if ( newValue != selectedIndex )
+			{
 				UndoRecordObject( this, string.Format( MessageFormat, "EditorGUIEnumPopup", ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
 			}
 			return newValue;
 		}
 
-		public UnityEngine.Object EditorGUIObjectField( Rect position, UnityEngine.Object obj, Type objType, bool allowSceneObjects )
+		public int EditorGUIPopup( Rect position, int selectedIndex, string[] displayedOptions, [UnityEngine.Internal.DefaultValue( "EditorStyles.popup" )] GUIStyle style )
+		{
+			int newValue = EditorGUI.Popup( position, selectedIndex, displayedOptions, style );
+			if ( newValue != selectedIndex )
+			{
+				UndoRecordObject( this, string.Format( MessageFormat, "EditorGUIEnumPopup", ( ( m_nodeAttribs != null ) ? m_nodeAttribs.Name : GetType().ToString() ) ) );
+			}
+			return newValue;
+		}
+
+		public UnityEngine.Object EditorGUIObjectField( Rect position, UnityEngine.Object obj, System.Type objType, bool allowSceneObjects )
 		{
 			UnityEngine.Object newValue = EditorGUI.ObjectField( position, obj, objType, allowSceneObjects );
 			if ( newValue != obj )

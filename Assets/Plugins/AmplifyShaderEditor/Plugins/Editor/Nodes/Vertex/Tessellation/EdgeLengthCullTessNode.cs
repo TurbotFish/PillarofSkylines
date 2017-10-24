@@ -5,7 +5,7 @@
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Edge Length Tessellation With Cull", "Vertex Data", "Tessellation level computed based on triangle edge length on the screen with patch frustum culling" )]
+	[NodeAttributes( "Edge Length Tessellation With Cull", "Miscellaneous", "Tessellation level computed based on triangle edge length on the screen with patch frustum culling" )]
 	public sealed class EdgeLengthCullTessNode : TessellationParentNode
 	{
 		private const string FunctionBody = "UnityEdgeLengthBasedTessCull( v0.vertex, v1.vertex, v2.vertex, {0},{1})";

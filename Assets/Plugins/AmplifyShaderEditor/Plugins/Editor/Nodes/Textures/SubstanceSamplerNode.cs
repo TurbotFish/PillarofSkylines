@@ -22,9 +22,12 @@ namespace AmplifyShaderEditor
 		private float TexturePreviewSizeY = 128;
 
 
-		private float PickerPreviewSizeX = 128;
-		private float PickerPreviewSizeY = 17;
+		//private float PickerPreviewSizeX = 128;
+		//private float PickerPreviewSizeY = 17;
 		private float PickerPreviewWidthAdjust = 18;
+
+		//private Rect m_varRect;
+		private bool m_editing;
 
 		private CacheNodeConnections m_cacheNodeConnections;
 
@@ -43,7 +46,7 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private bool m_autoNormal = true;
 
-		private Type m_type;
+		private System.Type m_type;
 
 		private List<int> m_outputConns = new List<int>();
 		protected override void CommonInit( int uniqueId )
@@ -51,7 +54,8 @@ namespace AmplifyShaderEditor
 			base.CommonInit( uniqueId );
 			AddInputPort( WirePortDataType.FLOAT2, false, "UV" );
 			AddOutputPort( WirePortDataType.COLOR, Constants.EmptyPortValue );
-			m_insideSize.Set( TexturePreviewSizeX + PickerPreviewWidthAdjust, TexturePreviewSizeY + PickerPreviewSizeY + 5 );
+			m_insideSize.Set( TexturePreviewSizeX + PickerPreviewWidthAdjust, TexturePreviewSizeY + 10 );
+			//m_insideSize.Set( TexturePreviewSizeX + PickerPreviewWidthAdjust, TexturePreviewSizeY + PickerPreviewSizeY );
 			m_type = typeof( ProceduralMaterial );
 			m_currentParameterType = PropertyType.Property;
 			m_freeType = false;
@@ -60,8 +64,39 @@ namespace AmplifyShaderEditor
 			m_customPrefix = "Substance Sample ";
 			m_drawPrecisionUI = false;
 			m_showPreview = true;
+			m_drawPreviewExpander = false;
 			m_selectedLocation = PreviewLocation.TopCenter;
 			m_cacheNodeConnections = new CacheNodeConnections();
+			m_previewShaderGUID = "6f322c1da33f1e744941aafcb0ad1a2d";
+		}
+
+		public override void RenderNodePreview()
+		{
+			if( !m_initialized )
+				return;
+
+			SetPreviewInputs();
+			PreviewMaterial.SetInt( "_CustomUVs", m_inputPorts[ 0 ].IsConnected ? 1 : 0 );
+
+			if( m_proceduralMaterial == null )
+				return;
+
+
+			Texture[] texs = m_proceduralMaterial.GetGeneratedTextures();
+			int count = m_outputPorts.Count;
+			for( int i = 0; i < count; i++ )
+			{
+				RenderTexture temp = RenderTexture.active;
+				RenderTexture.active = m_outputPorts[ i ].OutputPreviewTexture;
+
+				PreviewMaterial.SetTexture( "_GenTex", texs[ i ] );
+
+				if( m_autoNormal && m_textureTypes[ i ] == ProceduralOutputType.Normal )
+					Graphics.Blit( null, m_outputPorts[ i ].OutputPreviewTexture, PreviewMaterial, 1 );
+				else
+					Graphics.Blit( null, m_outputPorts[ i ].OutputPreviewTexture, PreviewMaterial, 0 );
+				RenderTexture.active = temp;
+			}
 		}
 
 		public override void OnOutputPortConnected( int portId, int otherNodeId, int otherPortId )
@@ -80,13 +115,28 @@ namespace AmplifyShaderEditor
 		{
 			m_outputConns.Clear();
 			int count = m_outputPorts.Count;
+			bool connectionsAvailable = false;
 			for ( int i = 0; i < count; i++ )
 			{
 				if ( m_outputPorts[ i ].IsConnected )
 				{
-					if ( m_firstOutputConnected < 0 )
-						m_firstOutputConnected = i;
+					connectionsAvailable = true;
+				}
+			}
 
+			for ( int i = 0; i < count; i++ )
+			{
+				if ( connectionsAvailable )
+				{
+					if( m_outputPorts[ i ].IsConnected )
+					{
+						if ( m_firstOutputConnected < 0 )
+							m_firstOutputConnected = i;
+
+						m_outputConns.Add( i );
+					}
+				} else
+				{
 					m_outputConns.Add( i );
 				}
 			}
@@ -96,53 +146,159 @@ namespace AmplifyShaderEditor
 
 		}
 
+		private Rect m_previewArea;
+		private Rect m_pickerArea;
+
+		public override void OnNodeLayout( DrawInfo drawInfo )
+		{
+			base.OnNodeLayout( drawInfo );
+
+			m_previewArea = m_remainingBox;
+			m_previewArea.width = TexturePreviewSizeX * drawInfo.InvertedZoom;
+			m_previewArea.height = TexturePreviewSizeY * drawInfo.InvertedZoom;
+			m_previewArea.x += 0.5f * m_remainingBox.width - 0.5f * m_previewArea.width;
+			//GUI.Label( previewArea, string.Empty, UIUtils.ObjectFieldThumb );
+
+			//Rect smallButton = m_previewArea;
+			//smallButton.height = 14 * drawInfo.InvertedZoom;
+			//smallButton.y = m_previewArea.yMax - smallButton.height - 2;
+			//smallButton.width = 40 * drawInfo.InvertedZoom;
+			//smallButton.x = m_previewArea.xMax - smallButton.width - 2;
+
+			m_pickerArea = m_previewArea;
+			//m_pickerArea.width = PickerPreviewSizeX * drawInfo.InvertedZoom;
+			//m_pickerArea.width = 27;
+			//m_pickerArea.height = PickerPreviewSizeY * drawInfo.InvertedZoom;
+			m_pickerArea.width = 40 * drawInfo.InvertedZoom;
+			m_pickerArea.x = m_previewArea.xMax - m_pickerArea.width - 2;
+			m_pickerArea.height = 14 * drawInfo.InvertedZoom;
+			m_pickerArea.y = m_previewArea.yMax - m_pickerArea.height - 2;
+			//m_pickerArea.height = 17 * drawInfo.InvertedZoom;
+			//m_pickerArea.y = m_previewArea.yMax - m_pickerArea.height;
+			//m_pickerArea.y += m_previewArea.height;
+		}
+
+		public override void DrawGUIControls( DrawInfo drawInfo )
+		{
+			base.DrawGUIControls( drawInfo );
+
+			if ( !( drawInfo.CurrentEventType == EventType.MouseDown || drawInfo.CurrentEventType == EventType.MouseUp || drawInfo.CurrentEventType == EventType.ExecuteCommand || drawInfo.CurrentEventType == EventType.DragPerform ) )
+				return;
+
+			bool insideBox = m_previewArea.Contains( drawInfo.MousePosition );
+
+			if ( insideBox )
+			{
+				m_editing = true;
+			}
+			else if ( m_editing && !insideBox && drawInfo.CurrentEventType != EventType.ExecuteCommand )
+			{
+				GUI.FocusControl( null );
+				m_editing = false;
+			}
+		}
+
+		private Texture[] m_textures = new Texture[] { };
+
 		public override void Draw( DrawInfo drawInfo )
 		{
 			base.Draw( drawInfo );
 
-
-			Rect previewArea = m_remainingBox;
-			previewArea.width = TexturePreviewSizeX * drawInfo.InvertedZoom;
-			previewArea.height = TexturePreviewSizeY * drawInfo.InvertedZoom;
-			previewArea.x += 0.5f * m_remainingBox.width - 0.5f * previewArea.width;
-			GUI.Box( previewArea, string.Empty, UIUtils.ObjectFieldThumb );
-
-			Rect pickerArea = previewArea;
-			pickerArea.width = PickerPreviewSizeX * drawInfo.InvertedZoom;
-			pickerArea.height = PickerPreviewSizeY * drawInfo.InvertedZoom;
-			pickerArea.y += previewArea.height;
-
-			Texture[] textures = m_proceduralMaterial != null ? m_proceduralMaterial.GetGeneratedTextures() : null;
-			if ( textures != null )
+			if ( m_editing )
 			{
-				
-				if ( m_firstOutputConnected < 0  )
+				m_textures = m_proceduralMaterial != null ? m_proceduralMaterial.GetGeneratedTextures() : null;
+				if ( GUI.Button( m_pickerArea, string.Empty, GUIStyle.none ) )
 				{
-					CalculateFirstOutputConnected();
-				}
-				else if ( textures.Length != m_textureTypes.Length )
-				{
-					OnNewSubstanceSelected( textures );
+					int controlID = EditorGUIUtility.GetControlID( FocusType.Passive );
+					EditorGUIUtility.ShowObjectPicker<ProceduralMaterial>( m_proceduralMaterial, false, "", controlID );
 				}
 
-				int texCount = m_outputConns.Count;
-				previewArea.height /= texCount;
-
-				for ( int i = 0; i < texCount; i++ )
+				string commandName = Event.current.commandName;
+				UnityEngine.Object newValue = null;
+				if ( commandName == "ObjectSelectorUpdated" )
 				{
-					EditorGUI.DrawPreviewTexture( previewArea, textures[ m_outputConns[ i ] ], null, ScaleMode.ScaleAndCrop );
-					previewArea.y += previewArea.height;
+					newValue = EditorGUIUtility.GetObjectPickerObject();
+					if ( newValue != ( UnityEngine.Object ) m_proceduralMaterial )
+					{
+						UndoRecordObject( this, "Changing value EditorGUIObjectField on node Substance Sample" );
+
+						m_proceduralMaterial = newValue != null ? ( ProceduralMaterial ) newValue : null;
+						m_textures = m_proceduralMaterial != null ? m_proceduralMaterial.GetGeneratedTextures() : null;
+						OnNewSubstanceSelected( m_textures );
+					}
+				}
+				else if ( commandName == "ObjectSelectorClosed" )
+				{
+					newValue = EditorGUIUtility.GetObjectPickerObject();
+					if ( newValue != ( UnityEngine.Object ) m_proceduralMaterial )
+					{
+						UndoRecordObject( this, "Changing value EditorGUIObjectField on node Substance Sample" );
+
+						m_proceduralMaterial = newValue != null ? ( ProceduralMaterial ) newValue : null;
+						m_textures = m_proceduralMaterial != null ? m_proceduralMaterial.GetGeneratedTextures() : null;
+						OnNewSubstanceSelected( m_textures );
+					}
+					m_editing = false;
+				}
+
+				if ( GUI.Button( m_previewArea, string.Empty, GUIStyle.none ) )
+				{
+					if ( m_proceduralMaterial != null )
+					{
+						Selection.activeObject = m_proceduralMaterial;
+						EditorGUIUtility.PingObject( Selection.activeObject );
+					}
+					m_editing = false;
 				}
 			}
 
-			EditorGUI.BeginChangeCheck();
-			m_proceduralMaterial = EditorGUIObjectField( pickerArea, m_proceduralMaterial, m_type, false ) as ProceduralMaterial;
-			if ( EditorGUI.EndChangeCheck() )
+			if ( drawInfo.CurrentEventType == EventType.Repaint )
 			{
-				textures = m_proceduralMaterial != null ? m_proceduralMaterial.GetGeneratedTextures() : null;
-				OnNewSubstanceSelected( textures );
+				if ( !m_editing )
+					m_textures = m_proceduralMaterial != null ? m_proceduralMaterial.GetGeneratedTextures() : null;
+
+				if ( m_textures != null )
+				{
+					if ( m_firstOutputConnected < 0 )
+					{
+						CalculateFirstOutputConnected();
+					}
+					else if ( m_textures.Length != m_textureTypes.Length )
+					{
+						OnNewSubstanceSelected( m_textures );
+					}
+
+					int texCount = m_outputConns.Count;
+					Rect individuals = m_previewArea;
+					individuals.height /= texCount;
+
+					for ( int i = 0; i < texCount; i++ )
+					{
+						EditorGUI.DrawPreviewTexture( individuals, m_textures[ m_outputConns[ i ] ], null, ScaleMode.ScaleAndCrop );
+						individuals.y += individuals.height;
+					}
+				}
+				else
+				{
+					GUI.Label( m_previewArea, string.Empty, UIUtils.ObjectFieldThumb );
+				}
+
+				if ( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD2 )
+				{
+					Rect smallButton = m_previewArea;
+					smallButton.height = 14 * drawInfo.InvertedZoom;
+					smallButton.y = m_previewArea.yMax - smallButton.height - 2;
+					smallButton.width = 40 * drawInfo.InvertedZoom;
+					smallButton.x = m_previewArea.xMax - smallButton.width - 2;
+					if ( m_textures == null )
+					{
+						GUI.Label( m_previewArea, "None (Procedural Material)", UIUtils.ObjectFieldThumbOverlay );
+					}
+					GUI.Label( m_pickerArea, "Select", UIUtils.GetCustomStyle( CustomStyle.SamplerButton ) );
+				}
+
+				GUI.Label( m_previewArea, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SamplerFrame ) );
 			}
-			
 		}
 
 		void OnNewSubstanceSelected( Texture[] textures )
@@ -222,8 +378,8 @@ namespace AmplifyShaderEditor
 		private void ConfigPortsFromMaterial( bool invalidateConnections = false, Texture[] newTextures = null )
 		{
 			//PreviewSizeX = ( m_proceduralMaterial != null ) ? UIUtils.ObjectField.CalcSize( new GUIContent( m_proceduralMaterial.name ) ).x + 15 : 110;
-			m_insideSize.x = TexturePreviewSizeX + 5;
-			SetAdditonalTitleText( ( m_proceduralMaterial != null ) ? string.Format( Constants.PropertyValueLabel, m_proceduralMaterial.name ) : string.Empty );
+			//m_insideSize.x = TexturePreviewSizeX + 5;
+			SetAdditonalTitleText( ( m_proceduralMaterial != null ) ? string.Format( Constants.PropertyValueLabel, m_proceduralMaterial.name ) : "Value( <None> )" );
 
 			Texture[] textures = newTextures != null ? newTextures : ( ( m_proceduralMaterial != null ) ? m_proceduralMaterial.GetGeneratedTextures() : null );
 			if ( textures != null )
@@ -286,7 +442,7 @@ namespace AmplifyShaderEditor
 
 			m_sizeIsDirty = true;
 			m_isDirty = true;
-			Event.current.Use();
+			//Event.current.Use();
 		}
 
 		private void ConfigFromObject( UnityEngine.Object obj )
@@ -358,27 +514,61 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				string vertexCoords = Constants.VertexShaderInputStr + ".texcoord";
-				if ( m_textureCoordSet > 0 )
-				{
-					vertexCoords += m_textureCoordSet.ToString();
-				}
 				string uvChannelName = IOUtils.GetUVChannelName( propertyName, m_textureCoordSet );
 
-				string dummyPropUV = "_texcoord" + ( m_textureCoordSet > 0 ? ( m_textureCoordSet + 1 ).ToString() : "" );
-				string dummyUV = "uv" + ( m_textureCoordSet > 0 ? ( m_textureCoordSet + 1 ).ToString() : "" ) + dummyPropUV;
-
-				dataCollector.AddToUniforms( UniqueId, "uniform float4 " + propertyName + "_ST;" );
-				dataCollector.AddToProperties( UniqueId, "[HideInInspector] " + dummyPropUV + "( \"\", 2D ) = \"white\" {}", 100 );
-				dataCollector.AddToInput( UniqueId, "float2 " + dummyUV, true );
-
-				if ( isVertex )
+				if ( dataCollector.IsTemplate )
 				{
-					dataCollector.AddToVertexLocalVariables( UniqueId, "float4 " + uvChannelName + " = float4(" + vertexCoords + " * " + propertyName + "_ST.xy + " + propertyName + "_ST.zw, 0 ,0);" );
-					return uvChannelName;
+					string propertyHelperVar = propertyName + "_ST";
+					dataCollector.AddToUniforms( UniqueId, "float4", propertyHelperVar );
+					string uvName = string.Empty;
+					if ( dataCollector.TemplateDataCollectorInstance.HasUV( m_textureCoordSet ) )
+					{
+						uvName = dataCollector.TemplateDataCollectorInstance.GetUVName( m_textureCoordSet );
+					}
+					else
+					{
+						uvName = dataCollector.TemplateDataCollectorInstance.RegisterUV( m_textureCoordSet );
+					}
+
+					uvChannelName = "uv" + propertyName;
+					if ( isVertex )
+					{
+						string value = string.Format( Constants.TilingOffsetFormat, uvName, propertyHelperVar + ".xy", propertyHelperVar + ".zw" );
+						string lodLevel = "0";
+
+						value = "float4( " + value + ", 0 , " + lodLevel + " )";
+						dataCollector.AddLocalVariable( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT4, uvChannelName, value );
+					}
+					else
+					{
+						dataCollector.AddLocalVariable( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT2, uvChannelName, string.Format( Constants.TilingOffsetFormat, uvName, propertyHelperVar + ".xy", propertyHelperVar + ".zw" ) );
+					}
 				}
 				else
-					dataCollector.AddToLocalVariables( UniqueId, PrecisionType.Float, WirePortDataType.FLOAT2, uvChannelName, Constants.InputVarStr + "." + dummyUV + " * " + propertyName + "_ST.xy + " + propertyName + "_ST.zw" );
+				{
+					string vertexCoords = Constants.VertexShaderInputStr + ".texcoord";
+					if ( m_textureCoordSet > 0 )
+					{
+						vertexCoords += m_textureCoordSet.ToString();
+					}
+
+
+					string dummyPropUV = "_texcoord" + ( m_textureCoordSet > 0 ? ( m_textureCoordSet + 1 ).ToString() : "" );
+					string dummyUV = "uv" + ( m_textureCoordSet > 0 ? ( m_textureCoordSet + 1 ).ToString() : "" ) + dummyPropUV;
+
+					dataCollector.AddToUniforms( UniqueId, "uniform float4 " + propertyName + "_ST;" );
+					dataCollector.AddToProperties( UniqueId, "[HideInInspector] " + dummyPropUV + "( \"\", 2D ) = \"white\" {}", 100 );
+					dataCollector.AddToInput( UniqueId, "float2 " + dummyUV, true );
+
+					if ( isVertex )
+					{
+						dataCollector.AddToVertexLocalVariables( UniqueId, "float4 " + uvChannelName + " = float4(" + vertexCoords + " * " + propertyName + "_ST.xy + " + propertyName + "_ST.zw, 0 ,0);" );
+						return uvChannelName;
+					}
+					else
+						dataCollector.AddToLocalVariables( UniqueId, PrecisionType.Float, WirePortDataType.FLOAT2, uvChannelName, Constants.InputVarStr + "." + dummyUV + " * " + propertyName + "_ST.xy + " + propertyName + "_ST.zw" );
+					
+				}
 
 				return uvChannelName;
 			}
@@ -416,6 +606,7 @@ namespace AmplifyShaderEditor
 		public override void Destroy()
 		{
 			base.Destroy();
+			m_textures = null;
 			m_proceduralMaterial = null;
 			m_cacheNodeConnections.Clear();
 			m_cacheNodeConnections = null;

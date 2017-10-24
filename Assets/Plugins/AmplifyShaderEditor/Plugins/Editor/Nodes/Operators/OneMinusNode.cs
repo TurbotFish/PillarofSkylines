@@ -7,7 +7,7 @@ using UnityEngine;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "One Minus", "Operators", "1 - input value", null, KeyCode.O )]
+	[NodeAttributes( "One Minus", "Math Operators", "1 - input value", null, KeyCode.O )]
 	public sealed class OneMinusNode : ParentNode
 	{
 		protected override void CommonInit( int uniqueId )
@@ -35,6 +35,9 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
+			if ( m_outputPorts[ 0 ].IsLocalValue )
+				return m_outputPorts[ 0 ].LocalValue;
+
 			string result = "( 1.0 - " + m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, m_inputPorts[ 0 ].DataType, ignoreLocalvar ) + " )";
 			return CreateOutputLocalVariable( 0, result, ref dataCollector );
 		}

@@ -14,7 +14,7 @@ namespace AmplifyShaderEditor
 		public const string TessellationPortStr = "Tessellation";
 
 
-		public const string TessSurfParam = "tessellate:tessFunction nolightmap";
+		public const string TessSurfParam = "tessellate:tessFunction";
 		public const string TessInclude = "Tessellation.cginc";
 		public const string CustomAppData = "\t\tstruct appdata\n" +
 											"\t\t{\n" +
@@ -353,20 +353,20 @@ namespace AmplifyShaderEditor
 			{
 				case 0:
 				{
-					UIUtils.CurrentDataCollector.AddToIncludes( -1, TessellationOpHelper.TessInclude );
+					dataCollector.AddToIncludes( -1, TessellationOpHelper.TessInclude );
 					if ( !m_hasCustomFunction )
 					{
 						//Tess
-						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( TessProperty, m_tessFactor ), orderIndex++ );
-						UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + TessUniformName + ";" );
+						dataCollector.AddToProperties( -1, string.Format( TessProperty, m_tessFactor ), orderIndex++ );
+						dataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + TessUniformName + ";" );
 
 						//Min
-						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( TessMinProperty, m_tessMinDistance ), orderIndex++ );
-						UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + TessMinUniformName + ";" );
+						dataCollector.AddToProperties( -1, string.Format( TessMinProperty, m_tessMinDistance ), orderIndex++ );
+						dataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + TessMinUniformName + ";" );
 
 						//Max
-						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( TessMaxProperty, m_tessMaxDistance ), orderIndex++ );
-						UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + TessMaxUniformName + ";" );
+						dataCollector.AddToProperties( -1, string.Format( TessMaxProperty, m_tessMaxDistance ), orderIndex++ );
+						dataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + TessMaxUniformName + ";" );
 					}
 				}
 				break;
@@ -375,36 +375,36 @@ namespace AmplifyShaderEditor
 					//Tess
 					if ( !m_hasCustomFunction )
 					{
-						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( TessProperty, m_tessFactor ), orderIndex++ );
-						UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + TessUniformName + ";" );
+						dataCollector.AddToProperties( -1, string.Format( TessProperty, m_tessFactor ), orderIndex++ );
+						dataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + TessUniformName + ";" );
 					}
 				}
 				break;
 				case 2:
 				{
-					UIUtils.CurrentDataCollector.AddToIncludes( -1, TessellationOpHelper.TessInclude );
+					dataCollector.AddToIncludes( -1, TessellationOpHelper.TessInclude );
 
 					//Tess
 					if ( !m_hasCustomFunction )
 					{
-						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( EdgeLengthTessProperty, m_tessFactor ), orderIndex++ );
-						UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + EdgeLengthTessUniformName + ";" );
+						dataCollector.AddToProperties( -1, string.Format( EdgeLengthTessProperty, m_tessFactor ), orderIndex++ );
+						dataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + EdgeLengthTessUniformName + ";" );
 					}
 				}
 				break;
 				case 3:
 				{
-					UIUtils.CurrentDataCollector.AddToIncludes( -1, TessellationOpHelper.TessInclude );
+					dataCollector.AddToIncludes( -1, TessellationOpHelper.TessInclude );
 
 					if ( !m_hasCustomFunction )
 					{
 						//Tess
-						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( EdgeLengthTessProperty, m_tessFactor ), orderIndex++ );
-						UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + EdgeLengthTessUniformName + ";" );
+						dataCollector.AddToProperties( -1, string.Format( EdgeLengthTessProperty, m_tessFactor ), orderIndex++ );
+						dataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + EdgeLengthTessUniformName + ";" );
 
 						//Max Displacement
-						UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( EdgeLengthTessMaxDispProperty, m_tessMaxDistance ), orderIndex++ );
-						UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + EdgeLengthTessMaxDispUniformName + ";" );
+						dataCollector.AddToProperties( -1, string.Format( EdgeLengthTessMaxDispProperty, m_tessMaxDistance ), orderIndex++ );
+						dataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + EdgeLengthTessMaxDispUniformName + ";" );
 					}
 				}
 				break;
@@ -412,8 +412,8 @@ namespace AmplifyShaderEditor
 
 			if ( m_phongEnabled )
 			{
-				UIUtils.CurrentDataCollector.AddToProperties( -1, string.Format( PhongStrengthProperty, m_phongStrength ), orderIndex++ );
-				UIUtils.CurrentDataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + PhongStrengthUniformName + ";" );
+				dataCollector.AddToProperties( -1, string.Format( PhongStrengthProperty, m_phongStrength ), orderIndex++ );
+				dataCollector.AddToUniforms( -1, "uniform " + UIUtils.FinalPrecisionWirePortToCgType( PrecisionType.Float, WirePortDataType.FLOAT ) + " " + PhongStrengthUniformName + ";" );
 			}
 		}
 

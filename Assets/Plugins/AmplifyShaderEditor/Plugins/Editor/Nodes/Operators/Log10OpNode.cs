@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Log10", "Operators", "Base-10 logarithm of scalars and vectors" )]
+	[NodeAttributes( "Log10", "Math Operators", "Base-10 logarithm of scalars and vectors" )]
 	public sealed class Log10OpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

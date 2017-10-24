@@ -1,4 +1,4 @@
-﻿Shader "Hidden/TriplanarNode"
+Shader "Hidden/TriplanarNode"
 {
 	Properties
 	{
@@ -74,12 +74,13 @@
 				float f = ( 1 - sqrt( 1 - r ) ) / r;
 				uvs.x = p.x;
 				uvs.y = p.y;
-				float3 worldPos = float3( uvs, ( f - 1 ) * 2 );
+				float3 vertexPos = float3( uvs, ( f - 1 ) * 2 );
+				float3 worldPos = mul(unity_ObjectToWorld, vertexPos).xyz;
 				float3 normal = normalize(worldPos);
 				float3 worldNormal = UnityObjectToWorldNormal(normal);
 
 				float falloff = tex2D( _E, uvs ).r;
-				float tilling = tex2D( _D, uvs ).r * 0.5;
+				float tilling = tex2D( _D, uvs ).r * 0.625;
 				float4 triplanar = 1;
 
 				if ( _IsNormal == 1 ) {

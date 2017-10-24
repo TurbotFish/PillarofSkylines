@@ -4,7 +4,7 @@ using UnityEngine;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Wire Node", "Misc", "Wire Node", null, KeyCode.None, false )]
+	[NodeAttributes( "Wire Node", "Miscellaneous", "Wire Node", null, KeyCode.None, false )]
 	public sealed class WireNode : ParentNode
 	{
 		private bool m_markedToDelete = false;
@@ -76,10 +76,14 @@ namespace AmplifyShaderEditor
 			base.DrawProperties();
 		}
 
-		public override void Draw( DrawInfo drawInfo )
+		public override void OnNodeLayout( DrawInfo drawInfo )
 		{
-			if ( m_markedToDelete )
-				return;
+			if ( m_firstDraw )
+			{
+				m_firstDraw = false;
+				AfterCommonInit();
+				OnNodeChange();
+			}
 
 			if ( m_repopulateDictionaries )
 			{
@@ -100,122 +104,240 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-			if ( m_initialized )
+			if ( m_sizeIsDirty )
 			{
-				if ( m_sizeIsDirty )
+				m_sizeIsDirty = false;
+				m_extraSize.Set( 20f, 20f );
+				m_position.width = m_extraSize.x + UIUtils.PortsSize.x;
+				m_position.height = m_extraSize.y + UIUtils.PortsSize.y;
+
+				Vec2Position -= Position.size * 0.5f;
+				if ( OnNodeChangeSizeEvent != null )
 				{
-					m_sizeIsDirty = false;
-
-					m_extraSize.Set( 20f, 20f );
-					m_position.width = m_extraSize.x + UIUtils.PortsSize.x;
-					m_position.height = m_extraSize.y + UIUtils.PortsSize.y;
-
-					Vec2Position -= Position.size * 0.5f;
-					//m_cachedPos = m_position;
-					if ( OnNodeChangeSizeEvent != null )
-					{
-						OnNodeChangeSizeEvent( this );
-					}
-
-					ChangeSizeFinished();
+					OnNodeChangeSizeEvent( this );
 				}
 
-				CalculatePositionAndVisibility( drawInfo );
-				Color colorBuffer = GUI.color;
-
-				if ( m_anchorAdjust < 0 )
-				{
-					m_anchorAdjust = UIUtils.GetCustomStyle( CustomStyle.PortEmptyIcon ).normal.background.width;
-				}
-
-				//GUI.Box(m_globalPosition, string.Empty, UIUtils.CurrentWindow.CustomStylesInstance.Box);
-
-				//Input ports
-				{
-					Rect currInputPortPos = m_globalPosition;
-					currInputPortPos.width = drawInfo.InvertedZoom * UIUtils.PortsSize.x;
-					currInputPortPos.height = drawInfo.InvertedZoom * UIUtils.PortsSize.y;
-
-					currInputPortPos.x += m_position.width * 0.5f * drawInfo.InvertedZoom - currInputPortPos.width * 0.5f;
-					currInputPortPos.y += m_position.height * 0.5f * drawInfo.InvertedZoom - currInputPortPos.height * 0.5f;
-
-					int inputCount = m_inputPorts.Count;
-					for ( int i = 0; i < inputCount; i++ )
-					{
-						if ( m_inputPorts[ i ].Visible )
-						{
-							// Button
-							m_inputPorts[ i ].Position = currInputPortPos;
-
-							GUIStyle style = m_inputPorts[ i ].IsConnected ? UIUtils.GetCustomStyle( CustomStyle.PortFullIcon ) : UIUtils.GetCustomStyle( CustomStyle.PortEmptyIcon );
-
-							Rect portPos = currInputPortPos;
-							portPos.x -= Constants.PORT_X_ADJUST;
-							m_inputPorts[ i ].ActivePortArea = portPos;
-							if ( m_isVisible )
-							{
-								if ( ContainerGraph.ParentWindow.Options.ColoredPorts )
-									GUI.color = Selected ? UIUtils.GetColorFromWireStatus( WireStatus.Highlighted ) : UIUtils.GetColorForDataType( m_inputPorts[ i ].DataType, false, false );
-								else
-									GUI.color = Selected ? UIUtils.GetColorFromWireStatus( WireStatus.Highlighted ) : UIUtils.GetColorForDataType( m_inputPorts[ i ].DataType, true, true );
-								GUI.Box( currInputPortPos, string.Empty, style );
-							}
-
-							GUI.color = colorBuffer;
-						}
-					}
-				}
-
-				//Output Ports
-				{
-					Rect currOutputPortPos = m_globalPosition;
-					currOutputPortPos.width = drawInfo.InvertedZoom * UIUtils.PortsSize.x;
-					currOutputPortPos.height = drawInfo.InvertedZoom * UIUtils.PortsSize.y;
-
-					currOutputPortPos.x += m_position.width * 0.5f * drawInfo.InvertedZoom - currOutputPortPos.width * 0.5f;
-					currOutputPortPos.y += m_position.height * 0.5f * drawInfo.InvertedZoom - currOutputPortPos.height * 0.5f;
-
-					int outputCount = m_outputPorts.Count;
-					for ( int i = 0; i < outputCount; i++ )
-					{
-						if ( m_outputPorts[ i ].Visible )
-						{
-							//Button
-							m_outputPorts[ i ].Position = currOutputPortPos;
-
-							GUIStyle style = m_isVisible ? ( m_outputPorts[ i ].IsConnected ? UIUtils.GetCustomStyle( CustomStyle.PortFullIcon ) : UIUtils.GetCustomStyle( CustomStyle.PortEmptyIcon ) ) : null;
-
-							Rect portPos = currOutputPortPos;
-							m_outputPorts[ i ].ActivePortArea = portPos;
-							if ( m_isVisible )
-							{
-								if ( ContainerGraph.ParentWindow.Options.ColoredPorts )
-									GUI.color = Selected ? UIUtils.GetColorFromWireStatus( WireStatus.Highlighted ) : UIUtils.GetColorForDataType( m_outputPorts[ i ].DataType, false, false );
-								else
-									GUI.color = Selected ? UIUtils.GetColorFromWireStatus( WireStatus.Highlighted ) : UIUtils.GetColorForDataType( m_outputPorts[ i ].DataType, true, false );
-								GUI.Box( currOutputPortPos, string.Empty, style );
-							}
-
-							GUI.color = colorBuffer;
-						}
-					}
-				}
-				GUI.color = colorBuffer;
-				TestIfValid();
+				ChangeSizeFinished();
+				//ChangeSize();
 			}
+
+			CalculatePositionAndVisibility( drawInfo );
+
+			// Input Ports
+			{
+				m_currInputPortPos = m_globalPosition;
+				m_currInputPortPos.width = drawInfo.InvertedZoom * UIUtils.PortsSize.x;
+				m_currInputPortPos.height = drawInfo.InvertedZoom * UIUtils.PortsSize.y;
+				m_currInputPortPos.position = m_globalPosition.center - m_currInputPortPos.size * 0.5f;
+				int inputCount = m_inputPorts.Count;
+
+				for ( int i = 0; i < inputCount; i++ )
+				{
+					if ( m_inputPorts[ i ].Visible )
+					{
+						// Button
+						m_inputPorts[ i ].Position = m_currInputPortPos;
+
+						if ( !m_inputPorts[ i ].Locked )
+						{
+							float overflow = 2;
+							float scaledOverflow = 3 * drawInfo.InvertedZoom;
+							m_auxRect = m_currInputPortPos;
+							m_auxRect.yMin -= scaledOverflow + overflow;
+							m_auxRect.yMax += scaledOverflow + overflow;
+							m_auxRect.xMin -= Constants.PORT_INITIAL_X * drawInfo.InvertedZoom + scaledOverflow + overflow;
+							m_auxRect.xMax += m_inputPorts[ i ].LabelSize.x + Constants.PORT_TO_LABEL_SPACE_X * drawInfo.InvertedZoom + scaledOverflow + overflow;
+							m_inputPorts[ i ].ActivePortArea = m_auxRect;
+						}
+						m_currInputPortPos.y += drawInfo.InvertedZoom * ( m_fontHeight + Constants.INPUT_PORT_DELTA_Y );
+					}
+				}
+			}
+
+			// Output Ports
+			{
+				m_currOutputPortPos = m_globalPosition;
+				m_currOutputPortPos.width = drawInfo.InvertedZoom * UIUtils.PortsSize.x;
+				m_currOutputPortPos.height = drawInfo.InvertedZoom * UIUtils.PortsSize.y;
+				m_currOutputPortPos.position = m_globalPosition.center - m_currOutputPortPos.size * 0.5f;
+				//m_currOutputPortPos.x += ( m_globalPosition.width - drawInfo.InvertedZoom * ( Constants.PORT_INITIAL_X + m_anchorAdjust ) );
+				//m_currOutputPortPos.y += drawInfo.InvertedZoom * Constants.PORT_INITIAL_Y;// + m_extraHeaderHeight * drawInfo.InvertedZoom;
+				int outputCount = m_outputPorts.Count;
+
+				for ( int i = 0; i < outputCount; i++ )
+				{
+					if ( m_outputPorts[ i ].Visible )
+					{
+						//Button
+						m_outputPorts[ i ].Position = m_currOutputPortPos;
+
+						if ( !m_outputPorts[ i ].Locked )
+						{
+							float overflow = 2;
+							float scaledOverflow = 3 * drawInfo.InvertedZoom;
+							m_auxRect = m_currOutputPortPos;
+							m_auxRect.yMin -= scaledOverflow + overflow;
+							m_auxRect.yMax += scaledOverflow + overflow;
+							m_auxRect.xMin -= m_outputPorts[ i ].LabelSize.x + Constants.PORT_TO_LABEL_SPACE_X * drawInfo.InvertedZoom + scaledOverflow + overflow;
+							m_auxRect.xMax += Constants.PORT_INITIAL_X * drawInfo.InvertedZoom + scaledOverflow + overflow;
+							m_outputPorts[ i ].ActivePortArea = m_auxRect;
+						}
+						m_currOutputPortPos.y += drawInfo.InvertedZoom * ( m_fontHeight + Constants.INPUT_PORT_DELTA_Y );
+					}
+				}
+			}
+		}
+
+		public override void OnNodeRepaint( DrawInfo drawInfo )
+		{
+			//base.OnRepaint( drawInfo );
+			//return;
+			if ( !m_isVisible )
+				return;
+
+			m_colorBuffer = GUI.color;
+			// Background
+			//GUI.color = m_infiniteLoopDetected ? Constants.InfiniteLoopColor : Constants.NodeBodyColor;
+			//GUI.Label( m_globalPosition, string.Empty, UIUtils.GetCustomStyle( CustomStyle.NodeWindowOff ) );
+
+			// Header
+			//GUI
+			//GUI.color = m_headerColor * m_headerColorModifier;
+			//GUI.Label( m_headerPosition, string.Empty, UIUtils.GetCustomStyle( CustomStyle.NodeHeader ) );
+			//GUI.color = m_colorBuffer;
+
+			// Title
+			//DrawTitle( m_titlePos );
+
+			// Additional Tile
+			//if ( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD3 )
+			//	GUI.Label( m_addTitlePos, m_additionalContent, UIUtils.GetCustomStyle( CustomStyle.PropertyValuesTitle ) );
+
+			// Expander
+			//if ( m_drawPreviewExpander && ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD4 )
+			//	GUI.Label( m_expandRect, string.Empty, ( m_showPreview ? UIUtils.PreviewCollapser : UIUtils.PreviewExpander ) );
+
+
+			// Input Ports
+			//int inputCount = m_inputPorts.Count;
+			//GUIStyle inputPortStyle = UIUtils.GetCustomStyle( CustomStyle.InputPortlabel );
+			//for ( int i = 0; i < inputCount; i++ )
+			//{
+			//	if ( m_inputPorts[ i ].Visible )
+			//	{
+			//		// Input Port Icon
+			//		if ( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD4 )
+			//		{
+			//			if ( m_inputPorts[ i ].Locked )
+			//				GUI.color = Constants.LockedPortColor;
+			//			else if ( ContainerGraph.ParentWindow.Options.ColoredPorts )
+			//				GUI.color = UIUtils.GetColorForDataType( m_inputPorts[ i ].DataType, false, true );
+			//			else
+			//				GUI.color = m_inputPorts[ i ].HasCustomColor ? m_inputPorts[ i ].CustomColor : UIUtils.GetColorForDataType( m_inputPorts[ i ].DataType, true, true );
+
+			//			GUIStyle style = m_inputPorts[ i ].IsConnected ? UIUtils.GetCustomStyle( CustomStyle.PortFullIcon ) : UIUtils.GetCustomStyle( CustomStyle.PortEmptyIcon );
+			//			GUI.Label( m_inputPorts[ i ].Position, string.Empty, style );
+
+			//			GUI.color = m_colorBuffer;
+			//		}
+
+			//		// Input Port Label
+			//		if ( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD3 )
+			//		{
+			//			if ( m_inputPorts[ i ].Locked )
+			//			{
+			//				GUI.color = Constants.PortLockedTextColor;
+			//				GUI.Label( m_inputPorts[ i ].LabelPosition, m_inputPorts[ i ].Name, inputPortStyle );
+			//				GUI.color = m_colorBuffer;
+			//			}
+			//			else
+			//			{
+			//				GUI.Label( m_inputPorts[ i ].LabelPosition, m_inputPorts[ i ].Name, inputPortStyle );
+			//			}
+			//		}
+			//	}
+			//}
+
+			// Output Ports
+			int outputCount = m_outputPorts.Count;
+			GUIStyle outputPortStyle = UIUtils.GetCustomStyle( CustomStyle.OutputPortLabel );
+			for ( int i = 0; i < outputCount; i++ )
+			{
+				if ( m_outputPorts[ i ].Visible )
+				{
+					// Output Port Icon
+					if ( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD4 )
+					{
+						if ( m_outputPorts[ i ].Locked )
+							GUI.color = Constants.LockedPortColor;
+						else if ( ContainerGraph.ParentWindow.Options.ColoredPorts )
+							GUI.color = UIUtils.GetColorForDataType( m_outputPorts[ i ].DataType, false, false );
+						else
+							GUI.color = m_outputPorts[ i ].HasCustomColor ? m_outputPorts[ i ].CustomColor : UIUtils.GetColorForDataType( m_outputPorts[ i ].DataType, true, false );
+
+						GUIStyle style = m_outputPorts[ i ].IsConnected ? UIUtils.GetCustomStyle( CustomStyle.PortFullIcon ) : UIUtils.GetCustomStyle( CustomStyle.PortEmptyIcon );
+						GUI.Label( m_outputPorts[ i ].Position, string.Empty, style );
+
+						GUI.color = m_colorBuffer;
+					}
+
+					// Output Port Label
+					if ( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD3 )
+					{
+						if ( m_outputPorts[ i ].Locked )
+						{
+							GUI.color = Constants.PortLockedTextColor;
+							GUI.Label( m_outputPorts[ i ].LabelPosition, m_outputPorts[ i ].Name, outputPortStyle );
+							GUI.color = m_colorBuffer;
+						}
+						else
+						{
+							GUI.Label( m_outputPorts[ i ].LabelPosition, m_outputPorts[ i ].Name, outputPortStyle );
+						}
+					}
+				}
+			}
+
+			// Selection Box
+			if ( m_selected )
+			{
+				Rect selectionBox = m_globalPosition;
+				selectionBox.size = Vector2.one * 16 * drawInfo.InvertedZoom + Vector2.one * 4;
+				selectionBox.center = m_globalPosition.center;
+				GUI.DrawTexture( selectionBox, UIUtils.WireNodeSelection );
+				GUI.color = m_colorBuffer;
+			}
+		}
+
+		public override void DrawGUIControls( DrawInfo drawInfo )
+		{
+			//base.DrawGUIControls( drawInfo );
+		}
+
+		public override void Draw( DrawInfo drawInfo )
+		{
+			if ( m_markedToDelete )
+				return;
+
+			if ( drawInfo.CurrentEventType == EventType.Repaint )
+				OnNodeRepaint( drawInfo );
+			//base.Draw( drawInfo );
+
+			if ( drawInfo.CurrentEventType == EventType.Repaint )
+				TestIfValid();
 		}
 
 		void TestIfValid()
 		{
 			if ( !m_inputPorts[ 0 ].IsConnected )
 			{
-				if ( !UIUtils.InputPortReference.IsValid || UIUtils.InputPortReference.IsValid && UIUtils.InputPortReference.NodeId != UniqueId )
+				if ( !m_containerGraph.ParentWindow.WireReferenceUtils.InputPortReference.IsValid || m_containerGraph.ParentWindow.WireReferenceUtils.InputPortReference.IsValid && m_containerGraph.ParentWindow.WireReferenceUtils.InputPortReference.NodeId != UniqueId )
 					ContainerGraph.MarkWireNodeSequence( this, true );
 			}
 
 			if ( !m_outputPorts[ 0 ].IsConnected )
 			{
-				if ( !UIUtils.OutputPortReference.IsValid || UIUtils.OutputPortReference.IsValid && UIUtils.OutputPortReference.NodeId != UniqueId )
+				if ( !m_containerGraph.ParentWindow.WireReferenceUtils.OutputPortReference.IsValid || m_containerGraph.ParentWindow.WireReferenceUtils.OutputPortReference.IsValid && m_containerGraph.ParentWindow.WireReferenceUtils.OutputPortReference.NodeId != UniqueId )
 					ContainerGraph.MarkWireNodeSequence( this, false );
 			}
 		}

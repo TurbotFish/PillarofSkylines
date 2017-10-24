@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Int", "Constants", "Int property", null, KeyCode.Alpha0 )]
+	[NodeAttributes( "Int", "Constants And Properties", "Int property", null, KeyCode.Alpha0 )]
 	public sealed class IntNode : PropertyNode
 	{
 		[SerializeField]
@@ -16,6 +16,8 @@ namespace AmplifyShaderEditor
 
 		[SerializeField]
 		private int m_materialValue;
+
+		private const float LabelWidth = 8;
 
 		private int m_cachedPropertyId = -1;
 
@@ -27,7 +29,6 @@ namespace AmplifyShaderEditor
 			AddOutputPort( WirePortDataType.INT, Constants.EmptyPortValue );
 			m_insideSize.Set( 50, 10 );
 			m_selectedLocation = PreviewLocation.BottomCenter;
-			//m_extraSize.x += 10;
 			m_precisionString = UIUtils.PrecisionWirePortToCgType( m_currentPrecisionType, m_outputPorts[ 0 ].DataType );
 			m_drawPrecisionUI = false;
 			m_previewShaderGUID = "0f64d695b6ffacc469f2dd31432a232a";
@@ -70,28 +71,53 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		//public override void DrawPreview( DrawInfo drawInfo, Rect rect, bool withAlpha = false )
-		//{
-		//	if ( m_materialMode && m_currentParameterType != PropertyType.Constant )
-		//		UIUtils.CurrentWindow.PreviewMaterial.SetFloat( "_InputFloat", m_materialValue );
-		//	else
-		//		UIUtils.CurrentWindow.PreviewMaterial.SetFloat( "_InputFloat", m_defaultValue );
+		public override void OnNodeLayout( DrawInfo drawInfo )
+		{
+			base.OnNodeLayout( drawInfo );
 
-		//	base.DrawPreview( drawInfo, rect );
-		//}
+			m_propertyDrawPos = m_remainingBox;
+			m_propertyDrawPos.x = m_remainingBox.x - LabelWidth * drawInfo.InvertedZoom;
+			m_propertyDrawPos.width = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_WIDTH_FIELD_SIZE;
+			m_propertyDrawPos.height = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_HEIGHT_FIELD_SIZE;
+		}
+
+		public override void DrawGUIControls( DrawInfo drawInfo )
+		{
+			base.DrawGUIControls( drawInfo );
+
+			if ( drawInfo.CurrentEventType != EventType.MouseDown )
+				return;
+
+			Rect hitBox = m_remainingBox;
+			hitBox.xMin -= LabelWidth * drawInfo.InvertedZoom;
+			bool insideBox = hitBox.Contains( drawInfo.MousePosition );
+
+			if ( insideBox )
+			{
+				m_isEditingFields = true;
+			}
+			else if ( m_isEditingFields && !insideBox )
+			{
+				GUI.FocusControl( null );
+				m_isEditingFields = false;
+			}
+		}
+
+		private bool m_isEditingFields;
+		private int m_previousValue;
+		private string m_fieldText = "0";
 
 		public override void Draw( DrawInfo drawInfo )
 		{
 			base.Draw( drawInfo );
-			if ( m_isVisible )
-			{
-				m_propertyDrawPos.x = m_remainingBox.x - 5 * drawInfo.InvertedZoom;
-				m_propertyDrawPos.y = m_remainingBox.y;
-				m_propertyDrawPos.width = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_WIDTH_FIELD_SIZE;
-				m_propertyDrawPos.height = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_HEIGHT_FIELD_SIZE;
 
+			if ( !m_isVisible )
+				return;
+
+			if ( m_isEditingFields )
+			{
 				float labelWidth = EditorGUIUtility.labelWidth;
-				EditorGUIUtility.labelWidth = 5 * drawInfo.InvertedZoom;
+				EditorGUIUtility.labelWidth = LabelWidth * drawInfo.InvertedZoom;
 				if ( m_materialMode && m_currentParameterType != PropertyType.Constant )
 				{
 					EditorGUI.BeginChangeCheck();
@@ -113,6 +139,26 @@ namespace AmplifyShaderEditor
 						BeginDelayedDirtyProperty();
 				}
 				EditorGUIUtility.labelWidth = labelWidth;
+			}
+			else if ( drawInfo.CurrentEventType == EventType.Repaint )
+			{
+				Rect fakeField = m_propertyDrawPos;
+				fakeField.xMin += LabelWidth * drawInfo.InvertedZoom;
+				Rect fakeLabel = m_propertyDrawPos;
+				fakeLabel.xMax = fakeField.xMin;
+				EditorGUIUtility.AddCursorRect( fakeLabel, MouseCursor.SlideArrow );
+				EditorGUIUtility.AddCursorRect( fakeField, MouseCursor.Text );
+
+				bool currMode = m_materialMode && m_currentParameterType != PropertyType.Constant;
+				int value = currMode ? m_materialValue : m_defaultValue;
+
+				if ( m_previousValue != value )
+				{
+					m_previousValue = value;
+					m_fieldText = value.ToString();
+				}
+
+				GUI.Label( fakeField, m_fieldText, UIUtils.MainSkin.textField );
 			}
 		}
 

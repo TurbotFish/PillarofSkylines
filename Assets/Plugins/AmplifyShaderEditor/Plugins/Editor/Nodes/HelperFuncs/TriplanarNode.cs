@@ -5,11 +5,12 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Triplanar Sampler", "Textures", "Triplanar Mapping" )]
+	[NodeAttributes( "Triplanar Sample", "Textures", "Triplanar Mapping" )]
 	public sealed class TriplanarNode : ParentNode
 	{
 		[SerializeField]
 		private string m_uniqueName;
+
 		private bool m_editPropertyNameMode = false;
 		[SerializeField]
 		private string m_propertyInspectorName = "Triplanar Sampler";
@@ -34,7 +35,9 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private TexturePropertyNode m_botTexture;
 
+		[SerializeField]
 		private string m_tempTopInspectorName = string.Empty;
+		[SerializeField]
 		private string m_tempTopName = string.Empty;
 		private TexturePropertyValues m_tempTopDefaultValue = TexturePropertyValues.white;
 		private int m_tempTopOrderIndex = -1;
@@ -51,12 +54,6 @@ namespace AmplifyShaderEditor
 		private TexturePropertyValues m_tempBotDefaultValue = TexturePropertyValues.white;
 		private int m_tempBotOrderIndex = -1;
 		private Texture2D m_tempBotDefaultTexture = null;
-
-		private TexturePropertyNode m_topTexPropRef = null;
-		private TexturePropertyNode m_midTexPropRef = null;
-		private TexturePropertyNode m_botTexPropRef = null;
-
-		public bool m_firstFrame = true;
 
 		private bool m_topTextureFoldout = true;
 		private bool m_midTextureFoldout = true;
@@ -178,19 +175,15 @@ namespace AmplifyShaderEditor
 			m_textLabelWidth = 120;
 			//m_propertyInspectorName = "Triplanar Sampler";
 			m_previewShaderGUID = "8723015ec59743143aadfbe480e34391";
-			//ConfigurePorts();
 		}
 
-		public void Init()
+		public void ReadPropertiesData()
 		{
-			m_topTexture = ScriptableObject.CreateInstance<TexturePropertyNode>();
-			m_topTexture.ContainerGraph = ContainerGraph;
-			m_topTexture.CustomPrefix = "Top Texture ";
-			m_topTexture.UniqueId = UniqueId;
-			if( UIUtils.IsUniformNameAvailable( m_tempTopName ) )
+			// Top
+			if ( UIUtils.IsUniformNameAvailable( m_tempTopName ) )
 			{
 				UIUtils.ReleaseUniformName( UniqueId, m_topTexture.PropertyName );
-				if ( !string.IsNullOrEmpty( m_tempTopInspectorName )  )
+				if ( !string.IsNullOrEmpty( m_tempTopInspectorName ) )
 				{
 					m_topTexture.SetInspectorName( m_tempTopInspectorName );
 				}
@@ -200,16 +193,10 @@ namespace AmplifyShaderEditor
 			}
 			m_topTexture.DefaultTextureValue = m_tempTopDefaultValue;
 			m_topTexture.OrderIndex = m_tempTopOrderIndex;
-			m_topTexture.DrawAutocast = false;
-			m_topTexture.CurrentParameterType = PropertyType.Property;
 			m_topTexture.DefaultValue = m_tempTopDefaultTexture;
-			UIUtils.RegisterPropertyNode( m_topTexture );
-			UIUtils.RegisterTexturePropertyNode( m_topTexture );
+			//m_topTexture.SetMaterialMode( UIUtils.CurrentWindow.CurrentGraph.CurrentMaterial, true );
 
-			m_midTexture = ScriptableObject.CreateInstance<TexturePropertyNode>();
-			m_midTexture.ContainerGraph = ContainerGraph;
-			m_midTexture.CustomPrefix = "Mid Texture ";
-			m_midTexture.UniqueId = UniqueId;
+			// Mid
 			if ( UIUtils.IsUniformNameAvailable( m_tempMidName ) )
 			{
 				UIUtils.ReleaseUniformName( UniqueId, m_midTexture.PropertyName );
@@ -221,14 +208,9 @@ namespace AmplifyShaderEditor
 			}
 			m_midTexture.DefaultTextureValue = m_tempMidDefaultValue;
 			m_midTexture.OrderIndex = m_tempMidOrderIndex;
-			m_midTexture.DrawAutocast = false;
-			m_midTexture.CurrentParameterType = PropertyType.Property;
 			m_midTexture.DefaultValue = m_tempMidDefaultTexture;
 
-			m_botTexture = ScriptableObject.CreateInstance<TexturePropertyNode>();
-			m_botTexture.ContainerGraph = ContainerGraph;
-			m_botTexture.CustomPrefix = "Bot Texture ";
-			m_botTexture.UniqueId = UniqueId;
+			// Bot
 			if ( UIUtils.IsUniformNameAvailable( m_tempBotName ) )
 			{
 				UIUtils.ReleaseUniformName( UniqueId, m_botTexture.PropertyName );
@@ -240,15 +222,48 @@ namespace AmplifyShaderEditor
 			}
 			m_botTexture.DefaultTextureValue = m_tempBotDefaultValue;
 			m_botTexture.OrderIndex = m_tempBotOrderIndex;
+			m_botTexture.DefaultValue = m_tempBotDefaultTexture;
+		}
+
+		public override void SetMaterialMode( Material mat, bool fetchMaterialValues )
+		{
+			base.SetMaterialMode( mat, fetchMaterialValues );
+			m_topTexture.SetMaterialMode( mat, fetchMaterialValues );
+			m_midTexture.SetMaterialMode( mat, fetchMaterialValues );
+			m_botTexture.SetMaterialMode( mat, fetchMaterialValues );
+		}
+
+		public void Init()
+		{
+			// Top
+			m_topTexture = ScriptableObject.CreateInstance<TexturePropertyNode>();
+			m_topTexture.ContainerGraph = ContainerGraph;
+			m_topTexture.CustomPrefix = "Top Texture ";
+			m_topTexture.UniqueId = UniqueId;
+			m_topTexture.DrawAutocast = false;
+			m_topTexture.CurrentParameterType = PropertyType.Property;
+
+			// Mid
+			m_midTexture = ScriptableObject.CreateInstance<TexturePropertyNode>();
+			m_midTexture.ContainerGraph = ContainerGraph;
+			m_midTexture.CustomPrefix = "Mid Texture ";
+			m_midTexture.UniqueId = UniqueId;
+			m_midTexture.DrawAutocast = false;
+			m_midTexture.CurrentParameterType = PropertyType.Property;
+			
+			// Bot
+			m_botTexture = ScriptableObject.CreateInstance<TexturePropertyNode>();
+			m_botTexture.ContainerGraph = ContainerGraph;
+			m_botTexture.CustomPrefix = "Bot Texture ";
+			m_botTexture.UniqueId = UniqueId;
 			m_botTexture.DrawAutocast = false;
 			m_botTexture.CurrentParameterType = PropertyType.Property;
-			m_botTexture.DefaultValue = m_tempBotDefaultTexture;
-
+			
 			if (m_materialMode)
 				SetDelayedMaterialMode( ContainerGraph.CurrentMaterial);
 
 			if ( m_nodeAttribs != null )
-				m_uniqueName = m_nodeAttribs.Name + UniqueId;
+				m_uniqueName = m_nodeAttribs.Name + OutputId;
 
 			ConfigurePorts();
 
@@ -267,71 +282,96 @@ namespace AmplifyShaderEditor
 
 			//UIUtils.UnregisterPropertyNode( m_botTexture );
 			//UIUtils.UnregisterTexturePropertyNode( m_botTexture );
-
-			m_topTexture.Destroy();
+			if( m_topTexture != null )
+				m_topTexture.Destroy();
 			m_topTexture = null;
-			m_midTexture.Destroy();
+			if ( m_midTexture != null )
+				m_midTexture.Destroy();
 			m_midTexture = null;
-			m_botTexture.Destroy();
+			if ( m_botTexture != null )
+				m_botTexture.Destroy();
 			m_botTexture = null;
 
 			m_tempTopDefaultTexture = null;
 			m_tempMidDefaultTexture = null;
 			m_tempBotDefaultTexture = null;
-
-			m_topTexPropRef = null;
-			m_midTexPropRef = null;
-			m_botTexPropRef = null;
 		}
 
 		public override void SetPreviewInputs()
 		{
 			base.SetPreviewInputs();
-			if ( m_topTexPropRef == null )
+			if ( m_topTexture == null )
 				return;
 
-			if ( m_materialMode )
+			
+			if ( m_inputPorts[ 0 ].IsConnected )
 			{
-				PreviewMaterial.SetTexture( "_A", m_topTexPropRef.MaterialValue );
-				if(m_selectedTriplanarType == TriplanarType.Cylindrical && m_midTexPropRef != null )
-				{
-					PreviewMaterial.SetTexture( "_B", m_midTexPropRef.MaterialValue );
-					PreviewMaterial.SetTexture( "_C", m_botTexPropRef.MaterialValue );
-				}
+				PreviewMaterial.SetTexture( "_A", m_inputPorts[ 0 ].InputPreviewTexture );
 			} else
 			{
-				PreviewMaterial.SetTexture( "_A", m_topTexPropRef.DefaultValue );
-				if ( m_selectedTriplanarType == TriplanarType.Cylindrical && m_midTexPropRef != null )
-				{
-					PreviewMaterial.SetTexture( "_B", m_midTexPropRef.DefaultValue );
-					PreviewMaterial.SetTexture( "_C", m_botTexPropRef.DefaultValue );
-				}
+				PreviewMaterial.SetTexture( "_A", m_topTexture.Value );
+			}
+			if ( m_selectedTriplanarType == TriplanarType.Cylindrical && m_midTexture != null )
+			{
+				if ( m_inputPorts[ 1 ].IsConnected )
+					PreviewMaterial.SetTexture( "_B", m_inputPorts[ 1 ].InputPreviewTexture );
+				else
+					PreviewMaterial.SetTexture( "_B", m_midTexture.Value );
+				if ( m_inputPorts[ 2 ].IsConnected )
+					PreviewMaterial.SetTexture( "_C", m_inputPorts[ 2 ].InputPreviewTexture );
+				else
+					PreviewMaterial.SetTexture( "_C", m_botTexture.Value );
 			}
 
 			PreviewMaterial.SetFloat( "_IsNormal", (m_normalCorrection ? 1 : 0));
 			PreviewMaterial.SetFloat( "_IsSpherical", ( m_selectedTriplanarType == TriplanarType.Spherical ? 1 : 0 ) );
 		}
 
+		public override void OnInputPortConnected( int portId, int otherNodeId, int otherPortId, bool activateNode = true )
+		{
+			base.OnInputPortConnected( portId, otherNodeId, otherPortId, activateNode );
+			ReRegisterPorts();
+		}
+
+		public override void OnInputPortDisconnected( int portId )
+		{
+			base.OnInputPortDisconnected( portId );
+			ReRegisterPorts();
+		}
+
 		public void ReRegisterPorts()
 		{
-			switch ( m_selectedTriplanarType )
+			if ( m_inputPorts[ 0 ].IsConnected )
 			{
-				case TriplanarType.Spherical:
-					UIUtils.UnregisterPropertyNode( m_midTexture );
-					UIUtils.UnregisterTexturePropertyNode( m_midTexture );
-					UIUtils.UnregisterPropertyNode( m_botTexture );
-					UIUtils.UnregisterTexturePropertyNode( m_botTexture );
-				break;
-				case TriplanarType.Cylindrical:
-					UIUtils.UnregisterPropertyNode( m_midTexture );
-					UIUtils.UnregisterTexturePropertyNode( m_midTexture );
-					UIUtils.UnregisterPropertyNode( m_botTexture );
-					UIUtils.UnregisterTexturePropertyNode( m_botTexture );
-					UIUtils.RegisterPropertyNode( m_midTexture );
-					UIUtils.RegisterTexturePropertyNode( m_midTexture );
-					UIUtils.RegisterPropertyNode( m_botTexture );
-					UIUtils.RegisterTexturePropertyNode( m_botTexture );
-				break;
+				UIUtils.UnregisterPropertyNode( m_topTexture );
+				UIUtils.UnregisterTexturePropertyNode( m_topTexture );
+			}
+			else if ( m_inputPorts[ 0 ].Visible )
+			{
+				UIUtils.RegisterPropertyNode( m_topTexture );
+				UIUtils.RegisterTexturePropertyNode( m_topTexture );
+			}
+
+			if ( m_inputPorts[ 1 ].IsConnected || m_selectedTriplanarType == TriplanarType.Spherical )
+			{
+				UIUtils.UnregisterPropertyNode( m_midTexture );
+				UIUtils.UnregisterTexturePropertyNode( m_midTexture );
+			}
+			else if( m_inputPorts[ 1 ].Visible && m_selectedTriplanarType == TriplanarType.Cylindrical )
+			{
+				UIUtils.RegisterPropertyNode( m_midTexture );
+				UIUtils.RegisterTexturePropertyNode( m_midTexture );
+			}
+
+			if ( m_inputPorts[ 2 ].IsConnected || m_selectedTriplanarType == TriplanarType.Spherical )
+			{
+				UIUtils.UnregisterPropertyNode( m_botTexture );
+				UIUtils.UnregisterTexturePropertyNode( m_botTexture );
+			}
+			else if ( m_inputPorts[ 2 ].Visible && m_selectedTriplanarType == TriplanarType.Cylindrical )
+			{
+				UIUtils.RegisterPropertyNode( m_botTexture );
+				UIUtils.RegisterTexturePropertyNode( m_botTexture );
 			}
 		}
 
@@ -372,10 +412,10 @@ namespace AmplifyShaderEditor
 			m_outputPorts[ 0 ].DirtyLabelSize = true;
 		}
 
-		public override void PropagateNodeData( NodeData nodeData )
+		public override void PropagateNodeData( NodeData nodeData, ref MasterNodeDataCollector dataCollector )
 		{
-			base.PropagateNodeData( nodeData );
-			UIUtils.CurrentDataCollector.DirtyNormal = true;
+			base.PropagateNodeData( nodeData , ref dataCollector );
+			dataCollector.DirtyNormal = true;
 		}
 
 		public override void DrawProperties()
@@ -469,34 +509,40 @@ namespace AmplifyShaderEditor
 		public override void OnEnable()
 		{
 			base.OnEnable();
-			m_firstFrame = true;
+			if ( !m_afterDeserialize )
+				Init(); //Generate texture properties
+			else
+				m_afterDeserialize = false;
 
-			if ( m_topTexture != null )
-				m_topTexture.ReRegisterName = true;
+			//if ( m_topTexture != null )
+			//	m_topTexture.ReRegisterName = true;
 
-			if(m_selectedTriplanarType == TriplanarType.Cylindrical )
-			{
-				if ( m_midTexture != null )
-					m_midTexture.ReRegisterName = true;
+			//if(m_selectedTriplanarType == TriplanarType.Cylindrical )
+			//{
+			//	if ( m_midTexture != null )
+			//		m_midTexture.ReRegisterName = true;
 
-				if ( m_botTexture != null )
-					m_botTexture.ReRegisterName = true;
-			}
+			//	if ( m_botTexture != null )
+			//		m_botTexture.ReRegisterName = true;
+			//}
 		}
 
-		public override void Draw( DrawInfo drawInfo )
-		{
-			if( m_firstFrame )
-			{
-				m_firstFrame = false;
-				Init();
-			}
+		bool m_afterDeserialize = false;
 
+		public override void OnAfterDeserialize()
+		{
+			base.OnAfterDeserialize();
+			m_afterDeserialize = true;
+		}
+
+		public override void OnNodeLayout( DrawInfo drawInfo )
+		{
 			if ( m_topTexture.ReRegisterName )
 			{
 				m_topTexture.ReRegisterName = false;
 				UIUtils.RegisterUniformName( UniqueId, m_topTexture.PropertyName );
 			}
+
 			m_topTexture.CheckDelayedDirtyProperty();
 			m_topTexture.CheckPropertyFromInspector();
 
@@ -507,6 +553,7 @@ namespace AmplifyShaderEditor
 					m_midTexture.ReRegisterName = false;
 					UIUtils.RegisterUniformName( UniqueId, m_midTexture.PropertyName );
 				}
+
 				m_midTexture.CheckDelayedDirtyProperty();
 				m_midTexture.CheckPropertyFromInspector();
 
@@ -515,97 +562,264 @@ namespace AmplifyShaderEditor
 					m_botTexture.ReRegisterName = false;
 					UIUtils.RegisterUniformName( UniqueId, m_botTexture.PropertyName );
 				}
+
 				m_botTexture.CheckDelayedDirtyProperty();
 				m_botTexture.CheckPropertyFromInspector();
 			}
 
+			base.OnNodeLayout( drawInfo );
+
+			m_allPicker = m_previewRect;
+			m_allPicker.x -= 43 * drawInfo.InvertedZoom;
+			m_allPicker.width = 43 * drawInfo.InvertedZoom;
+
+			m_startPicker = m_previewRect;
+			m_startPicker.x -= 43 * drawInfo.InvertedZoom;
+			m_startPicker.width = 43 * drawInfo.InvertedZoom;
+			m_startPicker.height = 43 * drawInfo.InvertedZoom;
+
+			m_pickerButton = m_startPicker;
+			m_pickerButton.width = 30 * drawInfo.InvertedZoom;
+			m_pickerButton.x = m_startPicker.xMax - m_pickerButton.width - 2;
+			m_pickerButton.height = 10 * drawInfo.InvertedZoom;
+			m_pickerButton.y = m_startPicker.yMax - m_pickerButton.height - 2;
+		}
+
+		private Rect m_allPicker;
+		private Rect m_startPicker;
+		private Rect m_pickerButton;
+		private bool m_editing;
+
+		public override void DrawGUIControls( DrawInfo drawInfo )
+		{
+			base.DrawGUIControls( drawInfo );
+
+			if ( !( drawInfo.CurrentEventType == EventType.MouseDown || drawInfo.CurrentEventType == EventType.MouseUp || drawInfo.CurrentEventType == EventType.ExecuteCommand || drawInfo.CurrentEventType == EventType.DragPerform ) )
+				return;
+
+			bool insideBox = m_allPicker.Contains( drawInfo.MousePosition );
+
+			if ( insideBox )
+			{
+				m_editing = true;
+			}
+			else if ( m_editing && !insideBox && drawInfo.CurrentEventType != EventType.ExecuteCommand )
+			{
+				GUI.FocusControl( null );
+				m_editing = false;
+			}
+		}
+		private int m_pickId = 0;
+		public override void Draw( DrawInfo drawInfo )
+		{
 			base.Draw( drawInfo );
-			//return;
-			Rect startPicker = m_previewRect;
-			startPicker.x -= 43 * drawInfo.InvertedZoom;
-			startPicker.width = 43 * drawInfo.InvertedZoom;
-			startPicker.height = 43 * drawInfo.InvertedZoom;
 
-			m_topTexPropRef = m_topTexture;
-			if ( m_inputPorts[ 0 ].IsConnected )
-			{
-				m_topTexPropRef = m_inputPorts[ 0 ].GetOutputNode( 0 ) as TexturePropertyNode;
-				if ( GUI.Button( startPicker, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SamplerTextureRef ) ) )
-					UIUtils.FocusOnNode( m_topTexPropRef, 1, true );
+			Rect pickerButtonClone = m_pickerButton;
+			Rect startPickerClone = m_startPicker;
 
-				if( m_topTexPropRef.Value != null)
-					EditorGUI.DrawPreviewTexture( startPicker, m_topTexPropRef.Value );
-			} else
+			if ( m_editing )
 			{
-				if ( m_materialMode )
+				if ( GUI.Button( pickerButtonClone, string.Empty, GUIStyle.none ) )
 				{
-					EditorGUI.BeginChangeCheck();
-					m_topTexPropRef.MaterialValue = EditorGUIObjectField( startPicker, m_topTexPropRef.MaterialValue, typeof( Texture ), false ) as Texture;
-					if ( EditorGUI.EndChangeCheck() )
-						m_requireMaterialUpdate = true;
+					int controlID = EditorGUIUtility.GetControlID( FocusType.Passive );
+					EditorGUIUtility.ShowObjectPicker<Texture2D>( m_topTexture.Value, false, "", controlID );
+					m_pickId = 0;
 				}
-				else
+
+				if( m_selectedTriplanarType == TriplanarType.Cylindrical )
 				{
-					m_topTexPropRef.DefaultValue = EditorGUIObjectField( startPicker, m_topTexPropRef.DefaultValue, typeof( Texture ), false ) as Texture;
+					pickerButtonClone.y += startPickerClone.height;
+					if ( GUI.Button( pickerButtonClone, string.Empty, GUIStyle.none ) )
+					{
+						int controlID = EditorGUIUtility.GetControlID( FocusType.Passive );
+						EditorGUIUtility.ShowObjectPicker<Texture2D>( m_midTexture.Value, false, "", controlID );
+						m_pickId = 1;
+					}
+
+					pickerButtonClone.y += startPickerClone.height;
+					if ( GUI.Button( pickerButtonClone, string.Empty, GUIStyle.none ) )
+					{
+						int controlID = EditorGUIUtility.GetControlID( FocusType.Passive );
+						EditorGUIUtility.ShowObjectPicker<Texture2D>( m_botTexture.Value, false, "", controlID );
+						m_pickId = 2;
+					}
+				}
+
+				string commandName = Event.current.commandName;
+				UnityEngine.Object newValue = null;
+				if ( commandName.Equals( "ObjectSelectorUpdated" ) || commandName.Equals( "ObjectSelectorClosed" ) )
+				{
+					newValue = EditorGUIUtility.GetObjectPickerObject();
+					if ( m_pickId == 2 )
+					{
+						if ( newValue != ( UnityEngine.Object ) m_botTexture.Value )
+						{
+							UndoRecordObject( this, "Changing value EditorGUIObjectField on node Triplanar Node" );
+							m_botTexture.Value = newValue != null ? ( Texture2D ) newValue : null;
+
+							if ( m_materialMode )
+								m_requireMaterialUpdate = true;
+						}
+					} else if ( m_pickId == 1 )
+					{
+						if ( newValue != ( UnityEngine.Object ) m_midTexture.Value )
+						{
+							UndoRecordObject( this, "Changing value EditorGUIObjectField on node Triplanar Node" );
+							m_midTexture.Value = newValue != null ? ( Texture2D ) newValue : null;
+
+							if ( m_materialMode )
+								m_requireMaterialUpdate = true;
+						}
+					} else
+					{
+						if ( newValue != ( UnityEngine.Object ) m_topTexture.Value )
+						{
+							UndoRecordObject( this, "Changing value EditorGUIObjectField on node Triplanar Node" );
+							m_topTexture.Value = newValue != null ? ( Texture2D ) newValue : null;
+
+							if ( m_materialMode )
+								m_requireMaterialUpdate = true;
+						}
+					}
+
+					if ( commandName.Equals( "ObjectSelectorClosed" ) )
+						m_editing = false;
+				}
+
+				if ( GUI.Button( startPickerClone, string.Empty, GUIStyle.none ) )
+				{
+					if ( m_inputPorts[ 0 ].IsConnected )
+					{
+						UIUtils.FocusOnNode( m_inputPorts[ 0 ].GetOutputNode( 0 ), 1, true );
+					}
+					else
+					{
+						if ( m_topTexture.Value != null )
+						{
+							Selection.activeObject = m_topTexture.Value;
+							EditorGUIUtility.PingObject( Selection.activeObject );
+						}
+					}
+					m_editing = false;
+				}
+
+				if ( m_selectedTriplanarType == TriplanarType.Cylindrical )
+				{
+					startPickerClone.y += startPickerClone.height;
+					if ( GUI.Button( startPickerClone, string.Empty, GUIStyle.none ) )
+					{
+						if ( m_inputPorts[ 1 ].IsConnected )
+						{
+							UIUtils.FocusOnNode( m_inputPorts[ 1 ].GetOutputNode( 0 ), 1, true );
+						}
+						else
+						{
+							if ( m_midTexture.Value != null )
+							{
+								Selection.activeObject = m_midTexture.Value;
+								EditorGUIUtility.PingObject( Selection.activeObject );
+							}
+						}
+						m_editing = false;
+					}
+
+					startPickerClone.y += startPickerClone.height;
+					if ( GUI.Button( startPickerClone, string.Empty, GUIStyle.none ) )
+					{
+						if ( m_inputPorts[ 2 ].IsConnected )
+						{
+							UIUtils.FocusOnNode( m_inputPorts[ 2 ].GetOutputNode( 0 ), 1, true );
+						}
+						else
+						{
+							if ( m_botTexture.Value != null )
+							{
+								Selection.activeObject = m_botTexture.Value;
+								EditorGUIUtility.PingObject( Selection.activeObject );
+							}
+						}
+						m_editing = false;
+					}
 				}
 			}
 
-			// Mid
-			if ( m_selectedTriplanarType == TriplanarType.Cylindrical )
+			pickerButtonClone = m_pickerButton;
+			startPickerClone = m_startPicker;
+
+			if ( drawInfo.CurrentEventType == EventType.Repaint )
 			{
-				startPicker.y += startPicker.height;
-
-				m_midTexPropRef = m_midTexture;
-				if ( m_inputPorts[ 1 ].IsConnected )
+				// Top
+				if ( m_inputPorts[ 0 ].IsConnected )
 				{
-					m_midTexPropRef = m_inputPorts[ 1 ].GetOutputNode( 0 ) as TexturePropertyNode;
-					if ( GUI.Button( startPicker, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SamplerTextureRef ) ) )
-						UIUtils.FocusOnNode( m_midTexPropRef, 1, true );
-
-					if ( m_midTexPropRef.Value != null )
-						EditorGUI.DrawPreviewTexture( startPicker, m_midTexPropRef.Value );
+					EditorGUI.DrawPreviewTexture( startPickerClone, m_inputPorts[ 0 ].GetOutputConnection( 0 ).OutputPreviewTexture, null, ScaleMode.ScaleAndCrop );
+				}
+				else if ( m_topTexture.Value != null )
+				{
+					EditorGUI.DrawPreviewTexture( startPickerClone, m_topTexture.Value, null, ScaleMode.ScaleAndCrop );
+					if ( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD2 )
+						GUI.Label( pickerButtonClone, "Select", UIUtils.MiniSamplerButton );
 				}
 				else
 				{
-					if ( m_materialMode )
+					GUI.Label( startPickerClone, string.Empty, UIUtils.ObjectFieldThumb );
+					if ( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD2 )
 					{
-						EditorGUI.BeginChangeCheck();
-						m_midTexPropRef.MaterialValue = EditorGUIObjectField( startPicker, m_midTexPropRef.MaterialValue, typeof( Texture ), false ) as Texture;
-						if ( EditorGUI.EndChangeCheck() )
-								m_requireMaterialUpdate = true;
+						GUI.Label( startPickerClone, "None (Texture2D)", UIUtils.MiniObjectFieldThumbOverlay );
+						GUI.Label( pickerButtonClone, "Select", UIUtils.MiniSamplerButton );
+					}
+				}
+				GUI.Label( startPickerClone, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SamplerFrame ) );
+
+				if ( m_selectedTriplanarType == TriplanarType.Cylindrical )
+				{
+					// Mid
+					startPickerClone.y += startPickerClone.height;
+					pickerButtonClone.y += startPickerClone.height;
+					if ( m_inputPorts[ 1 ].IsConnected )
+					{
+						EditorGUI.DrawPreviewTexture( startPickerClone, m_inputPorts[ 1 ].GetOutputConnection( 0 ).OutputPreviewTexture, null, ScaleMode.ScaleAndCrop );
+					}
+					else if ( m_midTexture.Value != null )
+					{
+						EditorGUI.DrawPreviewTexture( startPickerClone, m_midTexture.Value, null, ScaleMode.ScaleAndCrop );
+						if ( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD2 )
+							GUI.Label( pickerButtonClone, "Select", UIUtils.MiniSamplerButton );
 					}
 					else
 					{
-						m_midTexPropRef.DefaultValue = EditorGUIObjectField( startPicker, m_midTexPropRef.DefaultValue, typeof( Texture ), false ) as Texture;
+						GUI.Label( startPickerClone, string.Empty, UIUtils.ObjectFieldThumb );
+						if ( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD2 )
+						{
+							GUI.Label( startPickerClone, "None (Texture2D)", UIUtils.MiniObjectFieldThumbOverlay );
+							GUI.Label( pickerButtonClone, "Select", UIUtils.MiniSamplerButton );
+						}
 					}
-				}
+					GUI.Label( startPickerClone, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SamplerFrame ) );
 
-				startPicker.y += startPicker.height;
-				startPicker.height = 42 * drawInfo.InvertedZoom;
-
-				m_botTexPropRef = m_botTexture;
-				if ( m_inputPorts[ 2 ].IsConnected )
-				{
-					m_botTexPropRef = m_inputPorts[ 2 ].GetOutputNode( 0 ) as TexturePropertyNode;
-					if ( GUI.Button( startPicker, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SamplerTextureRef ) ) )
-						UIUtils.FocusOnNode( m_botTexPropRef, 1, true );
-
-					if ( m_botTexPropRef.Value != null )
-						EditorGUI.DrawPreviewTexture( startPicker, m_botTexPropRef.Value );
-				}
-				else
-				{
-					if ( m_materialMode )
+					// Bot
+					startPickerClone.y += startPickerClone.height;
+					startPickerClone.height = 42 * drawInfo.InvertedZoom;
+					pickerButtonClone.y += startPickerClone.height;
+					if ( m_inputPorts[ 2 ].IsConnected )
 					{
-						EditorGUI.BeginChangeCheck();
-						m_botTexPropRef.MaterialValue = EditorGUIObjectField( startPicker, m_botTexPropRef.MaterialValue, typeof( Texture ), false ) as Texture;
-						if ( EditorGUI.EndChangeCheck() )
-							m_requireMaterialUpdate = true;
+						EditorGUI.DrawPreviewTexture( startPickerClone, m_inputPorts[ 2 ].GetOutputConnection( 0 ).OutputPreviewTexture, null, ScaleMode.ScaleAndCrop );
+					}
+					else if ( m_botTexture.Value != null )
+					{
+						EditorGUI.DrawPreviewTexture( startPickerClone, m_botTexture.Value, null, ScaleMode.ScaleAndCrop );
+						if ( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD2 )
+							GUI.Label( pickerButtonClone, "Select", UIUtils.MiniSamplerButton );
 					}
 					else
 					{
-						m_botTexPropRef.DefaultValue = EditorGUIObjectField( startPicker, m_botTexPropRef.DefaultValue, typeof( Texture ), false ) as Texture;
+						GUI.Label( startPickerClone, string.Empty, UIUtils.ObjectFieldThumb );
+						if ( ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD2 )
+						{
+							GUI.Label( startPickerClone, "None (Texture2D)", UIUtils.MiniObjectFieldThumbOverlay );
+							GUI.Label( pickerButtonClone, "Select", UIUtils.MiniSamplerButton );
+						}
 					}
+					GUI.Label( startPickerClone, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SamplerFrame ) );
 				}
 			}
 		}
@@ -714,7 +928,7 @@ namespace AmplifyShaderEditor
 				}
 			}
 
-			dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_POS ), true );
+			dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( PrecisionType.Float, AvailableSurfaceInputs.WORLD_POS ), true );
 			dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_NORMAL ), true );
 			string tilling = m_inputPorts[ 3 ].GeneratePortInstructions( ref dataCollector );
 			string falloff = m_inputPorts[ 4 ].GeneratePortInstructions( ref dataCollector );
@@ -760,9 +974,9 @@ namespace AmplifyShaderEditor
 				IOUtils.CloseFunctionBody( ref normalTriplanar );
 
 				string call = dataCollector.AddFunctions( m_functionNormalCall, normalTriplanar, texTop, texMid, texBot, pos, norm, falloff, tilling, ( isVertex ? "1" : "0" ) );
-				dataCollector.AddToLocalVariables( dataCollector.PortCategory, UniqueId, "float3 worldTriplanarNormal" + UniqueId + " = " + call + ";" );
-				dataCollector.AddToLocalVariables( dataCollector.PortCategory, UniqueId, "float3 tanTriplanarNormal" + UniqueId + " = mul( " + worldToTangent + ", worldTriplanarNormal" + UniqueId + " );" );
-				return GetOutputVectorItem( 0, outputId, "tanTriplanarNormal" + UniqueId );
+				dataCollector.AddToLocalVariables( dataCollector.PortCategory, UniqueId, "float3 worldTriplanarNormal" + OutputId + " = " + call + ";" );
+				dataCollector.AddToLocalVariables( dataCollector.PortCategory, UniqueId, "float3 tanTriplanarNormal" + OutputId + " = mul( " + worldToTangent + ", worldTriplanarNormal" + OutputId + " );" );
+				return GetOutputVectorItem( 0, outputId, "tanTriplanarNormal" + OutputId );
 			} else
 			{
 				string samplingTriplanar = string.Empty;
@@ -794,8 +1008,8 @@ namespace AmplifyShaderEditor
 				}
 
 				string call = dataCollector.AddFunctions( m_functionSamplingCall, samplingTriplanar, texTop, texMid, texBot, pos, norm, falloff, tilling, ( isVertex ? "1" : "0") );
-				dataCollector.AddToLocalVariables( dataCollector.PortCategory, UniqueId, "float4 triplanar" + UniqueId + " = " + call + ";" );
-				return GetOutputVectorItem( 0, outputId, "triplanar" + UniqueId );
+				dataCollector.AddToLocalVariables( dataCollector.PortCategory, UniqueId, "float4 triplanar" + OutputId + " = " + call + ";" );
+				return GetOutputVectorItem( 0, outputId, "triplanar" + OutputId );
 			}
 		}
 
@@ -888,6 +1102,12 @@ namespace AmplifyShaderEditor
 			SetTitleText( m_propertyInspectorName );
 
 			ConfigurePorts();
+		}
+
+		public override void RefreshExternalReferences()
+		{
+			base.RefreshExternalReferences();
+			ReadPropertiesData();
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )

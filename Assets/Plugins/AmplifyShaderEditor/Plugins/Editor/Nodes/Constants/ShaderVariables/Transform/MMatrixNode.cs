@@ -4,7 +4,7 @@
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Model Matrix", "Transform", "Current model matrix" )]
+	[NodeAttributes( "Model Matrix", "Matrix Transform", "Current model matrix" )]
 	public sealed class MMatrixNode : ConstantShaderVariable
 	{
 		protected override void CommonInit( int uniqueId )

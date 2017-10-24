@@ -9,10 +9,29 @@ namespace AmplifyShaderEditor
 
 	public struct Constants
 	{
+		public readonly static string UndoReplaceMasterNodeId = "Replacing Master Node";
+		public readonly static string UnityLightingLib = "Lighting.cginc";
+		public readonly static string UnityAutoLightLib = "AutoLight.cginc";
+		public readonly static string LocalValueDecWithoutIdent = "{0} {1} = {2};";
+		public readonly static string LocalValueDefWithoutIdent = "{0} {1} {2};";
+		public readonly static string TilingOffsetFormat = "{0}*{1} + {2}";
+		public static string InvalidPostProcessDatapath = "__DELETED_GUID_Trash";
+		//TEMPLATES
+
+		public static float NodeButtonSizeX = 16;
+		public static float NodeButtonSizeY = 16;
+		public static float NodeButtonDeltaX = 5;
+		public static float NodeButtonDeltaY = 11;
+
+
+		public readonly static string DeprecatedMessageStr = "Node '{0}' is deprecated. Use node '{1}' instead.";
+		public readonly static string UndoChangeTypeNodesId = "Changing Nodes Types";
 		public readonly static string UndoMoveNodesId = "Moving Nodes";
 		public readonly static string UndoRegisterFullGrapId = "Register Graph";
 		public readonly static string UndoAddNodeToCommentaryId = "Add node to Commentary";
 		public readonly static string UndoRemoveNodeFromCommentaryId = "Remove node from Commentary";
+		public readonly static string UndoCreateDynamicPortId = "Create Dynamic Port";
+		public readonly static string UndoDeleteDynamicPortId = "Destroy Dynamic Port";
 		public readonly static string UndoCreateNodeId = "Create Object";
 		public readonly static string UndoDeleteNodeId = "Destroy Object";
 		public readonly static string UndoDeleteConnectionId = "Destroy Connection";
@@ -26,27 +45,34 @@ namespace AmplifyShaderEditor
 
 		public readonly static string ASEMenuName = "Amplify Shader";
 
+		public readonly static string LodCrossFadeOption2017 = "dithercrossfade";
+
 		public readonly static string UnityShaderVariables = "UnityShaderVariables.cginc";
 		public readonly static string UnityCgLibFuncs = "UnityCG.cginc";
 		public readonly static string UnityStandardUtilsLibFuncs = "UnityStandardUtils.cginc";
 		public readonly static string UnityPBSLightingLib = "UnityPBSLighting.cginc";
+		public readonly static string UnityDeferredLightLib = "UnityDeferredLibrary.cginc";
 		public readonly static string ATSharedLibGUID = "ba242738c4be3324aa88d126f7cc19f9";
 
 		public readonly static string HelpURL = "http://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor";
-		public readonly static string NodeCommonUrl = "http://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Nodes#";
-		public readonly static string CommunityNodeCommonUrl = "http://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Community_Nodes#";
+		//public readonly static string NodeCommonUrl = "http://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Nodes#";
+		//public readonly static string CommunityNodeCommonUrl = "http://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/Community_Nodes#";
+		public readonly static string NodeCommonUrl = "http://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/";
+		public readonly static string CommunityNodeCommonUrl = "http://wiki.amplify.pt/index.php?title=Unity_Products:Amplify_Shader_Editor/";
 		public readonly static Color InfiniteLoopColor = Color.red;
 
-		public readonly static Color DefaultCategoryColor = new Color( 0.1f, 0.35f, 0.44f, 1.0f );
+		public readonly static Color DefaultCategoryColor = new Color( 0.26f, 0.35f, 0.44f, 1.0f );
 		public readonly static Color NodeBodyColor = new Color( 1f, 1f, 1f, 1.0f );
 
 		public readonly static Color ModeTextColor = new Color( 1f, 1f, 1f, 0.25f );
 		public readonly static Color ModeIconColor = new Color( 1f, 1f, 1f, 0.75f );
 
 		public readonly static Color PortTextColor = new Color( 1f, 1f, 1f, 0.5f );
+		public readonly static Color PortLockedTextColor = new Color( 1f, 1f, 1f, 0.35f );
 		public readonly static Color BoxSelectionColor = new Color( 1f, 1f, 1f, 0.5f );
 
-		public readonly static Color NodeSelectedColor = new Color( 0.5f, 0.5f, 1f, 1f );
+		public readonly static Color SpecialSelectionColor = new Color( 0.2f, 0.8f, 0.4f, 1f );
+		public readonly static Color NodeSelectedColor = new Color( 0.85f, 0.56f, 0f, 1f );
 		public readonly static Color NodeDefaultColor = new Color( 1f, 1f, 1f, 1f );
 		public readonly static Color NodeConnectedColor = new Color( 1.0f, 1f, 0.0f, 1f );
 		public readonly static Color NodeErrorColor = new Color( 1f, 0.5f, 0.5f, 1f );
@@ -99,16 +125,23 @@ namespace AmplifyShaderEditor
 		public readonly static float HORIZONTAL_TANGENT_SIZE = 100f;
 		public readonly static float OUTSIDE_WIRE_MARGIN = 5f;
 
+		public readonly static string SubTitleNameFormatStr = "Name( {0} )";
+		public readonly static string SubTitleSpaceFormatStr = "Space( {0} )";
+		public readonly static string SubTitleTypeFormatStr = "Type( {0} )";
+		public readonly static string SubTitleValueFormatStr = "Value( {0} )";
+		public readonly static string SubTitleConstFormatStr = "Const( {0} )";
+		public readonly static string SubTitleVarNameFormatStr = "Var( {0} )";
+
 		public readonly static string CodeWrapper = "( {0} )";
 		public readonly static string UnpackNormal = "UnpackNormal( {0} )";
 		public readonly static string UnpackNormalScale = "UnpackNormal( {0} , {1} )";
 
 		public readonly static string NodesDumpFormat = "{0}:,{1},{2}\n";
-
+		public readonly static string TagFormat = " \"{0}\" = \"{1}\"";
 
 		public readonly static string LocalVarIdentation = "\t\t\t";
 		public readonly static string SimpleLocalValueDec = LocalVarIdentation + "{0} {1};\n";
-		public readonly static string LocalValueDecWithoutIdent = "{0} {1} = {2};";
+
 		public readonly static string LocalValueDec = LocalVarIdentation + LocalValueDecWithoutIdent + '\n';
 		public readonly static string LocalValueDef = LocalVarIdentation + "{0} = {1};\n";
 		public readonly static string CastHelper = "({0}).{1}";
@@ -137,6 +170,8 @@ namespace AmplifyShaderEditor
 		public readonly static string ValueLabel = "Value";
 		public readonly static string DefaultValueLabel = "Default Value";
 		public readonly static string MaterialValueLabel = "Material Value";
+		public readonly static GUIContent DefaultValueLabelContent = new GUIContent( "Default Value" );
+		public readonly static GUIContent MaterialValueLabelContent = new GUIContent( "Material Value" );
 
 		public readonly static string InputVarStr = "i";//"input";
 		public readonly static string OutputVarStr = "o";//"output";
@@ -183,10 +218,15 @@ namespace AmplifyShaderEditor
 
 		public readonly static Dictionary<string, string> UrlReplacementStringValues = new Dictionary<string, string>() { { " ", "_" } };
 
-		public readonly static Dictionary<string, string> ReplacementStringValues = new Dictionary<string, string>() {  { " == ", "Equals" },
+		public readonly static Dictionary<string, string> ReplacementStringValues = new Dictionary<string, string>() {  { " = ", "Equals" },
+																														{ " == ", "Equals" },
+																														{ " != ", "NotEqual" },
+																														{ " \u2260 ", "NotEqual" },
 																														{ " > ", "Greater" },
+																														{ " \u2265 ", "GreaterOrEqual" },
 																														{ " >= ", "GreaterOrEqual" },
 																														{ " < ", "Less" },
+																														{ " \u2264 ", "LessOrEqual" },
 																														{ " <= ", "LessOrEqual" }};
 		public readonly static string InternalData = "INTERNAL_DATA";
 

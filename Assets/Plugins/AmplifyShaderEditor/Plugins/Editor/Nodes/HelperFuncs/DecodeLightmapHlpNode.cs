@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Decode Lightmap", "Generic", "Decodes color from Unity lightmap (RGBM or dLDR depending on platform)" )]
+	[NodeAttributes( "Decode Lightmap", "Miscellaneous", "Decodes color from Unity lightmap (RGBM or dLDR depending on platform)" )]
 	public sealed class DecodeLightmapHlpNode : HelperParentNode
 	{
 		protected override void CommonInit( int uniqueId )

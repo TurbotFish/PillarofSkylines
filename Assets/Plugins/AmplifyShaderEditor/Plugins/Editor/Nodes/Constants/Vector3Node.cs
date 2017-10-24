@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Vector3", "Constants", "Vector3 property", null, KeyCode.Alpha3 )]
+	[NodeAttributes( "Vector3", "Constants And Properties", "Vector3 property", null, KeyCode.Alpha3 )]
 	public sealed class Vector3Node : PropertyNode
 	{
 		[SerializeField]
@@ -70,18 +70,20 @@ namespace AmplifyShaderEditor
 				PreviewMaterial.SetVector( m_cachedPropertyId, new Vector4( m_defaultValue[ 0 ], m_defaultValue[ 1 ], m_defaultValue[ 2 ], 0 ) );
 		}
 
+		private bool m_isEditingFields;
+		private Vector3 m_previousValue = Vector3.zero;
+		private string[] m_fieldText = new string[] { "0", "0", "0" };
+
 		public override void Draw( DrawInfo drawInfo )
 		{
 			base.Draw( drawInfo );
-			if ( m_isVisible )
+
+			if ( !m_isVisible )
+				return;
+
+			if ( m_isEditingFields )
 			{
-				m_propertyDrawPos = m_remainingBox;
-				m_propertyDrawPos.x = m_remainingBox.x - LabelWidth * drawInfo.InvertedZoom;
-				m_propertyDrawPos.width = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_WIDTH_FIELD_SIZE;
-				m_propertyDrawPos.height = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_HEIGHT_FIELD_SIZE;
-
 				EditorGUI.BeginChangeCheck();
-
 				for ( int i = 0; i < 3; i++ )
 				{
 					m_propertyDrawPos.y = m_outputPorts[ i + 1 ].Position.y - 2 * drawInfo.InvertedZoom;
@@ -101,9 +103,73 @@ namespace AmplifyShaderEditor
 				if ( EditorGUI.EndChangeCheck() )
 				{
 					m_requireMaterialUpdate = m_materialMode;
-					//MarkForPreviewUpdate();
 					BeginDelayedDirtyProperty();
 				}
+			}
+			else if( drawInfo.CurrentEventType == EventType.Repaint && ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD4 )
+			{
+				for ( int i = 0; i < 3; i++ )
+				{
+					m_propertyDrawPos.y = m_outputPorts[ i + 1 ].Position.y - 2 * drawInfo.InvertedZoom;
+
+					Rect fakeField = m_propertyDrawPos;
+					fakeField.xMin += LabelWidth * drawInfo.InvertedZoom;
+					Rect fakeLabel = m_propertyDrawPos;
+					fakeLabel.xMax = fakeField.xMin;
+					EditorGUIUtility.AddCursorRect( fakeLabel, MouseCursor.SlideArrow );
+					EditorGUIUtility.AddCursorRect( fakeField, MouseCursor.Text );
+
+					if ( m_materialMode && m_currentParameterType != PropertyType.Constant )
+					{
+						if ( m_previousValue[ i ] != m_materialValue[ i ] )
+						{
+							m_previousValue[ i ] = m_materialValue[ i ];
+							m_fieldText[ i ] = m_materialValue[ i ].ToString();
+						}
+					}
+					else
+					{
+						if ( m_previousValue[ i ] != m_defaultValue[ i ] )
+						{
+							m_previousValue[ i ] = m_defaultValue[ i ];
+							m_fieldText[ i ] = m_defaultValue[ i ].ToString();
+						}
+					}
+
+					GUI.Label( fakeField, m_fieldText[ i ], UIUtils.MainSkin.textField );
+				}
+			}
+		}
+
+		public override void OnNodeLayout( DrawInfo drawInfo )
+		{
+			base.OnNodeLayout( drawInfo );
+
+			m_propertyDrawPos = m_remainingBox;
+			m_propertyDrawPos.x = m_remainingBox.x - LabelWidth * drawInfo.InvertedZoom;
+			m_propertyDrawPos.width = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_WIDTH_FIELD_SIZE;
+			m_propertyDrawPos.height = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_HEIGHT_FIELD_SIZE;
+		}
+
+		public override void DrawGUIControls( DrawInfo drawInfo )
+		{
+			base.DrawGUIControls( drawInfo );
+
+			if ( drawInfo.CurrentEventType != EventType.MouseDown )
+				return;
+
+			Rect hitBox = m_remainingBox;
+			hitBox.xMin -= LabelWidth * drawInfo.InvertedZoom;
+			bool insideBox = hitBox.Contains( drawInfo.MousePosition );
+
+			if ( insideBox )
+			{
+				m_isEditingFields = true;
+			}
+			else if ( m_isEditingFields && !insideBox )
+			{
+				GUI.FocusControl( null );
+				m_isEditingFields = false;
 			}
 		}
 

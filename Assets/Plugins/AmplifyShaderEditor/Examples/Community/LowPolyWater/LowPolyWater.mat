@@ -178,4 +178,4 @@ Material:
       second: {r: 1, g: 1, b: 1, a: 0}
     - first:
         name: _WaterColor
-      second: {r: 0.043137237, g: 0.4470588, b: 1, a: 1}
+      second: {r: 0.043137208, g: 0.4470588, b: 1, a: 1}

@@ -53,7 +53,7 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		void UpdateNodeArr()
+		public void UpdateNodeArr()
 		{
 			m_nodesArr = new string[ m_nodes.Count ];
 			int count = m_nodesArr.Length;

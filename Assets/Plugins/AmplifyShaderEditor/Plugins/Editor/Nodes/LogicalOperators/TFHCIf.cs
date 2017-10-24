@@ -10,7 +10,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "If [Community]", "Logical Operators", "Compare A with B. If A is greater than B output the value of A > B port. If A is equal to B output the value of A == B port. If A is lower than B output the value of A < B port. Equal Threshold parameter will be used to check A == B adding and subtracting this value to A.", null, KeyCode.None, true, false, null, null, true )]
+	[NodeAttributes( "If [Community]", "Logical Operators", "Compare A with B. If A is greater than B output the value of A > B port. If A is equal to B output the value of A == B port. If A is lower than B output the value of A < B port. Equal Threshold parameter will be used to check A == B adding and subtracting this value to A.", null, KeyCode.None, true, false, null, null, "The Four Headed Cat - @fourheadedcat" )]
 	public sealed class TFHCIf : ParentNode
 	{
 		private WirePortDataType m_inputMainDataType = WirePortDataType.FLOAT;

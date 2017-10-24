@@ -11,7 +11,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Pixelate UV", "Textures", "Pixelate Texture Modifying UV.", null, KeyCode.None, true, false, null, null, true )]
+	[NodeAttributes( "Pixelate UV", "UV Coordinates", "Pixelate Texture Modifying UV.", null, KeyCode.None, true, false, null, null, "The Four Headed Cat - @fourheadedcat" )]
 	public sealed class TFHCPixelateUV : ParentNode
 	{
 		protected override void CommonInit( int uniqueId )
@@ -38,10 +38,10 @@ namespace AmplifyShaderEditor
 			string PixelCount_X = m_inputPorts[ 1 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT2, false );
 			string PixelCount_Y = m_inputPorts[ 2 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT2, false );
 
-			string pixelWidth = "float pixelWidth" + UniqueId + " =  1.0f / " + PixelCount_X + ";";
-			string pixelHeight = "float pixelHeight" + UniqueId + " = 1.0f / " + PixelCount_Y + ";";
-			string pixelatedUV = "half2 pixelateduv" + UniqueId + " = half2((int)(" + uv + ".x / pixelWidth" + UniqueId + ") * pixelWidth" + UniqueId + ", (int)(" + uv + ".y / pixelHeight" + UniqueId + ") * pixelHeight" + UniqueId + ");";
-			string result = "pixelateduv" + UniqueId;
+			string pixelWidth = "float pixelWidth" + OutputId + " =  1.0f / " + PixelCount_X + ";";
+			string pixelHeight = "float pixelHeight" + OutputId + " = 1.0f / " + PixelCount_Y + ";";
+			string pixelatedUV = "half2 pixelateduv" + OutputId + " = half2((int)(" + uv + ".x / pixelWidth" + OutputId + ") * pixelWidth" + OutputId + ", (int)(" + uv + ".y / pixelHeight" + OutputId + ") * pixelHeight" + OutputId + ");";
+			string result = "pixelateduv" + OutputId;
 
 			dataCollector.AddToLocalVariables( UniqueId, pixelWidth);
 			dataCollector.AddToLocalVariables( UniqueId, pixelHeight);

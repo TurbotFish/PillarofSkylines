@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "ACos", "Trigonometry", "Arccosine of scalars and vectors" )]
+	[NodeAttributes( "ACos", "Trigonometry Operators", "Arccosine of scalars and vectors" )]
 	public sealed class ACosOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
 
 namespace AmplifyShaderEditor
 {
@@ -15,9 +16,9 @@ namespace AmplifyShaderEditor
 		//private static bool m_clippingEnabled;
 		//private static Rect m_clippingBounds = new Rect();
 		private static Rect m_boundBox = new Rect();
-		private static Vector3[] allv3Points = null;
-		private static Vector2[] allPerpendiculars = null;
-		private static Color[] allColors = null;
+		private static Vector3[] allv3Points = new Vector3[] { };
+		private static Vector2[] allPerpendiculars = new Vector2[] { };
+		private static Color[] allColors = new Color[] { };
 		private static Vector2 startPt = Vector2.zero;
 		private static Vector2 endPt = Vector2.zero;
 
@@ -26,20 +27,7 @@ namespace AmplifyShaderEditor
 
 		private static Vector2 aux1Vec2 = Vector2.zero;
 
-
-		//public static void BeginGroup( Rect position )
-		//{
-		//	m_clippingEnabled = true;
-		//	m_clippingBounds.Set( 0, 0, position.width, position.height );
-		//	GUI.BeginGroup( position );
-		//}
-
-		//public static void EndGroup()
-		//{
-		//	GUI.EndGroup();
-		//	m_clippingBounds.Set( 0, 0, Screen.width, Screen.height );
-		//	m_clippingEnabled = false;
-		//}
+		private static int HigherBoundArray = 0;
 
 		public static void CreateMaterial()
 		{
@@ -52,7 +40,7 @@ namespace AmplifyShaderEditor
 			LineMaterial.hideFlags = HideFlags.HideAndDontSave;
 		}
 
-		public static void DrawCurve( Vector3[] allPoints, Vector2[] allNormals, Color[] allColors )
+		public static void DrawCurve( Vector3[] allPoints, Vector2[] allNormals, Color[] allColors, int pointCount )
 		{
 			if ( Event.current.type != EventType.repaint )
 				return;
@@ -61,7 +49,7 @@ namespace AmplifyShaderEditor
 			LineMaterial.SetPass( (MultiLine ? 1 : 0) );
 
 			GL.Begin( GL.TRIANGLE_STRIP );
-			for ( int i = 0; i < allPoints.Length; i++ )
+			for ( int i = 0; i < pointCount; i++ )
 			{
 				GL.Color( allColors[i] );
 				GL.TexCoord( Zero );
@@ -88,9 +76,15 @@ namespace AmplifyShaderEditor
 		{
 			int pointsCount = segments + 1;
 			int linesCount = segments;
+
+			HigherBoundArray = HigherBoundArray > pointsCount ? HigherBoundArray : pointsCount;
+
 			allv3Points = Handles.MakeBezierPoints( start, end, startTangent, endTangent, pointsCount );
-			allColors = new Color[ pointsCount ];
-			allPerpendiculars = new Vector2[ pointsCount ];
+			if ( allColors.Length < HigherBoundArray )
+			{
+				allColors = new Color[ HigherBoundArray ];
+				allPerpendiculars = new Vector2[ HigherBoundArray ];
+			}
 
 			startColor.a = ( type * 0.25f );
 			endColor.a = ( type * 0.25f );
@@ -102,9 +96,10 @@ namespace AmplifyShaderEditor
 			float maxX = allv3Points[ 0 ].x;
 			float maxY = allv3Points[ 0 ].y;
 
+			float amount = 1 / ( float ) linesCount;
 			for ( int i = 1; i < pointsCount; i++ )
 			{
-				allColors[ i ] = Color.LerpUnclamped( startColor, endColor, i / ( float )linesCount );
+				allColors[ i ] = Color.LerpUnclamped( startColor, endColor, amount * i );
 
 				minX = ( allv3Points[ i ].x < minX ) ? allv3Points[ i ].x : minX;
 				minY = ( allv3Points[ i ].y < minY ) ? allv3Points[ i ].y : minY;
@@ -129,7 +124,7 @@ namespace AmplifyShaderEditor
 					startPt.Set( allv3Points[ i + 1 ].y, allv3Points[ i - 1 ].x );
 					endPt.Set( allv3Points[ i - 1 ].y, allv3Points[ i + 1 ].x );
 				}
-				aux1Vec2.Set(startPt.x - endPt.x, startPt.y - endPt.y);
+				aux1Vec2.Set( startPt.x - endPt.x, startPt.y - endPt.y );
 				FastNormalized( ref aux1Vec2 );
 				aux1Vec2.Set( aux1Vec2.x * width, aux1Vec2.y * width );
 				allPerpendiculars[ i ] = aux1Vec2;
@@ -137,7 +132,7 @@ namespace AmplifyShaderEditor
 
 			m_boundBox.Set( minX, minY, ( maxX - minX ), ( maxY - minY ) );
 
-			DrawCurve( allv3Points, allPerpendiculars, allColors );
+			DrawCurve( allv3Points, allPerpendiculars, allColors, pointsCount );
 			return m_boundBox;
 		}
 

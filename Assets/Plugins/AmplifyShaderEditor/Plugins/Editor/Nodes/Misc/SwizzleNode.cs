@@ -12,29 +12,29 @@ using UnityEngine;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Swizzle", "Misc", "swizzle components of vector types " )]
+	[NodeAttributes( "Swizzle", "Vector Operators", "Swizzle components of vector types", community: "Tobias Pott - @TobiasPott" )]
 	public sealed class SwizzleNode : SingleInputOp
 	{
 
 		private const string OutputTypeStr = "Output type";
 
 		[SerializeField]
-		private WirePortDataType _selectedOutputType = WirePortDataType.FLOAT4;
+		private WirePortDataType m_selectedOutputType = WirePortDataType.FLOAT4;
 
 		[SerializeField]
-		private int _selectedOutputTypeInt = 4;
-		[SerializeField]
-		private int[] _selectedOutputSwizzleTypes = new int[] { 0, 1, 2, 3 };
+		private int m_selectedOutputTypeInt = 3;
 
+		[SerializeField]
+		private int[] m_selectedOutputSwizzleTypes = new int[] { 0, 1, 2, 3 };
 
 		private readonly string[] SwizzleVectorChannels = { "x", "y", "z", "w" };
 		private readonly string[] SwizzleColorChannels = { "r", "g", "b", "a" };
 		private readonly string[] SwizzleChannelLabels = { "Channel 0", "Channel 1", "Channel 2", "Channel 3" };
 
-		private readonly string[] _outputValueTypes ={  "Float",
-														"Vector2",
-														"Vector3",
-														"Vector4"};
+		private readonly string[] m_outputValueTypes ={  "Float",
+														"Vector 2",
+														"Vector 3",
+														"Vector 4"};
 
 		protected override void CommonInit( int uniqueId )
 		{
@@ -48,10 +48,66 @@ namespace AmplifyShaderEditor
 
 
 			m_inputPorts[ 0 ].DataType = WirePortDataType.FLOAT4;
-			m_outputPorts[ 0 ].DataType = _selectedOutputType;
+			m_outputPorts[ 0 ].DataType = m_selectedOutputType;
 			m_textLabelWidth = 90;
 			m_autoWrapProperties = true;
 			m_autoUpdateOutputPort = false;
+			m_hasLeftDropdown = true;
+			SetAdditonalTitleText( "Value( XYZW )" );
+		}
+
+		public override void AfterCommonInit()
+		{
+			base.AfterCommonInit();
+
+			if ( PaddingTitleLeft == 0 )
+			{
+				PaddingTitleLeft = Constants.PropertyPickerWidth + Constants.IconsLeftRightMargin;
+				if ( PaddingTitleRight == 0 )
+					PaddingTitleRight = Constants.PropertyPickerWidth + Constants.IconsLeftRightMargin;
+			}
+		}
+
+		public override void OnConnectedOutputNodeChanges( int outputPortId, int otherNodeId, int otherPortId, string name, WirePortDataType type )
+		{
+			base.OnConnectedOutputNodeChanges( outputPortId, otherNodeId, otherPortId, name, type );
+			UpdatePorts();
+		}
+
+		public override void OnInputPortConnected( int portId, int otherNodeId, int otherPortId, bool activateNode = true )
+		{
+			base.OnInputPortConnected( portId, otherNodeId, otherPortId, activateNode );
+			UpdatePorts();
+		}
+
+		public override void OnInputPortDisconnected( int portId )
+		{
+			base.OnInputPortDisconnected( portId );
+			UpdatePorts();
+		}
+
+		public override void Draw( DrawInfo drawInfo )
+		{
+			base.Draw( drawInfo );
+
+			if ( m_dropdownEditing )
+			{
+				EditorGUI.BeginChangeCheck();
+				m_selectedOutputTypeInt = EditorGUIPopup( m_dropdownRect, m_selectedOutputTypeInt, m_outputValueTypes, UIUtils.PropertyPopUp );
+				if ( EditorGUI.EndChangeCheck() )
+				{
+					switch ( m_selectedOutputTypeInt )
+					{
+						case 0: m_selectedOutputType = WirePortDataType.FLOAT; break;
+						case 1: m_selectedOutputType = WirePortDataType.FLOAT2; break;
+						case 2: m_selectedOutputType = WirePortDataType.FLOAT3; break;
+						case 3: m_selectedOutputType = WirePortDataType.FLOAT4; break;
+					}
+
+					UpdatePorts();
+					m_dropdownEditing = false;
+				}
+			}
 		}
 
 		public override void DrawProperties()
@@ -59,15 +115,15 @@ namespace AmplifyShaderEditor
 
 			EditorGUILayout.BeginVertical();
 			EditorGUI.BeginChangeCheck();
-			_selectedOutputTypeInt = EditorGUILayoutPopup( OutputTypeStr, _selectedOutputTypeInt, _outputValueTypes );
+			m_selectedOutputTypeInt = EditorGUILayoutPopup( OutputTypeStr, m_selectedOutputTypeInt, m_outputValueTypes );
 			if ( EditorGUI.EndChangeCheck() )
 			{
-				switch ( _selectedOutputTypeInt )
+				switch ( m_selectedOutputTypeInt )
 				{
-					case 0: _selectedOutputType = WirePortDataType.FLOAT; break;
-					case 1: _selectedOutputType = WirePortDataType.FLOAT2; break;
-					case 2: _selectedOutputType = WirePortDataType.FLOAT3; break;
-					case 3: _selectedOutputType = WirePortDataType.FLOAT4; break;
+					case 0: m_selectedOutputType = WirePortDataType.FLOAT; break;
+					case 1: m_selectedOutputType = WirePortDataType.FLOAT2; break;
+					case 2: m_selectedOutputType = WirePortDataType.FLOAT3; break;
+					case 3: m_selectedOutputType = WirePortDataType.FLOAT4; break;
 				}
 
 				UpdatePorts();
@@ -81,7 +137,57 @@ namespace AmplifyShaderEditor
 
 			int count = 0;
 
-			switch ( _selectedOutputType )
+			switch ( m_selectedOutputType )
+			{
+				case WirePortDataType.FLOAT4:
+				case WirePortDataType.COLOR:
+				count = 4;
+				break;
+				case WirePortDataType.FLOAT3:
+				count = 3;
+				break;
+				case WirePortDataType.FLOAT2:
+				count = 2;
+				break;
+				case WirePortDataType.INT:
+				case WirePortDataType.FLOAT:
+				count = 1;
+				break;
+				case WirePortDataType.OBJECT:
+				case WirePortDataType.FLOAT3x3:
+				case WirePortDataType.FLOAT4x4:
+				break;
+			}
+
+			EditorGUI.BeginChangeCheck();
+			if ( m_inputPorts[ 0 ].DataType == WirePortDataType.COLOR )
+			{
+				for ( int i = 0; i < count; i++ )
+				{
+					m_selectedOutputSwizzleTypes[ i ] = EditorGUILayoutPopup( SwizzleChannelLabels[ i ], m_selectedOutputSwizzleTypes[ i ], SwizzleColorChannels );
+				}
+			}
+			else
+			{
+				for ( int i = 0; i < count; i++ )
+				{
+					m_selectedOutputSwizzleTypes[ i ] = EditorGUILayoutPopup( SwizzleChannelLabels[ i ], m_selectedOutputSwizzleTypes[ i ], SwizzleVectorChannels );
+				}
+			}
+			if ( EditorGUI.EndChangeCheck() )
+			{
+				UpdatePorts();
+			}
+
+			EditorGUILayout.EndVertical();
+		}
+
+		void UpdatePorts()
+		{
+			ChangeOutputType( m_selectedOutputType, false );
+
+			int count = 0;
+			switch ( m_selectedOutputType )
 			{
 				case WirePortDataType.FLOAT4:
 				case WirePortDataType.COLOR:
@@ -126,33 +232,26 @@ namespace AmplifyShaderEditor
 				break;
 			}
 
-			EditorGUI.BeginChangeCheck();
-			if ( m_inputPorts[ 0 ].DataType == WirePortDataType.COLOR )
+			for ( int i = 0; i < count; i++ )
 			{
-				for ( int i = 0; i < count; i++ )
-				{
-					_selectedOutputSwizzleTypes[ i ] = Mathf.Clamp( EditorGUILayoutPopup( SwizzleChannelLabels[ i ], _selectedOutputSwizzleTypes[ i ], SwizzleColorChannels ), 0, inputMaxChannelId );
-				}
-			}
-			else
-			{
-				for ( int i = 0; i < count; i++ )
-				{
-					_selectedOutputSwizzleTypes[ i ] = Mathf.Clamp( EditorGUILayoutPopup( SwizzleChannelLabels[ i ], _selectedOutputSwizzleTypes[ i ], SwizzleVectorChannels ), 0, inputMaxChannelId );
-				}
-			}
-			if ( EditorGUI.EndChangeCheck() )
-			{
-				UpdatePorts();
+				m_selectedOutputSwizzleTypes[ i ] = Mathf.Clamp( m_selectedOutputSwizzleTypes[ i ], 0, inputMaxChannelId );
 			}
 
-			EditorGUILayout.EndVertical();
-		}
-		void UpdatePorts()
-		{
+			// Update Title
+			string additionalText = string.Empty;
+			for ( int i = 0; i < count; i++ )
+			{
+				additionalText += GetSwizzleComponentForChannel( m_selectedOutputSwizzleTypes[ i ] ).ToUpper();
+			}
+
+			if ( additionalText.Length > 0 )
+				SetAdditonalTitleText( "Value( " + additionalText + " )" );
+			else
+				SetAdditonalTitleText( string.Empty );
+
 			m_sizeIsDirty = true;
-			ChangeOutputType( _selectedOutputType, false );
 		}
+
 		public string GetSwizzleComponentForChannel( int channel )
 		{
 			if ( m_inputPorts[ 0 ].DataType == WirePortDataType.COLOR )
@@ -167,14 +266,12 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
-
 			if ( m_outputPorts[ 0 ].IsLocalValue )
 				return m_outputPorts[ 0 ].LocalValue;
-
-
+			
 			string value = string.Format( "({0}).", m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector ) );
 			int count = 0;
-			switch ( _selectedOutputType )
+			switch ( m_selectedOutputType )
 			{
 				case WirePortDataType.FLOAT4:
 				case WirePortDataType.COLOR:
@@ -197,7 +294,7 @@ namespace AmplifyShaderEditor
 			}
 			for ( int i = 0; i < count; i++ )
 			{
-				value += GetSwizzleComponentForChannel( _selectedOutputSwizzleTypes[ i ] );
+				value += GetSwizzleComponentForChannel( m_selectedOutputSwizzleTypes[ i ] );
 			}
 
 			return CreateOutputLocalVariable( 0, value, ref dataCollector );
@@ -206,18 +303,18 @@ namespace AmplifyShaderEditor
 		public override void ReadFromString( ref string[] nodeParams )
 		{
 			base.ReadFromString( ref nodeParams );
-			_selectedOutputType = ( WirePortDataType ) Enum.Parse( typeof( WirePortDataType ), GetCurrentParam( ref nodeParams ) );
-			switch ( _selectedOutputType )
+			m_selectedOutputType = ( WirePortDataType ) Enum.Parse( typeof( WirePortDataType ), GetCurrentParam( ref nodeParams ) );
+			switch ( m_selectedOutputType )
 			{
-				case WirePortDataType.FLOAT: _selectedOutputTypeInt = 0; break;
-				case WirePortDataType.FLOAT2: _selectedOutputTypeInt = 1; break;
-				case WirePortDataType.FLOAT3: _selectedOutputTypeInt = 2; break;
+				case WirePortDataType.FLOAT: m_selectedOutputTypeInt = 0; break;
+				case WirePortDataType.FLOAT2: m_selectedOutputTypeInt = 1; break;
+				case WirePortDataType.FLOAT3: m_selectedOutputTypeInt = 2; break;
 				case WirePortDataType.COLOR:
-				case WirePortDataType.FLOAT4: _selectedOutputTypeInt = 3; break;
+				case WirePortDataType.FLOAT4: m_selectedOutputTypeInt = 3; break;
 			}
-			for ( int i = 0; i < _selectedOutputSwizzleTypes.Length; i++ )
+			for ( int i = 0; i < m_selectedOutputSwizzleTypes.Length; i++ )
 			{
-				_selectedOutputSwizzleTypes[ i ] = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
+				m_selectedOutputSwizzleTypes[ i ] = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 			}
 
 			UpdatePorts();
@@ -226,10 +323,10 @@ namespace AmplifyShaderEditor
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
 		{
 			base.WriteToString( ref nodeInfo, ref connectionsInfo );
-			IOUtils.AddFieldValueToString( ref nodeInfo, _selectedOutputType );
-			for ( int i = 0; i < _selectedOutputSwizzleTypes.Length; i++ )
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_selectedOutputType );
+			for ( int i = 0; i < m_selectedOutputSwizzleTypes.Length; i++ )
 			{
-				IOUtils.AddFieldValueToString( ref nodeInfo, _selectedOutputSwizzleTypes[ i ] );
+				IOUtils.AddFieldValueToString( ref nodeInfo, m_selectedOutputSwizzleTypes[ i ] );
 			}
 		}
 	}

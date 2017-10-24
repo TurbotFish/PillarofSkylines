@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Texel Size", "Surface Standard Inputs", "Texel Size for a given sampler" )]
+	[NodeAttributes( "Texel Size", "Textures", "Texel Size for a given texture object" )]
 	public sealed class TexelSizeNode : ParentNode
 	{
 		private readonly string[] Dummy = { string.Empty };
@@ -17,11 +17,10 @@ namespace AmplifyShaderEditor
 
 		[SerializeField]
 		private TexturePropertyNode m_inputReferenceNode = null;
-
-		private bool m_forceNodeUpdate = false;
-
+		
 		private TexturePropertyNode m_referenceNode = null;
 
+		private UpperLeftWidgetHelper m_upperLeftWidget = new UpperLeftWidgetHelper();
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
@@ -34,6 +33,19 @@ namespace AmplifyShaderEditor
 			ChangeOutputName( 4, "Height" );
 			m_textLabelWidth = 80;
 			m_autoWrapProperties = true;
+			m_hasLeftDropdown = true;
+		}
+
+		public override void AfterCommonInit()
+		{
+			base.AfterCommonInit();
+
+			if( PaddingTitleLeft == 0 )
+			{
+				PaddingTitleLeft = Constants.PropertyPickerWidth + Constants.IconsLeftRightMargin;
+				if( PaddingTitleRight == 0 )
+					PaddingTitleRight = Constants.PropertyPickerWidth + Constants.IconsLeftRightMargin;
+			}
 		}
 
 		public override void OnInputPortConnected( int portId, int otherNodeId, int otherPortId, bool activateNode = true )
@@ -54,11 +66,11 @@ namespace AmplifyShaderEditor
 		{
 			if ( m_inputReferenceNode != null )
 			{
-				m_additionalContent.text = string.Format( "Value( {0} )", m_inputReferenceNode.PropertyInspectorName );
+				m_additionalContent.text = string.Format( Constants.PropertyValueLabel, m_inputReferenceNode.PropertyInspectorName );
 			}
 			else if ( m_referenceSamplerId > -1 && m_referenceNode != null )
 			{
-				m_additionalContent.text = string.Format( "Value( {0} )", m_referenceNode.PropertyInspectorName );
+				m_additionalContent.text = string.Format( Constants.PropertyValueLabel, m_referenceNode.PropertyInspectorName );
 			}
 			else
 			{
@@ -76,7 +88,7 @@ namespace AmplifyShaderEditor
 
 			if ( arr != null && arr.Length > 0 )
 			{
-				GUI.enabled = true && ( m_inputReferenceNode == null );
+				GUI.enabled = true && ( !m_inputPorts[0].IsConnected );
 				m_referenceSamplerId = EditorGUILayoutPopup( Constants.AvailableReferenceStr, m_referenceSamplerId, arr );
 			}
 			else
@@ -103,12 +115,13 @@ namespace AmplifyShaderEditor
 			m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 			string texelName = string.Empty;
 
-			if ( m_inputReferenceNode != null )
+			if ( m_inputPorts[ 0 ].IsConnected )
 			{
-				texelName = m_inputReferenceNode.PropertyName + "_TexelSize";
+				texelName = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector ) + "_TexelSize";
 			}
 			else if ( m_referenceNode != null )
 			{
+				m_referenceNode.BaseGenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalvar );
 				texelName = m_referenceNode.PropertyName + "_TexelSize";
 			}
 			else
@@ -135,31 +148,56 @@ namespace AmplifyShaderEditor
 		{
 			base.Draw( drawInfo );
 
-			if ( m_forceNodeUpdate )
+			EditorGUI.BeginChangeCheck();
 			{
-				m_forceNodeUpdate = false;
-				if ( UIUtils.CurrentShaderVersion() > 2404 )
+				string[] arr = UIUtils.TexturePropertyNodeArr();
+				bool guiEnabledBuffer = GUI.enabled;
+
+				if( arr != null && arr.Length > 0 )
 				{
-					m_referenceNode = UIUtils.GetNode( m_referenceNodeId ) as TexturePropertyNode;
-					m_referenceSamplerId = UIUtils.GetTexturePropertyNodeRegisterId( m_referenceNodeId );
+					GUI.enabled = true && ( !m_inputPorts[ 0 ].IsConnected );
+					m_referenceSamplerId = m_upperLeftWidget.DrawWidget( this, m_referenceSamplerId, arr );
 				}
 				else
 				{
-					m_referenceNode = UIUtils.GetTexturePropertyNode( m_referenceSamplerId );
-					if ( m_referenceNode != null )
-					{
-						m_referenceNodeId = m_referenceNode.UniqueId;
-					}
+					m_referenceSamplerId = -1;
+					GUI.enabled = false;
+					m_referenceSamplerId = m_upperLeftWidget.DrawWidget( this, m_referenceSamplerId, Dummy );
 				}
+				GUI.enabled = guiEnabledBuffer;
+			}
+			if( EditorGUI.EndChangeCheck() )
+			{
+				m_referenceNode = UIUtils.GetTexturePropertyNode( m_referenceSamplerId );
+				m_referenceNodeId = m_referenceNode.UniqueId;
 				UpdateTitle();
 			}
-
+			
 			if ( m_referenceNode == null && m_referenceNodeId > -1 )
 			{
 				m_referenceNodeId = -1;
 				m_referenceSamplerId = -1;
 				UpdateTitle();
 			}
+		}
+
+		public override void RefreshExternalReferences()
+		{
+			base.RefreshExternalReferences();
+			if ( UIUtils.CurrentShaderVersion() > 2404 )
+			{
+				m_referenceNode = UIUtils.GetNode( m_referenceNodeId ) as TexturePropertyNode;
+				m_referenceSamplerId = UIUtils.GetTexturePropertyNodeRegisterId( m_referenceNodeId );
+			}
+			else
+			{
+				m_referenceNode = UIUtils.GetTexturePropertyNode( m_referenceSamplerId );
+				if ( m_referenceNode != null )
+				{
+					m_referenceNodeId = m_referenceNode.UniqueId;
+				}
+			}
+			UpdateTitle();
 		}
 
 		public override void ReadFromString( ref string[] nodeParams )
@@ -173,7 +211,6 @@ namespace AmplifyShaderEditor
 			{
 				m_referenceSamplerId = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 			}
-			m_forceNodeUpdate = true;
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )
@@ -187,6 +224,7 @@ namespace AmplifyShaderEditor
 			base.Destroy();
 			m_referenceNode = null;
 			m_inputReferenceNode = null;
+			m_upperLeftWidget = null;
 		}
 	}
 }

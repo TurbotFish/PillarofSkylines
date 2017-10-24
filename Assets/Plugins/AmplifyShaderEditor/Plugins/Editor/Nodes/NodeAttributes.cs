@@ -9,7 +9,9 @@ namespace AmplifyShaderEditor
 	public enum NodeAvailability
 	{
 		SurfaceShader = 1 << 0,
-		ShaderFunction = 1 << 1
+		ShaderFunction = 1 << 1,
+		CustomLighting = 1 << 2,
+		TemplateShader	= 1 << 3
 	}
 
 
@@ -22,28 +24,33 @@ namespace AmplifyShaderEditor
 		public string Category;
 		public KeyCode ShortcutKey;
 		public bool Available;
-		public Type[] CastType; // Type that will be converted to AttribType if dropped on the canvas ... p.e. dropping a texture2d on the canvas will generate a sampler2d node 
+		public System.Type[] CastType; // Type that will be converted to AttribType if dropped on the canvas ... p.e. dropping a texture2d on the canvas will generate a sampler2d node 
 		public bool Deprecated;
 		public string DeprecatedAlternative;
-		public Type DeprecatedAlternativeType;
+		public System.Type DeprecatedAlternativeType;
 		public bool FromCommunity;
 		public string CustomCategoryColor; // Color created via a string containing its hexadecimal representation
 		public int SortOrderPriority; // to be used when name comparing on sorting 
 		public int NodeAvailabilityFlags;// used to define where this node can be used 
 		public string NodeUrl;
-		public NodeAttributes( string name, string category, string description, Type castType = null, KeyCode shortcutKey = KeyCode.None, bool available = true, bool deprecated = false, string deprecatedAlternative = null, Type deprecatedAlternativeType = null, bool fromCommunity = false, string customCategoryColor = null, int sortOrderPriority = -1, int nodeAvailabilityFlags = int.MaxValue )
+		public string Community;
+		public NodeAttributes( string name, string category, string description, System.Type castType = null, KeyCode shortcutKey = KeyCode.None, bool available = true, bool deprecated = false, string deprecatedAlternative = null, System.Type deprecatedAlternativeType = null, string community = null, string customCategoryColor = null, int sortOrderPriority = -1, int nodeAvailabilityFlags = int.MaxValue )
 		{
 			Name = name;
 			Description = description;
 			Category = category;
 			if ( castType != null )
-				CastType = new Type[] { castType };
+				CastType = new System.Type[] { castType };
 
 			ShortcutKey = shortcutKey;
 			Available = available;
 			Deprecated = deprecated;
 			DeprecatedAlternative = deprecatedAlternative;
-			FromCommunity = fromCommunity;
+			Community = community;
+			if( string.IsNullOrEmpty( Community ) )
+				Community = string.Empty;
+			else
+				FromCommunity = true;
 			CustomCategoryColor = customCategoryColor;
 			DeprecatedAlternativeType = deprecatedAlternativeType;
 			SortOrderPriority = sortOrderPriority;
@@ -51,7 +58,7 @@ namespace AmplifyShaderEditor
 			NodeUrl = ( FromCommunity ? Constants.CommunityNodeCommonUrl : Constants.NodeCommonUrl ) + UIUtils.UrlReplaceInvalidStrings( Name );
 		}
 
-		public NodeAttributes( string name, string category, string description, KeyCode shortcutKey, bool available, int sortOrderPriority, int nodeAvailabilityFlags, params Type[] castTypes )
+		public NodeAttributes( string name, string category, string description, KeyCode shortcutKey, bool available, int sortOrderPriority, int nodeAvailabilityFlags, params System.Type[] castTypes )
 		{
 			Name = name;
 			Description = description;

@@ -145,6 +145,18 @@ namespace AmplifyShaderEditor
 			return true;
 		}
 
+		public int CheckUniformNameOwner( string name )
+		{
+			if ( name.Length == 0 )
+				return -1;
+
+			if ( m_availableUniformNames.ContainsKey( name ) )
+			{
+				return m_availableUniformNames[ name ];
+			}
+
+			return -1;
+		}
 
 		public bool RegisterUniformName( int nodeId, string name )
 		{

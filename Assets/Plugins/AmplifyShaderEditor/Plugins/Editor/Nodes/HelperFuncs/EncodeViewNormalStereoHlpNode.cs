@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Encode View Normal Stereo", "Generic", "Encodes view space normal into two numbers in [0..1] range" )]
+	[NodeAttributes( "Encode View Normal Stereo", "Miscellaneous", "Encodes view space normal into two numbers in [0..1] range" )]
 	public sealed class EncodeViewNormalStereoHlpNode : HelperParentNode
 	{
 		protected override void CommonInit( int uniqueId )

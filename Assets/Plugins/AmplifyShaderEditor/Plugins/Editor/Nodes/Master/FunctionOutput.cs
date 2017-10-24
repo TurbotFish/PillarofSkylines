@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Function Output", "Functions", "Function output", NodeAvailabilityFlags = (int)NodeAvailability.ShaderFunction )]
+	[NodeAttributes( "Function Output", "Functions", "Function Output adds an output port to the shader function, it's port type is determined automatically.", NodeAvailabilityFlags = (int)NodeAvailability.ShaderFunction )]
 	public sealed class FunctionOutput : OutputNode
 	{
 		public FunctionOutput() : base() { CommonInit(); }

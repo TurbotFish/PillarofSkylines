@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Abs", "Operators", "Absolute value of scalars and vectors" )]
+	[NodeAttributes( "Abs", "Math Operators", "Absolute value of scalars and vectors" )]
 	public sealed class AbsOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

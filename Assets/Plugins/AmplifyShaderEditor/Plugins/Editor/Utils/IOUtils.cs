@@ -8,12 +8,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.Threading;
+using UnityEditor.VersionControl;
 
 namespace AmplifyShaderEditor
 {
 	public enum ShaderLoadResult
 	{
 		LOADED,
+		TEMPLATE_LOADED,
 		FILE_NOT_FOUND,
 		ASE_INFO_NOT_FOUND,
 		UNITY_NATIVE_PATHS
@@ -68,14 +70,20 @@ namespace AmplifyShaderEditor
 		public static readonly string PropertiesBegin = "\tProperties\n\t{\n";
 		public static readonly string PropertiesEnd = "\t}\n";
 		public static readonly string PropertiesElement = "\t\t{0}\n";
+		public static readonly string PropertiesElementsRaw = "{0}\n";
 
 		public static readonly string PragmaTargetHeader = "\t\t#pragma target {0}\n";
-		public static readonly string InstancedPropertiesHeader = "\t\t#pragma multi_compile_instancing\n";
+		public static readonly string InstancedPropertiesHeader = "multi_compile_instancing";
 		public static readonly string VirtualTexturePragmaHeader = "multi_compile _ _VT_SINGLE_MODE";
 
-		public static readonly string InstancedPropertiesBegin = "\t\tUNITY_INSTANCING_CBUFFER_START({0})\n";
-		public static readonly string InstancedPropertiesEnd = "\t\tUNITY_INSTANCING_CBUFFER_END\n";
-		public static readonly string InstancedPropertiesElement = "\t\t\tUNITY_DEFINE_INSTANCED_PROP({0}, {1})\n";
+		public static readonly string InstancedPropertiesBeginTabs		= "\t\tUNITY_INSTANCING_CBUFFER_START({0})\n";
+		public static readonly string InstancedPropertiesEndTabs		= "\t\tUNITY_INSTANCING_CBUFFER_END\n";
+		public static readonly string InstancedPropertiesElementTabs	= "\t\t\tUNITY_DEFINE_INSTANCED_PROP({0}, {1})\n";
+
+
+		public static readonly string InstancedPropertiesBegin		= "UNITY_INSTANCING_CBUFFER_START({0})";
+		public static readonly string InstancedPropertiesEnd		= "UNITY_INSTANCING_CBUFFER_END";
+		public static readonly string InstancedPropertiesElement	= "UNITY_DEFINE_INSTANCED_PROP({0}, {1})";
 		public static readonly string InstancedPropertiesData = "UNITY_ACCESS_INSTANCED_PROP({0})";
 
 		public static readonly string MetaBegin = "defaultTextures:";
@@ -118,7 +126,7 @@ namespace AmplifyShaderEditor
 		public readonly static string DefaultASEDirtyCheckProperty = "[HideInInspector] " + DefaultASEDirtyCheckName + "( \"\", Int ) = 1";
 		public readonly static string DefaultASEDirtyCheckUniform = "uniform int " + DefaultASEDirtyCheckName + " = 1;";
 
-		public readonly static string MaskClipValueName = "_MaskClipValue";
+		public readonly static string MaskClipValueName = "_Cutoff";
 		public readonly static string MaskClipValueProperty = MaskClipValueName + "( \"{0}\", Float ) = {1}";
 		public readonly static string MaskClipValueUniform = "uniform float " + MaskClipValueName + " = {0};";
 
@@ -127,7 +135,7 @@ namespace AmplifyShaderEditor
 		//public static string ASEFolderPath;
 
 		//public static bool IsShaderFunctionWindow = false;
-		public static NodeAvailability CurrentCanvasMode = NodeAvailability.SurfaceShader;
+		
 
 		public static int DefaultASEDirtyCheckId;
 
@@ -158,6 +166,8 @@ namespace AmplifyShaderEditor
 		public static string FocusNodeGUID = "da673e6179c67d346abb220a6935e359";
 		public static string FitViewGUID = "1def740f2314c6b4691529cadeee2e9c";
 		public static string ShowInfoWindowGUID = "77af20044e9766840a6be568806dc22e";
+		public static string ShowTipsWindowGUID = "066674048bbb1e64e8cdcc6c3b4abbeb";
+		public static string ShowConsoleWindowGUID = "9a81d7df8e62c044a9d1cada0c8a2131";
 
 		private static readonly string AmplifyShaderEditorDefineSymbol = "AMPLIFY_SHADER_EDITOR";
 
@@ -178,7 +188,22 @@ namespace AmplifyShaderEditor
 
 		public static void StartSaveThread( string shaderBody, string pathName )
 		{
-			if ( UseSaveThread )
+			if( Provider.enabled && Provider.isActive )
+			{
+				Asset loadedAsset = Provider.GetAssetByPath( FileUtil.GetProjectRelativePath( pathName ) );
+				if( loadedAsset != null )
+				{
+					//Task statusTask = Provider.Status( loadedAsset );
+					//statusTask.Wait();
+					//if( Provider.CheckoutIsValid( statusTask.assetList[ 0 ] ) )
+					{
+						Task checkoutTask = Provider.Checkout( loadedAsset, CheckoutMode.Both );
+						checkoutTask.Wait();
+					}
+				}
+			}
+
+			if( UseSaveThread )
 			{
 				if ( !SaveInThreadFlag )
 				{
@@ -371,19 +396,25 @@ namespace AmplifyShaderEditor
 		public static string LoadTextFileFromDisk( string pathName )
 		{
 			string result = string.Empty;
-			StreamReader fileReader = new StreamReader( pathName );
-			try
-			{
-				result = fileReader.ReadToEnd();
-			}
-			catch ( Exception e )
-			{
-				Debug.LogException( e );
-			}
-			finally
-			{
-				fileReader.Close();
-			}
+            if ( !string.IsNullOrEmpty( pathName ) && File.Exists( pathName ) )
+            {
+
+                StreamReader fileReader = null;
+                try
+                {
+                    fileReader = new StreamReader( pathName );
+                    result = fileReader.ReadToEnd();
+                }
+                catch ( Exception e )
+                {
+                    Debug.LogException( e );
+                }
+                finally
+                {
+                    if( fileReader != null)
+                        fileReader.Close();
+                }
+            }
 			return result;
 		}
 
@@ -668,6 +699,16 @@ namespace AmplifyShaderEditor
 				return matrix;
 			}
 			return Matrix4x4.identity;
+		}
+
+		public static void SaveTextureToDisk( Texture2D tex, string pathname )
+		{
+			byte[] rawData = tex.GetRawTextureData();
+			Texture2D newTex = new Texture2D( tex.width, tex.height, tex.format,  tex.mipmapCount > 1, false );
+			newTex.LoadRawTextureData( rawData );
+			newTex.Apply();
+			byte[] pngData = newTex.EncodeToPNG();
+			File.WriteAllBytes( pathname, pngData );
 		}
 
 		//public static void SaveObjToList( string newObj )
