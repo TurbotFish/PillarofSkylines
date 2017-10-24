@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Parallax Offset", "Generic", "Calculates UV offset for parallax normal mapping" )]
+	[NodeAttributes( "Parallax Offset", "UV Coordinates", "Calculates UV offset for parallax normal mapping" )]
 	public sealed class ParallaxOffsetHlpNode : HelperParentNode
 	{
 		protected override void CommonInit( int uniqueId )

@@ -272,17 +272,17 @@ namespace AmplifyShaderEditor
 
 		public override void Draw( DrawInfo drawInfo )
 		{
-			base.Draw( drawInfo );
-
-			if ( ContainerGraph.ParentWindow.CheckFunctions && m_function != null )
+			if( ContainerGraph.ParentWindow.CheckFunctions && m_function != null )
 			{
 				string newCheckSum = LastLine( m_function.FunctionInfo );
-				if ( !m_functionCheckSum.Equals( newCheckSum ) )
+				if( !m_functionCheckSum.Equals( newCheckSum ) )
 				{
 					m_functionCheckSum = newCheckSum;
 					ContainerGraph.OnDuplicateEvent += DuplicateMe;
 				}
 			}
+
+			base.Draw( drawInfo );
 		}
 
 		public void DuplicateMe()
@@ -313,7 +313,7 @@ namespace AmplifyShaderEditor
 			{
 				if ( m_inputPorts[ i ].IsConnected )
 				{
-					if ( newNode.InputPorts != null && newNode.InputPorts[ i ] != null )
+					if ( newNode.InputPorts != null && i < newNode.InputPorts.Count && newNode.InputPorts[ i ] != null )
 					{
 						ContainerGraph.CreateConnection( newNode.InputPorts[ i ].NodeId, newNode.InputPorts[ i ].PortId, m_inputPorts[ i ].ExternalReferences[ 0 ].NodeId, m_inputPorts[ i ].ExternalReferences[ 0 ].PortId );
 					}

@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Fog Params", "Fog And Ambient", "Parameters for fog calculation" )]
+	[NodeAttributes( "Fog Params", "Light", "Parameters for fog calculation" )]
 	public sealed class FogParamsNode : ConstVecShaderVariable
 	{
 		protected override void CommonInit( int uniqueId )

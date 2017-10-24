@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Remainder", "Operators", "Remainder between two variables" )]
+	[NodeAttributes( "Remainder", "Math Operators", "Remainder between two variables" )]
 	public sealed class SimpleRemainderNode : ParentNode
 	{
 		private string m_inputA = string.Empty;

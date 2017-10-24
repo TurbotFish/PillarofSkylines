@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "PI", "Constants", "PI constant : 3.14159265359" )]
+	[NodeAttributes( "PI", "Constants And Properties", "PI constant : 3.14159265359" )]
 	public sealed class PiNode : ParentNode
 	{
 		public PiNode() : base() { }
@@ -34,7 +34,7 @@ namespace AmplifyShaderEditor
 			} else
 			{
 				string multiplier = InputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
-				finalValue = multiplier + " * UNITY_PI";
+				finalValue = "( " + multiplier + " * UNITY_PI )";
 			}
 
 

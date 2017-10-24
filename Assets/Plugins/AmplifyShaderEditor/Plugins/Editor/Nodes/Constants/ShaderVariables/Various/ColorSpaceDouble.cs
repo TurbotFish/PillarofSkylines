@@ -1,7 +1,7 @@
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Color Space Double", "Various", "Color Space Double" )]
+	[NodeAttributes( "Color Space Double", "Miscellaneous", "Color Space Double" )]
 	public class ColorSpaceDouble : ParentNode
 	{
 		private const string ColorSpaceDoubleStr = "unity_ColorSpaceDouble";

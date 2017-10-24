@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Cross", "Vector", "Cross product of two three-component vectors" )]
+	[NodeAttributes( "Cross", "Vector Operators", "Cross product of two three-component vectors ( A x B )" )]
 	public sealed class CrossProductOpNode : ParentNode
 	{
 		protected override void CommonInit( int uniqueId )
@@ -21,6 +21,8 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
+			if ( m_outputPorts[ 0 ].IsLocalValue )
+				return m_outputPorts[ 0 ].LocalValue;
 			string lhsStr = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
 			string rhsStr = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
 

@@ -31,7 +31,17 @@
 				float4 minnew = tex2D( _D, i.uv );
 				float4 maxnew = tex2D( _E, i.uv );
 
-				return (minnew + (value - minold) * (maxnew - minnew) / (maxold - minold));
+				float4 denom = maxold - minold;
+				if(denom.x == 0)
+					denom.x = 0.000001;
+				if(denom.y == 0)
+					denom.y = 0.000001;
+				if(denom.z == 0)
+					denom.z = 0.000001;
+				if(denom.w == 0)
+					denom.w = 0.000001;
+
+				return (minnew + (value - minold) * (maxnew - minnew) / denom);
 			}
 			ENDCG
 		}

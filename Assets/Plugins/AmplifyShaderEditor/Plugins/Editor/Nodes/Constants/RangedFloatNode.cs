@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Float", "Constants", "Float property", null, KeyCode.Alpha1 )]
+	[NodeAttributes( "Float", "Constants And Properties", "Float property", null, KeyCode.Alpha1 )]
 	public sealed class RangedFloatNode : PropertyNode
 	{
 		private const int OriginalFontSize = 11;
@@ -140,26 +140,60 @@ namespace AmplifyShaderEditor
 				PreviewMaterial.SetFloat( m_cachedPropertyId, m_defaultValue );
 		}
 
+		public override void OnNodeLayout( DrawInfo drawInfo )
+		{
+			base.OnNodeLayout( drawInfo );
+
+			if ( m_floatMode )
+			{
+				m_propertyDrawPos = m_remainingBox;
+				m_propertyDrawPos.x = m_remainingBox.x - LabelWidth * drawInfo.InvertedZoom;
+				m_propertyDrawPos.width = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_WIDTH_FIELD_SIZE;
+				m_propertyDrawPos.height = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_HEIGHT_FIELD_SIZE;
+			}
+			else
+			{
+				m_propertyDrawPos = m_remainingBox;
+				m_propertyDrawPos.width = m_outputPorts[ 0 ].Position.x - m_propertyDrawPos.x - (m_outputPorts[ 0 ].LabelSize.x + (Constants.PORT_TO_LABEL_SPACE_X + 3) * drawInfo.InvertedZoom + 2);
+				m_propertyDrawPos.height = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_HEIGHT_FIELD_SIZE;
+			}
+		}
+
+		public override void DrawGUIControls( DrawInfo drawInfo )
+		{
+			base.DrawGUIControls( drawInfo );
+
+			if ( drawInfo.CurrentEventType != EventType.MouseDown )
+				return;
+
+			Rect hitBox = m_remainingBox;
+			hitBox.xMin -= LabelWidth * drawInfo.InvertedZoom;
+			bool insideBox = hitBox.Contains( drawInfo.MousePosition );
+
+			if ( insideBox )
+			{
+				m_isEditingFields = true;
+			}
+			else if ( m_isEditingFields && !insideBox )
+			{
+				GUI.FocusControl( null );
+				m_isEditingFields = false;
+			}
+		}
+
+		private bool m_isEditingFields;
+		private Vector3 m_previousValue = Vector3.zero;
+		private string[] m_fieldText = new string[] { "0", "0", "0" };
+
 		public override void Draw( DrawInfo drawInfo )
 		{
 			base.Draw( drawInfo );
-			if ( m_isVisible )
-			{
-				if ( m_floatMode )
-				{
-					m_propertyDrawPos.x = m_remainingBox.x - LabelWidth * drawInfo.InvertedZoom;
-					m_propertyDrawPos.y = m_outputPorts[ 0 ].Position.y - 2 * drawInfo.InvertedZoom;
-					m_propertyDrawPos.width = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_WIDTH_FIELD_SIZE;
-					m_propertyDrawPos.height = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_HEIGHT_FIELD_SIZE;
-				}
-				else
-				{
-					m_propertyDrawPos.x = m_remainingBox.x;
-					m_propertyDrawPos.y = m_outputPorts[ 0 ].Position.y - 2 * drawInfo.InvertedZoom;
-					m_propertyDrawPos.width = 0.7f * m_globalPosition.width;
-					m_propertyDrawPos.height = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_HEIGHT_FIELD_SIZE;
-				}
 
+			if ( !m_isVisible )
+				return;
+
+			if ( m_isEditingFields )
+			{
 				if ( m_materialMode && m_currentParameterType != PropertyType.Constant )
 				{
 					EditorGUI.BeginChangeCheck();
@@ -176,7 +210,6 @@ namespace AmplifyShaderEditor
 						m_requireMaterialUpdate = true;
 						if ( m_currentParameterType != PropertyType.Constant )
 						{
-							//MarkForPreviewUpdate();
 							BeginDelayedDirtyProperty();
 						}
 					}
@@ -195,48 +228,153 @@ namespace AmplifyShaderEditor
 					}
 					if ( EditorGUI.EndChangeCheck() )
 					{
-						//MarkForPreviewUpdate();
 						BeginDelayedDirtyProperty();
 					}
 
 				}
 			}
+			else if ( drawInfo.CurrentEventType == EventType.Repaint && ContainerGraph.LodLevel <= ParentGraph.NodeLOD.LOD4 )
+			{
+				if ( m_materialMode && m_currentParameterType != PropertyType.Constant )
+				{
+					if ( m_floatMode )
+					{
+						//UIUtils.DrawFloat( this, ref m_propertyDrawPos, ref m_materialValue, LabelWidth * drawInfo.InvertedZoom );
+						Rect fakeField = m_propertyDrawPos;
+						fakeField.xMin += LabelWidth * drawInfo.InvertedZoom;
+						Rect fakeLabel = m_propertyDrawPos;
+						fakeLabel.xMax = fakeField.xMin;
+						EditorGUIUtility.AddCursorRect( fakeLabel, MouseCursor.SlideArrow );
+						EditorGUIUtility.AddCursorRect( fakeField, MouseCursor.Text );
+
+						if ( m_previousValue[ 0 ] != m_materialValue )
+						{
+							m_previousValue[ 0 ] = m_materialValue;
+							m_fieldText[ 0 ] = m_materialValue.ToString();
+						}
+
+						GUI.Label( fakeField, m_fieldText[ 0 ], UIUtils.MainSkin.textField );
+					}
+					else
+					{
+						DrawFakeSlider( ref m_materialValue, drawInfo );
+					}
+				}
+				else
+				{
+					if ( m_floatMode )
+					{
+						//UIUtils.DrawFloat( this, ref m_propertyDrawPos, ref m_defaultValue, LabelWidth * drawInfo.InvertedZoom );
+						Rect fakeField = m_propertyDrawPos;
+						fakeField.xMin += LabelWidth * drawInfo.InvertedZoom;
+						Rect fakeLabel = m_propertyDrawPos;
+						fakeLabel.xMax = fakeField.xMin;
+						EditorGUIUtility.AddCursorRect( fakeLabel, MouseCursor.SlideArrow );
+						EditorGUIUtility.AddCursorRect( fakeField, MouseCursor.Text );
+
+						if ( m_previousValue[ 0 ] != m_defaultValue )
+						{
+							m_previousValue[ 0 ] = m_defaultValue;
+							m_fieldText[ 0 ] = m_defaultValue.ToString();
+						}
+
+						GUI.Label( fakeField, m_fieldText[ 0 ], UIUtils.MainSkin.textField );
+					}
+					else
+					{
+						DrawFakeSlider( ref m_defaultValue, drawInfo );
+					}
+				}
+			}
 		}
 
-		void DrawSlider( ref float value, DrawInfo drawInfo )
+		void DrawFakeSlider( ref float value, DrawInfo drawInfo )
 		{
-			int originalFontSize = EditorStyles.numberField.fontSize;
-			EditorStyles.numberField.fontSize = ( int ) ( OriginalFontSize * drawInfo.InvertedZoom );
-
 			float rangeWidth = 30 * drawInfo.InvertedZoom;
 			float rangeSpacing = 5 * drawInfo.InvertedZoom;
 
 			//Min
-			m_propertyDrawPos.width = rangeWidth;
-			m_min = EditorGUIFloatField( m_propertyDrawPos, m_min, UIUtils.MainSkin.textField );
-
-			//Value Slider
-			m_propertyDrawPos.x += m_propertyDrawPos.width + rangeSpacing;
-			m_propertyDrawPos.width = 0.65f * ( m_globalPosition.width - 3 * m_propertyDrawPos.width );
-
-			Rect slider = m_propertyDrawPos;
-			slider.height = 5 * drawInfo.InvertedZoom;
-			slider.y += m_propertyDrawPos.height * 0.5f - slider.height * 0.5f;
-			GUI.Box( slider, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SliderStyle ) );
-
-			value = GUI.HorizontalSlider( m_propertyDrawPos, value, m_min, m_max, GUIStyle.none, UIUtils.RangedFloatSliderThumbStyle );
+			Rect minRect = m_propertyDrawPos;
+			minRect.width = rangeWidth;
+			EditorGUIUtility.AddCursorRect( minRect, MouseCursor.Text );
+			if ( m_previousValue[ 1 ] != m_min )
+			{
+				m_previousValue[ 1 ] = m_min;
+				m_fieldText[ 1 ] = m_min.ToString();
+			}
+			GUI.Label( minRect, m_fieldText[ 1 ], UIUtils.MainSkin.textField );
 
 			//Value Area
-			m_propertyDrawPos.x += m_propertyDrawPos.width + rangeSpacing;
-			m_propertyDrawPos.width = rangeWidth;
-			value = EditorGUIFloatField( m_propertyDrawPos, value, UIUtils.MainSkin.textField );
+			Rect valRect = m_propertyDrawPos;
+			valRect.width = rangeWidth;
+			valRect.x = m_propertyDrawPos.xMax - rangeWidth - rangeWidth - rangeSpacing;
+			EditorGUIUtility.AddCursorRect( valRect, MouseCursor.Text );
+			if ( m_previousValue[ 0 ] != value )
+			{
+				m_previousValue[ 0 ] = value;
+				m_fieldText[ 0 ] = value.ToString();
+			}
+			GUI.Label( valRect, m_fieldText[ 0 ], UIUtils.MainSkin.textField );
 
 			//Max
-			m_propertyDrawPos.x += m_propertyDrawPos.width + rangeSpacing;
-			m_propertyDrawPos.width = rangeWidth;
-			m_max = EditorGUIFloatField( m_propertyDrawPos, m_max, UIUtils.MainSkin.textField );
+			Rect maxRect = m_propertyDrawPos;
+			maxRect.width = rangeWidth;
+			maxRect.x = m_propertyDrawPos.xMax - rangeWidth;
+			EditorGUIUtility.AddCursorRect( maxRect, MouseCursor.Text );
+			if ( m_previousValue[ 2 ] != m_max )
+			{
+				m_previousValue[ 2 ] = m_max;
+				m_fieldText[ 2 ] = m_max.ToString();
+			}
+			GUI.Label( maxRect, m_fieldText[ 2 ], UIUtils.MainSkin.textField );
 
-			EditorStyles.numberField.fontSize = originalFontSize;
+			Rect sliderValRect = m_propertyDrawPos;
+			sliderValRect.x = minRect.xMax + rangeSpacing;
+			sliderValRect.xMax = valRect.xMin - rangeSpacing;
+			Rect sliderBackRect = sliderValRect;
+			sliderBackRect.height = 5 * drawInfo.InvertedZoom;
+			sliderBackRect.center = new Vector2( sliderValRect.center.x, Mathf.Round( sliderValRect.center.y ) );
+
+
+			GUI.Label( sliderBackRect, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SliderStyle ) );
+
+			sliderValRect.width = 10;
+			float percent = ( value - m_min) / ( m_max-m_min );
+			sliderValRect.x += percent * (sliderBackRect.width - 10 * drawInfo.InvertedZoom );
+			GUI.Label( sliderValRect, string.Empty, UIUtils.RangedFloatSliderThumbStyle );
+		}
+
+		void DrawSlider( ref float value, DrawInfo drawInfo )
+		{
+			float rangeWidth = 30 * drawInfo.InvertedZoom;
+			float rangeSpacing = 5 * drawInfo.InvertedZoom;
+
+			//Min
+			Rect minRect = m_propertyDrawPos;
+			minRect.width = rangeWidth;
+			m_min = EditorGUIFloatField( minRect, m_min, UIUtils.MainSkin.textField );
+
+			//Value Area
+			Rect valRect = m_propertyDrawPos;
+			valRect.width = rangeWidth;
+			valRect.x = m_propertyDrawPos.xMax - rangeWidth - rangeWidth - rangeSpacing;
+			value = EditorGUIFloatField( valRect, value, UIUtils.MainSkin.textField );
+
+			//Max
+			Rect maxRect = m_propertyDrawPos;
+			maxRect.width = rangeWidth;
+			maxRect.x = m_propertyDrawPos.xMax - rangeWidth;
+			m_max = EditorGUIFloatField( maxRect, m_max, UIUtils.MainSkin.textField );
+
+			//Value Slider
+			Rect sliderValRect = m_propertyDrawPos;
+			sliderValRect.x = minRect.xMax + rangeSpacing;
+			sliderValRect.xMax = valRect.xMin - rangeSpacing;
+			Rect sliderBackRect = sliderValRect;
+			sliderBackRect.height = 5 * drawInfo.InvertedZoom;
+			sliderBackRect.center = new Vector2( sliderValRect.center.x, Mathf.Round( sliderValRect.center.y ));
+			GUI.Label( sliderBackRect, string.Empty, UIUtils.GetCustomStyle( CustomStyle.SliderStyle ) );
+			value = GUI.HorizontalSlider( sliderValRect, value, m_min, m_max, GUIStyle.none, UIUtils.RangedFloatSliderThumbStyle );
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )

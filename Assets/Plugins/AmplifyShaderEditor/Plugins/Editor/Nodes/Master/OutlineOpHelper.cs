@@ -23,7 +23,7 @@ namespace AmplifyShaderEditor
 														"Cull Front",
 														"CGPROGRAM",
 														"#pragma target 3.0",
-														"#pragma surface outlineSurf Standard keepalpha noshadow noambient novertexlights nolightmap nodynlightmap nodirlightmap nofog nometa noforwardadd vertex:outlineVertexDataFunc"
+														"#pragma surface outlineSurf Outline keepalpha noshadow noambient novertexlights nolightmap nodynlightmap nodirlightmap nofog nometa noforwardadd vertex:outlineVertexDataFunc"
 														};
 
 		private readonly string[] OutlineBodyStruct = {"struct Input",
@@ -40,7 +40,8 @@ namespace AmplifyShaderEditor
 														"\tUNITY_INITIALIZE_OUTPUT( Input, o );" };
 		private readonly string[] OutlineBodyDefaultEnd = {
 														"}",
-														"void outlineSurf( Input i, inout SurfaceOutputStandard o ) { o.Emission = _ASEOutlineColor.rgb; o.Alpha = 1; }",
+														"inline fixed4 LightingOutline( SurfaceOutput s, half3 lightDir, half atten ) { return fixed4 ( 0,0,0, s.Alpha); }",
+														"void outlineSurf( Input i, inout SurfaceOutput o ) { o.Emission = _ASEOutlineColor.rgb; o.Alpha = 1; }",
 														"ENDCG",
 														"\n"};
 
@@ -58,7 +59,8 @@ namespace AmplifyShaderEditor
 
 		private readonly string[] OutlineBodyInstancedEnd = {
 														"}",
-														"void outlineSurf( Input i, inout SurfaceOutputStandard o ) { o.Emission = UNITY_ACCESS_INSTANCED_PROP( _ASEOutlineColor ).rgb; o.Alpha = 1; }",
+														"inline fixed4 LightingOutline( SurfaceOutput s, half3 lightDir, half atten ) { return fixed4 ( 0,0,0, s.Alpha); }",
+														"void outlineSurf( Input i, inout SurfaceOutput o ) { o.Emission = UNITY_ACCESS_INSTANCED_PROP( _ASEOutlineColor ).rgb; o.Alpha = 1; }",
 														"ENDCG",
 														"\n"};
 

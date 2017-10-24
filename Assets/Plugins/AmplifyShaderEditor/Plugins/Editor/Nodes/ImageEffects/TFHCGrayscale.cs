@@ -11,7 +11,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Grayscale", "Image Effects", "Convert image colors to grayscale", null, KeyCode.None, true, false, null, null, true )]
+	[NodeAttributes( "Grayscale", "Image Effects", "Convert image colors to grayscale", null, KeyCode.None, true, false, null, null, "The Four Headed Cat - @fourheadedcat" )]
 	public sealed class TFHCGrayscale : ParentNode
 	{
 		private const string GrayscaleStyleStr = "Grayscale Style";
@@ -20,24 +20,59 @@ namespace AmplifyShaderEditor
 		private int m_grayscaleStyle;
 
 		[SerializeField]
-		private readonly string[] _GrayscaleStyleValues = { "Luminance", "Natural Classic", "Old School" };
+		private readonly string[] m_GrayscaleStyleValues = { "Luminance", "Natural Classic", "Old School" };
+
+		private UpperLeftWidgetHelper m_upperLeftWidget = new UpperLeftWidgetHelper();
 
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
-			AddInputPort( WirePortDataType.FLOAT3, false, "In" );
-			AddOutputPort( WirePortDataType.FLOAT, "Out" );
+			AddInputPort( WirePortDataType.FLOAT3, false, "RGB" );
+			AddOutputPort( WirePortDataType.FLOAT, Constants.EmptyPortValue );
 			m_textLabelWidth = 120;
 			m_useInternalPortData = true;
+			m_hasLeftDropdown = true;
 			m_autoWrapProperties = true;
+			SetAdditonalTitleText( string.Format( Constants.SubTitleTypeFormatStr, m_GrayscaleStyleValues[ m_grayscaleStyle ] ) );
+		}
+
+		public override void AfterCommonInit()
+		{
+			base.AfterCommonInit();
+			if( PaddingTitleLeft == 0 )
+			{
+				PaddingTitleLeft = Constants.PropertyPickerWidth + Constants.IconsLeftRightMargin;
+				if( PaddingTitleRight == 0 )
+					PaddingTitleRight = Constants.PropertyPickerWidth + Constants.IconsLeftRightMargin;
+			}
+		}
+
+		public override void Destroy()
+		{
+			base.Destroy();
+			m_upperLeftWidget = null;
+		}
+
+		public override void Draw( DrawInfo drawInfo )
+		{
+			base.Draw( drawInfo );
+			EditorGUI.BeginChangeCheck();
+			m_grayscaleStyle = m_upperLeftWidget.DrawWidget( this, m_grayscaleStyle, m_GrayscaleStyleValues );
+			if( EditorGUI.EndChangeCheck() )
+			{
+				SetAdditonalTitleText( string.Format( Constants.SubTitleTypeFormatStr, m_GrayscaleStyleValues[ m_grayscaleStyle ] ) );
+			}
 		}
 
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-			EditorGUILayout.BeginVertical();
-			m_grayscaleStyle = EditorGUILayoutPopup( GrayscaleStyleStr, m_grayscaleStyle, _GrayscaleStyleValues );
-			EditorGUILayout.EndVertical();
+			EditorGUI.BeginChangeCheck();
+			m_grayscaleStyle = EditorGUILayoutPopup( GrayscaleStyleStr, m_grayscaleStyle, m_GrayscaleStyleValues );
+			if( EditorGUI.EndChangeCheck() )
+			{
+				SetAdditonalTitleText( string.Format( Constants.SubTitleTypeFormatStr, m_GrayscaleStyleValues[ m_grayscaleStyle ] ) );
+			}
 			EditorGUILayout.HelpBox( "Grayscale Old:\n\n - In: Image to convert.\n - Grayscale Style: Select the grayscale style.\n\n - Out: Grayscale version of the image.", MessageType.None );
 		}
 
@@ -45,6 +80,7 @@ namespace AmplifyShaderEditor
 		{
 			base.ReadFromString( ref nodeParams );
 			m_grayscaleStyle = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
+			SetAdditonalTitleText( string.Format( Constants.SubTitleTypeFormatStr, m_GrayscaleStyleValues[ m_grayscaleStyle ] ) );
 		}
 
 		public override void WriteToString( ref string nodeInfo, ref string connectionsInfo )

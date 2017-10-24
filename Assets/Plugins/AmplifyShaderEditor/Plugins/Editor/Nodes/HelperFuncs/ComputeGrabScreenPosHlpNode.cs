@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Compute Grab Screen Pos", "Screen Space", "Computes texture coordinate for doing a screenspace-mapped texture sample. Input is clip space position" )]
+	[NodeAttributes( "Compute Grab Screen Pos", "Camera And Screen", "Computes texture coordinate for doing a screenspace-mapped texture sample. Input is clip space position" )]
 	public sealed class ComputeGrabScreenPosHlpNode : HelperParentNode
 	{
 		protected override void CommonInit( int uniqueId )

@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Sign", "Operators", "Sign of scalar or each vector component" )]
+	[NodeAttributes( "Sign", "Math Operators", "Sign of scalar or each vector component" )]
 	public sealed class SignOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

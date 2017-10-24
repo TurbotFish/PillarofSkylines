@@ -17,7 +17,12 @@ namespace AmplifyShaderEditor
 			m_graphDepth = -1;
 		}
 
-		public void SetupNodeCategories()
+		public virtual void SetupNodeCategories()
+		{
+			ContainerGraph.ResetNodesData();
+		}
+
+		public virtual void SetupNodeCategories( ref MasterNodeDataCollector collector)
 		{
 			ContainerGraph.ResetNodesData();
 			int count = m_inputPorts.Count;
@@ -27,7 +32,7 @@ namespace AmplifyShaderEditor
 				{
 					NodeData nodeData = new NodeData( m_inputPorts[ i ].Category );
 					ParentNode node = m_inputPorts[ i ].GetOutputNode();
-					node.PropagateNodeData( nodeData );
+					node.PropagateNodeData( nodeData, ref collector );
 				}
 			}
 		}

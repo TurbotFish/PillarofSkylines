@@ -3,7 +3,7 @@ using System;
 namespace AmplifyShaderEditor
 {
     [Serializable]
-    [NodeAttributes( "Negate", "Operators", "Negate or invert any input" )]
+    [NodeAttributes( "Negate", "Math Operators", "Negate or invert an input value" )]
     public sealed class NegateNode : ParentNode
     {
         protected override void CommonInit( int uniqueId )

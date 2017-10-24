@@ -11,7 +11,7 @@ namespace AmplifyShaderEditor
 	}
 
 	[Serializable]
-	[NodeAttributes( "Vector From Matrix", "Misc", "Retrieve vector data from a matrix" )]
+	[NodeAttributes( "Vector From Matrix", "Matrix Operators", "Retrieve vector data from a matrix" )]
 	public sealed class VectorFromMatrixNode : ParentNode
 	{
 		private const string IndexStr = "Index";
@@ -74,7 +74,7 @@ namespace AmplifyShaderEditor
 			if ( m_inputPorts[ 0 ].DataType != WirePortDataType.FLOAT4x4 &&
 				m_inputPorts[ 0 ].DataType != WirePortDataType.FLOAT3x3 )
 			{
-				value = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), value, m_inputPorts[ 0 ].DataType, WirePortDataType.FLOAT4x4, value );
+				value = UIUtils.CastPortType( ref dataCollector, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), value, m_inputPorts[ 0 ].DataType, WirePortDataType.FLOAT4x4, value );
 			}
 			if ( m_mode == eVectorFromMatrixMode.Row )
 			{

@@ -10,7 +10,7 @@ using System;
 namespace AmplifyShaderEditor
 {
     [Serializable]
-	[NodeAttributes("Compare (A != B)", "Logical Operators", "Check if A is not equal to B. If true return value of True else return value of False", null, KeyCode.None, true, false, null, null, true )]
+	[NodeAttributes("Compare (A \u2260 B)", "Logical Operators", "Check if A is not equal to B. If true return value of True else return value of False", null, KeyCode.None, true, false, null, null, "The Four Headed Cat - @fourheadedcat" )]
     public sealed class TFHCCompareNotEqual : TFHCStub
 	{
 		protected override void CommonInit( int uniqueId )

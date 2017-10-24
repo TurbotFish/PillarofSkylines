@@ -54,7 +54,7 @@ namespace AmplifyShaderEditor
 			}
 
 			m_areaSettings.position = mousePos + m_mouseDeltaPos;
-			GUI.Box( m_areaSettings, m_content, m_style );
+			GUI.Label( m_areaSettings, m_content, m_style );
 			m_areaSettings.position += new Vector2( DeltaX,DeltaX);
 			GUI.Label( m_areaSettings, m_labelContent, m_fontStyle );
 		}

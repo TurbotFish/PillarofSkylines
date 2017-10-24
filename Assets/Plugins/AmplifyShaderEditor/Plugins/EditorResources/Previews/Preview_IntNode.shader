@@ -1,7 +1,7 @@
-﻿Shader "Hidden/IntNode"
+Shader "Hidden/IntNode"
 {
 	Properties {
-		_InputFloat ("_InputInt", Int) = 0
+		_InputInt ("_InputInt", Int) = 0
 	}
 	SubShader
 	{
@@ -12,11 +12,11 @@
 			#pragma vertex vert_img
 			#pragma fragment frag
 
-			int _InputFloat;
+			int _InputInt;
 
 			float4 frag( v2f_img i ) : SV_Target
 			{
-				return _InputFloat;
+				return _InputInt;
 			}
 			ENDCG
 		}
