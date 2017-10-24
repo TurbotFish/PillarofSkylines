@@ -6,17 +6,49 @@ namespace Game.World.ChunkSystem
 {
     public class RegionController : MonoBehaviour
     {
+        List<ChunkController> chunkList = new List<ChunkController>();
 
-        // Use this for initialization
-        void Start()
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual void InitializeRegion(ChunkSystemData data)
         {
+            int childCount = this.transform.childCount;
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = this.transform.GetChild(i);
+                var chunk = child.GetComponent<ChunkController>();
 
+                if (chunk != null)
+                {
+                    this.chunkList.Add(chunk);
+                    chunk.InitializeChunk(data);
+                }
+            }
         }
 
-        // Update is called once per frame
-        void Update()
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual void UpdateRegion(Vector3 playerPos)
         {
+            foreach (var chunk in this.chunkList)
+            {
+                chunk.UpdateChunk(playerPos);
+            }
+        }
 
+        public virtual GameObject CreateCopy(Transform parent)
+        {
+            var go = new GameObject(this.gameObject.name, this.GetType());
+            go.transform.parent = parent;
+
+            foreach(var chunk in this.chunkList)
+            {
+                chunk.CreateCopy(go.transform);
+            }
+
+            return go;
         }
     }
 }

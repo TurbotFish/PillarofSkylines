@@ -7,10 +7,14 @@ namespace Game.World.ChunkSystem
 {
     public class SubChunkController : MonoBehaviour
     {
+        //layer
         [SerializeField]
-        [HideInInspector]
-        eSubChunkLayer layerMask = 0;
-        public eSubChunkLayer LayerMask { get { return this.layerMask; } set { this.layerMask = value; } }
+        eSubChunkLayer layer = 0;
+        public eSubChunkLayer Layer { get { return this.layer; } }
+
+        //wrapping
+        [SerializeField]
+        bool doNotWrap = false;
 
         public void ActivateSubChunk()
         {
@@ -20,6 +24,21 @@ namespace Game.World.ChunkSystem
         public void DeactivateSubChunk()
         {
             this.gameObject.SetActive(false);
+        }
+
+        public GameObject CreateCopy(Transform parent)
+        {
+            if (this.doNotWrap)
+            {
+                var go = new GameObject(this.gameObject.name);
+                go.transform.parent = parent;
+                return go;
+            }
+            else
+            {
+                var go = Instantiate(this.gameObject, parent);
+                return go;
+            }
         }
     }
 }

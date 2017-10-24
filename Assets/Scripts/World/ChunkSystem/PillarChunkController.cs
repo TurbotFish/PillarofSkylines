@@ -6,16 +6,19 @@ namespace Game.World.ChunkSystem
 {
     public class PillarChunkController : ChunkController
     {
-        // Use this for initialization
-        void Start()
-        {
+        //pillar layer
+        [SerializeField]
+        ePillarState pillarState;
+        public ePillarState PillarState { get { return this.pillarState; } }
 
+        public override void InitializeChunk(ChunkSystemData data)
+        {
+            base.InitializeChunk(data);
         }
 
-        // Update is called once per frame
-        void Update()
+        public override void UpdateChunk(Vector3 playerPos)
         {
-
+            base.UpdateChunk(playerPos);
         }
     }
 }

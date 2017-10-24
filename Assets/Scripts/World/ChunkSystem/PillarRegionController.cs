@@ -6,17 +6,14 @@ namespace Game.World.ChunkSystem
 {
     public class PillarRegionController : RegionController
     {
-
-        // Use this for initialization
-        void Start()
+        public override void InitializeRegion(ChunkSystemData data)
         {
-
+            base.InitializeRegion(data);
         }
 
-        // Update is called once per frame
-        void Update()
+        public override void UpdateRegion(Vector3 playerPos)
         {
-
+            base.UpdateRegion(playerPos);
         }
     }
 }

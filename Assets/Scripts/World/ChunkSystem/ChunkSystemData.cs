@@ -8,8 +8,27 @@ namespace Game.World.ChunkSystem
     [CreateAssetMenu(menuName = "ScriptableObjects/ChunkSystemData", fileName = "ChunkSystemData")]
     public class ChunkSystemData : ScriptableObject
     {
+        //######################################################
+
         [SerializeField]
         List<Vector2> RenderDistances = new List<Vector2>();
+
+        public Vector2 GetRenderDistance(eSubChunkLayer layer)
+        {
+            return this.RenderDistances[(int)layer];
+        }
+
+        //######################################################
+
+        [SerializeField]
+        float minUpdateDistance = 1f;
+
+        public float GetMinUpdateDistance()
+        {
+            return this.minUpdateDistance;
+        }
+
+        //######################################################
 
         void OnValidate()
         {
