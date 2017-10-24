@@ -50,10 +50,10 @@ public class ThirdPersonCamera : MonoBehaviour {
     Vector2 input;
     Vector2 rotationSpeed;
     Vector2 offset;
-    Transform my;
+    Transform my, character;
 
     float yaw, pitch;
-    float maxDistance, currentDistance, idealDistance;
+    float maxDistance, currentDistance, idealDistance, additionalDistance;
 	float deltaTime;
     float targetYaw, targetPitch;
     bool resetting;
@@ -65,6 +65,7 @@ public class ThirdPersonCamera : MonoBehaviour {
         Cursor.lockState = CursorLockMode.Locked;
 
         my = transform;
+        character = target.parent.GetComponentInChildren<Animator>().transform;
 
         Vector3 angles = transform.eulerAngles;
         yaw = angles.y;
@@ -114,16 +115,23 @@ public class ThirdPersonCamera : MonoBehaviour {
 		camPosition = camRotation * negDistance + targetWithOffset;
 
 		SmoothMovement();
+        
 
-        // DEBUG POUR ECLISPE
-        if (Input.GetKeyUp(KeyCode.G)) {
-            isEclipse ^= true;
-            if (isEclipse)
-                target.transform.parent.Rotate(0, 0, 90, Space.World);
-            else
-                target.transform.parent.Rotate(0, 0, -90, Space.World);
-        }
-        // FIN DEBUG
+        { // DEBUG
+            // DEBUG POUR ECLISPE
+            if (Input.GetKeyUp(KeyCode.G)) {
+                isEclipse ^= true;
+                if (isEclipse)
+                    target.transform.parent.Rotate(0, 0, 90, Space.World);
+                else
+                    target.transform.parent.Rotate(0, 0, -90, Space.World);
+            }
+            // DEBUG POUR FOLLOWBEHIND
+            if (Input.GetButtonUp("Back")) {
+                followBehind ^= true;
+            }
+        } // FIN DEBUG
+
 
         target.rotation = Quaternion.Euler(isEclipse ? yaw * Vector3.left + 90 * Vector3.forward : (yaw * Vector3.up) ); // Reoriente the character's rotator
         // change that later
@@ -150,19 +158,19 @@ public class ThirdPersonCamera : MonoBehaviour {
     bool inPanorama = false;
 
     void DoPanorama() {
-        if (!Input.anyKey && input.magnitude == 0)
+        if (!Input.anyKey && input.magnitude == 0 && Input.GetAxis("Horizontal") == 0 && Input.GetAxis("Vertical") == 0)
             panoramaTimer += deltaTime;
         else {
             panoramaTimer = 0;
             if (inPanorama) {
-                idealDistance = distance;
+                additionalDistance = 0;
                 inPanorama = false;
             }
         }
 
         //print(panoramaTimer + " & " + timeToTriggerPanorama + " | " + idealDistance + " < " + panoramaDistance);
-        if (panoramaTimer >= timeToTriggerPanorama && idealDistance <= panoramaDistance) {
-            idealDistance += deltaTime * panoramaDezoomSpeed;
+        if (panoramaTimer >= timeToTriggerPanorama && currentDistance <= panoramaDistance) {
+            additionalDistance += deltaTime * panoramaDezoomSpeed;
             inPanorama = true;
         }
     }
@@ -171,9 +179,7 @@ public class ThirdPersonCamera : MonoBehaviour {
     void DoRotation() {
         rotationSpeed.x = Mathf.Lerp(minRotationSpeed.x, maxRotationSpeed.x, currentDistance / maxDistance);
         rotationSpeed.y = Mathf.Lerp(minRotationSpeed.y, maxRotationSpeed.y, currentDistance / maxDistance);
-
-        //print(currentDistance / maxDistance);
-
+        
         float clampedX = Mathf.Clamp(input.x * (idealDistance / currentDistance), -mouseSpeedLimit.x, mouseSpeedLimit.x); // Avoid going too fast (makes weird lerp)
         if (invertAxis.x) clampedX = -clampedX;
         yaw += clampedX * rotationSpeed.x * deltaTime;
@@ -190,9 +196,13 @@ public class ThirdPersonCamera : MonoBehaviour {
 
         if (followBehind) {
             targetYaw = isEclipse ? -target.parent.eulerAngles.x : target.parent.eulerAngles.y;
-            float targetPitch = (my.position - target.position).x; // CHANGE WHEN ECLIPSE
+            // Vector3 heading = character.position - my.position;
+            float targetPitch = character.localEulerAngles.x; // CHANGE WHEN ECLIPSE
+            //float targetPitch = (heading / heading.magnitude).x;
             yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / resetDamp);
-            //pitch = Mathf.LerpAngle(pitch, targetPitch , deltaTime / resetDamp);
+            // Pitch pendant l'Éclipse ??
+
+            pitch = Mathf.LerpAngle(pitch, targetPitch + defaultPitch, deltaTime / resetDamp);
         }
 
         if (resetting) {
@@ -201,12 +211,11 @@ public class ThirdPersonCamera : MonoBehaviour {
             if (Mathf.Abs(yaw - targetYaw) < .1f && Mathf.Abs(pitch - defaultPitch) < .1f/* temp buffer */)
                 resetting = false;
         }
-
         camRotation = Quaternion.Euler(pitch, yaw, 0);
-        
-        //idealDistance = Mathf.Lerp(1, maxDistance, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch))); // prevents Zoom
-        // Changer le fonctionnement d'idealDistance pour avoir des modificateurs séparés et indépendants (exemple : angleModifier, panoramaModifier, etc)
 
+        float distanceModifier = Mathf.Lerp(0, 1, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch))); // distance From camera Angle
+        idealDistance = 1 + maxDistance * distanceModifier + additionalDistance;
+        
         //camera.fieldOfView = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
 
         //Changer la rotation de la caméra pendant l'Éclipse
@@ -231,7 +240,6 @@ public class ThirdPersonCamera : MonoBehaviour {
 			lastHitDistance = Mathf.Min(hit.distance - rayRadius, idealDistance);
 
             Debug.DrawLine(hit.point - new Vector3(0, .2f, 0), hit.point + new Vector3(0, .2f, 0), Color.red);
-
             Debug.DrawLine(hit.point - new Vector3(.2f, 0, 0), hit.point + new Vector3(.2f, 0, 0), Color.red);
         }
 
