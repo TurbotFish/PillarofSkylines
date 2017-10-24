@@ -428,7 +428,6 @@
 			//output.gBuffer2.rgba = float4(i.normal.xy * 0.5 + 0.5, 0.825, 0);// * 0.5 + 0.5);
 			output.gBuffer2.rgba = float4((i.normal.xy / sqrt(i.normal.z * 8 + 8)) + 0.5, GetPackedDiffuseSSS(), 0);
 
-
 			output.gBuffer3 = color;
 
 

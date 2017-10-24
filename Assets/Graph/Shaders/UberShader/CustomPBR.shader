@@ -24,8 +24,6 @@ Shader "Alo/PBR/CustomPBR" {
 		[NoScaleOffset] _EmissionMap ("Emission", 2D) = "black"{}
 		_Emission ("Emission", Color) = (0, 0, 0)
 
-		_TempTex ("Shadow Texture Test", 2D) = "black"{} //Initen
-
 		[NoScaleOffset] _OcclusionMap ("Occlusion", 2D) = "white"{}
 		_OcclusionStrength ("Occlusion Strength", Range(0,1)) = 1
 
