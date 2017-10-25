@@ -46,16 +46,15 @@ public class ThirdPersonCamera : MonoBehaviour {
 
     new Camera camera;
     Vector3 camPosition, negDistance;
-    Quaternion camRotation;
+    Quaternion camRotation, targetSpace;
     Vector2 input;
     Vector2 rotationSpeed;
     Vector2 offset;
-    Transform my, character;
+    Transform my, characterModel;
 
     float yaw, pitch;
     float maxDistance, currentDistance, idealDistance, additionalDistance;
 	float deltaTime;
-    float targetYaw, targetPitch;
     bool resetting;
 
     #region MonoBehaviour
@@ -65,7 +64,7 @@ public class ThirdPersonCamera : MonoBehaviour {
         Cursor.lockState = CursorLockMode.Locked;
 
         my = transform;
-        character = target.parent.GetComponentInChildren<Animator>().transform;
+        characterModel = target.parent.GetComponentInChildren<Animator>().transform;
 
         Vector3 angles = transform.eulerAngles;
         yaw = angles.y;
@@ -84,13 +83,8 @@ public class ThirdPersonCamera : MonoBehaviour {
     void LateUpdate() {
         if (!target || GameState.isPaused) return;
 
-        input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
-        input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
-
-        if (input.magnitude != 0)
-            resetting = false;
-
         deltaTime = Time.deltaTime;
+        GetInputs();
         DoRotation();
 
         if (canZoom) Zoom(Input.GetAxis("Mouse ScrollWheel"));
@@ -98,49 +92,54 @@ public class ThirdPersonCamera : MonoBehaviour {
         offset.x = Mathf.Lerp(offsetClose.x, offsetFar.x, currentDistance / maxDistance);
         offset.y = Mathf.Lerp(offsetClose.y, offsetFar.y, currentDistance / maxDistance);
 
-        Vector3 targetPosition = target.position;
+        Vector3 targetPos = target.position;
 
-        if (offsetOverriden) {
-            targetPosition.x += _tempOffset.x;
-            targetPosition.y += _tempOffset.y;
+        if (offsetOverriden) { // temporary camera offset
+            targetPos.x += _tempOffset.x;
+            targetPos.y += _tempOffset.y;
             _tempOffset = Vector2.Lerp(_tempOffset, Vector2.zero, deltaTime / smoothDamp);
             if (Vector2.Distance(_tempOffset, Vector2.zero) < .01f)
                 offsetOverriden = false;
         }
 
-        CheckForCollision();
+        CheckForCollision(targetPos);
 
 		negDistance.z = -currentDistance;
-		Vector3 targetWithOffset = targetPosition + my.right * offset.x + my.up * offset.y;
+		Vector3 targetWithOffset = targetPos + my.right * offset.x + my.up * offset.y;
 		camPosition = camRotation * negDistance + targetWithOffset;
 
 		SmoothMovement();
+
+        #if UNITY_EDITOR
+            DoDebug(); // TO DELETE
+        #endif
+
+        targetSpace = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, target.up), Vector3.Cross(Vector3.up, target.up));
         
-
-        { // DEBUG
-            // DEBUG POUR ECLISPE
-            if (Input.GetKeyUp(KeyCode.G)) {
-                isEclipse ^= true;
-                if (isEclipse)
-                    target.transform.parent.Rotate(0, 0, 90, Space.World);
-                else
-                    target.transform.parent.Rotate(0, 0, -90, Space.World);
-            }
-            // DEBUG POUR FOLLOWBEHIND
-            if (Input.GetButtonUp("Back")) {
-                followBehind ^= true;
-            }
-        } // FIN DEBUG
-
-
-        target.rotation = Quaternion.Euler(isEclipse ? yaw * Vector3.left + 90 * Vector3.forward : (yaw * Vector3.up) ); // Reoriente the character's rotator
-        // change that later
-
-		if (enablePanoramaMode)
+        // Reoriente the character's rotator
+        Vector3 characterUp = target.parent.up;
+        target.LookAt(targetPos + Vector3.ProjectOnPlane(my.forward, characterUp), characterUp);
+        
+        if (enablePanoramaMode)
 			DoPanorama();
     }
 
     #endregion
+
+    void DoDebug() {
+        // DEBUG POUR ECLISPE
+        if (Input.GetKeyUp(KeyCode.G)) {
+            isEclipse ^= true;
+            if (isEclipse)
+                target.parent.Rotate(0, 0, 90, Space.World);
+            else
+                target.parent.Rotate(0, 0, -90, Space.World);
+        }
+        // DEBUG POUR FOLLOWBEHIND
+        if (Input.GetButtonUp("Back")) {
+            followBehind ^= true;
+        }
+    }
 
     #region Zoom
     [Header("Zoom")]
@@ -176,6 +175,17 @@ public class ThirdPersonCamera : MonoBehaviour {
     }
     #endregion
 
+    void GetInputs() {
+        input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
+        input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
+
+        if (input.magnitude != 0 || Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)
+            resetting = false; // if we have manual control, stop automated movement
+
+        if (Input.GetButton("ResetCamera"))
+            resetting = true;
+    }
+
     void DoRotation() {
         rotationSpeed.x = Mathf.Lerp(minRotationSpeed.x, maxRotationSpeed.x, currentDistance / maxDistance);
         rotationSpeed.y = Mathf.Lerp(minRotationSpeed.y, maxRotationSpeed.y, currentDistance / maxDistance);
@@ -189,44 +199,38 @@ public class ThirdPersonCamera : MonoBehaviour {
         pitch -= clampedY * rotationSpeed.y * deltaTime;
         pitch = pitchRotationLimit.Clamp(pitch);
 
-        if (Input.GetButton("ResetCamera")) {
-            targetYaw = isEclipse ? -target.parent.eulerAngles.x : target.parent.eulerAngles.y;
-            resetting = true;
-        }
-
-        if (followBehind) {
-            targetYaw = isEclipse ? -target.parent.eulerAngles.x : target.parent.eulerAngles.y;
-            // Vector3 heading = character.position - my.position;
-            float targetPitch = character.localEulerAngles.x; // CHANGE WHEN ECLIPSE
-            //float targetPitch = (heading / heading.magnitude).x;
+        if (followBehind || resetting) { // place camera behind
+            float targetYaw = AngleSigned(targetSpace * Vector3.forward, target.parent.rotation * Vector3.forward, target.up);
+            float targetPitch = characterModel.localEulerAngles.x;
+            
             yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / resetDamp);
-            // Pitch pendant l'Éclipse ??
-
             pitch = Mathf.LerpAngle(pitch, targetPitch + defaultPitch, deltaTime / resetDamp);
-        }
 
-        if (resetting) {
-            yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / resetDamp);
-            pitch = Mathf.LerpAngle(pitch, defaultPitch, deltaTime / resetDamp);
-            if (Mathf.Abs(yaw - targetYaw) < .1f && Mathf.Abs(pitch - defaultPitch) < .1f/* temp buffer */)
-                resetting = false;
+            if (resetting) {
+                if (Mathf.Abs(Mathf.DeltaAngle(yaw, targetYaw)) < 1f && Mathf.Abs(Mathf.DeltaAngle(pitch, defaultPitch)) < 1f)
+                    resetting = false; // si on n'est pas trop loin on arrête de reset
+            }
         }
         camRotation = Quaternion.Euler(pitch, yaw, 0);
 
         float distanceModifier = Mathf.Lerp(0, 1, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch))); // distance From camera Angle
         idealDistance = 1 + maxDistance * distanceModifier + additionalDistance;
         
-        //camera.fieldOfView = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
+        camera.fieldOfView = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
 
         //Changer la rotation de la caméra pendant l'Éclipse
-        if (isEclipse)
-            camRotation = Quaternion.AngleAxis(90, Vector3.forward) * camRotation;
+        camRotation = targetSpace * camRotation;
+    }
+
+    public static float AngleSigned(Vector3 v1, Vector3 v2, Vector3 n) {
+        return Mathf.Atan2(
+            Vector3.Dot(n, Vector3.Cross(v1, v2)),
+            Vector3.Dot(v1, v2)) * 57.29578f; // Radian to Degrees constant
     }
 
     bool blockedByAWall;
     float lastHitDistance;
-    void CheckForCollision() {
-        Vector3 targetPos = target.position; // Same for the target
+    void CheckForCollision(Vector3 targetPos) {
         Vector3 startPos = targetPos;
 
         negDistance.z = -idealDistance;
