@@ -12,13 +12,13 @@ namespace Game.World.ChunkSystem
 
         [SerializeField]
         [HideInInspector]
-        Dictionary<eSubChunkLayer, Vector2> renderDistances = new Dictionary<eSubChunkLayer, Vector2>();
+        List<Vector2> renderDistances = new List<Vector2>();
 
         public Vector2 GetRenderDistance(eSubChunkLayer layer)
         {
-            if (this.renderDistances.ContainsKey(layer))
+            if (this.renderDistances.Count > (int)layer)
             {
-                return this.renderDistances[layer];
+                return this.renderDistances[(int)layer];
             }
             else
             {
@@ -39,13 +39,18 @@ namespace Game.World.ChunkSystem
                     value.y = 0;
                 }
 
-                if (this.renderDistances.ContainsKey(layer))
+                if (this.renderDistances.Count > (int)layer)
                 {
-                    this.renderDistances[layer] = value;
+                    this.renderDistances[(int)layer] = value;
                 }
                 else
                 {
-                    this.renderDistances.Add(layer, value);
+                    while(this.renderDistances.Count <= (int)layer)
+                    {
+                        this.renderDistances.Add(Vector2.zero);
+                    }
+
+                    this.renderDistances[(int)layer] = value;
                 }
             }
         }
