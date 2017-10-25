@@ -12,7 +12,9 @@ namespace Game.World.ChunkSystem
         {
             var chunkController = target as ChunkController;
 
-            if(GUILayout.Button("Sort into SubChunks"))
+            GUILayout.Label("Sort Chunk content (see tooltip)");
+
+            if(GUILayout.Button(new GUIContent( "Sort into SubChunks", "This will create SubChunks and move GameObject with the component \"RenderDistanceTag\" into them.")))
             {
                 chunkController.SortIntoSubChunks();
             }

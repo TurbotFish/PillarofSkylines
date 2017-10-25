@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 namespace Game.World.ChunkSystem
@@ -95,6 +96,11 @@ namespace Game.World.ChunkSystem
 #if UNITY_EDITOR
         public void SortIntoSubChunks()
         {
+            if(this.bounds == null)
+            {
+                Debug.LogError("Error: Bounds is null! Set this variable before using this!");
+            }
+
             var subChunkDict = new Dictionary<eSubChunkLayer, Transform>();
 
             //finding existing subchunks
@@ -162,13 +168,13 @@ namespace Game.World.ChunkSystem
             {
                 var child = this.transform.GetChild(i);
 
-                if (child.gameObject != this.bounds.gameObject && child.GetComponent<SubChunkController>() == null)
+                if (child.gameObject != this.bounds.gameObject && (child.GetComponent<SubChunkController>() == null || child.childCount == 0))
                 {
                     objectsToDelete.Add(child.gameObject);
                 }
             }
 
-            foreach(var objectToDelete in objectsToDelete)
+            foreach (var objectToDelete in objectsToDelete)
             {
                 DestroyImmediate(objectToDelete);
             }
@@ -181,7 +187,7 @@ namespace Game.World.ChunkSystem
 
             for (int i = 0; i < childCount; i++)
             {
-                var child = this.transform.GetChild(i);
+                var child = parent.GetChild(i);
                 var tag = child.GetComponent<RenderDistanceTag>();
 
                 if (tag == null)
