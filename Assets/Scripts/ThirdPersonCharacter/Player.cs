@@ -13,21 +13,6 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	public float characSpeed = 2f;
 	/// <summary>
-	/// The default time it takes for the player to get to their maximum speed.
-	/// </summary>
-	[Tooltip("The default time it takes for the player to get to  maximum speed.")]
-	public float groundAccelerationSmoothTime_default = 5f;
-	/// <summary>
-	/// The default time it takes for the player to decelerate.
-	/// </summary>
-	[Tooltip("The default time it takes for the player to decelerate.")]
-	public float groundDecelerationSmoothTime_default = 9f;
-	/// <summary>
-	/// The time it takes for the player to get to their maximum speed when turning back.
-	/// </summary>
-	[Tooltip("The time it takes for the player to get to their maximum speed when turning back.")]
-	public float groundAccelerationSmoothTime_uTurn = 1.7f;
-	/// <summary>
 	/// The speed at which the player's speed changes in the air.
 	/// </summary>
 	[Tooltip("The speed at which the player's speed changes in the air.")]
@@ -51,7 +36,7 @@ public class Player : MonoBehaviour {
 	/// The value by which the speed is multiplied when the player sprints.
 	/// </summary>
 	[Tooltip("The value by which the speed is multiplied when the player sprints.")]
-	public float sprintCoeff = 2f;
+	public float sprintCoeff = 1.5f;
 	/// <summary>
 	/// The max walkable slope angle.
 	/// </summary>
@@ -61,36 +46,7 @@ public class Player : MonoBehaviour {
 	/// Variable used in the speed smooth damp.
 	/// </summary>
 	float speedSmoothVelocity;
-	/// <summary>
-	/// The current speed of the player.
-	/// </summary>
-	float currentSpeed;
 	#endregion speed variables
-
-	#region turning variables
-	/// <summary>
-	/// Character turning speed.
-	/// </summary>
-	float turnSmoothTime;
-	/// <summary>
-	/// Variable used for turning the character via smooth damp.
-	/// </summary>
-	Vector3 turnSmoothVelocity;
-	/// <summary>
-	/// The default time it takes for the player to turn towards the player's input.
-	/// </summary>
-	[Tooltip("The default time it takes for the player to turn towards the player's input.")]
-	public float turnSmoothTime_default = 10f;
-	/// <summary>
-	/// The time it takes for the player to turn towards the player's input when turning back (make it instant).
-	/// </summary>
-	[Tooltip("The time it takes for the player to turn towards the player's input when turning back (make it instant).")]
-	public float turnSmoothTime_uTurn = 60f;
-	/// <summary>
-	/// Is the input at the opposite side of the player's forward vector.
-	/// </summary>
-	bool suddenStop;
-	#endregion turning variables
 
 	#region jump variables
 	[Header("Jump parameters")]
@@ -164,23 +120,18 @@ public class Player : MonoBehaviour {
 	[Tooltip("How much does gliding slow down the speed.")]
 	public float glideDrag = .2f;
 	/// <summary>
-	/// The speed at which the velocity is evolving when gliding (The higher it is, the slower it goes).
+	/// The speed at which the player's angle changes when gliding.
 	/// </summary>
-	[Tooltip("The speed at which the velocity is going up when gliding (The higher it is, the slower it goes).")]
-	public float glideAccelerate;
-	/// <summary>
-	/// The speed at which the velocity is evolving when gliding (The higher it is, the slower it goes).
-	/// </summary>
-	[Tooltip("The speed at which the velocity is slowing down when gliding (The higher it is, the slower it goes).")]
-	public float glideDecelerate;
-	/// <summary>
-	/// Is the player gliding ?
-	/// </summary>
-	bool isGliding = false;
-	/// <summary>
-	/// The current attitude when the player is gliding.
-	/// </summary>
-	Vector3 glideAttitude;
+	[Tooltip("The speed at which the player's angle changes when gliding.")]
+	public float glideControl = .2f;
+	public float glideBaseAngle = 10f;
+	public float glideBaseSpeed = 2f;
+	public float glideSpeedSmooth = .1f;
+	public AnimationCurve glideDownwardAcceleration;
+	public AnimationCurve glideUpwardDecelaration;
+	public float glideMinAngle;
+	public float glideMaxAngle;
+	float glideAngle;
 	#endregion glide variables
 
 	#region dash variables
@@ -218,15 +169,6 @@ public class Player : MonoBehaviour {
 
 	public ePlayerState currentPlayerState;
 
-	/// <summary>
-	/// The controller checking if there's collisions on the way.
-	/// </summary>
-	CharacControllerRecu controller;
-
-	/// <summary>
-	/// The animator of the character.
-	/// </summary>
-	Animator animator;
 
 	/// <summary>
 	/// The rotator used to turn the player.
@@ -238,17 +180,27 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	public PlayerModel playerMod;
 
-	#region input variables
+	#region private variables
 	bool readingInputs = true;
 	bool pressedJump = false;
 	bool releasedJump = false;
 	bool pressedDash = false;
 	bool pressedSprint = false;
+	bool pressingSprint = false;
 	Vector3 inputRaw;
 	Vector3 inputToCamera;
 	Vector3 inputToSlope;
 	Vector3 flatVelocity;
-	#endregion input bools
+	float currentSpeed;
+	/// <summary>
+	/// The controller checking if there's collisions on the way.
+	/// </summary>
+	CharacControllerRecu controller;
+	/// <summary>
+	/// The animator of the character.
+	/// </summary>
+	Animator animator;
+	#endregion private variables
 
 	void Start(){
 		controller = GetComponent<CharacControllerRecu> ();
@@ -311,6 +263,9 @@ public class Player : MonoBehaviour {
 			if (Input.GetButtonDown ("Sprint")) {
 				pressedSprint = true;
 			}
+			if (Input.GetButton ("Sprint")) {
+				pressingSprint = true;
+			}
 
 		} else {
 			inputRaw = Vector3.zero;
@@ -337,16 +292,29 @@ public class Player : MonoBehaviour {
 			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, airControl * Time.deltaTime);
 			if (releasedJump) {
 				releasedJump = false;
-				if (velocity.y > minJumpVelocity) {
-					velocity.y = minJumpVelocity;
+				if (lastJumpAerial) {
+					if (velocity.y > minAerialJumpVelocity) {
+						velocity.y = minAerialJumpVelocity;
+					}
+				} else {
+					if (velocity.y > minJumpVelocity) {
+						velocity.y = minJumpVelocity;
+					}
 				}
 			}
 			if (pressedDash && dashTimer <= 0f) {
 				Debug.Log("dash");
 				currentPlayerState = ePlayerState.dashing;
 			}
+			if (pressedJump && rmngAerialJumps > 0) {
+				Debug.Log("aerial jump");
+				velocity.y = maxAerialJumpVelocity;
+				rmngAerialJumps--;
+				lastJumpAerial = true;
+			}
 			if (pressedSprint) {
-				Debug.Log("sprint");
+				Debug.Log("glide");
+				glideAngle = glideBaseAngle;
 				currentPlayerState = ePlayerState.gliding;
 			}
 			break;
@@ -354,9 +322,11 @@ public class Player : MonoBehaviour {
 
 		case ePlayerState.onGround:
 
+			rmngAerialJumps = numberOfAerialJumps;
+
 			flatVelocity = velocity;
 			velocity.y = 0f;
-			targetVelocity = inputToSlope * characSpeed;
+			targetVelocity = inputToSlope * characSpeed * (pressingSprint ? sprintCoeff : 1);
 			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, groundControl * Time.deltaTime);
 			flatVelocity *= Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (90 * 5) + 1;
 
@@ -373,6 +343,7 @@ public class Player : MonoBehaviour {
 				pressedJump = false;
 				velocity.y = maxJumpVelocity;
 				currentPlayerState = ePlayerState.inAir;
+				lastJumpAerial = false;
 			}
 			if (pressedDash && dashTimer <= 0f) {
 				Debug.Log("dash");
@@ -384,6 +355,7 @@ public class Player : MonoBehaviour {
 		case ePlayerState.dashing:
 			flatVelocity = transform.forward * ((dashRange/dashSpeed)/Time.deltaTime);
 			flatVelocity.y = 0f;
+			velocity.y = 0f;
 			dashDuration -= Time.deltaTime;
 
 			if (dashDuration <= 0) {
@@ -396,8 +368,19 @@ public class Player : MonoBehaviour {
 
 		case ePlayerState.gliding:
 
+			glideAngle = Mathf.Lerp(glideAngle, Mathf.Clamp(Mathf.Lerp(glideMinAngle, glideMaxAngle, (inputRaw.z/2) +.5f) + glideBaseAngle, glideMinAngle, glideMaxAngle), glideControl * Time.deltaTime);
 
-			
+			if (glideAngle < glideBaseAngle){
+				currentSpeed = velocity.magnitude - glideUpwardDecelaration.Evaluate(Mathf.Abs((glideAngle - glideBaseAngle)/(glideMinAngle - glideBaseAngle))) * Time.deltaTime;
+			} else {
+				currentSpeed = Mathf.Lerp(velocity.magnitude, glideBaseSpeed + glideDownwardAcceleration.Evaluate((glideAngle - glideBaseAngle)/(glideMaxAngle - glideBaseAngle)), glideSpeedSmooth * Time.deltaTime);
+			}
+			Debug.Log("speed : " + currentSpeed + " angle : " + glideAngle);
+			targetVelocity = Quaternion.AngleAxis(glideAngle, transform.right) * transform.forward * currentSpeed;
+
+			velocity.y = 0f;
+			flatVelocity = targetVelocity;
+
 			break;
 
 

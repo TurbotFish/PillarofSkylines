@@ -210,7 +210,6 @@ public class CharacControllerRecu : MonoBehaviour {
 			movementVector += velocity;
 		}
 
-		Debug.Log (collisionNumber);
 		if (collisionNumber > 4) {
 			Debug.LogWarning ("whoa that was a lot of collisions there (" + collisionNumber + ").");
 		}
