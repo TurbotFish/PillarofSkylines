@@ -24,7 +24,7 @@
 
 			#pragma multi_compile_lightpass
 			#pragma multi_compile _ UNITY_HDR_ON
-			
+
 			#include "CustomDeferredShading.cginc"
 
 
