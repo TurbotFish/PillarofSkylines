@@ -6,35 +6,47 @@ public class Player : MonoBehaviour {
 
 
 	#region speed variables
+
+	[Header("Speed and control variables")]
 	/// <summary>
 	/// The character speed.
 	/// </summary>
-	public float characSpeed = 5f;
+	public float characSpeed = 2f;
 	/// <summary>
 	/// The default time it takes for the player to get to their maximum speed.
 	/// </summary>
 	[Tooltip("The default time it takes for the player to get to  maximum speed.")]
-	public float groundAccelerationSmoothTime_default = .2f;
+	public float groundAccelerationSmoothTime_default = 5f;
 	/// <summary>
 	/// The default time it takes for the player to decelerate.
 	/// </summary>
 	[Tooltip("The default time it takes for the player to decelerate.")]
-	public float groundDecelerationSmoothTime_default = .1f;
+	public float groundDecelerationSmoothTime_default = 9f;
 	/// <summary>
 	/// The time it takes for the player to get to their maximum speed when turning back.
 	/// </summary>
 	[Tooltip("The time it takes for the player to get to their maximum speed when turning back.")]
-	public float groundAccelerationSmoothTime_uTurn = .7f;
+	public float groundAccelerationSmoothTime_uTurn = 1.7f;
 	/// <summary>
 	/// The speed at which the player's speed changes in the air.
 	/// </summary>
 	[Tooltip("The speed at which the player's speed changes in the air.")]
-	public float airControl = .3f;
+	public float airControl = 2.5f;
 	/// <summary>
-	/// The speed at which the player's speed changes in the air.
+	/// The speed at which the player's speed changes on the ground.
 	/// </summary>
-	[Tooltip("The speed at which the player's speed changes in the air.")]
-	public float groundControl = .8f;
+	[Tooltip("The speed at which the player's speed changes on the ground.")]
+	public float groundControl = 6f;
+	/// <summary>
+	/// The speed at which the player's input impacts the slide.
+	/// </summary>
+	[Tooltip("The speed at which the player's input impacts the slide.")]
+	public float slopeControl = 2f;
+	/// <summary>
+	/// The speed at which the player's speed changes when sliding.
+	/// </summary>
+	[Tooltip("The speed at which the player's speed changes when sliding.")]
+	public float slopeStrength = .8f;
 	/// <summary>
 	/// The value by which the speed is multiplied when the player sprints.
 	/// </summary>
@@ -155,7 +167,12 @@ public class Player : MonoBehaviour {
 	/// The maximal speed when gliding.
 	/// </summary>
 	[Tooltip("The maximal speed when gliding.")]
-	public float glideMaxSpeed = 3f;
+	public float glideMaxSpeed = 75f;
+	/// <summary>
+	/// The speed at which the player's speed changes when gliding.
+	/// </summary>
+	[Tooltip("The speed at which the player's speed changes when gliding.")]
+	public float glideControl = 4f;
 	/// <summary>
 	/// The speed at which the avatar adjusts his Left and Right tilt to follow the player input.
 	/// </summary>
@@ -290,10 +307,16 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	public PlayerModel playerMod;
 
-	#region input bools
+	#region input variables
 	bool readingInputs = true;
 	bool pressedJump = false;
 	bool releasedJump = false;
+	bool pressedDash = false;
+	bool pressedSprint = false;
+	Vector3 inputRaw;
+	Vector3 inputToCamera;
+	Vector3 inputToSlope;
+	Vector3 flatVelocity;
 	#endregion input bools
 
 	void Start(){
@@ -326,25 +349,43 @@ public class Player : MonoBehaviour {
 
 	void Update(){
 
+		#region update timers
+		dashTimer -= Time.deltaTime;
+		#endregion update timers
+
 		#region input detection
 
 		pressedJump = false;
 		releasedJump = false;
+		pressedDash = false;
+		pressedSprint = false;
+		if (readingInputs) {
+			
+			inputRaw = new Vector3(Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical"));
+			inputToCamera = rotator.forward * Input.GetAxisRaw ("Vertical") + rotator.right * Input.GetAxisRaw ("Horizontal");
+			inputToSlope = (Quaternion.AngleAxis(Vector3.Angle(transform.up, controller.collisions.currentGroundNormal), Vector3.Cross(transform.up, controller.collisions.currentGroundNormal))) * inputToCamera;
+			inputToCamera = (Quaternion.AngleAxis (Vector3.Angle (transform.up, Vector3.up), Vector3.Cross (transform.up, Vector3.up))) * inputToCamera;
+			flatVelocity = velocity;
+			flatVelocity.y = 0;
 
-		Vector3 inputRaw = new Vector3(Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical"));
-		Vector3 inputToCamera = rotator.forward * Input.GetAxisRaw ("Vertical") + rotator.right * Input.GetAxisRaw ("Horizontal");
-		inputToCamera = (Quaternion.AngleAxis (Vector3.Angle (transform.up, Vector3.up), Vector3.Cross (transform.up, Vector3.up))) * inputToCamera;
-		Vector3 flatVelocity = velocity;
-		flatVelocity.y = 0;
+			if (Input.GetButtonDown ("Jump")) {
+				pressedJump = true;
+			}
+			if (Input.GetButtonUp ("Jump")) {
+				releasedJump = true;
+			}
+			if (Input.GetButtonDown ("Dash")) {
+				pressedDash = true;
+			}
+			if (Input.GetButtonDown ("Sprint")) {
+				pressedSprint = true;
+			}
 
-		if (Input.GetButtonDown ("Jump")) {
-			pressedJump = true;
+		} else {
+			inputRaw = Vector3.zero;
+			inputToCamera = Vector3.zero;
+			inputToSlope = Vector3.zero;
 		}
-
-		if (Input.GetButtonUp ("Jump")) {
-			releasedJump = true;
-		}
-
 
 		#endregion input detection
 
@@ -369,47 +410,96 @@ public class Player : MonoBehaviour {
 					velocity.y = minJumpVelocity;
 				}
 			}
+			if (pressedDash && dashTimer <= 0f) {
+				Debug.Log("dash");
+				currentPlayerState = ePlayerState.dashing;
+			}
+			if (pressedSprint) {
+				Debug.Log("sprint");
+				currentPlayerState = ePlayerState.gliding;
+			}
 			break;
 
 
 		case ePlayerState.onGround:
+
+			flatVelocity = velocity;
+			velocity.y = 0f;
+			targetVelocity = inputToSlope * characSpeed;
+			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, groundControl * Time.deltaTime);
+			flatVelocity *= Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (90 * 5) + 1;
+
+			/*   OTHER VERSION 
 			flatVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, controller.collisions.currentGroundNormal), Vector3.Cross(controller.collisions.currentGroundNormal, transform.up))) * velocity;
 			velocity.y = 0f;
 			targetVelocity = inputToCamera * characSpeed;
 			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, groundControl * Time.deltaTime);
 			flatVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, controller.collisions.currentGroundNormal), Vector3.Cross(transform.up, controller.collisions.currentGroundNormal))) * flatVelocity;
 			flatVelocity *= Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (90 * 5) + 1;
+*/
+
+			if (pressedJump) {
+				pressedJump = false;
+				velocity.y = maxJumpVelocity;
+				currentPlayerState = ePlayerState.inAir;
+			}
+			if (pressedDash && dashTimer <= 0f) {
+				Debug.Log("dash");
+				currentPlayerState = ePlayerState.dashing;
+			}
+			break;
+
+
+		case ePlayerState.dashing:
+			flatVelocity = transform.forward * ((dashRange/dashSpeed)/Time.deltaTime);
+			flatVelocity.y = 0f;
+			dashDuration -= Time.deltaTime;
+
+			if (dashDuration <= 0) {
+				currentPlayerState = ePlayerState.inAir;
+				dashTimer = dashCooldown;
+				playerMod.UnflagAbility (eAbilityType.Dash);
+			}
+			break;
+
+
+		case ePlayerState.gliding:
+			flatVelocity = velocity;
+			velocity.y = 0f;
+
+			targetVelocity = transform.forward * glideMaxSpeed * Mathf.Lerp(-gravity, gravity, inputRaw.z/2 +.5f);
+
+			targetVelocity = Quaternion.AngleAxis(Mathf.Lerp(90f, -90f, inputRaw.z/2 +.5f), transform.right) * targetVelocity;
+
+			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, glideControl * Time.deltaTime);
+			
+			break;
+
+
+		case ePlayerState.sliding:
+			float speed = Mathf.Lerp(gravity, 0, Vector3.Dot(transform.up, controller.collisions.currentGroundNormal));
+			targetVelocity = Quaternion.AngleAxis(90f, Vector3.Cross(transform.up, controller.collisions.currentGroundNormal)) * controller.collisions.currentGroundNormal * speed;
+			targetVelocity += inputToSlope;
+			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, slopeControl * Time.deltaTime);
+
+			/*
+			inputToCamera += targetVelocity;
+			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, slopeStrength * Time.deltaTime);
+			flatVelocity = Vector3.Lerp(flatVelocity, inputToCamera, slopeControl * Time.deltaTime);
+            */
 			if (pressedJump) {
 				pressedJump = false;
 				velocity.y = maxJumpVelocity;
 				currentPlayerState = ePlayerState.inAir;
 			}
 			break;
-
-
-		case ePlayerState.dashing:
-			velocity.y -= gravity;
-			velocity = Vector3.Lerp(velocity, targetVelocity, airControl);
-			break;
-
-
-		case ePlayerState.gliding:
-			velocity.y -= gravity;
-			velocity = Vector3.Lerp(velocity, targetVelocity, airControl);
-			break;
-
-
-		case ePlayerState.sliding:
-			float speed = Mathf.Lerp(gravity, 0, Vector3.Dot(transform.up, controller.collisions.currentGroundNormal));
-			//targetVelocity = rotation normale via cross (normal, trans.up) de 90
-			targetVelocity = Quaternion.AngleAxis(90f, Vector3.Cross(transform.up, controller.collisions.currentGroundNormal)) * controller.collisions.currentGroundNormal * speed;
-			velocity = Vector3.Lerp(velocity, targetVelocity, airControl);
-			break;
 		}
-		#endregion direction
 
 		velocity = new Vector3(0, velocity.y, 0);
 		velocity += flatVelocity;
+		
+		#endregion direction
+
 		//Calls the controller to check if the calculated velocity will run into walls and stuff
 		velocity = controller.Move ((Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * velocity / 10f);
 
@@ -417,14 +507,56 @@ public class Player : MonoBehaviour {
 
 
 		#region update state
-		if (controller.collisions.below) {
+		/*
+		switch (currentPlayerState) {
+		default:
+			currentPlayerState = ePlayerState.inAir;
+			break;
+
+
+		case ePlayerState.inAir:
+			if (controller.collisions.below) {
+				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle){
+					currentPlayerState = Player.ePlayerState.sliding;
+				} else {
+					currentPlayerState = Player.ePlayerState.onGround;
+				}
+			}
+			break;
+
+
+		case ePlayerState.onGround:
 			if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle){
 				currentPlayerState = Player.ePlayerState.sliding;
-			} else {
+			}
+			break;
+
+
+		case ePlayerState.dashing:
+			break;
+
+
+		case ePlayerState.gliding:
+			break;
+
+
+		case ePlayerState.sliding:
+			if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle){
 				currentPlayerState = Player.ePlayerState.onGround;
 			}
-		} else {
-			currentPlayerState = Player.ePlayerState.inAir;
+			break;
+		}
+		*/
+		if (currentPlayerState != ePlayerState.dashing) {
+			if (controller.collisions.below) {
+				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle){
+					currentPlayerState = Player.ePlayerState.sliding;
+				} else {
+					currentPlayerState = Player.ePlayerState.onGround;
+				}
+			} else {
+				currentPlayerState = Player.ePlayerState.inAir;
+			}
 		}
 		#endregion update state
 
