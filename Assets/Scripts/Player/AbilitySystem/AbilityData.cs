@@ -5,7 +5,7 @@ using System;
 
 namespace Game.Player.AbilitySystem
 {
-    [CreateAssetMenu(menuName = "AbilitySystem/AbilityData", fileName = "AbilityData")]
+    [CreateAssetMenu(menuName = "ScriptableObjects/AbilityData", fileName = "AbilityData")]
     public class AbilityData : ScriptableObject
     {
         //double jump
