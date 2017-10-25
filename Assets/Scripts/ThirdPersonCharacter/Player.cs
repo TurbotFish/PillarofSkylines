@@ -159,61 +159,6 @@ public class Player : MonoBehaviour {
 
 	[Header("Glide")]
 	/// <summary>
-	/// The minimal speed at the start of the glide.
-	/// </summary>
-	[Tooltip("The minimal speed at the start of the glide")]
-	public float glideMinimalInitialSpeed = 5f;
-	/// <summary>
-	/// The maximal speed when gliding.
-	/// </summary>
-	[Tooltip("The maximal speed when gliding.")]
-	public float glideMaxSpeed = 75f;
-	/// <summary>
-	/// The speed at which the player's speed changes when gliding.
-	/// </summary>
-	[Tooltip("The speed at which the player's speed changes when gliding.")]
-	public float glideControl = 4f;
-	/// <summary>
-	/// The speed at which the avatar adjusts his Left and Right tilt to follow the player input.
-	/// </summary>
-	[Tooltip("The speed at which the avatar adjusts his Left and Right tilt to follow the player input.")]
-	public float glideLRAttitudeTiltingSpeed = .2f;
-	/// <summary>
-	/// The speed at which the avatar comes back to a plane attitude after being tilted Left or Right.
-	/// </summary>
-	[Tooltip("The speed at which the avatar comes back to a plane attitude after being tilted Left or Right.")]
-	public float glideLRAttitudeRecoverSpeed = 2.5f;
-	/// <summary>
-	/// The speed at which the avatar adjusts his Forward tilt to follow the player input.
-	/// </summary>
-	[Tooltip("The speed at which the avatar adjusts his Forward tilt to follow the player input.")]
-	public float glideForwardAttitudeTiltingSpeed = 2f;
-	/// <summary>
-	/// The speed at which the avatar comes back to a plane attitude after being tilted Forward.
-	/// </summary>
-	[Tooltip("The speed at which the avatar comes back to a plane attitude after being tilted Forward.")]
-	public float glideForwardAttitudeRecoverSpeed = 1f;
-	/// <summary>
-	/// The speed at which the avatar adjusts his Backward tilt to follow the player input.
-	/// </summary>
-	[Tooltip("The speed at which the avatar adjusts his Backward tilt to follow the player input.")]
-	public float glideBackwardAttitudeTiltingSpeed = .5f;
-	/// <summary>
-	/// The speed at which the avatar comes back to a plane attitude after being tilted Backward.
-	/// </summary>
-	[Tooltip("The speed at which the avatar comes back to a plane attitude after being tilted Backward.")]
-	public float glideBackwardAttitudeRecoverSpeed = 2f;
-	/// <summary>
-	/// The maximum turn amount when gliding.
-	/// </summary>
-	[Tooltip("The maximum turn amount when gliding.")]
-	public float glideMaxTurn = 1f;
-	/// <summary>
-	/// The speed at which the player turns when gliding.
-	/// </summary>
-	[Tooltip("The speed at which the player turns when gliding.")]
-	public float glideTurnSpeed = 10f;
-	/// <summary>
 	/// How much does gliding slow down the speed.
 	/// </summary>
 	[Tooltip("How much does gliding slow down the speed.")]
@@ -228,20 +173,6 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	[Tooltip("The speed at which the velocity is slowing down when gliding (The higher it is, the slower it goes).")]
 	public float glideDecelerate;
-	/// <summary>
-	/// The speed minimum speed required to continue gliding.
-	/// </summary>
-	[Tooltip("The speed minimum speed required to continue gliding.")]
-	public float glideLimitSpeed = 2;
-	/// <summary>
-	/// The time the player has to wait after failing a glide (by going too slow).
-	/// </summary>
-	[Tooltip("The time the player has to wait after failing a glide (by going too slow).")]
-	public float timeBetweenGlides = 3f;
-	/// <summary>
-	/// The timer after the player failed a glide.
-	/// </summary>
-	float glideTimer = 0f;
 	/// <summary>
 	/// Is the player gliding ?
 	/// </summary>
@@ -464,14 +395,8 @@ public class Player : MonoBehaviour {
 
 
 		case ePlayerState.gliding:
-			flatVelocity = velocity;
-			velocity.y = 0f;
 
-			targetVelocity = transform.forward * glideMaxSpeed * Mathf.Lerp(-gravity, gravity, inputRaw.z/2 +.5f);
 
-			targetVelocity = Quaternion.AngleAxis(Mathf.Lerp(90f, -90f, inputRaw.z/2 +.5f), transform.right) * targetVelocity;
-
-			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, glideControl * Time.deltaTime);
 			
 			break;
 
@@ -482,11 +407,6 @@ public class Player : MonoBehaviour {
 			targetVelocity += inputToSlope;
 			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, slopeControl * Time.deltaTime);
 
-			/*
-			inputToCamera += targetVelocity;
-			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, slopeStrength * Time.deltaTime);
-			flatVelocity = Vector3.Lerp(flatVelocity, inputToCamera, slopeControl * Time.deltaTime);
-            */
 			if (pressedJump) {
 				pressedJump = false;
 				velocity.y = maxJumpVelocity;
@@ -507,7 +427,7 @@ public class Player : MonoBehaviour {
 
 
 		#region update state
-		/*
+
 		switch (currentPlayerState) {
 		default:
 			currentPlayerState = ePlayerState.inAir;
@@ -517,9 +437,9 @@ public class Player : MonoBehaviour {
 		case ePlayerState.inAir:
 			if (controller.collisions.below) {
 				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle){
-					currentPlayerState = Player.ePlayerState.sliding;
+					currentPlayerState = ePlayerState.sliding;
 				} else {
-					currentPlayerState = Player.ePlayerState.onGround;
+					currentPlayerState = ePlayerState.onGround;
 				}
 			}
 			break;
@@ -527,7 +447,10 @@ public class Player : MonoBehaviour {
 
 		case ePlayerState.onGround:
 			if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle){
-				currentPlayerState = Player.ePlayerState.sliding;
+				currentPlayerState = ePlayerState.sliding;
+			}
+			if (!controller.collisions.below) {
+				currentPlayerState = ePlayerState.inAir;
 			}
 			break;
 
@@ -542,11 +465,14 @@ public class Player : MonoBehaviour {
 
 		case ePlayerState.sliding:
 			if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle){
-				currentPlayerState = Player.ePlayerState.onGround;
+				currentPlayerState = ePlayerState.onGround;
+			}
+			if (!controller.collisions.below) {
+				currentPlayerState = ePlayerState.inAir;
 			}
 			break;
 		}
-		*/
+		/*
 		if (currentPlayerState != ePlayerState.dashing) {
 			if (controller.collisions.below) {
 				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle){
@@ -557,7 +483,7 @@ public class Player : MonoBehaviour {
 			} else {
 				currentPlayerState = Player.ePlayerState.inAir;
 			}
-		}
+		}*/
 		#endregion update state
 
 		#region update animator
