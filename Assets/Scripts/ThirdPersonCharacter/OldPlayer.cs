@@ -358,7 +358,7 @@ public class OldPlayer : MonoBehaviour {
 				glideAttitude = new Vector3 (Mathf.Lerp (glideAttitude.x, inputGlide.x, (glideAttitude.sqrMagnitude > inputGlide.sqrMagnitude ? glideLRAttitudeRecoverSpeed : glideLRAttitudeTiltingSpeed) * Time.deltaTime)
 					//                                                                                                           coming back from forward           tilting forward
 					, 0, Mathf.Lerp (glideAttitude.z, inputGlide.z, (glideAttitude.z > 0 ? (glideAttitude.z > inputGlide.z ? glideForwardAttitudeRecoverSpeed : glideForwardAttitudeTiltingSpeed) 
-						//                                                                                                       coming back from backward              tilting backward
+						//                                        coming back from backward              tilting backward
 						: (glideAttitude.z < inputGlide.z ? glideBackwardAttitudeRecoverSpeed : glideBackwardAttitudeTiltingSpeed)) * Time.deltaTime));
 			} else {
 				glideAttitude = Vector2.zero;
