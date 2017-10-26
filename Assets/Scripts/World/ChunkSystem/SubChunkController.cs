@@ -16,6 +16,13 @@ namespace Game.World.ChunkSystem
         [SerializeField]
         bool doNotWrap = false;
 
+#if UNITY_EDITOR
+        public void Editor_InitializeSubChunk(eSubChunkLayer layer)
+        {
+            this.layer = layer;
+        }
+#endif
+
         public void ActivateSubChunk()
         {
             this.gameObject.SetActive(true);

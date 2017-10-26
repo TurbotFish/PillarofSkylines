@@ -20,6 +20,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoSubSurfaceScattering ();
 		DoMain ();
 		DoSecondary ();
+		DoCheckerDebug ();
 	}
 
 	void DoMain(){
@@ -274,6 +275,18 @@ public class CustomPBR_GUI : ShaderGUI {
 
 		if (mode == RenderingMode.Fade || mode == RenderingMode.Transparent) {
 			DoSemitransparentShadows ();
+		}
+	}
+
+
+	void DoCheckerDebug(){
+		GUILayout.Label ("Checker debug", EditorStyles.boldLabel);
+
+		EditorGUI.BeginChangeCheck ();
+		bool checkerOn = EditorGUILayout.Toggle ("On", IsKeywordEnabled ("CHECKER_DEBUG"));
+
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("CHECKER_DEBUG", checkerOn);
 		}
 	}
 

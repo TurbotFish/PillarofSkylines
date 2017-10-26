@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,9 +9,11 @@ namespace Game.World.ChunkSystem
     {
         [SerializeField]
         Collider bounds;
+#if UNITY_EDITOR
+        public Collider Editor_Bounds { get { return this.bounds; } }
+#endif
 
         ChunkSystemData data;
-
         List<SubChunkController> subChunkList = new List<SubChunkController>();
 
         /// <summary>
@@ -82,7 +85,7 @@ namespace Game.World.ChunkSystem
 
             go.GetComponent<ChunkController>().InitializeChunkCopy(boundsGo.GetComponent<Collider>());
 
-            foreach(var subChunk in this.subChunkList)
+            foreach (var subChunk in this.subChunkList)
             {
                 subChunk.CreateCopy(go.transform);
             }
