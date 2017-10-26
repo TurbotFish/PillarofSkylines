@@ -64,7 +64,12 @@ namespace Game.Player
         // Update is called once per frame
         void Update()
         {
-
+#if UNITY_EDITOR
+            if (Input.GetKeyUp(KeyCode.P))
+            {
+                this.Favours++;
+            }
+#endif
         }
 
         #endregion monobehaviour methods
