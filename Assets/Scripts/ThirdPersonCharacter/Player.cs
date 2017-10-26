@@ -75,10 +75,8 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	[Tooltip("How many seconds after falling can the avatar still jump.")]
 	public float canStillJumpTime = .12f;
-	/// <summary>
-	/// Calculated at the start from maxJumpHeight and timeToJumpApex.
-	/// </summary>
 	public float gravity;
+	public float maxFallSpeed = 100f;
 
 	[Header("Aerial Jumps")]
 	/// <summary>
@@ -125,20 +123,39 @@ public class Player : MonoBehaviour {
 
 	[Header("Glide")]
 	/// <summary>
-	/// How much does gliding slow down the speed.
+	/// The speed of the strafe when gliding.
 	/// </summary>
-	[Tooltip("How much does gliding slow down the speed.")]
-	public float glideDrag = .2f;
+	[Tooltip("The speed of the strafe when gliding.")]
+	public float glideStrafeControlAngle = 5f;
 	/// <summary>
-	/// The speed at which the player's vertical angle changes when gliding.
+	/// The max angle of the strafe when gliding.
 	/// </summary>
-	[Tooltip("The speed at which the player's vertical angle changes when gliding.")]
-	public float glideVerticalAngleControl = 1f;
+	[Tooltip("The max angle of the strafe when gliding.")]
+	public float glideStrafeMaxAngle = 5f;
 	/// <summary>
-	/// The speed at which the player's vertical angle comes back to 0.
+	/// The speed at which the player's vertical angle changes downwards when gliding.
 	/// </summary>
-	[Tooltip("The speed at which the player's vertical angle comes back to 0.")]
-	public float glideVerticalComingBack = .1f;
+	[Tooltip("The speed at which the player's vertical angle changes downwards when gliding.")]
+	public float glideVerticalDownAngleControl = 1f;
+
+	/// <summary>
+	/// The speed at which the player's vertical angle comes back to 0 from a downwards position.
+	/// </summary>
+	//[Tooltip("The speed at which the player's vertical angle comes back to 0 from a downwards position.")]
+	//public float glideVerticalDownComingBack = .1f;
+
+	/// <summary>
+	/// The speed at which the player's vertical angle changes upwards when gliding.
+	/// </summary>
+	[Tooltip("The speed at which the player's vertical angle changes upwards when gliding.")]
+	public float glideVerticalUpAngleControl = 1f;
+
+	/// <summary>
+	/// The speed at which the player's vertical angle comes back to 0 from an upwards position.
+	/// </summary>
+	//[Tooltip("The speed at which the player's vertical angle comes back to 0 from an upwards position.")]
+	//public float glideVerticalUpComingBack = .1f;
+
 	/// <summary>
 	/// The speed at which the player's horizontal angle changes when gliding.
 	/// </summary>
@@ -149,6 +166,11 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	[Tooltip("The speed at which the player's horizontal angle comes back to 0.")]
 	public float glideHorizontalComingBack = 5f;
+	/// <summary>
+	/// How much having no input impacts the update of the vertical angle of the player.
+	/// </summary>
+	[Tooltip("How much having no input impacts the update of the vertical angle of the player.")]
+	public float glideNoInputImpactCoeff = .2f;
 	public float glideBaseAngle = 10f;
 	public float glideBaseSpeed = 1f;
 	public float glideStallSpeed = 5f;
@@ -159,10 +181,13 @@ public class Player : MonoBehaviour {
 	public float glideMaxAngle = 80f;
 	public float glideMinHorizontalAngle = -80f;
 	public float glideMaxHorizontalAngle = 80f;
-	float glideVerticalAngle;
+	[HideInInspector]
+	public float glideVerticalAngle;
 	float targetGlideVerticalAngle;
 	float glideHorizontalAngle;
 	float targetGlideHorizontalAngle;
+	float glideStrafeAngle;
+	float targetGlideStrafeAngle;
 	#endregion glide variables
 
 	#region dash variables
@@ -222,6 +247,8 @@ public class Player : MonoBehaviour {
 	Vector3 inputRaw;
 	Vector3 inputToCamera;
 	Vector3 inputToSlope;
+	float leftTrigger;
+	float rightTrigger;
 	Vector3 flatVelocity;
 	float currentSpeed;
 	/// <summary>
@@ -283,6 +310,9 @@ public class Player : MonoBehaviour {
 			flatVelocity = velocity;
 			flatVelocity.y = 0;
 
+			leftTrigger = Input.GetAxisRaw("Left Trigger");
+			rightTrigger = Input.GetAxisRaw("Right Trigger");
+
 			if (Input.GetButtonDown ("Jump")) {
 				pressedJump = true;
 			}
@@ -299,10 +329,13 @@ public class Player : MonoBehaviour {
 				pressingSprint = true;
 			}
 
+
 		} else {
 			inputRaw = Vector3.zero;
 			inputToCamera = Vector3.zero;
 			inputToSlope = Vector3.zero;
+			leftTrigger = 0f;
+			rightTrigger = 0f;
 		}
 
 		#endregion input detection
@@ -325,6 +358,7 @@ public class Player : MonoBehaviour {
 			
 			targetVelocity = inputToCamera * characSpeed;
 			velocity.y -= gravity * Time.deltaTime;
+			velocity.y = Mathf.Clamp(velocity.y, -maxFallSpeed, maxFallSpeed);
 			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, airControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f));
 			if (releasedJump) {
 				releasedJump = false;
@@ -350,6 +384,7 @@ public class Player : MonoBehaviour {
 			}
 			if (pressedSprint && playerMod.CheckAbilityActive(eAbilityType.Glide)) {
 				Debug.Log("glide");
+				glideParticles.Play();
 				glideVerticalAngle = Vector3.Angle(transform.up, velocity) - 90f;
 				glideHorizontalAngle = 0f;
 				currentPlayerState = ePlayerState.gliding;
@@ -411,7 +446,7 @@ public class Player : MonoBehaviour {
 		case ePlayerState.gliding:
 
 			targetGlideVerticalAngle = Mathf.Clamp(Mathf.Lerp(glideMinAngle, glideMaxAngle, (inputRaw.z/2) +.5f) + glideBaseAngle, glideMinAngle, glideMaxAngle);
-			glideVerticalAngle = Mathf.Lerp(glideVerticalAngle, targetGlideVerticalAngle, (Mathf.Abs(glideVerticalAngle) > Mathf.Abs(targetGlideVerticalAngle) ? glideVerticalComingBack : glideVerticalAngleControl) * Time.deltaTime);
+			glideVerticalAngle = Mathf.Lerp(glideVerticalAngle, targetGlideVerticalAngle, (targetGlideVerticalAngle > glideVerticalAngle ? glideVerticalUpAngleControl : glideVerticalDownAngleControl) * Time.deltaTime * (targetGlideVerticalAngle == glideBaseAngle ? glideNoInputImpactCoeff : 1f));
 
 			if (glideVerticalAngle < glideBaseAngle){
 				Debug.Log("on retire " + glideUpwardDecelaration.Evaluate(Mathf.Abs((glideVerticalAngle - glideBaseAngle)/(glideMinAngle - glideBaseAngle))) * Time.deltaTime);
@@ -420,16 +455,23 @@ public class Player : MonoBehaviour {
 				Debug.Log("on lerp de " + velocity.magnitude + " vers " + (glideBaseSpeed + glideDownwardAcceleration.Evaluate((glideVerticalAngle - glideBaseAngle)/(glideMaxAngle - glideBaseAngle))));
 				currentSpeed = Mathf.Lerp(velocity.magnitude, glideBaseSpeed + glideDownwardAcceleration.Evaluate((glideVerticalAngle - glideBaseAngle)/(glideMaxAngle - glideBaseAngle)), glideSpeedSmooth * Time.deltaTime);
 			}
-			Debug.Log("speed : " + currentSpeed + " angle : " + glideVerticalAngle);
+			Debug.Log("speed : " + currentSpeed + " vertical angle : " + glideVerticalAngle);
 			targetVelocity = Quaternion.AngleAxis(glideVerticalAngle, transform.right) * transform.forward * currentSpeed;
 
 			if (currentSpeed < glideStallSpeed){
 				glideVerticalAngle = glideMaxAngle;
 			}
+
 			targetGlideHorizontalAngle = Mathf.Lerp(glideMinHorizontalAngle, glideMaxHorizontalAngle, (inputRaw.x/2) +.5f);
 			glideHorizontalAngle = Mathf.Lerp (glideHorizontalAngle, targetGlideHorizontalAngle, (Mathf.Abs(glideHorizontalAngle) > Mathf.Abs(targetGlideHorizontalAngle) ? glideHorizontalComingBack : glideHorizontalAngleControl) * Time.deltaTime);
 
 			targetVelocity = Quaternion.AngleAxis(glideHorizontalAngle, transform.up) * targetVelocity;
+
+			targetGlideStrafeAngle = (rightTrigger - leftTrigger) * glideStrafeMaxAngle;
+
+			glideStrafeAngle = Mathf.Lerp(glideStrafeAngle, targetGlideStrafeAngle, glideStrafeControlAngle * Time.deltaTime);
+
+			targetVelocity = Quaternion.AngleAxis(glideStrafeAngle, transform.up) * targetVelocity;
 
 			velocity.y = 0f;
 			flatVelocity = targetVelocity;
@@ -463,8 +505,11 @@ public class Player : MonoBehaviour {
 		//Calls the controller to check if the calculated velocity will run into walls and stuff
 		velocity = controller.Move ((Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * velocity * Time.deltaTime);
 
-		transform.LookAt (transform.position + Vector3.ProjectOnPlane((Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * velocity, transform.up), transform.up);
-
+		if (currentPlayerState != ePlayerState.gliding) {
+			transform.LookAt (transform.position + Vector3.ProjectOnPlane ((Quaternion.AngleAxis (Vector3.Angle (Vector3.up, transform.up), Vector3.Cross (Vector3.up, transform.up))) * velocity, transform.up), transform.up);
+		} else {
+			transform.Rotate (transform.up, glideHorizontalAngle);
+		}
 
 		#region update state
 
@@ -550,6 +595,9 @@ public class Player : MonoBehaviour {
 		if (controller.collisions.below) {
 			animator.SetFloat("JumpLeg", jumpLeg);
 		}
+		/*if (currentPlayerState == ePlayerState.gliding) {
+			animator.transform.rotation = Quaternion.Euler(glideVerticalAngle, 0, 0);
+		}*/
 
 		windParticles.SetVelocity(velocity);
 		glideParticles.SetVelocity(velocity);
@@ -572,7 +620,7 @@ public class Player : MonoBehaviour {
 	}
 
 	void EndGlide(){
-
+		glideParticles.Stop();
 		keepMomentum = true;
 	}
 
