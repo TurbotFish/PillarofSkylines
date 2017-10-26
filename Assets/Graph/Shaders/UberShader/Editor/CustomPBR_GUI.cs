@@ -20,6 +20,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoSubSurfaceScattering ();
 		DoMain ();
 		DoSecondary ();
+		DoCheckerDebug ();
 	}
 
 	void DoMain(){
@@ -126,11 +127,11 @@ public class CustomPBR_GUI : ShaderGUI {
 
 	void DoSubSurfaceScattering(){
 		GUILayout.Label ("Sub Surface Scattering", EditorStyles.boldLabel);
-		MaterialProperty power = FindProperty ("_PowerSSS");
-		MaterialProperty scale = FindProperty ("_ScaleSSS");
-		MaterialProperty distortion = FindProperty ("_DistortionSSS");
-		MaterialProperty atten = FindProperty ("_AttenuationSSS");
-		MaterialProperty ambient = FindProperty ("_AmbientSSS");
+		//MaterialProperty power = FindProperty ("_PowerSSS");
+		//MaterialProperty scale = FindProperty ("_ScaleSSS");
+		//MaterialProperty distortion = FindProperty ("_DistortionSSS");
+		//MaterialProperty atten = FindProperty ("_AttenuationSSS");
+		//MaterialProperty ambient = FindProperty ("_AmbientSSS");
 		//MaterialProperty diffuse = FindProperty ("_DiffuseSSS");
 
 		MaterialProperty thickness = FindProperty ("_ThicknessMap");
@@ -139,18 +140,25 @@ public class CustomPBR_GUI : ShaderGUI {
 		EditorGUI.BeginChangeCheck ();
 
 		bool subSurfaceOn = EditorGUILayout.Toggle ("Translucency", IsKeywordEnabled ("_SSS"));
+
 		if (EditorGUI.EndChangeCheck ()) {
 			SetKeyword ("_SSS", subSurfaceOn);
+
 		}
+
+
 		if (subSurfaceOn) {
 			
-			editor.ShaderProperty (power, MakeLabel (power));
-			editor.ShaderProperty (scale, MakeLabel (scale));
-			editor.ShaderProperty (distortion, MakeLabel (distortion));
-			editor.ShaderProperty (atten, MakeLabel (atten));
-			editor.ShaderProperty (ambient, MakeLabel (ambient));
+			//editor.ShaderProperty (power, MakeLabel (power));
+			//editor.ShaderProperty (scale, MakeLabel (scale));
+			//editor.ShaderProperty (distortion, MakeLabel (distortion));
+			//editor.ShaderProperty (atten, MakeLabel (atten));
+			//editor.ShaderProperty (ambient, MakeLabel (ambient));
 			//editor.ShaderProperty (diffuse, MakeLabel (diffuse));
-			editor.TexturePropertySingleLine (MakeLabel (thickness, "Thickness (R)"), thickness, FindProperty("_DiffuseSSS"));
+			editor.TexturePropertySingleLine (MakeLabel (thickness, "Thickness (R)"), thickness);
+
+			bool useSSSColour2 = EditorGUILayout.Toggle ("Colour 2", IsKeywordEnabled ("_SSSColour2"));
+			SetKeyword ("_SSSColour2", useSSSColour2);
 		}
 	}
 
@@ -267,6 +275,18 @@ public class CustomPBR_GUI : ShaderGUI {
 
 		if (mode == RenderingMode.Fade || mode == RenderingMode.Transparent) {
 			DoSemitransparentShadows ();
+		}
+	}
+
+
+	void DoCheckerDebug(){
+		GUILayout.Label ("Checker debug", EditorStyles.boldLabel);
+
+		EditorGUI.BeginChangeCheck ();
+		bool checkerOn = EditorGUILayout.Toggle ("On", IsKeywordEnabled ("CHECKER_DEBUG"));
+
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("CHECKER_DEBUG", checkerOn);
 		}
 	}
 

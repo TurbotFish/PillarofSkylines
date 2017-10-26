@@ -4,7 +4,7 @@
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Scale Matrix", "Transform", "Scale Matrix" )]
+	[NodeAttributes( "Scale Matrix", "Matrix Transform", "Scale Matrix" )]
 	public sealed class UnityScaleMatrix : ConstantShaderVariable
 	{
 		protected override void CommonInit( int uniqueId )

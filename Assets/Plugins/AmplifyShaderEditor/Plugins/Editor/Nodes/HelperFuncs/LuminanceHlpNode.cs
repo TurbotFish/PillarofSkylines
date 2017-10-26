@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Luminance", "Generic", "Converts color to luminance (grayscale)" )]
+	[NodeAttributes( "Luminance", "Image Effects", "Converts color to luminance (grayscale)", Deprecated = true, DeprecatedAlternativeType = typeof( TFHCGrayscale ), DeprecatedAlternative = "Grayscale" )]
 	public sealed class LuminanceHlpNode : HelperParentNode
 	{
 		protected override void CommonInit( int uniqueId )

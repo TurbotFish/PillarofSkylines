@@ -1,4 +1,4 @@
-﻿Shader "Hidden/TextureArrayNode"
+Shader "Hidden/TextureArrayNode"
 {
 	Properties
 	{
@@ -6,6 +6,8 @@
 		_B ("_Index", 2D) = "white" {}
 		_C ("_Lod", 2D) = "white" {}
 		_D ("_NormalScale", 2D) = "white" {}
+		_G ("_Tex", 2D) = "white" {}
+		_TexConnected ("_TexConnected", Int) = 0
 	}
 	SubShader
 	{
@@ -23,9 +25,11 @@
 			sampler2D _B;
 			sampler2D _C;
 			sampler2D _D;
+			sampler2D _G;
 			float _CustomUVs;
 			float _LodType;
 			float _Unpack;
+			int _TexConnected;
 
 			float4 frag( v2f_img i ) : SV_Target
 			{
@@ -39,9 +43,13 @@
 					float lod = tex2D( _C, i.uv ).r;
 					c = UNITY_SAMPLE_TEX2DARRAY_LOD( _Sampler, float3( uvs, tex2D( _B, i.uv ).r ), lod );
 				}
-				else {
+				else if( _TexConnected == 0) {
 					c = UNITY_SAMPLE_TEX2DARRAY( _Sampler, float3( uvs, tex2D( _B, i.uv ).r ) );
+				} 
+				else {
+					c = tex2D( _G, uvs );
 				}
+
 				if ( _Unpack == 1 ) 
 				{
 					c.rgb = UnpackScaleNormal(c, n);

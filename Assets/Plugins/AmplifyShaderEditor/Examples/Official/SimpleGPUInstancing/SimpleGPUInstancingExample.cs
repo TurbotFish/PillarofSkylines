@@ -1,28 +1,23 @@
 using UnityEngine;
-using System;
-
-
-[Serializable]
-public class SimpleGPUInstancingComponent
-{
-	public Renderer ObjectRenderer;
-	public Color ObjectColor;
-}
 
 public class SimpleGPUInstancingExample : MonoBehaviour
 {
-	public SimpleGPUInstancingComponent[] Objects;
-
-	void Start()
+	public Transform Prefab;
+	public Material InstancedMaterial;
+	void Awake()
 	{
-		MaterialPropertyBlock matpropertyBlock = new MaterialPropertyBlock();
-		if ( Objects != null && Objects.Length > 0 )
+#if UNITY_5_6_OR_NEWER
+		InstancedMaterial.enableInstancing = true;
+#endif
+		int range = 5;
+
+		for ( int i = 0; i < 1000; i++ )
 		{
-			for ( int i = 0; i < Objects.Length; i++ )
-			{
-				matpropertyBlock.SetColor( "_Color", Objects[ i ].ObjectColor );
-				Objects[ i ].ObjectRenderer.SetPropertyBlock( matpropertyBlock );
-			}
+			Transform newInstance = Instantiate( Prefab, new Vector3( Random.Range( -range, range ), range + Random.Range( -range, range ), Random.Range( -range, range ) ), Quaternion.identity ) as Transform;
+			MaterialPropertyBlock matpropertyBlock = new MaterialPropertyBlock();
+			Color newColor = new Color( Random.Range( 0.0f, 1.0f ), Random.Range( 0.0f, 1.0f ), Random.Range( 0.0f, 1.0f ) );
+			matpropertyBlock.SetColor( "_Color", newColor );
+			newInstance.GetComponent<MeshRenderer>().SetPropertyBlock( matpropertyBlock );
 		}
 	}
 }

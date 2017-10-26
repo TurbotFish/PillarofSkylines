@@ -4,7 +4,7 @@
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Texture 0 Matrix", "Transform", "Texture 0 Matrix" )]
+	[NodeAttributes( "Texture 0 Matrix", "Matrix Transform", "Texture 0 Matrix" )]
 	public sealed class Texture0MatrixNode : ConstantShaderVariable
 	{
 		protected override void CommonInit( int uniqueId )

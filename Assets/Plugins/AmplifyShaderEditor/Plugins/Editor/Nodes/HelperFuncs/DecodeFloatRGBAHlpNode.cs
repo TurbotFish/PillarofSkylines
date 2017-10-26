@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Decode Float RGBA", "Generic", "Decodes RGBA color into a float" )]
+	[NodeAttributes( "Decode Float RGBA", "Miscellaneous", "Decodes RGBA color into a float" )]
 	public sealed class DecodeFloatRGBAHlpNode : HelperParentNode
 	{
 		protected override void CommonInit( int uniqueId )

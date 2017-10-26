@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Ceil", "Operators", "Smallest integer not less than a scalar or each vector component" )]
+	[NodeAttributes( "Ceil", "Math Operators", "Smallest integer not less than a scalar or each vector component" )]
 	public sealed class CeilOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

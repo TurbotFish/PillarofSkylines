@@ -5,33 +5,28 @@
 
 using System;
 using UnityEngine;
+using UnityEditor;
 
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Fresnel", "Misc", "Simple Fresnel effect" )]
+	[NodeAttributes( "Fresnel", "Surface Data", "Simple Fresnel effect" )]
 	public sealed class FresnelNode : ParentNode
 	{
-		private const string WorldDirVarStr = "worldViewDir";
-		private const string WorldDirFuncStr = "normalize( UnityWorldSpaceViewDir( {0} ) )";
+		private const string FresnedFinalVar = "fresnelNode";
 
-		private const string FresnedDotVar = "fresnelDotVal";
-		private const string FresnedFinalVar = "fresnelFinalVal";
-
-		private const string FresnesDotOp = "float {0} = dot( {1},{2} );";
-		private const string FresnesFinalOp = "float {0} = {1};";
-
-		private int m_cachedPropertyId = -1;
+		[SerializeField]
+		private ViewSpace m_normalSpace = ViewSpace.World;
 
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
-			AddInputPort( WirePortDataType.FLOAT3, false, "Normal" );
+			AddInputPort( WirePortDataType.FLOAT3, false, "World Normal" );
 			AddInputPort( WirePortDataType.FLOAT, false, "Bias" );
 			AddInputPort( WirePortDataType.FLOAT, false, "Scale" );
 			AddInputPort( WirePortDataType.FLOAT, false, "Power" );
 			AddOutputPort( WirePortDataType.FLOAT, "Out" );
-			m_useInternalPortData = true;
+			m_autoWrapProperties = true;
 			m_drawPreviewAsSphere = true;
 			m_inputPorts[ 2 ].FloatInternalData = 1;
 			m_inputPorts[ 3 ].FloatInternalData = 5;
@@ -42,53 +37,98 @@ namespace AmplifyShaderEditor
 		{
 			base.SetPreviewInputs();
 
-			if ( m_cachedPropertyId == -1 )
-				m_cachedPropertyId = Shader.PropertyToID( "_Connected" );
+			if( m_normalSpace == ViewSpace.Tangent && m_inputPorts[ 0 ].IsConnected )
+				m_previewMaterialPassId = 2;
+			else if( m_normalSpace == ViewSpace.World && m_inputPorts[ 0 ].IsConnected )
+				m_previewMaterialPassId = 1;
+			else
+				m_previewMaterialPassId = 0;
+		}
 
-			PreviewMaterial.SetFloat( m_cachedPropertyId, ( m_inputPorts[ 0 ].IsConnected ? 1 : 0 ) );
+		public override void DrawProperties()
+		{
+			base.DrawProperties();
+
+			EditorGUI.BeginChangeCheck();
+			m_normalSpace = (ViewSpace)EditorGUILayoutEnumPopup( "Normal Space", m_normalSpace );
+			if( EditorGUI.EndChangeCheck() )
+			{
+				UpdatePort();
+			}
+
+			if( !m_inputPorts[ 1 ].IsConnected )
+				m_inputPorts[ 1 ].FloatInternalData = EditorGUILayoutFloatField( m_inputPorts[ 1 ].Name, m_inputPorts[ 1 ].FloatInternalData );
+			if( !m_inputPorts[ 2 ].IsConnected )
+				m_inputPorts[ 2 ].FloatInternalData = EditorGUILayoutFloatField( m_inputPorts[ 2 ].Name, m_inputPorts[ 2 ].FloatInternalData );
+			if( !m_inputPorts[ 3 ].IsConnected )
+				m_inputPorts[ 3 ].FloatInternalData = EditorGUILayoutFloatField( m_inputPorts[ 3 ].Name, m_inputPorts[ 3 ].FloatInternalData );
+		}
+
+		private void UpdatePort()
+		{
+			if( m_normalSpace == ViewSpace.World )
+				m_inputPorts[ 0 ].ChangeProperties( "World Normal", m_inputPorts[ 0 ].DataType, false );
+			else
+				m_inputPorts[ 0 ].ChangeProperties( "Normal", m_inputPorts[ 0 ].DataType, false );
+
+			m_sizeIsDirty = true;
 		}
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
-			if ( m_outputPorts[ 0 ].IsLocalValue )
+			if( m_outputPorts[ 0 ].IsLocalValue )
 				return m_outputPorts[ 0 ].LocalValue;
 
-			dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_POS ), true );
-			if ( dataCollector.IsFragmentCategory )
-			{
-				dataCollector.AddLocalVariable( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3, WorldDirVarStr, string.Format( WorldDirFuncStr, Constants.InputVarStr + ".worldPos" ) );
+			if( dataCollector.IsFragmentCategory )
+				dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( PrecisionType.Float, AvailableSurfaceInputs.WORLD_POS ), true );
 
-			}
-			else
-			{
-				string worldPosVar = GeneratorUtils.GenerateWorldPosition( ref dataCollector, UniqueId ); 
-				dataCollector.AddLocalVariable( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3, WorldDirVarStr, string.Format( WorldDirFuncStr, worldPosVar ) );
-			}
+			string viewdir = GeneratorUtils.GenerateViewDirection( ref dataCollector, UniqueId, PrecisionType.Fixed, ViewSpace.World );
 
 			string normal = string.Empty;
-			if ( m_inputPorts[ 0 ].IsConnected )
+			if( m_inputPorts[ 0 ].IsConnected )
 			{
 				normal = m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT3, ignoreLocalvar, true );
+
+				if( dataCollector.IsFragmentCategory )
+				{
+					dataCollector.AddToInput( UniqueId, Constants.InternalData, false );
+
+					if( m_normalSpace == ViewSpace.Tangent )
+					{
+						dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_NORMAL ), true );
+						dataCollector.ForceNormal = true;
+						normal = "WorldNormalVector( " + Constants.InputVarStr + " , " + normal + " )";
+					}
+				}
+				else
+				{
+					if( m_normalSpace == ViewSpace.Tangent )
+					{
+						string wtMatrix = GeneratorUtils.GenerateWorldToTangentMatrix( ref dataCollector, UniqueId, m_currentPrecisionType );
+						normal = "mul( " + normal + "," + wtMatrix + " )";
+					}
+				}
 			}
 			else
 			{
-				dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_NORMAL ), true );
-				dataCollector.AddToInput( UniqueId, Constants.InternalData, false );
-				normal = GeneratorUtils.GenerateWorldNormal( ref dataCollector, UniqueId );
-				//string normalWorld = "WorldNormalVector( " + Constants.InputVarStr + ", float3( 0, 0, 1 ) );";
-				//dataCollector.AddToLocalVariables( m_uniqueId, "float3 worldNormal = "+ normalWorld );
-				//normal = "worldNormal";
-				//dataCollector.ForceNormal = true;
+				if( dataCollector.IsFragmentCategory )
+				{
+					dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_NORMAL ), true );
+					if( dataCollector.DirtyNormal )
+						dataCollector.AddToInput( UniqueId, Constants.InternalData, false );
+				}
+
+				normal = dataCollector.IsTemplate ? dataCollector.TemplateDataCollectorInstance.GetWorldNormal() : GeneratorUtils.GenerateWorldNormal( ref dataCollector, UniqueId );
 			}
 
 			string bias = m_inputPorts[ 1 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT, ignoreLocalvar, true );
 			string scale = m_inputPorts[ 2 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT, ignoreLocalvar, true );
 			string power = m_inputPorts[ 3 ].GenerateShaderForOutput( ref dataCollector, WirePortDataType.FLOAT, ignoreLocalvar, true );
 
-			string ndotl = "dot( " + normal + ", " + WorldDirVarStr + " )";
+			string ndotl = "dot( " + normal + ", " + viewdir + " )";
 
 			string fresnelFinalVar = FresnedFinalVar + OutputId;
-			string result = string.Format( "({0} + {1}*pow( 1.0 - {2} , {3}))", bias, scale, ndotl, power );
+			string result = string.Format( "( {0} + {1} * pow( 1.0 - {2}, {3} ) )", bias, scale, ndotl, power );
 
 			RegisterLocalVariable( 0, result, ref dataCollector, fresnelFinalVar );
 			return m_outputPorts[ 0 ].LocalValue;

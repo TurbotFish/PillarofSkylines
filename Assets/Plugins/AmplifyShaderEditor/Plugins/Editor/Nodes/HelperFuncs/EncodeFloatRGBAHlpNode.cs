@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Encode Float RGBA", "Generic", "Encodes [0..1] range float into RGBA color, for storage in low precision render target" )]
+	[NodeAttributes( "Encode Float RGBA", "Miscellaneous", "Encodes [0..1] range float into RGBA color, for storage in low precision render target" )]
 	public sealed class EncodeFloatRGBAHlpNode : HelperParentNode
 	{
 		protected override void CommonInit( int uniqueId )

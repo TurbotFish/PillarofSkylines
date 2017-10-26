@@ -67,8 +67,8 @@ Shader "ASESampleShaders/SimpleNoise"
 		{
 			float2 uv_TextureSample0 = i.uv_texcoord * _TextureSample0_ST.xy + _TextureSample0_ST.zw;
 			float simplePerlin2D205 = snoise( ( _Size * uv_TextureSample0 ) );
-			float2 temp_cast_0 = (( simplePerlin2D205 * _Strength )).xx;
-			o.Emission = tex2D( _TextureSample0, ( uv_TextureSample0 + temp_cast_0 ) ).xyz;
+			float2 temp_cast_0 = ( simplePerlin2D205 * _Strength );
+			o.Emission = tex2D( _TextureSample0,( uv_TextureSample0 + temp_cast_0 )).xyz;
 			o.Alpha = 1;
 		}
 
@@ -78,26 +78,26 @@ Shader "ASESampleShaders/SimpleNoise"
 	CustomEditor "ASEMaterialInspector"
 }
 /*ASEBEGIN
-Version=10001
-98;99;1455;745;-995.7839;446.3843;1;True;True
-Node;AmplifyShaderEditor.Vector2Node;199;1168.76,-127.3016;Float;False;Property;_Size;Size;1;0;0,0;0;3;FLOAT2;FLOAT;FLOAT
-Node;AmplifyShaderEditor.TextureCoordinatesNode;198;1095.557,21.3978;Float;False;0;210;2;3;2;SAMPLER2D;;False;0;FLOAT2;1,1;False;1;FLOAT2;0,0;False;5;FLOAT2;FLOAT;FLOAT;FLOAT;FLOAT
-Node;AmplifyShaderEditor.SimpleMultiplyOpNode;200;1398.767,-79.30207;Float;False;2;0;FLOAT2;0.0;False;1;FLOAT2;0.0,0;False;1;FLOAT2
-Node;AmplifyShaderEditor.RangedFloatNode;211;1538.458,108.999;Float;False;Property;_Strength;Strength;2;0;0;0;0;0;1;FLOAT
-Node;AmplifyShaderEditor.NoiseGeneratorNode;205;1546.165,-24.90001;Float;False;Simplex2D;1;0;FLOAT2;0,0,0;False;1;FLOAT
-Node;AmplifyShaderEditor.SimpleMultiplyOpNode;212;1715.259,47.89908;Float;False;2;0;FLOAT;0.0;False;1;FLOAT;0.0;False;1;FLOAT
-Node;AmplifyShaderEditor.TextureCoordinatesNode;213;1604.246,-180.3998;Float;False;0;210;2;3;2;SAMPLER2D;;False;0;FLOAT2;1,1;False;1;FLOAT2;0,0;False;5;FLOAT2;FLOAT;FLOAT;FLOAT;FLOAT
-Node;AmplifyShaderEditor.SimpleAddOpNode;214;1868.557,-58.60012;Float;False;2;0;FLOAT2;0.0;False;1;FLOAT;0.0,0;False;1;FLOAT2
-Node;AmplifyShaderEditor.SamplerNode;210;2028.653,-126.8006;Float;True;Property;_TextureSample0;Texture Sample 0;1;0;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;6;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;1.0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;1.0;False;5;FLOAT4;FLOAT;FLOAT;FLOAT;FLOAT
-Node;AmplifyShaderEditor.StandardSurfaceOutputNode;0;2385.304,-300.1997;Float;False;True;6;Float;ASEMaterialInspector;0;Standard;ASESampleShaders/SimpleNoise;False;False;False;False;False;False;False;False;False;False;False;False;Back;0;3;False;0;0;Masked;0.28;True;True;0;False;TransparentCutout;AlphaTest;All;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;False;0;255;255;0;0;0;0;False;1;4;10;25;False;0.5;True;0;Zero;Zero;0;Zero;Zero;Add;Add;0;False;0;0,0,0,0;VertexOffset;False;Cylindrical;Relative;0;;-1;-1;-1;-1;16;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT;0.0;False;4;FLOAT;0.0;False;5;FLOAT;0.0;False;6;FLOAT3;0,0,0;False;7;FLOAT3;0,0,0;False;8;FLOAT;0.0;False;9;FLOAT;0.0;False;10;OBJECT;0;False;11;FLOAT3;0.0,0,0;False;12;FLOAT3;0.0,0,0;False;13;FLOAT3;0,0,0;False;14;FLOAT4;0,0,0,0;False;15;FLOAT3;0,0,0;False;0
-WireConnection;200;0;199;0
-WireConnection;200;1;198;0
-WireConnection;205;0;200;0
-WireConnection;212;0;205;0
-WireConnection;212;1;211;0
+Version=5002
+339;92;1190;648;-1333.154;591.699;1.3;False;False
+Node;AmplifyShaderEditor.TextureCoordinatesNode;213;1604.246,-180.3998;Float;0;210;2;FLOAT2;1,1;FLOAT2;0,0
+Node;AmplifyShaderEditor.SimpleAddOpNode;214;1868.557,-58.60012;Float;FLOAT2;0.0;FLOAT;0.0,0
+Node;AmplifyShaderEditor.SamplerNode;210;2028.653,-126.8006;Float;Property;_TextureSample0;Texture Sample 0;1;0;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;SAMPLER2D;;FLOAT2;0,0;FLOAT;1.0;FLOAT2;0,0;FLOAT2;0,0;FLOAT;1.0
+Node;AmplifyShaderEditor.SimpleMultiplyOpNode;212;1715.259,47.89908;Float;FLOAT;0.0;FLOAT;0.0
+Node;AmplifyShaderEditor.RangedFloatNode;211;1538.458,108.999;Float;Property;_Strength;Strength;2;0;0;0;0
+Node;AmplifyShaderEditor.SimpleMultiplyOpNode;200;1398.767,-79.30207;Float;FLOAT2;0.0;FLOAT2;0.0,0
+Node;AmplifyShaderEditor.TextureCoordinatesNode;198;1095.557,21.3978;Float;0;210;2;FLOAT2;1,1;FLOAT2;0,0
+Node;AmplifyShaderEditor.Vector2Node;199;1194.76,-149.3016;Float;Property;_Size;Size;1;0;0,0
+Node;AmplifyShaderEditor.NoiseGeneratorNode;205;1546.165,-24.90001;Float;Simplex2D;FLOAT2;0,0,0
+Node;AmplifyShaderEditor.StandardSurfaceOutputNode;0;2385.304,-300.1997;Float;True;6;Float;ASEMaterialInspector;Standard;ASESampleShaders/SimpleNoise;False;False;False;False;False;False;False;False;False;False;False;False;Back;0;3;False;0;0;Masked;0.28;True;True;0;False;TransparentCutout;AlphaTest;All;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;False;0;255;255;0;0;0;0;False;1;4;10;25;False;0.5;True;0;Zero;Zero;0;Zero;Zero;Add;Add;0;FLOAT3;0,0,0;FLOAT3;0,0,0;FLOAT3;0,0,0;FLOAT;0.0;FLOAT;0.0;FLOAT;0.0;FLOAT3;0,0,0;FLOAT3;0,0,0;FLOAT;0.0;FLOAT;0.0;OBJECT;0;FLOAT3;0.0,0,0;FLOAT3;0.0,0,0;OBJECT;0;FLOAT4;0,0,0,0;FLOAT3;0,0,0
 WireConnection;214;0;213;0
 WireConnection;214;1;212;0
 WireConnection;210;1;214;0
+WireConnection;212;0;205;0
+WireConnection;212;1;211;0
+WireConnection;200;0;199;0
+WireConnection;200;1;198;0
+WireConnection;205;0;200;0
 WireConnection;0;2;210;0
 ASEEND*/
-//CHKSM=20FC2B3F546EAB487458C27F354238C632CF0567
+//CHKSM=BBB0EE18F9E3836D4D7B31D048E8F2E5439D58CB

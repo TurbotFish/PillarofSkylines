@@ -31,7 +31,7 @@ namespace AmplifyShaderEditor
 		}
 
 
-		public void CalculateShaderInstructions(Shader shader)
+		public void CalculateShaderInstructions( Shader shader )
 		{
 			//Type shaderutilType = Type.GetType( "UnityEditor.ShaderUtil, UnityEditor" );
 			//shaderutilType.InvokeMember( "OpenCompiledShader", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, null, new object[] { shader, mode, customPlatformsMask, includeAllVariants } );
@@ -49,7 +49,7 @@ namespace AmplifyShaderEditor
 			m_screenshotTex2D = new Texture2D( ( int ) m_window.position.width, ( int ) m_window.position.height, TextureFormat.RGB24, false );
 
 			RenderTexture.active = m_screenshotRT;
-			m_window.CurrentPaletteWindow.FillList( ref m_screenshotList );
+			m_window.CurrentPaletteWindow.FillList( ref m_screenshotList, true );
 			m_window.CurrentGraph.ClearGraph();
 			m_window.CurrentGraph.CurrentMasterNode.Vec2Position = new Vector2( 1500, 0 );
 			m_window.ResetCameraSettings();
@@ -73,7 +73,8 @@ namespace AmplifyShaderEditor
 					break;
 					case DebugNodeState.FocusOnNode:
 					{
-						m_window.FocusOnNode( m_node, 1, false );
+						//m_window.FocusOnNode( m_node, 1, false );
+						m_window.FocusOnPoint( m_node.TruePosition.center, 1, false );
 						m_screenShotState = DebugNodeState.TakeScreenshot;
 					}
 					break;
@@ -88,12 +89,12 @@ namespace AmplifyShaderEditor
 							string pictureFilename = UIUtils.ReplaceInvalidStrings( m_screenshotList[ 0 ].Name );
 							pictureFilename = UIUtils.RemoveInvalidCharacters( pictureFilename );
 
-							System.IO.File.WriteAllBytes( m_pathname + pictureFilename+".png", bytes );
+							System.IO.File.WriteAllBytes( m_pathname + pictureFilename + ".png", bytes );
 							m_screenShotState = DebugNodeState.WaitFrame;
 						}
 					}
 					break;
-					case DebugNodeState.WaitFrame: { Debug.Log( "Wait Frame" );m_screenShotState = DebugNodeState.DeleteNode; } break;
+					case DebugNodeState.WaitFrame: { Debug.Log( "Wait Frame" ); m_screenShotState = DebugNodeState.DeleteNode; } break;
 					case DebugNodeState.DeleteNode:
 					{
 						m_window.DestroyNode( m_node );

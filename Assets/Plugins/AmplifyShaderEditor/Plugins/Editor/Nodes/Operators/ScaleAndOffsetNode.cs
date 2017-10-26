@@ -1,21 +1,18 @@
 // Amplify Shader Editor - Visual Shader Editing Tool
 // Copyright (c) Amplify Creations, Lda <info@amplify.pt>
-
-using UnityEngine;
-using UnityEditor;
 using System;
 
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Scale And Offset", "Operators", "Scales and offsets a value" )]
+	[NodeAttributes( "Scale And Offset", "Math Operators", "Scales and offsets an input value\n( ( <b>Value</b> * <b>Scale</b> ) + <b>Offset</b> )" )]
 	public sealed class ScaleAndOffsetNode : ParentNode
 	{
 		private const string ScaleOffsetOpStr = "({0}*{1} + {2})";
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
-			AddInputPort( WirePortDataType.FLOAT, false, "Value" );
+			AddInputPort( WirePortDataType.FLOAT, false, Constants.EmptyPortValue );
 			AddInputPort( WirePortDataType.FLOAT, false, "Scale" );
 			m_inputPorts[ 1 ].FloatInternalData = 1;
 			AddInputPort( WirePortDataType.FLOAT, false, "Offset" );
@@ -47,6 +44,9 @@ namespace AmplifyShaderEditor
 		
 		public override string GenerateShaderForOutput( int outputId,  ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
+			if ( m_outputPorts[ 0 ].IsLocalValue )
+				return m_outputPorts[ 0 ].LocalValue;
+
 			string value = m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, m_inputPorts[ 0 ].DataType, ignoreLocalvar );
 
 			// If scale port is a float then there's no need to cast it to any other type since it can be multiplied with everything

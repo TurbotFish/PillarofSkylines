@@ -4,7 +4,7 @@
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Inverse Transpose Model View Matrix", "Transform", "All Transformation types" )]
+	[NodeAttributes( "Inverse Transpose Model View Matrix", "Matrix Transform", "All Transformation types" )]
 	public sealed class InverseTranspMVMatrixNode : ConstantShaderVariable
 	{
 		protected override void CommonInit( int uniqueId )

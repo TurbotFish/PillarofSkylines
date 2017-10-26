@@ -4,7 +4,7 @@
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Floor", "Operators", "Largest integer not greater than a scalar or each vector component" )]
+	[NodeAttributes( "Floor", "Math Operators", "Largest integer not greater than a scalar or each vector component" )]
 	public sealed class FloorOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

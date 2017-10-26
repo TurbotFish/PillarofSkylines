@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "ATan", "Trigonometry", "Arctangent of scalars and vectors" )]
+	[NodeAttributes( "ATan", "Trigonometry Operators", "Arctangent of scalars and vectors" )]
 	public sealed class ATanOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

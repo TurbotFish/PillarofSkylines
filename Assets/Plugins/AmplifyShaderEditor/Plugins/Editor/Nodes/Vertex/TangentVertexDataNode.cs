@@ -17,31 +17,30 @@ namespace AmplifyShaderEditor
 			m_previewShaderGUID = "0a44bb521d06d6143a4acbc3602037f8";
 		}
 
+		public override void PropagateNodeData( NodeData nodeData, ref MasterNodeDataCollector dataCollector )
+		{
+			base.PropagateNodeData( nodeData, ref dataCollector );
+			dataCollector.DirtyNormal = true;
+		}
+
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
-			if ( dataCollector.PortCategory == MasterNodePortCategory.Vertex || dataCollector.PortCategory == MasterNodePortCategory.Tessellation )
+			string vertexTangent = string.Empty;
+			if ( dataCollector.MasterNodeCategory == AvailableShaderTypes.Template )
 			{
-				return base.GenerateShaderForOutput( outputId, ref dataCollector, ignoreLocalVar );
+				vertexTangent = dataCollector.TemplateDataCollectorInstance.GetVertexTangent();
+				return GetOutputVectorItem( 0, outputId, vertexTangent );
 			}
-			else
+
+			if ( dataCollector.PortCategory == MasterNodePortCategory.Fragment || dataCollector.PortCategory == MasterNodePortCategory.Debug )
 			{
 				dataCollector.ForceNormal = true;
-
 				dataCollector.AddToInput( UniqueId, UIUtils.GetInputDeclarationFromType( m_currentPrecisionType, AvailableSurfaceInputs.WORLD_NORMAL ), true );
 				dataCollector.AddToInput( UniqueId, Constants.InternalData, false );
-
-				//dataCollector.AddToLocalVariables( m_uniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3, "worldTangent", "WorldNormalVector( " + Constants.InputVarStr + ", float3(1,0,0) )" );
-				GeneratorUtils.GenerateWorldTangent( ref dataCollector, UniqueId );
-				dataCollector.AddToIncludes( UniqueId, Constants.UnityShaderVariables );
-#if UNITY_5_4_OR_NEWER
-				string matrix = "unity_WorldToObject";
-#else
-				string matrix = "_World2Object";
-#endif
-
-				dataCollector.AddToLocalVariables( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT3, "vertexTangent", "mul( " + matrix + ", float4( "+ GeneratorUtils.WorldTangentStr + ", 0 ) )" );
-				return GetOutputVectorItem( 0, outputId, "vertexTangent" );
 			}
+
+			vertexTangent = GeneratorUtils.GenerateVertexTangent( ref dataCollector, UniqueId, m_currentPrecisionType );
+			return GetOutputVectorItem( 0, outputId, vertexTangent );
 		}
 	}
 }

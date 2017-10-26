@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Object Space View Dir", "Generic", "Object space direction (not normalized) from given object space vertex position towards the camera" )]
+	[NodeAttributes( "Object Space View Dir", "Object Transform", "Object space direction (not normalized) from given object space vertex position towards the camera" )]
 	public sealed class ObjSpaceViewDirHlpNode : HelperParentNode
 	{
 		protected override void CommonInit( int uniqueId )
@@ -15,6 +15,7 @@ namespace AmplifyShaderEditor
 			m_inputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT4, false );
 			m_outputPorts[ 0 ].ChangeType( WirePortDataType.FLOAT3, false );
 			m_outputPorts[ 0 ].Name = "XYZ";
+			m_previewShaderGUID = "c7852de24cec4a744b5358921e23feee";
 		}
 
 		protected override void OnUniqueIDAssigned()

@@ -3,9 +3,6 @@
 
 	#define LIGHTING_CUSTOM_PBR_INCLUDED
 
-
-
-
 	float4 _Tint;
 	sampler2D _MainTex, _DetailTex, _DetailMask;
 	float4 _MainTex_ST, _DetailTex_ST;
@@ -22,8 +19,6 @@
 
 	sampler2D _OcclusionMap;
 	float _OcclusionStrength;
-
-	sampler2D _TempTex;
 
 	float _AlphaCutoff;
 
@@ -104,6 +99,26 @@
 		#endif
 	}
 
+	//float GetPackedDiffuseSSS(){
+	//	float _PackedColour = 0;
+	//	#if defined(_SSS)
+	//		float _Green = floor(_DiffuseSSS.g * 10) * 0.1;
+	//		float _Red = floor(_DiffuseSSS.r * 10) * 0.01;
+	//		float _Blue = floor(_DiffuseSSS.b * 10) * 0.001;
+	//		_PackedColour = saturate(_Green + _Red + _Blue);
+	//	#endif
+
+	//	return _PackedColour;
+	//}
+
+	half GetSSSColourMask(){
+		half mask = 0;
+		#if defined(_SSSColour2)
+			mask = 1;
+		#endif
+		return mask;
+	}
+
 	float3 GetAlbedo(Interpolators i){
 		float3 albedo = tex2D(_MainTex, i.uv.xy).rgb * _Tint.rgb;
 		#if defined(_DETAIL_ALBEDO_MAP)
@@ -111,6 +126,15 @@
 			albedo = lerp(albedo, albedo * details, GetDetailMask(i));
 		#endif
 		return albedo; 
+	}
+
+	//checker test
+	float3 GetAlbedoDebug(Interpolators i){
+
+		float xValue = floor(i.worldPos.x) - floor(floor(i.worldPos.x) * 0.5) * 2.0;
+		float yValue = floor(i.worldPos.y) - floor(floor(i.worldPos.y) * 0.5) * 2.0;
+		float zValue = floor(i.worldPos.z) - floor(floor(i.worldPos.z) * 0.5) * 2.0;
+		return abs(yValue - abs(xValue - zValue));
 	}
 
 	float GetThickness(Interpolators i){
@@ -377,9 +401,17 @@
 
 		float3 specularTint;
 		float oneMinusReflectivity;
-		float3 albedo = DiffuseAndSpecularFromMetallic( 
-			GetAlbedo(i), GetMetallic(i), specularTint, oneMinusReflectivity
-		);
+
+		#if defined (CHECKER_DEBUG)
+			float3 albedo = DiffuseAndSpecularFromMetallic( 
+				GetAlbedoDebug(i), GetMetallic(i), specularTint, oneMinusReflectivity
+			);
+		#else
+			float3 albedo = DiffuseAndSpecularFromMetallic( 
+				GetAlbedo(i), GetMetallic(i), specularTint, oneMinusReflectivity
+			);
+		#endif
+
 		#if defined(_RENDERING_TRANSPARENT)
 			albedo *= alpha;
 			alpha = 1 - oneMinusReflectivity + alpha * oneMinusReflectivity;
@@ -411,10 +443,12 @@
 			output.gBuffer0.a = GetThickness(i);
 			output.gBuffer1.rgb = specularTint;
 			output.gBuffer1.a = GetSmoothness(i);
-			output.gBuffer2.rgba = float4(i.normal * 0.5 + 0.5, 1);
-			//output.gBuffer2.a = GetThickness(i);
+			output.gBuffer2.rgba = float4(i.normal.xyz * 0.5 + 0.5, GetSSSColourMask());
 			output.gBuffer3 = color;
 
+
+			//output.gBuffer2.rgba = float4(i.normal.xy * 0.5 + 0.5, 0.825, 0);// * 0.5 + 0.5);
+			//output.gBuffer2.rgba = float4((i.normal.xy / sqrt(i.normal.z * 8 + 8)) + 0.5, GetPackedDiffuseSSS(), 0);
 
 		#else
 			output.color = ApplyFog(color, i);

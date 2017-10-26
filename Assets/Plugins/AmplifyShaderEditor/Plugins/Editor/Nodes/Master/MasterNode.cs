@@ -18,12 +18,26 @@ namespace AmplifyShaderEditor
 
 	public enum AvailableShaderTypes
 	{
-		SurfaceShader
+		SurfaceShader = 0,
+		Template
+	}
+
+	[Serializable]
+	public class MasterNodeCategoriesData
+	{
+		public AvailableShaderTypes Category;
+		public string Name;
+		public MasterNodeCategoriesData( AvailableShaderTypes category, string name ) { Category = category; Name = name; }
 	}
 
 	[Serializable]
 	public class MasterNode : OutputNode
 	{
+		protected MasterNodeDataCollector m_currentDataCollector;
+
+		protected const string ShaderNameStr = "Shader Name";
+		protected GUIContent m_shaderNameContent;
+		private const string DefaultShaderName = "New AmplifyShader";
 
 		private const string IndentationHelper = "\t\t{0}\n";
 		private const string ShaderLODFormat = "\t\tLOD {0}\n";
@@ -31,6 +45,8 @@ namespace AmplifyShaderEditor
 		public delegate void OnMaterialUpdated( MasterNode masterNode );
 		public event OnMaterialUpdated OnMaterialUpdatedEvent;
 		public event OnMaterialUpdated OnShaderUpdatedEvent;
+
+		protected const string GeneralFoldoutStr = " General";
 
 		protected readonly string[] ShaderModelTypeArr = { "2.0", "2.5", "3.0", "3.5", "4.0", "4.5", "4.6", "5.0" };
 		private const string ShaderKeywordsStr = "Shader Keywords";
@@ -54,13 +70,16 @@ namespace AmplifyShaderEditor
 		private Rect m_masterNodeIconCoords;
 
 		[SerializeField]
-		protected string m_shaderName = "MyNewShader";
+		protected string m_shaderName = "New AmplifyShader";
 
 		[SerializeField]
 		protected string m_customInspectorName = Constants.DefaultCustomInspector;
 
 		[SerializeField]
-		protected AvailableShaderTypes m_currentShaderType = AvailableShaderTypes.SurfaceShader;
+		protected int m_masterNodeCategory = 0;// MasterNodeCategories.SurfaceShader;
+
+		[SerializeField]
+		protected string m_currentShaderData = string.Empty;
 
 		private Texture2D m_masterNodeOnTex;
 		private Texture2D m_masterNodeOffTex;
@@ -85,7 +104,11 @@ namespace AmplifyShaderEditor
 		public MasterNode() : base() { CommonInit(); }
 		public MasterNode( int uniqueId, float x, float y, float width, float height ) : base( uniqueId, x, y, width, height ) { CommonInit(); }
 
-		protected GUIContent m_shaderTypeLabel = new GUIContent( "Shader Type ", "Specify the type of shader you want to be working on" );
+		protected GUIContent m_categoryLabel = new GUIContent( "Shader Type ", "Specify the shader type you want to be working on" );
+
+		protected GUIContent[] m_availableCategoryLabels;
+		protected MasterNodeCategoriesData[] m_availableCategories;
+
 
 		void CommonInit()
 		{
@@ -95,7 +118,49 @@ namespace AmplifyShaderEditor
 			m_connStatus = NodeConnectionStatus.Connected;
 			m_activeType = GetType();
 			m_currentPrecisionType = PrecisionType.Float;
+			m_textLabelWidth = 120;
+			m_shaderNameContent = new GUIContent( ShaderNameStr, string.Empty );
+
 			AddMasterPorts();
+		}
+
+		void InitAvailableCategories()
+		{
+			int templateCount = TemplatesManager.TemplateCount;
+			m_availableCategories = new MasterNodeCategoriesData[ templateCount + 1 ];
+			m_availableCategoryLabels = new GUIContent[ templateCount + 1 ];
+
+			m_availableCategories[ 0 ] = new MasterNodeCategoriesData( AvailableShaderTypes.SurfaceShader, string.Empty );
+			m_availableCategoryLabels[ 0 ] = new GUIContent( "Surface Shader" );
+
+			for ( int i = 0; i < templateCount; i++ )
+			{
+				int idx = i + 1;
+				TemplateData templateData = TemplatesManager.GetTemplate( i );
+				m_availableCategories[ idx ] = new MasterNodeCategoriesData( AvailableShaderTypes.Template, templateData.GUID );
+				m_availableCategoryLabels[ idx ] = new GUIContent( templateData.Name );
+			}
+		}
+
+		public override void SetupNodeCategories()
+		{
+			//base.SetupNodeCategories();
+			ContainerGraph.ResetNodesData();
+			int count = m_inputPorts.Count;
+			for ( int i = 0; i < count; i++ )
+			{
+				if ( m_inputPorts[ i ].IsConnected )
+				{
+					NodeData nodeData = new NodeData( m_inputPorts[ i ].Category );
+					ParentNode node = m_inputPorts[ i ].GetOutputNode();
+					node.PropagateNodeData( nodeData, ref m_currentDataCollector );
+				}
+			}
+		}
+
+		public virtual void RefreshAvailableCategories()
+		{
+			InitAvailableCategories();
 		}
 
 		public virtual void AddMasterPorts() { }
@@ -105,6 +170,44 @@ namespace AmplifyShaderEditor
 		public virtual void UpdateMasterNodeMaterial( Material material ) { }
 
 		public virtual void SetName( string name ) { }
+
+		public void CopyFrom( MasterNode other )
+		{
+			Vec2Position = other.Vec2Position;
+			CurrentShader = other.CurrentShader;
+			CurrentMaterial = other.CurrentMaterial;
+			ShaderName = other.ShaderName;
+			m_masterNodeCategory = other.CurrentMasterNodeCategoryIdx;
+		}
+
+		protected void DrawCurrentShaderType()
+		{
+			int oldType = m_masterNodeCategory;
+			m_masterNodeCategory = EditorGUILayoutPopup( m_categoryLabel, m_masterNodeCategory, m_availableCategoryLabels );
+			if ( oldType != m_masterNodeCategory )
+			{
+				m_containerGraph.ParentWindow.ReplaceMasterNode( m_availableCategories[ m_masterNodeCategory ] );
+			}
+		}
+
+		protected void DrawShaderName()
+		{
+			EditorGUI.BeginChangeCheck();
+			string newShaderName = EditorGUILayoutTextField( m_shaderNameContent, m_shaderName );
+			if ( EditorGUI.EndChangeCheck() )
+			{
+				if ( newShaderName.Length > 0 )
+				{
+					newShaderName = UIUtils.RemoveShaderInvalidCharacters( newShaderName );
+				}
+				else
+				{
+					newShaderName = DefaultShaderName;
+				}
+				ShaderName = newShaderName;
+			}
+			m_shaderNameContent.tooltip = m_shaderName;
+		}
 
 		public void DrawShaderKeywords()
 		{
@@ -172,7 +275,14 @@ namespace AmplifyShaderEditor
 
 		public override void Draw( DrawInfo drawInfo )
 		{
+			if ( m_availableCategories == null )
+				InitAvailableCategories();
+
 			base.Draw( drawInfo );
+
+			if ( drawInfo.CurrentEventType != EventType.Repaint )
+				return;
+
 			if ( m_isMainOutputNode )
 			{
 				if ( m_masterNodeOnTex == null )
@@ -208,16 +318,24 @@ namespace AmplifyShaderEditor
 					m_gpuInstanceOnTex = UIUtils.GPUInstancedOnTexture;
 				}
 
-				if ( UIUtils.IsInstancedShader() )
-				{
-					m_masterNodeIconCoords = m_globalPosition;
-					m_masterNodeIconCoords.x += m_globalPosition.width - 5 - m_gpuInstanceOffTex.width * drawInfo.InvertedZoom;
-					m_masterNodeIconCoords.y += m_headerPosition.height;
-					m_masterNodeIconCoords.width = m_gpuInstanceOffTex.width * drawInfo.InvertedZoom;
-					m_masterNodeIconCoords.height = m_gpuInstanceOffTex.height * drawInfo.InvertedZoom;
-					GUI.DrawTexture( m_masterNodeIconCoords, m_gpuInstanceOffTex );
-				}
+				//if ( UIUtils.IsInstancedShader() )
+				//{
+				//	DrawInstancedIcon( drawInfo );
+				//}
 			}
+		}
+
+		protected void DrawInstancedIcon( DrawInfo drawInfo )
+		{
+			if ( drawInfo.CurrentEventType != EventType.Repaint )
+				return;
+
+			m_masterNodeIconCoords = m_globalPosition;
+			m_masterNodeIconCoords.x += m_globalPosition.width - 5 - m_gpuInstanceOffTex.width * drawInfo.InvertedZoom;
+			m_masterNodeIconCoords.y += m_headerPosition.height;
+			m_masterNodeIconCoords.width = m_gpuInstanceOffTex.width * drawInfo.InvertedZoom;
+			m_masterNodeIconCoords.height = m_gpuInstanceOffTex.height * drawInfo.InvertedZoom;
+			GUI.DrawTexture( m_masterNodeIconCoords, m_gpuInstanceOffTex );
 		}
 		//public override void DrawProperties()
 		//{
@@ -233,6 +351,7 @@ namespace AmplifyShaderEditor
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_currentPrecisionType );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_customInspectorName );
 			IOUtils.AddFieldValueToString( ref nodeInfo, m_shaderLOD );
+			IOUtils.AddFieldValueToString( ref nodeInfo, m_masterNodeCategory );
 		}
 
 		public override void ReadFromString( ref string[] nodeParams )
@@ -251,7 +370,13 @@ namespace AmplifyShaderEditor
 
 			if ( UIUtils.CurrentShaderVersion() > 6101 )
 			{
-				m_shaderLOD = Convert.ToInt32( GetCurrentParam( ref nodeParams ));
+				m_shaderLOD = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
+			}
+
+			if ( UIUtils.CurrentShaderVersion() >= 13001 )
+			{
+				//Debug.LogWarning( "Add correct version as soon as it is merged into master" );
+				m_masterNodeCategory = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 			}
 		}
 
@@ -287,7 +412,81 @@ namespace AmplifyShaderEditor
 		public virtual Shader Execute( string pathname, bool isFullPath )
 		{
 			ContainerGraph.ResetNodesLocalVariables();
+			m_currentDataCollector = new MasterNodeDataCollector( this );
 			return null;
+		}
+
+		protected void SortInputPorts( ref List<InputPort> vertexPorts, ref List<InputPort> fragmentPorts )
+		{
+			for ( int i = 0; i < m_inputPorts.Count; i++ )
+			{
+				if ( m_inputPorts[ i ].Category == MasterNodePortCategory.Fragment || m_inputPorts[ i ].Category == MasterNodePortCategory.Debug )
+				{
+					if ( fragmentPorts != null )
+						fragmentPorts.Add( m_inputPorts[ i ] );
+				}
+				else
+				{
+					if ( vertexPorts != null )
+						vertexPorts.Add( m_inputPorts[ i ] );
+				}
+			}
+
+			if ( fragmentPorts.Count > 0 )
+			{
+				fragmentPorts.Sort( ( x, y ) => x.OrderId.CompareTo( y.OrderId ) );
+			}
+
+			if ( vertexPorts.Count > 0 )
+			{
+				vertexPorts.Sort( ( x, y ) => x.OrderId.CompareTo( y.OrderId ) );
+			}
+		}
+
+		protected void UpdateShaderAsset( ref string pathname, ref string shaderBody, bool isFullPath )
+		{
+			// Generate Graph info
+			shaderBody += ContainerGraph.ParentWindow.GenerateGraphInfo();
+
+			//TODO: Remove current SaveDebugShader and uncomment SaveToDisk as soon as pathname is editable
+			if ( !String.IsNullOrEmpty( pathname ) )
+			{
+				IOUtils.StartSaveThread( shaderBody, ( isFullPath ? pathname : ( IOUtils.dataPath + pathname ) ) );
+			}
+			else
+			{
+				IOUtils.StartSaveThread( shaderBody, Application.dataPath + "/AmplifyShaderEditor/Samples/Shaders/" + m_shaderName + ".shader" );
+			}
+
+
+			if ( CurrentShader == null )
+			{
+				AssetDatabase.Refresh( ImportAssetOptions.ForceUpdate );
+				CurrentShader = Shader.Find( ShaderName );
+			}
+			else
+			{
+				// need to always get asset datapath because a user can change and asset location from the project window 
+				AssetDatabase.ImportAsset( AssetDatabase.GetAssetPath( m_currentShader ) );
+				//ShaderUtil.UpdateShaderAsset( m_currentShader, ShaderBody );
+			}
+
+			if ( m_currentShader != null )
+			{
+				if ( m_currentMaterial != null )
+				{
+					m_currentMaterial.shader = m_currentShader;
+					m_currentDataCollector.UpdateMaterialOnPropertyNodes( m_currentMaterial );
+					FireMaterialChangedEvt();
+					// need to always get asset datapath because a user can change and asset location from the project window
+					AssetDatabase.ImportAsset( AssetDatabase.GetAssetPath( m_currentMaterial ) );
+				}
+
+				m_currentDataCollector.UpdateShaderOnPropertyNodes( ref m_currentShader );
+			}
+
+			m_currentDataCollector.Destroy();
+			m_currentDataCollector = null;
 		}
 
 		public virtual void UpdateFromShader( Shader newShader ) { }
@@ -298,7 +497,7 @@ namespace AmplifyShaderEditor
 			OnMaterialUpdatedEvent = null;
 		}
 
-		public Material CurrentMaterial { get { return m_currentMaterial; } }
+		public Material CurrentMaterial { get { return m_currentMaterial; } set { m_currentMaterial = value; } }
 		public Shader CurrentShader
 		{
 			set
@@ -314,6 +513,7 @@ namespace AmplifyShaderEditor
 			get { return m_currentShader; }
 		}
 
+		public virtual void ReleaseResources() { }
 		public override void Destroy()
 		{
 			base.Destroy();
@@ -327,8 +527,16 @@ namespace AmplifyShaderEditor
 			m_removeShaderKeywordStyle = null;
 			m_smallAddShaderKeywordItemStyle = null;
 			m_smallRemoveShaderKeywordStyle = null;
+			m_shaderKeywords.Clear();
+			m_shaderKeywords = null;
+
+			if ( m_currentDataCollector != null )
+			{
+				m_currentDataCollector.Destroy();
+				m_currentDataCollector = null;
+			}
 		}
-		
+
 		public static void OpenShaderBody( ref string result, string name )
 		{
 			result += string.Format( "Shader \"{0}\"\n", name ) + "{\n";
@@ -407,10 +615,12 @@ namespace AmplifyShaderEditor
 			set
 			{
 				m_shaderName = value;
-				m_content.text = value;
+				m_content.text = GenerateClippedTitle( value );
 				m_sizeIsDirty = true;
 			}
 		}
 
+		public AvailableShaderTypes CurrentMasterNodeCategory { get { return ( m_masterNodeCategory == 0 ) ? AvailableShaderTypes.SurfaceShader : AvailableShaderTypes.Template; } }
+		public int CurrentMasterNodeCategoryIdx { get { return m_masterNodeCategory; } }
 	}
 }

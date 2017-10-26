@@ -6,7 +6,7 @@
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Distance-based Tessellation", "Vertex Data", "Calculates tessellation based on distance from camera" )]
+	[NodeAttributes( "Distance-based Tessellation", "Miscellaneous", "Calculates tessellation based on distance from camera" )]
 	public sealed class DistanceBasedTessNode : TessellationParentNode
 	{
 		private const string FunctionBody = "UnityDistanceBasedTess( v0.vertex, v1.vertex, v2.vertex, {0},{1},{2})";

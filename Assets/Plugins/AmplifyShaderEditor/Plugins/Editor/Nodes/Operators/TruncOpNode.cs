@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Trunc", "Operators", "Largest integer not greater than a scalar or each vector component" )]
+	[NodeAttributes( "Trunc", "Math Operators", "Largest integer not greater than a scalar or each vector component" )]
 	public sealed class TruncOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

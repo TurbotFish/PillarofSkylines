@@ -28,3 +28,37 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+
+Assets/Cloud System Demos/Assets/Animations\.meta
+
+Assets/Cloud System Demos/Assets/GUI/Fonts/Ubunto Font Family\.meta
+
+Assets/Cloud System Demos/Assets/GUI/Skin\.meta
+
+Assets/Cloud System Demos/Assets/GUI/Textures\.meta
+
+Assets/Cloud System Demos/Assets/Lightning\.meta
+
+Assets/Cloud System Demos/Assets/Prefabs/Cameras\.meta
+
+Assets/Cloud System Demos/Assets/Prefabs/Clouds/Example Clouds\.meta
+
+Assets/Cloud System Demos/Assets/Sounds\.meta
+
+Assets/Cloud System Demos/Assets/Terrains\.meta
+
+Assets/Cloud System Demos/Assets/Tree Creator/Trees/BigTree_textures\.meta
+
+Assets/Cloud System Demos/Scenes\.meta
+
+Assets/Cloud System Demos/Scripts/Camera\.meta
+
+Assets/Cloud System Demos/Scripts/Effects\.meta
+
+Assets/Cloud System Demos/Standard Assets/Skyboxes/StarryNight\.meta
+
+Assets/Cloud System Demos/Standard Assets/Skyboxes/Textures/Sunny3\.meta
+
+Assets/Cloud System Demos/Standard Assets/Textures\.meta
+
+Assets/Plugins/Cloud System/Source/CloudSystemSource\.unitypackage\.meta

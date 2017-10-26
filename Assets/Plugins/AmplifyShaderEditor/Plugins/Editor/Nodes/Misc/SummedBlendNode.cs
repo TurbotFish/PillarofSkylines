@@ -7,7 +7,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Summed Blend", "Misc", "Mix all channels through weighted sum", null, KeyCode.None, true )]
+	[NodeAttributes( "Summed Blend", "Miscellaneous", "Mix all channels through weighted sum", null, KeyCode.None, true )]
 	public sealed class SummedBlendNode : WeightedAvgNode
 	{
 		protected override void CommonInit( int uniqueId )

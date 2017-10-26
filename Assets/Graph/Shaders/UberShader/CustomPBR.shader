@@ -24,8 +24,6 @@ Shader "Alo/PBR/CustomPBR" {
 		[NoScaleOffset] _EmissionMap ("Emission", 2D) = "black"{}
 		_Emission ("Emission", Color) = (0, 0, 0)
 
-		_TempTex ("Shadow Texture Test", 2D) = "black"{} //Initen
-
 		[NoScaleOffset] _OcclusionMap ("Occlusion", 2D) = "white"{}
 		_OcclusionStrength ("Occlusion Strength", Range(0,1)) = 1
 
@@ -81,6 +79,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ _CELSHADED
 			#pragma shader_feature _ _SSS
 
+
 			#pragma multi_compile _ SHADOWS_SCREEN
 			#pragma multi_compile _ VERTEXLIGHT_ON
 			#pragma multi_compile_fog
@@ -89,7 +88,6 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma fragment MyFragmentProgram
 
 			#define FORWARD_BASE_PASS
-			//#define INITEN
 
 			#if defined(_CELSHADED)
 			float _ShadowTransition;
@@ -156,6 +154,8 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 			#pragma shader_feature _ _RENDERING_CUTOUT
 			#pragma shader_feature _ _SSS
+			#pragma shader_feature _ _SSSColour2
+			#pragma shader_feature _ CHECKER_DEBUG
 
 			#pragma shader_feature _ _CELSHADED
 

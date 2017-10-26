@@ -4,7 +4,7 @@
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Length", "Operators", "Scalar Euclidean length of a vector" )]
+	[NodeAttributes( "Length", "Vector Operators", "Scalar Euclidean length of a vector" )]
 	public sealed class LengthOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

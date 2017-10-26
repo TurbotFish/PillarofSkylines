@@ -13,6 +13,7 @@ namespace AmplifyShaderEditor
 			base.CommonInit( uniqueId );
 			ChangeOutputProperties( 0, "XYZ", WirePortDataType.FLOAT3 );
 			m_value = "_WorldSpaceCameraPos";
+			m_previewShaderGUID = "6b0c78411043dd24dac1152c84bb63ba";
 		}
 	}
 }

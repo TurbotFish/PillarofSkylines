@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Sinh", "Trigonometry", "Hyperbolic sine of scalars and vectors" )]
+	[NodeAttributes( "Sinh", "Trigonometry Operators", "Hyperbolic sine of scalars and vectors" )]
 	public sealed class SinhOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

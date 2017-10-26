@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Dithering", "Generic", "Generates a dithering pattern" )]
+	[NodeAttributes( "Dither", "Camera And Screen", "Generates a dithering pattern" )]
 	public sealed class DitheringNode : ParentNode
 	{
 		private const string InputTypeStr = "Pattern";
@@ -20,33 +20,81 @@ namespace AmplifyShaderEditor
 		[SerializeField]
 		private int m_selectedPatternInt = 0;
 
-		private readonly string[] PatternsFuncStr = { "4x4Bayer", "8x8Bayer" };
-		private readonly string[] PatternsStr = { "4x4 Bayer Matrix", "8x8 Bayer Matrix" };
+		private readonly string[] PatternsFuncStr = { "4x4Bayer", "8x8Bayer", "NoiseTex" };
+		private readonly string[] PatternsStr = { "4x4 Bayer", "8x8 Bayer", "Noise Texture" };
+
+		private UpperLeftWidgetHelper m_upperLeftWidget = new UpperLeftWidgetHelper();
 
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
+			AddInputPort( WirePortDataType.FLOAT, false, Constants.EmptyPortValue );
+			AddInputPort( WirePortDataType.SAMPLER2D, false, "Pattern");
 			AddOutputPort( WirePortDataType.FLOAT, Constants.EmptyPortValue );
 			m_textLabelWidth = 100;
 			m_autoWrapProperties = true;
+			m_hasLeftDropdown = true;
+			SetAdditonalTitleText( string.Format( Constants.SubTitleTypeFormatStr, PatternsStr[ m_selectedPatternInt ] ) );
+			UpdatePorts();
 			GeneratePattern();
+		}
+
+		public override void Destroy()
+		{
+			base.Destroy();
+			m_upperLeftWidget = null;
+		}
+
+
+		public override void AfterCommonInit()
+		{
+			base.AfterCommonInit();
+			if( PaddingTitleLeft == 0 )
+			{
+				PaddingTitleLeft = Constants.PropertyPickerWidth + Constants.IconsLeftRightMargin;
+				if( PaddingTitleRight == 0 )
+					PaddingTitleRight = Constants.PropertyPickerWidth + Constants.IconsLeftRightMargin;
+			}
+		}
+
+		public override void Draw( DrawInfo drawInfo )
+		{
+			base.Draw( drawInfo );
+			EditorGUI.BeginChangeCheck();
+			m_selectedPatternInt = m_upperLeftWidget.DrawWidget( this, m_selectedPatternInt, PatternsStr );
+			if( EditorGUI.EndChangeCheck() )
+			{
+				UpdatePorts();
+				GeneratePattern();
+			}
 		}
 
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
-			EditorGUILayout.BeginVertical();
 			EditorGUI.BeginChangeCheck();
 			m_selectedPatternInt = EditorGUILayoutPopup( "Pattern", m_selectedPatternInt, PatternsStr );
 			if ( EditorGUI.EndChangeCheck() )
 			{
+				UpdatePorts();
 				GeneratePattern();
 			}
-			EditorGUILayout.EndVertical();
+		}
+
+		private void UpdatePorts()
+		{
+			if( m_selectedPatternInt == 2)
+			{
+				m_inputPorts[ 1 ].Visible = true;
+			} else
+			{
+				m_inputPorts[ 1 ].Visible = false;
+			}
 		}
 
 		private void GeneratePattern()
 		{
+			SetAdditonalTitleText( string.Format( Constants.SubTitleTypeFormatStr, PatternsStr[ m_selectedPatternInt ] ) );
 			switch ( m_selectedPatternInt )
 			{
 				default:
@@ -61,8 +109,7 @@ namespace AmplifyShaderEditor
 					IOUtils.AddFunctionLine( ref m_functionBody, "	 4, 12,  2, 10," );
 					IOUtils.AddFunctionLine( ref m_functionBody, "	16,  8, 14,  6 };" );
 					IOUtils.AddFunctionLine( ref m_functionBody, "int r = y * 4 + x;" );
-					//same as dividing by 16
-					IOUtils.AddFunctionLine( ref m_functionBody, "return (dither[r]-1) / 15;" );
+					IOUtils.AddFunctionLine( ref m_functionBody, "return dither[r] / 16;" );
 					IOUtils.CloseFunctionBody( ref m_functionBody );
 				}
 				break;
@@ -81,8 +128,19 @@ namespace AmplifyShaderEditor
 					IOUtils.AddFunctionLine( ref m_functionBody, "	11, 59,  7, 55, 10, 58,  6, 54," );
 					IOUtils.AddFunctionLine( ref m_functionBody, "	43, 27, 39, 23, 42, 26, 38, 22};" );
 					IOUtils.AddFunctionLine( ref m_functionBody, "int r = y * 8 + x;" );
-					//same as dividing by 64
-					IOUtils.AddFunctionLine( ref m_functionBody, "return (dither[r]-1) / 63;" );
+					IOUtils.AddFunctionLine( ref m_functionBody, "return dither[r] / 64;" );
+					IOUtils.CloseFunctionBody( ref m_functionBody );
+				}
+				break;
+				case 2:
+				{
+					m_functionBody = string.Empty;
+					m_functionHeader = "Dither" + PatternsFuncStr[ m_selectedPatternInt ] + "( {0}, {1}, {2})";
+					IOUtils.AddFunctionHeader( ref m_functionBody, "inline float Dither" + PatternsFuncStr[ m_selectedPatternInt ] + "( float4 screenPos, sampler2D noiseTexture, float4 noiseTexelSize )" );
+					IOUtils.AddFunctionLine( ref m_functionBody, "float dither = tex2Dlod( noiseTexture, float4( screenPos.xy * _ScreenParams.xy * noiseTexelSize.xy, 0, 0 ) ).g;" );
+					IOUtils.AddFunctionLine( ref m_functionBody, "float ditherRate = noiseTexelSize.x * noiseTexelSize.y;" );
+					IOUtils.AddFunctionLine( ref m_functionBody, "dither = ( 1 - ditherRate ) * dither + ditherRate;" );
+					IOUtils.AddFunctionLine( ref m_functionBody, "return dither;" );
 					IOUtils.CloseFunctionBody( ref m_functionBody );
 				}
 				break;
@@ -94,6 +152,8 @@ namespace AmplifyShaderEditor
 			if ( m_outputPorts[ 0 ].IsLocalValue )
 				return m_outputPorts[ 0 ].LocalValue;
 
+			GeneratePattern();
+
 			dataCollector.AddToIncludes( UniqueId, Constants.UnityShaderVariables );
 			string varName = string.Empty;
 			bool isFragment = dataCollector.IsFragmentCategory;
@@ -103,37 +163,59 @@ namespace AmplifyShaderEditor
 			}
 			else
 			{
-				if ( isFragment )
+				if ( dataCollector.IsTemplate )
 				{
-					dataCollector.AddToInput( UniqueId, "float4 " + CustomScreenPosStr, true );
-					string screenPos = GeneratorUtils.GenerateVertexScreenPosition( ref dataCollector, UniqueId, m_currentPrecisionType, false );
-					string vertexInstruction = Constants.VertexShaderOutputStr + "." + CustomScreenPosStr + " = " + screenPos+";";
-					dataCollector.AddToVertexLocalVariables( UniqueId, vertexInstruction );
-					varName = Constants.InputVarStr + "." + CustomScreenPosStr;
+					varName = dataCollector.TemplateDataCollectorInstance.GetScreenPos();
 				}
 				else
 				{
-					varName = GeneratorUtils.GenerateVertexScreenPosition( ref dataCollector, UniqueId, m_currentPrecisionType, false );
+					varName = GeneratorUtils.GenerateScreenPositionNormalized( ref dataCollector, UniqueId, m_currentPrecisionType, true );
 				}
 			}
 
-			string surfInstruction = "( " + varName + ".xy / " + varName + ".w ) * _ScreenParams.xy";
-			dataCollector.AddLocalVariable( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT2, "clipScreen" + OutputId, surfInstruction );
-
+			string surfInstruction = varName + ".xy * _ScreenParams.xy";
+			m_showErrorMessage = false;
 			string functionResult = "";
 			switch ( m_selectedPatternInt )
 			{
 				default:
 				case 0:
+				dataCollector.AddLocalVariable( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT2, "clipScreen" + OutputId, surfInstruction );
 				functionResult = dataCollector.AddFunctions( m_functionHeader, m_functionBody, "fmod(" + "clipScreen" + OutputId + ".x, 4)", "fmod(" + "clipScreen" + UniqueId + ".y, 4)" );
 				break;
 				case 1:
+				dataCollector.AddLocalVariable( UniqueId, m_currentPrecisionType, WirePortDataType.FLOAT2, "clipScreen" + OutputId, surfInstruction );
 				functionResult = dataCollector.AddFunctions( m_functionHeader, m_functionBody, "fmod(" + "clipScreen" + OutputId + ".x, 8)", "fmod(" + "clipScreen" + UniqueId + ".y, 8)" );
+				break;
+				case 2:
+				{
+					if( !m_inputPorts[ 1 ].IsConnected )
+					{
+						m_showErrorMessage = true;
+						m_errorMessageTypeIsError = NodeMessageType.Warning;
+						m_errorMessageTooltip = "Please connect a texture object to the Pattern input port to generate a proper dithered pattern";
+						return "0";
+					} else
+					{
+						string noiseTex = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
+						dataCollector.AddToUniforms( UniqueId, "uniform float4 " + noiseTex + "_TexelSize;" );
+						functionResult = dataCollector.AddFunctions( m_functionHeader, m_functionBody, varName, noiseTex, noiseTex+"_TexelSize" );
+					}
+				}
 				break;
 			}
 
+			dataCollector.AddLocalVariable( UniqueId, "float dither" + OutputId + " = "+ functionResult+";" );
 
-			RegisterLocalVariable( 0, functionResult, ref dataCollector, "dither" + OutputId );
+			if( m_inputPorts[ 0 ].IsConnected )
+			{
+				string driver = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
+				dataCollector.AddLocalVariable( UniqueId, "dither" + OutputId+" = step( dither"+ OutputId + ", "+ driver + " );" );
+			}
+
+			//RegisterLocalVariable( 0, functionResult, ref dataCollector, "dither" + OutputId );
+			m_outputPorts[ 0 ].SetLocalValue( "dither" + OutputId );
+
 			return m_outputPorts[ 0 ].LocalValue;
 		}
 
@@ -141,6 +223,7 @@ namespace AmplifyShaderEditor
 		{
 			base.ReadFromString( ref nodeParams );
 			m_selectedPatternInt = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
+			UpdatePorts();
 			GeneratePattern();
 		}
 

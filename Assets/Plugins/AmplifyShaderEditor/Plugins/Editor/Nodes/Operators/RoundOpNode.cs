@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Round", "Operators", "Rounded value of scalars or vectors" )]
+	[NodeAttributes( "Round", "Math Operators", "Rounded value of scalars or vectors" )]
 	public sealed class RoundOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

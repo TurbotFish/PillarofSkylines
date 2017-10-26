@@ -26,14 +26,12 @@ namespace AmplifyShaderEditor
 	}
 
 	[Serializable]
-	[NodeAttributes( "Common Transform Matrices", "Transform", "All Transformation types" )]
+	[NodeAttributes( "Common Transform Matrices", "Matrix Transform", "All Transformation types" )]
 	public sealed class TransformVariables : ShaderVariablesNode
 	{
 		[SerializeField]
 		private BuiltInShaderTransformTypes m_selectedType = BuiltInShaderTransformTypes.UNITY_MATRIX_MVP;
-		[SerializeField]
-		private BuiltInShaderTransformTypes m_oldVarType = BuiltInShaderTransformTypes.UNITY_MATRIX_MVP;
-
+		
 		private const string MatrixLabelStr = "Matrix";
 		private readonly string[] ValuesStr =  {
 													"Model View Projection",
@@ -51,23 +49,48 @@ namespace AmplifyShaderEditor
 													"Word to Object",
 													"Scale"
 												};
+
+		private UpperLeftWidgetHelper m_upperLeftWidget = new UpperLeftWidgetHelper();
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
 			ChangeOutputProperties( 0, ValuesStr[ ( int ) m_selectedType ], WirePortDataType.FLOAT4x4 );
 			m_textLabelWidth = 60;
+			m_hasLeftDropdown = true;
 			m_autoWrapProperties = true;
 			m_drawPreview = false;
+		}
+
+		public override void AfterCommonInit()
+		{
+			base.AfterCommonInit();
+			if( PaddingTitleLeft == 0 )
+			{
+				PaddingTitleLeft = Constants.PropertyPickerWidth + Constants.IconsLeftRightMargin;
+				if( PaddingTitleRight == 0 )
+					PaddingTitleRight = Constants.PropertyPickerWidth + Constants.IconsLeftRightMargin;
+			}
+		}
+
+		public override void Draw( DrawInfo drawInfo )
+		{
+			base.Draw( drawInfo );
+			EditorGUI.BeginChangeCheck();
+			m_selectedType = (BuiltInShaderTransformTypes)m_upperLeftWidget.DrawWidget( this, (int)m_selectedType, ValuesStr );
+			if( EditorGUI.EndChangeCheck() )
+			{
+				ChangeOutputName( 0, ValuesStr[ (int)m_selectedType ] );
+				m_sizeIsDirty = true;
+			}
 		}
 
 		public override void DrawProperties()
 		{
 			base.DrawProperties();
+			EditorGUI.BeginChangeCheck();
 			m_selectedType = ( BuiltInShaderTransformTypes ) EditorGUILayoutPopup( MatrixLabelStr, ( int ) m_selectedType, ValuesStr );
-
-			if ( m_selectedType != m_oldVarType )
+			if ( EditorGUI.EndChangeCheck() )
 			{
-				m_oldVarType = m_selectedType;
 				ChangeOutputName( 0, ValuesStr[ ( int ) m_selectedType ] );
 				m_sizeIsDirty = true;
 			}
