@@ -18,6 +18,11 @@ public class Player : MonoBehaviour {
 	[Tooltip("The speed at which the player's speed changes in the air.")]
 	public float airControl = 2.5f;
 	/// <summary>
+	/// Multiplies the control of the player when they come out of gliding or sliding etc.
+	/// </summary>
+	[Tooltip("Multiplies the control of the player when they come out of gliding or sliding etc.")]
+	public float momentumCoeff = .5f;
+	/// <summary>
 	/// The speed at which the player's speed changes on the ground.
 	/// </summary>
 	[Tooltip("The speed at which the player's speed changes on the ground.")]
@@ -120,18 +125,39 @@ public class Player : MonoBehaviour {
 	[Tooltip("How much does gliding slow down the speed.")]
 	public float glideDrag = .2f;
 	/// <summary>
-	/// The speed at which the player's angle changes when gliding.
+	/// The speed at which the player's vertical angle changes when gliding.
 	/// </summary>
-	[Tooltip("The speed at which the player's angle changes when gliding.")]
-	public float glideControl = .2f;
+	[Tooltip("The speed at which the player's vertical angle changes when gliding.")]
+	public float glideVerticalAngleControl = 1f;
+	/// <summary>
+	/// The speed at which the player's vertical angle comes back to 0.
+	/// </summary>
+	[Tooltip("The speed at which the player's vertical angle comes back to 0.")]
+	public float glideVerticalComingBack = .1f;
+	/// <summary>
+	/// The speed at which the player's horizontal angle changes when gliding.
+	/// </summary>
+	[Tooltip("The speed at which the player's horizontal angle changes when gliding.")]
+	public float glideHorizontalAngleControl = 1f;
+	/// <summary>
+	/// The speed at which the player's horizontal angle comes back to 0.
+	/// </summary>
+	[Tooltip("The speed at which the player's horizontal angle comes back to 0.")]
+	public float glideHorizontalComingBack = 5f;
 	public float glideBaseAngle = 10f;
-	public float glideBaseSpeed = 2f;
+	public float glideBaseSpeed = 1f;
+	public float glideStallSpeed = 5f;
 	public float glideSpeedSmooth = .1f;
 	public AnimationCurve glideDownwardAcceleration;
 	public AnimationCurve glideUpwardDecelaration;
-	public float glideMinAngle;
-	public float glideMaxAngle;
-	float glideAngle;
+	public float glideMinAngle = -80f;
+	public float glideMaxAngle = 80f;
+	public float glideMinHorizontalAngle = -80f;
+	public float glideMaxHorizontalAngle = 80f;
+	float glideVerticalAngle;
+	float targetGlideVerticalAngle;
+	float glideHorizontalAngle;
+	float targetGlideHorizontalAngle;
 	#endregion glide variables
 
 	#region dash variables
@@ -187,6 +213,7 @@ public class Player : MonoBehaviour {
 	bool pressedDash = false;
 	bool pressedSprint = false;
 	bool pressingSprint = false;
+	bool keepMomentum = false;
 	Vector3 inputRaw;
 	Vector3 inputToCamera;
 	Vector3 inputToSlope;
@@ -287,9 +314,13 @@ public class Player : MonoBehaviour {
 
 
 		case ePlayerState.inAir:
+
+			if (flatVelocity.magnitude < characSpeed)
+				keepMomentum = false;
+			
 			targetVelocity = inputToCamera * characSpeed;
 			velocity.y -= gravity * Time.deltaTime;
-			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, airControl * Time.deltaTime);
+			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, airControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f));
 			if (releasedJump) {
 				releasedJump = false;
 				if (lastJumpAerial) {
@@ -314,20 +345,26 @@ public class Player : MonoBehaviour {
 			}
 			if (pressedSprint) {
 				Debug.Log("glide");
-				glideAngle = glideBaseAngle;
+				glideVerticalAngle = Vector3.Angle(transform.up, velocity) - 90f;
+				glideHorizontalAngle = 0f;
 				currentPlayerState = ePlayerState.gliding;
 			}
+
+
 			break;
 
 
 		case ePlayerState.onGround:
 
+			if (flatVelocity.magnitude < characSpeed)
+				keepMomentum = false;
+			
 			rmngAerialJumps = numberOfAerialJumps;
 
 			flatVelocity = velocity;
 			velocity.y = 0f;
 			targetVelocity = inputToSlope * characSpeed * (pressingSprint ? sprintCoeff : 1);
-			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, groundControl * Time.deltaTime);
+			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, groundControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f));
 			flatVelocity *= Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (90 * 5) + 1;
 
 			/*   OTHER VERSION 
@@ -368,19 +405,33 @@ public class Player : MonoBehaviour {
 
 		case ePlayerState.gliding:
 
-			glideAngle = Mathf.Lerp(glideAngle, Mathf.Clamp(Mathf.Lerp(glideMinAngle, glideMaxAngle, (inputRaw.z/2) +.5f) + glideBaseAngle, glideMinAngle, glideMaxAngle), glideControl * Time.deltaTime);
+			targetGlideVerticalAngle = Mathf.Clamp(Mathf.Lerp(glideMinAngle, glideMaxAngle, (inputRaw.z/2) +.5f) + glideBaseAngle, glideMinAngle, glideMaxAngle);
+			glideVerticalAngle = Mathf.Lerp(glideVerticalAngle, targetGlideVerticalAngle, (Mathf.Abs(glideVerticalAngle) > Mathf.Abs(targetGlideVerticalAngle) ? glideVerticalComingBack : glideVerticalAngleControl) * Time.deltaTime);
 
-			if (glideAngle < glideBaseAngle){
-				currentSpeed = velocity.magnitude - glideUpwardDecelaration.Evaluate(Mathf.Abs((glideAngle - glideBaseAngle)/(glideMinAngle - glideBaseAngle))) * Time.deltaTime;
+			if (glideVerticalAngle < glideBaseAngle){
+				Debug.Log("on retire " + glideUpwardDecelaration.Evaluate(Mathf.Abs((glideVerticalAngle - glideBaseAngle)/(glideMinAngle - glideBaseAngle))) * Time.deltaTime);
+				currentSpeed = velocity.magnitude - glideUpwardDecelaration.Evaluate(Mathf.Abs((glideVerticalAngle - glideBaseAngle)/(glideMinAngle - glideBaseAngle))) * Time.deltaTime;
 			} else {
-				currentSpeed = Mathf.Lerp(velocity.magnitude, glideBaseSpeed + glideDownwardAcceleration.Evaluate((glideAngle - glideBaseAngle)/(glideMaxAngle - glideBaseAngle)), glideSpeedSmooth * Time.deltaTime);
+				Debug.Log("on lerp de " + velocity.magnitude + " vers " + (glideBaseSpeed + glideDownwardAcceleration.Evaluate((glideVerticalAngle - glideBaseAngle)/(glideMaxAngle - glideBaseAngle))));
+				currentSpeed = Mathf.Lerp(velocity.magnitude, glideBaseSpeed + glideDownwardAcceleration.Evaluate((glideVerticalAngle - glideBaseAngle)/(glideMaxAngle - glideBaseAngle)), glideSpeedSmooth * Time.deltaTime);
 			}
-			Debug.Log("speed : " + currentSpeed + " angle : " + glideAngle);
-			targetVelocity = Quaternion.AngleAxis(glideAngle, transform.right) * transform.forward * currentSpeed;
+			Debug.Log("speed : " + currentSpeed + " angle : " + glideVerticalAngle);
+			targetVelocity = Quaternion.AngleAxis(glideVerticalAngle, transform.right) * transform.forward * currentSpeed;
+
+			if (currentSpeed < glideStallSpeed){
+				glideVerticalAngle = glideMaxAngle;
+			}
+			targetGlideHorizontalAngle = Mathf.Lerp(glideMinHorizontalAngle, glideMaxHorizontalAngle, (inputRaw.x/2) +.5f);
+			glideHorizontalAngle = Mathf.Lerp (glideHorizontalAngle, targetGlideHorizontalAngle, (Mathf.Abs(glideHorizontalAngle) > Mathf.Abs(targetGlideHorizontalAngle) ? glideHorizontalComingBack : glideHorizontalAngleControl) * Time.deltaTime);
+
+			targetVelocity = Quaternion.AngleAxis(glideHorizontalAngle, transform.up) * targetVelocity;
 
 			velocity.y = 0f;
 			flatVelocity = targetVelocity;
 
+			if (pressedSprint) {
+				currentPlayerState = ePlayerState.inAir;
+			}
 			break;
 
 
@@ -388,7 +439,7 @@ public class Player : MonoBehaviour {
 			float speed = Mathf.Lerp(gravity, 0, Vector3.Dot(transform.up, controller.collisions.currentGroundNormal));
 			targetVelocity = Quaternion.AngleAxis(90f, Vector3.Cross(transform.up, controller.collisions.currentGroundNormal)) * controller.collisions.currentGroundNormal * speed;
 			targetVelocity += inputToSlope;
-			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, slopeControl * Time.deltaTime);
+			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, slopeControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f));
 
 			if (pressedJump) {
 				pressedJump = false;
@@ -443,15 +494,26 @@ public class Player : MonoBehaviour {
 
 
 		case ePlayerState.gliding:
+			if (controller.collisions.below) {
+				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle){
+					currentPlayerState = ePlayerState.sliding;
+					keepMomentum = true;
+				} else {
+					currentPlayerState = ePlayerState.onGround;
+					keepMomentum = true;
+				}
+			}
 			break;
 
 
 		case ePlayerState.sliding:
 			if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle){
 				currentPlayerState = ePlayerState.onGround;
+				keepMomentum = true;
 			}
 			if (!controller.collisions.below) {
 				currentPlayerState = ePlayerState.inAir;
+				keepMomentum = true;
 			}
 			break;
 		}
