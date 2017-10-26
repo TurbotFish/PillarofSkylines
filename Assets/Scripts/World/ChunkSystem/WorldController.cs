@@ -17,7 +17,6 @@ namespace Game.World.ChunkSystem
         [SerializeField]
         int numberOfRepetitions;
 
-        [SerializeField]
         Transform playerTransform;
 
         ChunkSystemData data;
@@ -105,6 +104,13 @@ namespace Game.World.ChunkSystem
 
                 this.previousPlayerPos = currentPlayerPos;
             }
+        }
+
+        //############################################
+
+        public void InitializeWorldController(Transform playerTransform)
+        {
+            this.playerTransform = playerTransform;
         }
 
         //############################################
