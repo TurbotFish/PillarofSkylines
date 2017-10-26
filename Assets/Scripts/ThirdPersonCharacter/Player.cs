@@ -77,6 +77,10 @@ public class Player : MonoBehaviour {
 	public float canStillJumpTime = .12f;
 	public float gravity;
 	public float maxFallSpeed = 100f;
+	/// <summary>
+	/// The max speed  the playercloud.
+	/// </summary>
+	public float maxSpeedCloud = 60f;
 
 	[Header("Aerial Jumps")]
 	/// <summary>
@@ -344,7 +348,7 @@ public class Player : MonoBehaviour {
 		#region direction
 
 		Vector3 targetVelocity = Vector3.zero;
-		Debug.Log("state : " + currentPlayerState + " momentum : " + keepMomentum);
+//		Debug.Log("state : " + currentPlayerState + " momentum : " + keepMomentum);
 		switch (currentPlayerState) {
 		default:
 			Debug.LogWarning ("pas de player state >:c");
@@ -376,14 +380,12 @@ public class Player : MonoBehaviour {
 				StartDash();
 			}
 			if (pressedJump && rmngAerialJumps > 0 && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)) {
-				Debug.Log("aerial jump");
 				velocity.y = maxAerialJumpVelocity;
 				rmngAerialJumps--;
 				lastJumpAerial = true;
 				playerMod.FlagAbility(eAbilityType.DoubleJump);
 			}
 			if (pressedSprint && playerMod.CheckAbilityActive(eAbilityType.Glide)) {
-				Debug.Log("glide");
 				glideParticles.Play();
 				glideVerticalAngle = Vector3.Angle(transform.up, velocity) - 90f;
 				glideHorizontalAngle = 0f;
@@ -449,13 +451,13 @@ public class Player : MonoBehaviour {
 			glideVerticalAngle = Mathf.Lerp(glideVerticalAngle, targetGlideVerticalAngle, (targetGlideVerticalAngle > glideVerticalAngle ? glideVerticalUpAngleControl : glideVerticalDownAngleControl) * Time.deltaTime * (targetGlideVerticalAngle == glideBaseAngle ? glideNoInputImpactCoeff : 1f));
 
 			if (glideVerticalAngle < glideBaseAngle){
-				Debug.Log("on retire " + glideUpwardDecelaration.Evaluate(Mathf.Abs((glideVerticalAngle - glideBaseAngle)/(glideMinAngle - glideBaseAngle))) * Time.deltaTime);
+//				Debug.Log("on retire " + glideUpwardDecelaration.Evaluate(Mathf.Abs((glideVerticalAngle - glideBaseAngle)/(glideMinAngle - glideBaseAngle))) * Time.deltaTime);
 				currentSpeed = velocity.magnitude - glideUpwardDecelaration.Evaluate(Mathf.Abs((glideVerticalAngle - glideBaseAngle)/(glideMinAngle - glideBaseAngle))) * Time.deltaTime;
 			} else {
-				Debug.Log("on lerp de " + velocity.magnitude + " vers " + (glideBaseSpeed + glideDownwardAcceleration.Evaluate((glideVerticalAngle - glideBaseAngle)/(glideMaxAngle - glideBaseAngle))));
+//				Debug.Log("on lerp de " + velocity.magnitude + " vers " + (glideBaseSpeed + glideDownwardAcceleration.Evaluate((glideVerticalAngle - glideBaseAngle)/(glideMaxAngle - glideBaseAngle))));
 				currentSpeed = Mathf.Lerp(velocity.magnitude, glideBaseSpeed + glideDownwardAcceleration.Evaluate((glideVerticalAngle - glideBaseAngle)/(glideMaxAngle - glideBaseAngle)), glideSpeedSmooth * Time.deltaTime);
 			}
-			Debug.Log("speed : " + currentSpeed + " vertical angle : " + glideVerticalAngle);
+//			Debug.Log("speed : " + currentSpeed + " vertical angle : " + glideVerticalAngle);
 			targetVelocity = Quaternion.AngleAxis(glideVerticalAngle, transform.right) * transform.forward * currentSpeed;
 
 			if (currentSpeed < glideStallSpeed){

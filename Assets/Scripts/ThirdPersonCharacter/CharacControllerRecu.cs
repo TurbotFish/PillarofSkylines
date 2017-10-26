@@ -60,21 +60,11 @@ public class CharacControllerRecu : MonoBehaviour {
 	/// </summary>
 	Cloud currentCloud;
 
-	[HideInInspector]
-	public bool jumpedOnThisFrame;
-	/// <summary>
-	/// The slide speed.
-	/// </summary>
-	public float slideSpeed = 1f;
-	/// <summary>
-	/// The slide damp.
-	/// </summary>
-	public float slideDamp = 0.2f;
-
 	Quaternion playerAngle;
 	Vector3 initialVelocity;
 	RaycastHit hit;
 	Vector3 wallDir;
+	float maxSpeedCloud;
 
 	void Start(){
 		favourCollider = GetComponentInChildren<CapsuleCollider> ();
@@ -84,6 +74,7 @@ public class CharacControllerRecu : MonoBehaviour {
 		favourCollider.radius = radius;
 		favourCollider.height = height + radius*2;
 		capsuleHeightModifier = new Vector3 (0, height, 0);
+		maxSpeedCloud = myPlayer.maxSpeedCloud;
 	}
 
 
@@ -179,7 +170,8 @@ public class CharacControllerRecu : MonoBehaviour {
 		}*/
 
 		//Send a first capsule cast in the direction of the velocity
-		if (Physics.CapsuleCast (newOrigin - (playerAngle * capsuleHeightModifier/2), newOrigin + (playerAngle * capsuleHeightModifier/2), radius, velocity, out hit, rayLength, (veloNorm.y > 0 ? collisionMaskNoCloud : collisionMask))) {
+		if (Physics.CapsuleCast (newOrigin - (playerAngle * capsuleHeightModifier/2), newOrigin + (playerAngle * capsuleHeightModifier/2), radius, velocity, out hit, rayLength
+			, ((veloNorm.y > 0 || myPlayer.currentPlayerState == ePlayerState.gliding) ? collisionMaskNoCloud : collisionMask))) {
 			collisionNumber++;
 
 			//When an obstacle is met, remember the amount of movement needed to get to the obstacle
