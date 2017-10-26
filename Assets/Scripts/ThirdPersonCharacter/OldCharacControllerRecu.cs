@@ -145,7 +145,7 @@ public class OldCharacControllerRecu : MonoBehaviour {
 		collisions.below = Physics.SphereCast (myTransform.position + playerAngle * center - capsuleHeightModifier, radius, -myTransform.up, out hit, skinWidth, collisionMask);
 		Debug.DrawRay(myTransform.position + playerAngle * center - capsuleHeightModifier, -myTransform.up * (skinWidth), Color.magenta);
 		if (collisions.below && !jumpedOnThisFrame) {
-			myPlayer.currentPlayerState = Player.ePlayerState.onGround;
+			//myPlayer.currentPlayerState = Player.ePlayerState.onGround;
 			collisions.onSteepSlope = Vector3.Angle (myTransform.up, hit.normal) > maxSlopeAngle;
 			collisions.currentGroundNormal = hit.normal;
 			if (collisions.onSteepSlope) {

@@ -48,6 +48,11 @@ public class Player : MonoBehaviour {
 	[Tooltip("The max walkable slope angle.")]
 	public float maxSlopeAngle = 45f;
 	/// <summary>
+	/// How much being on slanted terrain impacts the player's speed (1 means the player will double their speed down a MaxSlopeAngle slope).
+	/// </summary>
+	[Tooltip("How much being on slanted terrain impacts the player's speed (1 means the player will double their speed down a MaxSlopeAngle slope).")]
+	public float slopeCoeff = .1f;
+	/// <summary>
 	/// Variable used in the speed smooth damp.
 	/// </summary>
 	float speedSmoothVelocity;
@@ -306,7 +311,7 @@ public class Player : MonoBehaviour {
 		#region direction
 
 		Vector3 targetVelocity = Vector3.zero;
-		Debug.Log("state : " + currentPlayerState);
+		Debug.Log("state : " + currentPlayerState + " momentum : " + keepMomentum);
 		switch (currentPlayerState) {
 		default:
 			Debug.LogWarning ("pas de player state >:c");
@@ -333,21 +338,22 @@ public class Player : MonoBehaviour {
 					}
 				}
 			}
-			if (pressedDash && dashTimer <= 0f) {
-				Debug.Log("dash");
-				currentPlayerState = ePlayerState.dashing;
+			if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash)) {
+				StartDash();
 			}
-			if (pressedJump && rmngAerialJumps > 0) {
+			if (pressedJump && rmngAerialJumps > 0 && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)) {
 				Debug.Log("aerial jump");
 				velocity.y = maxAerialJumpVelocity;
 				rmngAerialJumps--;
 				lastJumpAerial = true;
+				playerMod.FlagAbility(eAbilityType.DoubleJump);
 			}
-			if (pressedSprint) {
+			if (pressedSprint && playerMod.CheckAbilityActive(eAbilityType.Glide)) {
 				Debug.Log("glide");
 				glideVerticalAngle = Vector3.Angle(transform.up, velocity) - 90f;
 				glideHorizontalAngle = 0f;
 				currentPlayerState = ePlayerState.gliding;
+				playerMod.FlagAbility(eAbilityType.Glide);
 			}
 
 
@@ -360,12 +366,14 @@ public class Player : MonoBehaviour {
 				keepMomentum = false;
 			
 			rmngAerialJumps = numberOfAerialJumps;
+			playerMod.UnflagAbility(eAbilityType.DoubleJump);
 
 			flatVelocity = velocity;
 			velocity.y = 0f;
 			targetVelocity = inputToSlope * characSpeed * (pressingSprint ? sprintCoeff : 1);
 			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, groundControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f));
-			flatVelocity *= Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (90 * 5) + 1;
+			// Detects if the player is moving up or down the slope, and multiply their speed based on that slope
+			flatVelocity *= 1 + slopeCoeff * Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (maxSlopeAngle);
 
 			/*   OTHER VERSION 
 			flatVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, controller.collisions.currentGroundNormal), Vector3.Cross(controller.collisions.currentGroundNormal, transform.up))) * velocity;
@@ -382,9 +390,8 @@ public class Player : MonoBehaviour {
 				currentPlayerState = ePlayerState.inAir;
 				lastJumpAerial = false;
 			}
-			if (pressedDash && dashTimer <= 0f) {
-				Debug.Log("dash");
-				currentPlayerState = ePlayerState.dashing;
+			if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash)) {
+				StartDash();
 			}
 			break;
 
@@ -396,9 +403,7 @@ public class Player : MonoBehaviour {
 			dashDuration -= Time.deltaTime;
 
 			if (dashDuration <= 0) {
-				currentPlayerState = ePlayerState.inAir;
-				dashTimer = dashCooldown;
-				playerMod.UnflagAbility (eAbilityType.Dash);
+				EndDash();
 			}
 			break;
 
@@ -431,6 +436,7 @@ public class Player : MonoBehaviour {
 
 			if (pressedSprint) {
 				currentPlayerState = ePlayerState.inAir;
+				EndGlide();
 			}
 			break;
 
@@ -455,7 +461,7 @@ public class Player : MonoBehaviour {
 		#endregion direction
 
 		//Calls the controller to check if the calculated velocity will run into walls and stuff
-		velocity = controller.Move ((Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * velocity / 10f);
+		velocity = controller.Move ((Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * velocity * Time.deltaTime);
 
 		transform.LookAt (transform.position + Vector3.ProjectOnPlane((Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * velocity, transform.up), transform.up);
 
@@ -497,10 +503,10 @@ public class Player : MonoBehaviour {
 			if (controller.collisions.below) {
 				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle){
 					currentPlayerState = ePlayerState.sliding;
-					keepMomentum = true;
+					EndGlide();
 				} else {
 					currentPlayerState = ePlayerState.onGround;
-					keepMomentum = true;
+					EndGlide();
 				}
 			}
 			break;
@@ -537,7 +543,7 @@ public class Player : MonoBehaviour {
 
 		animator.SetBool ("OnGround", controller.collisions.below);
 		animator.SetFloat ("Forward", inputRaw.magnitude);
-		animator.SetFloat ("Turn", Vector3.Dot (transform.right, inputRaw));
+		//animator.SetFloat ("Turn", Vector3.Dot (transform.right, inputRaw));
 		animator.SetFloat ("Jump", velocity.y/5);
 		float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
 		float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputRaw.magnitude;
@@ -551,19 +557,33 @@ public class Player : MonoBehaviour {
 
 	}
 
-	public void CancelDash(){
+	void StartDash(){
+		playerMod.FlagAbility (eAbilityType.Dash);
+		currentPlayerState = ePlayerState.dashing;
+		dashDuration = dashSpeed;
+		dashParticles.Play ();
+	}
+
+	void EndDash(){
+		currentPlayerState = ePlayerState.inAir;
 		dashDuration = 0f;
-		isDashing = false;
 		dashTimer = dashCooldown;
 		playerMod.UnflagAbility (eAbilityType.Dash);
 	}
 
+	void EndGlide(){
 
-	public enum ePlayerState {
-		onGround,
-		inAir,
-		gliding,
-		dashing,
-		sliding
+		keepMomentum = true;
 	}
+
+
+
+}
+
+public enum ePlayerState {
+	onGround,
+	inAir,
+	gliding,
+	dashing,
+	sliding
 }

@@ -104,7 +104,7 @@ public class CharacControllerRecu : MonoBehaviour {
 		/// Check if calculated movement will end up in a wall, if so try to adjust movement
 		if (!Physics.CheckCapsule (myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + velocity, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + velocity, radius, collisionMaskNoCloud)) {
 			myTransform.Translate (velocity, Space.World);
-			finalVelocity = (Quaternion.AngleAxis (Vector3.Angle (transform.up, Vector3.up), Vector3.Cross (transform.up, Vector3.up))) * velocity * 10f;
+			finalVelocity = (Quaternion.AngleAxis (Vector3.Angle (transform.up, Vector3.up), Vector3.Cross (transform.up, Vector3.up))) * velocity / Time.deltaTime;
 		} else {
 			wallDir = Vector3.zero;
 			Debug.LogWarning ("Oh oh, tu vas dans un mur. " + collisions.below);
@@ -121,7 +121,7 @@ public class CharacControllerRecu : MonoBehaviour {
 				if (!Physics.CheckCapsule (myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + (destination - myTransform.position)
 					, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + (destination - myTransform.position), radius, collisionMaskNoCloud)) {
 					myTransform.Translate (destination - myTransform.position, Space.World);
-					finalVelocity = (Quaternion.AngleAxis (Vector3.Angle (transform.up, Vector3.up), Vector3.Cross (transform.up, Vector3.up))) * (velocity) * 10f;
+					finalVelocity = (Quaternion.AngleAxis (Vector3.Angle (transform.up, Vector3.up), Vector3.Cross (transform.up, Vector3.up))) * (velocity) / Time.deltaTime;
 					Debug.Log ("adjusted position");
 				}
 			} else {
