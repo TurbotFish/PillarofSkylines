@@ -155,6 +155,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ _RENDERING_CUTOUT
 			#pragma shader_feature _ _SSS
 			#pragma shader_feature _ _SSSColour2
+			#pragma shader_feature _ CHECKER_DEBUG
 
 			#pragma shader_feature _ _CELSHADED
 

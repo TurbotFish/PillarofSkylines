@@ -3,7 +3,6 @@
 
 	#define LIGHTING_CUSTOM_PBR_INCLUDED
 
-
 	float4 _Tint;
 	sampler2D _MainTex, _DetailTex, _DetailMask;
 	float4 _MainTex_ST, _DetailTex_ST;
@@ -127,6 +126,15 @@
 			albedo = lerp(albedo, albedo * details, GetDetailMask(i));
 		#endif
 		return albedo; 
+	}
+
+	//checker test
+	float3 GetAlbedoDebug(Interpolators i){
+
+		float xValue = floor(i.worldPos.x) - floor(floor(i.worldPos.x) * 0.5) * 2.0;
+		float yValue = floor(i.worldPos.y) - floor(floor(i.worldPos.y) * 0.5) * 2.0;
+		float zValue = floor(i.worldPos.z) - floor(floor(i.worldPos.z) * 0.5) * 2.0;
+		return abs(yValue - abs(xValue - zValue));
 	}
 
 	float GetThickness(Interpolators i){
@@ -393,9 +401,17 @@
 
 		float3 specularTint;
 		float oneMinusReflectivity;
-		float3 albedo = DiffuseAndSpecularFromMetallic( 
-			GetAlbedo(i), GetMetallic(i), specularTint, oneMinusReflectivity
-		);
+
+		#if defined (CHECKER_DEBUG)
+			float3 albedo = DiffuseAndSpecularFromMetallic( 
+				GetAlbedoDebug(i), GetMetallic(i), specularTint, oneMinusReflectivity
+			);
+		#else
+			float3 albedo = DiffuseAndSpecularFromMetallic( 
+				GetAlbedo(i), GetMetallic(i), specularTint, oneMinusReflectivity
+			);
+		#endif
+
 		#if defined(_RENDERING_TRANSPARENT)
 			albedo *= alpha;
 			alpha = 1 - oneMinusReflectivity + alpha * oneMinusReflectivity;
