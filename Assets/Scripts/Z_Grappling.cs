@@ -41,7 +41,7 @@ public class Z_Grappling : MonoBehaviour
 
     void Start()
     {
-		_camera = FindObjectOfType<ThirdPersonCamera> ().GetComponent<Camera> ();
+		_camera = FindObjectOfType<PoS_Camera> ().GetComponent<Camera> ();
         _grapRenderer = null;
         _grapBody = null;
         _grapOut = false;
