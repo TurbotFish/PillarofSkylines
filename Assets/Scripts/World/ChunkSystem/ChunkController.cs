@@ -78,8 +78,8 @@ namespace Game.World.ChunkSystem
         public virtual GameObject CreateCopy(Transform parent)
         {
             var go = new GameObject(this.gameObject.name, this.GetType());
-            go.transform.localPosition = this.transform.localPosition;
             go.transform.parent = parent;
+            go.transform.localPosition = this.transform.localPosition;            
 
             var boundsGo = Instantiate(this.bounds.gameObject, go.transform);
             boundsGo.layer = this.bounds.gameObject.layer;
