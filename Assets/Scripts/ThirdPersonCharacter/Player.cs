@@ -43,10 +43,20 @@ public class Player : MonoBehaviour {
 	[Tooltip("The value by which the speed is multiplied when the player sprints.")]
 	public float sprintCoeff = 1.5f;
 	/// <summary>
+	/// The angle at which the player starts having trouble climbing up.
+	/// </summary>
+	[Tooltip("The angle at which the player starts having trouble climbing up.")]
+	public float minSlopeAngle = 30f;
+	/// <summary>
 	/// The max walkable slope angle.
 	/// </summary>
 	[Tooltip("The max walkable slope angle.")]
 	public float maxSlopeAngle = 45f;
+	/// <summary>
+	/// The angle at which the ground is considered a wall.
+	/// </summary>
+	[Tooltip("The angle at which the ground is considered a wall.")]
+	public float minWallAngle = 75f;
 	/// <summary>
 	/// How much being on slanted terrain impacts the player's speed (1 means the player will double their speed down a MaxSlopeAngle slope).
 	/// </summary>
@@ -201,7 +211,7 @@ public class Player : MonoBehaviour {
 	public float dashSpeed = 1f;
 	public float dashRange = 5f;
 	public float dashCooldown = 1f;
-	public float wallMaxAngle = 20f;
+//	public float wallMaxAngle = 20f;
 	float dashTimer = 0f;
 	float dashDuration = 0f;
 	[HideInInspector]
@@ -238,7 +248,7 @@ public class Player : MonoBehaviour {
 	/// <summary>
 	/// The script to get info about abilities.
 	/// </summary>
-	public PlayerModel playerMod;
+	PlayerModel playerMod;
 
 	#region private variables
 	bool readingInputs = true;
@@ -305,6 +315,7 @@ public class Player : MonoBehaviour {
 		releasedJump = false;
 		pressedDash = false;
 		pressedSprint = false;
+		pressingSprint = false;
 		if (readingInputs) {
 			
 			inputRaw = new Vector3(Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical"));
@@ -410,7 +421,8 @@ public class Player : MonoBehaviour {
 			targetVelocity = inputToSlope * characSpeed * (pressingSprint ? sprintCoeff : 1);
 			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, groundControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f));
 			// Detects if the player is moving up or down the slope, and multiply their speed based on that slope
-			flatVelocity *= 1 + slopeCoeff * Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (maxSlopeAngle);
+			if (Vector3.Angle(transform.up, controller.collisions.currentGroundNormal) > minSlopeAngle)
+				flatVelocity *= 1 + slopeCoeff * Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (maxSlopeAngle);
 
 			/*   OTHER VERSION 
 			flatVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, controller.collisions.currentGroundNormal), Vector3.Cross(controller.collisions.currentGroundNormal, transform.up))) * velocity;
@@ -486,6 +498,7 @@ public class Player : MonoBehaviour {
 
 
 		case ePlayerState.sliding:
+			playerMod.UnflagAbility(eAbilityType.DoubleJump);
 			float speed = Mathf.Lerp(gravity, 0, Vector3.Dot(transform.up, controller.collisions.currentGroundNormal));
 			targetVelocity = Quaternion.AngleAxis(90f, Vector3.Cross(transform.up, controller.collisions.currentGroundNormal)) * controller.collisions.currentGroundNormal * speed;
 			targetVelocity += inputToSlope;
@@ -523,20 +536,20 @@ public class Player : MonoBehaviour {
 
 		case ePlayerState.inAir:
 			if (controller.collisions.below) {
-				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle){
-					currentPlayerState = ePlayerState.sliding;
-				} else {
+				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle){
 					currentPlayerState = ePlayerState.onGround;
+				} else if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < minWallAngle) {
+					currentPlayerState = ePlayerState.sliding;
 				}
 			}
 			break;
 
 
 		case ePlayerState.onGround:
-			if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle){
+			if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle && Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < minWallAngle){
 				currentPlayerState = ePlayerState.sliding;
-			}
-			if (!controller.collisions.below) {
+			} 
+			if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > minWallAngle || !controller.collisions.below) {
 				currentPlayerState = ePlayerState.inAir;
 			}
 			break;
@@ -549,8 +562,10 @@ public class Player : MonoBehaviour {
 		case ePlayerState.gliding:
 			if (controller.collisions.below) {
 				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle){
-					currentPlayerState = ePlayerState.sliding;
-					EndGlide();
+					if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < minWallAngle) {
+						currentPlayerState = ePlayerState.sliding;
+						EndGlide();
+					}
 				} else {
 					currentPlayerState = ePlayerState.onGround;
 					EndGlide();
@@ -570,6 +585,8 @@ public class Player : MonoBehaviour {
 			}
 			break;
 		}
+	
+		Debug.Log("ground normal = " + controller.collisions.currentGroundNormal + " angle is " + Vector3.Angle(controller.collisions.currentGroundNormal, transform.up));
 		/*
 		if (currentPlayerState != ePlayerState.dashing) {
 			if (controller.collisions.below) {
@@ -624,6 +641,13 @@ public class Player : MonoBehaviour {
 	void EndGlide(){
 		glideParticles.Stop();
 		keepMomentum = true;
+	}
+
+
+	public void InitializePlayer(PlayerModel playmod) {
+
+		playerMod = playmod;
+
 	}
 
 

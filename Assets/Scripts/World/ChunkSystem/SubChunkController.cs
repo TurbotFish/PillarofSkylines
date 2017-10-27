@@ -38,6 +38,7 @@ namespace Game.World.ChunkSystem
             if (this.doNotWrap)
             {
                 var go = new GameObject(this.gameObject.name);
+                go.transform.localPosition = this.transform.localPosition;
                 go.transform.parent = parent;
                 return go;
             }
