@@ -18,7 +18,7 @@ namespace Game
         Player.PlayerController playerController;
 
 
-        
+
 
         Scene openWorldScene;
         World.ChunkSystem.WorldController worldController;
@@ -59,6 +59,28 @@ namespace Game
             {
                 SceneManager.SetActiveScene(scene);
 
+                //cleaning scene
+
+                var gameControllerLite = SearchForScriptInScene<GameControllerLite>(scene);
+                if (gameControllerLite != null)
+                {
+                    Destroy(gameControllerLite.gameObject);
+                }
+
+                var scenePlayer = SearchForScriptInScene<Player.PlayerController>(scene);
+                if (scenePlayer != null)
+                {
+                    Destroy(scenePlayer.gameObject);
+                }
+
+                var sceneCamera = SearchForScriptInScene<PoS_Camera>(scene);
+                if (sceneCamera != null)
+                {
+                    Destroy(sceneCamera.gameObject);
+                }
+
+                //initializing scene
+
                 this.worldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(scene);
                 this.worldController.InitializeWorldController(this.playerController.transform);
 
@@ -66,6 +88,6 @@ namespace Game
             }
         }
 
-        
+
     }
 } //end of namespace
