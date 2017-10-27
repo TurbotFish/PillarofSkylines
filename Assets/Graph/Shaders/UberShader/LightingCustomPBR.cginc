@@ -137,8 +137,12 @@
 		return abs(yValue - abs(xValue - zValue));
 	}
 
+	float4 GetLocalNormalDebug(Interpolators i){
+		return float4(i.normal.xyz, 1);
+	}
+
 	float GetThickness(Interpolators i){
-		#if defined(_SSS)
+		#if defined(_SSS) && !defined(_LOCAL_NORMAL_DEBUG)
 			float thickness = 1.0 - tex2D(_ThicknessMap, i.uv).r;
 			return thickness;
 		#else
@@ -218,7 +222,13 @@
 
 		i.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
 		i.uv.zw = TRANSFORM_TEX(v.uv, _DetailTex);
-		i.normal = UnityObjectToWorldNormal(v.normal);
+
+		#if defined(_LOCAL_NORMAL_DEBUG)
+			i.normal = v.normal;
+		#else
+			i.normal = UnityObjectToWorldNormal(v.normal);
+		#endif
+
 
 		#if defined(BINORMAL_PER_FRAGMENT)
 			i.tangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
@@ -418,20 +428,24 @@
 		#endif
 
 
-
-	
-		float4 color = ALO_BRDF_PBS(
+		#if defined(_LOCAL_NORMAL_DEBUG)
+			float4 color = GetLocalNormalDebug(i);
+		#else
+			float4 color = ALO_BRDF_PBS(
 				albedo, specularTint,
 				oneMinusReflectivity, GetSmoothness(i),
 				i.normal, viewDir,
 				CreateLight(i), CreateIndirectLight(i, viewDir),
 				i.uv
-		);
-		color.rgb += GetEmission(i);
+			);
+			color.rgb += GetEmission(i);
 
-		#if defined(_RENDERING_FADE) || defined(_RENDERING_TRANSPARENT)
-			color.a = alpha;
+			#if defined(_RENDERING_FADE) || defined(_RENDERING_TRANSPARENT)
+				color.a = alpha;
+			#endif
 		#endif
+	
+		
 
 
 		FragmentOutput output;
@@ -451,7 +465,9 @@
 			//output.gBuffer2.rgba = float4((i.normal.xy / sqrt(i.normal.z * 8 + 8)) + 0.5, GetPackedDiffuseSSS(), 0);
 
 		#else
-			output.color = ApplyFog(color, i);
+			#if !defined(_LOCAL_NORMAL_DEBUG)
+				output.color = ApplyFog(color, i);
+			#endif
 		#endif
 
 		return output;

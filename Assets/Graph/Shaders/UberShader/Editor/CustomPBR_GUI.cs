@@ -21,7 +21,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoSubSurfaceScattering ();
 		DoMain ();
 		DoSecondary ();
-		DoCheckerDebug ();
+		DoDebug ();
 	}
 
 	void DoMain(){
@@ -36,10 +36,17 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoMetallic ();
 		DoSmoothness ();
 		DoNormals ();
-		DoOcclusion ();
+		//DoOcclusion ();
 		DoEmission ();
 		DoDetailMask ();
 		editor.TextureScaleOffsetProperty (mainTex);
+	}
+
+	void DoDebug(){
+		GUILayout.Label ("Debug", EditorStyles.boldLabel);
+
+		DoLocalNormalDebug ();
+		DoCheckerDebug ();
 	}
 
 	void DoAlphaCutoff(){
@@ -313,16 +320,23 @@ public class CustomPBR_GUI : ShaderGUI {
 	}
 
 	void DoCheckerDebug(){
-		GUILayout.Label ("Checker debug", EditorStyles.boldLabel);
 
 		EditorGUI.BeginChangeCheck ();
-		bool checkerOn = EditorGUILayout.Toggle ("On", IsKeywordEnabled ("CHECKER_DEBUG"));
+		bool checkerOn = EditorGUILayout.Toggle ("Checker", IsKeywordEnabled ("CHECKER_DEBUG"));
 
 		if (EditorGUI.EndChangeCheck ()) {
 			SetKeyword ("CHECKER_DEBUG", checkerOn);
 		}
 	}
 
+	void DoLocalNormalDebug(){
+		EditorGUI.BeginChangeCheck ();
+		bool displayNormals = EditorGUILayout.Toggle ("Local normal", IsKeywordEnabled ("_LOCAL_NORMAL_DEBUG"));
+
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_LOCAL_NORMAL_DEBUG", displayNormals);
+		}
+	}
 
 	enum SmoothnessSource {
 		Uniform, Albedo, Metallic

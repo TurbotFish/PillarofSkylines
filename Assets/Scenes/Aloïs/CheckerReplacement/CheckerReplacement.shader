@@ -39,33 +39,33 @@
 		}
 		ENDCG
 	}
-//	SubShader {
-//		Tags { "RenderType"="Transparent" }
-//
-//		Blend SrcAlpha OneMinusSrcAlpha
-//
-//		CGPROGRAM
-//		#pragma surface surf Standard fullforwardshadows
-//		#pragma target 3.0
-//
-//		sampler2D _MainTex;
-//
-//		struct Input {
-//			float2 uv_MainTex;
-//			float3 worldPos;
-//		};
-//
-//		half _Glossiness;
-//		half _Metallic;
-//		fixed4 _Color;
-//
-//		void surf (Input IN, inout SurfaceOutputStandard o) {
-//			o.Albedo = float3(0.2,0.6,0.7);
-//			o.Metallic = _Metallic;
-//			o.Smoothness = _Glossiness;
-//			o.Alpha = 0.1;
-//		}
-//		ENDCG
-//	}
+	SubShader {
+		Tags { "RenderType"="Transparent" }
+
+		Blend SrcAlpha OneMinusSrcAlpha
+
+		CGPROGRAM
+		#pragma surface surf Standard fullforwardshadows
+		#pragma target 3.0
+
+		sampler2D _MainTex;
+
+		struct Input {
+			float2 uv_MainTex;
+			float3 worldPos;
+		};
+
+		half _Glossiness;
+		half _Metallic;
+		fixed4 _Color;
+
+		void surf (Input IN, inout SurfaceOutputStandard o) {
+			o.Albedo = float3(0.2,0.6,0.7);
+			o.Metallic = _Metallic;
+			o.Smoothness = _Glossiness;
+			o.Alpha = 0.1;
+		}
+		ENDCG
+	}
 	FallBack "Diffuse"
 }
