@@ -460,7 +460,7 @@ public class OldPlayer : MonoBehaviour {
 			if (Input.GetButtonDown ("Jump") && readingInputs) {
 				if (controller.collisions.below || permissiveJumpTime > 0f) {
 					lastJumpAerial = false;
-					controller.jumpedOnThisFrame = true;
+					//controller.jumpedOnThisFrame = true;
 					if (controller.collisions.onSteepSlope) {
 						//MAYBE TODO: change behavior of jump when on a steep slope
 						velocity.y = maxJumpVelocity;
