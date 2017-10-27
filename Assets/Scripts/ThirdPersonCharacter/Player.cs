@@ -261,6 +261,7 @@ public class Player : MonoBehaviour {
 	float leftTrigger;
 	float rightTrigger;
 	Vector3 flatVelocity;
+	Vector3 turnedVelocity;
 	float currentSpeed;
 	/// <summary>
 	/// The controller checking if there's collisions on the way.
@@ -400,6 +401,7 @@ public class Player : MonoBehaviour {
 					rmngAerialJumps--;
 					lastJumpAerial = true;
 					playerMod.FlagAbility(eAbilityType.DoubleJump);
+					Instantiate (jumpParticles, transform.position, Quaternion.identity, transform);
 				}
 			}
 			if (pressedSprint && playerMod.CheckAbilityActive(eAbilityType.Glide)) {
@@ -527,13 +529,17 @@ public class Player : MonoBehaviour {
 		#endregion direction
 
 		//Calls the controller to check if the calculated velocity will run into walls and stuff
-		velocity = controller.Move ((Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * velocity * Time.deltaTime);
+		turnedVelocity = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * velocity;
+		Debug.Log ("velocity before : " + velocity);
+		velocity = controller.Move (turnedVelocity * Time.deltaTime);
+		Debug.Log ("velocity after : " + velocity);
 
 		if (currentPlayerState != ePlayerState.gliding) {
-			transform.LookAt (transform.position + Vector3.ProjectOnPlane ((Quaternion.AngleAxis (Vector3.Angle (Vector3.up, transform.up), Vector3.Cross (Vector3.up, transform.up))) * velocity, transform.up), transform.up);
+			transform.LookAt (transform.position + Vector3.ProjectOnPlane (turnedVelocity, transform.up), transform.up);
 		} else {
 			transform.Rotate (transform.up, glideHorizontalAngle);
 		}
+		Debug.Log ("up = " + transform.up);
 
 		#region update state
 
@@ -617,15 +623,12 @@ public class Player : MonoBehaviour {
 		animator.SetBool ("OnGround", controller.collisions.below);
 		animator.SetFloat ("Forward", inputRaw.magnitude);
 		//animator.SetFloat ("Turn", Vector3.Dot (transform.right, inputRaw));
-		animator.SetFloat ("Jump", velocity.y/5);
+		animator.SetFloat ("Jump", turnedVelocity.y/5);
 		float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
 		float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputRaw.magnitude;
 		if (controller.collisions.below) {
 			animator.SetFloat("JumpLeg", jumpLeg);
 		}
-		/*if (currentPlayerState == ePlayerState.gliding) {
-			animator.transform.rotation = Quaternion.Euler(glideVerticalAngle, 0, 0);
-		}*/
 
 		windParticles.SetVelocity(velocity);
 		glideParticles.SetVelocity(velocity);
@@ -649,6 +652,7 @@ public class Player : MonoBehaviour {
 
 	void EndGlide(){
 		glideParticles.Stop();
+		playerMod.UnflagAbility(eAbilityType.Glide);
 		keepMomentum = true;
 	}
 

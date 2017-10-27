@@ -83,7 +83,7 @@ public class CharacControllerRecu : MonoBehaviour {
 		initialVelocity = velocity;
 
 		#if UNITY_EDITOR
-		Debug.DrawRay (myTransform.position + playerAngle * center, velocity*10, Color.green);
+		Debug.DrawRay (myTransform.position + playerAngle * center, velocity/Time.deltaTime, Color.green);
 		#endif
 
 		collisionNumber = 0;
@@ -131,6 +131,7 @@ public class CharacControllerRecu : MonoBehaviour {
 		//Send casts to check if there's stuff around the player and sets bools depending on the results
 		collisions.below = Physics.SphereCast (myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier/2) + myTransform.up * skinWidth*2, radius, -myTransform.up, out hit, skinWidth*4, collisionMask);
 		Debug.DrawRay(myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier/2), -myTransform.up * (skinWidth) * 10f, Color.cyan);
+		Debug.Log ("below = " + collisions.below);
 		if (collisions.below) {
 			collisions.currentGroundNormal = hit.normal;
 			if (currentCloud == null && hit.collider.CompareTag ("cloud")) {
