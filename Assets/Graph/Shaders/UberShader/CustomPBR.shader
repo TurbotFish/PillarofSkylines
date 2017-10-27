@@ -139,6 +139,8 @@ Shader "Alo/PBR/CustomPBR" {
 			Blend [_SrcBlend] [_DstBlend]
 			ZWrite [_ZWrite]
 
+			Cull [_Cull]
+
 			CGPROGRAM
 
 			#pragma target 3.0
@@ -156,6 +158,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ _SSS
 			#pragma shader_feature _ _SSSColour2
 			#pragma shader_feature _ CHECKER_DEBUG
+			#pragma shader_feature _CULL_BACK _CULL_FRONT _CULL_OFF
 
 			#pragma shader_feature _ _CELSHADED
 

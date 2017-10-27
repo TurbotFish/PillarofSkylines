@@ -16,6 +16,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		this.editor = editor;
 		this.properties = properties;
 		DoRenderingMode ();
+		DoCulling ();
 		DoCelShading ();
 		DoSubSurfaceScattering ();
 		DoMain ();
@@ -270,6 +271,7 @@ public class CustomPBR_GUI : ShaderGUI {
 				m.SetInt ("_SrcBlend", (int)settings.srcBlend);
 				m.SetInt ("_DstBlend", (int)settings.dstBlend);
 				m.SetInt ("_ZWrite", settings.zWrite ? 1 : 0);
+			
 			}
 		}
 
@@ -278,6 +280,37 @@ public class CustomPBR_GUI : ShaderGUI {
 		}
 	}
 
+
+	void DoCulling(){
+		CullMode mode = CullMode.Back;
+		if (IsKeywordEnabled("_CULL_BACK")) {
+			mode = CullMode.Back;
+		} else if (IsKeywordEnabled("_CULL_FRONT")) {
+			mode = CullMode.Front;
+		} else if (IsKeywordEnabled("_CULL_OFF")) {
+			mode = CullMode.Off;
+		}
+
+		EditorGUI.BeginChangeCheck ();
+		mode = (CullMode)EditorGUILayout.EnumPopup (MakeLabel ("Culling Mode"), mode);
+		if (EditorGUI.EndChangeCheck ()) {
+			
+			RecordAction ("Culling Mode");
+			SetKeyword ("_CULL_BACK", mode == CullMode.Back);
+			SetKeyword ("_CULL_FRONT", mode == CullMode.Front);
+			SetKeyword ("_CULL_OFF", mode == CullMode.Off);
+
+			foreach (Material m in editor.targets) {
+				if (mode == CullMode.Back) {
+					m.SetInt ("_Cull", (int)CullMode.Back);
+				} else if (mode == CullMode.Front) {
+					m.SetInt ("_Cull", (int)CullMode.Front);
+				} else if (mode == CullMode.Off) {
+					m.SetInt ("_Cull", (int)CullMode.Off);
+				}
+			}
+		}
+	}
 
 	void DoCheckerDebug(){
 		GUILayout.Label ("Checker debug", EditorStyles.boldLabel);
@@ -290,12 +323,17 @@ public class CustomPBR_GUI : ShaderGUI {
 		}
 	}
 
+
 	enum SmoothnessSource {
 		Uniform, Albedo, Metallic
 	}
 
 	enum RenderingMode {
 		Opaque, Cutout, Fade, Transparent
+	}
+
+	enum CullingMode {
+		Back, Front, Off
 	}
 
 	struct RenderingSettings {
