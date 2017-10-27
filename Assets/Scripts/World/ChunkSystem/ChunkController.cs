@@ -79,6 +79,7 @@ namespace Game.World.ChunkSystem
         {
             var go = new GameObject(this.gameObject.name, this.GetType());
             go.transform.parent = parent;
+            go.transform.localPosition = this.transform.localPosition;            
 
             var boundsGo = Instantiate(this.bounds.gameObject, go.transform);
             boundsGo.layer = this.bounds.gameObject.layer;

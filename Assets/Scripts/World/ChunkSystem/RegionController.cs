@@ -42,6 +42,7 @@ namespace Game.World.ChunkSystem
         {
             var go = new GameObject(this.gameObject.name, this.GetType());
             go.transform.parent = parent;
+            go.transform.localPosition = this.transform.localPosition;          
 
             foreach(var chunk in this.chunkList)
             {

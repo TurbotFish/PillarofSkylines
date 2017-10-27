@@ -39,6 +39,8 @@ namespace Game.World.ChunkSystem
             {
                 var go = new GameObject(this.gameObject.name);
                 go.transform.parent = parent;
+                go.transform.localPosition = this.transform.localPosition;
+                
                 return go;
             }
             else

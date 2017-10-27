@@ -24,7 +24,7 @@ public class ThirdPersonController : MonoBehaviour {
     Vector3 distToGround;
     KeyCode jumpKey = KeyCode.Space;
 
-    new ThirdPersonCamera camera;
+    new PoS_Camera camera;
 
     CharacterController controller;
     GameObject platform;
@@ -45,7 +45,7 @@ public class ThirdPersonController : MonoBehaviour {
     }
     
     void Start() {
-        camera = FindObjectOfType<ThirdPersonCamera>();
+        camera = FindObjectOfType<PoS_Camera>();
         animator = GetComponent<Animator>();
         controller = GetComponent<CharacterController>();
         distToGround.y = - (GetComponent<Collider>().bounds.extents.y + .1f);
