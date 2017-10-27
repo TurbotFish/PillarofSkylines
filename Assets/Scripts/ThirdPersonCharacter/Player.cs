@@ -248,7 +248,7 @@ public class Player : MonoBehaviour {
 	/// <summary>
 	/// The script to get info about abilities.
 	/// </summary>
-	public PlayerModel playerMod;
+	PlayerModel playerMod;
 
 	#region private variables
 	bool readingInputs = true;
@@ -387,16 +387,16 @@ public class Player : MonoBehaviour {
 					}
 				}
 			}
-			if (pressedDash && dashTimer <= 0f/* && playerMod.CheckAbilityActive(eAbilityType.Dash)*/) {
+			if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash)) {
 				StartDash();
 			}
-			if (pressedJump && rmngAerialJumps > 0/* && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)*/) {
+			if (pressedJump && rmngAerialJumps > 0 && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)) {
 				velocity.y = maxAerialJumpVelocity;
 				rmngAerialJumps--;
 				lastJumpAerial = true;
 				playerMod.FlagAbility(eAbilityType.DoubleJump);
 			}
-			if (pressedSprint/* && playerMod.CheckAbilityActive(eAbilityType.Glide)*/) {
+			if (pressedSprint && playerMod.CheckAbilityActive(eAbilityType.Glide)) {
 				glideParticles.Play();
 				glideVerticalAngle = Vector3.Angle(transform.up, velocity) - 90f;
 				glideHorizontalAngle = 0f;
@@ -641,6 +641,13 @@ public class Player : MonoBehaviour {
 	void EndGlide(){
 		glideParticles.Stop();
 		keepMomentum = true;
+	}
+
+
+	public void InitializePlayer(PlayerModel playmod) {
+
+		playerMod = playmod;
+
 	}
 
 

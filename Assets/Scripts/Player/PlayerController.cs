@@ -10,11 +10,11 @@ namespace Game.Player
     /// </summary>
     public class PlayerController : MonoBehaviour
     {
-        [SerializeField]
+        //[SerializeField]
         global::Player player;
         public global::Player Player { get { return this.player; } }
 
-        [SerializeField]
+        //[SerializeField]
         FavourController favourController;
         public FavourController FavourController { get { return this.favourController; } }      
 
@@ -24,7 +24,10 @@ namespace Game.Player
         /// <param name="gameController"></param>
         public void InitializePlayerController(GameControllerBase gameController)
         {
-            //this.player.InitializePlayer(gameController.PlayerModel);
+			this.player = transform.GetComponent<global::Player> ();
+			this.favourController = GetComponentInChildren<FavourController> ();
+
+            this.player.InitializePlayer(gameController.PlayerModel);
             this.favourController.InitializeFavourController(gameController.PlayerModel);
         }
     }
