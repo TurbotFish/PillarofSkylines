@@ -211,11 +211,8 @@ public class Player : MonoBehaviour {
 	public float dashSpeed = 1f;
 	public float dashRange = 5f;
 	public float dashCooldown = 1f;
-//	public float wallMaxAngle = 20f;
 	float dashTimer = 0f;
 	float dashDuration = 0f;
-	[HideInInspector]
-	public bool isDashing;
 
 	#endregion dash variables
 
@@ -368,6 +365,8 @@ public class Player : MonoBehaviour {
 
 		case ePlayerState.inAir:
 
+			permissiveJumpTime -= Time.deltaTime;
+
 			if (flatVelocity.magnitude < characSpeed)
 				keepMomentum = false;
 			
@@ -390,11 +389,18 @@ public class Player : MonoBehaviour {
 			if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash)) {
 				StartDash();
 			}
-			if (pressedJump && rmngAerialJumps > 0 && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)) {
-				velocity.y = maxAerialJumpVelocity;
-				rmngAerialJumps--;
-				lastJumpAerial = true;
-				playerMod.FlagAbility(eAbilityType.DoubleJump);
+			if (pressedJump) {
+				if (permissiveJumpTime > 0f) {
+					pressedJump = false;
+					velocity.y = maxJumpVelocity;
+					currentPlayerState = ePlayerState.inAir;
+					lastJumpAerial = false;
+				}else if (rmngAerialJumps > 0 && playerMod.CheckAbilityActive(eAbilityType.DoubleJump)) {
+					velocity.y = maxAerialJumpVelocity;
+					rmngAerialJumps--;
+					lastJumpAerial = true;
+					playerMod.FlagAbility(eAbilityType.DoubleJump);
+				}
 			}
 			if (pressedSprint && playerMod.CheckAbilityActive(eAbilityType.Glide)) {
 				glideParticles.Play();
@@ -409,6 +415,8 @@ public class Player : MonoBehaviour {
 
 
 		case ePlayerState.onGround:
+
+			permissiveJumpTime = canStillJumpTime;
 
 			if (flatVelocity.magnitude < characSpeed)
 				keepMomentum = false;
@@ -498,6 +506,7 @@ public class Player : MonoBehaviour {
 
 
 		case ePlayerState.sliding:
+			permissiveJumpTime = canStillJumpTime;
 			playerMod.UnflagAbility(eAbilityType.DoubleJump);
 			float speed = Mathf.Lerp(gravity, 0, Vector3.Dot(transform.up, controller.collisions.currentGroundNormal));
 			targetVelocity = Quaternion.AngleAxis(90f, Vector3.Cross(transform.up, controller.collisions.currentGroundNormal)) * controller.collisions.currentGroundNormal * speed;
