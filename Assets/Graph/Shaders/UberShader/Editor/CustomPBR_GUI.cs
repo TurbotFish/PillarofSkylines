@@ -29,7 +29,7 @@ public class CustomPBR_GUI : ShaderGUI {
 
 		MaterialProperty mainTex = FindProperty ("_MainTex", properties);
 
-		editor.TexturePropertySingleLine (MakeLabel(mainTex, "Albedo (RGB)"), mainTex, FindProperty("_Tint"));
+		editor.TexturePropertySingleLine (MakeLabel(mainTex, "Albedo (RGB)"), mainTex, FindProperty("_Color"));
 		if (shouldShowAlphaCutoff) {
 			DoAlphaCutoff ();
 		}

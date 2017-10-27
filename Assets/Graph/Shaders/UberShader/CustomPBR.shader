@@ -3,7 +3,7 @@
 Shader "Alo/PBR/CustomPBR" {
 
 	Properties {
-		_Tint ("Tint", Color) = (1.0,1.0,1.0,1.0)
+		_Color ("Tint", Color) = (1.0,1.0,1.0,1.0)
 		_MainTex ("Albedo", 2D) = "white"{}
 
 		[NoScaleOffset] _NormalMap ("Normals", 2D) = "bump"{}
@@ -54,10 +54,15 @@ Shader "Alo/PBR/CustomPBR" {
 
 	SubShader {
 
+		Tags {
+			"RenderType" = "Opaque"
+		}
+
 
 		Pass {
 			Tags {
 				"LightMode" = "ForwardBase"
+
 			}
 			Blend [_SrcBlend] [_DstBlend]
 			ZWrite [_ZWrite]
