@@ -210,21 +210,19 @@ public class PoS_Camera : MonoBehaviour {
     void GetInputs() {
         input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
         input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
-
+        
         if (input.magnitude != 0)
             placedByPlayer = true;
 
         if (input.magnitude == 0 && (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0))
             placedByPlayer = false;
-
-        if (input.magnitude != 0 || Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)
-            resetting = false; // if we have manual control, stop automated movement
-
-        if (Input.GetButton("ResetCamera")) {
-
-            resetting = true;
-            autoDamp = resetDamp;
-        }
+        
+        if (input.magnitude != 0 // if we have manual control, stop automated movement
+            || (resetMode == ResetMode.Manual && (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)))
+            resetting = false;
+        
+        if (Input.GetButton("ResetCamera"))
+            GoBehindPlayer(ResetMode.Manual, resetDamp);
     }
 
     void DoRotation() {
@@ -246,9 +244,10 @@ public class PoS_Camera : MonoBehaviour {
         camRotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
     }
 
-    void GoBehindPlayer(ResetMode mode) {
+    void GoBehindPlayer(ResetMode mode, float damp) {
         resetting = true;
         resetMode = mode;
+        autoDamp = damp;
     }
 
     void Resetting() { // place camera behind
@@ -258,7 +257,7 @@ public class PoS_Camera : MonoBehaviour {
         yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / autoDamp);
         pitch = Mathf.LerpAngle(pitch, targetPitch + defaultPitch, deltaTime / autoDamp);
 
-        if (resetting) {
+        if (resetMode != ResetMode.FollowBehind) {
             if (Mathf.Abs(Mathf.DeltaAngle(yaw, targetYaw)) < 1f && Mathf.Abs(Mathf.DeltaAngle(pitch, defaultPitch)) < 1f)
                 resetting = false; // si on n'est pas trop loin on arrête de reset
         }
@@ -269,7 +268,7 @@ public class PoS_Camera : MonoBehaviour {
             Vector3.Dot(n, Vector3.Cross(v1, v2)),
             Vector3.Dot(v1, v2)) * 57.29578f; // Radian to Degrees constant
     }
-
+    
     bool blockedByAWall;
     float lastHitDistance;
     void CheckForCollision(Vector3 targetPos) {
@@ -291,15 +290,20 @@ public class PoS_Camera : MonoBehaviour {
                 float delta = Mathf.Abs(Mathf.DeltaAngle(newYaw, targetYaw));
 
                 Debug.DrawLine(hit.point, hit.point + hit.normal, Color.magenta);
-                
+
+                Vector3 centerOfSphereCast = startPos + (rayEnd - startPos).normalized * hit.distance;
+                Vector3 hitDirection = (hit.point - centerOfSphereCast).normalized;
+
+                print("la direction: " + hitDirection);
+
                 if (delta > 1 && delta < 100) {
 
-                    resetting = true;
-                    autoDamp = slideDamp;
+                    GoBehindPlayer(ResetMode.Angle, slideDamp);
                     
-                    yaw = newYaw;
-                    camRotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
-                    CheckForCollision(targetPos);
+                    //yaw = newYaw;
+                    //camRotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
+                    //CheckForCollision(targetPos);
+                    //print("recursion at frame: " + Time.frameCount);
                 }
             }
             
