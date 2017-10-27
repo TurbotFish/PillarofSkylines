@@ -5,24 +5,33 @@ using PlayMaker;
 
 namespace Game.Player
 {
+    /// <summary>
+    /// This class handles picking up of objects in the world.
+    /// </summary>
     [RequireComponent(typeof(Collider))]
     public class FavourController : MonoBehaviour
     {
-        [SerializeField]
+        //
         PlayerModel playerModel;
 
+        //
         bool favourPickUpInRange = false;
         Collider favourPickUpCollider;
 
+        //
         bool pillarInRange = false;
 
-        // Use this for initialization
-        void Start()
+        /// <summary>
+        /// 
+        /// </summary>
+        public void InitializeFavourController(PlayerModel playerModel)
         {
-            
+            this.playerModel = playerModel;
         }
 
-        // Update is called once per frame
+        /// <summary>
+        /// 
+        /// </summary>
         void Update()
         {
 
@@ -54,6 +63,9 @@ namespace Game.Player
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         void OnTriggerEnter(Collider other)
         {
             //Debug.LogFormat("trigger enter: name={0}, layer={1}, tag={2}, pickUpLayerId={3}", other.name, other.gameObject.layer, other.tag, LayerMask.NameToLayer("PickUps"));
@@ -90,6 +102,9 @@ namespace Game.Player
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         void OnTriggerExit(Collider other)
         {
             if (other.gameObject.layer == LayerMask.GetMask("PickUps"))
@@ -105,6 +120,9 @@ namespace Game.Player
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         void LeaveFavourPickUpZone()
         {
             this.favourPickUpInRange = false;
