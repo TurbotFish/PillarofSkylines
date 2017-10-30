@@ -32,7 +32,6 @@
 		float3 _DiffuseSSS;
 	#endif
 
-	//#include "UnityPBSLighting.cginc"
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
 
@@ -444,9 +443,6 @@
 				color.a = alpha;
 			#endif
 		#endif
-	
-		
-
 
 		FragmentOutput output;
 		#if defined(DEFERRED_PASS)
@@ -459,10 +455,6 @@
 			output.gBuffer1.a = GetSmoothness(i);
 			output.gBuffer2.rgba = float4(i.normal.xyz * 0.5 + 0.5, GetSSSColourMask());
 			output.gBuffer3 = color;
-
-
-			//output.gBuffer2.rgba = float4(i.normal.xy * 0.5 + 0.5, 0.825, 0);// * 0.5 + 0.5);
-			//output.gBuffer2.rgba = float4((i.normal.xy / sqrt(i.normal.z * 8 + 8)) + 0.5, GetPackedDiffuseSSS(), 0);
 
 		#else
 			#if !defined(_LOCAL_NORMAL_DEBUG)
