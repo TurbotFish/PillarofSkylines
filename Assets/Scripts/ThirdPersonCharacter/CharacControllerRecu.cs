@@ -64,7 +64,6 @@ public class CharacControllerRecu : MonoBehaviour {
 	Vector3 initialVelocity;
 	RaycastHit hit;
 	Vector3 wallDir;
-	float maxSpeedCloud;
 
 	void Start(){
 		favourCollider = GetComponentInChildren<CapsuleCollider> ();
@@ -74,7 +73,6 @@ public class CharacControllerRecu : MonoBehaviour {
 		favourCollider.radius = radius;
 		favourCollider.height = height + radius*2;
 		capsuleHeightModifier = new Vector3 (0, height, 0);
-		maxSpeedCloud = myPlayer.maxSpeedCloud;
 	}
 
 
@@ -131,7 +129,7 @@ public class CharacControllerRecu : MonoBehaviour {
 		//Send casts to check if there's stuff around the player and sets bools depending on the results
 		collisions.below = Physics.SphereCast (myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier/2) + myTransform.up * skinWidth*2, radius, -myTransform.up, out hit, skinWidth*4, collisionMask);
 		Debug.DrawRay(myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier/2), -myTransform.up * (skinWidth) * 10f, Color.cyan);
-		Debug.Log ("below = " + collisions.below);
+//		Debug.Log ("below = " + collisions.below);
 		if (collisions.below) {
 			collisions.currentGroundNormal = hit.normal;
 			if (currentCloud == null && hit.collider.CompareTag ("cloud")) {
@@ -174,6 +172,7 @@ public class CharacControllerRecu : MonoBehaviour {
 		if (Physics.CapsuleCast (newOrigin - (playerAngle * capsuleHeightModifier/2), newOrigin + (playerAngle * capsuleHeightModifier/2), radius, velocity, out hit, rayLength
 			, ((veloNorm.y > 0 || myPlayer.currentPlayerState == ePlayerState.gliding) ? collisionMaskNoCloud : collisionMask))) {
 			collisionNumber++;
+			Debug.Log ("collided with : " + hit.collider.name + " at " + hit.point + " by following " + velocity);
 
 			//When an obstacle is met, remember the amount of movement needed to get to the obstacle
 			movementVector += veloNorm * (hit.distance - ((skinWidth < hit.distance)? skinWidth : hit.distance));
