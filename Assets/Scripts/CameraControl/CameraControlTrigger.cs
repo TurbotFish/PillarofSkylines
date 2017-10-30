@@ -6,6 +6,7 @@ public class CameraControlTrigger : MonoBehaviour {
 
     [SerializeField] float zoomValue = 3;
     [SerializeField] bool enablePanoramaMode = false;
+    [SerializeField] bool alignWithDirection = true;
 
     private void Start() {
         camera = FindObjectOfType<PoS_Camera>();

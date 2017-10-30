@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 namespace Game.World.ChunkSystem
 {
@@ -27,8 +28,24 @@ namespace Game.World.ChunkSystem
 
         void Start()
         {
-            wrapper = FindObjectOfType<WorldController>();
+            this.wrapper = FindObjectOfType<WorldController>();
+
+            if (this.wrapper == null)
+            {
+                SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
+            }
+
             my = transform;
+        }
+
+        void OnSceneLoadedEventHandler(Scene arg0, LoadSceneMode arg1)
+        {
+            this.wrapper = FindObjectOfType<WorldController>();
+
+            if(this.wrapper != null)
+            {
+                SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
+            }
         }
 
         void Update()

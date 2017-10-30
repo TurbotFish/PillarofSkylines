@@ -74,7 +74,7 @@ namespace Game.World.ChunkSystem
                             }
 
                             var go = new GameObject(string.Format("WorldCopy{0}{1}{2}", x, y, z));
-                            go.transform.parent = this.transform;
+                            //go.transform.parent = this.transform;
 
                             foreach (var region in this.regionList)
                             {
