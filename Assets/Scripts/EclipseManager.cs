@@ -23,7 +23,7 @@ public class EclipseManager : MonoBehaviour {
     void Awake() {
         if (!instance) {
             instance = this;
-            DontDestroyOnLoad(gameObject);
+            //DontDestroyOnLoad(gameObject);
         } else if (instance != this)
             Destroy(gameObject);
     }
