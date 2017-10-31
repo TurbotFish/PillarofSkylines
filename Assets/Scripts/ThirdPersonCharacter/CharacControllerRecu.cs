@@ -127,10 +127,12 @@ public class CharacControllerRecu : MonoBehaviour {
 
 	void CollisionUpdate(Vector3 velocity){
 		//Send casts to check if there's stuff around the player and sets bools depending on the results
-		collisions.below = Physics.SphereCast (myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier/2) + myTransform.up * skinWidth*2, radius, -myTransform.up, out hit, skinWidth*4, collisionMask);
-		Debug.DrawRay(myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier/2), -myTransform.up * (skinWidth) * 10f, Color.cyan);
-//		Debug.Log ("below = " + collisions.below);
+		collisions.below = Physics.SphereCast (myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier/2) + myTransform.up * skinWidth*5, radius, -myTransform.up, out hit, skinWidth*10, collisionMask);
+		Debug.DrawRay(myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier/2), -myTransform.up * (skinWidth)*10, Color.cyan);
+
+		Debug.Log ("test at = " + myTransform.position + velocity);
 		if (collisions.below) {
+			Debug.Log("detected ground");
 			collisions.currentGroundNormal = hit.normal;
 			if (currentCloud == null && hit.collider.CompareTag ("cloud")) {
 				currentCloud = hit.collider.GetComponent<Cloud> ();

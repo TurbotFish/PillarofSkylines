@@ -259,6 +259,7 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	Animator animator;
 
+	PoS_Camera camera;
 
 	//[HideInInspector]
 	public ePlayerState currentPlayerState;
@@ -301,6 +302,7 @@ public class Player : MonoBehaviour {
 	void Start(){
 		controller = GetComponent<CharacControllerRecu> ();
 		animator = GetComponentInChildren<Animator> ();
+		camera = FindObjectOfType<PoS_Camera>();
 
 		currentPlayerState = ePlayerState.inAir;
 
@@ -354,7 +356,6 @@ public class Player : MonoBehaviour {
 		}
 		#endregion turn the player
 
-
 		#region input detection
 
 		leftStickAtZero = false;
@@ -405,7 +406,6 @@ public class Player : MonoBehaviour {
 		}
 
 		#endregion input detection
-
 
 		#region direction calculations
 
@@ -605,6 +605,8 @@ public class Player : MonoBehaviour {
 
 		#endregion direction calculations
 
+
+		Debug.Log("before y velocity = " + velocity.y);
 		//Turns the velocity in world space and calls the controller to check if the calculated velocity will run into walls and stuff
 		turnedVelocity = TurnLocalToSpace(velocity);
 		if (currentPlayerState == ePlayerState.gliding) {
@@ -625,6 +627,8 @@ public class Player : MonoBehaviour {
 			case ePlayerState.inAir:
 				if (controller.collisions.below) {
 					if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle){
+						Debug.Log("offset camera : " + new Vector2(0f, -velocity.y * .1f) + " y velocity = " + velocity.y);
+						camera.temporaryOffset = new Vector2(0f, -velocity.y * .1f);
 						currentPlayerState = ePlayerState.onGround;
 						if (leftStickAtZero) {
 							velocity = Vector3.zero;
