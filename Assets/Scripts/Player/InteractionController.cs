@@ -19,8 +19,12 @@ namespace Game.Player
         Collider favourPickUpCollider;
 
 		//
-		bool pillarInRange = false;
 		bool needleInRange = false;
+		Collider needlePickedUpCollider;
+		bool eyeInRange = false;
+
+		//
+		bool pillarInRange = false;
 
         /// <summary>
         /// 
@@ -36,7 +40,7 @@ namespace Game.Player
         void Update()
         {
 
-            if (Input.GetButton("Sprint")) {
+            if (Input.GetButtonDown("Sprint")) {
                 if (this.favourPickUpInRange)
                 {
                     this.favourPickUpCollider.enabled = false;
@@ -63,14 +67,35 @@ namespace Game.Player
                 }
 				else if (this.needleInRange)
 				{
-					Utilities.EventManager.SendOnEclipseEvent(this, true);
-
 					this.needleInRange = false;
+					this.needlePickedUpCollider.enabled = false;
+
+					playerModel.hasNeedle = true;
+
+					Utilities.EventManager.SendOnEclipseEvent(this, new Utilities.EventManager.OnEclipseEventArgs(true));
+
+					//hide UI text
+					Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
+				}
+				else if (this.eyeInRange)
+				{
+					this.eyeInRange = false;
+
+					playerModel.hasNeedle = false;
+
+					Utilities.EventManager.SendOnEyeKilledEvent(this);
+					Debug.Log("oeil mort");
 
 					//hide UI text
 					Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
 				}
             }
+
+			if (Input.GetButtonUp("Drift")) {
+				playerModel.hasNeedle = false;
+				this.needlePickedUpCollider.enabled = true;
+				Utilities.EventManager.SendOnEclipseEvent(this, new Utilities.EventManager.OnEclipseEventArgs(false));
+			}
         }
 
         /// <summary>
@@ -85,33 +110,42 @@ namespace Game.Player
                 //Debug.LogFormat("trigger enter check 1");
 
                 switch (other.tag)
-                {
+				{
                     case "Favour":
                         //Debug.LogFormat("trigger enter check 2");
 
                         this.favourPickUpInRange = true;
-                        this.favourPickUpCollider = other;
+						this.favourPickUpCollider = other;
 
-                        //show UI text
-                        Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [X] to pick up a Favour!"));
+						//show UI text
+						Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [X] to pick up a Favour!"));
 
-                        break;
-                    case "Pillar":
-                        if(this.playerModel.GetAllActiveAbilities().Count + this.playerModel.Favours >= 3)
-                        {
-                            this.pillarInRange = true;
+						break;
+					case "Pillar":
+						if(this.playerModel.GetAllActiveAbilities().Count + this.playerModel.Favours >= 3)
+						{
+							this.pillarInRange = true;
 
-                            //show UI text
-                            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [X] to enter the Pillar!"));
-                        }
+							//show UI text
+							Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [X] to enter the Pillar!"));
+						}
 
-                        break;
-				    case "Needle":
-					    this.needleInRange = true;
+						break;
+					case "Needle":
+						this.needleInRange = true;
+						this.needlePickedUpCollider = other;
 
-					    //show UI text
-					    Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [X] to take the needle"));
+						//show UI text
+						Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [X] to take the needle"));
 
+						break;
+					case "Eye":
+						if (playerModel.hasNeedle)
+						{
+							this.eyeInRange = true;
+							//show UI text
+							Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [X] to plant the needle"));
+						}
 						break;
                     default:
                         break;
@@ -123,17 +157,27 @@ namespace Game.Player
         /// 
         /// </summary>
         void OnTriggerExit(Collider other)
-        {
-            if (other.gameObject.layer == LayerMask.GetMask("PickUps"))
-            {
+		{
+            if (other.gameObject.layer == LayerMask.NameToLayer("PickUps"))
+			{
                 switch (other.tag)
                 {
                     case "favour":
                         LeaveFavourPickUpZone();
                         break;
-				    case "Needle":
-					    LeaveFavourPickUpZone();
-					    break;
+					case "Needle":
+						this.needleInRange = false;
+						this.needlePickedUpCollider = null;
+
+						//hide UI text
+						Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
+						break;
+					case "Eye":
+						this.eyeInRange = false;
+
+						//hide UI text
+						Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
+						break;
                     default:
                         break;
                 }
@@ -151,13 +195,6 @@ namespace Game.Player
             //hide UI text
             Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
         }
-		void LeaveNeedlePickUpZone()
-		{
-			this.needleInRange = false;
-
-			//hide UI text
-			Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
-		}
     }
 }
 //end of namespace

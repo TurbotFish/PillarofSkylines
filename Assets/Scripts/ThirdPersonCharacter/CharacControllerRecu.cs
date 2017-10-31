@@ -172,7 +172,6 @@ public class CharacControllerRecu : MonoBehaviour {
 		if (Physics.CapsuleCast (newOrigin - (playerAngle * capsuleHeightModifier/2), newOrigin + (playerAngle * capsuleHeightModifier/2), radius, velocity, out hit, rayLength
 			, ((veloNorm.y > 0 || myPlayer.currentPlayerState == ePlayerState.gliding) ? collisionMaskNoCloud : collisionMask))) {
 			collisionNumber++;
-			Debug.Log ("collided with : " + hit.collider.name + " at " + hit.point + " by following " + velocity);
 
 			//When an obstacle is met, remember the amount of movement needed to get to the obstacle
 			movementVector += veloNorm * (hit.distance - ((skinWidth < hit.distance)? skinWidth : hit.distance));
