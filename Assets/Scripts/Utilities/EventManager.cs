@@ -160,9 +160,28 @@ namespace Game.Utilities
         //###########################################################
         //###########################################################
 
-        #region pillar entered event
+        #region enter pillar event
 
-        #endregion pillar entered event
+        public class OnEnterPillarEventArgs : EventArgs
+        {
+            public World.ePillarId PillarId { get; private set; }
+
+            public OnEnterPillarEventArgs(World.ePillarId pillarId)
+            {
+                this.PillarId = pillarId;
+            }
+        }
+
+        public delegate void OnEnterPillarEventHandler(object sender, OnEnterPillarEventArgs args);
+
+        public static event OnEnterPillarEventHandler OnEnterPillarEvent;
+
+        public static void SendOnEnterPillarEvent(object sender, OnEnterPillarEventArgs args)
+        {
+            OnEnterPillarEvent?.Invoke(sender, args);
+        }
+
+        #endregion enter pillar event
 
         //###########################################################
         //###########################################################
@@ -173,45 +192,45 @@ namespace Game.Utilities
 
         //###########################################################
 
-		#region eclipse events
+        #region eclipse events
 
-		public class OnEclipseEventArgs : EventArgs
-		{
-			public bool EclipseOn;
+        public class OnEclipseEventArgs : EventArgs
+        {
+            public bool EclipseOn;
 
-			public OnEclipseEventArgs(bool eclipseOn)
-			{
-				EclipseOn = eclipseOn;
-			}
-		}
+            public OnEclipseEventArgs(bool eclipseOn)
+            {
+                EclipseOn = eclipseOn;
+            }
+        }
 
-		public delegate void OnEclipseEventHandler(object sender, OnEclipseEventArgs args);
+        public delegate void OnEclipseEventHandler(object sender, OnEclipseEventArgs args);
 
-		public static event OnEclipseEventHandler OnEclipseEvent;
+        public static event OnEclipseEventHandler OnEclipseEvent;
 
-		public static void SendOnEclipseEvent(object sender, OnEclipseEventArgs args)
-		{
-			OnEclipseEvent?.Invoke(sender, args);
-		}
+        public static void SendOnEclipseEvent(object sender, OnEclipseEventArgs args)
+        {
+            OnEclipseEvent?.Invoke(sender, args);
+        }
 
-		#endregion eclipse events
+        #endregion eclipse events
 
 
-		//###########################################################
+        //###########################################################
 
-		#region eye killed events
+        #region eye killed events
 
-		public delegate void OnEyeKilledEventHandler(object sender);
+        public delegate void OnEyeKilledEventHandler(object sender);
 
-		public static event OnEyeKilledEventHandler OnEyeKilledEvent;
+        public static event OnEyeKilledEventHandler OnEyeKilledEvent;
 
-		public static void SendOnEyeKilledEvent(object sender)
-		{
-			OnEyeKilledEvent?.Invoke(sender);
-		}
+        public static void SendOnEyeKilledEvent(object sender)
+        {
+            OnEyeKilledEvent?.Invoke(sender);
+        }
 
-		#endregion eye killed events
+        #endregion eye killed events
 
-		//***********************************************************
+        //***********************************************************
     }
 } //end of namespace

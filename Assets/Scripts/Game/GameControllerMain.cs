@@ -18,6 +18,8 @@ namespace Game
         Player.PlayerModel playerModel;
         public Player.PlayerModel PlayerModel { get { return this.playerModel; } }
 
+        TimeController timeController;
+
         //
         Player.PlayerController playerController;
 
@@ -25,6 +27,9 @@ namespace Game
         OpenWorldSceneInfo openWorldSceneInfo = new OpenWorldSceneInfo();
         UiSceneInfo uiSceneInfo = new UiSceneInfo();
         Dictionary<World.ePillarId, PillarSceneInfo> pillarSceneDictionary = new Dictionary<World.ePillarId, PillarSceneInfo>();
+
+        bool isPillarActive = false;
+        World.ePillarId activePillarId;
 
         //###############################################################
         //###############################################################
@@ -37,18 +42,24 @@ namespace Game
             //
             this.playerModel = GetComponentInChildren<Player.PlayerModel>();
 
+            this.timeController = GetComponentInChildren<TimeController>();
+
             //
             this.playerController = FindObjectOfType<Player.PlayerController>();
             this.playerController.InitializePlayerController(this);
 
             //
+            Utilities.EventManager.OnEyeKilledEvent += OnEyeKilledEventHandler;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
+            //
             StartCoroutine(LoadScenesRoutine());
         }
 
         //###############################################################
         //###############################################################
+
+        #region initialization methods
 
         IEnumerator LoadScenesRoutine()
         {
@@ -76,7 +87,10 @@ namespace Game
                 yield return null;
             }
 
+            //
             SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
+
+            Utilities.EventManager.SendOnPlayerSpawnedEvent(this, new Utilities.EventManager.OnPlayerSpawnedEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnPoint()));
             Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.Intro));
         }
 
@@ -128,7 +142,7 @@ namespace Game
                         this.pillarSceneDictionary.Add(pillarId, pillarInfo);
 
                         //deactivating scene
-                        foreach(var go in scene.GetRootGameObjects())
+                        foreach (var go in scene.GetRootGameObjects())
                         {
                             go.SetActive(false);
                         }
@@ -137,8 +151,78 @@ namespace Game
             }
         }
 
+        #endregion initialization methods
+
         //###############################################################
         //###############################################################
+
+        void OnEnterPillarEventHandler(object sender, Utilities.EventManager.OnEnterPillarEventArgs args)
+        {
+            if (this.isPillarActive)
+            {
+                throw new Exception("A Pillar is already active!");
+            }
+
+            //todo: pause game
+            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.LoadingScreen));
+
+            //deactivate open world scene
+            foreach (var go in this.openWorldSceneInfo.Scene.GetRootGameObjects())
+            {
+                go.SetActive(false);
+            }
+
+            //activate pillar scene
+            this.isPillarActive = true;
+            this.activePillarId = args.PillarId;
+            var info = this.pillarSceneDictionary[this.activePillarId];
+            var pillarScene = info.Scene;
+            foreach (var go in pillarScene.GetRootGameObjects())
+            {
+                go.SetActive(true);
+            }
+            SceneManager.SetActiveScene(pillarScene);
+
+            //
+            Utilities.EventManager.SendOnPlayerSpawnedEvent(this, new Utilities.EventManager.OnPlayerSpawnedEventArgs(info.SpawnPointManager.GetInitialSpawnPoint()));
+
+            //
+            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.HUD));
+            //todo: unpause game
+        }
+
+        void OnEyeKilledEventHandler(object sender)
+        {
+            if (!this.isPillarActive)
+            {
+                throw new Exception("No Pillar is active!");
+            }
+
+            //todo: pause game
+            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.LoadingScreen));
+
+            //deactivate pillar scene
+            var pillarScene = this.pillarSceneDictionary[this.activePillarId].Scene;
+            foreach(var go in pillarScene.GetRootGameObjects())
+            {
+                go.SetActive(false);
+            }
+            this.isPillarActive = false;
+
+            //activate open world scene
+            foreach(var go in this.openWorldSceneInfo.Scene.GetRootGameObjects())
+            {
+                go.SetActive(true);
+            }
+            SceneManager.SetActiveScene(this.openWorldSceneInfo.Scene);
+
+            //
+            Utilities.EventManager.SendOnPlayerSpawnedEvent(this, new Utilities.EventManager.OnPlayerSpawnedEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnPoint()));
+
+            //
+            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.HUD));
+            //todo: unpause game
+        }
 
         //###############################################################
         //###############################################################
