@@ -4,7 +4,15 @@
 [RequireComponent(typeof(Camera))]
 public class PoS_Camera : MonoBehaviour {
 
+    #region Properties
     public LayerMask blockingLayer;
+
+    public eCameraState state;
+    public enum eCameraState {
+        Default, Idle, PlayerControl,
+        Resetting, AroundCorner, FollowBehind,
+        Slope, Jump
+    }
 
     [Header("Position")]
     public Transform target;
@@ -46,19 +54,15 @@ public class PoS_Camera : MonoBehaviour {
     [Header("Eclipse")]
     public bool isEclipse = false;
     
-    eCameraState state;
-    enum eCameraState {
-        Idle, PlayerControl, Resetting, AroundCorner, FollowBehind
-    }
-
     new Camera camera;
     Vector3 camPosition, negDistance;
+    Vector3 playerVelocity;
     Quaternion camRotation, targetSpace;
     Vector2 input;
     Vector2 rotationSpeed;
     Vector2 offset;
     Player player;
-    Transform my, characterModel;
+    Transform my;
 
     ePlayerState playerState;
 
@@ -67,9 +71,12 @@ public class PoS_Camera : MonoBehaviour {
     float additionalDistance;
 	float deltaTime;
     float autoDamp;
-    bool resetting;
+    float manualPitch, manualYaw;
+    bool resetting, autoAdjustYaw, autoAdjustPitch;
     bool placedByPlayer;
-    
+
+    #endregion
+
     #region MonoBehaviour
 
     void Start() {
@@ -78,9 +85,6 @@ public class PoS_Camera : MonoBehaviour {
 
         my = transform;
         player = target.GetComponentInParent<Player>();
-
-        // Trouver le bon truc qui défini la rotation
-        characterModel = target.parent.GetComponentInChildren<Animator>().transform;
         
         Vector3 angles = transform.eulerAngles;
         yaw = angles.y;
@@ -89,6 +93,9 @@ public class PoS_Camera : MonoBehaviour {
 
         currentDistance = zoomValue = idealDistance = distance;
         maxDistance = canZoom ? zoomDistance.max : distance;
+
+        manualPitch = defaultPitch;
+        state = eCameraState.Default;
     }
 
     void OnApplicationFocus(bool hasFocus) {
@@ -128,11 +135,7 @@ public class PoS_Camera : MonoBehaviour {
 		camPosition = camRotation * negDistance + targetWithOffset;
 
 		SmoothMovement();
-
-        #if UNITY_EDITOR
-            DoDebug(); // TO DELETE
-        #endif
-
+        
         targetSpace = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, target.up), Vector3.Cross(Vector3.up, target.up));
         
         // Reoriente the character's rotator
@@ -144,17 +147,6 @@ public class PoS_Camera : MonoBehaviour {
     }
 
     #endregion
-
-    void DoDebug() {
-        // DEBUG POUR ECLISPE
-        if (Input.GetKeyUp(KeyCode.G)) {
-            isEclipse ^= true;
-            if (isEclipse)
-                target.parent.Rotate(0, 0, 90, Space.World);
-            else
-                target.parent.Rotate(0, 0, -90, Space.World);
-        }
-    }
 
     #region Zoom
     [Header("Zoom")]
@@ -185,7 +177,7 @@ public class PoS_Camera : MonoBehaviour {
     bool inPanorama = false;
 
     void DoPanorama() {
-        if (!Input.anyKey && input.magnitude == 0 && Input.GetAxis("Horizontal") == 0 && Input.GetAxis("Vertical") == 0)
+        if (!Input.anyKey && input.magnitude == 0 && playerVelocity == Vector3.zero)
             panoramaTimer += deltaTime;
         else {
             panoramaTimer = 0;
@@ -194,8 +186,6 @@ public class PoS_Camera : MonoBehaviour {
                 inPanorama = false;
             }
         }
-
-        //print(panoramaTimer + " & " + timeToTriggerPanorama + " | " + idealDistance + " < " + panoramaDistance);
         if (panoramaTimer >= timeToTriggerPanorama && currentDistance <= panoramaDistance) {
             additionalDistance += deltaTime * panoramaDezoomSpeed;
             inPanorama = true;
@@ -208,22 +198,58 @@ public class PoS_Camera : MonoBehaviour {
         input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
 
         playerState = player.currentPlayerState;
+        playerVelocity = target.InverseTransformVector(player.velocity);
 
         if (input.magnitude != 0) {
             state = eCameraState.PlayerControl;
-            placedByPlayer = true;
             resetting = false;
+            manualPitch = pitch;
+            manualYaw = yaw;
+            autoAdjustPitch = false;
+            autoAdjustYaw = false;
+
+        } else if (state != eCameraState.Resetting) {
+
+            if (playerVelocity != Vector3.zero && playerState == ePlayerState.onGround) {
+
+                state = eCameraState.Default;
+                autoAdjustYaw = false;
+                autoAdjustPitch = true;
+
+                // POUR LES PENTES
+                if (playerVelocity.normalized.y > 0 || playerVelocity.z > 0) {
+                    targetPitch = -50 * playerVelocity.normalized.y * Mathf.Sign(playerVelocity.z) + manualPitch;
+                    autoAdjustYaw = false;
+
+                } else
+                    targetPitch = defaultPitch;
+                
+            } else {
+                state = eCameraState.Idle;
+                autoAdjustPitch = false;
+                autoAdjustYaw = false;
+            }
+        }
+        
+        if (playerState == ePlayerState.gliding) {
+            targetPitch = -2 * playerVelocity.y + defaultPitch;
+            targetYaw = GetYawBehindPlayer();
+            autoDamp = resetDamp;
+            autoAdjustPitch = true;
+            autoAdjustYaw = true;
+            state = eCameraState.FollowBehind;
         }
 
-        if (input.magnitude == 0 && (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0))
-            placedByPlayer = false;
-
-        if (playerState == ePlayerState.gliding)
-            state = eCameraState.FollowBehind;
-
-        if (Input.GetButton("ResetCamera") || state == eCameraState.FollowBehind) {
+        if (Input.GetButton("ResetCamera")) {
             targetYaw = GetYawBehindPlayer();
-            GoBehindPlayer(eCameraState.Resetting, resetDamp);
+            targetPitch = defaultPitch;
+            manualPitch = defaultPitch;
+            manualYaw = targetYaw;
+
+            autoDamp = resetDamp;
+            autoAdjustPitch = true;
+            autoAdjustYaw = true;
+            state = eCameraState.Resetting;
         }
     }
 
@@ -240,28 +266,24 @@ public class PoS_Camera : MonoBehaviour {
         pitch -= clampedY * rotationSpeed.y * deltaTime;
         pitch = pitchRotationLimit.Clamp(pitch);
 
-        if (followBehind || resetting)
+        if (state != eCameraState.PlayerControl)
             AutomatedMovement();
 
         camRotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
     }
 
-    void GoBehindPlayer(eCameraState mode, float damp) {
-        resetting = true;
-        state = mode;
-        autoDamp = damp;
-    }
-
     float targetYaw, targetPitch;
     void AutomatedMovement() { // place camera behind
-        targetPitch = characterModel.localEulerAngles.x;
-
-        yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / autoDamp);
-        pitch = Mathf.LerpAngle(pitch, targetPitch + defaultPitch, deltaTime / autoDamp);
-
-        if (state != eCameraState.FollowBehind) {
-            if (Mathf.Abs(Mathf.DeltaAngle(yaw, targetYaw)) < 1f && Mathf.Abs(Mathf.DeltaAngle(pitch, defaultPitch)) < 1f)
-                resetting = false; // si on n'est pas trop loin on arrête de reset
+        if (autoAdjustYaw)
+            yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / autoDamp);
+        if (autoAdjustPitch)   
+            pitch = Mathf.LerpAngle(pitch, targetPitch, deltaTime / autoDamp);
+        
+        if (state == eCameraState.Resetting) {
+            if ( ((autoAdjustYaw   && Mathf.Abs(Mathf.DeltaAngle(yaw,   targetYaw))   < 1f) || !autoAdjustYaw)
+              && ((autoAdjustPitch && Mathf.Abs(Mathf.DeltaAngle(pitch, targetPitch)) < 1f) || !autoAdjustPitch) ) {
+                state = eCameraState.Default;
+            }
         }
     }
 
@@ -286,7 +308,7 @@ public class PoS_Camera : MonoBehaviour {
         if (blockedByAWall && hit.distance > 0) {// If we hit something, hitDistance cannot be 0, nor higher than idealDistance
             lastHitDistance = Mathf.Min(hit.distance - rayRadius, idealDistance);
 
-            if (input.magnitude == 0 && !placedByPlayer && currentDistance >= hit.distance) { // auto move around corners
+            if (state != eCameraState.PlayerControl && currentDistance >= hit.distance) { // auto move around corners
                 float targetYaw = GetYawBehindPlayer();
                 float newYaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / slideDamp);
                 float delta = Mathf.Abs(Mathf.DeltaAngle(newYaw, targetYaw));
@@ -295,12 +317,11 @@ public class PoS_Camera : MonoBehaviour {
 
                 Vector3 centerOfSphereCast = startPos + (rayEnd - startPos).normalized * hit.distance;
                 Vector3 hitDirection = (hit.point - centerOfSphereCast).normalized;
-
-                print("la direction: " + hitDirection);
-
+                
                 if (delta > 1 && delta < 100) {
-
-                    GoBehindPlayer(eCameraState.AroundCorner, slideDamp);
+                    targetYaw = GetYawBehindPlayer();
+                    state = eCameraState.AroundCorner;
+                    autoDamp = slideDamp;
                     
                     //yaw = newYaw;
                     //camRotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
