@@ -61,6 +61,11 @@ public class Player : MonoBehaviour {
 	[Tooltip("The speed at which the player's speed changes on the ground.")]
 	public float groundControl = 6f;
 	/// <summary>
+	/// The value by which the speed update of the player is multiplied when there's no input on the left stick.
+	/// </summary>
+	[Tooltip("The value by which the speed update of the player is multiplied when there's no input on the left stick.")]
+	public float groundNoInputCoeff = 5f;
+	/// <summary>
 	/// The speed at which the player's input impacts the slide.
 	/// </summary>
 	[Tooltip("The speed at which the player's input impacts the slide.")]
@@ -338,7 +343,7 @@ public class Player : MonoBehaviour {
 		dashTimer -= Time.deltaTime;
 		#endregion update timers
 
-
+		#region turn the player
 		//Turn the player in his last direction
 		if (inputRaw.magnitude > 0f) {
 			if (currentPlayerState != ePlayerState.gliding) {
@@ -347,6 +352,7 @@ public class Player : MonoBehaviour {
 				transform.Rotate (transform.up, glideHorizontalAngle, Space.World);
 			}
 		}
+		#endregion turn the player
 
 
 		#region input detection
@@ -401,7 +407,7 @@ public class Player : MonoBehaviour {
 		#endregion input detection
 
 
-		#region direction
+		#region direction calculations
 
 		Vector3 targetVelocity = Vector3.zero;
 		//		Debug.Log("state : " + currentPlayerState + " momentum : " + keepMomentum);
@@ -470,21 +476,23 @@ public class Player : MonoBehaviour {
 				
 				permissiveJumpTime = canStillJumpTime;
 
+
 				if (flatVelocity.magnitude < characSpeed)
 					keepMomentum = false;
 				
 				rmngAerialJumps = numberOfAerialJumps;
 				playerMod.UnflagAbility(eAbilityType.DoubleJump);
 
+
 				flatVelocity = velocity;
 				velocity.y = 0f;
 				targetVelocity = inputToSlope * characSpeed * (pressingSprint ? sprintCoeff : 1);
-				flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, groundControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f));
+				flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, groundControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f) * (leftStickAtZero ? groundNoInputCoeff : 1f));
 				// Detects if the player is moving up or down the slope, and multiply their speed based on that slope
 				if (Vector3.Angle(transform.up, controller.collisions.currentGroundNormal) > minSlopeAngle)
 					flatVelocity *= 1 + slopeCoeff * Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (maxSlopeAngle);
 				
-			/*   OTHER VERSION 
+				/*   OTHER VERSION 
 			flatVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, controller.collisions.currentGroundNormal), Vector3.Cross(controller.collisions.currentGroundNormal, transform.up))) * velocity;
 			velocity.y = 0f;
 			targetVelocity = inputToCamera * characSpeed;
@@ -495,7 +503,7 @@ public class Player : MonoBehaviour {
 
 				if (pressedJump) {
 					pressedJump = false;
-					velocity.y = maxJumpVelocity;
+					flatVelocity += maxJumpVelocity/2 * TurnSpaceToLocal(controller.collisions.currentGroundNormal) + maxJumpVelocity/2 * Vector3.up;
 					currentPlayerState = ePlayerState.inAir;
 					lastJumpAerial = false;
 				}
@@ -584,7 +592,7 @@ public class Player : MonoBehaviour {
 
 				if (pressedJump) {
 					pressedJump = false;
-					velocity.y = maxJumpVelocity;
+					flatVelocity += maxJumpVelocity/2 * TurnSpaceToLocal(controller.collisions.currentGroundNormal) + maxJumpVelocity/2 * Vector3.up;
 					currentPlayerState = ePlayerState.inAir;
 				}
 				break;
@@ -595,7 +603,7 @@ public class Player : MonoBehaviour {
 		velocity = new Vector3(0, velocity.y, 0);
 		velocity += flatVelocity;
 
-		#endregion direction
+		#endregion direction calculations
 
 		//Turns the velocity in world space and calls the controller to check if the calculated velocity will run into walls and stuff
 		turnedVelocity = TurnLocalToSpace(velocity);
