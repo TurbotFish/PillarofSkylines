@@ -7,6 +7,9 @@ namespace Game
 {
     public class GameControllerLite : GameControllerBase
     {
+        [SerializeField]
+        bool showIntroMenu = false;
+
         protected override void Start()
         {
             base.Start();
@@ -15,7 +18,10 @@ namespace Game
             player.InitializePlayerController(this);
 
             var worldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(SceneManager.GetActiveScene());
-            worldController.InitializeWorldController(player.transform);
+            if (worldController != null)
+            {
+                worldController.InitializeWorldController(player.transform);
+            }
         }
 
         protected override IEnumerator LoadScenesRoutine()
@@ -27,7 +33,15 @@ namespace Game
             yield return null;
 
             SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
-            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.Intro));
+
+            if (this.showIntroMenu)
+            {
+                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.Intro));
+            }
+            else
+            {
+                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.HUD));
+            }
         }
 
         protected override void OnSceneLoadedEventHandler(Scene scene, LoadSceneMode mode)

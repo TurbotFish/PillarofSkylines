@@ -3,7 +3,7 @@
 
 	#define LIGHTING_CUSTOM_PBR_INCLUDED
 
-	float4 _Tint;
+	float4 _Color;
 	sampler2D _MainTex, _DetailTex, _DetailMask;
 	float4 _MainTex_ST, _DetailTex_ST;
 
@@ -32,9 +32,9 @@
 		float3 _DiffuseSSS;
 	#endif
 
-	//#include "UnityPBSLighting.cginc"
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
+	#include "WindSystem.cginc"
 
 	#if defined(FOG_LINEAR) || defined(FOG_EXP) || defined(FOG_EXP2)
 		#if !defined(FOG_DISTANCE)
@@ -120,7 +120,7 @@
 	}
 
 	float3 GetAlbedo(Interpolators i){
-		float3 albedo = tex2D(_MainTex, i.uv.xy).rgb * _Tint.rgb;
+		float3 albedo = tex2D(_MainTex, i.uv.xy).rgb * _Color.rgb;
 		#if defined(_DETAIL_ALBEDO_MAP)
 			float3 details = tex2D(_DetailTex, i.uv.zw) * unity_ColorSpaceDouble;
 			albedo = lerp(albedo, albedo * details, GetDetailMask(i));
@@ -131,14 +131,18 @@
 	//checker test
 	float3 GetAlbedoDebug(Interpolators i){
 
-		float xValue = floor(i.worldPos.x) - floor(floor(i.worldPos.x) * 0.5) * 2.0;
-		float yValue = floor(i.worldPos.y) - floor(floor(i.worldPos.y) * 0.5) * 2.0;
-		float zValue = floor(i.worldPos.z) - floor(floor(i.worldPos.z) * 0.5) * 2.0;
-		return abs(yValue - abs(xValue - zValue));
+		float xValue = floor(i.worldPos.x * 0.5) - floor(floor(i.worldPos.x * 0.5) * 0.5) * 2.0;
+		float yValue = floor(i.worldPos.y * 0.5) - floor(floor(i.worldPos.y * 0.5) * 0.5) * 2.0;
+		float zValue = floor(i.worldPos.z * 0.5) - floor(floor(i.worldPos.z * 0.5) * 0.5) * 2.0;
+		return clamp(0.45, 0.6,abs(yValue - abs(xValue - zValue)));
+	}
+
+	float4 GetLocalNormalDebug(Interpolators i){
+		return float4(i.normal.xyz, 1);
 	}
 
 	float GetThickness(Interpolators i){
-		#if defined(_SSS)
+		#if defined(_SSS) && !defined(_LOCAL_NORMAL_DEBUG)
 			float thickness = 1.0 - tex2D(_ThicknessMap, i.uv).r;
 			return thickness;
 		#else
@@ -179,7 +183,7 @@
 	}
 
 	float GetAlpha(Interpolators i){
-		float alpha = _Tint.a;
+		float alpha = _Color.a;
 		#if !defined(_SMOOTHNESS_ALBEDO)
 			alpha *= tex2D(_MainTex, i.uv.xy).a;
 		#endif
@@ -208,8 +212,18 @@
 
 	Interpolators MyVertexProgram(VertexData v) {
 		Interpolators i;
+
+		/////////////
+		//Rotation test
+		v.vertex.xyz = ApplyWind(v.vertex.xyz, float3(0,0,0));
+
+		/////////////
+
+
 		i.pos = UnityObjectToClipPos(v.vertex);
 		i.worldPos.xyz = mul(unity_ObjectToWorld, v.vertex);
+
+
 
 		#if FOG_DEPTH
 			i.worldPos.w = i.pos.z;
@@ -218,7 +232,13 @@
 
 		i.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
 		i.uv.zw = TRANSFORM_TEX(v.uv, _DetailTex);
-		i.normal = UnityObjectToWorldNormal(v.normal);
+
+		#if defined(_LOCAL_NORMAL_DEBUG)
+			i.normal = v.normal;
+		#else
+			i.normal = UnityObjectToWorldNormal(v.normal);
+		#endif
+
 
 		#if defined(BINORMAL_PER_FRAGMENT)
 			i.tangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
@@ -418,21 +438,22 @@
 		#endif
 
 
-
-	
-		float4 color = ALO_BRDF_PBS(
+		#if defined(_LOCAL_NORMAL_DEBUG)
+			float4 color = GetLocalNormalDebug(i);
+		#else
+			float4 color = ALO_BRDF_PBS(
 				albedo, specularTint,
 				oneMinusReflectivity, GetSmoothness(i),
 				i.normal, viewDir,
 				CreateLight(i), CreateIndirectLight(i, viewDir),
 				i.uv
-		);
-		color.rgb += GetEmission(i);
+			);
+			color.rgb += GetEmission(i);
 
-		#if defined(_RENDERING_FADE) || defined(_RENDERING_TRANSPARENT)
-			color.a = alpha;
+			#if defined(_RENDERING_FADE) || defined(_RENDERING_TRANSPARENT)
+				color.a = alpha;
+			#endif
 		#endif
-
 
 		FragmentOutput output;
 		#if defined(DEFERRED_PASS)
@@ -446,12 +467,10 @@
 			output.gBuffer2.rgba = float4(i.normal.xyz * 0.5 + 0.5, GetSSSColourMask());
 			output.gBuffer3 = color;
 
-
-			//output.gBuffer2.rgba = float4(i.normal.xy * 0.5 + 0.5, 0.825, 0);// * 0.5 + 0.5);
-			//output.gBuffer2.rgba = float4((i.normal.xy / sqrt(i.normal.z * 8 + 8)) + 0.5, GetPackedDiffuseSSS(), 0);
-
 		#else
-			output.color = ApplyFog(color, i);
+			#if !defined(_LOCAL_NORMAL_DEBUG)
+				output.color = ApplyFog(color, i);
+			#endif
 		#endif
 
 		return output;

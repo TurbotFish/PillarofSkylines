@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game.World.ChunkSystem
+namespace Game.World
 {
     public enum ePillarId
     {
