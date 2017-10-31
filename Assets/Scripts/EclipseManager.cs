@@ -67,5 +67,10 @@ public class EclipseManager : MonoBehaviour {
 			gravityTimer += Time.deltaTime;
 			yield return null;
 		}
+		if (eclipseOn) {
+			player.ChangeGravityDirection (eclipseGravity);
+		} else {
+			player.ChangeGravityDirection (regularGravity);
+		}
 	}
 }
