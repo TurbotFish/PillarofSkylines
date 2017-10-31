@@ -45,14 +45,10 @@ public class PoS_Camera : MonoBehaviour {
 
     [Header("Eclipse")]
     public bool isEclipse = false;
-
-    [HideInInspector]
-    CameraState cameraState;
-    enum CameraState { }
-
-    ResetMode resetMode;
-    enum ResetMode {
-        Manual, Angle, FollowBehind
+    
+    eCameraState state;
+    enum eCameraState {
+        Idle, PlayerControl, Resetting, AroundCorner, FollowBehind
     }
 
     new Camera camera;
@@ -61,7 +57,10 @@ public class PoS_Camera : MonoBehaviour {
     Vector2 input;
     Vector2 rotationSpeed;
     Vector2 offset;
+    Player player;
     Transform my, characterModel;
+
+    ePlayerState playerState;
 
     float yaw, pitch;
     float maxDistance, currentDistance, idealDistance;
@@ -78,8 +77,11 @@ public class PoS_Camera : MonoBehaviour {
         Cursor.lockState = CursorLockMode.Locked;
 
         my = transform;
-        characterModel = target.parent.GetComponentInChildren<Animator>().transform;
+        player = target.GetComponentInParent<Player>();
 
+        // Trouver le bon truc qui défini la rotation
+        characterModel = target.parent.GetComponentInChildren<Animator>().transform;
+        
         Vector3 angles = transform.eulerAngles;
         yaw = angles.y;
         pitch = angles.x;
@@ -95,8 +97,6 @@ public class PoS_Camera : MonoBehaviour {
     }
 
     void LateUpdate() {
-        if (!target || GameState.isPaused) return;
-
         deltaTime = Time.deltaTime;
         GetInputs();
         DoRotation();
@@ -154,10 +154,6 @@ public class PoS_Camera : MonoBehaviour {
             else
                 target.parent.Rotate(0, 0, -90, Space.World);
         }
-        // DEBUG POUR FOLLOWBEHIND
-        if (Input.GetButtonUp("Back")) {
-            followBehind ^= true;
-        }
     }
 
     #region Zoom
@@ -210,19 +206,25 @@ public class PoS_Camera : MonoBehaviour {
     void GetInputs() {
         input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
         input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
-        
-        if (input.magnitude != 0)
+
+        playerState = player.currentPlayerState;
+
+        if (input.magnitude != 0) {
+            state = eCameraState.PlayerControl;
             placedByPlayer = true;
+            resetting = false;
+        }
 
         if (input.magnitude == 0 && (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0))
             placedByPlayer = false;
-        
-        if (input.magnitude != 0 // if we have manual control, stop automated movement
-            || (resetMode == ResetMode.Manual && (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)))
-            resetting = false;
-        
-        if (Input.GetButton("ResetCamera"))
-            GoBehindPlayer(ResetMode.Manual, resetDamp);
+
+        if (playerState == ePlayerState.gliding)
+            state = eCameraState.FollowBehind;
+
+        if (Input.GetButton("ResetCamera") || state == eCameraState.FollowBehind) {
+            targetYaw = GetYawBehindPlayer();
+            GoBehindPlayer(eCameraState.Resetting, resetDamp);
+        }
     }
 
     void DoRotation() {
@@ -239,25 +241,25 @@ public class PoS_Camera : MonoBehaviour {
         pitch = pitchRotationLimit.Clamp(pitch);
 
         if (followBehind || resetting)
-            Resetting();
+            AutomatedMovement();
 
         camRotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
     }
 
-    void GoBehindPlayer(ResetMode mode, float damp) {
+    void GoBehindPlayer(eCameraState mode, float damp) {
         resetting = true;
-        resetMode = mode;
+        state = mode;
         autoDamp = damp;
     }
 
-    void Resetting() { // place camera behind
-        float targetYaw = GetYawBehindPlayer();
-        float targetPitch = characterModel.localEulerAngles.x;
+    float targetYaw, targetPitch;
+    void AutomatedMovement() { // place camera behind
+        targetPitch = characterModel.localEulerAngles.x;
 
         yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / autoDamp);
         pitch = Mathf.LerpAngle(pitch, targetPitch + defaultPitch, deltaTime / autoDamp);
 
-        if (resetMode != ResetMode.FollowBehind) {
+        if (state != eCameraState.FollowBehind) {
             if (Mathf.Abs(Mathf.DeltaAngle(yaw, targetYaw)) < 1f && Mathf.Abs(Mathf.DeltaAngle(pitch, defaultPitch)) < 1f)
                 resetting = false; // si on n'est pas trop loin on arrête de reset
         }
@@ -298,7 +300,7 @@ public class PoS_Camera : MonoBehaviour {
 
                 if (delta > 1 && delta < 100) {
 
-                    GoBehindPlayer(ResetMode.Angle, slideDamp);
+                    GoBehindPlayer(eCameraState.AroundCorner, slideDamp);
                     
                     //yaw = newYaw;
                     //camRotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
