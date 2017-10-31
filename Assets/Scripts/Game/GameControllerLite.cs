@@ -15,7 +15,10 @@ namespace Game
             player.InitializePlayerController(this);
 
             var worldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(SceneManager.GetActiveScene());
-            worldController.InitializeWorldController(player.transform);
+            if (worldController != null)
+            {
+                worldController.InitializeWorldController(player.transform);
+            }
         }
 
         protected override IEnumerator LoadScenesRoutine()
