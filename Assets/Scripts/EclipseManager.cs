@@ -7,13 +7,15 @@ public class EclipseManager : MonoBehaviour {
     [TestButton("Stop Eclipse", "StopEclipse", isActiveInEditor = false)]
     public bool isEclipseActive;
 
-    public float rotationDuration = 1;
+	public float rotationDuration = 1;
+	public Vector3 regularGravity;
+	public Vector3 eclipseGravity;
 
     [SerializeField]
     Transform pillar;
 
     EchoManager echoes;
-    Transform player;
+    Player player;
     Needle needle;
 
     #region Singleton
@@ -29,60 +31,40 @@ public class EclipseManager : MonoBehaviour {
 
     void Start () {
         echoes = EchoManager.instance;
-        needle = FindObjectOfType<Needle>();
-        needle.transform.parent = pillar;
-        player = FindObjectOfType<ThirdPersonController>()?.transform ?? FindObjectOfType<Player>().transform; //to fix
+        player = FindObjectOfType<Player>(); //to fix
+
+		Game.Utilities.EventManager.OnEclipseEvent += HandleEventEclipse;
     }
 	
     public void StartEclipse() {
-        PlaceAllObjectsInPillar();
         echoes.FreezeAll();
         isEclipseActive = true;
-        RotatePillar(player.position, Vector3.forward, -90);
     }
 
     public void StopEclipse() {
-        PlaceAllObjectsInPillar();
         echoes.UnfreezeAll();
         isEclipseActive = false;
-        needle.gameObject.SetActive(true);
-        RotatePillar(player.position, Vector3.forward, 90);
     }
 
-    void PlaceAllObjectsInPillar() {
-        pillar.DetachChildren();
-        pillar.position = player.position;
+	void HandleEventEclipse(object sender, Game.Utilities.EventManager.OnEclipseEventArgs args) {
+		if (args.EclipseOn) {
+			StartEclipse ();
+		} else {
+			StopEclipse ();
+		}
+		StartCoroutine ("ChangeGravity", args.EclipseOn);
+	}
 
-        GameObject[] allRootObjects = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
-
-        foreach (GameObject go in allRootObjects) {
-            if (go.GetComponent<Camera>() || go.tag == "Player") continue; //not the camera nor the player
-            go.transform.parent = pillar;
-        }
-    }
-    
-    void RotatePillar(Vector3 pivot, Vector3 axis, float angle) {
-        StartCoroutine(_RotatePillar(pivot, axis, angle));
-    }
-
-    IEnumerator _RotatePillar(Vector3 pivot, Vector3 axis, float angle) {
-        
-        GameState.Pause(true);
-
-        float finalzRot = Mathf.Round(pillar.eulerAngles.z + angle);
-        float trueAngle = angle / rotationDuration;
-        for (float elapsed = 0; elapsed < rotationDuration; elapsed += Time.unscaledDeltaTime) {
-
-            //pillar.Rotate(axis * trueAngle * Time.unscaledDeltaTime);
-
-            pillar.RotateAround(pivot, axis, trueAngle * Time.unscaledDeltaTime);
-            yield return new WaitForEndOfFrame();
-        }
-
-        pillar.eulerAngles = new Vector3(0, 0, finalzRot);
-
-        player.position = needle.transform.position;
-        GameState.Pause(false);
-    }
-
+	IEnumerator ChangeGravity(bool eclipseOn){
+		float gravityTimer = 0;
+		while (gravityTimer < rotationDuration) {
+			if (eclipseOn) {
+				player.ChangeGravityDirection (Vector3.Lerp (regularGravity, eclipseGravity, gravityTimer / rotationDuration));
+			} else {
+				player.ChangeGravityDirection (Vector3.Lerp (eclipseGravity, regularGravity, gravityTimer / rotationDuration));
+			}
+			gravityTimer += Time.deltaTime;
+			yield return null;
+		}
+	}
 }

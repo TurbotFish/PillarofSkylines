@@ -15,8 +15,8 @@ namespace Game.Player
         public global::Player Player { get { return this.player; } }
 
         //[SerializeField]
-        FavourController favourController;
-        public FavourController FavourController { get { return this.favourController; } }      
+        InteractionController favourController;
+        public InteractionController FavourController { get { return this.favourController; } }      
 
         /// <summary>
         /// Initializes the Player Prefab with references to outside scripts.
@@ -25,7 +25,7 @@ namespace Game.Player
         public void InitializePlayerController(IGameControllerBase gameController)
         {
 			this.player = transform.GetComponent<global::Player> ();
-			this.favourController = GetComponentInChildren<FavourController> ();
+			this.favourController = GetComponentInChildren<InteractionController> ();
 
             this.player.InitializePlayer(gameController.PlayerModel);
             this.favourController.InitializeFavourController(gameController.PlayerModel);

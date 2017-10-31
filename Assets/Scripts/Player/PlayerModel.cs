@@ -31,7 +31,7 @@ namespace Game.Player
         public AbilitySystem.AbilityData AbilityData { get { return this.abilityData; } }
 
 
-
+		public bool hasNeedle;
 
         //
         int favours = 0;
