@@ -91,7 +91,7 @@ namespace Game.Player
 				}
             }
 
-			if (Input.GetButtonUp("Drift")) {
+			if (Input.GetButtonUp("Drift") && playerModel.hasNeedle) {
 				playerModel.hasNeedle = false;
 				this.needlePickedUpCollider.enabled = true;
 				Utilities.EventManager.SendOnEclipseEvent(this, new Utilities.EventManager.OnEclipseEventArgs(false));
