@@ -16,6 +16,7 @@ namespace AmplifyShaderEditor
 
 		[SerializeField]
 		private int m_index = 0;
+
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
@@ -28,6 +29,7 @@ namespace AmplifyShaderEditor
 			m_outputPorts[ 3 ].Name = "W";
 			m_outputPorts[ 4 ].Name = "T";
 			m_autoWrapProperties = true;
+			m_hasLeftDropdown = true;
 			m_previewShaderGUID = "6c1bee77276896041bbb73b1b9e7f8ac";
 		}
 
@@ -46,6 +48,22 @@ namespace AmplifyShaderEditor
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				m_currentVertexData = ( m_index == 0 ) ? "texcoord" : "texcoord" + Constants.AvailableUVChannelsStr[ m_index ];
+			}
+		}
+
+		public override void Draw( DrawInfo drawInfo )
+		{
+			base.Draw( drawInfo );
+
+			if ( m_dropdownEditing )
+			{
+				EditorGUI.BeginChangeCheck();
+				m_texcoordSize = EditorGUIIntPopup( m_dropdownRect, m_texcoordSize, Constants.AvailableUVSizesStr, Constants.AvailableUVSizes, UIUtils.PropertyPopUp );
+				if ( EditorGUI.EndChangeCheck() )
+				{
+					UpdateOutput();
+					m_dropdownEditing = false;
+				}
 			}
 		}
 
@@ -78,6 +96,28 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
+			if ( dataCollector.IsTemplate )
+			{
+				if ( dataCollector.TemplateDataCollectorInstance.HasUV( m_index ) )
+				{
+					InterpDataHelper info = dataCollector.TemplateDataCollectorInstance.GetUVInfo( m_index );
+					if ( outputId == 0 )
+					{
+						return info.VarName;
+					}
+					else if ( outputId <= TemplateHelperFunctions.DataTypeChannelUsage[info.VarType] )
+					{
+						return GetOutputVectorItem( 0, outputId, info.VarName );
+					}
+					Debug.LogWarning( "Attempting to access inexisting UV channel" );
+				}
+				else
+				{
+					Debug.LogWarning( "Attempting to access non-registered UV" );
+				}
+				return "0";
+			}
+
 			if ( dataCollector.PortCategory == MasterNodePortCategory.Fragment || dataCollector.PortCategory == MasterNodePortCategory.Debug )
 			{
 				if ( m_texcoordSize > 2 )

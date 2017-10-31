@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Saturate", "Operators", "Smallest integer not less than a scalar or each vector component" )]
+	[NodeAttributes( "Saturate", "Math Operators", "Saturate clamps the input values into the [0,1] range" )]
 	public sealed class SaturateNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

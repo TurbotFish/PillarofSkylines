@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Sqrt", "Operators", "Square root of scalars and vectors" )]
+	[NodeAttributes( "Sqrt", "Math Operators", "Square root of scalars and vectors" )]
 	public sealed class SqrtOpNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

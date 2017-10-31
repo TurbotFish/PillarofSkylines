@@ -18,7 +18,7 @@ namespace AmplifyShaderEditor
 	public class CreateNodeActionData : ActionData
 	{
 		private int m_nodeId;
-		private Type m_nodeType;
+		private System.Type m_nodeType;
 		private Vector2 m_nodePos;
 
 		public CreateNodeActionData( ParentNode node )
@@ -29,7 +29,7 @@ namespace AmplifyShaderEditor
 		}
 
 
-		public CreateNodeActionData( int nodeId, Type nodeType, Vector2 nodePos )
+		public CreateNodeActionData( int nodeId, System.Type nodeType, Vector2 nodePos )
 		{
 			m_nodeId = nodeId;
 			m_nodePos = nodePos;
@@ -56,7 +56,7 @@ namespace AmplifyShaderEditor
 	public class DestroyNodeActionData : ActionData
 	{
 		private int m_nodeId;
-		private Type m_nodeType;
+		private System.Type m_nodeType;
 		private Vector2 m_nodePos;
 
 		public DestroyNodeActionData( ParentNode node )
@@ -66,7 +66,7 @@ namespace AmplifyShaderEditor
 			m_nodeType = node.GetType();
 		}
 
-		public DestroyNodeActionData( int nodeId, Type nodeType, Vector2 nodePos )
+		public DestroyNodeActionData( int nodeId, System.Type nodeType, Vector2 nodePos )
 		{
 			m_nodeId = nodeId;
 			m_nodePos = nodePos;

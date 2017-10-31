@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Switch by Face", "Various", "Switch which automaticaly uses a Face variable to select which input to use" )]
+	[NodeAttributes( "Switch by Face", "Miscellaneous", "Switch which automaticaly uses a Face variable to select which input to use" )]
 	public class SwitchByFaceNode : DynamicTypeNode
 	{
 		private const string SwitchOp = "((({0}>0)?({1}):({2})))";
@@ -67,7 +67,16 @@ namespace AmplifyShaderEditor
 			string back = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
 
 			dataCollector.AddToInput( UniqueId, Constants.VFaceInput, true );
-			string variable = ( ( dataCollector.PortCategory == MasterNodePortCategory.Vertex ) ? Constants.VertexShaderOutputStr : Constants.InputVarStr ) + "." + Constants.VFaceVariable;
+			string variable = string.Empty;
+			if ( dataCollector.IsTemplate )
+			{
+				variable = dataCollector.TemplateDataCollectorInstance.GetVFace();
+			}
+			else
+			{
+				variable = ( ( dataCollector.PortCategory == MasterNodePortCategory.Vertex ) ? Constants.VertexShaderOutputStr : Constants.InputVarStr ) + "." + Constants.VFaceVariable;
+			}
+
 			string value = string.Format( SwitchOp, variable, front, back );
 			RegisterLocalVariable( 0, value, ref dataCollector, "switchResult" + OutputId );
 			return m_outputPorts[ 0 ].LocalValue;

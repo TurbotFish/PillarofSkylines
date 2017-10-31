@@ -11,7 +11,8 @@ namespace Game.Player.UI
         HUD,
         AbilityMenu,
         Intro,
-        End
+        End,
+        LoadingScreen
     }
 
     public class UiController : MonoBehaviour
@@ -19,26 +20,26 @@ namespace Game.Player.UI
         //hud controller
         [SerializeField]
         HudController hudController;
-
         public HudController Hud { get { return this.hudController; } }
 
         //ability menu controller
         [SerializeField]
         AbilityMenuController abilityMenuController;
-
         public AbilityMenuController AbilityMenu { get { return this.abilityMenuController; } }
 
         //intro menu controller
         [SerializeField]
         IntroMenuController introMenuController;
-
         public IntroMenuController IntroMenuController { get { return this.introMenuController; } }
 
         //end menu controller
         [SerializeField]
         EndMenuController endMenuController;
-
         public EndMenuController EndMenuController { get { return this.endMenuController; } }
+
+        //loading screen controller
+        [SerializeField]
+        LoadingScreenController loadingScreenController;
 
 
 
@@ -52,7 +53,7 @@ namespace Game.Player.UI
 
         //###########################################################
 
-        public void InitializeUi(PlayerModel playerModel, eUiState startingUiState)
+        public void InitializeUi(PlayerModel playerModel)
         {
             this.playerModel = playerModel;
 
@@ -63,6 +64,7 @@ namespace Game.Player.UI
             this.uiStates.Add(eUiState.AbilityMenu, this.abilityMenuController);
             this.uiStates.Add(eUiState.Intro, this.introMenuController);
             this.uiStates.Add(eUiState.End, this.endMenuController);
+            this.uiStates.Add(eUiState.LoadingScreen, this.loadingScreenController);
 
             foreach (var uiState in uiStates.Values)
             {
@@ -70,7 +72,7 @@ namespace Game.Player.UI
                 uiState.Deactivate();
             }
 
-            SwitchState(startingUiState);
+            SwitchState(eUiState.LoadingScreen);
         }
 
         //###########################################################
@@ -102,9 +104,9 @@ namespace Game.Player.UI
                     case eUiState.End:
                         if (Application.isEditor)
                         {
-						#if UNITY_EDITOR
+#if UNITY_EDITOR
                             UnityEditor.EditorApplication.isPlaying = false;
-						#endif
+#endif
                         }
                         else
                         {

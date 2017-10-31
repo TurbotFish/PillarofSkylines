@@ -145,10 +145,10 @@ Material:
     m_Colors:
     - first:
         name: _Bot_XZ
-      second: {r: 0.7058823, g: 0.202422, b: 0.202422, a: 0}
+      second: {r: 0.7058823, g: 0.20242196, b: 0.20242196, a: 0}
     - first:
         name: _Bot_Y
-      second: {r: 0.3877362, g: 0.595588, b: 0.18831089, a: 0}
+      second: {r: 0.38773617, g: 0.595588, b: 0.18831086, a: 0}
     - first:
         name: _Color
       second: {r: 1, g: 1, b: 1, a: 1}
@@ -160,7 +160,7 @@ Material:
       second: {r: 0, g: 0, b: 0, a: 1}
     - first:
         name: _Top_XZ
-      second: {r: 0.25692028, g: 0.5525265, b: 0.7279412, a: 0}
+      second: {r: 0.25692025, g: 0.5525265, b: 0.7279412, a: 0}
     - first:
         name: _Top_Y
-      second: {r: 0.7259277, g: 0.7647059, b: 0.06185112, a: 0}
+      second: {r: 0.7259277, g: 0.7647059, b: 0.0618511, a: 0}

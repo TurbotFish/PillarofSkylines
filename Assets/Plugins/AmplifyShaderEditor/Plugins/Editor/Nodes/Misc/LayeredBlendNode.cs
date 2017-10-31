@@ -8,7 +8,7 @@ using UnityEditor;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Layered Blend", "Misc", "Mix all channels through interpolation factors", null, KeyCode.None, true )]
+	[NodeAttributes( "Layered Blend", "Miscellaneous", "Mix all channels through interpolation factors", null, KeyCode.None, true )]
 	public sealed class LayeredBlendNode : WeightedAvgNode
 	{
 		protected override void CommonInit( int uniqueId )

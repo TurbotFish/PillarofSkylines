@@ -5,7 +5,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Position From Transform", "Misc", "Gets the position vector from a transformation matrix" )]
+	[NodeAttributes( "Position From Transform", "Matrix Operators", "Gets the position vector from a transformation matrix" )]
 	public sealed class PosFromTransformMatrix : ParentNode
 	{
 		protected override void CommonInit( int uniqueId )

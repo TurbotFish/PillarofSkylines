@@ -248,7 +248,7 @@ namespace AmplifyShaderEditor
 				DrawItem( "LMB Drag", "Box selection" );
 				DrawItem( "RMB Drag", "Camera Pan" );
 				DrawItem( "Alt + RMB Drag", "Scroll Menu" );
-				DrawItem( "Control + Node Drag", "Node move with snap" );
+				DrawItem( "Ctrl + Shift + Drag", "Node move with snap" );
 				DrawItem( "Alt + Node Drag", "Auto-(Dis)Connect node on existing wire connection" );
 				EditorGUI.indentLevel++;
 

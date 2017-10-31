@@ -15,7 +15,7 @@ namespace AmplifyShaderEditor
 
 		public void GenerateSignalPropagation()
 		{
-			Type myType = GetType();
+			System.Type myType = GetType();
 			for ( int i = 0; i < m_inputPorts.Count; i++ )
 			{
 				if ( m_inputPorts[ i ].IsConnected )

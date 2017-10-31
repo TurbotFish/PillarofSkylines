@@ -8,7 +8,7 @@ using UnityEditor;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Weighted Blend", "Misc", "Mix all channels through weighted average sum", null, KeyCode.None, true )]
+	[NodeAttributes( "Weighted Blend", "Miscellaneous", "Mix all channels through weighted average sum", null, KeyCode.None, true )]
 	public sealed class WeightedBlendNode : WeightedAvgNode
 	{
 		protected override void CommonInit( int uniqueId )

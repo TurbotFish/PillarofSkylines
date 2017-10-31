@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Remap", "Operators", "Remap value from old min - max range to new min - max range", null, KeyCode.None, true, false, null, null, true )]
+	[NodeAttributes( "Remap", "Math Operators", "Remap value from old min - max range to new min - max range", null, KeyCode.None, true, false, null, null, "The Four Headed Cat - @fourheadedcat" )]
 	public sealed class TFHCRemap : DynamicTypeNode
 	{
 

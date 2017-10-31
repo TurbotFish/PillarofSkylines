@@ -7,18 +7,48 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Multiply", "Operators", "Simple multiplication of two variables", null, KeyCode.M )]
+	[NodeAttributes( "Multiply", "Math Operators", "Multiplication of two or more values ( A * B * .. )\nIt also handles Matrices multiplication", null, KeyCode.M )]
 	public sealed class SimpleMultiplyOpNode : DynamicTypeNode
 	{
 		protected override void CommonInit( int uniqueId )
 		{
+			m_dynamicRestrictions = new WirePortDataType[]
+			{
+				WirePortDataType.OBJECT,
+				WirePortDataType.FLOAT,
+				WirePortDataType.FLOAT2,
+				WirePortDataType.FLOAT3,
+				WirePortDataType.FLOAT4,
+				WirePortDataType.COLOR,
+				WirePortDataType.FLOAT3x3,
+				WirePortDataType.FLOAT4x4,
+				WirePortDataType.INT
+			};
+
 			base.CommonInit( uniqueId );
+			m_extensibleInputPorts = true;
+			m_vectorMatrixOps = true;
 			m_previewShaderGUID = "1ba1e43e86415ff4bbdf4d81dfcf035b";
+		}
+
+		public override void SetPreviewInputs()
+		{
+			base.SetPreviewInputs();
+
+			int count = 0;
+			int inputCount = m_inputPorts.Count;
+			for ( int i = 2; i < inputCount; i++ )
+			{
+				count++;
+				if ( !m_inputPorts[ i ].IsConnected )
+					PreviewMaterial.SetTexture( ( "_" + Convert.ToChar( i + 65 )), UnityEditor.EditorGUIUtility.whiteTexture );
+			}
+
+			m_previewMaterialPassId = count;
 		}
 
 		public override string BuildResults( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
-
 			if ( m_inputPorts[ 0 ].DataType == WirePortDataType.FLOAT3x3 ||
 				m_inputPorts[ 0 ].DataType == WirePortDataType.FLOAT4x4 ||
 				m_inputPorts[ 1 ].DataType == WirePortDataType.FLOAT3x3 ||
@@ -40,12 +70,12 @@ namespace AmplifyShaderEditor
 						case WirePortDataType.FLOAT4:
 						case WirePortDataType.COLOR:
 						{
-							m_inputB = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputB, m_inputPorts[ 1 ].DataType, WirePortDataType.FLOAT3, m_inputB );
+							m_inputB = UIUtils.CastPortType( ref dataCollector, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputB, m_inputPorts[ 1 ].DataType, WirePortDataType.FLOAT3, m_inputB );
 						}
 						break;
 						case WirePortDataType.FLOAT4x4:
 						{
-							m_inputA = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputA, m_inputPorts[ 0 ].DataType, WirePortDataType.FLOAT4x4, m_inputA );
+							m_inputA = UIUtils.CastPortType( ref dataCollector, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputA, m_inputPorts[ 0 ].DataType, WirePortDataType.FLOAT4x4, m_inputA );
 						}
 						break;
 						case WirePortDataType.FLOAT3:
@@ -63,12 +93,12 @@ namespace AmplifyShaderEditor
 						case WirePortDataType.FLOAT2:
 						case WirePortDataType.FLOAT3:
 						{
-							m_inputB = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputB, m_inputPorts[ 1 ].DataType, WirePortDataType.FLOAT4, m_inputB );
+							m_inputB = UIUtils.CastPortType( ref dataCollector, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputB, m_inputPorts[ 1 ].DataType, WirePortDataType.FLOAT4, m_inputB );
 						}
 						break;
 						case WirePortDataType.FLOAT3x3:
 						{
-							m_inputB = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputB, m_inputPorts[ 1 ].DataType, WirePortDataType.FLOAT4x4, m_inputB );
+							m_inputB = UIUtils.CastPortType( ref dataCollector, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputB, m_inputPorts[ 1 ].DataType, WirePortDataType.FLOAT4x4, m_inputB );
 						}
 						break;
 						case WirePortDataType.FLOAT4x4:
@@ -89,7 +119,7 @@ namespace AmplifyShaderEditor
 						case WirePortDataType.FLOAT4:
 						case WirePortDataType.COLOR:
 						{
-							m_inputA = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputA, m_inputPorts[ 0 ].DataType, WirePortDataType.FLOAT3, m_inputA );
+							m_inputA = UIUtils.CastPortType( ref dataCollector, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputA, m_inputPorts[ 0 ].DataType, WirePortDataType.FLOAT3, m_inputA );
 						}
 						break;
 						case WirePortDataType.FLOAT4x4:
@@ -108,7 +138,7 @@ namespace AmplifyShaderEditor
 						case WirePortDataType.FLOAT2:
 						case WirePortDataType.FLOAT3:
 						{
-							m_inputA = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputA, m_inputPorts[ 0 ].DataType, WirePortDataType.FLOAT4, m_inputA );
+							m_inputA = UIUtils.CastPortType( ref dataCollector, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputA, m_inputPorts[ 0 ].DataType, WirePortDataType.FLOAT4, m_inputA );
 						}
 						break;
 						case WirePortDataType.FLOAT3x3:
@@ -118,24 +148,18 @@ namespace AmplifyShaderEditor
 					}
 				}
 
-				return "mul( " + m_inputA + " , " + m_inputB + " )";
+				return "mul( " + m_inputA + ", " + m_inputB + " )";
 			}
 			else
 			{
-
-				m_inputA = m_inputPorts[ 0 ].GenerateShaderForOutput( ref dataCollector, m_inputPorts[ 0 ].DataType, ignoreLocalvar );
-				if ( m_inputPorts[ 0 ].DataType != m_mainDataType && m_inputPorts[ 0 ].DataType != WirePortDataType.FLOAT )
+				base.BuildResults( outputId, ref dataCollector, ignoreLocalvar );
+				string result = "( " + m_extensibleInputResults[ 0 ];
+				for ( int i = 1; i < m_extensibleInputResults.Count; i++ )
 				{
-					m_inputA = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputA, m_inputPorts[ 0 ].DataType, m_mainDataType, m_inputA );
+					result += " * " + m_extensibleInputResults[ i ];
 				}
-
-				m_inputB = m_inputPorts[ 1 ].GenerateShaderForOutput( ref dataCollector, m_inputPorts[ 1 ].DataType, ignoreLocalvar );
-				if ( m_inputPorts[ 1 ].DataType != m_mainDataType && m_inputPorts[ 1 ].DataType != WirePortDataType.FLOAT )
-				{
-					m_inputB = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), m_inputB, m_inputPorts[ 1 ].DataType, m_mainDataType, m_inputB );
-				}
-
-				return "( " + m_inputA + " * " + m_inputB + " )";
+				result += " )";
+				return result;
 			}
 		}
 	}

@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Function Input", "Functions", "Function Input", NodeAvailabilityFlags = ( int ) NodeAvailability.ShaderFunction )]
+	[NodeAttributes( "Function Input", "Functions", "Function Input adds an input port to the shader function", NodeAvailabilityFlags = ( int ) NodeAvailability.ShaderFunction )]
 	public sealed class FunctionInput : ParentNode
 	{
 		private const string InputTypeStr = "Input Type";

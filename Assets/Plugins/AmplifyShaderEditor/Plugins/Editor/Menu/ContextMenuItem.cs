@@ -14,13 +14,13 @@ namespace AmplifyShaderEditor
 		private string m_name;
 		private string m_category;
 		private string m_description;
-		private Type m_type;
+		private System.Type m_type;
 		private GUIContent m_guiContent;
 		private string m_nameWithShortcut;
 		private AmplifyShaderFunction m_function;
 		private NodeAttributes m_nodeAttributes;
 
-		public ContextMenuItem( NodeAttributes nodeAttributes, Type type, string name, string category, string description, AmplifyShaderFunction function, KeyCode shortcut )
+		public ContextMenuItem( NodeAttributes nodeAttributes, System.Type type, string name, string category, string description, AmplifyShaderFunction function, KeyCode shortcut )
 		{
 			m_nodeAttributes = nodeAttributes;
 			m_name = name;
@@ -59,7 +59,7 @@ namespace AmplifyShaderEditor
 		public string Category { get { return m_category; } }
 		public string Description { get { return m_description; } }
 		public AmplifyShaderFunction Function { get { return m_function; } }
-		public Type NodeType { get { return m_type; } }
+		public System.Type NodeType { get { return m_type; } }
 		public GUIContent ItemUIContent { get { return m_guiContent; } }
 		public NodeAttributes NodeAttributes { get { return m_nodeAttributes; } }
 

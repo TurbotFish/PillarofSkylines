@@ -11,7 +11,7 @@ public class Heatwave : MonoBehaviour {
 	void Start () {
 		_mat = GetComponent<MeshRenderer>().material;
         _my = transform;
-		_camera = FindObjectOfType<ThirdPersonCamera> ().transform;
+		_camera = FindObjectOfType<PoS_Camera> ().transform;
         LookAtCamera();
     }
 	

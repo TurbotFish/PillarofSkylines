@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Matrix4X4", "Constants", "Matrix4X4 property" )]
+	[NodeAttributes( "Matrix4X4", "Constants And Properties", "Matrix4X4 property" )]
 	public sealed class Matrix4X4Node : PropertyNode
 	{
 		[SerializeField]
@@ -70,18 +70,53 @@ namespace AmplifyShaderEditor
 				m_requireMaterialUpdate = true;
 		}
 
+		public override void OnNodeLayout( DrawInfo drawInfo )
+		{
+			base.OnNodeLayout( drawInfo );
+
+			m_propertyDrawPos.position = m_remainingBox.position;
+			m_propertyDrawPos.width = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_WIDTH_FIELD_SIZE;
+			m_propertyDrawPos.height = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_HEIGHT_FIELD_SIZE;
+		}
+
+		public override void DrawGUIControls( DrawInfo drawInfo )
+		{
+			base.DrawGUIControls( drawInfo );
+
+			if ( drawInfo.CurrentEventType != EventType.MouseDown )
+				return;
+
+			Rect hitBox = m_remainingBox;
+			hitBox.height = m_insideSize.y * drawInfo.InvertedZoom;
+			bool insideBox = hitBox.Contains( drawInfo.MousePosition );
+
+			if ( insideBox )
+			{
+				m_isEditingFields = true;
+			}
+			else if ( m_isEditingFields && !insideBox )
+			{
+				GUI.FocusControl( null );
+				m_isEditingFields = false;
+			}
+		}
+
+		private bool m_isEditingFields;
+		[NonSerialized]
+		private Matrix4x4 m_previousValue;
+		private string[,] m_fieldText = new string[ 4, 4 ] { { "0", "0", "0", "0" }, { "0", "0", "0", "0" }, { "0", "0", "0", "0" }, { "0", "0", "0", "0" } };
+
 		public override void Draw( DrawInfo drawInfo )
 		{
 			base.Draw( drawInfo );
-			if ( m_isVisible )
-			{
-				m_propertyDrawPos.position = m_remainingBox.position;
 
+			if ( !m_isVisible )
+				return;
+
+			if ( m_isEditingFields )
+			{
 				bool currMode = m_materialMode && m_currentParameterType != PropertyType.Constant;
 				Matrix4x4 value = currMode ? m_materialValue : m_defaultValue;
-
-				m_propertyDrawPos.width = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_WIDTH_FIELD_SIZE;
-				m_propertyDrawPos.height = drawInfo.InvertedZoom * Constants.FLOAT_DRAW_HEIGHT_FIELD_SIZE;
 
 				EditorGUI.BeginChangeCheck();
 				for ( int row = 0; row < 4; row++ )
@@ -106,6 +141,28 @@ namespace AmplifyShaderEditor
 				{
 					m_requireMaterialUpdate = m_materialMode;
 					BeginDelayedDirtyProperty();
+				}
+			}
+			else if ( drawInfo.CurrentEventType == EventType.Repaint )
+			{
+				bool currMode = m_materialMode && m_currentParameterType != PropertyType.Constant;
+				Matrix4x4 value = currMode ? m_materialValue : m_defaultValue;
+				for ( int row = 0; row < 4; row++ )
+				{
+					for ( int column = 0; column < 4; column++ )
+					{
+						Rect fakeField = m_propertyDrawPos;
+						fakeField.position = m_remainingBox.position + Vector2.Scale( m_propertyDrawPos.size, new Vector2( column, row ) ) + new Vector2( Constants.FLOAT_WIDTH_SPACING * drawInfo.InvertedZoom * column, Constants.FLOAT_WIDTH_SPACING * drawInfo.InvertedZoom * row );
+						EditorGUIUtility.AddCursorRect( fakeField, MouseCursor.Text );
+
+						if ( m_previousValue[ row, column ] != value[ row, column ] )
+						{
+							m_previousValue[ row, column ] = value[ row, column ];
+							m_fieldText[ row, column ] = value[ row, column ].ToString();
+						}
+
+						GUI.Label( fakeField, m_fieldText[ row, column ], UIUtils.MainSkin.textField );
+					}
 				}
 			}
 		}

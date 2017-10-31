@@ -112,10 +112,10 @@ namespace AmplifyShaderEditor
 				EditorGUILayout.BeginVertical( UIUtils.MenuItemBackgroundStyle );
 				GUI.color = cachedColor;
 
+				EditorGUI.indentLevel++;
 				if ( !customBlendAvailable )
 					EditorGUILayout.HelpBox( "Depth Writing is only available for Opaque or Custom blend modes", MessageType.Warning );
 
-				EditorGUI.indentLevel++;
 				EditorGUILayout.Separator();
 				EditorGUI.BeginDisabledGroup( !customBlendAvailable );
 

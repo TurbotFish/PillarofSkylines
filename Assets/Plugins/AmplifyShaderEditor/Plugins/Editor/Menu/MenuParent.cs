@@ -95,7 +95,6 @@ namespace AmplifyShaderEditor
 				m_minimizeButtonPos = new Rect( 0, 0, minimizeTex.width, minimizeTex.height );
 			}
 
-
 			Rect currentArea = m_isMaximized ? m_maximizedArea : m_minimizedArea;
 
 			if ( m_isMaximized )
@@ -104,8 +103,10 @@ namespace AmplifyShaderEditor
 				{
 					if ( m_isResizing )
 					{
-						float delta = Event.current.delta.x;
-						m_resizeDelta += delta;
+						if ( m_anchor == MenuAnchor.TOP_LEFT )
+							m_resizeDelta = ( ParentWindow.CurrentEvent.mousePosition.x - m_maximizedArea.width );
+						else if ( m_anchor == MenuAnchor.TOP_RIGHT )
+							m_resizeDelta = ParentWindow.CurrentEvent.mousePosition.x - ( parentPosition.width - m_maximizedArea.width);
 					}
 				}
 
@@ -260,15 +261,15 @@ namespace AmplifyShaderEditor
 		public virtual void Draw( Rect parentPosition, Vector2 mousePosition, int mouseButtonId, bool hasKeyboadFocus )
 		{
 			InitDraw( parentPosition, mousePosition, mouseButtonId );
-			m_isMouseInside = IsInside( mousePosition );
-			if ( m_isMouseInside )
+			if ( ParentWindow.CurrentEvent.type == EventType.MouseDrag && ParentWindow.CurrentEvent.button > 0 /*catches both middle and right mouse button*/ )
 			{
-				if ( Event.current.type == EventType.MouseDrag && Event.current.button > 0 /*catches both middle and right mouse button*/ )
+				m_isMouseInside = IsInside( mousePosition );
+				if ( m_isMouseInside )
 				{
-					m_currentScrollPos.x += Constants.MenuDragSpeed*Event.current.delta.x;
+					m_currentScrollPos.x += Constants.MenuDragSpeed * ParentWindow.CurrentEvent.delta.x;
 					if ( m_currentScrollPos.x < 0 )
 						m_currentScrollPos.x = 0;
-					m_currentScrollPos.y += Constants.MenuDragSpeed * Event.current.delta.y;
+					m_currentScrollPos.y += Constants.MenuDragSpeed * ParentWindow.CurrentEvent.delta.y;
 					if ( m_currentScrollPos.y < 0 )
 						m_currentScrollPos.y = 0;
 
@@ -281,7 +282,7 @@ namespace AmplifyShaderEditor
 			if ( !m_isMaximized )
 			{
 				m_transformedArea.height = 35;
-				GUI.Box( m_transformedArea, m_content, m_style );
+				GUI.Label( m_transformedArea, m_content, m_style );
 			}
 
 			Color colorBuffer = GUI.color;
@@ -296,8 +297,11 @@ namespace AmplifyShaderEditor
 			buttonArea.y -= MinimizeCollisionAdjust;
 			buttonArea.height += 2 * MinimizeCollisionAdjust;
 
-			GUI.Box( m_minimizeButtonPos, string.Empty, UIUtils.GetCustomStyle( m_isMaximized ? CustomStyle.MinimizeButton : CustomStyle.MaximizeButton ) );
-			if ( GUI.Button( buttonArea, string.Empty, m_empty ) )
+			if ( m_parentWindow.CameraDrawInfo.CurrentEventType == EventType.Repaint )
+				GUI.Label( m_minimizeButtonPos, string.Empty, UIUtils.GetCustomStyle( m_isMaximized ? CustomStyle.MinimizeButton : CustomStyle.MaximizeButton ) );
+
+			if( m_parentWindow.CameraDrawInfo.CurrentEventType == EventType.mouseDown && buttonArea.Contains( m_parentWindow.CameraDrawInfo.MousePosition ) )
+			//if ( GUI.Button( buttonArea, string.Empty, m_empty ) )
 			{
 				m_isMaximized = !m_isMaximized;
 				m_resizeDelta = 0;
@@ -314,7 +318,7 @@ namespace AmplifyShaderEditor
 				{
 					if ( m_isResizing )
 					{
-						if ( Event.current.isMouse && Event.current.type != EventType.MouseDrag )
+						if ( ParentWindow.CurrentEvent.isMouse && ParentWindow.CurrentEvent.type != EventType.MouseDrag )
 						{
 							m_isResizing = false;
 						}
@@ -348,6 +352,7 @@ namespace AmplifyShaderEditor
 
 			GUI.enabled = guiEnabledBuffer;
 			GUI.color = colorBuffer;
+			
 		}
 
 		public void OnLostFocus()
@@ -431,7 +436,10 @@ namespace AmplifyShaderEditor
 				}
 			}
 		}
-
+		public bool IsActive
+		{
+			get { return m_isActive; }
+		}
 		public AmplifyShaderEditorWindow ParentWindow { get { return m_parentWindow; } set { m_parentWindow = value; } }
 	}
 }

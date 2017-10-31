@@ -7,7 +7,7 @@ using UnityEngine;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "[Deprecated] Local Position", "Surface Standard Inputs", "Interpolated Vertex Position in Local Space", null, KeyCode.None, true, true, "Vertex Position", typeof( PosVertexDataNode ) )]
+	[NodeAttributes( "[Deprecated] Local Position", "Surface Data", "Interpolated Vertex Position in Local Space", null, KeyCode.None, true, true, "Vertex Position", typeof( PosVertexDataNode ) )]
 	public sealed class LocalVertexPosNode : ParentNode
 	{
 		private const string VertexVarName = "localVertexPos";

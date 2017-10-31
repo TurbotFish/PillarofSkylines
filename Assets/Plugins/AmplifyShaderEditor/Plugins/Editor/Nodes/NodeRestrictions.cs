@@ -63,14 +63,14 @@ namespace AmplifyShaderEditor
 
 	public class NodeRestrictions
 	{
-		private Dictionary<Type, NodeRestrictionsData> m_restrictions;
+		private Dictionary<System.Type, NodeRestrictionsData> m_restrictions;
 
 		public NodeRestrictions()
 		{
-			m_restrictions = new Dictionary<Type, NodeRestrictionsData>();
+			m_restrictions = new Dictionary<System.Type, NodeRestrictionsData>();
 		}
 
-		public void AddTypeRestriction( Type type )
+		public void AddTypeRestriction( System.Type type )
 		{
 			if ( !m_restrictions.ContainsKey( type ) )
 				m_restrictions.Add( type, new NodeRestrictionsData() );
@@ -79,7 +79,7 @@ namespace AmplifyShaderEditor
 
 		}
 
-		public void AddPortRestriction( Type type, int port )
+		public void AddPortRestriction( System.Type type, int port )
 		{
 			if ( !m_restrictions.ContainsKey( type ) )
 				m_restrictions.Add( type, new NodeRestrictionsData( port ) );
@@ -89,7 +89,7 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		public bool GetRestiction( Type type, int port )
+		public bool GetRestiction( System.Type type, int port )
 		{
 			if ( m_restrictions.Count == 0 || type == null )
 				return false;
@@ -107,7 +107,7 @@ namespace AmplifyShaderEditor
 
 		public void Destroy()
 		{
-			foreach ( KeyValuePair<Type, NodeRestrictionsData> pair in m_restrictions )
+			foreach ( KeyValuePair<System.Type, NodeRestrictionsData> pair in m_restrictions )
 			{
 				pair.Value.Destroy();
 			}

@@ -6,14 +6,14 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Clamp", "Operators", "Value clamped to the range [min,max]" )]
+	[NodeAttributes( "Clamp", "Math Operators", "Value clamped to the range [min,max]" )]
 	public sealed class ClampOpNode : ParentNode
 	{
 
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
-			AddInputPort( WirePortDataType.FLOAT, false, "Value" );
+			AddInputPort( WirePortDataType.FLOAT, false, Constants.EmptyPortValue );
 			AddInputPort( WirePortDataType.FLOAT, false, "Min" );
 			AddInputPort( WirePortDataType.FLOAT, false, "Max" );
 			AddOutputPort( WirePortDataType.FLOAT, Constants.EmptyPortValue );
@@ -53,6 +53,9 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
+			if ( m_outputPorts[ 0 ].IsLocalValue )
+				return m_outputPorts[ 0 ].LocalValue;
+
 			WirePortDataType valueType = m_inputPorts[ 0 ].ConnectionType();
 			WirePortDataType minType = m_inputPorts[ 1 ].ConnectionType();
 			WirePortDataType maxType = m_inputPorts[ 2 ].ConnectionType();
@@ -61,13 +64,13 @@ namespace AmplifyShaderEditor
 			string min = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
 			if ( minType != valueType )
 			{
-				min = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), null, m_inputPorts[ 1 ].DataType, m_inputPorts[ 0 ].DataType, min );
+				min = UIUtils.CastPortType( ref dataCollector, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), null, m_inputPorts[ 1 ].DataType, m_inputPorts[ 0 ].DataType, min );
 			}
 
 			string max = m_inputPorts[ 2 ].GeneratePortInstructions( ref dataCollector );
 			if ( maxType != valueType )
 			{
-				max = UIUtils.CastPortType( dataCollector.PortCategory, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), null, m_inputPorts[ 2 ].DataType, m_inputPorts[ 0 ].DataType, max );
+				max = UIUtils.CastPortType( ref dataCollector, m_currentPrecisionType, new NodeCastInfo( UniqueId, outputId ), null, m_inputPorts[ 2 ].DataType, m_inputPorts[ 0 ].DataType, max );
 			}
 
 			string result = string.Empty;
@@ -81,16 +84,18 @@ namespace AmplifyShaderEditor
 				case WirePortDataType.COLOR:
 				case WirePortDataType.OBJECT:
 				{
-					result =  "clamp( " + value + " , " + min + " , " + max + " )";
-				}break;
+					result = "clamp( " + value + " , " + min + " , " + max + " )";
+				}
+				break;
 				case WirePortDataType.FLOAT3x3:
 				case WirePortDataType.FLOAT4x4:
 				{
-					result = UIUtils.InvalidParameter(this);
-				} break;
+					return UIUtils.InvalidParameter( this );
+				}
 			}
 
-			return CreateOutputLocalVariable( 0, result, ref dataCollector );
+			RegisterLocalVariable( 0, result, ref dataCollector, "clampResult" + OutputId );
+			return m_outputPorts[ 0 ].LocalValue;
 		}
 
 	}

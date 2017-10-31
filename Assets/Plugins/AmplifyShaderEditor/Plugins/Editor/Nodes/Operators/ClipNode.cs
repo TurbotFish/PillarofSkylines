@@ -6,7 +6,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Clip", "Operators", "Conditionally kill a pixel before output", null, UnityEngine.KeyCode.None, false )]
+	[NodeAttributes( "Clip", "Math Operators", "Conditionally kill a pixel before output", null, UnityEngine.KeyCode.None, false )]
 	public sealed class ClipNode : SingleInputOp
 	{
 		protected override void CommonInit( int uniqueId )

@@ -4,7 +4,7 @@
 namespace AmplifyShaderEditor
 {
 	[System.Serializable]
-	[NodeAttributes( "Object To World Matrix", "Transform", "Current model matrix" )]
+	[NodeAttributes( "Object To World Matrix", "Matrix Transform", "Current model matrix" )]
 	public sealed class ObjectToWorldMatrixNode : ConstantShaderVariable
 	{
 		protected override void CommonInit( int uniqueId )

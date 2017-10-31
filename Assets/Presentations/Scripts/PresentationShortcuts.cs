@@ -27,12 +27,12 @@ public class PresentationShortcuts : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.O)) {
 			if (Camera.main.targetDisplay != 0) {
 				Camera.main.targetDisplay = 0;
-				GameObject.FindObjectOfType<ThirdPersonCamera> ().GetComponent<Camera> ().targetDisplay = 1;
+				GameObject.FindObjectOfType<PoS_Camera> ().GetComponent<Camera> ().targetDisplay = 1;
 				Camera.main.transform.localPosition = Vector3.zero;
 				Camera.main.transform.rotation = Quaternion.Euler (_cameraBaseRotation);
 			} else {
 				Camera.main.targetDisplay = 1;
-				GameObject.FindObjectOfType<ThirdPersonCamera> ().GetComponent<Camera> ().targetDisplay = 0;
+				GameObject.FindObjectOfType<PoS_Camera> ().GetComponent<Camera> ().targetDisplay = 0;
 			}
 
 		}

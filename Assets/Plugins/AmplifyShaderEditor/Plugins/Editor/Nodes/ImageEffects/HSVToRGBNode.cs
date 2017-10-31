@@ -26,7 +26,7 @@ namespace AmplifyShaderEditor
 			AddInputPort( WirePortDataType.FLOAT, false, "Hue" );
 			AddInputPort( WirePortDataType.FLOAT, false, "Saturation" );
 			AddInputPort( WirePortDataType.FLOAT, false, "Value" );
-			AddOutputColorPorts( Constants.EmptyPortValue, false );
+			AddOutputColorPorts( "RGB", false );
 		}
 
 		public override void DrawProperties()
@@ -45,15 +45,22 @@ namespace AmplifyShaderEditor
 			{
 				//Hack to be used util indent is properly used
 				int currIndent = UIUtils.ShaderIndentLevel;
-				UIUtils.ShaderIndentLevel = 1;
+				if ( dataCollector.MasterNodeCategory == AvailableShaderTypes.Template )
+				{
+					UIUtils.ShaderIndentLevel = 0;
+				}
+				else
+				{
+					UIUtils.ShaderIndentLevel = 1;
+					UIUtils.ShaderIndentLevel++;
+				}
 				
-				UIUtils.ShaderIndentLevel++;
 				string finalFunction = string.Empty;
 				for ( int i = 0; i < HSVToRGBFunction.Length; i++ )
 				{
 					finalFunction += UIUtils.ShaderIndentTabs + ( HSVToRGBFlags[ i ] ? string.Format( HSVToRGBFunction[ i ], precisionString ) : HSVToRGBFunction[ i ] );
 				}
-				UIUtils.ShaderIndentLevel--;
+				
 				UIUtils.ShaderIndentLevel = currIndent;
 
 				dataCollector.AddFunction( HSVToRGBHeader, finalFunction );

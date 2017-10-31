@@ -8,37 +8,51 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "Add", "Operators", "Simple add of two variables", null, KeyCode.A )]
+	[NodeAttributes( "Add", "Math Operators", "Addition of two or more values ( A + B + .. )", null, KeyCode.A )]
 	public sealed class SimpleAddOpNode : DynamicTypeNode
 	{
+		private int m_cachedPropertyId = -1;
+
 		protected override void CommonInit( int uniqueId )
 		{
+			m_dynamicRestrictions = new WirePortDataType[]
+			{
+				WirePortDataType.OBJECT,
+				WirePortDataType.FLOAT,
+				WirePortDataType.FLOAT2,
+				WirePortDataType.FLOAT3,
+				WirePortDataType.FLOAT4,
+				WirePortDataType.COLOR,
+				WirePortDataType.FLOAT3x3,
+				WirePortDataType.FLOAT4x4,
+				WirePortDataType.INT
+			};
+
 			base.CommonInit( uniqueId );
+			m_extensibleInputPorts = true;
 			m_previewShaderGUID = "9eb150cbc752cbc458a0a37984b9934a";
+		}
+
+		public override void SetPreviewInputs()
+		{
+			base.SetPreviewInputs();
+
+			if ( m_cachedPropertyId == -1 )
+				m_cachedPropertyId = Shader.PropertyToID( "_Count" );
+
+			PreviewMaterial.SetInt( m_cachedPropertyId, m_inputPorts.Count);
 		}
 
 		public override string BuildResults( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalvar )
 		{
 			base.BuildResults( outputId, ref dataCollector, ignoreLocalvar );
-			switch ( m_outputPorts[ 0 ].DataType )
+			string result = "( " + m_extensibleInputResults[ 0 ];
+			for ( int i = 1; i < m_extensibleInputResults.Count; i++ )
 			{
-				case WirePortDataType.FLOAT:
-				case WirePortDataType.FLOAT2:
-				case WirePortDataType.FLOAT3:
-				case WirePortDataType.FLOAT4:
-				case WirePortDataType.INT:
-				case WirePortDataType.COLOR:
-				case WirePortDataType.OBJECT:
-				{
-					return "( " + m_inputA + " + " + m_inputB + " )";
-				}
-				case WirePortDataType.FLOAT3x3:
-				case WirePortDataType.FLOAT4x4:
-				{ }
-				break;
+				result += " + " + m_extensibleInputResults[ i ];
 			}
-
-			return UIUtils.InvalidParameter( this );
+			result += " )";
+			return result;
 		}
 	}
 }

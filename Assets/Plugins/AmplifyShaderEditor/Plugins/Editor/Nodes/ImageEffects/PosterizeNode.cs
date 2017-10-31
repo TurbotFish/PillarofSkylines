@@ -19,8 +19,8 @@ namespace AmplifyShaderEditor
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
-			AddInputPort( WirePortDataType.INT, false, "Posterization Power [1-256]" );
-			AddInputPort( WirePortDataType.COLOR, false, "Color" );
+			AddInputPort( WirePortDataType.COLOR, false, "RGBA", -1, MasterNodePortCategory.Fragment, 1 );
+			AddInputPort( WirePortDataType.INT, false, "Power", -1, MasterNodePortCategory.Fragment, 0 );
 			AddOutputPort( WirePortDataType.COLOR, Constants.EmptyPortValue );
 			m_textLabelWidth = 60;
 			m_autoWrapProperties = true;
@@ -38,21 +38,21 @@ namespace AmplifyShaderEditor
 
 		public override string GenerateShaderForOutput( int outputId, ref MasterNodeDataCollector dataCollector, bool ignoreLocalVar )
 		{
-			if ( m_outputPorts[ 0 ].IsLocalValue )
+			if( m_outputPorts[ 0 ].IsLocalValue )
 				return m_outputPorts[ 0 ].LocalValue;
 
 			string posterizationPower = "1";
-			if ( m_inputPorts[ 0 ].IsConnected )
+			if( m_inputPorts[ 1 ].IsConnected )
 			{
-				posterizationPower = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
+				posterizationPower = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
 			}
 			else
 			{
 				posterizationPower = m_posterizationPower.ToString();
 			}
 
-			string colorTarget = m_inputPorts[ 1 ].GeneratePortInstructions( ref dataCollector );
-			
+			string colorTarget = m_inputPorts[ 0 ].GeneratePortInstructions( ref dataCollector );
+
 			string divVar = "div" + OutputId;
 			dataCollector.AddLocalVariable( UniqueId, "float " + divVar + "=256.0/float(" + posterizationPower + ");" );
 			string result = "( floor( " + colorTarget + " * " + divVar + " ) / " + divVar + " )";

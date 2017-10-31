@@ -129,6 +129,7 @@ namespace AmplifyShaderEditor
 			base.Draw();
 			bool guiEnabledBuffer = GUI.enabled;
 			GUI.enabled = m_enabled;
+
 			if ( GUILayout.Button( m_content, m_style ) && ToolButtonPressedEvt != null )
 			{
 				ToolButtonPressedEvt( m_buttonType );
@@ -138,8 +139,13 @@ namespace AmplifyShaderEditor
 
 		public override void Draw( float x, float y )
 		{
+			if ( !(m_parentWindow.CameraDrawInfo.CurrentEventType == EventType.MouseDown || m_parentWindow.CameraDrawInfo.CurrentEventType == EventType.Repaint ) )
+				return;
+
 			if ( m_parentWindow.CurrentGraph.CurrentMasterNode == null && !m_drawOnFunction)
 				return;
+
+
 			base.Draw( x, y );
 
 			if ( m_bufferedState > -1 )
@@ -160,10 +166,22 @@ namespace AmplifyShaderEditor
 
 			m_buttonArea.x = x;
 			m_buttonArea.y = y;
-			if ( GUI.Button( m_buttonArea, m_content, m_style ) && ToolButtonPressedEvt != null )
+			
+			if ( m_parentWindow.CameraDrawInfo.CurrentEventType == EventType.MouseDown && m_buttonArea.Contains( m_parentWindow.CameraDrawInfo.MousePosition ) && ToolButtonPressedEvt != null )
 			{
 				ToolButtonPressedEvt( m_buttonType );
+				Event.current.Use();
+				m_parentWindow.CameraDrawInfo.CurrentEventType = EventType.Used;
 			}
+			else if ( m_parentWindow.CameraDrawInfo.CurrentEventType == EventType.Repaint )
+			{
+				GUI.Label( m_buttonArea, m_content, m_style );
+			}
+
+			//if ( GUI.Button( m_buttonArea, m_content, m_style ) && ToolButtonPressedEvt != null )
+			//{
+			//	ToolButtonPressedEvt( m_buttonType );
+			//}
 		}
 
 		public override void Draw( Vector2 pos )

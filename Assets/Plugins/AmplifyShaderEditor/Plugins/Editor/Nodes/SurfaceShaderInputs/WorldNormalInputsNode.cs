@@ -8,7 +8,7 @@ using System;
 namespace AmplifyShaderEditor
 {
 	[Serializable]
-	[NodeAttributes( "[Deprecated] World Normal", "Surface Standard Inputs", "Vertex Normal World", null, KeyCode.None, true, true, "World Normal", typeof( WorldNormalVector ) )]
+	[NodeAttributes( "[Deprecated] World Normal", "Surface Data", "Vertex Normal World", null, KeyCode.None, true, true, "World Normal", typeof( WorldNormalVector ) )]
 	public sealed class WorldNormalInputsNode : SurfaceShaderINParentNode
 	{
 		private const string PerPixelLabelStr = "Per Pixel";
@@ -33,15 +33,15 @@ namespace AmplifyShaderEditor
 			base.CommonInit( uniqueId );
 			m_currentInput = AvailableSurfaceInputs.WORLD_NORMAL;
 			InitialSetup();
-			UIUtils.AddNormalDependentCount();
+			//UIUtils.AddNormalDependentCount();
 			m_precisionString = UIUtils.PrecisionWirePortToCgType( m_currentPrecisionType, WirePortDataType.FLOAT3 );
 		}
 
-		public override void Destroy()
-		{
-			ContainerGraph.RemoveNormalDependentCount();
-			base.Destroy();
-		}
+		//public override void Destroy()
+		//{
+		//	ContainerGraph.RemoveNormalDependentCount();
+		//	base.Destroy();
+		//}
 
 		public override void DrawProperties()
 		{
@@ -88,7 +88,7 @@ namespace AmplifyShaderEditor
 					}
 					if ( count > 1 )
 					{
-						string localVarName = "WorldNormal" + UniqueId;
+						string localVarName = "WorldNormal" + OutputId;
 						dataCollector.AddToLocalVariables( UniqueId, m_currentPrecisionType, m_outputPorts[ 0 ].DataType, localVarName, result );
 						return GetOutputVectorItem( 0, outputId, localVarName );
 					}

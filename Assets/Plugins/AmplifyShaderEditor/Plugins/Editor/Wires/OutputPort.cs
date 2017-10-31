@@ -28,6 +28,28 @@ namespace AmplifyShaderEditor
 
 		public OutputPort( int nodeId, int portId, WirePortDataType dataType, string name ) : base( nodeId, portId, dataType, name ) { LabelSize = Vector2.zero; }
 
+		public string ErrorValue
+		{
+			get
+			{
+				string value = string.Empty;
+				switch( m_dataType )
+				{
+					default:
+					case WirePortDataType.OBJECT:
+					case WirePortDataType.INT:
+					case WirePortDataType.FLOAT: value = "0"; break;
+					case WirePortDataType.FLOAT2: value = "fixed2(0,0)"; break;
+					case WirePortDataType.FLOAT3: value = "fixed3(0,0,0)"; break;
+					case WirePortDataType.COLOR:
+					case WirePortDataType.FLOAT4: value = "fixed4(0,0,0,0)"; break;
+					case WirePortDataType.FLOAT3x3: value = "fixed3x3(0,0,0,0,0,0,0,0,0)"; break;
+					case WirePortDataType.FLOAT4x4: value = "fixed4x4(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)"; break;
+				}
+				return value;
+			}
+		}
+
 		public bool ConnectedToMasterNode
 		{
 			get { return m_connectedToMasterNode; }
@@ -41,7 +63,7 @@ namespace AmplifyShaderEditor
 
 		public InputPort GetInputConnection( int connID = 0 )
 		{
-			if ( connID < m_externalReferences.Count )
+			if( connID < m_externalReferences.Count )
 			{
 				return UIUtils.GetNode( m_externalReferences[ connID ].NodeId ).GetInputPortByUniqueId( m_externalReferences[ connID ].PortId );
 			}
@@ -50,7 +72,7 @@ namespace AmplifyShaderEditor
 
 		public ParentNode GetInputNode( int connID = 0 )
 		{
-			if ( connID < m_externalReferences.Count )
+			if( connID < m_externalReferences.Count )
 			{
 				return UIUtils.GetNode( m_externalReferences[ connID ].NodeId );
 			}
@@ -59,10 +81,10 @@ namespace AmplifyShaderEditor
 
 		public override void NotifyExternalRefencesOnChange()
 		{
-			for ( int i = 0; i < m_externalReferences.Count; i++ )
+			for( int i = 0; i < m_externalReferences.Count; i++ )
 			{
 				ParentNode node = UIUtils.GetNode( m_externalReferences[ i ].NodeId );
-				if ( node )
+				if( node )
 				{
 					node.CheckSpherePreview();
 					InputPort port = node.GetInputPortByUniqueId( m_externalReferences[ i ].PortId );
@@ -74,25 +96,25 @@ namespace AmplifyShaderEditor
 
 		public void ChangeTypeWithRestrictions( WirePortDataType newType, int restrictions )
 		{
-			if ( m_dataType != newType )
+			if( m_dataType != newType )
 			{
 				DataType = newType;
-				for ( int i = 0; i < m_externalReferences.Count; i++ )
+				for( int i = 0; i < m_externalReferences.Count; i++ )
 				{
 					ParentNode inNode = UIUtils.GetNode( m_externalReferences[ i ].NodeId );
 					InputPort inputPort = inNode.GetInputPortByUniqueId( m_externalReferences[ i ].PortId );
 
 					bool valid = false;
-					if ( restrictions == 0 )
+					if( restrictions == 0 )
 					{
 						valid = true;
 					}
 					else
 					{
-						valid = ( restrictions & ( int ) inputPort.DataType ) != 0;
+						valid = ( restrictions & (int)inputPort.DataType ) != 0;
 					}
 
-					if ( valid )
+					if( valid )
 					{
 						inNode.CheckSpherePreview();
 						inputPort.UpdateInfoOnExternalConn( m_nodeId, m_portId, m_dataType );
@@ -114,7 +136,7 @@ namespace AmplifyShaderEditor
 			string autoGraphId = currentGraph.GraphId > 0 ? "_g" + currentGraph.GraphId : string.Empty;
 			m_localOutputValue = string.IsNullOrEmpty( customName ) ? ( "temp_output_" + m_nodeId + "_" + PortId + autoGraphId ) : customName;
 			m_isLocalValue = true;
-			m_isLocalWithPortType |= ( int ) category;
+			m_isLocalWithPortType |= (int)category;
 			return string.Format( Constants.LocalValueDecWithoutIdent, UIUtils.PrecisionWirePortToCgType( precisionType, DataType ), m_localOutputValue, value );
 		}
 
@@ -122,7 +144,7 @@ namespace AmplifyShaderEditor
 		{
 			m_isLocalValue = true;
 			m_localOutputValue = value;
-			m_isLocalWithPortType |= ( int ) category;
+			m_isLocalWithPortType |= (int)category;
 		}
 
 		public void ResetLocalValue()
@@ -134,7 +156,7 @@ namespace AmplifyShaderEditor
 
 		public bool IsLocalOnCategory( MasterNodePortCategory category )
 		{
-			return ( m_isLocalWithPortType & ( int ) category ) != 0; ;
+			return ( m_isLocalWithPortType & (int)category ) != 0; ;
 		}
 
 		public override void ForceClearConnection()
@@ -151,8 +173,11 @@ namespace AmplifyShaderEditor
 		{
 			get
 			{
-				if ( m_outputPreview == null )
+				if( m_outputPreview == null )
+				{
 					m_outputPreview = new RenderTexture( 128, 128, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear );
+					m_outputPreview.wrapMode = TextureWrapMode.Repeat;
+				}
 
 				return m_outputPreview;
 			}
@@ -168,11 +193,11 @@ namespace AmplifyShaderEditor
 		public override void Destroy()
 		{
 			base.Destroy();
-			if ( m_outputPreview != null )
+			if( m_outputPreview != null )
 				UnityEngine.ScriptableObject.DestroyImmediate( m_outputPreview );
 			m_outputPreview = null;
 
-			if ( m_outputMaskMaterial != null )
+			if( m_outputMaskMaterial != null )
 				UnityEngine.ScriptableObject.DestroyImmediate( m_outputMaskMaterial );
 			m_outputMaskMaterial = null;
 		}
@@ -181,9 +206,10 @@ namespace AmplifyShaderEditor
 		{
 			get
 			{
-				if ( m_outputMaskMaterial == null )
+				if( m_outputMaskMaterial == null )
 				{
-					m_outputMaskMaterial = new Material( AssetDatabase.LoadAssetAtPath<Shader>( AssetDatabase.GUIDToAssetPath( "9c34f18ebe2be3e48b201b748c73dec0" ) ) );
+					//m_outputMaskMaterial = new Material( AssetDatabase.LoadAssetAtPath<Shader>( AssetDatabase.GUIDToAssetPath( "9c34f18ebe2be3e48b201b748c73dec0" ) ) );
+					m_outputMaskMaterial = new Material( UIUtils.MaskingShader );
 				}
 				return m_outputMaskMaterial;
 			}

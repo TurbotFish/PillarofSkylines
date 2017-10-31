@@ -16,7 +16,7 @@ namespace AmplifyShaderEditor
 		Skyshop,
 		Lux
 	}
-	
+
 	public enum VirtualChannel
 	{
 		Albedo = 0,
@@ -31,12 +31,16 @@ namespace AmplifyShaderEditor
 	}
 
 	[Serializable]
-	[NodeAttributes( "Virtual Texture Object", "Textures", "Represents a Virtual Texture Asset. Can only be used alongside Texture Sample node by connecting to its Tex Input Port" , null, KeyCode.None, true, false, null, null, false, null, 1 )]
+	[NodeAttributes( "Virtual Texture Object", "Textures", "Represents a Virtual Texture Asset", SortOrderPriority = 1 )]
 	public class VirtualTexturePropertyNode : TexturePropertyNode
 	{
 		protected const string VirtualPresetStr = "Layout Preset";
 		protected const string VirtualChannelStr = "Virtual Layer";
 
+		private const string VirtualTextureObjectInfo = "Can only be used alongside a Texture Sample node by connecting to its Tex Input Port.\n" +
+														"\nProperty name must match the value set on your Virtual Texture.\n" +
+														"Default e.g Albedo = _MainTex\n" +
+														"\nName your node according to the respective channel property in your Virtual Texture. The Albedo must be set to _MainTex ( temporary requirement ).";
 		private readonly string[] ChannelTypeStr = {
 			"Albedo - D.RGBA",
 			"Base - D.RGBA",
@@ -63,8 +67,14 @@ namespace AmplifyShaderEditor
 		protected override void CommonInit( int uniqueId )
 		{
 			base.CommonInit( uniqueId );
-			UIUtils.AddVirtualTextureCount();
 			ChangeChannels();
+		}
+
+		protected override void OnUniqueIDAssigned()
+		{
+			base.OnUniqueIDAssigned();
+			if ( UniqueId != -1 )
+				UIUtils.AddVirtualTextureCount();
 		}
 
 		public override void DrawSubProperties()
@@ -84,7 +94,7 @@ namespace AmplifyShaderEditor
 		new void ShowDefaults()
 		{
 			EditorGUI.BeginChangeCheck();
-			m_virtualPreset = ( VirtualPreset )EditorGUILayoutEnumPopup( VirtualPresetStr, m_virtualPreset );
+			m_virtualPreset = ( VirtualPreset ) EditorGUILayoutEnumPopup( VirtualPresetStr, m_virtualPreset );
 			if ( EditorGUI.EndChangeCheck() )
 			{
 				ChangeChannels();
@@ -98,26 +108,32 @@ namespace AmplifyShaderEditor
 			}
 		}
 
-		private VirtualChannel GetChannel(int popupInt)
+		public override void DrawProperties()
+		{
+			base.DrawProperties();
+			EditorGUILayout.HelpBox( VirtualTextureObjectInfo, MessageType.Info );
+		}
+
+		private VirtualChannel GetChannel( int popupInt )
 		{
 			int remapInt = 0;
 			switch ( m_virtualPreset )
 			{
 				case VirtualPreset.Unity_Legacy:
-					remapInt = popupInt == 0 ? 1 : popupInt == 1 ? 2 : popupInt == 2 ? 4 : popupInt == 3 ? 5 : 0;
-					break;
+				remapInt = popupInt == 0 ? 1 : popupInt == 1 ? 2 : popupInt == 2 ? 4 : popupInt == 3 ? 5 : 0;
+				break;
 				default:
 				case VirtualPreset.Unity5:
 				case VirtualPreset.UBER:
-					remapInt = popupInt == 0 ? 0 : popupInt == 1 ? 7 : popupInt == 2 ? 2 : popupInt == 3 ? 3 : popupInt == 4 ? 4 : 0;
-					break;
+				remapInt = popupInt == 0 ? 0 : popupInt == 1 ? 7 : popupInt == 2 ? 2 : popupInt == 3 ? 3 : popupInt == 4 ? 4 : 0;
+				break;
 				case VirtualPreset.Alloy:
-					remapInt = popupInt == 0 ? 1 : popupInt == 1 ? 2 : popupInt == 2 ? 8 : popupInt == 3 ? 3 : 0;
-					break;
+				remapInt = popupInt == 0 ? 1 : popupInt == 1 ? 2 : popupInt == 2 ? 8 : popupInt == 3 ? 3 : 0;
+				break;
 				case VirtualPreset.Skyshop:
 				case VirtualPreset.Lux:
-					remapInt = popupInt == 0 ? 1 : popupInt == 1 ? 2 : popupInt == 2 ? 6 : 0;
-					break;
+				remapInt = popupInt == 0 ? 1 : popupInt == 1 ? 2 : popupInt == 2 ? 6 : 0;
+				break;
 			}
 
 			return ( VirtualChannel ) remapInt;
@@ -129,20 +145,20 @@ namespace AmplifyShaderEditor
 			switch ( m_virtualPreset )
 			{
 				case VirtualPreset.Unity_Legacy:
-					m_channelTypeStr = new string[] { ChannelTypeStr[ 1 ], ChannelTypeStr[ 2 ], ChannelTypeStr[ 4 ], ChannelTypeStr[ 5 ] };
-					break;
+				m_channelTypeStr = new string[] { ChannelTypeStr[ 1 ], ChannelTypeStr[ 2 ], ChannelTypeStr[ 4 ], ChannelTypeStr[ 5 ] };
+				break;
 				default:
 				case VirtualPreset.Unity5:
 				case VirtualPreset.UBER:
-					m_channelTypeStr = new string[] { ChannelTypeStr[ 0 ], ChannelTypeStr[ 7 ], ChannelTypeStr[ 2 ], ChannelTypeStr[ 3 ], ChannelTypeStr[ 4 ] };
-					break;
+				m_channelTypeStr = new string[] { ChannelTypeStr[ 0 ], ChannelTypeStr[ 7 ], ChannelTypeStr[ 2 ], ChannelTypeStr[ 3 ], ChannelTypeStr[ 4 ] };
+				break;
 				case VirtualPreset.Alloy:
-					m_channelTypeStr = new string[] { ChannelTypeStr[ 1 ], ChannelTypeStr[ 2 ], ChannelTypeStr[ 8 ], ChannelTypeStr[ 3 ] };
-					break;
+				m_channelTypeStr = new string[] { ChannelTypeStr[ 1 ], ChannelTypeStr[ 2 ], ChannelTypeStr[ 8 ], ChannelTypeStr[ 3 ] };
+				break;
 				case VirtualPreset.Skyshop:
 				case VirtualPreset.Lux:
-					m_channelTypeStr = new string[] { ChannelTypeStr[ 1 ], ChannelTypeStr[ 2 ], ChannelTypeStr[ 6 ] };
-					break;
+				m_channelTypeStr = new string[] { ChannelTypeStr[ 1 ], ChannelTypeStr[ 2 ], ChannelTypeStr[ 6 ] };
+				break;
 			}
 		}
 
@@ -162,14 +178,14 @@ namespace AmplifyShaderEditor
 				default:
 				case VirtualChannel.Albedo:
 				case VirtualChannel.Base:
-					propertyValue = PropertyName + "(\"" + m_propertyInspectorName + "\", 2D) = \"" + m_defaultTextureValue + "\" {}";
-					break;
+				propertyValue = PropertyName + "(\"" + m_propertyInspectorName + "\", 2D) = \"" + m_defaultTextureValue + "\" {}";
+				break;
 				case VirtualChannel.Normal:
-					propertyValue = PropertyName + "(\"" + m_propertyInspectorName + "\", 2D) = \"" + m_defaultTextureValue + "\" {}";
-					break;
+				propertyValue = PropertyName + "(\"" + m_propertyInspectorName + "\", 2D) = \"" + m_defaultTextureValue + "\" {}";
+				break;
 				case VirtualChannel.SpecMet:
-					propertyValue = PropertyName + "(\"" + m_propertyInspectorName + "\", 2D) = \"" + m_defaultTextureValue + "\" {}";
-					break;
+				propertyValue = PropertyName + "(\"" + m_propertyInspectorName + "\", 2D) = \"" + m_defaultTextureValue + "\" {}";
+				break;
 			}
 			return PropertyAttributes + propertyValue;
 		}
@@ -179,10 +195,11 @@ namespace AmplifyShaderEditor
 			return "uniform sampler2D " + PropertyName + ";";
 		}
 
-		public override void GetUniformData( out string dataType, out string dataName )
+		public override bool GetUniformData( out string dataType, out string dataName )
 		{
 			dataType = "sampler2D";
 			dataName = PropertyName;
+			return true;
 		}
 
 		public override void ReadFromString( ref string[] nodeParams )
@@ -191,14 +208,14 @@ namespace AmplifyShaderEditor
 			string textureName = GetCurrentParam( ref nodeParams );
 			m_defaultValue = AssetDatabase.LoadAssetAtPath<Texture>( textureName );
 			m_isNormalMap = Convert.ToBoolean( GetCurrentParam( ref nodeParams ) );
-			m_defaultTextureValue = ( TexturePropertyValues )Enum.Parse( typeof( TexturePropertyValues ), GetCurrentParam( ref nodeParams ) );
-			m_autocastMode = ( AutoCastType )Enum.Parse( typeof( AutoCastType ), GetCurrentParam( ref nodeParams ) );
-			m_virtualPreset = ( VirtualPreset )Enum.Parse( typeof( VirtualPreset ), GetCurrentParam( ref nodeParams ) );
+			m_defaultTextureValue = ( TexturePropertyValues ) Enum.Parse( typeof( TexturePropertyValues ), GetCurrentParam( ref nodeParams ) );
+			m_autocastMode = ( AutoCastType ) Enum.Parse( typeof( AutoCastType ), GetCurrentParam( ref nodeParams ) );
+			m_virtualPreset = ( VirtualPreset ) Enum.Parse( typeof( VirtualPreset ), GetCurrentParam( ref nodeParams ) );
 			m_selectedChannelInt = Convert.ToInt32( GetCurrentParam( ref nodeParams ) );
 			ChangeChannels();
 			m_virtualChannel = GetChannel( m_selectedChannelInt );
 
-			m_forceNodeUpdate = true;
+			//m_forceNodeUpdate = true;
 
 			ConfigFromObject( m_defaultValue );
 			ConfigureInputPorts();
@@ -252,6 +269,7 @@ namespace AmplifyShaderEditor
 			UIUtils.RemoveVirtualTextureCount();
 		}
 
+		public override bool IsNormalMap { get { return m_isNormalMap || m_virtualChannel == VirtualChannel.Normal; } }
 		public VirtualChannel Channel { get { return m_virtualChannel; } }
 	}
 }
