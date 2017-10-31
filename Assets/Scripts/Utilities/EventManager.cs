@@ -101,6 +101,10 @@ namespace Game.Utilities
 
         #region model events
 
+        //###########################################################
+
+        #region favour amount changed event
+
         public class OnFavourAmountChangedEventArgs : EventArgs
         {
             public int FavourAmount { get; private set; }
@@ -120,8 +124,53 @@ namespace Game.Utilities
             OnFavourAmountChangedEvent?.Invoke(sender, args);
         }
 
+        #endregion favour amount changed event
+
+        //###########################################################
+
         #endregion model events
 
         //***********************************************************
+
+        //###########################################################
+
+        #region player spawned event
+
+        public class OnPlayerSpawnedEventArgs : EventArgs
+        {
+            public Vector3 Position { get; private set; }
+
+            public OnPlayerSpawnedEventArgs(Vector3 position)
+            {
+                this.Position = position;
+            }
+        }
+
+        public delegate void OnPlayerSpawnedEventHandler(object sender, OnPlayerSpawnedEventArgs args);
+
+        public static event OnPlayerSpawnedEventHandler OnPlayerSpawnedEvent;
+
+        public static void SendOnPlayerSpawnedEvent(object sender, OnPlayerSpawnedEventArgs args)
+        {
+            OnPlayerSpawnedEvent?.Invoke(sender, args);
+        }
+
+        #endregion player spawned event
+
+        //###########################################################
+        //###########################################################
+
+        #region pillar entered event
+
+        #endregion pillar entered event
+
+        //###########################################################
+        //###########################################################
+
+        #region pillar left event
+
+        #endregion pillar left event
+
+        //###########################################################
     }
 } //end of namespace
