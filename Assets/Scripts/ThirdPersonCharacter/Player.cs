@@ -233,7 +233,7 @@ public class Player : MonoBehaviour {
 	#endregion joli variables
 
 
-	#region other variables (privates and stuff)
+	#region other variables
 	[Space(20)]
 	/// <summary>
 	/// The rotator used to turn the camera.
@@ -266,6 +266,8 @@ public class Player : MonoBehaviour {
 
 	public Vector3 gravity = -Vector3.up;
 
+	#endregion other variables
+
 	#region private variables
 	bool readingInputs = true;
 	bool pressedJump = false;
@@ -275,6 +277,8 @@ public class Player : MonoBehaviour {
 	bool pressingSprint = false;
 	float leftTrigger;
 	float rightTrigger;
+
+	bool leftStickAtZero = false;
 
 	bool keepMomentum = false;
 
@@ -288,7 +292,6 @@ public class Player : MonoBehaviour {
 	float currentSpeed;
 	#endregion private variables
 
-	#endregion other variables (privates and stuff)
 
 	void Start(){
 		controller = GetComponent<CharacControllerRecu> ();
@@ -307,6 +310,7 @@ public class Player : MonoBehaviour {
 		velocity = Vector3.zero;
 
 		Game.Utilities.EventManager.OnMenuSwitchedEvent += HandleEventMenuSwitched;
+		Game.Utilities.EventManager.OnPlayerSpawnedEvent += HandleEventPlayerSpawnedSwitched;
 	}
 
 	void HandleEventMenuSwitched (object sender, Game.Utilities.EventManager.OnMenuSwitchedEventArgs args){
@@ -319,6 +323,14 @@ public class Player : MonoBehaviour {
 			readingInputs = false;
 		}
 	}
+
+	void HandleEventPlayerSpawnedSwitched (object sender, Game.Utilities.EventManager.OnPlayerSpawnedEventArgs args){
+		transform.position = args.Position;
+		velocity = Vector3.zero;
+		currentPlayerState = ePlayerState.inAir;
+		ChangeGravityDirection(Vector3.down);
+	}
+
 
 	void Update(){
 
@@ -339,6 +351,7 @@ public class Player : MonoBehaviour {
 
 		#region input detection
 
+		leftStickAtZero = false;
 		pressedJump = false;
 		releasedJump = false;
 		pressedDash = false;
@@ -347,6 +360,9 @@ public class Player : MonoBehaviour {
 		if (readingInputs) {
 			
 			inputRaw = new Vector3(Input.GetAxisRaw ("Horizontal"), 0, Input.GetAxisRaw ("Vertical"));
+			if (inputRaw.magnitude < .1f){
+				leftStickAtZero = true;
+			}
 			inputToCamera = rotator.forward * Input.GetAxisRaw ("Vertical") + rotator.right * Input.GetAxisRaw ("Horizontal");
 			inputToCamera = (Quaternion.AngleAxis (Vector3.Angle (transform.up, Vector3.up), Vector3.Cross (transform.up, Vector3.up))) * inputToCamera;
 			inputToSlope = (Quaternion.AngleAxis(Vector3.Angle(transform.up, controller.collisions.currentGroundNormal), Vector3.Cross(transform.up, controller.collisions.currentGroundNormal))) * inputToCamera;
@@ -593,63 +609,68 @@ public class Player : MonoBehaviour {
 		#region update state
 
 		switch (currentPlayerState) {
-		default:
-			currentPlayerState = ePlayerState.inAir;
-			break;
-
-
-		case ePlayerState.inAir:
-			if (controller.collisions.below) {
-				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle){
-					currentPlayerState = ePlayerState.onGround;
-				} else if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < minWallAngle) {
-					currentPlayerState = ePlayerState.sliding;
-				}
-			}
-			break;
-
-
-		case ePlayerState.onGround:
-			if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle && Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < minWallAngle){
-				currentPlayerState = ePlayerState.sliding;
-			} 
-			if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > minWallAngle || !controller.collisions.below) {
+			default:
 				currentPlayerState = ePlayerState.inAir;
-			}
-			break;
+				break;
 
 
-		case ePlayerState.dashing:
-			break;
-
-
-		case ePlayerState.gliding:
-			if (controller.collisions.below) {
-				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle){
-					if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < minWallAngle) {
+			case ePlayerState.inAir:
+				if (controller.collisions.below) {
+					if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle){
+						currentPlayerState = ePlayerState.onGround;
+						if (leftStickAtZero) {
+							velocity = Vector3.zero;
+						} else {
+							velocity = Vector3.ProjectOnPlane(velocity, transform.right);
+						}
+					} else if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < minWallAngle) {
 						currentPlayerState = ePlayerState.sliding;
+					}
+				}
+				break;
+
+
+			case ePlayerState.onGround:
+				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle && Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < minWallAngle){
+					currentPlayerState = ePlayerState.sliding;
+				} 
+				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > minWallAngle || !controller.collisions.below) {
+					currentPlayerState = ePlayerState.inAir;
+				}
+				break;
+
+
+			case ePlayerState.dashing:
+				break;
+
+
+			case ePlayerState.gliding:
+				if (controller.collisions.below) {
+					if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle){
+						if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < minWallAngle) {
+							currentPlayerState = ePlayerState.sliding;
+							EndGlide();
+						}
+					} else {
+						currentPlayerState = ePlayerState.onGround;
 						EndGlide();
 					}
-				} else {
-					currentPlayerState = ePlayerState.onGround;
-					EndGlide();
 				}
-			}
-			break;
+				break;
 
 
-		case ePlayerState.sliding:
-			if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle){
-				currentPlayerState = ePlayerState.onGround;
-				keepMomentum = true;
-			}
-			if (!controller.collisions.below) {
-				currentPlayerState = ePlayerState.inAir;
-				keepMomentum = true;
-			}
-			break;
+			case ePlayerState.sliding:
+				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle){
+					currentPlayerState = ePlayerState.onGround;
+					keepMomentum = true;
+				}
+				if (!controller.collisions.below) {
+					currentPlayerState = ePlayerState.inAir;
+					keepMomentum = true;
+				}
+				break;
 		}
-	
+
 		/*
 		if (currentPlayerState != ePlayerState.dashing) {
 			if (controller.collisions.below) {
