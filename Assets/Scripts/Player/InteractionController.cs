@@ -24,7 +24,8 @@ namespace Game.Player
 		bool eyeInRange = false;
 
 		//
-		bool pillarInRange = false;
+		bool isPillarInRange = false;
+        World.PillarEntrance pillarEntrance;
 
         /// <summary>
         /// 
@@ -56,11 +57,11 @@ namespace Game.Player
 
                     LeaveFavourPickUpZone();
                 }
-                else if (this.pillarInRange)
+                else if (this.isPillarInRange)
                 {
                     Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.End));
 
-                    this.pillarInRange = false;
+                    this.isPillarInRange = false;
 
                     //hide UI text
                     Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
@@ -122,15 +123,17 @@ namespace Game.Player
 
 						break;
 					case "Pillar":
-						if(this.playerModel.GetAllActiveAbilities().Count + this.playerModel.Favours >= 3)
-						{
-							this.pillarInRange = true;
+                        var pillarEntry = other.GetComponent<World.PillarEntrance>();
 
-							//show UI text
-							Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [X] to enter the Pillar!"));
-						}
+                        if(!this.playerModel.IsPillarDestroyed(pillarEntry.PillarId) && this.playerModel.Favours >= pillarEntrance.EntryPrice)
+                        {
+                            this.isPillarInRange = true;
+                            this.pillarEntrance = pillarEntry;
 
-						break;
+                            //show UI text
+                            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [X] to enter the Pillar!"));
+                        }
+                        break;
 					case "Needle":
 						this.needleInRange = true;
 						this.needlePickedUpCollider = other;
@@ -162,8 +165,15 @@ namespace Game.Player
 			{
                 switch (other.tag)
                 {
-                    case "favour":
+                    case "Favour":
                         LeaveFavourPickUpZone();
+                        break;
+                    case "Pillar":
+                        this.isPillarInRange = false;
+                        this.pillarEntrance = null;
+
+                        //hide UI text
+                        Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
                         break;
 					case "Needle":
 						this.needleInRange = false;

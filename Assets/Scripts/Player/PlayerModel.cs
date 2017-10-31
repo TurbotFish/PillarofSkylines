@@ -31,7 +31,7 @@ namespace Game.Player
         public AbilitySystem.AbilityData AbilityData { get { return this.abilityData; } }
 
 
-		public bool hasNeedle;
+        public bool hasNeedle;
 
         //
         int favours = 0;
@@ -49,6 +49,9 @@ namespace Game.Player
         List<eAbilityGroup> unlockedAbilityGroups = new List<eAbilityGroup>();
         List<eAbilityType> activatedAbilities = new List<eAbilityType>();
         List<eAbilityType> flaggedAbilities = new List<eAbilityType>();
+
+        //
+        List<World.ePillarId> destoyedPillars = new List<World.ePillarId>();
 
 
         //###########################################################
@@ -285,6 +288,26 @@ namespace Game.Player
         }
 
         #endregion ability flagging methods
+
+        //###########################################################
+
+        public void SetPillarDestroyed(World.ePillarId pillarId)
+        {
+            if (!this.destoyedPillars.Contains(pillarId))
+            {
+                this.destoyedPillars.Add(pillarId);
+            }
+        }
+
+        public bool IsPillarDestroyed(World.ePillarId pillarId)
+        {
+            if (this.destoyedPillars.Contains(pillarId))
+            {
+                return true;
+            }
+
+            return false;
+        }
 
         //###########################################################
     }

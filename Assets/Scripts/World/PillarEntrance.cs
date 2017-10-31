@@ -13,17 +13,5 @@ namespace Game.World
         [SerializeField]
         int entryPrice;
         public int EntryPrice { get { return this.entryPrice; } }
-
-        // Use this for initialization
-        void Start()
-        {
-
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
     }
 }
