@@ -5,15 +5,30 @@ using UnityEngine.SceneManagement;
 
 namespace Game
 {
-    public class GameControllerLite : GameControllerBase
+    public class GameControllerLite : MonoBehaviour, IGameControllerBase
     {
+        public const string UI_SCENE_NAME = "UiScene";
+
         [SerializeField]
         bool showIntroMenu = false;
 
-        protected override void Start()
-        {
-            base.Start();
+        //
+        Player.PlayerModel playerModel;
+        public Player.PlayerModel PlayerModel { get { return this.playerModel; } }
 
+        //###############################################################
+        //###############################################################
+
+        void Start()
+        {
+            //
+            this.playerModel = GetComponentInChildren<Player.PlayerModel>();
+
+            //
+            SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
+            StartCoroutine(LoadScenesRoutine());
+
+            //
             var player = SearchForScriptInScene<Player.PlayerController>(SceneManager.GetActiveScene());
             player.InitializePlayerController(this);
 
@@ -24,7 +39,10 @@ namespace Game
             }
         }
 
-        protected override IEnumerator LoadScenesRoutine()
+        //###############################################################
+        //###############################################################
+
+        IEnumerator LoadScenesRoutine()
         {
             yield return null;
 
@@ -44,15 +62,35 @@ namespace Game
             }
         }
 
-        protected override void OnSceneLoadedEventHandler(Scene scene, LoadSceneMode mode)
+        void OnSceneLoadedEventHandler(Scene scene, LoadSceneMode mode)
         {
             if (scene.name == UI_SCENE_NAME)
             {
-                this.UiController = SearchForScriptInScene<Player.UI.UiController>(scene);
-                this.UiController.InitializeUi(this.playerModel);
-
-                this.uiScene = scene;
+                var uiController = SearchForScriptInScene<Player.UI.UiController>(scene);
+                uiController.InitializeUi(this.playerModel);
             }
         }
+
+        //###############################################################
+        //###############################################################
+
+        protected static T SearchForScriptInScene<T>(Scene scene) where T : class
+        {
+            T result = null;
+
+            foreach (var gameObject in scene.GetRootGameObjects())
+            {
+                result = gameObject.GetComponentInChildren<T>();
+
+                if (result != null)
+                {
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        //###############################################################
     }
 }
