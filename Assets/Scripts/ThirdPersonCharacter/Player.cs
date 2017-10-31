@@ -497,7 +497,6 @@ public class Player : MonoBehaviour {
 				flatVelocity.y = 0f;
 				velocity.y = 0f;
 				dashDuration -= Time.deltaTime;
-				Debug.Log("Velocity = " + flatVelocity);
 
 				if (dashDuration <= 0) {
 					EndDash();
