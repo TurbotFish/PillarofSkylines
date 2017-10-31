@@ -34,6 +34,7 @@
 
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
+	#include "WindSystem.cginc"
 
 	#if defined(FOG_LINEAR) || defined(FOG_EXP) || defined(FOG_EXP2)
 		#if !defined(FOG_DISTANCE)
@@ -211,8 +212,18 @@
 
 	Interpolators MyVertexProgram(VertexData v) {
 		Interpolators i;
+
+		/////////////
+		//Rotation test
+		v.vertex.xyz = ApplyWind(v.vertex.xyz, float3(0,0,0));
+
+		/////////////
+
+
 		i.pos = UnityObjectToClipPos(v.vertex);
 		i.worldPos.xyz = mul(unity_ObjectToWorld, v.vertex);
+
+
 
 		#if FOG_DEPTH
 			i.worldPos.w = i.pos.z;
