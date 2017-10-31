@@ -9,7 +9,7 @@ namespace Game.Player
     /// This class handles picking up of objects in the world.
     /// </summary>
     [RequireComponent(typeof(Collider))]
-    public class FavourController : MonoBehaviour
+    public class InteractionController : MonoBehaviour
     {
         //
         PlayerModel playerModel;
@@ -18,8 +18,9 @@ namespace Game.Player
         bool favourPickUpInRange = false;
         Collider favourPickUpCollider;
 
-        //
-        bool pillarInRange = false;
+		//
+		bool pillarInRange = false;
+		bool needleInRange = false;
 
         /// <summary>
         /// 
@@ -60,6 +61,15 @@ namespace Game.Player
                     //hide UI text
                     Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
                 }
+				else if (this.needleInRange)
+				{
+					Utilities.EventManager.SendOnEclipseEvent(this, true);
+
+					this.needleInRange = false;
+
+					//hide UI text
+					Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
+				}
             }
         }
 
@@ -96,6 +106,13 @@ namespace Game.Player
                         }
 
                         break;
+				    case "Needle":
+					    this.needleInRange = true;
+
+					    //show UI text
+					    Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, "Press [X] to take the needle"));
+
+						break;
                     default:
                         break;
                 }
@@ -114,6 +131,9 @@ namespace Game.Player
                     case "favour":
                         LeaveFavourPickUpZone();
                         break;
+				    case "Needle":
+					    LeaveFavourPickUpZone();
+					    break;
                     default:
                         break;
                 }
@@ -131,6 +151,13 @@ namespace Game.Player
             //hide UI text
             Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
         }
+		void LeaveNeedlePickUpZone()
+		{
+			this.needleInRange = false;
+
+			//hide UI text
+			Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
+		}
     }
 }
 //end of namespace

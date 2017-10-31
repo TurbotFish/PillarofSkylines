@@ -507,6 +507,8 @@ public class Player : MonoBehaviour {
 			#region gliding
 		case ePlayerState.gliding:
 
+			//Attention : la vélocité glide est calculé dans le world space et non dans le local space !
+
 			//Turn the vertical input of the player into an angle between glideMinAngle and glideMaxAngle
 			targetGlideVerticalAngle = Mathf.Clamp(Mathf.Lerp(glideMinAngle, glideMaxAngle, (inputRaw.z/2) +.5f) + glideBaseAngle, glideMinAngle, glideMaxAngle);
 			//Update the current vertical angle of the player depending on the angle calculated above
@@ -688,13 +690,6 @@ public class Player : MonoBehaviour {
 		dashParticles.Play ();
 	}
 
-	public Vector3 TurnLocalToSpace(Vector3 vector){
-		return (Quaternion.AngleAxis (Vector3.Angle (Vector3.up, transform.up), Vector3.Cross (Vector3.up, transform.up))) * vector;
-	}
-	public Vector3 TurnSpaceToLocal(Vector3 vector){
-		return (Quaternion.AngleAxis (Vector3.Angle (Vector3.up, transform.up), Vector3.Cross (transform.up, Vector3.up))) * vector;
-	}
-
 	void EndDash(){
 		currentPlayerState = ePlayerState.inAir;
 		dashDuration = 0f;
@@ -709,17 +704,21 @@ public class Player : MonoBehaviour {
 		keepMomentum = true;
 	}
 
+	public Vector3 TurnLocalToSpace(Vector3 vector){
+		return (Quaternion.AngleAxis (Vector3.Angle (Vector3.up, transform.up), Vector3.Cross (Vector3.up, transform.up))) * vector;
+	}
+	public Vector3 TurnSpaceToLocal(Vector3 vector){
+		return (Quaternion.AngleAxis (Vector3.Angle (Vector3.up, transform.up), Vector3.Cross (transform.up, Vector3.up))) * vector;
+	}
+
 	public void ChangeGravityDirection(Vector3 newGravity){
 		gravity = newGravity.normalized;
-		Debug.Log ("axis = " + Vector3.Cross (transform.up, -gravity));
 		transform.Rotate (Vector3.Cross(transform.up, -gravity), Vector3.SignedAngle(transform.up, -gravity, Vector3.Cross(transform.up, -gravity)),Space.World);
 	}
 
 
 	public void InitializePlayer(PlayerModel playmod) {
-
 		playerMod = playmod;
-
 	}
 
 

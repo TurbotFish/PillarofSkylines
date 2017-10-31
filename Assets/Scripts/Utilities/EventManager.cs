@@ -123,5 +123,30 @@ namespace Game.Utilities
         #endregion model events
 
         //***********************************************************
+
+		#region eclipse events
+
+		public class OnEclipseEventArgs : EventArgs
+		{
+			public bool EclipseOn;
+
+			public OnEclipseEventArgs(bool eclipseOn)
+			{
+				EclipseOn = eclipseOn;
+			}
+		}
+
+		public delegate void OnEclipseEventHandler(object sender, OnEclipseEventArgs args);
+
+		public static event OnEclipseEventHandler OnEclipseEvent;
+
+		public static void SendOnEclipseEvent(object sender, OnEclipseEventArgs args)
+		{
+			OnEclipseEvent?.Invoke(sender, args);
+		}
+
+		#endregion eclipse events
+
+		//***********************************************************
     }
 } //end of namespace
