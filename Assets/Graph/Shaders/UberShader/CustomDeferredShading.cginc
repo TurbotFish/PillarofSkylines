@@ -178,6 +178,7 @@
 		indirectLight.diffuse = 0;
 		indirectLight.specular = 0;
 
+
 		float4 color = ALO_BRDF_PBS(
 			albedo, specularTint, oneMinusReflectivity, smoothness,
 			normal, viewDir, light, indirectLight, thickness, _DiffuseSSS

@@ -32,7 +32,7 @@
 			float xValue = floor(wPos.x * _CheckerScale) - floor(floor(wPos.x * _CheckerScale) * 0.5) * 2.0;
 			float yValue = floor(wPos.y * _CheckerScale) - floor(floor(wPos.y * _CheckerScale) * 0.5) * 2.0;
 			float zValue = floor(wPos.z * _CheckerScale) - floor(floor(wPos.z * _CheckerScale) * 0.5) * 2.0;
-			o.Albedo = clamp(abs(yValue - abs(xValue - zValue)), _CheckerMinContrast, _CheckerMaxContrast);
+			o.Albedo = clamp(abs(yValue - abs(xValue - zValue)), _CheckerMinContrast, _CheckerMaxContrast) * _Color;
 			o.Metallic = _Metallic;
 			o.Smoothness = _Glossiness;
 			o.Alpha = 1.0;

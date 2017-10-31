@@ -3,7 +3,7 @@
 Shader "Alo/PBR/CustomPBR" {
 
 	Properties {
-		_Tint ("Tint", Color) = (1.0,1.0,1.0,1.0)
+		_Color ("Tint", Color) = (1.0,1.0,1.0,1.0)
 		_MainTex ("Albedo", 2D) = "white"{}
 
 		[NoScaleOffset] _NormalMap ("Normals", 2D) = "bump"{}
@@ -54,10 +54,15 @@ Shader "Alo/PBR/CustomPBR" {
 
 	SubShader {
 
+		Tags {
+			"RenderType" = "Opaque"
+		}
+
 
 		Pass {
 			Tags {
 				"LightMode" = "ForwardBase"
+
 			}
 			Blend [_SrcBlend] [_DstBlend]
 			ZWrite [_ZWrite]
@@ -78,7 +83,7 @@ Shader "Alo/PBR/CustomPBR" {
 
 			#pragma shader_feature _ _CELSHADED
 			#pragma shader_feature _ _SSS
-
+			#pragma shader_feature _LOCAL_NORMAL_DEBUG
 
 			#pragma multi_compile _ SHADOWS_SCREEN
 			#pragma multi_compile _ VERTEXLIGHT_ON
@@ -139,6 +144,8 @@ Shader "Alo/PBR/CustomPBR" {
 			Blend [_SrcBlend] [_DstBlend]
 			ZWrite [_ZWrite]
 
+			Cull [_Cull]
+
 			CGPROGRAM
 
 			#pragma target 3.0
@@ -155,6 +162,8 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ _RENDERING_CUTOUT
 			#pragma shader_feature _ _SSS
 			#pragma shader_feature _ _SSSColour2
+			#pragma shader_feature _CULL_BACK _CULL_FRONT _CULL_OFF
+			#pragma shader_feature _LOCAL_NORMAL_DEBUG
 			#pragma shader_feature _ CHECKER_DEBUG
 
 			#pragma shader_feature _ _CELSHADED
