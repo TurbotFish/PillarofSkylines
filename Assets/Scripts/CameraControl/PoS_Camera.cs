@@ -215,17 +215,18 @@ public class PoS_Camera : MonoBehaviour {
                 state = eCameraState.Default;
                 autoAdjustYaw = false;
                 autoAdjustPitch = true;
-
+                
                 // POUR LES PENTES
-                if (playerVelocity.normalized.y > 0 || playerVelocity.z > 0) {
+                if (playerVelocity.normalized.y > 0 || (playerVelocity.normalized.y != 0 && playerVelocity.z > 0)) {
                     targetPitch = -50 * playerVelocity.normalized.y * Mathf.Sign(playerVelocity.z) + manualPitch;
                     autoAdjustYaw = false;
 
                 } else
-                    targetPitch = defaultPitch;
+                    targetPitch = manualPitch;
                 
             } else {
                 state = eCameraState.Idle;
+                manualPitch = defaultPitch;
                 autoAdjustPitch = false;
                 autoAdjustYaw = false;
             }
