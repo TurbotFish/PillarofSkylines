@@ -21,23 +21,26 @@ public class PoS_Camera : MonoBehaviour {
                    offsetClose = new Vector2(2, 0);
     public float defaultPitch = 15;
 
-    [Header("Movement")]
+    [Header("Control")]
     public Bool3 invertAxis;
-    public bool followBehind;
-    public Vector2 maxRotationSpeed = new Vector2(15, 15);
     public Vector2 minRotationSpeed = new Vector2(10, 10);
-    public Vector2 mouseSpeedLimit = new Vector2(10, 10);
-    public MinMax pitchRotationLimit = new MinMax(-20, 80);
+    public Vector2 maxRotationSpeed = new Vector2(100, 100);
+    public Vector2 mouseSpeedLimit = new Vector2(5, 5);
+    public MinMax pitchRotationLimit = new MinMax(-70, 80);
 
+    public bool smoothMovement = true;
+    public float smoothDamp = .1f;
+    public float resetDamp = .3f;
+
+    [Header("Behaviour")]
+    public bool followBehind;
+    public float slopeAngleMultiplier = -50;
     public MinMax distanceBasedOnPitch = new MinMax(1, 12);
     public AnimationCurve distanceFromRotation;
 
     public MinMax fovBasedOnPitch = new MinMax(60, 75);
     public AnimationCurve fovFromRotation;
     
-    public bool smoothMovement = true;
-    public float smoothDamp = .1f;
-    public float resetDamp = .6f;
 
     [Header("Collision")]
     public float rayRadius = .2f;
@@ -72,6 +75,7 @@ public class PoS_Camera : MonoBehaviour {
 	float deltaTime;
     float autoDamp;
     float manualPitch, manualYaw;
+    float slopeValue;
     bool resetting, autoAdjustYaw, autoAdjustPitch;
     bool placedByPlayer;
 
@@ -105,7 +109,7 @@ public class PoS_Camera : MonoBehaviour {
 
     void LateUpdate() {
         deltaTime = Time.deltaTime;
-        GetInputs();
+        GetInputsAndStates();
         DoRotation();
         
         float distanceFromAngle = Mathf.Lerp(0, 1, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
@@ -121,8 +125,12 @@ public class PoS_Camera : MonoBehaviour {
         Vector3 targetPos = target.position;
 
         if (offsetOverriden) { // temporary camera offset
+
+            //on change la targetPos avec le tempoffset
+            
             targetPos.x += _tempOffset.x;
             targetPos.y += _tempOffset.y;
+
             _tempOffset = Vector2.Lerp(_tempOffset, Vector2.zero, deltaTime / smoothDamp);
             if (Vector2.Distance(_tempOffset, Vector2.zero) < .01f)
                 offsetOverriden = false;
@@ -193,36 +201,41 @@ public class PoS_Camera : MonoBehaviour {
     }
     #endregion
 
-    void GetInputs() {
+    void GetInputsAndStates() {
         input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
         input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
 
         playerState = player.currentPlayerState;
         playerVelocity = target.InverseTransformVector(player.velocity);
 
+        slopeValue = playerState == ePlayerState.onGround ?
+                     slopeAngleMultiplier * playerVelocity.normalized.y * Mathf.Sign(playerVelocity.z) : 0;
+        
         if (input.magnitude != 0) {
             state = eCameraState.PlayerControl;
             resetting = false;
-            manualPitch = pitch;
+            manualPitch = pitch - slopeValue;
             manualYaw = yaw;
             autoAdjustPitch = false;
             autoAdjustYaw = false;
+            autoDamp = smoothDamp;
 
         } else if (state != eCameraState.Resetting) {
 
             if (playerVelocity != Vector3.zero && playerState == ePlayerState.onGround) {
-
                 state = eCameraState.Default;
                 autoAdjustYaw = false;
                 autoAdjustPitch = true;
                 
                 // POUR LES PENTES
                 if (playerVelocity.normalized.y > 0 || (playerVelocity.normalized.y != 0 && playerVelocity.z > 0)) {
-                    targetPitch = -50 * playerVelocity.normalized.y * Mathf.Sign(playerVelocity.z) + manualPitch;
-                    autoAdjustYaw = false;
+                    targetPitch = slopeValue + manualPitch;
+                    autoDamp = resetDamp;
 
-                } else
+                } else {
                     targetPitch = manualPitch;
+                    autoDamp = smoothDamp;
+                }
                 
             } else {
                 state = eCameraState.Idle;
@@ -287,12 +300,6 @@ public class PoS_Camera : MonoBehaviour {
             }
         }
     }
-
-    public static float AngleSigned(Vector3 v1, Vector3 v2, Vector3 n) {
-        return Mathf.Atan2(
-            Vector3.Dot(n, Vector3.Cross(v1, v2)),
-            Vector3.Dot(v1, v2)) * 57.29578f; // Radian to Degrees constant
-    }
     
     bool blockedByAWall;
     float lastHitDistance;
@@ -346,7 +353,12 @@ public class PoS_Camera : MonoBehaviour {
     }
 
     float GetYawBehindPlayer() {
-        return AngleSigned(targetSpace * Vector3.forward, target.parent.rotation * Vector3.forward, target.up);
+        return SignedAngle(targetSpace * Vector3.forward, target.parent.rotation * Vector3.forward, target.up);
+    }
+    public float SignedAngle(Vector3 v1, Vector3 v2, Vector3 n) {
+        return Mathf.Atan2(
+            Vector3.Dot(n, Vector3.Cross(v1, v2)),
+            Vector3.Dot(v1, v2)) * 57.29578f; // Radian to Degrees constant
     }
 
     #region Temporary Offset
