@@ -32,6 +32,11 @@
 		float3 _DiffuseSSS;
 	#endif
 
+	#if defined(NORMAL_DISTANCE_FADE)
+		float _NormalDistFull;
+		float _NormalDistCulled;
+	#endif
+
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
 	#include "WindSystem.cginc"
@@ -359,10 +364,26 @@
 	float3 GetTangentSpaceNormal(Interpolators i){
 		float3 normal = float3(0,0,1);
 		#if defined(_NORMAL_MAP)
-			normal = UnpackScaleNormal(tex2D(_NormalMap, i.uv.xy), _BumpScale);
+			#if defined(NORMAL_DISTANCE_FADE)
+				float3 viewDir = _WorldSpaceCameraPos - i.worldPos.xyz;
+				float _SqrDistFromCamera = dot(viewDir, viewDir);
+				float _LerpAmount = saturate((_SqrDistFromCamera - _NormalDistFull) / (_NormalDistCulled - _NormalDistFull));
+				float _DistBump = lerp(_BumpScale,0, _LerpAmount);
+				normal = UnpackScaleNormal(tex2D(_NormalMap, i.uv.xy), _DistBump);
+			#else
+				normal = UnpackScaleNormal(tex2D(_NormalMap, i.uv.xy), _BumpScale);
+			#endif
+
+
 		#endif
 		#if defined(_DETAIL_NORMAL_MAP)
-			float3 detailNormal = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailBumpScale);
+			#if defined(NORMAL_DISTANCE_FADE)
+				float detailDistBump = lerp(_DetailBumpScale, 0, _LerpAmount);
+				float3 detailNormal = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), detailDistBump);
+			#else
+				float3 detailNormal = UnpackScaleNormal(tex2D(_DetailNormalMap, i.uv.zw), _DetailBumpScale);
+			#endif
+
 			detailNormal = lerp(float3(0,0,1), detailNormal, GetDetailMask(i));
 			normal = BlendNormals(normal, detailNormal);
 		#endif

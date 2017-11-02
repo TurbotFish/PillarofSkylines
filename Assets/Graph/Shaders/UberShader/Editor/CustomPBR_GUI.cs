@@ -36,6 +36,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoMetallic ();
 		DoSmoothness ();
 		DoNormals ();
+		DoFadeNormals ();
 		//DoOcclusion ();
 		DoEmission ();
 		DoDetailMask ();
@@ -81,6 +82,23 @@ public class CustomPBR_GUI : ShaderGUI {
 		if (EditorGUI.EndChangeCheck () && tex != map.textureValue) {
 			SetKeyword ("_NORMAL_MAP", map.textureValue);
 		}
+	}
+
+	void DoFadeNormals(){
+		MaterialProperty _distOne = FindProperty ("_NormalDistFull");
+		MaterialProperty _distZero = FindProperty ("_NormalDistCulled");
+		EditorGUI.BeginChangeCheck ();
+		EditorGUI.indentLevel += 2;
+		bool fadeOn = EditorGUILayout.Toggle ("Fade Normals", IsKeywordEnabled ("NORMAL_DISTANCE_FADE"));
+
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("NORMAL_DISTANCE_FADE", fadeOn);
+		}
+		if (fadeOn) {
+			editor.ShaderProperty (_distOne, MakeLabel ("Distance Min"));
+			editor.ShaderProperty (_distZero, MakeLabel ("Distance Max"));
+		}
+		EditorGUI.indentLevel -= 2;
 	}
 
 	void DoSecondaryNormals(){
