@@ -138,7 +138,6 @@ public class PoS_Camera : MonoBehaviour {
         if (offsetOverriden) { // temporary camera offset
             //targetWithOffset.x += _tempOffset.x;
             targetWithOffset.y -= _tempOffset.y * recoilOnImpact;
-            print(targetWithOffset);
             _tempOffset = Vector2.Lerp(_tempOffset, Vector2.zero, deltaTime / smoothDamp);
             if (Vector2.Distance(_tempOffset, Vector2.zero) < .01f)
                 offsetOverriden = false;
