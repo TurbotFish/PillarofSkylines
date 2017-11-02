@@ -17,35 +17,43 @@ public class WindTunnelInspector : Editor {
 	private int precision = 20;
 	private int colliderPrecision = 3;
 	private float colliderRadius = 1;
+	private float windStrength = 1;
 
 	public override void OnInspectorGUI () {
-		//DrawDefaultInspector();
+		DrawDefaultInspector();
 
 		tunnel = target as WindTunnel;
-
+		/*
 		precision = tunnel.GetPrecision();
+		colliderPrecision = tunnel.GetColliderPrecision();
+		colliderRadius = tunnel.GetColliderRadius();
+		windStrength = tunnel.GetWindStrength();
 		showDebug = EditorGUILayout.Toggle("Show Debug", showDebug);
 
 		EditorGUI.BeginChangeCheck ();
-		precision = EditorGUILayout.IntField("Renderer Precision", precision);
+		precision = EditorGUILayout.PropertyField("Renderer Precision", precision);
 		if (EditorGUI.EndChangeCheck ()) {
 			tunnel.SetPrecision (precision);
 		}
 
-
-		colliderPrecision = tunnel.GetColliderPrecision();
 		EditorGUI.BeginChangeCheck ();
 		colliderPrecision = EditorGUILayout.IntField("Collider Precision", colliderPrecision);
 		if (EditorGUI.EndChangeCheck ()) {
 			tunnel.SetColliderPrecision (colliderPrecision);
 		}
 
-		colliderRadius = tunnel.GetColliderRadius();
 		EditorGUI.BeginChangeCheck ();
 		colliderRadius = EditorGUILayout.FloatField("Collider Radius", colliderRadius);
 		if (EditorGUI.EndChangeCheck ()) {
 			tunnel.SetColliderRadius(colliderRadius);
 		}
+
+		EditorGUI.BeginChangeCheck ();
+		windStrength = EditorGUILayout.FloatField("Wind Strength", windStrength);
+		if (EditorGUI.EndChangeCheck ()) {
+			tunnel.SetWindStrength(windStrength);
+		}*/
+
 
 		if (selectedIndex >= 0 && selectedIndex < tunnel.ControlPointCount) {
 			DrawSelectedPointInspector();
@@ -55,7 +63,6 @@ public class WindTunnelInspector : Editor {
 			tunnel.AddCurve();
 			EditorUtility.SetDirty(tunnel);
 		}
-
 
 		if (GUILayout.Button("Update Wind Colliders")) {
 			Undo.RecordObject(tunnel, "Update Wind Colliders");

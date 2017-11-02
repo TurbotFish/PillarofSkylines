@@ -619,7 +619,6 @@ public class Player : MonoBehaviour {
 		#endregion direction calculations
 
 
-		Debug.Log("before y velocity = " + velocity.y);
 		//Turns the velocity in world space and calls the controller to check if the calculated velocity will run into walls and stuff
 		turnedVelocity = TurnLocalToSpace(velocity);
 		if (currentPlayerState == ePlayerState.gliding) {

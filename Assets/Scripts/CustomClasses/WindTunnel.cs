@@ -6,9 +6,11 @@ using UnityEngine;
 
 public class WindTunnel : BezierSpline {
 
-	private int precision = 20;
-	private int colliderPrecision = 3;
-	private float colliderRadius = 3;
+	public float windStrength = .5f;
+	public float tunnelAttraction = .8f;
+	public int precision = 20;
+	public int colliderPrecision = 3;
+	public float colliderRadius = 3;
 	private LineRenderer lr;
 	private WindTunnelPart partPrefab;
 	private WindTunnelPart currentPart;
@@ -30,6 +32,11 @@ public class WindTunnel : BezierSpline {
 		colliderRadius = f;
 	}
 
+	public void SetWindStrength(float f)
+	{
+		windStrength = f;
+	}
+
 	public int GetPrecision()
 	{
 		return precision;
@@ -43,6 +50,11 @@ public class WindTunnel : BezierSpline {
 	public float GetColliderRadius()
 	{
 		return colliderRadius;
+	}
+
+	public float GetWindStrength()
+	{
+		return windStrength;
 	}
 
 	public void UpdateLR()
@@ -85,6 +97,8 @@ public class WindTunnel : BezierSpline {
 			currentPart.transform.Rotate(90f, 0f, 0f);
 			currentPart.GetComponent<CapsuleCollider>().radius = colliderRadius;
 			currentPart.GetComponent<CapsuleCollider>().height = (nextPosition - position).magnitude/2;
+			currentPart.windStrength = windStrength;
+			currentPart.tunnelAttraction = tunnelAttraction;
 		}
 	}
 }
