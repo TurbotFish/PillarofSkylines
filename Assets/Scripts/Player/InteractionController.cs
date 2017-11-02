@@ -92,7 +92,7 @@ namespace Game.Player
                 //pillar entrance
                 else if (this.pillarEntranceInfo.IsPillarEntranceInRange)
                 {
-                    Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.End));
+                    Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowPillarEntranceMenuEventArgs(this.pillarEntranceInfo.CurrentPillarEntrance.PillarId));
                 }
                 else if (this.needleInRange)
                 {
@@ -277,10 +277,6 @@ namespace Game.Player
                 this.isActive = false;
                 Debug.Log("InteractionController deactivated!");
             }
-            else
-            {
-                Debug.LogWarningFormat("InteractionController: isActive={0}, previousUiState={1}, newUiState={2}", this.isActive, args.PreviousUiState, args.NewUiState);
-            }
         }
 
         /// <summary>
@@ -298,6 +294,8 @@ namespace Game.Player
 
             this.pillarEntranceInfo.IsPillarEntranceInRange = false;
             this.pillarEntranceInfo.CurrentPillarEntrance = null;
+
+            HideUiMessage();
         }
 
         #endregion event handlers

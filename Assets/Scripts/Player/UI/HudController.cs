@@ -29,7 +29,15 @@ namespace Game.Player.UI
         // Update is called once per frame
         void Update()
         {
+            if (!this.IsActive)
+            {
+                return;
+            }
 
+            if (Input.GetButtonDown("MenuButton"))
+            {
+                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.AbilityMenu));
+            }
         }
 
         #endregion monobehaviour methods
@@ -39,9 +47,11 @@ namespace Game.Player.UI
         void IUiState.Initialize(PlayerModel playerModel)
         {
             this.playerModel = playerModel;
+
+            this.messageView.text = "";
         }
 
-        void IUiState.Activate()
+        void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
         {
             if (this.IsActive)
             {
@@ -49,9 +59,7 @@ namespace Game.Player.UI
             }
 
             this.IsActive = true;
-            this.gameObject.SetActive(true);
-
-            this.messageView.text = "";
+            this.gameObject.SetActive(true);          
         }
 
         void IUiState.Deactivate()

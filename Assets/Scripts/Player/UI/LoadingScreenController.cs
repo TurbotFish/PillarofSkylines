@@ -35,7 +35,7 @@ namespace Game.Player.UI
             this.playerModel = playerModel;
         }
 
-        void IUiState.Activate()
+        void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
         {
             if (this.IsActive)
             {

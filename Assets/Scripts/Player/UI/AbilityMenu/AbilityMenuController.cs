@@ -44,6 +44,12 @@ namespace Game.Player.UI.AbilityMenu
                 return;
             }
 
+            if (Input.GetButtonDown("MenuButton"))
+            {
+                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HUD));
+                return;
+            }
+
             //###########################################################
 
             float stickValue = Input.GetAxis("Vertical");
@@ -67,9 +73,6 @@ namespace Game.Player.UI.AbilityMenu
             }
 
             //###########################################################
-            //###########################################################
-
-            //Debug.LogFormat("selectionDelayTimer={0}", selectionDelayTimer);
 
             if (Mathf.Approximately(stickValue, 0f))
             {
@@ -137,7 +140,7 @@ namespace Game.Player.UI.AbilityMenu
             this.leftColumnView.SetAbilitySelected(this.playerModel.AbilityData.GetAbility(this.selectedAbility));
         }
 
-        void IUiState.Activate()
+        void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
         {
             if (this.IsActive)
             {

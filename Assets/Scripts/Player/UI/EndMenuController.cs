@@ -23,7 +23,24 @@ namespace Game.Player.UI
         // Update is called once per frame
         void Update()
         {
+            if (!IsActive)
+            {
+                return;
+            }
 
+            if (Input.GetButtonDown("MenuButton"))
+            {
+                if (Application.isEditor)
+                {
+#if UNITY_EDITOR
+                    UnityEditor.EditorApplication.isPlaying = false;
+#endif
+                }
+                else
+                {
+                    Application.Quit();
+                }
+            }
         }
 
         #endregion monobehaviour methods
@@ -35,7 +52,7 @@ namespace Game.Player.UI
             this.playerModel = playerModel;
         }
 
-        void IUiState.Activate()
+        void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
         {
             if (this.IsActive)
             {

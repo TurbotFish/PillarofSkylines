@@ -51,25 +51,11 @@ namespace Game.GameControl
 
             //
             Utilities.EventManager.OnEyeKilledEvent += OnEyeKilledEventHandler;
-            SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
+            Utilities.EventManager.OnEnterPillarEvent += OnEnterPillarEventHandler;
 
             //
+            SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
             StartCoroutine(LoadScenesRoutine());
-        }
-
-        void Update()
-        {
-            if (Input.GetKeyUp(KeyCode.O))
-            {
-                if (this.isPillarActive)
-                {
-                    OnEyeKilledEventHandler(this);
-                }
-                else
-                {
-                    OnEnterPillarEventHandler(this, new Utilities.EventManager.OnSceneChangedEventArgs(World.ePillarId.Pillar_01));
-                }
-            }
         }
 
         //###############################################################
@@ -107,6 +93,7 @@ namespace Game.GameControl
             SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
 
             Utilities.EventManager.SendOnPlayerSpawnedEvent(this, new Utilities.EventManager.OnPlayerSpawnedEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnPoint()));
+            Utilities.EventManager.SendOnSceneChangedEvent(this, new Utilities.EventManager.OnSceneChangedEventArgs());
             Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.Intro));
         }
 
@@ -172,7 +159,7 @@ namespace Game.GameControl
         //###############################################################
         //###############################################################
 
-        void OnEnterPillarEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
+        void OnEnterPillarEventHandler(object sender, Utilities.EventManager.OnEnterPillarEventArgs args)
         {
             if (this.isPillarActive)
             {
