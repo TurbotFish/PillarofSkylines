@@ -14,10 +14,6 @@ public class WindTunnelInspector : Editor {
 	private const float directionScale = 0.5f;
 
 	private bool showDebug = true;
-	private int precision = 20;
-	private int colliderPrecision = 3;
-	private float colliderRadius = 1;
-	private float windStrength = 1;
 
 	public override void OnInspectorGUI () {
 		DrawDefaultInspector();

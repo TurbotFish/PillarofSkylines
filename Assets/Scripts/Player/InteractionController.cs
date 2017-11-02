@@ -187,7 +187,11 @@ namespace Game.Player
 
                             ShowUiMessage("Press [X] to plant the needle");
                         }
-                        break;
+						break;
+					//wind
+					case "Wind":
+						other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer);
+						break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
@@ -231,7 +235,11 @@ namespace Game.Player
                         this.eyeInRange = false;
 
                         HideUiMessage();
-                        break;
+						break;
+					//wind
+					case "Wind":
+						other.GetComponent<WindTunnelPart>().RemovePlayer();
+						break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
