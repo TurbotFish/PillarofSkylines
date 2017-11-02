@@ -6,15 +6,6 @@ using UnityEngine;
 
 namespace Game.Player.UI
 {
-    public enum eUiState
-    {
-        HUD,
-        AbilityMenu,
-        Intro,
-        End,
-        LoadingScreen
-    }
-
     public class UiController : MonoBehaviour
     {
         //hud controller
@@ -40,6 +31,10 @@ namespace Game.Player.UI
         //loading screen controller
         [SerializeField]
         LoadingScreenController loadingScreenController;
+
+        //pillar entrance menu controller
+        [SerializeField]
+        PillarEntranceMenu.PillarEntranceMenuController pillarEntranceMenuController;
 
 
 

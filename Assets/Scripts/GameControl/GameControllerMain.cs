@@ -41,6 +41,7 @@ namespace Game.GameControl
 
             //
             this.playerModel = GetComponentInChildren<Player.PlayerModel>();
+            this.playerModel.InitializePlayerModel();
 
             this.timeController = GetComponentInChildren<TimeController>();
 
@@ -66,7 +67,7 @@ namespace Game.GameControl
                 }
                 else
                 {
-                    OnEnterPillarEventHandler(this, new Utilities.EventManager.OnEnterPillarEventArgs(World.ePillarId.Pillar_01));
+                    OnEnterPillarEventHandler(this, new Utilities.EventManager.OnSceneChangedEventArgs(World.ePillarId.Pillar_01));
                 }
             }
         }
@@ -171,7 +172,7 @@ namespace Game.GameControl
         //###############################################################
         //###############################################################
 
-        void OnEnterPillarEventHandler(object sender, Utilities.EventManager.OnEnterPillarEventArgs args)
+        void OnEnterPillarEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
         {
             if (this.isPillarActive)
             {
@@ -211,8 +212,9 @@ namespace Game.GameControl
 
             //
             Utilities.EventManager.SendOnPlayerSpawnedEvent(this, new Utilities.EventManager.OnPlayerSpawnedEventArgs(info.SpawnPointManager.GetInitialSpawnPoint()));
+            Utilities.EventManager.SendOnSceneChangedEvent(this, new Utilities.EventManager.OnSceneChangedEventArgs(pillarId));
 
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(0.1f);
 
             //
             Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.HUD));
@@ -226,8 +228,15 @@ namespace Game.GameControl
                 throw new Exception("No Pillar is active!");
             }
 
+            StartCoroutine(ActivateOpenWorldScene());
+        }
+
+        IEnumerator ActivateOpenWorldScene()
+        {
             //todo: pause game
             Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.LoadingScreen));
+
+            yield return null;
 
             //deactivate pillar scene
             var pillarScene = this.pillarSceneDictionary[this.activePillarId].Scene;
@@ -238,6 +247,8 @@ namespace Game.GameControl
             this.playerModel.SetPillarDestroyed(this.activePillarId);
             this.isPillarActive = false;
 
+            yield return null;
+
             //activate open world scene
             foreach (var go in this.openWorldSceneInfo.Scene.GetRootGameObjects())
             {
@@ -245,9 +256,15 @@ namespace Game.GameControl
             }
             SceneManager.SetActiveScene(this.openWorldSceneInfo.Scene);
 
+            yield return null;
+
             //
             var playerSpawnedEventArgs = new Utilities.EventManager.OnPlayerSpawnedEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetPillarExitPoint(this.activePillarId));
             Utilities.EventManager.SendOnPlayerSpawnedEvent(this, playerSpawnedEventArgs);
+
+            Utilities.EventManager.SendOnSceneChangedEvent(this, new Utilities.EventManager.OnSceneChangedEventArgs());
+
+            yield return new WaitForSeconds(0.1f);
 
             //
             Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.HUD));

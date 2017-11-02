@@ -23,6 +23,7 @@ namespace Game.GameControl
         {
             //
             this.playerModel = GetComponentInChildren<Player.PlayerModel>();
+            this.playerModel.InitializePlayerModel();
 
             //
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;

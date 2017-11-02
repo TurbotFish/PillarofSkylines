@@ -38,26 +38,6 @@ namespace Game.GameControl
 
 #if UNITY_EDITOR
         public List<Object> PillarScenes { get { return this.pillarScenes; } set { this.pillarScenes = value; } }
-
-        public void SetPillarSceneName(World.ePillarId pillarId, Object scene)
-        {
-            if (!Application.isPlaying)
-            {
-                if (this.pillarScenes.Count > (int)pillarId)
-                {
-                    this.pillarScenes[(int)pillarId] = scene;
-                }
-                else
-                {
-                    while (this.pillarScenes.Count <= (int)pillarId)
-                    {
-                        this.pillarScenes.Add(null);
-                    }
-
-                    this.pillarScenes[(int)pillarId] = scene;
-                }
-            }
-        }
 #endif
     }
 } //end of namespace

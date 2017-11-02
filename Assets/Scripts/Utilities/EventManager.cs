@@ -131,6 +131,9 @@ namespace Game.Utilities
         #endregion model events
 
         //***********************************************************
+        //***********************************************************
+
+        #region gameplay events
 
         //###########################################################
 
@@ -160,36 +163,44 @@ namespace Game.Utilities
         //###########################################################
         //###########################################################
 
-        #region enter pillar event
+        #region scene changed event
 
-        public class OnEnterPillarEventArgs : EventArgs
+        public class OnSceneChangedEventArgs : EventArgs
         {
+            public bool HasChangedToPillar { get; private set; }
             public World.ePillarId PillarId { get; private set; }
 
-            public OnEnterPillarEventArgs(World.ePillarId pillarId)
+            /// <summary>
+            /// Change to Open World.
+            /// </summary>
+            public OnSceneChangedEventArgs()
             {
+                this.HasChangedToPillar = false;
+            }
+
+            /// <summary>
+            /// Change to Pillar.
+            /// </summary>
+            /// <param name="pillarId"></param>
+            public OnSceneChangedEventArgs(World.ePillarId pillarId)
+            {
+                this.HasChangedToPillar = true;
                 this.PillarId = pillarId;
             }
         }
 
-        public delegate void OnEnterPillarEventHandler(object sender, OnEnterPillarEventArgs args);
+        public delegate void OnSceneChangedEventHandler(object sender, OnSceneChangedEventArgs args);
 
-        public static event OnEnterPillarEventHandler OnEnterPillarEvent;
+        public static event OnSceneChangedEventHandler OnSceneChangedEvent;
 
-        public static void SendOnEnterPillarEvent(object sender, OnEnterPillarEventArgs args)
+        public static void SendOnSceneChangedEvent(object sender, OnSceneChangedEventArgs args)
         {
-            OnEnterPillarEvent?.Invoke(sender, args);
+            OnSceneChangedEvent?.Invoke(sender, args);
         }
 
-        #endregion enter pillar event
+        #endregion scene changed event
 
         //###########################################################
-        //###########################################################
-
-        #region pillar left event
-
-        #endregion pillar left event
-
         //###########################################################
 
         #region eclipse events
@@ -217,6 +228,7 @@ namespace Game.Utilities
 
 
         //###########################################################
+        //###########################################################
 
         #region eye killed events
 
@@ -230,6 +242,10 @@ namespace Game.Utilities
         }
 
         #endregion eye killed events
+
+        //###########################################################
+
+        #endregion gameplay events
 
         //***********************************************************
     }

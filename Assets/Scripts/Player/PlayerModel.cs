@@ -27,10 +27,13 @@ namespace Game.Player
         //ability data
         [SerializeField]
         AbilitySystem.AbilityData abilityData;
-
         public AbilitySystem.AbilityData AbilityData { get { return this.abilityData; } }
 
+        //pillar data
+        World.PillarData pillarData;
+        public World.PillarData PillarData { get { return this.pillarData; } }
 
+        //
         public bool hasNeedle;
 
         //
@@ -56,12 +59,19 @@ namespace Game.Player
 
         //###########################################################
 
+        public void InitializePlayerModel()
+        {
+            this.pillarData = Resources.Load<World.PillarData>("ScriptableObjects/PillarData");
+
+            UnlockAbilityGroup(eAbilityGroup.test);
+        }
+
         #region monobehaviour methods
 
         // Use this for initialization
         void Start()
         {
-            UnlockAbilityGroup(eAbilityGroup.test);
+
         }
 
         // Update is called once per frame
