@@ -1,0 +1,90 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+[RequireComponent(typeof(LineRenderer))]
+
+public class WindTunnel : BezierSpline {
+
+	private int precision = 20;
+	private int colliderPrecision = 3;
+	private float colliderRadius = 3;
+	private LineRenderer lr;
+	private WindTunnelPart partPrefab;
+	private WindTunnelPart currentPart;
+	private GameObject[] children = new GameObject[0];
+
+
+	public void SetPrecision(int f)
+	{
+		precision = f;
+	}
+
+	public void SetColliderPrecision(int f)
+	{
+		colliderPrecision = f;
+	}
+
+	public void SetColliderRadius(float f)
+	{
+		colliderRadius = f;
+	}
+
+	public int GetPrecision()
+	{
+		return precision;
+	}
+
+	public int GetColliderPrecision()
+	{
+		return colliderPrecision;
+	}
+
+	public float GetColliderRadius()
+	{
+		return colliderRadius;
+	}
+
+	public void UpdateLR()
+	{
+		lr = GetComponent<LineRenderer> ();
+		Vector3[] lrPoints = new Vector3[precision];
+
+		for (int i = 0; i < precision; i++) {
+			lrPoints [i] = GetPoint ((float)i / (float)Mathf.Clamp((precision-1),0,precision));
+		}
+
+		lr.positionCount = lrPoints.Length;
+		lr.SetPositions (lrPoints);
+	}
+
+	public void UpdateColliders() {
+		partPrefab = Resources.Load<WindTunnelPart>("Prefabs/WindTunnelPart");
+		Vector3 position = Vector3.zero;
+		Vector3 nextPosition = Vector3.zero;
+
+		Debug.Log("Destroying " + transform.childCount + " objects, instancing " + colliderPrecision);
+
+
+		children = new GameObject[transform.childCount];
+		for (int i = 0; i < transform.childCount; i++)
+		{
+			children[i] = transform.GetChild(i).gameObject;
+		}
+		foreach (GameObject go in children)
+		{
+			GameObject.DestroyImmediate(go.gameObject);
+		}
+
+
+		for (int i = 0; i < colliderPrecision; i++)
+		{
+			position = GetPoint((float)i / (float)Mathf.Clamp((colliderPrecision - 1), 0, colliderPrecision));
+			nextPosition = GetPoint((float)(i+1) / (float)Mathf.Clamp((colliderPrecision - 1), 0, colliderPrecision));
+			currentPart = Instantiate<WindTunnelPart>(partPrefab, position + (nextPosition - position), Quaternion.LookRotation(nextPosition - position), transform);
+			currentPart.transform.Rotate(90f, 0f, 0f);
+			currentPart.GetComponent<CapsuleCollider>().radius = colliderRadius;
+			currentPart.GetComponent<CapsuleCollider>().height = (nextPosition - position).magnitude/2;
+		}
+	}
+}
