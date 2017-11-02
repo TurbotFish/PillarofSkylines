@@ -21,6 +21,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoSubSurfaceScattering ();
 		DoMain ();
 		DoSecondary ();
+		DoDistanceDither ();
 		DoDebug ();
 	}
 
@@ -99,6 +100,16 @@ public class CustomPBR_GUI : ShaderGUI {
 			editor.ShaderProperty (_distZero, MakeLabel ("Distance Max"));
 		}
 		EditorGUI.indentLevel -= 2;
+	}
+
+	void DoDistanceDither(){
+		GUILayout.Label ("Distance Dithering", EditorStyles.boldLabel);
+		EditorGUI.BeginChangeCheck ();
+
+		bool ditherOn = EditorGUILayout.Toggle(MakeLabel("Distance Dithering"), IsKeywordEnabled ("_DISTANCE_DITHER"));
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_DISTANCE_DITHER", ditherOn);
+		}
 	}
 
 	void DoSecondaryNormals(){
