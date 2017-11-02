@@ -37,6 +37,11 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	[Tooltip("The speed at which the player model turns around (only visual, no gameplay incidence).")]
 	public float playerModelTurnSpeed = 4f;
+	/// <summary>
+	/// The strength of the camera offset when the player lands on ground.
+	/// </summary>
+	[Tooltip("The strength of the camera offset when the player lands on ground.")]
+	public float landingCameraOffsetStrength = .5f;
 	#endregion general
 
 	#region speed and controls variables
@@ -627,8 +632,8 @@ public class Player : MonoBehaviour {
 			case ePlayerState.inAir:
 				if (controller.collisions.below) {
 					if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle){
-						Debug.Log("offset camera : " + new Vector2(0f, -velocity.y * .1f) + " y velocity = " + velocity.y);
-						camera.temporaryOffset = new Vector2(0f, -velocity.y * .1f);
+						Debug.Log("offset camera : " + new Vector2(0f, -controller.collisions.initialVelocityOnThisFrame.y * landingCameraOffsetStrength) + " y velocity = " + controller.collisions.initialVelocityOnThisFrame.y);
+						camera.temporaryOffset = new Vector2(0f, -controller.collisions.initialVelocityOnThisFrame.y * landingCameraOffsetStrength);
 						currentPlayerState = ePlayerState.onGround;
 						if (leftStickAtZero) {
 							velocity = Vector3.zero;
