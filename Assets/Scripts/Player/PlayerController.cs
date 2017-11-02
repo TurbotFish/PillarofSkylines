@@ -22,7 +22,7 @@ namespace Game.Player
         /// Initializes the Player Prefab with references to outside scripts.
         /// </summary>
         /// <param name="gameController"></param>
-        public void InitializePlayerController(GameControllerBase gameController)
+        public void InitializePlayerController(GameControl.IGameControllerBase gameController)
         {
 			this.player = transform.GetComponent<global::Player> ();
 			this.favourController = GetComponentInChildren<InteractionController> ();
