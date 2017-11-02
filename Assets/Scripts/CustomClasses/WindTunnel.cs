@@ -10,52 +10,12 @@ public class WindTunnel : BezierSpline {
 	public float tunnelAttraction = .8f;
 	public int precision = 20;
 	public int colliderPrecision = 3;
-	public float colliderRadius = 3;
+	public AnimationCurve colliderRadius;
 	private LineRenderer lr;
 	private WindTunnelPart partPrefab;
 	private WindTunnelPart currentPart;
 	private GameObject[] children = new GameObject[0];
 
-
-	public void SetPrecision(int f)
-	{
-		precision = f;
-	}
-
-	public void SetColliderPrecision(int f)
-	{
-		colliderPrecision = f;
-	}
-
-	public void SetColliderRadius(float f)
-	{
-		colliderRadius = f;
-	}
-
-	public void SetWindStrength(float f)
-	{
-		windStrength = f;
-	}
-
-	public int GetPrecision()
-	{
-		return precision;
-	}
-
-	public int GetColliderPrecision()
-	{
-		return colliderPrecision;
-	}
-
-	public float GetColliderRadius()
-	{
-		return colliderRadius;
-	}
-
-	public float GetWindStrength()
-	{
-		return windStrength;
-	}
 
 	public void UpdateLR()
 	{
@@ -75,7 +35,7 @@ public class WindTunnel : BezierSpline {
 		Vector3 position = Vector3.zero;
 		Vector3 nextPosition = Vector3.zero;
 
-		Debug.Log("Destroying " + transform.childCount + " objects, instancing " + colliderPrecision);
+		Debug.Log("Destroying " + transform.childCount + " objects, instancing " + (colliderPrecision-1));
 
 
 		children = new GameObject[transform.childCount];
@@ -89,13 +49,13 @@ public class WindTunnel : BezierSpline {
 		}
 
 
-		for (int i = 0; i < colliderPrecision; i++)
+		for (int i = 0; i < colliderPrecision-1; i++)
 		{
 			position = GetPoint((float)i / (float)Mathf.Clamp((colliderPrecision - 1), 0, colliderPrecision));
 			nextPosition = GetPoint((float)(i+1) / (float)Mathf.Clamp((colliderPrecision - 1), 0, colliderPrecision));
 			currentPart = Instantiate<WindTunnelPart>(partPrefab, position + (nextPosition - position), Quaternion.LookRotation(nextPosition - position), transform);
 			currentPart.transform.Rotate(90f, 0f, 0f);
-			currentPart.GetComponent<CapsuleCollider>().radius = colliderRadius;
+			currentPart.GetComponent<CapsuleCollider>().radius = colliderRadius.Evaluate((float)i/colliderPrecision);
 			currentPart.GetComponent<CapsuleCollider>().height = (nextPosition - position).magnitude/2;
 			currentPart.windStrength = windStrength;
 			currentPart.tunnelAttraction = tunnelAttraction;
