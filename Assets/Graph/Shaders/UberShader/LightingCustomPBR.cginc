@@ -3,6 +3,8 @@
 
 	#define LIGHTING_CUSTOM_PBR_INCLUDED
 
+	//#define _DISTANCE_DITHER
+
 	float4 _Color;
 	sampler2D _MainTex, _DetailTex, _DetailMask;
 	float4 _MainTex_ST, _DetailTex_ST;
@@ -78,6 +80,10 @@
 
 		#if defined(VERTEXLIGHT_ON)
 			float3 vertexLightColor : TEXCOORD6;
+		#endif
+
+		#if defined(_DISTANCE_DITHER)
+			float4 screenPos : TEXCOORD7;
 		#endif
 	};
 
@@ -214,6 +220,23 @@
 		return color;
 	}
 
+	#if defined(_DISTANCE_DITHER)
+		float Dither8x8Bayer( int x, int y )
+		{
+			const float dither[ 64 ] = {
+				 1, 49, 13, 61,  4, 52, 16, 64,
+				33, 17, 45, 29, 36, 20, 48, 32,
+				 9, 57,  5, 53, 12, 60,  8, 56,
+				41, 25, 37, 21, 44, 28, 40, 24,
+				 3, 51, 15, 63,  2, 50, 14, 62,
+				35, 19, 47, 31, 34, 18, 46, 30,
+				11, 59,  7, 55, 10, 58,  6, 54,
+				43, 27, 39, 23, 42, 26, 38, 22};
+			int r = y * 8 + x;
+			return (dither[r]) / 64;
+		}
+	#endif
+
 
 	Interpolators MyVertexProgram(VertexData v) {
 		Interpolators i;
@@ -228,7 +251,9 @@
 		i.pos = UnityObjectToClipPos(v.vertex);
 		i.worldPos.xyz = mul(unity_ObjectToWorld, v.vertex);
 
-
+		#if defined(_DISTANCE_DITHER)
+			i.screenPos = ComputeScreenPos(i.pos);
+		#endif
 
 		#if FOG_DEPTH
 			i.worldPos.w = i.pos.z;
@@ -437,8 +462,19 @@
 
 		InitializeFragmentNormal(i);
 		//i.normal = normalize(i.normal);
+		float3 viewVec = _WorldSpaceCameraPos - i.worldPos.xyz;
+		float3 viewDir = normalize(viewVec);
 
-		float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos.xyz);
+		///////////
+		#if defined(_DISTANCE_DITHER)
+			float2 clipScreen = (i.screenPos.xy / i.screenPos.w) * _ScreenParams.xy;
+			float temp = dot(viewVec, viewVec);
+			float dist2Cam = 1 - saturate((temp - 5) / (8 - 5));
+			float bayer = Dither8x8Bayer(fmod(clipScreen.x,8), fmod(clipScreen.y,8));
+			clip((dist2Cam - bayer) + 0.01);
+		#endif
+		//////////
+
 
 		float3 specularTint;
 		float oneMinusReflectivity;
