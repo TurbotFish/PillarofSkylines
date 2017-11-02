@@ -172,5 +172,46 @@ namespace Game.Utilities
         #endregion pillar left event
 
         //###########################################################
+
+		#region eclipse events
+
+		public class OnEclipseEventArgs : EventArgs
+		{
+			public bool EclipseOn;
+
+			public OnEclipseEventArgs(bool eclipseOn)
+			{
+				EclipseOn = eclipseOn;
+			}
+		}
+
+		public delegate void OnEclipseEventHandler(object sender, OnEclipseEventArgs args);
+
+		public static event OnEclipseEventHandler OnEclipseEvent;
+
+		public static void SendOnEclipseEvent(object sender, OnEclipseEventArgs args)
+		{
+			OnEclipseEvent?.Invoke(sender, args);
+		}
+
+		#endregion eclipse events
+
+
+		//###########################################################
+
+		#region eye killed events
+
+		public delegate void OnEyeKilledEventHandler(object sender);
+
+		public static event OnEyeKilledEventHandler OnEyeKilledEvent;
+
+		public static void SendOnEyeKilledEvent(object sender)
+		{
+			OnEyeKilledEvent?.Invoke(sender);
+		}
+
+		#endregion eye killed events
+
+		//***********************************************************
     }
 } //end of namespace
