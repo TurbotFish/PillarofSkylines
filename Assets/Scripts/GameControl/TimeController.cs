@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game
+namespace Game.GameControl
 {
     public class TimeController : MonoBehaviour
     {
@@ -33,6 +33,10 @@ namespace Game
             }
         }
 
+        //###########################################################
+        //###########################################################
+
+        //###########################################################
         //###########################################################
 
         void OnMenuOpenedEventHandler(object sender, Utilities.EventManager.OnMenuSwitchedEventArgs args)

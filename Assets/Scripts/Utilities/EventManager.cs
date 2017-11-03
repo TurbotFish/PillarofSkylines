@@ -131,6 +131,9 @@ namespace Game.Utilities
         #endregion model events
 
         //***********************************************************
+        //***********************************************************
+
+        #region gameplay events
 
         //###########################################################
 
@@ -160,17 +163,90 @@ namespace Game.Utilities
         //###########################################################
         //###########################################################
 
-        #region pillar entered event
+        #region scene changed event
 
-        #endregion pillar entered event
+        public class OnSceneChangedEventArgs : EventArgs
+        {
+            public bool HasChangedToPillar { get; private set; }
+            public World.ePillarId PillarId { get; private set; }
+
+            /// <summary>
+            /// Change to Open World.
+            /// </summary>
+            public OnSceneChangedEventArgs()
+            {
+                this.HasChangedToPillar = false;
+            }
+
+            /// <summary>
+            /// Change to Pillar.
+            /// </summary>
+            /// <param name="pillarId"></param>
+            public OnSceneChangedEventArgs(World.ePillarId pillarId)
+            {
+                this.HasChangedToPillar = true;
+                this.PillarId = pillarId;
+            }
+        }
+
+        public delegate void OnSceneChangedEventHandler(object sender, OnSceneChangedEventArgs args);
+
+        public static event OnSceneChangedEventHandler OnSceneChangedEvent;
+
+        public static void SendOnSceneChangedEvent(object sender, OnSceneChangedEventArgs args)
+        {
+            OnSceneChangedEvent?.Invoke(sender, args);
+        }
+
+        #endregion scene changed event
 
         //###########################################################
         //###########################################################
 
-        #region pillar left event
+        #region eclipse events
 
-        #endregion pillar left event
+        public class OnEclipseEventArgs : EventArgs
+        {
+            public bool EclipseOn;
+
+            public OnEclipseEventArgs(bool eclipseOn)
+            {
+                EclipseOn = eclipseOn;
+            }
+        }
+
+        public delegate void OnEclipseEventHandler(object sender, OnEclipseEventArgs args);
+
+        public static event OnEclipseEventHandler OnEclipseEvent;
+
+        public static void SendOnEclipseEvent(object sender, OnEclipseEventArgs args)
+        {
+            OnEclipseEvent?.Invoke(sender, args);
+        }
+
+        #endregion eclipse events
+
 
         //###########################################################
+        //###########################################################
+
+        #region eye killed events
+
+        public delegate void OnEyeKilledEventHandler(object sender);
+
+        public static event OnEyeKilledEventHandler OnEyeKilledEvent;
+
+        public static void SendOnEyeKilledEvent(object sender)
+        {
+            OnEyeKilledEvent?.Invoke(sender);
+        }
+
+        #endregion eye killed events
+
+        //###########################################################
+
+        #endregion gameplay events
+
+        //***********************************************************
     }
 } //end of namespace
