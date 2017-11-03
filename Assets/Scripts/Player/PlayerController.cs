@@ -28,7 +28,7 @@ namespace Game.Player
 			this.favourController = GetComponentInChildren<InteractionController> ();
 
             this.player.InitializePlayer(gameController.PlayerModel);
-            this.favourController.InitializeFavourController(gameController.PlayerModel);
+            this.favourController.InitializeFavourController(gameController.PlayerModel, player);
         }
     }
 }

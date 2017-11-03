@@ -170,11 +170,6 @@ public class Player : MonoBehaviour {
 	[Tooltip("The speed at which the player's vertical angle changes downwards when gliding.")]
 	public float glideVerticalDownAngleControl = 1f;
 
-	/// <summary>
-	/// The speed at which the player's vertical angle comes back to 0 from a downwards position.
-	/// </summary>
-	//[Tooltip("The speed at which the player's vertical angle comes back to 0 from a downwards position.")]
-	//public float glideVerticalDownComingBack = .1f;
 
 	/// <summary>
 	/// The speed at which the player's vertical angle changes upwards when gliding.
@@ -182,11 +177,6 @@ public class Player : MonoBehaviour {
 	[Tooltip("The speed at which the player's vertical angle changes upwards when gliding.")]
 	public float glideVerticalUpAngleControl = 1f;
 
-	/// <summary>
-	/// The speed at which the player's vertical angle comes back to 0 from an upwards position.
-	/// </summary>
-	//[Tooltip("The speed at which the player's vertical angle comes back to 0 from an upwards position.")]
-	//public float glideVerticalUpComingBack = .1f;
 
 	/// <summary>
 	/// The speed at which the player's horizontal angle changes when gliding.
@@ -203,11 +193,29 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	[Tooltip("How much having no input impacts the update of the vertical angle of the player.")]
 	public float glideNoInputImpactCoeff = .2f;
+	/// <summary>
+	/// The target angle of the glide when the player has no input.
+	/// </summary>
 	public float glideBaseAngle = 10f;
-	public float glideBaseSpeed = 1f;
+	/// <summary>
+	/// The target speed at which the player will naturally come back to when gliding at glideBaseAngle.
+	/// </summary>
+	public float glideBaseSpeed = 20f;
+	/// <summary>
+	/// The speed under which the player will stall.
+	/// </summary>
 	public float glideStallSpeed = 5f;
+	/// <summary>
+	/// The speed at which the player accelerates
+	/// </summary>
 	public float glideSpeedSmooth = .1f;
+	/// <summary>
+	/// The speed added to the target speed depending on the player's angle when gliding downwards.
+	/// </summary>
 	public AnimationCurve glideDownwardAcceleration;
+	/// <summary>
+	/// The speed removed from the player's when gliding upwards.
+	/// </summary>
 	public AnimationCurve glideUpwardDecelaration;
 	public float glideMinAngle = -80f;
 	public float glideMaxAngle = 80f;
@@ -611,7 +619,6 @@ public class Player : MonoBehaviour {
 		#endregion direction calculations
 
 
-		Debug.Log("before y velocity = " + velocity.y);
 		//Turns the velocity in world space and calls the controller to check if the calculated velocity will run into walls and stuff
 		turnedVelocity = TurnLocalToSpace(velocity);
 		if (currentPlayerState == ePlayerState.gliding) {

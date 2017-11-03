@@ -130,9 +130,7 @@ public class CharacControllerRecu : MonoBehaviour {
 //		Debug.DrawRay(myTransform.position + playerAngle * (center - capsuleHeightModifier/2) + myTransform.up * skinWidth*5, -myTransform.up * (skinWidth)*10, Color.cyan);
 //		Debug.DrawRay(myTransform.position, myTransform.right, Color.red);
 //		Debug.DrawRay(myTransform.position + playerAngle * (center - capsuleHeightModifier/2), myTransform.right, Color.red);
-		Debug.Log ("test at = " + myTransform.position + velocity);
 		if (collisions.below) {
-			Debug.Log("detected ground");
 			collisions.currentGroundNormal = hit.normal;
 			if (currentCloud == null && hit.collider.CompareTag ("cloud")) {
 				currentCloud = hit.collider.GetComponent<Cloud> ();

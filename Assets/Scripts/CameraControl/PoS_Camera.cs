@@ -114,7 +114,7 @@ public class PoS_Camera : MonoBehaviour {
         Vector3 targetPos = target.position;
 
         if (offsetOverriden) { // temporary camera offset
-            targetPos.x += _tempOffset.x;
+            //targetPos.x += _tempOffset.x;
             targetPos.y += _tempOffset.y;
             _tempOffset = Vector2.Lerp(_tempOffset, Vector2.zero, deltaTime / smoothDamp);
             if (Vector2.Distance(_tempOffset, Vector2.zero) < .01f)
