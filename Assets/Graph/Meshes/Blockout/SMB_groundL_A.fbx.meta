@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: b5780fb4a79d9d340895a6df83b5f5c4
-timeCreated: 1509634371
+guid: 69d8ccb18abeebf4282520da58ceddf9
+timeCreated: 1509709049
 licenseType: Pro
 ModelImporter:
   serializedVersion: 21
@@ -9,7 +9,8 @@ ModelImporter:
     400000: //RootNode
     2300000: //RootNode
     3300000: //RootNode
-    4300000: SMB_groundM_A
+    4300000: SMB_groundL_A
+    9500000: //RootNode
   materials:
     importMaterials: 0
     materialName: 0
@@ -79,7 +80,7 @@ ModelImporter:
     hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
-  animationType: 0
+  animationType: 2
   humanoidOversampling: 1
   additionalBone: 0
   userData: 
