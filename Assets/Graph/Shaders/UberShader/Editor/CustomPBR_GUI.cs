@@ -16,11 +16,12 @@ public class CustomPBR_GUI : ShaderGUI {
 		this.editor = editor;
 		this.properties = properties;
 		DoRenderingMode ();
+		DoCulling ();
 		DoCelShading ();
 		DoSubSurfaceScattering ();
 		DoMain ();
 		DoSecondary ();
-		DoCheckerDebug ();
+		DoDebug ();
 	}
 
 	void DoMain(){
@@ -28,17 +29,25 @@ public class CustomPBR_GUI : ShaderGUI {
 
 		MaterialProperty mainTex = FindProperty ("_MainTex", properties);
 
-		editor.TexturePropertySingleLine (MakeLabel(mainTex, "Albedo (RGB)"), mainTex, FindProperty("_Tint"));
+		editor.TexturePropertySingleLine (MakeLabel(mainTex, "Albedo (RGB)"), mainTex, FindProperty("_Color"));
 		if (shouldShowAlphaCutoff) {
 			DoAlphaCutoff ();
 		}
 		DoMetallic ();
 		DoSmoothness ();
 		DoNormals ();
-		DoOcclusion ();
+		DoFadeNormals ();
+		//DoOcclusion ();
 		DoEmission ();
 		DoDetailMask ();
 		editor.TextureScaleOffsetProperty (mainTex);
+	}
+
+	void DoDebug(){
+		GUILayout.Label ("Debug", EditorStyles.boldLabel);
+
+		DoLocalNormalDebug ();
+		DoCheckerDebug ();
 	}
 
 	void DoAlphaCutoff(){
@@ -73,6 +82,23 @@ public class CustomPBR_GUI : ShaderGUI {
 		if (EditorGUI.EndChangeCheck () && tex != map.textureValue) {
 			SetKeyword ("_NORMAL_MAP", map.textureValue);
 		}
+	}
+
+	void DoFadeNormals(){
+		MaterialProperty _distOne = FindProperty ("_NormalDistFull");
+		MaterialProperty _distZero = FindProperty ("_NormalDistCulled");
+		EditorGUI.BeginChangeCheck ();
+		EditorGUI.indentLevel += 2;
+		bool fadeOn = EditorGUILayout.Toggle ("Fade Normals", IsKeywordEnabled ("NORMAL_DISTANCE_FADE"));
+
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("NORMAL_DISTANCE_FADE", fadeOn);
+		}
+		if (fadeOn) {
+			editor.ShaderProperty (_distOne, MakeLabel ("Distance Min"));
+			editor.ShaderProperty (_distZero, MakeLabel ("Distance Max"));
+		}
+		EditorGUI.indentLevel -= 2;
 	}
 
 	void DoSecondaryNormals(){
@@ -270,6 +296,7 @@ public class CustomPBR_GUI : ShaderGUI {
 				m.SetInt ("_SrcBlend", (int)settings.srcBlend);
 				m.SetInt ("_DstBlend", (int)settings.dstBlend);
 				m.SetInt ("_ZWrite", settings.zWrite ? 1 : 0);
+			
 			}
 		}
 
@@ -279,14 +306,53 @@ public class CustomPBR_GUI : ShaderGUI {
 	}
 
 
-	void DoCheckerDebug(){
-		GUILayout.Label ("Checker debug", EditorStyles.boldLabel);
+	void DoCulling(){
+		CullMode mode = CullMode.Back;
+		if (IsKeywordEnabled("_CULL_BACK")) {
+			mode = CullMode.Back;
+		} else if (IsKeywordEnabled("_CULL_FRONT")) {
+			mode = CullMode.Front;
+		} else if (IsKeywordEnabled("_CULL_OFF")) {
+			mode = CullMode.Off;
+		}
 
 		EditorGUI.BeginChangeCheck ();
-		bool checkerOn = EditorGUILayout.Toggle ("On", IsKeywordEnabled ("CHECKER_DEBUG"));
+		mode = (CullMode)EditorGUILayout.EnumPopup (MakeLabel ("Culling Mode"), mode);
+		if (EditorGUI.EndChangeCheck ()) {
+			
+			RecordAction ("Culling Mode");
+			SetKeyword ("_CULL_BACK", mode == CullMode.Back);
+			SetKeyword ("_CULL_FRONT", mode == CullMode.Front);
+			SetKeyword ("_CULL_OFF", mode == CullMode.Off);
+
+			foreach (Material m in editor.targets) {
+				if (mode == CullMode.Back) {
+					m.SetInt ("_Cull", (int)CullMode.Back);
+				} else if (mode == CullMode.Front) {
+					m.SetInt ("_Cull", (int)CullMode.Front);
+				} else if (mode == CullMode.Off) {
+					m.SetInt ("_Cull", (int)CullMode.Off);
+				}
+			}
+		}
+	}
+
+	void DoCheckerDebug(){
+
+		EditorGUI.BeginChangeCheck ();
+		bool checkerOn = EditorGUILayout.Toggle ("Checker", IsKeywordEnabled ("CHECKER_DEBUG"));
 
 		if (EditorGUI.EndChangeCheck ()) {
 			SetKeyword ("CHECKER_DEBUG", checkerOn);
+		}
+	}
+
+	void DoLocalNormalDebug(){
+		EditorGUI.BeginChangeCheck ();
+		bool displayNormals = EditorGUILayout.Toggle ("Local normal", IsKeywordEnabled ("_LOCAL_NORMAL_DEBUG"));
+
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_LOCAL_NORMAL_DEBUG", displayNormals);
 		}
 	}
 
@@ -296,6 +362,10 @@ public class CustomPBR_GUI : ShaderGUI {
 
 	enum RenderingMode {
 		Opaque, Cutout, Fade, Transparent
+	}
+
+	enum CullingMode {
+		Back, Front, Off
 	}
 
 	struct RenderingSettings {

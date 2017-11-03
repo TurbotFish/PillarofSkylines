@@ -349,11 +349,15 @@ half4 BRDF1_Alo_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity
     #endif
 
 
-    return half4(color, 1);
+
     
+    #if defined(FORWARD_BASE_PASS)
+    return half4(color * half3(0.1,0.8,0.6),1);
+    #else
+    return half4(color, 1);
+    #endif
 
-
-   // return half4(1,1,0,1);
+    //return half4(1,1,0,1);
 }
 
 
