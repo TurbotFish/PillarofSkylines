@@ -220,7 +220,7 @@ public class PoS_Camera : MonoBehaviour {
 		playerState = player.currentPlayerState;
 		playerVelocity = player.velocity;
 
-		print(playerVelocity);
+		//print(playerVelocity);
 
 		targetSpace = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, target.up), Vector3.Cross(Vector3.up, target.up));
 
@@ -241,7 +241,7 @@ public class PoS_Camera : MonoBehaviour {
 
 
 
-		print(slopeValue + " ou alors peut être " + versLavantSlope);
+		//print(slopeValue + " ou alors peut être " + versLavantSlope);
 
 		if (input.magnitude != 0) {
 			state = eCameraState.PlayerControl;

@@ -313,6 +313,7 @@ public class Player : MonoBehaviour {
 
 	Vector3 flatVelocity;
 	Vector3 turnedVelocity;
+	Vector3 windVelocity;
 
 	float currentSpeed;
 	#endregion private variables
@@ -336,7 +337,7 @@ public class Player : MonoBehaviour {
 		velocity = Vector3.zero;
 
 		Game.Utilities.EventManager.OnMenuSwitchedEvent += HandleEventMenuSwitched;
-		Game.Utilities.EventManager.OnPlayerSpawnedEvent += HandleEventPlayerSpawnedSwitched;
+		Game.Utilities.EventManager.OnPlayerSpawnedEvent += HandleEventPlayerSpawned;
 	}
 
 	void HandleEventMenuSwitched (object sender, Game.Utilities.EventManager.OnMenuSwitchedEventArgs args){
@@ -350,7 +351,7 @@ public class Player : MonoBehaviour {
 		}
 	}
 
-	void HandleEventPlayerSpawnedSwitched (object sender, Game.Utilities.EventManager.OnPlayerSpawnedEventArgs args){
+	void HandleEventPlayerSpawned (object sender, Game.Utilities.EventManager.OnPlayerSpawnedEventArgs args){
 		transform.position = args.Position;
 		velocity = Vector3.zero;
 		currentPlayerState = ePlayerState.inAir;
@@ -368,7 +369,7 @@ public class Player : MonoBehaviour {
 		//Turn the player in his last direction
 		if (inputRaw.magnitude > 0f) {
 			if (currentPlayerState != ePlayerState.gliding) {
-				transform.Rotate (transform.up, Mathf.Lerp (0f, Vector3.SignedAngle (transform.forward, Vector3.ProjectOnPlane (inputToCamera, transform.up), transform.up), 
+				transform.Rotate (transform.up, Mathf.Lerp (0f, Vector3.SignedAngle (transform.forward, Vector3.ProjectOnPlane (TurnLocalToSpace(inputToCamera), transform.up), transform.up), 
 					(currentPlayerState == ePlayerState.gliding ? playerModelAerialTurnSpeed : playerModelTurnSpeed) * Time.deltaTime), Space.World);
 			} else {
 				transform.Rotate (transform.up, glideHorizontalAngle, Space.World);
@@ -394,8 +395,6 @@ public class Player : MonoBehaviour {
 			inputToCamera = (Quaternion.AngleAxis (Vector3.Angle (transform.up, Vector3.up), Vector3.Cross (transform.up, Vector3.up))) * inputToCamera;
 			inputToSlope = (Quaternion.AngleAxis(Vector3.Angle(transform.up, controller.collisions.currentGroundNormal), Vector3.Cross(transform.up, controller.collisions.currentGroundNormal))) * inputToCamera;
 //			Debug.Log("Inputs = raw : " + inputRaw + " to camera = : " + inputToCamera + " to slope = " + inputToSlope + " slope " + Vector3.Angle(transform.up, controller.collisions.currentGroundNormal));
-			flatVelocity = velocity;
-			flatVelocity.y = 0;
 
 			leftTrigger = Input.GetAxisRaw("Left Trigger");
 			rightTrigger = Input.GetAxisRaw("Right Trigger");
@@ -424,10 +423,12 @@ public class Player : MonoBehaviour {
 			leftTrigger = 0f;
 			rightTrigger = 0f;
 		}
-
 		#endregion input detection
 
 		#region direction calculations
+
+		flatVelocity = velocity;
+		flatVelocity.y = 0;
 
 		Vector3 targetVelocity = Vector3.zero;
 		//		Debug.Log("state : " + currentPlayerState + " momentum : " + keepMomentum);
@@ -622,10 +623,13 @@ public class Player : MonoBehaviour {
 			case ePlayerState.inWindTunnel:
 
 				keepMomentum = false;
-
-				targetVelocity = inputToCamera * characSpeed;
-				flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, airControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f));
-
+				flatVelocity = velocity;
+				velocity.y = 0;
+				//targetVelocity = inputToCamera * characSpeed;
+				Debug.Log("used wind velocity : " + windVelocity);
+				flatVelocity = Vector3.Lerp(flatVelocity, windVelocity, airControl * Time.deltaTime);
+				Debug.Log("final velocity : " + flatVelocity);
+				windVelocity = Vector3.zero;
 				if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash)) {
 					StartDash();
 				}
@@ -647,7 +651,6 @@ public class Player : MonoBehaviour {
 		} else {
 			velocity = controller.Move (turnedVelocity * Time.deltaTime);
 		}
-
 
 		#region update state
 
@@ -765,6 +768,8 @@ public class Player : MonoBehaviour {
 		keepMomentum = true;
 	}
 
+	#region public utilty functions
+
 	public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool framerateDependant){
 		velocity += (worldSpace? TurnSpaceToLocal(newVelocity) : newVelocity) * (framerateDependant ? Time.deltaTime : 1);
 	}
@@ -776,7 +781,12 @@ public class Player : MonoBehaviour {
 
 	public void AddWindVelocity(Vector3 newVelocity){
 		inWindTunnel = true;
-		velocity += TurnSpaceToLocal(newVelocity) * Time.deltaTime;
+		if (windVelocity == Vector3.zero)
+		{
+			windVelocity = newVelocity * Time.deltaTime;
+		} else {
+			windVelocity = Vector3.Lerp((newVelocity), windVelocity, .5f) * Time.deltaTime;
+		}
 	}
 	public void ExitWindTunnel(){
 		inWindTunnel = false;
@@ -800,6 +810,7 @@ public class Player : MonoBehaviour {
 		playerMod = playmod;
 	}
 
+	#endregion public utilty functions
 
 
 }
