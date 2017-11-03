@@ -729,7 +729,13 @@ public class Player : MonoBehaviour {
 
 	}
 
-	void StartDash(){
+    void OnDestroy()
+    {
+        Game.Utilities.EventManager.OnMenuSwitchedEvent -= HandleEventMenuSwitched;
+        Game.Utilities.EventManager.OnPlayerSpawnedEvent -= HandleEventPlayerSpawnedSwitched;
+    }
+
+    void StartDash(){
 		playerMod.FlagAbility (eAbilityType.Dash);
 		currentPlayerState = ePlayerState.dashing;
 		dashDuration = dashSpeed;

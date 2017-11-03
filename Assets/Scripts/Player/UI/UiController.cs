@@ -64,26 +64,28 @@ namespace Game.Player.UI
 
             foreach (var uiState in uiStates.Values)
             {
+                if((object)uiState != this.loadingScreenController)
                 uiState.Initialize(playerModel);
                 uiState.Deactivate();
             }
-
-            SwitchState(eUiState.LoadingScreen);
         }
 
         //###########################################################
 
         #region monobehaviour methods
 
-        // Use this for initialization
+        void OnEnable()
+        {
+            if(this.playerModel == null) //this is only executed if the instance has not been initialized yet
+            {
+                (this.loadingScreenController as IUiState).Activate(null);
+                this.currentState = eUiState.LoadingScreen;
+            }
+        }
+
         void Start()
         {
             Utilities.EventManager.OnShowMenuEvent += OnShowMenuEventHandler;
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
         }
 
         #endregion monobehaviour methods

@@ -17,31 +17,23 @@ namespace Game.GameControl
         public Player.PlayerModel PlayerModel { get { return this.playerModel; } }
 
         EchoManager echoManager;
+        public EchoManager EchoManager { get { return this.echoManager; } }
+
+        Player.PlayerController playerController;
+        public Player.PlayerController PlayerController { get { return this.playerController; } }
+
+        World.ChunkSystem.WorldController worldController;
+        public World.ChunkSystem.WorldController WorldController { get { return this.worldController; } }
+
+        Player.UI.UiController uiController;
+        public Player.UI.UiController UiController { get { return this.uiController; } }
 
         //###############################################################
         //###############################################################
 
         void Start()
         {
-            //
-            this.playerModel = GetComponentInChildren<Player.PlayerModel>();
-            this.playerModel.InitializePlayerModel();
-
-            this.echoManager = GetComponentInChildren<EchoManager>();
-
-            //
-            SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
             StartCoroutine(LoadScenesRoutine());
-
-            //
-            var player = SearchForScriptInScene<Player.PlayerController>(SceneManager.GetActiveScene());
-            player.InitializePlayerController(this);
-
-            var worldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(SceneManager.GetActiveScene());
-            if (worldController != null)
-            {
-                worldController.InitializeWorldController(player.transform);
-            }
 
             //cleaning up, just in case
             var echoManagers = FindObjectsOfType<EchoManager>();
@@ -59,14 +51,40 @@ namespace Game.GameControl
 
         IEnumerator LoadScenesRoutine()
         {
+            //getting references in local scene
+            this.playerModel = GetComponentInChildren<Player.PlayerModel>();
+            this.echoManager = GetComponentInChildren<EchoManager>();
+
+            var player = SearchForScriptInScene<Player.PlayerController>(SceneManager.GetActiveScene());
+            var worldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(SceneManager.GetActiveScene());
+
             yield return null;
 
+            //loading UI scene
             SceneManager.LoadScene(UI_SCENE_NAME, LoadSceneMode.Additive);
 
             yield return null;
 
-            SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
+            //getting references in UI scene
+            var uiScene = SceneManager.GetSceneByName(UI_SCENE_NAME);
 
+            this.uiController = SearchForScriptInScene<Player.UI.UiController>(uiScene);
+
+            yield return null;
+
+            //initializing
+            this.playerModel.InitializePlayerModel();
+
+            player.InitializePlayerController(this);
+
+            if (worldController != null)
+            {
+                worldController.InitializeWorldController(player.transform);
+            }
+
+            this.uiController.InitializeUi(this.playerModel);
+
+            //starting the game
             if (this.showIntroMenu)
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.Intro));
@@ -74,15 +92,6 @@ namespace Game.GameControl
             else
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.HUD));
-            }
-        }
-
-        void OnSceneLoadedEventHandler(Scene scene, LoadSceneMode mode)
-        {
-            if (scene.name == UI_SCENE_NAME)
-            {
-                var uiController = SearchForScriptInScene<Player.UI.UiController>(scene);
-                uiController.InitializeUi(this.playerModel);
             }
         }
 
