@@ -103,12 +103,20 @@ public class CustomPBR_GUI : ShaderGUI {
 	}
 
 	void DoDistanceDither(){
+		
 		GUILayout.Label ("Distance Dithering", EditorStyles.boldLabel);
+		MaterialProperty _distMin = FindProperty ("_DitherDistMin");
+		MaterialProperty _distMax = FindProperty ("_DitherDistMax");
 		EditorGUI.BeginChangeCheck ();
 
 		bool ditherOn = EditorGUILayout.Toggle(MakeLabel("Distance Dithering"), IsKeywordEnabled ("_DISTANCE_DITHER"));
 		if (EditorGUI.EndChangeCheck ()) {
 			SetKeyword ("_DISTANCE_DITHER", ditherOn);
+		}
+
+		if (ditherOn) {
+			editor.ShaderProperty (_distMin, MakeLabel ("Distance Min"));
+			editor.ShaderProperty (_distMax, MakeLabel ("Distance Max"));
 		}
 	}
 
@@ -164,12 +172,13 @@ public class CustomPBR_GUI : ShaderGUI {
 
 	void DoSubSurfaceScattering(){
 		GUILayout.Label ("Sub Surface Scattering", EditorStyles.boldLabel);
-		//MaterialProperty power = FindProperty ("_PowerSSS");
-		//MaterialProperty scale = FindProperty ("_ScaleSSS");
-		//MaterialProperty distortion = FindProperty ("_DistortionSSS");
-		//MaterialProperty atten = FindProperty ("_AttenuationSSS");
-		//MaterialProperty ambient = FindProperty ("_AmbientSSS");
-		//MaterialProperty diffuse = FindProperty ("_DiffuseSSS");
+
+		MaterialProperty power = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_PowerSSS") : null;
+		MaterialProperty scale = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_ScaleSSS") : null;
+		MaterialProperty distortion = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_DistortionSSS") : null;
+		MaterialProperty atten = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_AttenuationSSS") : null;
+		MaterialProperty ambient = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_AmbientSSS") : null;
+		//MaterialProperty diffuse = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_DiffuseSSS") : null;
 
 		MaterialProperty thickness = FindProperty ("_ThicknessMap");
 		Texture tex = thickness.textureValue;
@@ -180,23 +189,23 @@ public class CustomPBR_GUI : ShaderGUI {
 
 		if (EditorGUI.EndChangeCheck ()) {
 			SetKeyword ("_SSS", subSurfaceOn);
-
 		}
-
-
+		EditorGUI.indentLevel += 1;
 		if (subSurfaceOn) {
-			
-			//editor.ShaderProperty (power, MakeLabel (power));
-			//editor.ShaderProperty (scale, MakeLabel (scale));
-			//editor.ShaderProperty (distortion, MakeLabel (distortion));
-			//editor.ShaderProperty (atten, MakeLabel (atten));
-			//editor.ShaderProperty (ambient, MakeLabel (ambient));
-			//editor.ShaderProperty (diffuse, MakeLabel (diffuse));
-			editor.TexturePropertySingleLine (MakeLabel (thickness, "Thickness (R)"), thickness);
-
-			bool useSSSColour2 = EditorGUILayout.Toggle ("Colour 2", IsKeywordEnabled ("_SSSColour2"));
-			SetKeyword ("_SSSColour2", useSSSColour2);
+			if (IsKeywordEnabled ("_RENDERING_TRANSPARENT")) {
+				editor.ShaderProperty (power, MakeLabel (power));
+				editor.ShaderProperty (scale, MakeLabel (scale));
+				editor.ShaderProperty (distortion, MakeLabel (distortion));
+				editor.ShaderProperty (atten, MakeLabel (atten));
+				editor.ShaderProperty (ambient, MakeLabel (ambient));
+				//editor.ShaderProperty (diffuse, MakeLabel (diffuse));
+			} else {
+				bool useSSSColour2 = EditorGUILayout.Toggle ("The other colour", IsKeywordEnabled ("_SSSColour2"));
+				SetKeyword ("_SSSColour2", useSSSColour2);
+			}
+			editor.TexturePropertySingleLine (MakeLabel (thickness, "Thickness (R)"), thickness, IsKeywordEnabled ("_RENDERING_TRANSPARENT") ? FindProperty ("_DiffuseSSS") : null);
 		}
+		EditorGUI.indentLevel -= 1;
 	}
 
 	void DoOcclusion(){

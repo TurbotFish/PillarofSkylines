@@ -45,6 +45,9 @@ Shader "Alo/PBR/CustomPBR" {
 
 		_NormalDistFull ("Normal Distance Full", Float) = 1.2
 		_NormalDistCulled ("Normal Distance Culled", Float) = 1.4
+
+		_DitherDistMin ("Dither Distance Min", Float) = 1.5
+		_DitherDistMax ("Dither Distance Max", Float) = 5
 	}
 
 	CGINCLUDE
@@ -88,6 +91,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ _SSS
 			#pragma shader_feature _ _LOCAL_NORMAL_DEBUG
 			#pragma shader_feature _ NORMAL_DISTANCE_FADE
+			#pragma shader_feature _ _DISTANCE_DITHER
 
 			#pragma multi_compile _ SHADOWS_SCREEN
 			#pragma multi_compile _ VERTEXLIGHT_ON
@@ -130,6 +134,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
 			#pragma shader_feature _ _SSS
 			#pragma shader_feature _ NORMAL_DISTANCE_FADE
+			#pragma shader_feature _ _DISTANCE_DITHER
 
 			#pragma multi_compile_fwdadd_fullshadows
 			#pragma multi_compile_fog

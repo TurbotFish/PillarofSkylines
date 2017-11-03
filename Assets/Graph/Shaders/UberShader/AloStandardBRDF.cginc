@@ -258,16 +258,8 @@ half4 BRDF1_Alo_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity
 	//ALO:use this for cool cel-shading
     //half nl = clamp(step(_ShadowTransition,saturate(dot(normal, light.dir))), _ShadowStrength,1.0);
 #if defined(FORWARD_BASE_PASS) && defined(_CELSHADED)
-	
-		#if defined(INITEN)
-		    half temp = step(_ShadowTransition, saturate(dot(normal, light.dir)));
-		    half nl = clamp(temp, _ShadowStrength, 1.0);
-		    float temp2 = step(1-(_ShadowTransition+0.01), 1-saturate(dot(normal, light.dir))) * temp;
-		#else
-		    //half nl = clamp(step(_ShadowTransition,saturate(dot(normal, light.dir))), _ShadowStrength,1.0);
-		    half nl = clamp(step(_ShadowTransition,saturate(dot(normal, light.dir))), _ShadowStrength,1.0);
-		#endif
-	
+		
+	half nl = clamp(step(_ShadowTransition,saturate(dot(normal, light.dir))), _ShadowStrength,1.0);
 #else
 	half nl = saturate(dot(normal, light.dir));
 #endif
@@ -318,25 +310,14 @@ half4 BRDF1_Alo_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity
     specularTerm *= any(specColor) ? 1.0 : 0.0;
 
 
-    #if defined(INITEN) && (_CELSHADED)
-   // diffColor += temp2 * diffColor*0.8;
-    diffColor = lerp(diffColor,half3(0.2,0.2,0.9),  temp2);
-   // diffColor -= lerp(0, tex2D(_TempTex, uv), (1-temp))*0.1;
-   // diffColor = saturate(diffColor);
-
-	#endif
-
 	#if defined(_SSS)
+		float3 L = light.dir;
+		float3 VD = viewDir;
+		float3 N = normal;
 
-
-	float3 L = light.dir;
-	float3 VD = viewDir;
-	float3 N = normal;
-
-	float3 H = normalize(L+N*_DistortionSSS);
-	float VDdotH = pow(saturate(dot(VD,-H)), _PowerSSS) * _ScaleSSS;
-	float I = tex2D(_ThicknessMap, uv).r * (VDdotH + _AmbientSSS) * _AttenuationSSS;
-
+		float3 H = normalize(L+N*_DistortionSSS);
+		float VDdotH = pow(saturate(dot(VD,-H)), _PowerSSS) * _ScaleSSS;
+		float I = tex2D(_ThicknessMap, uv).r * (VDdotH + _AmbientSSS) * _AttenuationSSS;
 	#endif
 
     half grazingTerm = saturate(smoothness + (1-oneMinusReflectivity));
@@ -348,16 +329,7 @@ half4 BRDF1_Alo_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity
     	color += saturate(_DiffuseSSS * light.color) * I;
     #endif
 
-
-
-    
-    #if defined(FORWARD_BASE_PASS)
-    return half4(color * half3(0.1,0.8,0.6),1);
-    #else
     return half4(color, 1);
-    #endif
-
-    //return half4(1,1,0,1);
 }
 
 

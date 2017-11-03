@@ -3,8 +3,6 @@
 
 	#define LIGHTING_CUSTOM_PBR_INCLUDED
 
-	//#define _DISTANCE_DITHER
-
 	float4 _Color;
 	sampler2D _MainTex, _DetailTex, _DetailMask;
 	float4 _MainTex_ST, _DetailTex_ST;
@@ -37,6 +35,11 @@
 	#if defined(NORMAL_DISTANCE_FADE)
 		float _NormalDistFull;
 		float _NormalDistCulled;
+	#endif
+
+	#if defined(_DISTANCE_DITHER)
+		float _DitherDistMin;
+		float _DitherDistMax;
 	#endif
 
 	#include "AloPBSLighting.cginc"
@@ -465,15 +468,13 @@
 		float3 viewVec = _WorldSpaceCameraPos - i.worldPos.xyz;
 		float3 viewDir = normalize(viewVec);
 
-		///////////
 		#if defined(_DISTANCE_DITHER)
 			float2 clipScreen = (i.screenPos.xy / i.screenPos.w) * _ScreenParams.xy;
 			float temp = dot(viewVec, viewVec);
-			float dist2Cam = 1 - saturate((temp - 5) / (8 - 5));
+			float dist2Cam = 1 - saturate((temp - _DitherDistMin) / (_DitherDistMax - _DitherDistMin));
 			float bayer = Dither8x8Bayer(fmod(clipScreen.x,8), fmod(clipScreen.y,8));
-			clip((dist2Cam - bayer) + 0.01);
+			clip(dist2Cam - bayer);
 		#endif
-		//////////
 
 
 		float3 specularTint;
