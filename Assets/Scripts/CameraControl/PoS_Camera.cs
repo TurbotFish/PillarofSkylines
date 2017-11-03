@@ -38,7 +38,6 @@ public class PoS_Camera : MonoBehaviour {
 	public float autoResetDamp = 1;
 
 	public float recoilOnImpact = 20;
-	//public AnimationCurve impactFromSpeed;
 
 	public MinMax distanceBasedOnPitch = new MinMax(1, 12);
 	public AnimationCurve distanceFromRotation;
@@ -84,8 +83,10 @@ public class PoS_Camera : MonoBehaviour {
 	float lastInput;
 	float autoDamp;
 	float manualPitch, manualYaw;
+    float recoilIntensity;
 	float slopeValue;
 	bool resetting, autoAdjustYaw, autoAdjustPitch;
+    bool canAutoReset;
 	bool placedByPlayer, onEdgeOfCliff;
 
 	#endregion
@@ -99,20 +100,24 @@ public class PoS_Camera : MonoBehaviour {
 		my = transform;
 		player = target.GetComponentInParent<Player>();
 		controller = player.GetComponent<CharacControllerRecu>();
-
-		Vector3 angles = transform.eulerAngles;
-		yaw = angles.y;
-		pitch = angles.x;
-		camPosition = transform.position;
-
+        
 		currentDistance = zoomValue = idealDistance = distance;
 		maxDistance = canZoom ? zoomDistance.max : distance;
 
 		manualPitch = defaultPitch;
 		state = eCameraState.Default;
-	}
 
-	void OnApplicationFocus(bool hasFocus) {
+        PlaceBehindPlayerNoLerp();
+    }
+
+    private void OnEnable() {
+        Game.Utilities.EventManager.OnPlayerSpawnedEvent += OnPlayerSpawn;
+    }
+    private void OnDisable() {
+        Game.Utilities.EventManager.OnPlayerSpawnedEvent -= OnPlayerSpawn;
+    }
+
+    void OnApplicationFocus(bool hasFocus) {
 		if (!GameState.isPaused)
 			Cursor.lockState = CursorLockMode.Locked;
 	}
@@ -141,16 +146,17 @@ public class PoS_Camera : MonoBehaviour {
 
 		{ // Contextual Offset
 			if (cameraBounce) {
-				targetWithOffset += contextualOffset.y * target.up * recoilOnImpact;
+				targetWithOffset += contextualOffset.y * target.up * recoilIntensity;
 				contextualOffset.y = Mathf.Lerp(contextualOffset.y, 0, deltaTime / smoothDamp);
 				if (Mathf.Abs(contextualOffset.y - 0) < .01f)
 					cameraBounce = false;
-
-			}
-			if (onEdgeOfCliff)
-				contextualOffset = Vector3.Lerp(contextualOffset, player.transform.forward * (Mathf.Max(0, pitch) / 20), deltaTime / 1);
+                // use impactFromSpeed (animCurve) to attenuate the impact on low speed
+                // impactFromSpeed on recoilOnImpact
+            }
+            if (onEdgeOfCliff)
+				contextualOffset = Vector3.Lerp(contextualOffset, player.transform.forward * (Mathf.Max(0, pitch) / 20), deltaTime / autoResetDamp);
 			else
-				contextualOffset = Vector3.Lerp(contextualOffset, Vector3.zero, deltaTime / 1);
+				contextualOffset = Vector3.Lerp(contextualOffset, Vector3.zero, deltaTime / autoResetDamp);
 			targetWithOffset += contextualOffset;
 		}
 
@@ -213,35 +219,31 @@ public class PoS_Camera : MonoBehaviour {
 	}
 	#endregion
 
-	void GetInputsAndStates() {
+    void OnPlayerSpawn(object sender, Game.Utilities.EventManager.OnPlayerSpawnedEventArgs args) {
+        PlaceBehindPlayerNoLerp();
+    }
+
+    void PlaceBehindPlayerNoLerp() {
+        currentDistance = distance;
+        yaw = GetYawBehindPlayer();
+        pitch = defaultPitch;
+        camRotation = my.rotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
+        negDistance.z = -currentDistance;
+        Vector3 targetWithOffset = target.position + my.right * offset.x + my.up * offset.y;
+        camPosition = my.position = my.rotation * negDistance + targetWithOffset;
+    }
+
+    void GetInputsAndStates() {
 		input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
 		input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
 
 		playerState = player.currentPlayerState;
 		playerVelocity = player.velocity;
-
-		//print(playerVelocity);
-
+        
 		targetSpace = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, target.up), Vector3.Cross(Vector3.up, target.up));
 
 		Vector3 groundNormal = controller.collisions.currentGroundNormal;
-		slopeValue = Vector3.SignedAngle(target.up, groundNormal, target.right);
-
-		float versLavantSlope = Vector3.Dot(target.up, groundNormal);
-
-		// Slope Value dépend de targetUp, groundNormal et targetRight
-
-		// On veut targetUp et groundNormal pour connaître l'angle de la pente
-		// mais
-		// On veut prendre cet angle en fonction de la vélocité du joueur sur l'axe z de la caméra
-		// Donc on le prend toujhours positif
-		// Si je vais vers l'avant (z>0) c'est une pente qui monte, donc l'angle est négatif
-		// Si je vais vers la caméra (z<0) c'est une pente qui descend, donc l'angle est positif
-		// Si je vais vers le côté (z=0) c'est du sol plat, donc l'angle est nul
-
-
-
-		//print(slopeValue + " ou alors peut être " + versLavantSlope);
+        slopeValue = Vector3.Dot(target.forward, groundNormal) * 60;
 
 		if (input.magnitude != 0) {
 			state = eCameraState.PlayerControl;
@@ -252,60 +254,49 @@ public class PoS_Camera : MonoBehaviour {
 			autoAdjustYaw = false;
 			autoDamp = smoothDamp;
 			lastInput = Time.time;
+            canAutoReset = true;
 
 		} else if (state != eCameraState.Resetting) {
-			if (Time.time > lastInput + timeBeforeAutoReset) // Si ça fait genre 5 secondes qu'on n'a pas touché à la caméra
-				manualPitch = Mathf.Lerp(manualPitch, defaultPitch - slopeValue, deltaTime / autoResetDamp);
-			// lentement remettre le manualPitch sur le defaultPitch quand on utilise pas les contrôles
+            if (canAutoReset && Time.time > lastInput + timeBeforeAutoReset && !onEdgeOfCliff) { // Si ça fait genre 5 secondes qu'on n'a pas touché à la caméra
+                state = eCameraState.Resetting;
+                SetTargetRotation(defaultPitch - slopeValue, GetYawBehindPlayer(), autoResetDamp);
+                manualPitch = defaultPitch - slopeValue;
+                canAutoReset = false;
 
-			if (playerState == ePlayerState.onGround) {
+            } else if (playerState == ePlayerState.onGround) {
 
 				// POUR LES BORDS
-
 				onEdgeOfCliff = !Physics.Raycast(target.position, player.transform.forward, 1, blockingLayer) 
-					&& !Physics.Raycast(target.position + player.transform.forward * cliffEdgeMaxWidth, -target.up, cliffMinDepth, blockingLayer);
+					         && !Physics.Raycast(target.position + player.transform.forward * cliffEdgeMaxWidth, 
+                                -target.up, cliffMinDepth, blockingLayer);
 
 				if (playerVelocity != Vector3.zero) {
 					state = eCameraState.Default;
-					autoAdjustYaw = false;
-					autoAdjustPitch = true;
-					autoDamp = resetDamp;
-
-					// POUR LES PENTES
-					targetPitch = slopeValue + manualPitch;
+                    SetTargetRotation(slopeValue + manualPitch, null, resetDamp);
 
 				} else {
 					state = eCameraState.Idle;
-					autoAdjustPitch = false;
-					autoAdjustYaw = false;
-				}
-
+                    SetTargetRotation(slopeValue + manualPitch, null, resetDamp);
+                }
 			} else {
 				state = eCameraState.Air;
 				autoAdjustPitch = false;
 				autoAdjustYaw = false;
 			}
-
 		}
 
 		if (playerState == ePlayerState.gliding) {
-			targetPitch = -2 * playerVelocity.y + defaultPitch;
-			targetYaw = GetYawBehindPlayer();
-			autoDamp = resetDamp;
-			autoAdjustPitch = true;
-			autoAdjustYaw = true;
+            SetTargetRotation(-2 * playerVelocity.y + defaultPitch, GetYawBehindPlayer(), resetDamp);
 			state = eCameraState.FollowBehind;
 		}
 
 		if (Input.GetButton("ResetCamera")) {
-			targetYaw = GetYawBehindPlayer();
-			targetPitch = defaultPitch;
 			manualPitch = defaultPitch;
 			manualYaw = targetYaw;
-
-			autoDamp = resetDamp;
-			autoAdjustPitch = true;
-			autoAdjustYaw = true;
+            lastInput = Time.time;
+            canAutoReset = true;
+            
+            SetTargetRotation(defaultPitch, GetYawBehindPlayer(), resetDamp);
 			state = eCameraState.Resetting;
 		}
 	}
@@ -329,12 +320,20 @@ public class PoS_Camera : MonoBehaviour {
 		camRotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
 	}
 
-	float targetYaw, targetPitch;
+    float targetYaw, targetPitch;
+    void SetTargetRotation(float? newTargetPitch, float? newTargetYaw, float damp) {
+        autoAdjustPitch = newTargetPitch != null;
+        autoAdjustYaw = newTargetYaw != null;
+        targetPitch = newTargetPitch ?? targetPitch;
+        targetYaw = newTargetYaw ?? targetYaw;
+        autoDamp = damp;
+    }
+
 	void AutomatedMovement() { // place camera behind
-		if (autoAdjustYaw)
+        if (autoAdjustPitch)
+            pitch = Mathf.LerpAngle(pitch, targetPitch, deltaTime / autoDamp);
+        if (autoAdjustYaw)
 			yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / autoDamp);
-		if (autoAdjustPitch)   
-			pitch = Mathf.LerpAngle(pitch, targetPitch, deltaTime / autoDamp);
 
 		if (state == eCameraState.Resetting) {
 			if ( ((autoAdjustYaw   && Mathf.Abs(Mathf.DeltaAngle(yaw,   targetYaw))   < 1f) || !autoAdjustYaw)
@@ -409,7 +408,8 @@ public class PoS_Camera : MonoBehaviour {
 	bool cameraBounce;
 
 	public void SetVerticalOffset(float verticalOffset) {
-		contextualOffset.y = -verticalOffset;
+        recoilIntensity = recoilOnImpact * verticalOffset;
+        contextualOffset.y = -verticalOffset;
 		cameraBounce = true;
 	}
 	#endregion
