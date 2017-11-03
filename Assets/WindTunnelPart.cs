@@ -7,12 +7,13 @@ public class WindTunnelPart : MonoBehaviour {
 	Player currentPlayer;
 	public float windStrength;
 	public float tunnelAttraction;
+	public int idInTunnel;
 
 	// Update is called once per frame
 	void Update () {
 		if (currentPlayer != null)
 		{
-			currentPlayer.AddExternalVelocity(transform.up*windStrength + Vector3.ProjectOnPlane(transform.position - currentPlayer.transform.position, transform.up)*tunnelAttraction, true);
+			currentPlayer.AddWindVelocity(transform.up*windStrength + Vector3.ProjectOnPlane(transform.position - currentPlayer.transform.position, transform.up)*tunnelAttraction);
 		}
 	}
 
@@ -21,6 +22,7 @@ public class WindTunnelPart : MonoBehaviour {
 	}
 
 	public void RemovePlayer(){
+		currentPlayer.ExitWindTunnel();
 		currentPlayer = null;
 	}
 }

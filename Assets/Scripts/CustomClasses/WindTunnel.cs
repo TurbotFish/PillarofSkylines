@@ -59,6 +59,7 @@ public class WindTunnel : BezierSpline {
 			currentPart.GetComponent<CapsuleCollider>().height = (nextPosition - position).magnitude/2;
 			currentPart.windStrength = windStrength;
 			currentPart.tunnelAttraction = tunnelAttraction;
+			currentPart.idInTunnel = i;
 		}
 	}
 }

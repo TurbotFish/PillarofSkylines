@@ -38,6 +38,11 @@ public class Player : MonoBehaviour {
 	[Tooltip("The speed at which the player model turns around (only visual, no gameplay incidence).")]
 	public float playerModelTurnSpeed = 4f;
 	/// <summary>
+	/// The speed at which the player model turns around in the air (only visual, no gameplay incidence).
+	/// </summary>
+	[Tooltip("The speed at which the player model turns around in the air (only visual, no gameplay incidence).")]
+	public float playerModelAerialTurnSpeed = 4f;
+	/// <summary>
 	/// The strength of the camera offset when the player lands on ground.
 	/// </summary>
 	[Tooltip("The strength of the camera offset when the player lands on ground.")]
@@ -300,6 +305,7 @@ public class Player : MonoBehaviour {
 	bool leftStickAtZero = false;
 
 	bool keepMomentum = false;
+	bool inWindTunnel = false;
 
 	Vector3 inputRaw;
 	Vector3 inputToCamera;
@@ -362,7 +368,8 @@ public class Player : MonoBehaviour {
 		//Turn the player in his last direction
 		if (inputRaw.magnitude > 0f) {
 			if (currentPlayerState != ePlayerState.gliding) {
-				transform.Rotate (transform.up, Mathf.Lerp (0f, Vector3.SignedAngle (transform.forward, Vector3.ProjectOnPlane (turnedVelocity, transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime), Space.World);
+				transform.Rotate (transform.up, Mathf.Lerp (0f, Vector3.SignedAngle (transform.forward, Vector3.ProjectOnPlane (inputToCamera, transform.up), transform.up), 
+					(currentPlayerState == ePlayerState.gliding ? playerModelAerialTurnSpeed : playerModelTurnSpeed) * Time.deltaTime), Space.World);
 			} else {
 				transform.Rotate (transform.up, glideHorizontalAngle, Space.World);
 			}
@@ -611,6 +618,20 @@ public class Player : MonoBehaviour {
 				break;
 				#endregion sliding
 
+				#region in wind tunnel
+			case ePlayerState.inWindTunnel:
+
+				keepMomentum = false;
+
+				targetVelocity = inputToCamera * characSpeed;
+				flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, airControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f));
+
+				if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash)) {
+					StartDash();
+				}
+				break;
+				#endregion in wind tunnel
+
 		}
 
 		velocity = new Vector3(0, velocity.y, 0);
@@ -639,8 +660,6 @@ public class Player : MonoBehaviour {
 			case ePlayerState.inAir:
 				if (controller.collisions.below) {
 					if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle){
-						Debug.Log("offset camera : " + new Vector2(0f, - TurnSpaceToLocal(controller.collisions.initialVelocityOnThisFrame).y * landingCameraOffsetStrength) + " y velocity = " + controller.collisions.initialVelocityOnThisFrame.y);
-                        //camera.temporaryOffset = new Vector2(0f, -controller.collisions.initialVelocityOnThisFrame.y * landingCameraOffsetStrength);
 						camera.SetVerticalOffset(-TurnSpaceToLocal(controller.collisions.initialVelocityOnThisFrame).y * landingCameraOffsetStrength);
 						currentPlayerState = ePlayerState.onGround;
 						if (leftStickAtZero) {
@@ -651,6 +670,8 @@ public class Player : MonoBehaviour {
 					} else if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < minWallAngle) {
 						currentPlayerState = ePlayerState.sliding;
 					}
+				} else if (inWindTunnel) {
+					currentPlayerState = ePlayerState.inWindTunnel;
 				}
 				break;
 
@@ -694,20 +715,13 @@ public class Player : MonoBehaviour {
 					keepMomentum = true;
 				}
 				break;
-		}
 
-		/*
-		if (currentPlayerState != ePlayerState.dashing) {
-			if (controller.collisions.below) {
-				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle){
-					currentPlayerState = Player.ePlayerState.sliding;
-				} else {
-					currentPlayerState = Player.ePlayerState.onGround;
+			case ePlayerState.inWindTunnel:
+				if (!inWindTunnel){
+					currentPlayerState = ePlayerState.inAir;
 				}
-			} else {
-				currentPlayerState = Player.ePlayerState.inAir;
-			}
-		}*/
+				break;
+		}
 		#endregion update state
 
 		#region update animator
@@ -751,12 +765,21 @@ public class Player : MonoBehaviour {
 		keepMomentum = true;
 	}
 
-	public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace){
-		velocity += (worldSpace? TurnSpaceToLocal(newVelocity) : newVelocity);
+	public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool framerateDependant){
+		velocity += (worldSpace? TurnSpaceToLocal(newVelocity) : newVelocity) * (framerateDependant ? Time.deltaTime : 1);
 	}
 
-	public void SetVelocity(Vector3 newVelocity, bool worldSpace){
-		velocity = (worldSpace? TurnSpaceToLocal(newVelocity) : newVelocity);
+	public void SetVelocity(Vector3 newVelocity, bool worldSpace, bool framerateDependant){
+		velocity = (worldSpace? TurnSpaceToLocal(newVelocity) : newVelocity) * (framerateDependant ? Time.deltaTime : 1);
+	}
+
+
+	public void AddWindVelocity(Vector3 newVelocity){
+		inWindTunnel = true;
+		velocity += TurnSpaceToLocal(newVelocity) * Time.deltaTime;
+	}
+	public void ExitWindTunnel(){
+		inWindTunnel = false;
 	}
 
 	public Vector3 TurnLocalToSpace(Vector3 vector){
@@ -765,6 +788,7 @@ public class Player : MonoBehaviour {
 	public Vector3 TurnSpaceToLocal(Vector3 vector){
 		return (Quaternion.AngleAxis (Vector3.Angle (Vector3.up, transform.up), Vector3.Cross (transform.up, Vector3.up))) * vector;
 	}
+
 
 	public void ChangeGravityDirection(Vector3 newGravity){
 		gravity = newGravity.normalized;
@@ -785,5 +809,6 @@ public enum ePlayerState {
 	onGround,
 	gliding,
 	dashing,
-	sliding
+	sliding, 
+	inWindTunnel
 }

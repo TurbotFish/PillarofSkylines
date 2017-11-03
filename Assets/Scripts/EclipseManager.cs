@@ -57,7 +57,7 @@ public class EclipseManager : MonoBehaviour {
 
 	IEnumerator ChangeGravity(bool eclipseOn){
 		float gravityTimer = 0;
-		player.SetVelocity(new Vector3(0f, 10f, 0f), false);
+		player.SetVelocity(new Vector3(0f, 10f, 0f), false, false);
 		while (gravityTimer < rotationDuration) {
 			if (eclipseOn) {
 				player.ChangeGravityDirection (Vector3.Lerp (regularGravity, eclipseGravity, gravityTimer / rotationDuration));
