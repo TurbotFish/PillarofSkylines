@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: a7a4902e7743f3c4e844c504f51a17e2
-timeCreated: 1509638920
+guid: 0827f081d57d6624cabc20c952ee5928
+timeCreated: 1509713885
 licenseType: Pro
 ModelImporter:
   serializedVersion: 21
@@ -9,8 +9,9 @@ ModelImporter:
     400000: //RootNode
     2300000: //RootNode
     3300000: //RootNode
-    4300000: SMB_groundDetail_A
+    4300000: SMB_wall_door
     6400000: //RootNode
+    9500000: //RootNode
   materials:
     importMaterials: 0
     materialName: 0
