@@ -72,8 +72,8 @@ namespace Game.Player
                 if (this.favourPickUpInRange)
                 {
                     //pick up favour
-                    this.favourPickUpCollider.enabled = false;
                     this.playerModel.Favours++;
+                    this.playerModel.SetFavourPickedUp(DetermineFavourId(this.favourPickUpCollider));
 
                     //play favour pick up animation
                     PlayMakerFSM[] temp = favourPickUpCollider.transform.parent.GetComponents<PlayMakerFSM>();
@@ -155,12 +155,15 @@ namespace Game.Player
                 {
                     //favour
                     case "Favour":
-                        this.favourPickUpInRange = true;
-                        this.favourPickUpCollider = other;
+                        string favourId = DetermineFavourId(other);
 
-                        
+                        if (!this.playerModel.IsFavourPickedUp(favourId))
+                        {
+                            this.favourPickUpInRange = true;
+                            this.favourPickUpCollider = other;
 
-                        ShowUiMessage("Press [X] to pick up a Favour!");
+                            ShowUiMessage("Press [X] to pick up a Favour!");
+                        }                       
                         break;
                     //pillar entrance
                     case "Pillar":
@@ -267,7 +270,7 @@ namespace Game.Player
             Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
         }
 
-        string DetermineFavourId(Collider favourCollider)
+        static string DetermineFavourId(Collider favourCollider)
         {
             return string.Format("{0}-{1}", favourCollider.name, favourCollider.transform.position);
         }

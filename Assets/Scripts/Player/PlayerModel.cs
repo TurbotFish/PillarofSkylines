@@ -322,7 +322,20 @@ namespace Game.Player
 
         public void SetFavourPickedUp(string favourId)
         {
+            if (!this.pickedUpFavours.Contains(favourId))
+            {
+                this.pickedUpFavours.Add(favourId);
+            }
+        }
 
+        public bool IsFavourPickedUp(string favourId)
+        {
+            if (this.pickedUpFavours.Contains(favourId))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         //###########################################################
