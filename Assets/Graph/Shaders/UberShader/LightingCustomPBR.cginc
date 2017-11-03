@@ -42,6 +42,12 @@
 		float _DitherDistMax;
 	#endif
 
+	#if defined(_DITHER_OBSTRUCTION)
+		float _DitherObstrMin;
+		float _DitherObstrMax;
+		float _DistFromCam;
+	#endif
+
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
 	#include "WindSystem.cginc"
@@ -85,7 +91,7 @@
 			float3 vertexLightColor : TEXCOORD6;
 		#endif
 
-		#if defined(_DISTANCE_DITHER)
+		#if defined(_DISTANCE_DITHER) || defined(_DITHER_OBSTRUCTION)
 			float4 screenPos : TEXCOORD7;
 		#endif
 	};
@@ -223,7 +229,7 @@
 		return color;
 	}
 
-	#if defined(_DISTANCE_DITHER)
+	#if defined(_DISTANCE_DITHER) || defined(_DITHER_OBSTRUCTION)
 		float Dither8x8Bayer( int x, int y )
 		{
 			const float dither[ 64 ] = {
@@ -254,7 +260,7 @@
 		i.pos = UnityObjectToClipPos(v.vertex);
 		i.worldPos.xyz = mul(unity_ObjectToWorld, v.vertex);
 
-		#if defined(_DISTANCE_DITHER)
+		#if defined(_DISTANCE_DITHER) || defined(_DITHER_OBSTRUCTION)
 			i.screenPos = ComputeScreenPos(i.pos);
 		#endif
 
@@ -463,18 +469,29 @@
 			clip(alpha - _AlphaCutoff);
 		#endif
 
-		InitializeFragmentNormal(i);
-		//i.normal = normalize(i.normal);
 		float3 viewVec = _WorldSpaceCameraPos - i.worldPos.xyz;
 		float3 viewDir = normalize(viewVec);
 
-		#if defined(_DISTANCE_DITHER)
+		#if defined(_DISTANCE_DITHER) || defined(_DITHER_OBSTRUCTION)
 			float2 clipScreen = (i.screenPos.xy / i.screenPos.w) * _ScreenParams.xy;
-			float temp = dot(viewVec, viewVec);
-			float dist2Cam = 1 - saturate((temp - _DitherDistMin) / (_DitherDistMax - _DitherDistMin));
+			float sqrViewDist = dot(viewVec, viewVec);
 			float bayer = Dither8x8Bayer(fmod(clipScreen.x,8), fmod(clipScreen.y,8));
-			clip(dist2Cam - bayer);
+
+			#if defined(_DITHER_OBSTRUCTION)
+				float obstrCamDist = saturate((_DistFromCam - _DitherObstrMin)/(_DitherObstrMax - _DitherObstrMin));
+				clip(obstrCamDist - bayer);
+			#endif
+
+
+			#if defined(_DISTANCE_DITHER)
+				float dist2Cam = 1 - saturate((sqrViewDist - _DitherDistMin) / (_DitherDistMax - _DitherDistMin));
+				clip(dist2Cam - bayer);
+			#endif
 		#endif
+
+		InitializeFragmentNormal(i);
+		//i.normal = normalize(i.normal);
+
 
 
 		float3 specularTint;

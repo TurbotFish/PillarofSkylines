@@ -48,6 +48,10 @@ Shader "Alo/PBR/CustomPBR" {
 
 		_DitherDistMin ("Dither Distance Min", Float) = 1.5
 		_DitherDistMax ("Dither Distance Max", Float) = 5
+
+		_DitherObstrMin ("Dither Obstruction Min", Float) = 0.3
+		_DitherObstrMax ("Dither Obstruction Max", Float) = 1
+		_DistFromCam ("Distance From Camera", Float) = 0
 	}
 
 	CGINCLUDE
@@ -97,6 +101,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma multi_compile _ SHADOWS_SCREEN
 			#pragma multi_compile _ VERTEXLIGHT_ON
 			#pragma multi_compile_fog
+			#pragma multi_compile _ _DITHER_OBSTRUCTION
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
@@ -140,6 +145,7 @@ Shader "Alo/PBR/CustomPBR" {
 
 			#pragma multi_compile_fwdadd_fullshadows
 			#pragma multi_compile_fog
+			#pragma multi_compile _ _DITHER_OBSTRUCTION
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
@@ -183,6 +189,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ _CELSHADED
 
 			#pragma multi_compile _ UNITY_HDR_ON
+			#pragma multi_compile _ _DITHER_OBSTRUCTION
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
