@@ -91,7 +91,8 @@ public class ThirdPersonController : MonoBehaviour {
 
     void Impact() {
         float impactStrength = Mathf.Min(reachedMaxFallingSpeed * fallImpact + impact.min, impact.max);
-        camera.temporaryOffset = new Vector2(0, -impactStrength);
+        //camera.temporaryOffset = new Vector2(0, -impactStrength);
+        camera.SetVerticalOffset(-impactStrength);
     }
     #endregion
     

@@ -110,7 +110,6 @@ public class CharacControllerRecu : MonoBehaviour {
 					, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + (destination - myTransform.position), radius, collisionMaskNoCloud)) {
 					myTransform.Translate (destination - myTransform.position, Space.World);
 					finalVelocity = (Quaternion.AngleAxis (Vector3.Angle (transform.up, Vector3.up), Vector3.Cross (transform.up, Vector3.up))) * (velocity) / Time.deltaTime;
-					Debug.Log ("adjusted position");
 				}
 			} else {
 				finalVelocity = Vector3.zero;
@@ -148,7 +147,6 @@ public class CharacControllerRecu : MonoBehaviour {
 		}
 		collisions.side = Physics.SphereCast (myTransform.position  + playerAngle * center - (collisions.initialVelocityOnThisFrame.normalized * skinWidth*2), radius, Vector3.ProjectOnPlane(collisions.initialVelocityOnThisFrame, myTransform.up), out hit, skinWidth*4, collisionMask);
 		if (collisions.side) {
-			Debug.Log ("ya un mur");
 			collisions.currentWallNormal = hit.normal;
 		}
 	}

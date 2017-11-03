@@ -639,8 +639,9 @@ public class Player : MonoBehaviour {
 			case ePlayerState.inAir:
 				if (controller.collisions.below) {
 					if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle){
-						Debug.Log("offset camera : " + new Vector2(0f, -TurnSpaceToLocal(controller.collisions.initialVelocityOnThisFrame).y * landingCameraOffsetStrength) + " y velocity = " + TurnSpaceToLocal(controller.collisions.initialVelocityOnThisFrame).y);
-						camera.temporaryOffset = new Vector2(0f, -TurnSpaceToLocal(controller.collisions.initialVelocityOnThisFrame).y * landingCameraOffsetStrength);
+						Debug.Log("offset camera : " + new Vector2(0f, - TurnSpaceToLocal(controller.collisions.initialVelocityOnThisFrame).y * landingCameraOffsetStrength) + " y velocity = " + controller.collisions.initialVelocityOnThisFrame.y);
+                        //camera.temporaryOffset = new Vector2(0f, -controller.collisions.initialVelocityOnThisFrame.y * landingCameraOffsetStrength);
+						camera.SetVerticalOffset(-TurnSpaceToLocal(controller.collisions.initialVelocityOnThisFrame).y * landingCameraOffsetStrength);
 						currentPlayerState = ePlayerState.onGround;
 						if (leftStickAtZero) {
 							velocity = Vector3.zero;

@@ -3,7 +3,7 @@
 Shader "Alo/PBR/CustomPBR" {
 
 	Properties {
-		_Tint ("Tint", Color) = (1.0,1.0,1.0,1.0)
+		_Color ("Tint", Color) = (1.0,1.0,1.0,1.0)
 		_MainTex ("Albedo", 2D) = "white"{}
 
 		[NoScaleOffset] _NormalMap ("Normals", 2D) = "bump"{}
@@ -42,6 +42,9 @@ Shader "Alo/PBR/CustomPBR" {
 		[HideInspector] _SrcBlend ("_SrcBlend", Float) = 1
 		[HideInspector] _DstBlend ("_DstBlend", Float) = 0
 		[HideInspector] _ZWrite ("_ZWrite", Float) = 1
+
+		_NormalDistFull ("Normal Distance Full", Float) = 1.2
+		_NormalDistCulled ("Normal Distance Culled", Float) = 1.4
 	}
 
 	CGINCLUDE
@@ -54,10 +57,15 @@ Shader "Alo/PBR/CustomPBR" {
 
 	SubShader {
 
+		Tags {
+			"RenderType" = "Opaque"
+		}
+
 
 		Pass {
 			Tags {
 				"LightMode" = "ForwardBase"
+
 			}
 			Blend [_SrcBlend] [_DstBlend]
 			ZWrite [_ZWrite]
@@ -78,7 +86,8 @@ Shader "Alo/PBR/CustomPBR" {
 
 			#pragma shader_feature _ _CELSHADED
 			#pragma shader_feature _ _SSS
-
+			#pragma shader_feature _ _LOCAL_NORMAL_DEBUG
+			#pragma shader_feature _ NORMAL_DISTANCE_FADE
 
 			#pragma multi_compile _ SHADOWS_SCREEN
 			#pragma multi_compile _ VERTEXLIGHT_ON
@@ -120,6 +129,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 			#pragma shader_feature _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
 			#pragma shader_feature _ _SSS
+			#pragma shader_feature _ NORMAL_DISTANCE_FADE
 
 			#pragma multi_compile_fwdadd_fullshadows
 			#pragma multi_compile_fog
@@ -139,6 +149,8 @@ Shader "Alo/PBR/CustomPBR" {
 			Blend [_SrcBlend] [_DstBlend]
 			ZWrite [_ZWrite]
 
+			Cull [_Cull]
+
 			CGPROGRAM
 
 			#pragma target 3.0
@@ -155,7 +167,10 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ _RENDERING_CUTOUT
 			#pragma shader_feature _ _SSS
 			#pragma shader_feature _ _SSSColour2
+			#pragma shader_feature _CULL_BACK _CULL_FRONT _CULL_OFF
+			#pragma shader_feature _LOCAL_NORMAL_DEBUG
 			#pragma shader_feature _ CHECKER_DEBUG
+			#pragma shader_feature _ NORMAL_DISTANCE_FADE
 
 			#pragma shader_feature _ _CELSHADED
 
