@@ -611,7 +611,6 @@ public class Player : MonoBehaviour {
 		#endregion direction calculations
 
 
-		Debug.Log("before y velocity = " + velocity.y);
 		//Turns the velocity in world space and calls the controller to check if the calculated velocity will run into walls and stuff
 		turnedVelocity = TurnLocalToSpace(velocity);
 		if (currentPlayerState == ePlayerState.gliding) {
@@ -633,7 +632,8 @@ public class Player : MonoBehaviour {
 				if (controller.collisions.below) {
 					if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle){
 						Debug.Log("offset camera : " + new Vector2(0f, -controller.collisions.initialVelocityOnThisFrame.y * landingCameraOffsetStrength) + " y velocity = " + controller.collisions.initialVelocityOnThisFrame.y);
-						camera.temporaryOffset = new Vector2(0f, -controller.collisions.initialVelocityOnThisFrame.y * landingCameraOffsetStrength);
+                        //camera.temporaryOffset = new Vector2(0f, -controller.collisions.initialVelocityOnThisFrame.y * landingCameraOffsetStrength);
+                        camera.SetVerticalOffset(-controller.collisions.initialVelocityOnThisFrame.y * landingCameraOffsetStrength);
 						currentPlayerState = ePlayerState.onGround;
 						if (leftStickAtZero) {
 							velocity = Vector3.zero;

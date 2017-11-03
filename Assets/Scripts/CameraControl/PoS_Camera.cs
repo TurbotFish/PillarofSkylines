@@ -11,7 +11,7 @@ public class PoS_Camera : MonoBehaviour {
     public enum eCameraState {
         Default, Idle, PlayerControl,
         Resetting, AroundCorner, FollowBehind,
-        Slope, Jump
+        Slope, Air
     }
 
     [Header("Position")]
@@ -34,16 +34,20 @@ public class PoS_Camera : MonoBehaviour {
 
     [Header("Behaviour")]
     public bool followBehind;
-    public float recoilOnImpact = 20;
     public float timeBeforeAutoReset = 5;
     public float autoResetDamp = 1;
+
+    public float recoilOnImpact = 20;
+    //public AnimationCurve impactFromSpeed;
 
     public MinMax distanceBasedOnPitch = new MinMax(1, 12);
     public AnimationCurve distanceFromRotation;
 
     public MinMax fovBasedOnPitch = new MinMax(60, 75);
     public AnimationCurve fovFromRotation;
-    
+
+    public float cliffEdgeMaxWidth = 2;
+    public float cliffMinDepth = 5;
 
     [Header("Collision")]
     public float rayRadius = .2f;
@@ -82,7 +86,7 @@ public class PoS_Camera : MonoBehaviour {
     float manualPitch, manualYaw;
     float slopeValue;
     bool resetting, autoAdjustYaw, autoAdjustPitch;
-    bool placedByPlayer;
+    bool placedByPlayer, onEdgeOfCliff;
 
     #endregion
 
@@ -135,12 +139,19 @@ public class PoS_Camera : MonoBehaviour {
 		negDistance.z = -currentDistance;
 		Vector3 targetWithOffset = targetPos + my.right * offset.x + my.up * offset.y;
 
-        if (offsetOverriden) { // temporary camera offset
-            //targetWithOffset.x += _tempOffset.x;
-            targetWithOffset.y -= _tempOffset.y * recoilOnImpact;
-            _tempOffset = Vector2.Lerp(_tempOffset, Vector2.zero, deltaTime / smoothDamp);
-            if (Vector2.Distance(_tempOffset, Vector2.zero) < .01f)
-                offsetOverriden = false;
+        { // Contextual Offset
+            if (cameraBounce) {
+                targetWithOffset += contextualOffset.y * target.up * recoilOnImpact;
+                contextualOffset.y = Mathf.Lerp(contextualOffset.y, 0, deltaTime / smoothDamp);
+                if (Mathf.Abs(contextualOffset.y - 0) < .01f)
+                    cameraBounce = false;
+
+            }
+            if (onEdgeOfCliff)
+                contextualOffset = Vector3.Lerp(contextualOffset, player.transform.forward * (Mathf.Max(0, pitch) / 20), deltaTime / 1);
+            else
+                contextualOffset = Vector3.Lerp(contextualOffset, Vector3.zero, deltaTime / 1);
+            targetWithOffset += contextualOffset;
         }
 
         camPosition = camRotation * negDistance + targetWithOffset;
@@ -208,12 +219,30 @@ public class PoS_Camera : MonoBehaviour {
 
         playerState = player.currentPlayerState;
         playerVelocity = player.velocity;
-        
+
+        print(playerVelocity);
+
         targetSpace = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, target.up), Vector3.Cross(Vector3.up, target.up));
 
         Vector3 groundNormal = controller.collisions.currentGroundNormal;
         slopeValue = Vector3.SignedAngle(target.up, groundNormal, target.right);
-        
+
+        float versLavantSlope = Vector3.Dot(target.up, groundNormal);
+
+        // Slope Value dépend de targetUp, groundNormal et targetRight
+
+        // On veut targetUp et groundNormal pour connaître l'angle de la pente
+        // mais
+        // On veut prendre cet angle en fonction de la vélocité du joueur sur l'axe z de la caméra
+        // Donc on le prend toujhours positif
+        // Si je vais vers l'avant (z>0) c'est une pente qui monte, donc l'angle est négatif
+        // Si je vais vers la caméra (z<0) c'est une pente qui descend, donc l'angle est positif
+        // Si je vais vers le côté (z=0) c'est du sol plat, donc l'angle est nul
+
+
+
+        print(slopeValue + " ou alors peut être " + versLavantSlope);
+
         if (input.magnitude != 0) {
             state = eCameraState.PlayerControl;
             resetting = false;
@@ -224,16 +253,19 @@ public class PoS_Camera : MonoBehaviour {
             autoDamp = smoothDamp;
             lastInput = Time.time;
 
-        } else {
-            if (Time.time > lastInput + timeBeforeAutoReset) { // Si ça fait genre 5 secondes qu'on n'a pas touché à la caméra
-                // lentement remettre le manualPitch sur le defaultPitch quand on utilise pas les contrôles
-                manualPitch = Mathf.Lerp(manualPitch, defaultPitch, deltaTime / autoResetDamp);
-            }
+        } else if (state != eCameraState.Resetting) {
+            if (Time.time > lastInput + timeBeforeAutoReset) // Si ça fait genre 5 secondes qu'on n'a pas touché à la caméra
+                manualPitch = Mathf.Lerp(manualPitch, defaultPitch - slopeValue, deltaTime / autoResetDamp);
+            // lentement remettre le manualPitch sur le defaultPitch quand on utilise pas les contrôles
 
+            if (playerState == ePlayerState.onGround) {
 
-            if (state != eCameraState.Resetting) {
+                // POUR LES BORDS
 
-                if (playerVelocity != Vector3.zero && playerState == ePlayerState.onGround) {
+                onEdgeOfCliff = !Physics.Raycast(target.position, player.transform.forward, 1, blockingLayer) 
+                    && !Physics.Raycast(target.position + player.transform.forward * cliffEdgeMaxWidth, -target.up, cliffMinDepth, blockingLayer);
+
+                if (playerVelocity != Vector3.zero) {
                     state = eCameraState.Default;
                     autoAdjustYaw = false;
                     autoAdjustPitch = true;
@@ -247,7 +279,13 @@ public class PoS_Camera : MonoBehaviour {
                     autoAdjustPitch = false;
                     autoAdjustYaw = false;
                 }
+
+            } else {
+                state = eCameraState.Air;
+                autoAdjustPitch = false;
+                autoAdjustYaw = false;
             }
+
         }
         
         if (playerState == ePlayerState.gliding) {
@@ -367,18 +405,12 @@ public class PoS_Camera : MonoBehaviour {
     }
 
     #region Temporary Offset
-    Vector2 _tempOffset;
-    bool offsetOverriden;
-    public Vector2 temporaryOffset {
-        set {
-            _tempOffset = value;
-            offsetOverriden = true;
-        }
-    }
+    Vector3 contextualOffset;
+    bool cameraBounce;
 
     public void SetVerticalOffset(float verticalOffset) {
-        _tempOffset.y = verticalOffset;
-        offsetOverriden = true;
+        contextualOffset.y = -verticalOffset;
+        cameraBounce = true;
     }
     #endregion
     
