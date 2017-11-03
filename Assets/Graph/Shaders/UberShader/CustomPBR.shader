@@ -171,6 +171,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _LOCAL_NORMAL_DEBUG
 			#pragma shader_feature _ CHECKER_DEBUG
 			#pragma shader_feature _ NORMAL_DISTANCE_FADE
+			#pragma shader_feature _ _DISTANCE_DITHER
 
 			#pragma shader_feature _ _CELSHADED
 

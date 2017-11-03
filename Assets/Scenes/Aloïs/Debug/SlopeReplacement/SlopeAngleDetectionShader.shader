@@ -58,7 +58,7 @@
 			//float4 slopeColour = tex2D(_RampTex, float2(_Green, 0.5));
 
 			if(_Green < 0.95){
-				slopeColour = float4(0.73,0.11,0.11,1);//wrong slope
+				slopeColour = float4(0.5,0.91,0.3,1);//wrong slope
 			}
 
 			if(_Green <= 0.85){
