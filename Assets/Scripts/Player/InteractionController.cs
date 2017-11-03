@@ -158,13 +158,15 @@ namespace Game.Player
                         this.favourPickUpInRange = true;
                         this.favourPickUpCollider = other;
 
+                        
+
                         ShowUiMessage("Press [X] to pick up a Favour!");
                         break;
                     //pillar entrance
                     case "Pillar":
                         var pillarEntrance = other.GetComponent<World.Interaction.PillarEntrance>();
 
-                        if (!this.playerModel.IsPillarDestroyed(pillarEntrance.PillarId) && this.playerModel.Favours >= pillarEntrance.EntryPrice)
+                        if (!this.playerModel.IsPillarDestroyed(pillarEntrance.PillarId) && this.playerModel.Favours >= this.playerModel.PillarData.GetPillarEntryPrice(pillarEntrance.PillarId))
                         {
                             this.pillarEntranceInfo.IsPillarEntranceInRange = true;
                             this.pillarEntranceInfo.CurrentPillarEntrance = pillarEntrance;
@@ -263,6 +265,11 @@ namespace Game.Player
         void HideUiMessage()
         {
             Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
+        }
+
+        string DetermineFavourId(Collider favourCollider)
+        {
+            return string.Format("{0}-{1}", favourCollider.name, favourCollider.transform.position);
         }
 
         #endregion helper methods

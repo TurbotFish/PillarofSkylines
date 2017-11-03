@@ -48,13 +48,14 @@ namespace Game.Player
             }
         }
 
-        //
+        //ability variables
         List<eAbilityGroup> unlockedAbilityGroups = new List<eAbilityGroup>();
         List<eAbilityType> activatedAbilities = new List<eAbilityType>();
         List<eAbilityType> flaggedAbilities = new List<eAbilityType>();
 
         //
         List<World.ePillarId> destoyedPillars = new List<World.ePillarId>();
+        List<string> pickedUpFavours = new List<string>();
 
 
         //###########################################################
@@ -317,6 +318,11 @@ namespace Game.Player
             }
 
             return false;
+        }
+
+        public void SetFavourPickedUp(string favourId)
+        {
+
         }
 
         //###########################################################

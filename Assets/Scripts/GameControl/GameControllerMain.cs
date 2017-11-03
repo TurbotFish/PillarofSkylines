@@ -278,6 +278,18 @@ namespace Game.GameControl
             return result;
         }
 
+        static List<T> SearchForScriptsInScene<T>(Scene scene) where T: class
+        {
+            var result = new List<T>();
+
+            foreach(var gameObject in scene.GetRootGameObjects())
+            {
+                result.AddRange(gameObject.GetComponentsInChildren<T>());
+            }
+
+            return result;
+        }
+
         static void CleanScene(Scene scene)
         {
             var gameControllerLite = SearchForScriptInScene<GameControllerLite>(scene);
@@ -296,6 +308,13 @@ namespace Game.GameControl
             if (sceneCamera != null)
             {
                 Destroy(sceneCamera.gameObject);
+            }
+
+            //cleaning up old EchoManagers
+            var echoManagers = SearchForScriptsInScene<EchoManager>(scene);
+            foreach(var echoManager in echoManagers)
+            {
+                Destroy(echoManager.gameObject);
             }
         }
 

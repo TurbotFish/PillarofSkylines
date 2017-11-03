@@ -16,6 +16,8 @@ namespace Game.GameControl
         Player.PlayerModel playerModel;
         public Player.PlayerModel PlayerModel { get { return this.playerModel; } }
 
+        EchoManager echoManager;
+
         //###############################################################
         //###############################################################
 
@@ -24,6 +26,8 @@ namespace Game.GameControl
             //
             this.playerModel = GetComponentInChildren<Player.PlayerModel>();
             this.playerModel.InitializePlayerModel();
+
+            this.echoManager = GetComponentInChildren<EchoManager>();
 
             //
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
@@ -37,6 +41,16 @@ namespace Game.GameControl
             if (worldController != null)
             {
                 worldController.InitializeWorldController(player.transform);
+            }
+
+            //cleaning up, just in case
+            var echoManagers = FindObjectsOfType<EchoManager>();
+            foreach(var echoManager in echoManagers)
+            {
+                if(echoManager != this.echoManager)
+                {
+                    Destroy(echoManager.gameObject);
+                }
             }
         }
 
