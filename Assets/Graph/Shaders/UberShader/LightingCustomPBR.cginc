@@ -48,6 +48,11 @@
 		float _DistFromCam;
 	#endif
 
+	#if defined(_REFRACTION)
+		sampler2D _BackgroundTex;
+		float _RefractionAmount;
+	#endif
+
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
 	#include "WindSystem.cginc"
@@ -93,6 +98,11 @@
 
 		#if defined(_DISTANCE_DITHER) || defined(_DITHER_OBSTRUCTION)
 			float4 screenPos : TEXCOORD7;
+		#endif
+
+		#if defined(_REFRACTION)
+			float4 grabPos : TEXCOORD8;
+			float4 refraction : TEXCOORD9;
 		#endif
 	};
 
@@ -266,6 +276,11 @@
 
 		#if FOG_DEPTH
 			i.worldPos.w = i.pos.z;
+		#endif
+
+		#if defined(_REFRACTION)
+			i.grabPos = ComputeGrabScreenPos(i.pos);
+			i.refraction = mul(unity_ObjectToWorld, float4(-v.normal.xy, v.normal.z, 1)) * _RefractionAmount;
 		#endif
 
 
@@ -510,6 +525,16 @@
 		#if defined(_RENDERING_TRANSPARENT)
 			albedo *= alpha;
 			alpha = 1 - oneMinusReflectivity + alpha * oneMinusReflectivity;
+		#endif
+
+		#if defined(_REFRACTION)
+			#if defined(_SSS)
+					float4 refracColour = tex2Dproj(_BackgroundTex, UNITY_PROJ_COORD(i.grabPos + i.refraction * GetThickness(i)));
+
+				#else
+					float4 refracColour = tex2Dproj(_BackgroundTex, UNITY_PROJ_COORD(i.grabPos + i.refraction));
+				#endif
+			albedo *= refracColour;
 		#endif
 
 

@@ -18,6 +18,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoRenderingMode ();
 		DoCulling ();
 		DoCelShading ();
+		DoRefraction ();
 		DoSubSurfaceScattering ();
 		DoMain ();
 		DoSecondary ();
@@ -357,6 +358,49 @@ public class CustomPBR_GUI : ShaderGUI {
 		}
 	}
 
+	void DoRefraction(){
+		GUILayout.Label ("Refraction", EditorStyles.boldLabel);
+
+		RenderingMode mode = RenderingMode.Opaque;
+		if (IsKeywordEnabled ("_RENDERING_CUTOUT")) {
+			mode = RenderingMode.Cutout;
+			shouldShowAlphaCutoff = true;
+		} else if (IsKeywordEnabled ("_RENDERING_FADE")) {
+			mode = RenderingMode.Fade;	
+		} else if (IsKeywordEnabled ("_RENDERING_TRANSPARENT")) {
+			mode = RenderingMode.Transparent;	
+		}
+
+
+		MaterialProperty refracAmount = FindProperty ("_RefractionAmount");
+
+		if (mode != RenderingMode.Transparent) {
+			SetKeyword ("_REFRACTION", false);
+		}
+
+		EditorGUI.BeginChangeCheck ();
+		bool refrac = EditorGUILayout.Toggle ("Refraction", IsKeywordEnabled ("_REFRACTION"));
+
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_REFRACTION", refrac);
+			SetKeyword ("_RENDERING_TRANSPARENT", refrac);
+
+			RenderingSettings settings = RenderingSettings.modes [refrac ? 4 : 0];
+			foreach (Material m in editor.targets) {
+				m.SetShaderPassEnabled ("Always", refrac);
+				m.renderQueue = (int)settings.queue;
+				m.SetOverrideTag ("RenderType", settings.renderType);
+				m.SetInt ("_SrcBlend", (int)settings.srcBlend);
+				m.SetInt ("_DstBlend", (int)settings.dstBlend);
+				m.SetInt ("_ZWrite", settings.zWrite ? 1 : 0);
+			}
+		}
+
+		if (refrac) {
+			editor.ShaderProperty (refracAmount, MakeLabel (refracAmount));
+		}
+	}
+
 	void DoCheckerDebug(){
 
 		EditorGUI.BeginChangeCheck ();
@@ -422,6 +466,14 @@ public class CustomPBR_GUI : ShaderGUI {
 				srcBlend = BlendMode.One,
 				dstBlend = BlendMode.OneMinusSrcAlpha,
 				zWrite = false
+			},
+			//special refraction setting
+			new RenderingSettings(){
+				queue = RenderQueue.Transparent,
+				renderType = "Custom",
+				srcBlend = BlendMode.One,
+				dstBlend = BlendMode.Zero,
+				zWrite = true
 			}
 		};
 	}

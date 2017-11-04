@@ -52,6 +52,8 @@ Shader "Alo/PBR/CustomPBR" {
 		_DitherObstrMin ("Dither Obstruction Min", Float) = 0.3
 		_DitherObstrMax ("Dither Obstruction Max", Float) = 1
 		_DistFromCam ("Distance From Camera", Float) = 0
+
+		_RefractionAmount ("Refraction Amount", Range(-0.1,0.1)) = 0
 	}
 
 	CGINCLUDE
@@ -66,6 +68,11 @@ Shader "Alo/PBR/CustomPBR" {
 
 		Tags {
 			"RenderType" = "Opaque"
+		}
+
+		GrabPass{
+			Tags{ "LightMode" = "Always"}
+			"_BackgroundTex"
 		}
 
 
@@ -97,6 +104,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ NORMAL_DISTANCE_FADE
 			#pragma shader_feature _ _DISTANCE_DITHER
 			#pragma shader_feature _CULL_BACK _CULL_FRONT _CULL_OFF
+			#pragma shader_feature _ _REFRACTION
 
 			#pragma multi_compile _ SHADOWS_SCREEN
 			#pragma multi_compile _ VERTEXLIGHT_ON
@@ -142,6 +150,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ NORMAL_DISTANCE_FADE
 			#pragma shader_feature _ _DISTANCE_DITHER
 			#pragma shader_feature _CULL_BACK _CULL_FRONT _CULL_OFF
+			#pragma shader_feature _ _REFRACTION
 
 			#pragma multi_compile_fwdadd_fullshadows
 			#pragma multi_compile_fog
@@ -187,6 +196,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ _DISTANCE_DITHER
 
 			#pragma shader_feature _ _CELSHADED
+			#pragma shader_feature _ _REFRACTION
 
 			#pragma multi_compile _ UNITY_HDR_ON
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
