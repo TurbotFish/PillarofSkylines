@@ -111,10 +111,10 @@ public class PoS_Camera : MonoBehaviour {
     }
 
     private void OnEnable() {
-        Game.Utilities.EventManager.OnPlayerSpawnedEvent += OnPlayerSpawn;
+        Game.Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayer;
     }
     private void OnDisable() {
-        Game.Utilities.EventManager.OnPlayerSpawnedEvent -= OnPlayerSpawn;
+        Game.Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayer;
     }
 
     void OnApplicationFocus(bool hasFocus) {
@@ -219,8 +219,17 @@ public class PoS_Camera : MonoBehaviour {
 	}
 	#endregion
 
-    void OnPlayerSpawn(object sender, Game.Utilities.EventManager.OnPlayerSpawnedEventArgs args) {
-        PlaceBehindPlayerNoLerp();
+    void OnTeleportPlayer(object sender, Game.Utilities.EventManager.OnTeleportPlayerEventArgs args) {
+        if (args.IsNewScene)
+        {
+            PlaceBehindPlayerNoLerp();
+        }
+        else
+        {
+            negDistance.z = -currentDistance;
+            Vector3 targetWithOffset = args.Position + my.right * offset.x + my.up * offset.y;
+            camPosition = my.position = my.rotation * negDistance + targetWithOffset;
+        }
     }
 
     void PlaceBehindPlayerNoLerp() {

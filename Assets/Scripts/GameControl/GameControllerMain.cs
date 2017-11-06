@@ -146,7 +146,9 @@ namespace Game.GameControl
 
 
             //starting the game
-            Utilities.EventManager.SendOnPlayerSpawnedEvent(this, new Utilities.EventManager.OnPlayerSpawnedEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnPoint()));
+            var teleportPlayerEventArgs = new Utilities.EventManager.OnTeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnPoint(), true);
+            Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
+
             Utilities.EventManager.SendOnSceneChangedEvent(this, new Utilities.EventManager.OnSceneChangedEventArgs());
             Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.Intro));
         }
@@ -195,7 +197,9 @@ namespace Game.GameControl
             yield return null;
 
             //
-            Utilities.EventManager.SendOnPlayerSpawnedEvent(this, new Utilities.EventManager.OnPlayerSpawnedEventArgs(info.SpawnPointManager.GetInitialSpawnPoint()));
+            var teleportPlayerEventArgs = new Utilities.EventManager.OnTeleportPlayerEventArgs(info.SpawnPointManager.GetInitialSpawnPoint(), true);
+            Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
+
             Utilities.EventManager.SendOnSceneChangedEvent(this, new Utilities.EventManager.OnSceneChangedEventArgs(pillarId));
 
             yield return new WaitForSeconds(0.1f);
@@ -243,8 +247,8 @@ namespace Game.GameControl
             yield return null;
 
             //
-            var playerSpawnedEventArgs = new Utilities.EventManager.OnPlayerSpawnedEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetPillarExitPoint(this.activePillarId));
-            Utilities.EventManager.SendOnPlayerSpawnedEvent(this, playerSpawnedEventArgs);
+            var teleportPlayerEventArgs = new Utilities.EventManager.OnTeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetPillarExitPoint(this.activePillarId), true);
+            Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
             Utilities.EventManager.SendOnSceneChangedEvent(this, new Utilities.EventManager.OnSceneChangedEventArgs());
 
