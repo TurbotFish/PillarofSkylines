@@ -8,7 +8,9 @@ namespace Game.Player.UI {
         bool IsActive { get; }
 
         void Initialize(PlayerModel playerModel);
-        void Activate();
+
+        void Activate(Utilities.EventManager.OnShowMenuEventArgs args);
+
         void Deactivate();
     }
 }

@@ -10,13 +10,13 @@ namespace Game.Player
     /// </summary>
     public class PlayerController : MonoBehaviour
     {
-        //[SerializeField]
         global::Player player;
         public global::Player Player { get { return this.player; } }
 
-        //[SerializeField]
-        InteractionController favourController;
-        public InteractionController FavourController { get { return this.favourController; } }      
+        InteractionController interactionController;
+        public InteractionController InteractionController { get { return this.interactionController; } }
+
+        WrappableObject wrappableObject;
 
         /// <summary>
         /// Initializes the Player Prefab with references to outside scripts.
@@ -24,11 +24,13 @@ namespace Game.Player
         /// <param name="gameController"></param>
         public void InitializePlayerController(GameControl.IGameControllerBase gameController)
         {
-			this.player = transform.GetComponent<global::Player> ();
-			this.favourController = GetComponentInChildren<InteractionController> ();
+			this.player = this.transform.GetComponent<global::Player> ();
+			this.interactionController = GetComponentInChildren<InteractionController> ();
+            this.wrappableObject = this.transform.GetComponent<WrappableObject>();
 
             this.player.InitializePlayer(gameController.PlayerModel);
-            this.favourController.InitializeFavourController(gameController.PlayerModel, player);
+            this.interactionController.InitializeFavourController(gameController.PlayerModel, player);
+            this.wrappableObject.InitializeWrappableObject(gameController.WorldController);
         }
     }
 }

@@ -72,8 +72,8 @@ namespace Game.Player
                 if (this.favourPickUpInRange)
                 {
                     //pick up favour
-                    this.favourPickUpCollider.enabled = false;
                     this.playerModel.Favours++;
+                    this.playerModel.SetFavourPickedUp(DetermineFavourId(this.favourPickUpCollider));
 
                     //play favour pick up animation
                     PlayMakerFSM[] temp = favourPickUpCollider.transform.parent.GetComponents<PlayMakerFSM>();
@@ -94,7 +94,7 @@ namespace Game.Player
                 //pillar entrance
                 else if (this.pillarEntranceInfo.IsPillarEntranceInRange)
                 {
-                    Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.End));
+                    Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowPillarEntranceMenuEventArgs(this.pillarEntranceInfo.CurrentPillarEntrance.PillarId));
                 }
                 else if (this.needleInRange)
                 {
@@ -155,16 +155,21 @@ namespace Game.Player
                 {
                     //favour
                     case "Favour":
-                        this.favourPickUpInRange = true;
-                        this.favourPickUpCollider = other;
+                        string favourId = DetermineFavourId(other);
 
-                        ShowUiMessage("Press [X] to pick up a Favour!");
+                        if (!this.playerModel.IsFavourPickedUp(favourId))
+                        {
+                            this.favourPickUpInRange = true;
+                            this.favourPickUpCollider = other;
+
+                            ShowUiMessage("Press [X] to pick up a Favour!");
+                        }                       
                         break;
                     //pillar entrance
                     case "Pillar":
                         var pillarEntrance = other.GetComponent<World.Interaction.PillarEntrance>();
 
-                        if (!this.playerModel.IsPillarDestroyed(pillarEntrance.PillarId) && this.playerModel.Favours >= pillarEntrance.EntryPrice)
+                        if (!this.playerModel.IsPillarDestroyed(pillarEntrance.PillarId) && this.playerModel.Favours >= this.playerModel.PillarData.GetPillarEntryPrice(pillarEntrance.PillarId))
                         {
                             this.pillarEntranceInfo.IsPillarEntranceInRange = true;
                             this.pillarEntranceInfo.CurrentPillarEntrance = pillarEntrance;
@@ -265,6 +270,11 @@ namespace Game.Player
             Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
         }
 
+        static string DetermineFavourId(Collider favourCollider)
+        {
+            return string.Format("{0}-{1}", favourCollider.name, favourCollider.transform.position);
+        }
+
         #endregion helper methods
 
         //########################################################################
@@ -287,10 +297,6 @@ namespace Game.Player
                 this.isActive = false;
                 Debug.Log("InteractionController deactivated!");
             }
-            else
-            {
-                Debug.LogWarningFormat("InteractionController: isActive={0}, previousUiState={1}, newUiState={2}", this.isActive, args.PreviousUiState, args.NewUiState);
-            }
         }
 
         /// <summary>
@@ -308,6 +314,8 @@ namespace Game.Player
 
             this.pillarEntranceInfo.IsPillarEntranceInRange = false;
             this.pillarEntranceInfo.CurrentPillarEntrance = null;
+
+            HideUiMessage();
         }
 
         #endregion event handlers

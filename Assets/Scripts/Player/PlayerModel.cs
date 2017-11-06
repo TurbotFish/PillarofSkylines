@@ -48,13 +48,14 @@ namespace Game.Player
             }
         }
 
-        //
+        //ability variables
         List<eAbilityGroup> unlockedAbilityGroups = new List<eAbilityGroup>();
         List<eAbilityType> activatedAbilities = new List<eAbilityType>();
         List<eAbilityType> flaggedAbilities = new List<eAbilityType>();
 
         //
         List<World.ePillarId> destoyedPillars = new List<World.ePillarId>();
+        List<string> pickedUpFavours = new List<string>();
 
 
         //###########################################################
@@ -312,6 +313,24 @@ namespace Game.Player
         public bool IsPillarDestroyed(World.ePillarId pillarId)
         {
             if (this.destoyedPillars.Contains(pillarId))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public void SetFavourPickedUp(string favourId)
+        {
+            if (!this.pickedUpFavours.Contains(favourId))
+            {
+                this.pickedUpFavours.Add(favourId);
+            }
+        }
+
+        public bool IsFavourPickedUp(string favourId)
+        {
+            if (this.pickedUpFavours.Contains(favourId))
             {
                 return true;
             }

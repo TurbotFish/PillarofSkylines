@@ -9,9 +9,5 @@ namespace Game.World.Interaction
         [SerializeField]
         ePillarId pillarId;
         public ePillarId PillarId { get { return this.pillarId; } }
-
-        [SerializeField]
-        int entryPrice;
-        public int EntryPrice { get { return this.entryPrice; } }
     }
 }
