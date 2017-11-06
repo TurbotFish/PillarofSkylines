@@ -3,6 +3,8 @@
 
 	#define LIGHTING_CUSTOM_PBR_INCLUDED
 
+	//#define _SMOOTH_NORMALS
+
 	float4 _Color;
 	sampler2D _MainTex, _DetailTex, _DetailMask;
 	float4 _MainTex_ST, _DetailTex_ST;
@@ -64,6 +66,11 @@
 		#define FOG_ON 1
 	#endif
 
+	#if defined(_SMOOTH_NORMALS)
+		sampler2D _CameraDepthNormalsTexture;
+
+	#endif
+
 
 	struct VertexData {
 		float4 vertex : POSITION;
@@ -96,7 +103,7 @@
 			float3 vertexLightColor : TEXCOORD6;
 		#endif
 
-		#if defined(_DISTANCE_DITHER) || defined(_DITHER_OBSTRUCTION)
+		#if defined(_DISTANCE_DITHER) || defined(_DITHER_OBSTRUCTION) || defined (_SMOOTH_NORMALS)
 			float4 screenPos : TEXCOORD7;
 		#endif
 
@@ -260,17 +267,19 @@
 	Interpolators MyVertexProgram(VertexData v) {
 		Interpolators i;
 
+		#if defined(_VERTEX_WIND)
+		//ifdef(_VERTEX_BEND)
 		/////////////
 		//Rotation test
-		v.vertex.xyz = ApplyWind(v.vertex.xyz, float3(0,0,0));
+		v.vertex.xyz = ApplyWind(v.vertex.xyz, float3(0,0,45));
 
 		/////////////
-
+		#endif
 
 		i.pos = UnityObjectToClipPos(v.vertex);
 		i.worldPos.xyz = mul(unity_ObjectToWorld, v.vertex);
 
-		#if defined(_DISTANCE_DITHER) || defined(_DITHER_OBSTRUCTION)
+		#if defined(_DISTANCE_DITHER) || defined(_DITHER_OBSTRUCTION) || defined(_SMOOTH_NORMALS)
 			i.screenPos = ComputeScreenPos(i.pos);
 		#endif
 
@@ -509,6 +518,16 @@
 
 
 
+		#if defined(_SMOOTH_NORMALS)
+			float3 screenNormals;
+			float screenDepth;
+
+//			float rawDepth = DecodeFloatRG(tex2Dproj(_CameraDepthTexture, i.screenPos));
+//			half4 linearDepth = Linear01Depth(rawDepth);
+			DecodeDepthNormal(tex2D(_CameraDepthNormalsTexture, i.screenPos.xy), screenDepth, screenNormals);
+		#endif
+
+
 		float3 specularTint;
 		float oneMinusReflectivity;
 
@@ -554,6 +573,11 @@
 				color.a = alpha;
 			#endif
 		#endif
+
+		#if defined(_SMOOTH_NORMALS)
+			//color.rgb = screenNormals;
+		#endif
+
 
 		FragmentOutput output;
 		#if defined(DEFERRED_PASS)
