@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: d254bc52f0f9e794e909bc0cfb26d695
+guid: 6bb940fd726983e4a96668f310b1c11b
 timeCreated: 1509978901
 licenseType: Pro
 ModelImporter:
@@ -9,10 +9,11 @@ ModelImporter:
     400000: //RootNode
     2300000: //RootNode
     3300000: //RootNode
-    4300000: SM_rock_small_04
+    4300000: SM_rock_Blob_M_01
+    6400000: //RootNode
     9500000: //RootNode
   materials:
-    importMaterials: 1
+    importMaterials: 0
     materialName: 0
     materialSearch: 1
   animations:
@@ -40,11 +41,11 @@ ModelImporter:
     lODScreenPercentages: []
     globalScale: 1
     meshCompression: 0
-    addColliders: 0
+    addColliders: 1
     importVisibility: 1
     importBlendShapes: 1
-    importCameras: 1
-    importLights: 1
+    importCameras: 0
+    importLights: 0
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
@@ -59,7 +60,7 @@ ModelImporter:
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
-    tangentImportMode: 3
+    tangentImportMode: 1
     normalCalculationMode: 4
   importAnimation: 0
   copyAvatar: 0
@@ -83,6 +84,6 @@ ModelImporter:
   animationType: 0
   humanoidOversampling: 1
   additionalBone: 0
-  userData: 
+  userData: DIO_applied
   assetBundleName: 
   assetBundleVariant: 
