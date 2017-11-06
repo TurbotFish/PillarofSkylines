@@ -145,9 +145,16 @@ public class CharacControllerRecu : MonoBehaviour {
 		if (collisions.above && hit.collider.CompareTag ("cloud")) {
 			collisions.above = false;
 		}
-		collisions.side = Physics.SphereCast (myTransform.position  + playerAngle * center - (collisions.initialVelocityOnThisFrame.normalized * skinWidth*2), radius, Vector3.ProjectOnPlane(collisions.initialVelocityOnThisFrame, myTransform.up), out hit, skinWidth*4, collisionMask);
+		collisions.side = Physics.CapsuleCast (myTransform.position  + playerAngle * (center - capsuleHeightModifier/2), myTransform.position + playerAngle * (center + capsuleHeightModifier/2), radius, Vector3.ProjectOnPlane(collisions.initialVelocityOnThisFrame, myTransform.up), out hit, skinWidth*4, collisionMask);
 		if (collisions.side) {
 			collisions.currentWallNormal = hit.normal;
+//			Debug.DrawRay(myTransform.position + myTransform.up * (height + radius * 2) - collisions.currentWallNormal * (radius + skinWidth*2), -myTransform.up * (height + radius * 2), Color.red);
+//			if (Physics.Raycast(myTransform.position + myTransform.up * (height + radius * 2) - collisions.currentWallNormal * (radius + skinWidth*2), -myTransform.up, out hit, height + radius * 2, collisionMask)) {
+//				collisions.stepHeight = (height + radius * 2) - hit.distance;
+//				Debug.Log(hit.collider.name + " height " + collisions.stepHeight + ", distance : " + hit.distance);
+//				if (collisions.stepHeight < 1.5f)
+//					transform.position = hit.point + transform.up * skinWidth;
+//			}
 		}
 	}
 
@@ -222,6 +229,8 @@ public class CharacControllerRecu : MonoBehaviour {
 	public struct CollisionInfo{
 		public bool above, below;
 		public bool side, onSteepSlope;
+
+		public float stepHeight;
 
 		public Vector3 initialVelocityOnThisFrame;
 

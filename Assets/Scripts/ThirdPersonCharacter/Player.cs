@@ -513,17 +513,9 @@ public class Player : MonoBehaviour {
 				if (Vector3.Angle(transform.up, controller.collisions.currentGroundNormal) > minSlopeAngle)
 					flatVelocity *= 1 + slopeCoeff * Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (maxSlopeAngle);
 				
-				/*   OTHER VERSION 
-			flatVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, controller.collisions.currentGroundNormal), Vector3.Cross(controller.collisions.currentGroundNormal, transform.up))) * velocity;
-			velocity.y = 0f;
-			targetVelocity = inputToCamera * characSpeed;
-			flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, groundControl * Time.deltaTime);
-			flatVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, controller.collisions.currentGroundNormal), Vector3.Cross(transform.up, controller.collisions.currentGroundNormal))) * flatVelocity;
-			flatVelocity *= Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (90 * 5) + 1;
-*/
-
 				if (pressedJump) {
 					pressedJump = false;
+					velocity.y = 0f;
 					flatVelocity += maxJumpVelocity/2 * TurnSpaceToLocal(controller.collisions.currentGroundNormal) + maxJumpVelocity/2 * Vector3.up;
 					currentPlayerState = ePlayerState.inAir;
 					lastJumpAerial = false;
@@ -613,14 +605,17 @@ public class Player : MonoBehaviour {
 
 				if (pressedJump) {
 					pressedJump = false;
+					velocity.y = 0f;
 					flatVelocity += maxJumpVelocity/2 * TurnSpaceToLocal(controller.collisions.currentGroundNormal) + maxJumpVelocity/2 * Vector3.up;
 					currentPlayerState = ePlayerState.inAir;
 				}
 				break;
 				#endregion sliding
 
+
 				#region in wind tunnel
 			case ePlayerState.inWindTunnel:
+
 
 				keepMomentum = false;
 				flatVelocity = velocity;
@@ -631,6 +626,7 @@ public class Player : MonoBehaviour {
 				windVelocity = Vector3.zero;
 				if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash)) {
 					StartDash();
+
 				}
 				break;
 				#endregion in wind tunnel
@@ -770,6 +766,8 @@ public class Player : MonoBehaviour {
 		playerMod.UnflagAbility(eAbilityType.Glide);
 		keepMomentum = true;
 	}
+
+
 
 	#region public utilty functions
 
