@@ -60,8 +60,11 @@ public class CharacControllerRecu : MonoBehaviour {
 	/// </summary>
 	Cloud currentCloud;
 
+	bool climbedStep;
+
 	Quaternion playerAngle;
 	RaycastHit hit;
+	RaycastHit hit2;
 	Vector3 wallDir;
 
 	void Start(){
@@ -76,6 +79,7 @@ public class CharacControllerRecu : MonoBehaviour {
 
 
 	public Vector3 Move(Vector3 velocity){
+		climbedStep = false;
 		playerAngle = (Quaternion.AngleAxis(Vector3.Angle (Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
 		collisions.initialVelocityOnThisFrame = velocity;
 
@@ -86,6 +90,7 @@ public class CharacControllerRecu : MonoBehaviour {
 		collisionNumber = 0;
 		//Recursively check if the movement meets obstacles
 		velocity = CollisionDetection (velocity, myTransform.position + playerAngle * center, new RaycastHit());
+
 
 
 		Vector3 finalVelocity = Vector3.zero;
@@ -119,16 +124,13 @@ public class CharacControllerRecu : MonoBehaviour {
 		//Update collision informations
 		CollisionUpdate (velocity);
 
-		return finalVelocity;
+		return climbedStep ? Vector3.ProjectOnPlane(finalVelocity, collisions.currentGroundNormal) : finalVelocity;
 	}
 
 
 	void CollisionUpdate(Vector3 velocity){
 		//Send casts to check if there's stuff around the player and sets bools depending on the results
 		collisions.below = Physics.SphereCast (myTransform.position + playerAngle * (center - capsuleHeightModifier/2) + myTransform.up * skinWidth*2, radius, -myTransform.up, out hit, skinWidth*4, collisionMask);
-//		Debug.DrawRay(myTransform.position + playerAngle * (center - capsuleHeightModifier/2) + myTransform.up * skinWidth*5, -myTransform.up * (skinWidth)*10, Color.cyan);
-//		Debug.DrawRay(myTransform.position, myTransform.right, Color.red);
-//		Debug.DrawRay(myTransform.position + playerAngle * (center - capsuleHeightModifier/2), myTransform.right, Color.red);
 		if (collisions.below) {
 			collisions.currentGroundNormal = hit.normal;
 			if (currentCloud == null && hit.collider.CompareTag ("cloud")) {
@@ -145,15 +147,16 @@ public class CharacControllerRecu : MonoBehaviour {
 		if (collisions.above && hit.collider.CompareTag ("cloud")) {
 			collisions.above = false;
 		}
-		collisions.side = Physics.CapsuleCast (myTransform.position  + playerAngle * (center - capsuleHeightModifier/2), myTransform.position + playerAngle * (center + capsuleHeightModifier/2), radius, Vector3.ProjectOnPlane(collisions.initialVelocityOnThisFrame, myTransform.up), out hit, skinWidth*4, collisionMask);
+		collisions.side = Physics.CapsuleCast (myTransform.position  + playerAngle * (center - capsuleHeightModifier/2), myTransform.position + playerAngle * (center + capsuleHeightModifier/2), radius
+			, Vector3.ProjectOnPlane(collisions.initialVelocityOnThisFrame, (collisions.below ? collisions.currentGroundNormal : myTransform.up)), out hit, skinWidth*2, collisionMask);
 		if (collisions.side) {
 			collisions.currentWallNormal = hit.normal;
+//			collisions.stepHeight = 0f;
 //			Debug.DrawRay(myTransform.position + myTransform.up * (height + radius * 2) - collisions.currentWallNormal * (radius + skinWidth*2), -myTransform.up * (height + radius * 2), Color.red);
-//			if (Physics.Raycast(myTransform.position + myTransform.up * (height + radius * 2) - collisions.currentWallNormal * (radius + skinWidth*2), -myTransform.up, out hit, height + radius * 2, collisionMask)) {
+//			if (Physics.Raycast(myTransform.position + myTransform.up * (height + radius * 2) - collisions.currentWallNormal * (radius + skinWidth * 2), -myTransform.up, out hit, height + radius * 2, collisionMask))
+//			{
 //				collisions.stepHeight = (height + radius * 2) - hit.distance;
 //				Debug.Log(hit.collider.name + " height " + collisions.stepHeight + ", distance : " + hit.distance);
-//				if (collisions.stepHeight < 1.5f)
-//					transform.position = hit.point + transform.up * skinWidth;
 //			}
 		}
 	}
@@ -169,14 +172,31 @@ public class CharacControllerRecu : MonoBehaviour {
 		Vector3 newOrigin = position;
 
 
-		/*if (collisions.side) {
-			velocity = Vector3.ProjectOnPlane (velocity, collisions.currentWallNormal);
-		}*/
 
 		//Send a first capsule cast in the direction of the velocity
 		if (Physics.CapsuleCast (newOrigin - (playerAngle * capsuleHeightModifier/2), newOrigin + (playerAngle * capsuleHeightModifier/2), radius, velocity, out hit, rayLength
 			, ((veloNorm.y > 0 || myPlayer.currentPlayerState == ePlayerState.gliding) ? collisionMaskNoCloud : collisionMask))) {
 			collisionNumber++;
+
+
+			if (hit.normal != collisions.currentGroundNormal) {
+				print("lul");
+				collisions.stepHeight = 0f;
+				Debug.DrawRay(myTransform.position + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, collisions.currentGroundNormal).normalized * (radius + skinWidth), -myTransform.up * (height + radius * 2), Color.red);
+				if (Physics.Raycast(myTransform.position + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, collisions.currentGroundNormal).normalized * (radius + skinWidth), -myTransform.up, out hit2, height + radius * 2, collisionMask)) {
+					collisions.stepHeight = (height + radius * 2) - hit2.distance;
+					Debug.Log(hit2.collider.name + ", height " + collisions.stepHeight + ", distance : " + hit2.distance);
+					if (collisions.stepHeight < 1f) {
+						if (Physics.SphereCast(myTransform.position + Vector3.ProjectOnPlane(velocity, collisions.currentGroundNormal) + myTransform.up * collisions.stepHeight, radius, -myTransform.up, out hit2, collisions.stepHeight, collisionMask)) {
+
+//							myTransform.position += Vector3.ProjectOnPlane(velocity, collisions.currentGroundNormal) + myTransform.up * (collisions.stepHeight + skinWidth - hit2.distance);
+							climbedStep = true;
+							return Vector3.ProjectOnPlane(velocity, collisions.currentGroundNormal) + myTransform.up * (collisions.stepHeight + skinWidth - hit2.distance);
+							//myTransform.position += myTransform.up * collisions.stepHeight;
+						}
+					}
+				}
+			}
 
 			//When an obstacle is met, remember the amount of movement needed to get to the obstacle
 			movementVector += veloNorm * (hit.distance - ((skinWidth < hit.distance)? skinWidth : hit.distance));
