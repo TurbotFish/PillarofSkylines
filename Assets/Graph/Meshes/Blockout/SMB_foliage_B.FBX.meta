@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: bd8ef253c20d25d4e8f46217e6d8f2a8
-timeCreated: 1509723393
+guid: 2841a34980cafc14584bdf4888a34c8f
+timeCreated: 1509960462
 licenseType: Pro
 ModelImporter:
   serializedVersion: 21
@@ -9,7 +9,7 @@ ModelImporter:
     400000: //RootNode
     2300000: //RootNode
     3300000: //RootNode
-    4300000: foliage_B
+    4300000: foliageSquare_B
     9500000: //RootNode
   materials:
     importMaterials: 1
@@ -61,7 +61,7 @@ ModelImporter:
     normalImportMode: 0
     tangentImportMode: 3
     normalCalculationMode: 4
-  importAnimation: 0
+  importAnimation: 1
   copyAvatar: 0
   humanDescription:
     serializedVersion: 2
@@ -80,7 +80,7 @@ ModelImporter:
     hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
-  animationType: 0
+  animationType: 2
   humanoidOversampling: 1
   additionalBone: 0
   userData: 
