@@ -33,6 +33,11 @@ namespace Game.GameControl
             }
         }
 
+        private void OnDestroy()
+        {
+            Utilities.EventManager.OnMenuSwitchedEvent -= OnMenuOpenedEventHandler;
+        }
+
         //###########################################################
         //###########################################################
 

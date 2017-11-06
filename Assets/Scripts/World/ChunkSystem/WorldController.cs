@@ -26,6 +26,8 @@ namespace Game.World.ChunkSystem
         List<GameObject> worldCopies = new List<GameObject>();
         List<RegionController> regionCopyList = new List<RegionController>();
 
+        bool isInitialized = false;
+
         //############################################
 
         void Start()
@@ -74,7 +76,7 @@ namespace Game.World.ChunkSystem
                             }
 
                             var go = new GameObject(string.Format("WorldCopy{0}{1}{2}", x, y, z));
-                            //go.transform.parent = this.transform;
+                            go.transform.parent = this.transform;
 
                             foreach (var region in this.regionList)
                             {
@@ -92,6 +94,11 @@ namespace Game.World.ChunkSystem
 
         void FixedUpdate()
         {
+            if (!this.isInitialized)
+            {
+                return;
+            }
+
             var currentPlayerPos = this.playerTransform.position;
             float posDelta = Vector3.Distance(this.previousPlayerPos, currentPlayerPos);
 
@@ -110,6 +117,8 @@ namespace Game.World.ChunkSystem
 
         public void InitializeWorldController(Transform playerTransform)
         {
+            this.isInitialized = true;
+
             this.playerTransform = playerTransform;
         }
 

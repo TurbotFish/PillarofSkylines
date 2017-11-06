@@ -41,7 +41,7 @@ namespace Game.Player.UI
 
         PlayerModel playerModel;
 
-        eUiState currentState = eUiState.HUD;
+        eUiState currentState = eUiState.LoadingScreen;
         Dictionary<eUiState, IUiState> uiStates = new Dictionary<eUiState, IUiState>();
 
         bool menuButtonDown = false;
@@ -60,71 +60,39 @@ namespace Game.Player.UI
             this.uiStates.Add(eUiState.Intro, this.introMenuController);
             this.uiStates.Add(eUiState.End, this.endMenuController);
             this.uiStates.Add(eUiState.LoadingScreen, this.loadingScreenController);
+            this.uiStates.Add(eUiState.PillarEntrance, this.pillarEntranceMenuController);
 
             foreach (var uiState in uiStates.Values)
             {
+                if((object)uiState != this.loadingScreenController)
                 uiState.Initialize(playerModel);
                 uiState.Deactivate();
             }
-
-            SwitchState(eUiState.LoadingScreen);
         }
 
         //###########################################################
 
         #region monobehaviour methods
 
-        // Use this for initialization
+        void OnEnable()
+        {
+            if(this.playerModel == null) //this is only executed if the instance has not been initialized yet
+            {
+                (this.loadingScreenController as IUiState).Activate(null);
+                this.currentState = eUiState.LoadingScreen;
+            }
+        }
+
         void Start()
         {
             Utilities.EventManager.OnShowMenuEvent += OnShowMenuEventHandler;
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-            if (Input.GetButton("MenuButton") && !this.menuButtonDown)
-            {
-                switch (this.currentState)
-                {
-                    case eUiState.HUD:
-                        SwitchState(eUiState.AbilityMenu);
-                        break;
-                    case eUiState.AbilityMenu:
-                        SwitchState(eUiState.HUD);
-                        break;
-                    case eUiState.Intro:
-                        SwitchState(eUiState.HUD);
-                        break;
-                    case eUiState.End:
-                        if (Application.isEditor)
-                        {
-#if UNITY_EDITOR
-                            UnityEditor.EditorApplication.isPlaying = false;
-#endif
-                        }
-                        else
-                        {
-                            Application.Quit();
-                        }
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-
-                this.menuButtonDown = true;
-            }
-            if (!Input.GetButton("MenuButton"))
-            {
-                this.menuButtonDown = false;
-            }
         }
 
         #endregion monobehaviour methods
 
         //###########################################################
 
-        void SwitchState(eUiState newState)
+        void SwitchState(eUiState newState, Utilities.EventManager.OnShowMenuEventArgs args = null)
         {
             //if (this.currentState == newState)
             //{
@@ -135,14 +103,14 @@ namespace Game.Player.UI
 
             this.uiStates[this.currentState].Deactivate();
             this.currentState = newState;
-            this.uiStates[this.currentState].Activate();
+            this.uiStates[this.currentState].Activate(args);
 
             Utilities.EventManager.SendOnMenuSwitchedEvent(this, new Utilities.EventManager.OnMenuSwitchedEventArgs(newState, previousState));
         }
 
-        private void OnShowMenuEventHandler(object sender, Utilities.EventManager.OnShowMenuEventArgs args)
+        void OnShowMenuEventHandler(object sender, Utilities.EventManager.OnShowMenuEventArgs args)
         {
-            SwitchState(args.Menu);
+            SwitchState(args.Menu, args);
         }
 
         //###########################################################
