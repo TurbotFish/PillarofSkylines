@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 4d37625bdf7380e43af76120f5a5254a
-timeCreated: 1509704967
+guid: a727af5fd1c0c7740aba63abbd89e008
+timeCreated: 1509962548
 licenseType: Pro
 ModelImporter:
   serializedVersion: 21
@@ -9,13 +9,13 @@ ModelImporter:
     400000: //RootNode
     2300000: //RootNode
     3300000: //RootNode
-    4300000: SMB_groundS_B
+    4300000: SMB_relief_M_A
     6400000: //RootNode
     9500000: //RootNode
   materials:
-    importMaterials: 1
-    materialName: 1
-    materialSearch: 2
+    importMaterials: 0
+    materialName: 0
+    materialSearch: 1
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
