@@ -13,6 +13,7 @@ public class WindTunnelPart : MonoBehaviour {
 	void Update () {
 		if (currentPlayer != null)
 		{
+//			Debug.Log("wind velocity = " + (transform.up * windStrength + Vector3.ProjectOnPlane(transform.position - currentPlayer.transform.position, transform.up) * tunnelAttraction) + " made from " + Vector3.ProjectOnPlane(transform.position - currentPlayer.transform.position, transform.up));
 			currentPlayer.AddWindVelocity(transform.up*windStrength + Vector3.ProjectOnPlane(transform.position - currentPlayer.transform.position, transform.up)*tunnelAttraction);
 		}
 	}

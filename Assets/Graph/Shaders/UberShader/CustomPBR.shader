@@ -45,6 +45,15 @@ Shader "Alo/PBR/CustomPBR" {
 
 		_NormalDistFull ("Normal Distance Full", Float) = 1.2
 		_NormalDistCulled ("Normal Distance Culled", Float) = 1.4
+
+		_DitherDistMin ("Dither Distance Min", Float) = 1.5
+		_DitherDistMax ("Dither Distance Max", Float) = 5
+
+		_DitherObstrMin ("Dither Obstruction Min", Float) = 0.3
+		_DitherObstrMax ("Dither Obstruction Max", Float) = 1
+		_DistFromCam ("Distance From Camera", Float) = 0
+
+		_RefractionAmount ("Refraction Amount", Range(-0.1,0.1)) = 0
 	}
 
 	CGINCLUDE
@@ -59,6 +68,11 @@ Shader "Alo/PBR/CustomPBR" {
 
 		Tags {
 			"RenderType" = "Opaque"
+		}
+
+		GrabPass{
+			Tags{ "LightMode" = "Always"}
+			"_BackgroundTex"
 		}
 
 
@@ -88,10 +102,14 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ _SSS
 			#pragma shader_feature _ _LOCAL_NORMAL_DEBUG
 			#pragma shader_feature _ NORMAL_DISTANCE_FADE
+			#pragma shader_feature _ _DISTANCE_DITHER
+			#pragma shader_feature _CULL_BACK _CULL_FRONT _CULL_OFF
+			#pragma shader_feature _ _REFRACTION
 
 			#pragma multi_compile _ SHADOWS_SCREEN
 			#pragma multi_compile _ VERTEXLIGHT_ON
 			#pragma multi_compile_fog
+			#pragma multi_compile _ _DITHER_OBSTRUCTION
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
@@ -130,9 +148,13 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
 			#pragma shader_feature _ _SSS
 			#pragma shader_feature _ NORMAL_DISTANCE_FADE
+			#pragma shader_feature _ _DISTANCE_DITHER
+			#pragma shader_feature _CULL_BACK _CULL_FRONT _CULL_OFF
+			#pragma shader_feature _ _REFRACTION
 
 			#pragma multi_compile_fwdadd_fullshadows
 			#pragma multi_compile_fog
+			#pragma multi_compile _ _DITHER_OBSTRUCTION
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
@@ -171,10 +193,13 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _LOCAL_NORMAL_DEBUG
 			#pragma shader_feature _ CHECKER_DEBUG
 			#pragma shader_feature _ NORMAL_DISTANCE_FADE
+			#pragma shader_feature _ _DISTANCE_DITHER
 
 			#pragma shader_feature _ _CELSHADED
+			#pragma shader_feature _ _REFRACTION
 
 			#pragma multi_compile _ UNITY_HDR_ON
+			#pragma multi_compile _ _DITHER_OBSTRUCTION
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
