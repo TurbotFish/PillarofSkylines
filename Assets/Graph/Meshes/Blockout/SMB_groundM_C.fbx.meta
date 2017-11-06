@@ -12,9 +12,9 @@ ModelImporter:
     4300000: SMB_groundM_C
     6400000: //RootNode
   materials:
-    importMaterials: 0
-    materialName: 0
-    materialSearch: 1
+    importMaterials: 1
+    materialName: 1
+    materialSearch: 2
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
