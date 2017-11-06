@@ -267,12 +267,14 @@
 	Interpolators MyVertexProgram(VertexData v) {
 		Interpolators i;
 
+		#if defined(_VERTEX_WIND)
+		//ifdef(_VERTEX_BEND)
 		/////////////
 		//Rotation test
-		v.vertex.xyz = ApplyWind(v.vertex.xyz, float3(0,0,0));
+		v.vertex.xyz = ApplyWind(v.vertex.xyz, float3(0,0,45));
 
 		/////////////
-
+		#endif
 
 		i.pos = UnityObjectToClipPos(v.vertex);
 		i.worldPos.xyz = mul(unity_ObjectToWorld, v.vertex);

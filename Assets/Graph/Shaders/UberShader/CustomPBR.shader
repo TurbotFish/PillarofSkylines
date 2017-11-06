@@ -105,6 +105,8 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ _DISTANCE_DITHER
 			#pragma shader_feature _CULL_BACK _CULL_FRONT _CULL_OFF
 			#pragma shader_feature _ _REFRACTION
+			#pragma shader_feature _ _VERTEX_WIND
+			#pragma shader_feature _ _VERTEX_BEND
 
 			#pragma multi_compile _ SHADOWS_SCREEN
 			#pragma multi_compile _ VERTEXLIGHT_ON
@@ -151,6 +153,8 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ _DISTANCE_DITHER
 			#pragma shader_feature _CULL_BACK _CULL_FRONT _CULL_OFF
 			#pragma shader_feature _ _REFRACTION
+			#pragma shader_feature _ _VERTEX_WIND
+			#pragma shader_feature _ _VERTEX_BEND
 
 			#pragma multi_compile_fwdadd_fullshadows
 			#pragma multi_compile_fog
@@ -194,6 +198,8 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ CHECKER_DEBUG
 			#pragma shader_feature _ NORMAL_DISTANCE_FADE
 			#pragma shader_feature _ _DISTANCE_DITHER
+			#pragma shader_feature _ _VERTEX_WIND
+			#pragma shader_feature _ _VERTEX_BEND
 
 			#pragma shader_feature _ _CELSHADED
 			#pragma shader_feature _ _REFRACTION
