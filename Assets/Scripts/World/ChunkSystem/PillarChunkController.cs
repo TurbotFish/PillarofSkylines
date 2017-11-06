@@ -6,7 +6,6 @@ namespace Game.World.ChunkSystem
 {
     public class PillarChunkController : ChunkController
     {
-        //pillar layer
         [SerializeField]
         ePillarState pillarState;
         public ePillarState PillarState { get { return this.pillarState; } }
@@ -16,9 +15,28 @@ namespace Game.World.ChunkSystem
             base.InitializeChunk(data);
         }
 
+        protected override void InitializeChunkCopy(ChunkController originalChunk)
+        {
+            base.InitializeChunkCopy(originalChunk);
+
+            var pillarChunkParent = originalChunk as PillarChunkController;
+
+            this.pillarState = pillarChunkParent.PillarState;
+        }
+
         public override void UpdateChunk(Vector3 playerPos)
         {
             base.UpdateChunk(playerPos);
+        }
+
+        public void Activate()
+        {
+
+        }
+
+        public void Deactivate()
+        {
+
         }
     }
 }

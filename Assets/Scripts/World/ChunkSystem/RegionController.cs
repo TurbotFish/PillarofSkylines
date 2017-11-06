@@ -6,7 +6,7 @@ namespace Game.World.ChunkSystem
 {
     public class RegionController : MonoBehaviour
     {
-        List<ChunkController> chunkList = new List<ChunkController>();
+        protected List<ChunkController> chunkList = new List<ChunkController>();
 
         /// <summary>
         /// 
@@ -30,6 +30,14 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
+        protected virtual void InitializeRegionCopy(RegionController originalRegion)
+        {
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual void UpdateRegion(Vector3 playerPos)
         {
             foreach (var chunk in this.chunkList)
@@ -38,15 +46,20 @@ namespace Game.World.ChunkSystem
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual GameObject CreateCopy(Transform parent)
         {
             var go = new GameObject(this.gameObject.name, this.GetType());
-            go.transform.parent = parent;
-            go.transform.localPosition = this.transform.localPosition;          
+
+            var regionCopyTransform = go.transform;
+            regionCopyTransform.parent = parent;
+            regionCopyTransform.localPosition = this.transform.localPosition;          
 
             foreach(var chunk in this.chunkList)
             {
-                chunk.CreateCopy(go.transform);
+                chunk.CreateCopy(regionCopyTransform);
             }
 
             return go;

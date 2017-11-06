@@ -23,6 +23,8 @@ namespace Game.World.ChunkSystem
         }
 #endif
 
+        //#################
+
         public void ActivateSubChunk()
         {
             this.gameObject.SetActive(true);
@@ -33,20 +35,25 @@ namespace Game.World.ChunkSystem
             this.gameObject.SetActive(false);
         }
 
-        public GameObject CreateCopy(Transform parent)
+        void InitializeSubChunkCopy(SubChunkController originalSubChunk)
+        {
+            this.layer = originalSubChunk.Layer;
+        }
+
+        public void CreateCopy(Transform parent)
         {
             if (this.doNotWrap)
             {
                 var go = new GameObject(this.gameObject.name);
                 go.transform.parent = parent;
                 go.transform.localPosition = this.transform.localPosition;
-                
-                return go;
+
             }
             else
             {
                 var go = Instantiate(this.gameObject, parent);
-                return go;
+
+                go.GetComponent<SubChunkController>().InitializeSubChunkCopy(this);
             }
         }
     }

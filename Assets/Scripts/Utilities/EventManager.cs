@@ -76,7 +76,7 @@ namespace Game.Utilities
             /// <summary>
             /// The id of the menu to switch to.
             /// </summary>
-            public Player.UI.eUiState Menu { get; private set; }            
+            public Player.UI.eUiState Menu { get; private set; }
 
             /// <summary>
             /// Default Contructor.
@@ -84,10 +84,10 @@ namespace Game.Utilities
             public OnShowMenuEventArgs(Player.UI.eUiState menu)
             {
                 this.Menu = menu;
-            }          
+            }
         }
 
-        public class OnShowPillarEntranceMenuEventArgs: OnShowMenuEventArgs
+        public class OnShowPillarEntranceMenuEventArgs : OnShowMenuEventArgs
         {
             /// <summary>
             /// 
@@ -97,7 +97,7 @@ namespace Game.Utilities
             /// <summary>
             /// Constructor for the Pillar entrance menu.
             /// </summary>
-            public OnShowPillarEntranceMenuEventArgs(World.ePillarId pillarId):base(Player.UI.eUiState.PillarEntrance)
+            public OnShowPillarEntranceMenuEventArgs(World.ePillarId pillarId) : base(Player.UI.eUiState.PillarEntrance)
             {
                 this.PillarId = pillarId;
             }
@@ -147,6 +147,13 @@ namespace Game.Utilities
         }
 
         #endregion favour amount changed event
+
+        //###########################################################
+        //###########################################################
+
+        #region pillar destroyed event
+
+        #endregion pillar destroyed event
 
         //###########################################################
 

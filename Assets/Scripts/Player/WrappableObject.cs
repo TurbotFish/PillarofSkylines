@@ -17,9 +17,6 @@ namespace Game.Player
         AxisInfo zAxisInfo;
 
         bool isInitialized = false;
-        bool teleporting = false;
-
-        Vector3 previousPlayerPos;
 
         public void InitializeWrappableObject(World.ChunkSystem.WorldController worldController)
         {
@@ -27,7 +24,7 @@ namespace Game.Player
 
             this.worldController = worldController;
             this.myTransform = this.transform;
-            this.previousPlayerPos = this.myTransform.position;
+
 
             Vector3 worldPos = this.worldController.transform.position;
             Vector3 worldSize = this.worldController.WorldSize;
@@ -52,16 +49,7 @@ namespace Game.Player
                 return;
             }
 
-            ////
-            /*var changedPlayerPos = this.myTransform.position;
-            if(changedPlayerPos.y > this.previousPlayerPos.y)
-            {
-                Debug.LogErrorFormat("Player went up: oldPos={0}, newPos={1}", this.previousPlayerPos, changedPlayerPos);
-            }
-            this.previousPlayerPos = changedPlayerPos;*/
-            ////
-
-            teleporting = false;
+            bool teleporting = false;
             Vector3 playerPos = this.myTransform.position;
             Vector3 teleportOffset = Vector3.zero;
 
@@ -109,10 +97,6 @@ namespace Game.Player
 
             if (teleporting)
             {
-                Debug.LogErrorFormat("Teleporting player: offset={0}", teleportOffset.ToString());
-
-
-
                 Vector3 newPlayerPos = playerPos + teleportOffset;
 
                 //this.myTransform.position = newPlayerPos;
@@ -120,11 +104,11 @@ namespace Game.Player
                 var teleportPlayerEventArgs = new Utilities.EventManager.OnTeleportPlayerEventArgs(newPlayerPos, false);
                 Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
-                foreach (var follower in this.followers)
-                {
+                //foreach (var follower in this.followers)
+                //{
                     //Vector3 newFollowerPos = follower.position + teleportOffset;
                     //follower.position = newFollowerPos;
-                }
+                //}
             }
         }
 
