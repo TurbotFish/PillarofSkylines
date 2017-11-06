@@ -20,14 +20,22 @@ namespace Game.GameControl
 
         TimeController timeController;
 
-        //
+        EchoManager echoManager;
+        public EchoManager EchoManager { get { return this.echoManager; } }
+
         Player.PlayerController playerController;
+        public Player.PlayerController PlayerController { get { return this.playerController; } }
 
         //
         OpenWorldSceneInfo openWorldSceneInfo = new OpenWorldSceneInfo();
+        public World.ChunkSystem.WorldController WorldController { get { return this.openWorldSceneInfo.WorldController; } }
+
         UiSceneInfo uiSceneInfo = new UiSceneInfo();
+        public Player.UI.UiController UiController { get { return this.uiSceneInfo.UiController; } }
+
         Dictionary<World.ePillarId, PillarSceneInfo> pillarSceneDictionary = new Dictionary<World.ePillarId, PillarSceneInfo>();
 
+        //
         bool isPillarActive = false;
         World.ePillarId activePillarId;
 
@@ -36,40 +44,15 @@ namespace Game.GameControl
 
         void Start()
         {
-            //
+            //load resources
             this.sceneNames = Resources.Load<SceneNamesData>("ScriptableObjects/SceneNamesData");
 
-            //
-            this.playerModel = GetComponentInChildren<Player.PlayerModel>();
-            this.playerModel.InitializePlayerModel();
-
-            this.timeController = GetComponentInChildren<TimeController>();
-
-            //
-            this.playerController = FindObjectOfType<Player.PlayerController>();
-            this.playerController.InitializePlayerController(this);
-
-            //
-            Utilities.EventManager.OnEyeKilledEvent += OnEyeKilledEventHandler;
-            SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
-
-            //
+            //load everything
             StartCoroutine(LoadScenesRoutine());
-        }
 
-        void Update()
-        {
-            if (Input.GetKeyUp(KeyCode.O))
-            {
-                if (this.isPillarActive)
-                {
-                    OnEyeKilledEventHandler(this);
-                }
-                else
-                {
-                    OnEnterPillarEventHandler(this, new Utilities.EventManager.OnSceneChangedEventArgs(World.ePillarId.Pillar_01));
-                }
-            }
+            //register to events
+            Utilities.EventManager.OnEyeKilledEvent += OnEyeKilledEventHandler;
+            Utilities.EventManager.OnEnterPillarEvent += OnEnterPillarEventHandler;
         }
 
         //###############################################################
@@ -79,92 +62,93 @@ namespace Game.GameControl
 
         IEnumerator LoadScenesRoutine()
         {
+            //getting references in main scene
+            this.playerModel = GetComponentInChildren<Player.PlayerModel>();
+            this.timeController = GetComponentInChildren<TimeController>();
+
+            this.playerController = FindObjectOfType<Player.PlayerController>();
+
             yield return null;
 
+            //loading ui scene
             SceneManager.LoadScene(UI_SCENE_NAME, LoadSceneMode.Additive);
 
             yield return null;
 
+            //getting references in ui scene
+            this.uiSceneInfo.Scene = SceneManager.GetSceneByName(UI_SCENE_NAME);
+
+            this.uiSceneInfo.UiController = SearchForScriptInScene<Player.UI.UiController>(this.uiSceneInfo.Scene);
+
+            yield return null;
+
+            //loading open world scene
             SceneManager.LoadScene(this.sceneNames.GetOpenWorldSceneName(), LoadSceneMode.Additive);
 
             yield return null;
 
+            //getting references in open world scene
+            this.openWorldSceneInfo.Scene = SceneManager.GetSceneByName(this.sceneNames.GetOpenWorldSceneName());
+            CleanScene(this.openWorldSceneInfo.Scene);
+            SceneManager.SetActiveScene(this.openWorldSceneInfo.Scene);
+
+            this.openWorldSceneInfo.WorldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(this.openWorldSceneInfo.Scene);
+            this.openWorldSceneInfo.SpawnPointManager = SearchForScriptInScene<World.SpawnPointSystem.SpawnPointManager>(this.openWorldSceneInfo.Scene);
+
+            yield return null;
+
+            //pillar scenes
             var pillarIdValues = Enum.GetValues(typeof(World.ePillarId)).Cast<World.ePillarId>();
 
             foreach (var pillarId in pillarIdValues)
             {
                 string name = this.sceneNames.GetPillarSceneName(pillarId);
 
-                if (!string.IsNullOrEmpty(name))
+                if (string.IsNullOrEmpty(name))
                 {
-                    SceneManager.LoadScene(name, LoadSceneMode.Additive);
+                    continue;
+                }
+
+                //loading pillar scene
+                SceneManager.LoadScene(name, LoadSceneMode.Additive);
+
+                yield return null;
+
+                //getting references in pillar scene
+                var pillarScene = SceneManager.GetSceneByName(name);
+                CleanScene(pillarScene);
+
+                var pillarInfo = new PillarSceneInfo()
+                {
+                    Scene = pillarScene,
+                    PillarId = pillarId,
+                    SpawnPointManager = SearchForScriptInScene<World.SpawnPointSystem.SpawnPointManager>(pillarScene)
+                };
+
+                this.pillarSceneDictionary.Add(pillarId, pillarInfo);
+
+                //deactivating scene
+                foreach (var go in pillarScene.GetRootGameObjects())
+                {
+                    go.SetActive(false);
                 }
 
                 yield return null;
             }
 
-            //
-            SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
+            //initializing
+            this.playerModel.InitializePlayerModel();
+            this.playerController.InitializePlayerController(this);
 
+            this.uiSceneInfo.UiController.InitializeUi(this.playerModel);
+
+            this.openWorldSceneInfo.WorldController.InitializeWorldController(this.playerController.transform);
+
+
+            //starting the game
             Utilities.EventManager.SendOnPlayerSpawnedEvent(this, new Utilities.EventManager.OnPlayerSpawnedEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnPoint()));
+            Utilities.EventManager.SendOnSceneChangedEvent(this, new Utilities.EventManager.OnSceneChangedEventArgs());
             Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.Intro));
-        }
-
-        void OnSceneLoadedEventHandler(Scene scene, LoadSceneMode mode)
-        {
-            if (scene.name == UI_SCENE_NAME)
-            {
-                this.uiSceneInfo.UiController = SearchForScriptInScene<Player.UI.UiController>(scene);
-                this.uiSceneInfo.UiController.InitializeUi(this.playerModel);
-
-                this.uiSceneInfo.Scene = scene;
-            }
-            else if (scene.name == this.sceneNames.GetOpenWorldSceneName())
-            {
-                SceneManager.SetActiveScene(scene);
-
-                //cleaning scene
-                CleanScene(scene);
-
-                //initializing scene
-                this.openWorldSceneInfo.WorldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(scene);
-                this.openWorldSceneInfo.WorldController.InitializeWorldController(this.playerController.transform);
-
-                this.openWorldSceneInfo.SpawnPointManager = SearchForScriptInScene<World.SpawnPointSystem.SpawnPointManager>(scene);
-
-                this.openWorldSceneInfo.Scene = scene;
-            }
-            else
-            {
-                var pillarIdValues = Enum.GetValues(typeof(World.ePillarId)).Cast<World.ePillarId>();
-
-                foreach (var pillarId in pillarIdValues)
-                {
-                    string name = this.sceneNames.GetPillarSceneName(pillarId);
-
-                    if (name == scene.name)
-                    {
-                        //cleaning scene
-                        CleanScene(scene);
-
-                        //
-                        var pillarInfo = new PillarSceneInfo()
-                        {
-                            Scene = scene,
-                            PillarId = pillarId,
-                            SpawnPointManager = SearchForScriptInScene<World.SpawnPointSystem.SpawnPointManager>(scene)
-                        };
-
-                        this.pillarSceneDictionary.Add(pillarId, pillarInfo);
-
-                        //deactivating scene
-                        foreach (var go in scene.GetRootGameObjects())
-                        {
-                            go.SetActive(false);
-                        }
-                    }
-                }
-            }
         }
 
         #endregion initialization methods
@@ -172,7 +156,7 @@ namespace Game.GameControl
         //###############################################################
         //###############################################################
 
-        void OnEnterPillarEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
+        void OnEnterPillarEventHandler(object sender, Utilities.EventManager.OnEnterPillarEventArgs args)
         {
             if (this.isPillarActive)
             {
@@ -280,12 +264,31 @@ namespace Game.GameControl
 
             foreach (var gameObject in scene.GetRootGameObjects())
             {
+                result = gameObject.GetComponent<T>();
+
+                if (result != null)
+                {
+                    break;
+                }
+
                 result = gameObject.GetComponentInChildren<T>();
 
                 if (result != null)
                 {
                     break;
                 }
+            }
+
+            return result;
+        }
+
+        static List<T> SearchForScriptsInScene<T>(Scene scene) where T : class
+        {
+            var result = new List<T>();
+
+            foreach (var gameObject in scene.GetRootGameObjects())
+            {
+                result.AddRange(gameObject.GetComponentsInChildren<T>());
             }
 
             return result;
@@ -309,6 +312,13 @@ namespace Game.GameControl
             if (sceneCamera != null)
             {
                 Destroy(sceneCamera.gameObject);
+            }
+
+            //cleaning up old EchoManagers
+            var echoManagers = SearchForScriptsInScene<EchoManager>(scene);
+            foreach (var echoManager in echoManagers)
+            {
+                Destroy(echoManager.gameObject);
             }
         }
 

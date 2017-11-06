@@ -16,27 +16,33 @@ namespace Game.GameControl
         Player.PlayerModel playerModel;
         public Player.PlayerModel PlayerModel { get { return this.playerModel; } }
 
+        EchoManager echoManager;
+        public EchoManager EchoManager { get { return this.echoManager; } }
+
+        Player.PlayerController playerController;
+        public Player.PlayerController PlayerController { get { return this.playerController; } }
+
+        World.ChunkSystem.WorldController worldController;
+        public World.ChunkSystem.WorldController WorldController { get { return this.worldController; } }
+
+        Player.UI.UiController uiController;
+        public Player.UI.UiController UiController { get { return this.uiController; } }
+
         //###############################################################
         //###############################################################
 
         void Start()
         {
-            //
-            this.playerModel = GetComponentInChildren<Player.PlayerModel>();
-            this.playerModel.InitializePlayerModel();
-
-            //
-            SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
             StartCoroutine(LoadScenesRoutine());
 
-            //
-            var player = SearchForScriptInScene<Player.PlayerController>(SceneManager.GetActiveScene());
-            player.InitializePlayerController(this);
-
-            var worldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(SceneManager.GetActiveScene());
-            if (worldController != null)
+            //cleaning up, just in case
+            var echoManagers = FindObjectsOfType<EchoManager>();
+            foreach(var echoManager in echoManagers)
             {
-                worldController.InitializeWorldController(player.transform);
+                if(echoManager != this.echoManager)
+                {
+                    Destroy(echoManager.gameObject);
+                }
             }
         }
 
@@ -45,14 +51,43 @@ namespace Game.GameControl
 
         IEnumerator LoadScenesRoutine()
         {
-            yield return null;
+            //***********************
+            //getting references in local scene
+            this.playerModel = GetComponentInChildren<Player.PlayerModel>();
+            this.echoManager = GetComponentInChildren<EchoManager>();
 
+            this.playerController = SearchForScriptInScene<Player.PlayerController>(SceneManager.GetActiveScene());
+            this.worldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(SceneManager.GetActiveScene());
+
+            yield return null;
+            //***********************
+            //loading UI scene
             SceneManager.LoadScene(UI_SCENE_NAME, LoadSceneMode.Additive);
 
             yield return null;
 
-            SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
+            //getting references in UI scene
+            var uiScene = SceneManager.GetSceneByName(UI_SCENE_NAME);
 
+            this.uiController = SearchForScriptInScene<Player.UI.UiController>(uiScene);
+
+            yield return null;
+            //***********************
+            //initializing
+            this.playerModel.InitializePlayerModel();
+
+            this.playerController.InitializePlayerController(this);
+
+            if (worldController != null)
+            {
+                worldController.InitializeWorldController(this.playerController.transform);
+            }
+
+            this.uiController.InitializeUi(this.playerModel);
+
+            yield return null;
+            //***********************
+            //starting the game
             if (this.showIntroMenu)
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.Intro));
@@ -63,24 +98,22 @@ namespace Game.GameControl
             }
         }
 
-        void OnSceneLoadedEventHandler(Scene scene, LoadSceneMode mode)
-        {
-            if (scene.name == UI_SCENE_NAME)
-            {
-                var uiController = SearchForScriptInScene<Player.UI.UiController>(scene);
-                uiController.InitializeUi(this.playerModel);
-            }
-        }
-
         //###############################################################
         //###############################################################
 
-        protected static T SearchForScriptInScene<T>(Scene scene) where T : class
+        protected static T SearchForScriptInScene<T>(Scene scene) where T : Object
         {
             T result = null;
 
             foreach (var gameObject in scene.GetRootGameObjects())
             {
+                result = gameObject.GetComponent<T>();
+
+                if (result != null)
+                {
+                    break;
+                }
+
                 result = gameObject.GetComponentInChildren<T>();
 
                 if (result != null)

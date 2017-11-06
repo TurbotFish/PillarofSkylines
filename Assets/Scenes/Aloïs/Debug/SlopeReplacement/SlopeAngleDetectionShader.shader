@@ -52,33 +52,33 @@
 
 		void surf (Input IN, inout SurfaceOutputStandard o) {
 
-			float4 slopeColour = float4(0.13, 0.54, 0.08,1);
+			float4 slopeColour = float4(0.13, 0.54, 0.08,1);//flat ground colour
 			float _Green = o.Normal.g;
 
 			//float4 slopeColour = tex2D(_RampTex, float2(_Green, 0.5));
 
 			if(_Green < 0.95){
-				slopeColour = float4(0.73,0.11,0.11,1);//wrong slope
+				slopeColour = float4(0.5,0.91,0.3,1);//between flat and climbable colour
 			}
 
 			if(_Green <= 0.85){
-				slopeColour = float4(1,1,0,1);
+				slopeColour = float4(1,1,0,1);//climbable ground color
 			}
 
 			if(_Green < 0.8){
-				slopeColour = float4(0.73,0.11,0.11,1);//wrong slope
+				slopeColour = float4(0.73,0.11,0.11,1);//unauthorised slope colour
 			}
 
 			if(_Green <= 0.35){
-				slopeColour = float4(0.11,0.27,0.73,1);
+				slopeColour = float4(0.11,0.27,0.73,1);//slide ground colour
 			}
 
 			if(_Green < 0.3){
-				slopeColour = float4(0.73,0.11,0.11,1);//wrong slope
+				slopeColour = float4(0.73,0.11,0.11,1);//unauthorised slope colour
 			}
 
 			if(_Green <= 0.05){
-				slopeColour = 0;
+				slopeColour = 0;//wall colour
 			}
 
 			o.Albedo = slopeColour;

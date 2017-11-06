@@ -18,9 +18,11 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoRenderingMode ();
 		DoCulling ();
 		DoCelShading ();
+		DoRefraction ();
 		DoSubSurfaceScattering ();
 		DoMain ();
 		DoSecondary ();
+		DoDistanceDither ();
 		DoDebug ();
 	}
 
@@ -101,6 +103,24 @@ public class CustomPBR_GUI : ShaderGUI {
 		EditorGUI.indentLevel -= 2;
 	}
 
+	void DoDistanceDither(){
+		
+		GUILayout.Label ("Distance Dithering", EditorStyles.boldLabel);
+		MaterialProperty _distMin = FindProperty ("_DitherDistMin");
+		MaterialProperty _distMax = FindProperty ("_DitherDistMax");
+		EditorGUI.BeginChangeCheck ();
+
+		bool ditherOn = EditorGUILayout.Toggle(MakeLabel("Distance Dithering"), IsKeywordEnabled ("_DISTANCE_DITHER"));
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_DISTANCE_DITHER", ditherOn);
+		}
+
+		if (ditherOn) {
+			editor.ShaderProperty (_distMin, MakeLabel ("Distance Min"));
+			editor.ShaderProperty (_distMax, MakeLabel ("Distance Max"));
+		}
+	}
+
 	void DoSecondaryNormals(){
 		MaterialProperty map = FindProperty ("_DetailNormalMap");
 		Texture tex = map.textureValue;
@@ -153,12 +173,13 @@ public class CustomPBR_GUI : ShaderGUI {
 
 	void DoSubSurfaceScattering(){
 		GUILayout.Label ("Sub Surface Scattering", EditorStyles.boldLabel);
-		//MaterialProperty power = FindProperty ("_PowerSSS");
-		//MaterialProperty scale = FindProperty ("_ScaleSSS");
-		//MaterialProperty distortion = FindProperty ("_DistortionSSS");
-		//MaterialProperty atten = FindProperty ("_AttenuationSSS");
-		//MaterialProperty ambient = FindProperty ("_AmbientSSS");
-		//MaterialProperty diffuse = FindProperty ("_DiffuseSSS");
+
+		MaterialProperty power = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_PowerSSS") : null;
+		MaterialProperty scale = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_ScaleSSS") : null;
+		MaterialProperty distortion = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_DistortionSSS") : null;
+		MaterialProperty atten = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_AttenuationSSS") : null;
+		MaterialProperty ambient = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_AmbientSSS") : null;
+		//MaterialProperty diffuse = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_DiffuseSSS") : null;
 
 		MaterialProperty thickness = FindProperty ("_ThicknessMap");
 		Texture tex = thickness.textureValue;
@@ -169,23 +190,23 @@ public class CustomPBR_GUI : ShaderGUI {
 
 		if (EditorGUI.EndChangeCheck ()) {
 			SetKeyword ("_SSS", subSurfaceOn);
-
 		}
-
-
+		EditorGUI.indentLevel += 1;
 		if (subSurfaceOn) {
-			
-			//editor.ShaderProperty (power, MakeLabel (power));
-			//editor.ShaderProperty (scale, MakeLabel (scale));
-			//editor.ShaderProperty (distortion, MakeLabel (distortion));
-			//editor.ShaderProperty (atten, MakeLabel (atten));
-			//editor.ShaderProperty (ambient, MakeLabel (ambient));
-			//editor.ShaderProperty (diffuse, MakeLabel (diffuse));
-			editor.TexturePropertySingleLine (MakeLabel (thickness, "Thickness (R)"), thickness);
-
-			bool useSSSColour2 = EditorGUILayout.Toggle ("Colour 2", IsKeywordEnabled ("_SSSColour2"));
-			SetKeyword ("_SSSColour2", useSSSColour2);
+			if (IsKeywordEnabled ("_RENDERING_TRANSPARENT")) {
+				editor.ShaderProperty (power, MakeLabel (power));
+				editor.ShaderProperty (scale, MakeLabel (scale));
+				editor.ShaderProperty (distortion, MakeLabel (distortion));
+				editor.ShaderProperty (atten, MakeLabel (atten));
+				editor.ShaderProperty (ambient, MakeLabel (ambient));
+				//editor.ShaderProperty (diffuse, MakeLabel (diffuse));
+			} else {
+				bool useSSSColour2 = EditorGUILayout.Toggle ("The other colour", IsKeywordEnabled ("_SSSColour2"));
+				SetKeyword ("_SSSColour2", useSSSColour2);
+			}
+			editor.TexturePropertySingleLine (MakeLabel (thickness, "Thickness (R)"), thickness, IsKeywordEnabled ("_RENDERING_TRANSPARENT") ? FindProperty ("_DiffuseSSS") : null);
 		}
+		EditorGUI.indentLevel -= 1;
 	}
 
 	void DoOcclusion(){
@@ -337,6 +358,49 @@ public class CustomPBR_GUI : ShaderGUI {
 		}
 	}
 
+	void DoRefraction(){
+		GUILayout.Label ("Refraction", EditorStyles.boldLabel);
+
+		RenderingMode mode = RenderingMode.Opaque;
+		if (IsKeywordEnabled ("_RENDERING_CUTOUT")) {
+			mode = RenderingMode.Cutout;
+			shouldShowAlphaCutoff = true;
+		} else if (IsKeywordEnabled ("_RENDERING_FADE")) {
+			mode = RenderingMode.Fade;	
+		} else if (IsKeywordEnabled ("_RENDERING_TRANSPARENT")) {
+			mode = RenderingMode.Transparent;	
+		}
+
+
+		MaterialProperty refracAmount = FindProperty ("_RefractionAmount");
+
+		if (mode != RenderingMode.Transparent) {
+			SetKeyword ("_REFRACTION", false);
+		}
+
+		EditorGUI.BeginChangeCheck ();
+		bool refrac = EditorGUILayout.Toggle ("Refraction", IsKeywordEnabled ("_REFRACTION"));
+
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_REFRACTION", refrac);
+			SetKeyword ("_RENDERING_TRANSPARENT", refrac);
+
+			RenderingSettings settings = RenderingSettings.modes [refrac ? 4 : 0];
+			foreach (Material m in editor.targets) {
+				m.SetShaderPassEnabled ("Always", refrac);
+				m.renderQueue = (int)settings.queue;
+				m.SetOverrideTag ("RenderType", settings.renderType);
+				m.SetInt ("_SrcBlend", (int)settings.srcBlend);
+				m.SetInt ("_DstBlend", (int)settings.dstBlend);
+				m.SetInt ("_ZWrite", settings.zWrite ? 1 : 0);
+			}
+		}
+
+		if (refrac) {
+			editor.ShaderProperty (refracAmount, MakeLabel (refracAmount));
+		}
+	}
+
 	void DoCheckerDebug(){
 
 		EditorGUI.BeginChangeCheck ();
@@ -402,6 +466,14 @@ public class CustomPBR_GUI : ShaderGUI {
 				srcBlend = BlendMode.One,
 				dstBlend = BlendMode.OneMinusSrcAlpha,
 				zWrite = false
+			},
+			//special refraction setting
+			new RenderingSettings(){
+				queue = RenderQueue.Transparent,
+				renderType = "Custom",
+				srcBlend = BlendMode.One,
+				dstBlend = BlendMode.Zero,
+				zWrite = true
 			}
 		};
 	}

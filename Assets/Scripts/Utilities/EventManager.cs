@@ -73,11 +73,33 @@ namespace Game.Utilities
 
         public class OnShowMenuEventArgs : EventArgs
         {
-            public Player.UI.eUiState Menu { get; private set; }
+            /// <summary>
+            /// The id of the menu to switch to.
+            /// </summary>
+            public Player.UI.eUiState Menu { get; private set; }            
 
+            /// <summary>
+            /// Default Contructor.
+            /// </summary>
             public OnShowMenuEventArgs(Player.UI.eUiState menu)
             {
                 this.Menu = menu;
+            }          
+        }
+
+        public class OnShowPillarEntranceMenuEventArgs: OnShowMenuEventArgs
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+            public World.ePillarId PillarId { get; private set; }
+
+            /// <summary>
+            /// Constructor for the Pillar entrance menu.
+            /// </summary>
+            public OnShowPillarEntranceMenuEventArgs(World.ePillarId pillarId):base(Player.UI.eUiState.PillarEntrance)
+            {
+                this.PillarId = pillarId;
             }
         }
 
@@ -199,6 +221,32 @@ namespace Game.Utilities
         }
 
         #endregion scene changed event
+
+        //###########################################################
+        //###########################################################
+
+        #region enter pillar event
+
+        public class OnEnterPillarEventArgs : EventArgs
+        {
+            public World.ePillarId PillarId { get; private set; }
+
+            public OnEnterPillarEventArgs(World.ePillarId pillarId)
+            {
+                this.PillarId = pillarId;
+            }
+        }
+
+        public delegate void OnEnterPillarEventHandler(object sender, OnEnterPillarEventArgs args);
+
+        public static event OnEnterPillarEventHandler OnEnterPillarEvent;
+
+        public static void SendOnEnterPillarEvent(object sender, OnEnterPillarEventArgs args)
+        {
+            OnEnterPillarEvent?.Invoke(sender, args);
+        }
+
+        #endregion enter pillar event
 
         //###########################################################
         //###########################################################

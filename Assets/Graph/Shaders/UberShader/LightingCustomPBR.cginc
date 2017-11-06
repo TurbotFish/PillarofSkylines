@@ -37,6 +37,22 @@
 		float _NormalDistCulled;
 	#endif
 
+	#if defined(_DISTANCE_DITHER)
+		float _DitherDistMin;
+		float _DitherDistMax;
+	#endif
+
+	#if defined(_DITHER_OBSTRUCTION)
+		float _DitherObstrMin;
+		float _DitherObstrMax;
+		float _DistFromCam;
+	#endif
+
+	#if defined(_REFRACTION)
+		sampler2D _BackgroundTex;
+		float _RefractionAmount;
+	#endif
+
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
 	#include "WindSystem.cginc"
@@ -78,6 +94,15 @@
 
 		#if defined(VERTEXLIGHT_ON)
 			float3 vertexLightColor : TEXCOORD6;
+		#endif
+
+		#if defined(_DISTANCE_DITHER) || defined(_DITHER_OBSTRUCTION)
+			float4 screenPos : TEXCOORD7;
+		#endif
+
+		#if defined(_REFRACTION)
+			float4 grabPos : TEXCOORD8;
+			float4 refraction : TEXCOORD9;
 		#endif
 	};
 
@@ -214,6 +239,23 @@
 		return color;
 	}
 
+	#if defined(_DISTANCE_DITHER) || defined(_DITHER_OBSTRUCTION)
+		float Dither8x8Bayer( int x, int y )
+		{
+			const float dither[ 64 ] = {
+				 1, 49, 13, 61,  4, 52, 16, 64,
+				33, 17, 45, 29, 36, 20, 48, 32,
+				 9, 57,  5, 53, 12, 60,  8, 56,
+				41, 25, 37, 21, 44, 28, 40, 24,
+				 3, 51, 15, 63,  2, 50, 14, 62,
+				35, 19, 47, 31, 34, 18, 46, 30,
+				11, 59,  7, 55, 10, 58,  6, 54,
+				43, 27, 39, 23, 42, 26, 38, 22};
+			int r = y * 8 + x;
+			return (dither[r]) / 64;
+		}
+	#endif
+
 
 	Interpolators MyVertexProgram(VertexData v) {
 		Interpolators i;
@@ -228,10 +270,17 @@
 		i.pos = UnityObjectToClipPos(v.vertex);
 		i.worldPos.xyz = mul(unity_ObjectToWorld, v.vertex);
 
-
+		#if defined(_DISTANCE_DITHER) || defined(_DITHER_OBSTRUCTION)
+			i.screenPos = ComputeScreenPos(i.pos);
+		#endif
 
 		#if FOG_DEPTH
 			i.worldPos.w = i.pos.z;
+		#endif
+
+		#if defined(_REFRACTION)
+			i.grabPos = ComputeGrabScreenPos(i.pos);
+			i.refraction = mul(unity_ObjectToWorld, float4(-v.normal.xy, v.normal.z, 1)) * _RefractionAmount;
 		#endif
 
 
@@ -435,10 +484,30 @@
 			clip(alpha - _AlphaCutoff);
 		#endif
 
+		float3 viewVec = _WorldSpaceCameraPos - i.worldPos.xyz;
+		float3 viewDir = normalize(viewVec);
+
+		#if defined(_DISTANCE_DITHER) || defined(_DITHER_OBSTRUCTION)
+			float2 clipScreen = (i.screenPos.xy / i.screenPos.w) * _ScreenParams.xy;
+			float sqrViewDist = dot(viewVec, viewVec);
+			float bayer = Dither8x8Bayer(fmod(clipScreen.x,8), fmod(clipScreen.y,8));
+
+			#if defined(_DITHER_OBSTRUCTION)
+				float obstrCamDist = saturate((_DistFromCam - _DitherObstrMin)/(_DitherObstrMax - _DitherObstrMin));
+				clip(obstrCamDist - bayer);
+			#endif
+
+
+			#if defined(_DISTANCE_DITHER)
+				float dist2Cam = 1 - saturate((sqrViewDist - _DitherDistMin) / (_DitherDistMax - _DitherDistMin));
+				clip(dist2Cam - bayer);
+			#endif
+		#endif
+
 		InitializeFragmentNormal(i);
 		//i.normal = normalize(i.normal);
 
-		float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos.xyz);
+
 
 		float3 specularTint;
 		float oneMinusReflectivity;
@@ -456,6 +525,16 @@
 		#if defined(_RENDERING_TRANSPARENT)
 			albedo *= alpha;
 			alpha = 1 - oneMinusReflectivity + alpha * oneMinusReflectivity;
+		#endif
+
+		#if defined(_REFRACTION)
+			#if defined(_SSS)
+					float4 refracColour = tex2Dproj(_BackgroundTex, UNITY_PROJ_COORD(i.grabPos + i.refraction * GetThickness(i)));
+
+				#else
+					float4 refracColour = tex2Dproj(_BackgroundTex, UNITY_PROJ_COORD(i.grabPos + i.refraction));
+				#endif
+			albedo *= refracColour;
 		#endif
 
 
