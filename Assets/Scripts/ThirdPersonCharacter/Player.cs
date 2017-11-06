@@ -626,9 +626,8 @@ public class Player : MonoBehaviour {
 				flatVelocity = velocity;
 				velocity.y = 0;
 				//targetVelocity = inputToCamera * characSpeed;
-				Debug.Log("used wind velocity : " + windVelocity);
 				flatVelocity = Vector3.Lerp(flatVelocity, windVelocity, airControl * Time.deltaTime);
-				Debug.Log("final velocity : " + flatVelocity);
+				Debug.Log("used wind velocity : " + windVelocity + " final velocity : " + flatVelocity);
 				windVelocity = Vector3.zero;
 				if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash)) {
 					StartDash();
@@ -686,6 +685,9 @@ public class Player : MonoBehaviour {
 				if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > minWallAngle || !controller.collisions.below) {
 					currentPlayerState = ePlayerState.inAir;
 				}
+				if (inWindTunnel) {
+					currentPlayerState = ePlayerState.inWindTunnel;
+				}
 				break;
 
 
@@ -722,6 +724,7 @@ public class Player : MonoBehaviour {
 			case ePlayerState.inWindTunnel:
 				if (!inWindTunnel){
 					currentPlayerState = ePlayerState.inAir;
+					keepMomentum = true;
 				}
 				break;
 		}
@@ -783,9 +786,9 @@ public class Player : MonoBehaviour {
 		inWindTunnel = true;
 		if (windVelocity == Vector3.zero)
 		{
-			windVelocity = newVelocity * Time.deltaTime;
+			windVelocity = newVelocity;
 		} else {
-			windVelocity = Vector3.Lerp((newVelocity), windVelocity, .5f) * Time.deltaTime;
+			windVelocity = Vector3.Lerp((newVelocity), windVelocity, .5f);
 		}
 	}
 	public void ExitWindTunnel(){
