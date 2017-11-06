@@ -753,7 +753,7 @@ public class Player : MonoBehaviour {
     void OnDestroy()
     {
         Game.Utilities.EventManager.OnMenuSwitchedEvent -= HandleEventMenuSwitched;
-        Game.Utilities.EventManager.OnPlayerSpawnedEvent -= HandleEventPlayerSpawnedSwitched;
+        Game.Utilities.EventManager.OnPlayerSpawnedEvent -= HandleEventPlayerSpawned;
     }
 
     void StartDash(){
