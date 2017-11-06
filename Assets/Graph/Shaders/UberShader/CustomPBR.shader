@@ -84,6 +84,8 @@ Shader "Alo/PBR/CustomPBR" {
 			Blend [_SrcBlend] [_DstBlend]
 			ZWrite [_ZWrite]
 
+			Cull [_Cull]
+
 			CGPROGRAM
 
 			#pragma target 3.0
@@ -136,6 +138,8 @@ Shader "Alo/PBR/CustomPBR" {
 
 			Blend [_SrcBlend] One
 			ZWrite Off
+
+			Cull [_Cull]
 
 			CGPROGRAM
 
