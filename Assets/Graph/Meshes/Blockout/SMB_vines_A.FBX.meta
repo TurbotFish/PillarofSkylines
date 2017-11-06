@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: ea7b673b2a6106c4fad84e291e1a13d2
-timeCreated: 1509729901
+guid: 8cf6c2b0c34793a48bd57bce7fca46aa
+timeCreated: 1509965176
 licenseType: Pro
 ModelImporter:
   serializedVersion: 21
@@ -9,7 +9,7 @@ ModelImporter:
     400000: //RootNode
     2300000: //RootNode
     3300000: //RootNode
-    4300000: foliageSquare_D
+    4300000: Line043
     9500000: //RootNode
   materials:
     importMaterials: 1
