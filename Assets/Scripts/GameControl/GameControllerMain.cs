@@ -264,6 +264,13 @@ namespace Game.GameControl
 
             foreach (var gameObject in scene.GetRootGameObjects())
             {
+                result = gameObject.GetComponent<T>();
+
+                if (result != null)
+                {
+                    break;
+                }
+
                 result = gameObject.GetComponentInChildren<T>();
 
                 if (result != null)

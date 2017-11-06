@@ -316,6 +316,8 @@ public class Player : MonoBehaviour {
 	Vector3 windVelocity;
 
 	float currentSpeed;
+
+    bool isInitialized = false;
 	#endregion private variables
 
 
@@ -360,6 +362,10 @@ public class Player : MonoBehaviour {
 
 
 	void Update(){
+        if (!this.isInitialized)
+        {
+            return;
+        }
 
 		#region update timers
 		dashTimer -= Time.deltaTime;
@@ -816,6 +822,8 @@ public class Player : MonoBehaviour {
 
 
 	public void InitializePlayer(PlayerModel playmod) {
+        this.isInitialized = true;
+
 		playerMod = playmod;
 	}
 

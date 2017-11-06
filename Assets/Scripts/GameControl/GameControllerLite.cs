@@ -51,15 +51,16 @@ namespace Game.GameControl
 
         IEnumerator LoadScenesRoutine()
         {
+            //***********************
             //getting references in local scene
             this.playerModel = GetComponentInChildren<Player.PlayerModel>();
             this.echoManager = GetComponentInChildren<EchoManager>();
 
-            var player = SearchForScriptInScene<Player.PlayerController>(SceneManager.GetActiveScene());
-            var worldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(SceneManager.GetActiveScene());
+            this.playerController = SearchForScriptInScene<Player.PlayerController>(SceneManager.GetActiveScene());
+            this.worldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(SceneManager.GetActiveScene());
 
             yield return null;
-
+            //***********************
             //loading UI scene
             SceneManager.LoadScene(UI_SCENE_NAME, LoadSceneMode.Additive);
 
@@ -71,19 +72,21 @@ namespace Game.GameControl
             this.uiController = SearchForScriptInScene<Player.UI.UiController>(uiScene);
 
             yield return null;
-
+            //***********************
             //initializing
             this.playerModel.InitializePlayerModel();
 
-            player.InitializePlayerController(this);
+            this.playerController.InitializePlayerController(this);
 
             if (worldController != null)
             {
-                worldController.InitializeWorldController(player.transform);
+                worldController.InitializeWorldController(this.playerController.transform);
             }
 
             this.uiController.InitializeUi(this.playerModel);
 
+            yield return null;
+            //***********************
             //starting the game
             if (this.showIntroMenu)
             {
@@ -98,12 +101,19 @@ namespace Game.GameControl
         //###############################################################
         //###############################################################
 
-        protected static T SearchForScriptInScene<T>(Scene scene) where T : class
+        protected static T SearchForScriptInScene<T>(Scene scene) where T : Object
         {
             T result = null;
 
             foreach (var gameObject in scene.GetRootGameObjects())
             {
+                result = gameObject.GetComponent<T>();
+
+                if (result != null)
+                {
+                    break;
+                }
+
                 result = gameObject.GetComponentInChildren<T>();
 
                 if (result != null)
