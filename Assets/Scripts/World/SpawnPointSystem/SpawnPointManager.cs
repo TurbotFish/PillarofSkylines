@@ -7,10 +7,11 @@ namespace Game.World.SpawnPointSystem
     public class SpawnPointManager : MonoBehaviour
     {
         SpawnPoint initialSpawnPoint;
-
         Dictionary<ePillarId, SpawnPoint> pillarExitPointDictionary = new Dictionary<ePillarId, SpawnPoint>();
 
-        void Start()
+        bool isInitialized = false;
+
+        void Initialize()
         {
             var children = GetComponentsInChildren<SpawnPoint>();
 
@@ -31,15 +32,27 @@ namespace Game.World.SpawnPointSystem
                     }
                 }
             }
+
+            this.isInitialized = true;
         }
 
         public Vector3 GetInitialSpawnPoint()
         {
+            if (!this.isInitialized)
+            {
+                Initialize();
+            }
+
             return this.initialSpawnPoint.transform.position;
         }
 
         public Vector3 GetPillarExitPoint(ePillarId pillar)
         {
+            if (!this.isInitialized)
+            {
+                Initialize();
+            }
+
             return this.pillarExitPointDictionary[pillar].transform.position;
         }
     }

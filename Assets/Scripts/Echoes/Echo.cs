@@ -16,6 +16,7 @@ public class Echo : MonoBehaviour {
     ParticleSystem particles;
     new Renderer renderer;
     EchoManager echoManager;
+	int pickUpLayer;
     Transform pool;
 
 	void Start() {
@@ -26,6 +27,8 @@ public class Echo : MonoBehaviour {
         collider = GetComponent<BoxCollider>();
         collider.isTrigger = true;
         defaultColliderSize = collider.size;
+
+		pickUpLayer = gameObject.layer;
 
         echoManager = FindObjectOfType<EchoManager>();
         pool = echoManager.pool;
@@ -63,6 +66,7 @@ public class Echo : MonoBehaviour {
         particles.Pause();
         renderer.sharedMaterial = solidMaterial;
         renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+		gameObject.layer = 0;
         isFrozen = true;
 
         collider.size *= colliderSizeWhenSolid;
@@ -73,7 +77,8 @@ public class Echo : MonoBehaviour {
         if (!particles) Start();
         particles.Play();
         renderer.sharedMaterial = defaultMaterial;
-        renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+		renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+		gameObject.layer = pickUpLayer;
         isFrozen = false;
 
         collider.size = defaultColliderSize;

@@ -1,10 +1,10 @@
-﻿using UnityEngine;
-using UnityEngine.EventSystems;
+﻿//using UnityEngine;
+//using UnityEngine.EventSystems;
 
-public class DropZone : MonoBehaviour, IDropHandler {
-    #region IDropHandler implementation
-    public void OnDrop(PointerEventData eventData) {
-        DragHandler.itemBeingDragged.transform.SetParent(transform);
-    }
-    #endregion
-}
+//public class DropZone : MonoBehaviour, IDropHandler {
+//    #region IDropHandler implementation
+//    public void OnDrop(PointerEventData eventData) {
+//        DragHandler.itemBeingDragged.transform.SetParent(transform);
+//    }
+//    #endregion
+//}

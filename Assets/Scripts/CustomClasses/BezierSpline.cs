@@ -101,6 +101,9 @@ public class BezierSpline : MonoBehaviour {
 	}
 
 
+	public int GetPointAmount () {
+		return points.Length;
+	}
 
 	public Vector3 GetPoint (float t) {
 		int i;

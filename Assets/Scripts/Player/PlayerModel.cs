@@ -27,11 +27,14 @@ namespace Game.Player
         //ability data
         [SerializeField]
         AbilitySystem.AbilityData abilityData;
-
         public AbilitySystem.AbilityData AbilityData { get { return this.abilityData; } }
 
+        //pillar data
+        World.PillarData pillarData;
+        public World.PillarData PillarData { get { return this.pillarData; } }
 
-
+        //
+        public bool hasNeedle;
 
         //
         int favours = 0;
@@ -50,15 +53,25 @@ namespace Game.Player
         List<eAbilityType> activatedAbilities = new List<eAbilityType>();
         List<eAbilityType> flaggedAbilities = new List<eAbilityType>();
 
+        //
+        List<World.ePillarId> destoyedPillars = new List<World.ePillarId>();
+
 
         //###########################################################
+
+        public void InitializePlayerModel()
+        {
+            this.pillarData = Resources.Load<World.PillarData>("ScriptableObjects/PillarData");
+
+            UnlockAbilityGroup(eAbilityGroup.test);
+        }
 
         #region monobehaviour methods
 
         // Use this for initialization
         void Start()
         {
-            UnlockAbilityGroup(eAbilityGroup.test);
+
         }
 
         // Update is called once per frame
@@ -285,6 +298,26 @@ namespace Game.Player
         }
 
         #endregion ability flagging methods
+
+        //###########################################################
+
+        public void SetPillarDestroyed(World.ePillarId pillarId)
+        {
+            if (!this.destoyedPillars.Contains(pillarId))
+            {
+                this.destoyedPillars.Add(pillarId);
+            }
+        }
+
+        public bool IsPillarDestroyed(World.ePillarId pillarId)
+        {
+            if (this.destoyedPillars.Contains(pillarId))
+            {
+                return true;
+            }
+
+            return false;
+        }
 
         //###########################################################
     }

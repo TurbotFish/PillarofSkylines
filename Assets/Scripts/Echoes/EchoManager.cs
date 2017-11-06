@@ -49,14 +49,8 @@ public class EchoManager : MonoBehaviour {
                 Drift();
             if (Input.GetButtonUp("Echo")) 
                 CreateEcho();
-        } else if (Input.GetButtonUp("Drift")) {
-                StopEclipse();
         }
 	}
-
-    public void StopEclipse() {
-        EclipseManager.instance.StopEclipse();
-    }
 
     public void Drift() {
         if (echoes.Count > 0) {
