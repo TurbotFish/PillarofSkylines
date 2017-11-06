@@ -26,12 +26,8 @@ namespace grreuze {
 			currentScrollViewHeight = position.height / 2;
 			cursorChangeRect = new Rect(0, currentScrollViewHeight, position.width, 1f);
 
-			separator = EditorGUIUtility.whiteTexture;
-			for (int i = 0; i < separator.width; i++) {
-				for (int j = 0; j < separator.height; j++) {
-					separator.SetPixel(i, j, new Color(0, 0, 0, .5f));
-				}
-			}
+            separator = new Texture2D(1, 1);
+            separator.SetPixel(0, 0, new Color(0, 0, 0, .5f));
 			separator.Apply();
 		}
 
