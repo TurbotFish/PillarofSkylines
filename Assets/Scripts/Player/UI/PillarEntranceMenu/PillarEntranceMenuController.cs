@@ -9,10 +9,17 @@ namespace Game.Player.UI.PillarEntranceMenu
         [SerializeField]
         CostPanelView costPanelView;
 
+        [SerializeField]
+        GameObject warningMessage;
+
         PlayerModel playerModel;
 
+        //
+        World.ePillarId pillarId;
+        bool canEnterPillar = false;
+
+        //
         public bool IsActive { get; private set; }
-        bool isMenuButtonDown = false;
 
         //###########################################################
 
@@ -32,15 +39,15 @@ namespace Game.Player.UI.PillarEntranceMenu
                 return;
             }
 
-            if (Input.GetButton("Menu") && !this.isMenuButtonDown)
+            if (Input.GetButtonDown("MenuButton"))
             {
-                this.isMenuButtonDown = true;
-
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HUD));
             }
-            else if (!Input.GetButton("Menu") && this.isMenuButtonDown)
+
+            if (Input.GetButtonDown("Sprint"))
             {
-                this.isMenuButtonDown = false;
+                this.playerModel.Favours -= this.playerModel.PillarData.GetPillarEntryPrice(this.pillarId);
+                Utilities.EventManager.SendOnEnterPillarEvent(this, new Utilities.EventManager.OnEnterPillarEventArgs(this.pillarId));
             }
         }
 
@@ -53,15 +60,35 @@ namespace Game.Player.UI.PillarEntranceMenu
             this.playerModel = playerModel;
         }
 
-        void IUiState.Activate()
+        void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
         {
             if (this.IsActive)
             {
                 return;
             }
+            else if (!(args is Utilities.EventManager.OnShowPillarEntranceMenuEventArgs))
+            {
+                throw new System.Exception("ERROR!");
+            }
 
             this.IsActive = true;
             this.gameObject.SetActive(true);
+
+
+            this.pillarId = (args as Utilities.EventManager.OnShowPillarEntranceMenuEventArgs).PillarId;
+
+            int cost = this.playerModel.PillarData.GetPillarEntryPrice(this.pillarId);
+            this.costPanelView.Initialize(cost);
+
+            if (this.playerModel.Favours < cost)
+            {
+                this.warningMessage.SetActive(true);
+            }
+            else
+            {
+                this.warningMessage.SetActive(false);
+                this.canEnterPillar = true;
+            }
         }
 
         void IUiState.Deactivate()

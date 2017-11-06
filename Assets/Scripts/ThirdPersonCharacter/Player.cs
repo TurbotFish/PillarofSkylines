@@ -316,6 +316,8 @@ public class Player : MonoBehaviour {
 	Vector3 windVelocity;
 
 	float currentSpeed;
+
+    bool isInitialized = false;
 	#endregion private variables
 
 
@@ -360,6 +362,10 @@ public class Player : MonoBehaviour {
 
 
 	void Update(){
+        if (!this.isInitialized)
+        {
+            return;
+        }
 
 		#region update timers
 		dashTimer -= Time.deltaTime;
@@ -750,7 +756,13 @@ public class Player : MonoBehaviour {
 
 	}
 
-	void StartDash(){
+    void OnDestroy()
+    {
+        Game.Utilities.EventManager.OnMenuSwitchedEvent -= HandleEventMenuSwitched;
+        Game.Utilities.EventManager.OnPlayerSpawnedEvent -= HandleEventPlayerSpawned;
+    }
+
+    void StartDash(){
 		playerMod.FlagAbility (eAbilityType.Dash);
 		currentPlayerState = ePlayerState.dashing;
 		dashDuration = dashSpeed;
@@ -810,6 +822,8 @@ public class Player : MonoBehaviour {
 
 
 	public void InitializePlayer(PlayerModel playmod) {
+        this.isInitialized = true;
+
 		playerMod = playmod;
 	}
 
