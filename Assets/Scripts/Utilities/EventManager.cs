@@ -159,28 +159,36 @@ namespace Game.Utilities
 
         //###########################################################
 
-        #region player spawned event
+        #region teleport player event
 
-        public class OnPlayerSpawnedEventArgs : EventArgs
+        public class OnTeleportPlayerEventArgs : EventArgs
         {
+            /// <summary>
+            /// The Position the Player should be teleported to.
+            /// </summary>
             public Vector3 Position { get; private set; }
 
-            public OnPlayerSpawnedEventArgs(Vector3 position)
+            /// <summary>
+            /// value='true' means that the current scene was switched. value='false' means that the player is teleported inside the current scene.
+            /// </summary>
+            public bool IsNewScene { get; private set; }
+
+            public OnTeleportPlayerEventArgs(Vector3 position, bool isNewScene)
             {
                 this.Position = position;
             }
         }
 
-        public delegate void OnPlayerSpawnedEventHandler(object sender, OnPlayerSpawnedEventArgs args);
+        public delegate void OnTeleportPlayerEventHandler(object sender, OnTeleportPlayerEventArgs args);
 
-        public static event OnPlayerSpawnedEventHandler OnPlayerSpawnedEvent;
+        public static event OnTeleportPlayerEventHandler TeleportPlayerEvent;
 
-        public static void SendOnPlayerSpawnedEvent(object sender, OnPlayerSpawnedEventArgs args)
+        public static void SendTeleportPlayerEvent(object sender, OnTeleportPlayerEventArgs args)
         {
-            OnPlayerSpawnedEvent?.Invoke(sender, args);
+            TeleportPlayerEvent?.Invoke(sender, args);
         }
 
-        #endregion player spawned event
+        #endregion teleport player event
 
         //###########################################################
         //###########################################################
