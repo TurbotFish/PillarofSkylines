@@ -12,9 +12,9 @@ ModelImporter:
     4300000: SMB_groundDetail_C
     6400000: //RootNode
   materials:
-    importMaterials: 1
-    materialName: 1
-    materialSearch: 2
+    importMaterials: 0
+    materialName: 0
+    materialSearch: 1
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
@@ -59,7 +59,7 @@ ModelImporter:
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
-    tangentImportMode: 3
+    tangentImportMode: 1
     normalCalculationMode: 4
   importAnimation: 0
   copyAvatar: 0
@@ -83,6 +83,6 @@ ModelImporter:
   animationType: 0
   humanoidOversampling: 1
   additionalBone: 0
-  userData: 
+  userData: DIO_applied
   assetBundleName: 
   assetBundleVariant: 

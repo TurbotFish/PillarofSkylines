@@ -124,6 +124,7 @@ public class PoS_Camera : MonoBehaviour {
 
 	void LateUpdate() {
 		deltaTime = Time.deltaTime;
+        
 		GetInputsAndStates();
 		DoRotation();
 
@@ -138,8 +139,8 @@ public class PoS_Camera : MonoBehaviour {
 		offset.y = Mathf.Lerp(offsetClose.y, offsetFar.y, currentDistance / maxDistance);
 
 		Vector3 targetPos = target.position;
-
-		CheckForCollision(targetPos);
+        
+        CheckForCollision(targetPos);
 
 		negDistance.z = -currentDistance;
 		Vector3 targetWithOffset = targetPos + my.right * offset.x + my.up * offset.y;
@@ -216,18 +217,18 @@ public class PoS_Camera : MonoBehaviour {
 			inPanorama = true;
 		}
 	}
-	#endregion
-
+    #endregion
+    
     void OnTeleportPlayer(object sender, Game.Utilities.EventManager.OnTeleportPlayerEventArgs args) {
-        if (args.IsNewScene)
-        {
+        if (args.IsNewScene) {
             PlaceBehindPlayerNoLerp();
         }
-        else
-        {
+        else {
+            print("yo je me tp là: " + lastFrameOffset);
+            my.position = args.Position - lastFrameOffset;
             negDistance.z = -currentDistance;
             Vector3 targetWithOffset = args.Position + my.right * offset.x + my.up * offset.y;
-            camPosition = my.position = my.rotation * negDistance + targetWithOffset;
+            camPosition = my.rotation * negDistance + targetWithOffset;
         }
     }
 
@@ -266,20 +267,23 @@ public class PoS_Camera : MonoBehaviour {
             canAutoReset = true;
 
 		} else if (state != eCameraState.Resetting) {
-            if (canAutoReset && Time.time > lastInput + timeBeforeAutoReset && !onEdgeOfCliff) { // Si ça fait genre 5 secondes qu'on n'a pas touché à la caméra on reset parce que bon
+            /*if (canAutoReset && Time.time > lastInput + timeBeforeAutoReset && !onEdgeOfCliff) { // Si ça fait genre 5 secondes qu'on n'a pas touché à la caméra on reset parce que bon
                 state = eCameraState.Resetting;
                 SetTargetRotation(defaultPitch - slopeValue, GetYawBehindPlayer(), autoResetDamp);
                 manualPitch = defaultPitch - slopeValue;
                 canAutoReset = false;
+            } else */
 
-            } else if (playerState == ePlayerState.onGround) {
+            // POUR LES BORDS
+            onEdgeOfCliff = playerState == ePlayerState.onGround &&
+                            !Physics.Raycast(target.position, player.transform.forward, 1, blockingLayer)
+                         && !Physics.Raycast(target.position + player.transform.forward * cliffEdgeMaxWidth,
+                            -target.up, cliffMinDepth, blockingLayer);
 
-				// POUR LES BORDS
-				onEdgeOfCliff = !Physics.Raycast(target.position, player.transform.forward, 1, blockingLayer) 
-					         && !Physics.Raycast(target.position + player.transform.forward * cliffEdgeMaxWidth, 
-                                -target.up, cliffMinDepth, blockingLayer);
+            if (playerState == ePlayerState.onGround) {
 
-				if (playerVelocity != Vector3.zero) {
+                additionalDistance = 0;
+                if (playerVelocity != Vector3.zero) {
 					state = eCameraState.Default;
                     SetTargetRotation(slopeValue + manualPitch, null, resetDamp);
 
@@ -289,6 +293,8 @@ public class PoS_Camera : MonoBehaviour {
                 }
 			} else {
 				state = eCameraState.Air;
+                if (additionalDistance > -5)
+                    additionalDistance -= deltaTime / autoResetDamp;
 				autoAdjustPitch = false;
 				autoAdjustYaw = false;
 			}
@@ -397,9 +403,11 @@ public class PoS_Camera : MonoBehaviour {
 		currentDistance = Mathf.Lerp(currentDistance, fixedDistance, fixedDistance < currentDistance + .1f ? deltaTime / dampWhenColliding : deltaTime / dampAfterColliding);
 	}
 
+    Vector3 lastFrameOffset;
 	void SmoothMovement() {
 		float t = smoothMovement ? deltaTime / smoothDamp : 1;
 		my.position = Vector3.Lerp(my.position, camPosition, t);
+        lastFrameOffset = target.position - my.position;
 		my.rotation = Quaternion.Lerp(my.rotation, camRotation, t);
 	}
 
