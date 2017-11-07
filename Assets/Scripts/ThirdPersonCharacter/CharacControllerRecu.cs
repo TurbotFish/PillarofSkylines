@@ -209,14 +209,20 @@ public class CharacControllerRecu : MonoBehaviour
 			//Get the remaining velocity after getting to the obstacle
 			Vector3 extraVelocity = (velocity - movementVector);
 
+			//Detect the obstacle met from above to check if it's a step
 //			Debug.DrawRay(myTransform.position + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up * (height + radius * 2), Color.red);
 			if (myPlayer.currentPlayerState == ePlayerState.onGround && Physics.Raycast(myTransform.position + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up, out hit2, height + radius * 2, collisionMask)) {
 				collisions.stepHeight = (height + radius * 2) - hit2.distance;
-//				print("new ground angle : " + Vector3.Angle(hit2.normal, myTransform.up) + ", step height : " + collisions.stepHeight + ", dot product : " + Vector3.Dot(hit.point-transform.position, collisions.currentGroundNormal));
-				if (Vector3.Angle(hit2.normal, myTransform.up) < myPlayer.maxSlopeAngle && collisions.stepHeight < myPlayer.maxStepHeight && Vector3.Dot(hit.point-transform.position, collisions.currentGroundNormal) > .1f) {
-					stepOffset = myTransform.up * collisions.stepHeight;
+				// Once checked if it's a step, check if it's not too high, and if it's not a slope
+				print("new ground angle : " + Vector3.Angle(hit2.normal, myTransform.up) + ", step height : " + collisions.stepHeight + ", dot product : " + Vector3.Dot(hit.normal, hit2.normal));
+				if (Vector3.Angle(hit2.normal, myTransform.up) < myPlayer.maxSlopeAngle && collisions.stepHeight < myPlayer.maxStepHeight && Vector3.Dot(hit.normal, hit2.normal) < .95f) {
+					if (Physics.SphereCast(myTransform.position + movementVector + myTransform.up * collisions.stepHeight, radius, -myTransform.up, out hit2, collisions.stepHeight, collisionMask)) {
+						stepOffset = myTransform.up * (collisions.stepHeight - hit2.distance);
+					} else {
+						stepOffset = myTransform.up * collisions.stepHeight;
+					}
 					climbingStep = true;
-//					print("added step offset");
+					print("added step offset");
 				} else {
 					climbingStep = false;
 				}
@@ -232,7 +238,8 @@ public class CharacControllerRecu : MonoBehaviour
 				//if the player is on the ground, count the ground as a first collision
 				//once the extra velocity has been projected, Call the function once more to check if this new velocity meets obstacle and do everything again
 				if (climbingStep) {
-					reflection = CollisionDetection(extraVelocity, position + movementVector * (1 + skinWidth) + myTransform.up * collisions.stepHeight, hit);
+					// If the controller detected the player is going up a step, send a new detection from above the step
+					reflection = CollisionDetection(extraVelocity, position + movementVector * (1 + skinWidth) + stepOffset, hit);
 				} else {
 					if (collisionNumber > 1) {
 						if (Vector3.Dot(hit.normal, oldHit.normal) < 0) {
