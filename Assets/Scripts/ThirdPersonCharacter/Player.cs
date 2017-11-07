@@ -47,6 +47,11 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	[Tooltip("The strength of the camera offset when the player lands on ground.")]
 	public float landingCameraOffsetStrength = .5f;
+	/// <summary>
+	/// The maximum height of step the player can climb.
+	/// </summary>
+	[Tooltip("The maximum height of step the player can climb.")]
+	public float maxStepHeight = 1f;
 	#endregion general
 
 	#region speed and controls variables
@@ -518,15 +523,11 @@ public class Player : MonoBehaviour {
 				// Detects if the player is moving up or down the slope, and multiply their speed based on that slope
 				if (Vector3.Angle(transform.up, controller.collisions.currentGroundNormal) > minSlopeAngle)
 					flatVelocity *= 1 + slopeCoeff * Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (maxSlopeAngle);
-
-				if (controller.collisions.side) {
-
-				}
-
+				
 				if (pressedJump) {
 					pressedJump = false;
 					velocity.y = 0f;
-					flatVelocity += maxJumpVelocity/2 * TurnSpaceToLocal(controller.collisions.currentGroundNormal) + maxJumpVelocity/2 * Vector3.up;
+					flatVelocity +=  maxJumpVelocity * Vector3.up + flatVelocity/10f;
 					currentPlayerState = ePlayerState.inAir;
 					lastJumpAerial = false;
 				}
