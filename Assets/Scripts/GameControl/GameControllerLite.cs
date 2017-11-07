@@ -16,8 +16,8 @@ namespace Game.GameControl
         Player.PlayerModel playerModel;
         public Player.PlayerModel PlayerModel { get { return this.playerModel; } }
 
-        EchoManager echoManager;
-        public EchoManager EchoManager { get { return this.echoManager; } }
+        EchoSystem.EchoManager echoManager;
+        public EchoSystem.EchoManager EchoManager { get { return this.echoManager; } }
 
         Player.PlayerController playerController;
         public Player.PlayerController PlayerController { get { return this.playerController; } }
@@ -36,7 +36,7 @@ namespace Game.GameControl
             StartCoroutine(LoadScenesRoutine());
 
             //cleaning up, just in case
-            var echoManagers = FindObjectsOfType<EchoManager>();
+            var echoManagers = FindObjectsOfType<EchoSystem.EchoManager>();
             foreach(var echoManager in echoManagers)
             {
                 if(echoManager != this.echoManager)
@@ -54,7 +54,7 @@ namespace Game.GameControl
             //***********************
             //getting references in local scene
             this.playerModel = GetComponentInChildren<Player.PlayerModel>();
-            this.echoManager = GetComponentInChildren<EchoManager>();
+            this.echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
 
             this.playerController = SearchForScriptInScene<Player.PlayerController>(SceneManager.GetActiveScene());
             this.worldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(SceneManager.GetActiveScene());

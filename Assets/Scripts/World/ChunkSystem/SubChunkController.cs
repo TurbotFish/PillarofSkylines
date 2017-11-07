@@ -83,6 +83,13 @@ namespace Game.World.ChunkSystem
                 var go = Instantiate(this.gameObject, parent);
 
                 go.GetComponent<SubChunkController>().InitializeSubChunkCopy(this);
+
+                var colliders = go.GetComponentsInChildren<Collider>(true);
+
+                foreach (var collider in colliders)
+                {
+                    Destroy(collider);
+                }
             }
         }
 

@@ -20,8 +20,8 @@ namespace Game.GameControl
 
         TimeController timeController;
 
-        EchoManager echoManager;
-        public EchoManager EchoManager { get { return this.echoManager; } }
+        EchoSystem.EchoManager echoManager;
+        public EchoSystem.EchoManager EchoManager { get { return this.echoManager; } }
 
         Player.PlayerController playerController;
         public Player.PlayerController PlayerController { get { return this.playerController; } }
@@ -319,7 +319,7 @@ namespace Game.GameControl
             }
 
             //cleaning up old EchoManagers
-            var echoManagers = SearchForScriptsInScene<EchoManager>(scene);
+            var echoManagers = SearchForScriptsInScene<EchoSystem.EchoManager>(scene);
             foreach (var echoManager in echoManagers)
             {
                 Destroy(echoManager.gameObject);

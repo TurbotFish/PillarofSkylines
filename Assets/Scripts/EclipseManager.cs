@@ -1,76 +1,97 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class EclipseManager : MonoBehaviour {
+namespace Game
+{
+    public class EclipseManager : MonoBehaviour
+    {
 
-    [TestButton("Start Eclipse", "StartEclipse", isActiveInEditor = false)]
-    [TestButton("Stop Eclipse", "StopEclipse", isActiveInEditor = false)]
-    public bool isEclipseActive;
+        [TestButton("Start Eclipse", "StartEclipse", isActiveInEditor = false)]
+        [TestButton("Stop Eclipse", "StopEclipse", isActiveInEditor = false)]
+        public bool isEclipseActive;
 
-	public float rotationDuration = 1;
-	public Vector3 regularGravity;
-	public Vector3 eclipseGravity;
+        public float rotationDuration = 1;
+        public Vector3 regularGravity;
+        public Vector3 eclipseGravity;
 
-    [SerializeField]
-    Transform pillar;
+        [SerializeField]
+        Transform pillar;
 
-    EchoManager echoes;
-    Player player;
-    Needle needle;
+        Game.EchoSystem.EchoManager echoes;
+        global::Player player;
 
-    #region Singleton
-    public static EclipseManager instance;
-    void Awake() {
-        if (!instance) {
-            instance = this;
-            //DontDestroyOnLoad(gameObject);
-        } else if (instance != this)
-            Destroy(gameObject);
+        #region Singleton
+        public static EclipseManager instance;
+        void Awake()
+        {
+            if (!instance)
+            {
+                instance = this;
+                //DontDestroyOnLoad(gameObject);
+            }
+            else if (instance != this)
+                Destroy(gameObject);
+        }
+        #endregion
+
+        void Start()
+        {
+            echoes = Game.EchoSystem.EchoManager.instance;
+            player = FindObjectOfType<global::Player>(); //to fix
+
+            Game.Utilities.EventManager.OnEclipseEvent += HandleEventEclipse;
+        }
+
+        public void StartEclipse()
+        {
+            echoes.FreezeAll();
+            isEclipseActive = true;
+        }
+
+        public void StopEclipse()
+        {
+            echoes.UnfreezeAll();
+            isEclipseActive = false;
+        }
+
+        void HandleEventEclipse(object sender, Game.Utilities.EventManager.OnEclipseEventArgs args)
+        {
+            if (args.EclipseOn)
+            {
+                StartEclipse();
+            }
+            else
+            {
+                StopEclipse();
+            }
+            StartCoroutine("ChangeGravity", args.EclipseOn);
+        }
+
+        IEnumerator ChangeGravity(bool eclipseOn)
+        {
+            float gravityTimer = 0;
+            player.SetVelocity(new Vector3(0f, 10f, 0f), false, false);
+            while (gravityTimer < rotationDuration)
+            {
+                if (eclipseOn)
+                {
+                    player.ChangeGravityDirection(Vector3.Lerp(regularGravity, eclipseGravity, gravityTimer / rotationDuration));
+                }
+                else
+                {
+                    player.ChangeGravityDirection(Vector3.Lerp(eclipseGravity, regularGravity, gravityTimer / rotationDuration));
+                }
+                gravityTimer += Time.deltaTime;
+                yield return null;
+            }
+            if (eclipseOn)
+            {
+                player.ChangeGravityDirection(eclipseGravity);
+            }
+            else
+            {
+                player.ChangeGravityDirection(regularGravity);
+            }
+        }
     }
-    #endregion
-
-    void Start () {
-        echoes = EchoManager.instance;
-        player = FindObjectOfType<Player>(); //to fix
-
-		Game.Utilities.EventManager.OnEclipseEvent += HandleEventEclipse;
-    }
-	
-    public void StartEclipse() {
-        echoes.FreezeAll();
-        isEclipseActive = true;
-    }
-
-    public void StopEclipse() {
-        echoes.UnfreezeAll();
-        isEclipseActive = false;
-    }
-
-	void HandleEventEclipse(object sender, Game.Utilities.EventManager.OnEclipseEventArgs args) {
-		if (args.EclipseOn) {
-			StartEclipse ();
-		} else {
-			StopEclipse ();
-		}
-		StartCoroutine ("ChangeGravity", args.EclipseOn);
-	}
-
-	IEnumerator ChangeGravity(bool eclipseOn){
-		float gravityTimer = 0;
-		player.SetVelocity(new Vector3(0f, 10f, 0f), false, false);
-		while (gravityTimer < rotationDuration) {
-			if (eclipseOn) {
-				player.ChangeGravityDirection (Vector3.Lerp (regularGravity, eclipseGravity, gravityTimer / rotationDuration));
-			} else {
-				player.ChangeGravityDirection (Vector3.Lerp (eclipseGravity, regularGravity, gravityTimer / rotationDuration));
-			}
-			gravityTimer += Time.deltaTime;
-			yield return null;
-		}
-		if (eclipseOn) {
-			player.ChangeGravityDirection (eclipseGravity);
-		} else {
-			player.ChangeGravityDirection (regularGravity);
-		}
-	}
-}
+} //end of namespace
