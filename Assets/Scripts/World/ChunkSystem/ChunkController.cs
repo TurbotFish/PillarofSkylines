@@ -7,10 +7,10 @@ namespace Game.World.ChunkSystem
 {
     public class ChunkController : MonoBehaviour
     {
-        ChunkSystemData data;
+        protected ChunkSystemData data;
 
-        Collider bounds;
-        List<SubChunkController> subChunkList = new List<SubChunkController>();
+        protected Collider bounds;
+        protected List<SubChunkController> subChunkList = new List<SubChunkController>();
 
         /// <summary>
         /// Initializes the Chunk.
@@ -42,11 +42,12 @@ namespace Game.World.ChunkSystem
             for (int i = 0; i < childCount; i++)
             {
                 var child = this.transform.GetChild(i);
-                var subChunkController = child.GetComponent<SubChunkController>();
+                var subChunk = child.GetComponent<SubChunkController>();
 
-                if (subChunkController != null)
+                if (subChunk != null)
                 {
-                    this.subChunkList.Add(subChunkController);
+                    this.subChunkList.Add(subChunk);
+                    subChunk.InitializeSubChunk();
                 }
             }
         }

@@ -21,6 +21,11 @@ namespace Game.World.ChunkSystem
 
                 if (chunk != null)
                 {
+                    if (!chunk.gameObject.activeSelf)
+                    {
+                        chunk.gameObject.SetActive(true);
+                    }
+
                     this.chunkList.Add(chunk);
                     chunk.InitializeChunk(data);
                 }

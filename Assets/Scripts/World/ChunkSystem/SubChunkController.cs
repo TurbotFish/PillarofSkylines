@@ -16,6 +16,9 @@ namespace Game.World.ChunkSystem
         [SerializeField]
         bool doNotWrap = false;
 
+        Transform myTransform;
+        List<GameObject> childList = new List<GameObject>();
+
 #if UNITY_EDITOR
         public void Editor_InitializeSubChunk(eSubChunkLayer layer)
         {
@@ -23,23 +26,49 @@ namespace Game.World.ChunkSystem
         }
 #endif
 
-        //#################
+        //############################################################################
 
-        public void ActivateSubChunk()
+        /// <summary>
+        /// 
+        /// </summary>
+        public void InitializeSubChunk()
         {
-            this.gameObject.SetActive(true);
+            this.myTransform = this.transform;
+
+            this.childList.Clear();
+            for (int i = 0; i < this.myTransform.childCount; i++)
+            {
+                this.childList.Add(this.myTransform.GetChild(i).gameObject);
+            }
         }
 
-        public void DeactivateSubChunk()
-        {
-            this.gameObject.SetActive(false);
-        }
-
+        /// <summary>
+        /// 
+        /// </summary>
         void InitializeSubChunkCopy(SubChunkController originalSubChunk)
         {
             this.layer = originalSubChunk.Layer;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public void ActivateSubChunk()
+        {
+            StartCoroutine(ActivateSubChunkRoutine());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void DeactivateSubChunk()
+        {
+            StartCoroutine(DeactivateSubChunkRoutine());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public void CreateCopy(Transform parent)
         {
             if (this.doNotWrap)
@@ -56,5 +85,47 @@ namespace Game.World.ChunkSystem
                 go.GetComponent<SubChunkController>().InitializeSubChunkCopy(this);
             }
         }
+
+        //############################################################################
+        //############################################################################
+
+        void OnTransformChildrenChanged()
+        {
+            if (this.myTransform == null)
+            {
+                return;
+            }
+
+            this.childList.Clear();
+            for (int i = 0; i < this.myTransform.childCount; i++)
+            {
+                this.childList.Add(this.myTransform.GetChild(i).gameObject);
+            }
+        }
+
+        //############################################################################
+        //############################################################################
+
+        IEnumerator ActivateSubChunkRoutine()
+        {
+            foreach (var go in this.childList)
+            {
+                go.SetActive(true);
+
+                yield return null;
+            }
+        }
+
+        IEnumerator DeactivateSubChunkRoutine()
+        {
+            foreach (var go in this.childList)
+            {
+                go.SetActive(false);
+
+                yield return null;
+            }
+        }
+
+        //############################################################################
     }
 }

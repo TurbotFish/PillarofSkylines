@@ -153,6 +153,25 @@ namespace Game.Utilities
 
         #region pillar destroyed event
 
+        public class PillarDestroyedEventArgs : EventArgs
+        {
+            public World.ePillarId PillarId { get; private set; }
+
+            public PillarDestroyedEventArgs(World.ePillarId pillarId)
+            {
+                this.PillarId = pillarId;
+            }
+        }
+
+        public delegate void PillarDestroyedEventHandler(object sender, PillarDestroyedEventArgs args);
+
+        public static event PillarDestroyedEventHandler PillarDestroyedEvent;
+
+        public static void SendPillarDestroyedEvent(object sender, PillarDestroyedEventArgs args)
+        {
+            PillarDestroyedEvent?.Invoke(sender, args);
+        }
+
         #endregion pillar destroyed event
 
         //###########################################################

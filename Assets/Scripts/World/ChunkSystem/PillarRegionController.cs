@@ -15,6 +15,9 @@ namespace Game.World.ChunkSystem
 
         ePillarState currentPillarState = ePillarState.Intact;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void InitializeRegion(ChunkSystemData data)
         {
             base.InitializeRegion(data);
@@ -27,26 +30,25 @@ namespace Game.World.ChunkSystem
 
                     if (pillarChunk.PillarState == ePillarState.Intact)
                     {
+                        pillarChunk.Activate();
+
                         this.intactPillarChunks.Add(pillarChunk);
                     }
                     else if (pillarChunk.PillarState == ePillarState.Destroyed)
                     {
+                        pillarChunk.Deactivate();
+
                         this.destroyedPillarChunks.Add(pillarChunk);
                     }
                 }
             }
 
-            foreach(var chunk in this.intactPillarChunks)
-            {
-                this.chunkList.Remove(chunk);
-            }
-
-            foreach(var chunk in this.destroyedPillarChunks)
-            {
-                this.chunkList.Remove(chunk);
-            }
+            Utilities.EventManager.PillarDestroyedEvent += OnPillarDestroyedEventHandler;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         protected override void InitializeRegionCopy(RegionController originalRegion)
         {
             base.InitializeRegionCopy(originalRegion);
@@ -54,6 +56,22 @@ namespace Game.World.ChunkSystem
             var pillarOriginal = originalRegion as PillarRegionController;
 
             this.pillarId = pillarOriginal.PillarId;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void OnPillarDestroyedEventHandler(object sender, Utilities.EventManager.PillarDestroyedEventArgs args)
+        {
+            foreach (var chunk in this.intactPillarChunks)
+            {
+                chunk.Deactivate();
+            }
+
+            foreach (var chunk in this.destroyedPillarChunks)
+            {
+                chunk.Deactivate();
+            }
         }
     }
 }

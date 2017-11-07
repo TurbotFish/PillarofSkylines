@@ -152,6 +152,15 @@ namespace Game.World.ChunkSystem
 
         void OnDrawGizmos()
         {
+            //if (this.isInitialized && Application.isEditor && Application.isPlaying)
+            //{
+            //    float size = this.data.GetRenderDistance(eSubChunkLayer.Near_VeryLarge).y * 2;
+            //    var colour = Color.yellow;
+            //    colour.a = 0.3f;
+            //    Gizmos.color = colour;
+            //    Gizmos.DrawCube(this.playerTransform.position, new Vector3(size, size, size));
+            //}
+
             if (drawGizmo)
             {
                 Gizmos.color = gizmoColor;
