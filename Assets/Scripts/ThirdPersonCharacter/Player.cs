@@ -260,7 +260,6 @@ public class Player : MonoBehaviour {
 	public ParticlesManager dashParticles;
 	#endregion joli variables
 
-
 	#region other variables
 	[Space(20)]
 	/// <summary>
@@ -381,8 +380,8 @@ public class Player : MonoBehaviour {
 		#endregion update timers
 
 		#region turn the player
-		//Turn the player in his last direction
-		if (inputRaw.magnitude > 0f) {
+		//Turn the player in the direction of his input
+		if (inputRaw.magnitude > 0f && currentPlayerState != ePlayerState.dashing) {
 			if (currentPlayerState != ePlayerState.gliding) {
 				transform.Rotate (transform.up, Mathf.Lerp (0f, Vector3.SignedAngle (transform.forward, Vector3.ProjectOnPlane (TurnLocalToSpace(inputToCamera), transform.up), transform.up), 
 					(currentPlayerState == ePlayerState.gliding ? playerModelAerialTurnSpeed : playerModelTurnSpeed) * Time.deltaTime), Space.World);
@@ -637,7 +636,6 @@ public class Player : MonoBehaviour {
 				velocity.y = 0;
 				//targetVelocity = inputToCamera * characSpeed;
 				flatVelocity = Vector3.Lerp(flatVelocity, windVelocity, airControl * Time.deltaTime);
-				Debug.Log("used wind velocity : " + windVelocity + " final velocity : " + flatVelocity);
 				windVelocity = Vector3.zero;
 				if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash)) {
 					StartDash();
