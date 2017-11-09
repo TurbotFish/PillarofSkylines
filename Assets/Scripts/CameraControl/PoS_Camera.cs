@@ -282,8 +282,6 @@ public class PoS_Camera : MonoBehaviour {
 
         // Il nous faut une fonction SetState() pour pouvoir faire des trucs uniquement lors d'un changement de State
 
-        print("additional distance " + additionalDistance);
-
         if (input.magnitude != 0) {
 			state = eCameraState.PlayerControl;
 			resetting = false;
