@@ -163,12 +163,11 @@ public class PoS_Camera : MonoBehaviour {
 		camPosition = camRotation * negDistance + targetWithOffset;
 
 		SmoothMovement();
+        
+        Vector3 characterUp = target.parent.up;
+        target.LookAt(target.position + Vector3.ProjectOnPlane(my.forward, characterUp), characterUp); // Reoriente the character's rotator
 
-		// Reoriente the character's rotator
-		Vector3 characterUp = target.parent.up;
-		target.LookAt(targetPos + Vector3.ProjectOnPlane(my.forward, characterUp), characterUp);
-
-		if (enablePanoramaMode)
+        if (enablePanoramaMode)
 			DoPanorama();
 	}
 
@@ -250,11 +249,12 @@ public class PoS_Camera : MonoBehaviour {
 		playerVelocity = player.velocity;
         
 		targetSpace = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, target.up), Vector3.Cross(Vector3.up, target.up));
+        
+        Vector3 groundNormal = controller.collisions.currentGroundNormal;
+        slopeValue = Vector3.Dot(Vector3.ProjectOnPlane(my.forward, target.parent.up), groundNormal) * 60;
+        // ON REPROJETE LE FORWARD POUR PAS FAIRE DES BÊTISES PENDANT QUE LE PERSO TOURNE
 
-		Vector3 groundNormal = controller.collisions.currentGroundNormal;
-        slopeValue = Vector3.Dot(target.forward, groundNormal) * 60;
-
-		if (input.magnitude != 0) {
+        if (input.magnitude != 0) {
 			state = eCameraState.PlayerControl;
 			resetting = false;
 			manualPitch = pitch - slopeValue;
@@ -266,7 +266,7 @@ public class PoS_Camera : MonoBehaviour {
             canAutoReset = true;
 
 		} else if (state != eCameraState.Resetting) {
-            if (canAutoReset && Time.time > lastInput + timeBeforeAutoReset && !onEdgeOfCliff) { // Si ça fait genre 5 secondes qu'on n'a pas touché à la caméra
+            if (canAutoReset && Time.time > lastInput + timeBeforeAutoReset && !onEdgeOfCliff) { // Si ça fait genre 5 secondes qu'on n'a pas touché à la caméra on reset parce que bon
                 state = eCameraState.Resetting;
                 SetTargetRotation(defaultPitch - slopeValue, GetYawBehindPlayer(), autoResetDamp);
                 manualPitch = defaultPitch - slopeValue;
