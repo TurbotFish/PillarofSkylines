@@ -7,31 +7,47 @@ namespace Game.World.ChunkSystem
 {
     public class ChunkController : MonoBehaviour
     {
-        [SerializeField]
-        Collider bounds;
-#if UNITY_EDITOR
-        public Collider Editor_Bounds { get { return this.bounds; } }
-#endif
+        protected ChunkSystemData data;
 
-        ChunkSystemData data;
-        List<SubChunkController> subChunkList = new List<SubChunkController>();
+        protected Collider bounds;
+        protected List<SubChunkController> subChunkList = new List<SubChunkController>();
 
         /// <summary>
-        /// 
+        /// Initializes the Chunk.
         /// </summary>
         public virtual void InitializeChunk(ChunkSystemData data)
         {
             this.data = data;
 
             int childCount = this.transform.childCount;
+
+            //find the bounds
             for (int i = 0; i < childCount; i++)
             {
                 var child = this.transform.GetChild(i);
-                var subChunkController = child.GetComponent<SubChunkController>();
+                var bounds = child.GetComponent<Collider>();
 
-                if (subChunkController != null)
+                if (bounds != null && bounds.gameObject.layer == 14)
                 {
-                    this.subChunkList.Add(subChunkController);
+                    this.bounds = bounds;
+                    break;
+                }
+            }
+            if (this.bounds == null)
+            {
+                Debug.LogErrorFormat("Chunk \"{0}\": could not find bounds collider!", this.name);
+            }
+
+            //find all the SubChunks
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = this.transform.GetChild(i);
+                var subChunk = child.GetComponent<SubChunkController>();
+
+                if (subChunk != null)
+                {
+                    this.subChunkList.Add(subChunk);
+                    subChunk.InitializeSubChunk();
                 }
             }
         }
@@ -39,13 +55,13 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
-        public virtual void InitializeChunkCopy(Collider bounds)
+        protected virtual void InitializeChunkCopy(ChunkController originalChunk)
         {
-            this.bounds = bounds;
+
         }
 
         /// <summary>
-        /// 
+        /// Update all the things!
         /// </summary>
         public virtual void UpdateChunk(Vector3 playerPos)
         {
@@ -73,25 +89,25 @@ namespace Game.World.ChunkSystem
         }
 
         /// <summary>
-        /// 
+        /// Creates a copy of the Chunk and attaches it to the given Transform.
         /// </summary>
-        public virtual GameObject CreateCopy(Transform parent)
+        public virtual void CreateCopy(Transform parent)
         {
-            var go = new GameObject(this.gameObject.name, this.GetType());
-            go.transform.parent = parent;
-            go.transform.localPosition = this.transform.localPosition;            
+            var chunkCopyGameObject = new GameObject(this.gameObject.name, this.GetType());
 
-            var boundsGo = Instantiate(this.bounds.gameObject, go.transform);
-            boundsGo.layer = this.bounds.gameObject.layer;
+            var ChunkCopyTransform = chunkCopyGameObject.transform;
+            ChunkCopyTransform.parent = parent;
+            ChunkCopyTransform.localPosition = this.transform.localPosition;
 
-            go.GetComponent<ChunkController>().InitializeChunkCopy(boundsGo.GetComponent<Collider>());
+            var boundsGo = Instantiate(this.bounds.gameObject, ChunkCopyTransform, true);
+            boundsGo.layer = this.bounds.gameObject.layer;           
 
             foreach (var subChunk in this.subChunkList)
             {
-                subChunk.CreateCopy(go.transform);
+                subChunk.CreateCopy(ChunkCopyTransform);
             }
 
-            return go;
+            chunkCopyGameObject.GetComponent<ChunkController>().InitializeChunkCopy(this);
         }
     }
 }

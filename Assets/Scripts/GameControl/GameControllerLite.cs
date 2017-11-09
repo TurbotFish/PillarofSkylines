@@ -16,9 +16,14 @@ namespace Game.GameControl
         Player.PlayerModel playerModel;
         public Player.PlayerModel PlayerModel { get { return this.playerModel; } }
 
-        EchoManager echoManager;
-        public EchoManager EchoManager { get { return this.echoManager; } }
+        EchoSystem.EchoManager echoManager;
+        public EchoSystem.EchoManager EchoManager { get { return this.echoManager; } }
 
+        EclipseManager eclipseManager;
+        public EclipseManager EclipseManager { get { return this.eclipseManager; } }
+
+
+        //
         Player.PlayerController playerController;
         public Player.PlayerController PlayerController { get { return this.playerController; } }
 
@@ -36,12 +41,21 @@ namespace Game.GameControl
             StartCoroutine(LoadScenesRoutine());
 
             //cleaning up, just in case
-            var echoManagers = FindObjectsOfType<EchoManager>();
-            foreach(var echoManager in echoManagers)
+            var echoManagers = FindObjectsOfType<EchoSystem.EchoManager>();
+            foreach (var echoManager in echoManagers)
             {
-                if(echoManager != this.echoManager)
+                if (echoManager != this.echoManager)
                 {
                     Destroy(echoManager.gameObject);
+                }
+            }
+
+            var eclipseManagers = FindObjectsOfType<EclipseManager>();
+            foreach (var eclipseManager in eclipseManagers)
+            {
+                if (eclipseManager != this.eclipseManager)
+                {
+                    Destroy(eclipseManager.gameObject);
                 }
             }
         }
@@ -54,7 +68,8 @@ namespace Game.GameControl
             //***********************
             //getting references in local scene
             this.playerModel = GetComponentInChildren<Player.PlayerModel>();
-            this.echoManager = GetComponentInChildren<EchoManager>();
+            this.echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
+            this.eclipseManager = GetComponentInChildren<EclipseManager>();
 
             this.playerController = SearchForScriptInScene<Player.PlayerController>(SceneManager.GetActiveScene());
             this.worldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(SceneManager.GetActiveScene());
@@ -107,13 +122,6 @@ namespace Game.GameControl
 
             foreach (var gameObject in scene.GetRootGameObjects())
             {
-                result = gameObject.GetComponent<T>();
-
-                if (result != null)
-                {
-                    break;
-                }
-
                 result = gameObject.GetComponentInChildren<T>();
 
                 if (result != null)
