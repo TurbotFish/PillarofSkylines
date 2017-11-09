@@ -27,11 +27,6 @@ namespace Game.World.ChunkSystem
         {
             var chunkController = target as ChunkController;
 
-            if (chunkController.Editor_Bounds == null)
-            {
-                Debug.LogError("Error: Bounds is null! Set this variable before using this!");
-            }
-
             var subChunkDict = new Dictionary<eSubChunkLayer, Transform>();
 
             //finding existing subchunks
@@ -70,7 +65,7 @@ namespace Game.World.ChunkSystem
             {
                 var child = chunkController.transform.GetChild(i);
 
-                if (child.gameObject != chunkController.Editor_Bounds.gameObject && child.GetComponent<SubChunkController>() == null)
+                if (child.gameObject.layer != 14 && child.GetComponent<SubChunkController>() == null)
                 {
                     var tag = child.GetComponent<RenderDistanceTag>();
 
@@ -99,7 +94,7 @@ namespace Game.World.ChunkSystem
             {
                 var child = chunkController.transform.GetChild(i);
 
-                if (child.gameObject != chunkController.Editor_Bounds.gameObject && (child.GetComponent<SubChunkController>() == null || child.childCount == 0))
+                if (child.gameObject.layer != 14 && (child.GetComponent<SubChunkController>() == null || child.childCount == 0))
                 {
                     objectsToDelete.Add(child.gameObject);
                 }

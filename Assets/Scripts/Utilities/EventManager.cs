@@ -76,7 +76,7 @@ namespace Game.Utilities
             /// <summary>
             /// The id of the menu to switch to.
             /// </summary>
-            public Player.UI.eUiState Menu { get; private set; }            
+            public Player.UI.eUiState Menu { get; private set; }
 
             /// <summary>
             /// Default Contructor.
@@ -84,10 +84,10 @@ namespace Game.Utilities
             public OnShowMenuEventArgs(Player.UI.eUiState menu)
             {
                 this.Menu = menu;
-            }          
+            }
         }
 
-        public class OnShowPillarEntranceMenuEventArgs: OnShowMenuEventArgs
+        public class OnShowPillarEntranceMenuEventArgs : OnShowMenuEventArgs
         {
             /// <summary>
             /// 
@@ -97,7 +97,7 @@ namespace Game.Utilities
             /// <summary>
             /// Constructor for the Pillar entrance menu.
             /// </summary>
-            public OnShowPillarEntranceMenuEventArgs(World.ePillarId pillarId):base(Player.UI.eUiState.PillarEntrance)
+            public OnShowPillarEntranceMenuEventArgs(World.ePillarId pillarId) : base(Player.UI.eUiState.PillarEntrance)
             {
                 this.PillarId = pillarId;
             }
@@ -149,6 +149,32 @@ namespace Game.Utilities
         #endregion favour amount changed event
 
         //###########################################################
+        //###########################################################
+
+        #region pillar destroyed event
+
+        public class PillarDestroyedEventArgs : EventArgs
+        {
+            public World.ePillarId PillarId { get; private set; }
+
+            public PillarDestroyedEventArgs(World.ePillarId pillarId)
+            {
+                this.PillarId = pillarId;
+            }
+        }
+
+        public delegate void PillarDestroyedEventHandler(object sender, PillarDestroyedEventArgs args);
+
+        public static event PillarDestroyedEventHandler PillarDestroyedEvent;
+
+        public static void SendPillarDestroyedEvent(object sender, PillarDestroyedEventArgs args)
+        {
+            PillarDestroyedEvent?.Invoke(sender, args);
+        }
+
+        #endregion pillar destroyed event
+
+        //###########################################################
 
         #endregion model events
 
@@ -159,28 +185,36 @@ namespace Game.Utilities
 
         //###########################################################
 
-        #region player spawned event
+        #region teleport player event
 
-        public class OnPlayerSpawnedEventArgs : EventArgs
+        public class OnTeleportPlayerEventArgs : EventArgs
         {
+            /// <summary>
+            /// The Position the Player should be teleported to.
+            /// </summary>
             public Vector3 Position { get; private set; }
 
-            public OnPlayerSpawnedEventArgs(Vector3 position)
+            /// <summary>
+            /// value='true' means that the current scene was switched. value='false' means that the player is teleported inside the current scene.
+            /// </summary>
+            public bool IsNewScene { get; private set; }
+
+            public OnTeleportPlayerEventArgs(Vector3 position, bool isNewScene)
             {
                 this.Position = position;
             }
         }
 
-        public delegate void OnPlayerSpawnedEventHandler(object sender, OnPlayerSpawnedEventArgs args);
+        public delegate void OnTeleportPlayerEventHandler(object sender, OnTeleportPlayerEventArgs args);
 
-        public static event OnPlayerSpawnedEventHandler OnPlayerSpawnedEvent;
+        public static event OnTeleportPlayerEventHandler TeleportPlayerEvent;
 
-        public static void SendOnPlayerSpawnedEvent(object sender, OnPlayerSpawnedEventArgs args)
+        public static void SendTeleportPlayerEvent(object sender, OnTeleportPlayerEventArgs args)
         {
-            OnPlayerSpawnedEvent?.Invoke(sender, args);
+            TeleportPlayerEvent?.Invoke(sender, args);
         }
 
-        #endregion player spawned event
+        #endregion teleport player event
 
         //###########################################################
         //###########################################################

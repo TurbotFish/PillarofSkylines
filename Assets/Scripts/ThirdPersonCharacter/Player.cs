@@ -343,7 +343,7 @@ public class Player : MonoBehaviour {
 		velocity = Vector3.zero;
 
 		Game.Utilities.EventManager.OnMenuSwitchedEvent += HandleEventMenuSwitched;
-		Game.Utilities.EventManager.OnPlayerSpawnedEvent += HandleEventPlayerSpawned;
+		Game.Utilities.EventManager.TeleportPlayerEvent += HandleEventTeleportPlayer;
 	}
 
 	void HandleEventMenuSwitched (object sender, Game.Utilities.EventManager.OnMenuSwitchedEventArgs args){
@@ -357,11 +357,15 @@ public class Player : MonoBehaviour {
 		}
 	}
 
-	void HandleEventPlayerSpawned (object sender, Game.Utilities.EventManager.OnPlayerSpawnedEventArgs args){
+	void HandleEventTeleportPlayer (object sender, Game.Utilities.EventManager.OnTeleportPlayerEventArgs args){
 		transform.position = args.Position;
-		velocity = Vector3.zero;
-		currentPlayerState = ePlayerState.inAir;
-		ChangeGravityDirection(Vector3.down);
+
+        if (args.IsNewScene)
+        {
+            velocity = Vector3.zero;
+            currentPlayerState = ePlayerState.inAir;
+            ChangeGravityDirection(Vector3.down);
+        }
 	}
 
 
@@ -758,7 +762,7 @@ public class Player : MonoBehaviour {
     void OnDestroy()
     {
         Game.Utilities.EventManager.OnMenuSwitchedEvent -= HandleEventMenuSwitched;
-        Game.Utilities.EventManager.OnPlayerSpawnedEvent -= HandleEventPlayerSpawned;
+        Game.Utilities.EventManager.TeleportPlayerEvent -= HandleEventTeleportPlayer;
     }
 
     void StartDash(){

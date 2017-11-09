@@ -307,6 +307,8 @@ namespace Game.Player
             if (!this.destoyedPillars.Contains(pillarId))
             {
                 this.destoyedPillars.Add(pillarId);
+
+                Utilities.EventManager.SendPillarDestroyedEvent(this, new Utilities.EventManager.PillarDestroyedEventArgs(pillarId));
             }
         }
 
