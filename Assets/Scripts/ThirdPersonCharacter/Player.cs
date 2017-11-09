@@ -260,7 +260,6 @@ public class Player : MonoBehaviour {
 	public ParticlesManager dashParticles;
 	#endregion joli variables
 
-
 	#region other variables
 	[Space(20)]
 	/// <summary>
