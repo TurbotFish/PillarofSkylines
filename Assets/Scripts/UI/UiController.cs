@@ -40,7 +40,7 @@ namespace Game.UI
 
         GameControl.IGameControllerBase gameController;
 
-        eUiState currentState = eUiState.LoadingScreen;
+        eUiState currentState = eUiState.NONE;
         Dictionary<eUiState, IUiState> uiStates = new Dictionary<eUiState, IUiState>();
 
         bool isInitialized = false;
@@ -67,28 +67,15 @@ namespace Game.UI
                     uiState.Initialize(this.gameController.PlayerModel);
                 uiState.Deactivate();
             }
+
+            SwitchState(eUiState.LoadingScreen);
+
+            Utilities.EventManager.OnShowMenuEvent += OnShowMenuEventHandler;
+
+            this.isInitialized = true;
         }
 
         //###########################################################
-
-        #region monobehaviour methods
-
-        void OnEnable()
-        {
-            if (!this.isInitialized) //this is only executed if the instance has not been initialized yet
-            {
-                (this.loadingScreenController as IUiState).Activate(null);
-                this.currentState = eUiState.LoadingScreen;
-            }
-        }
-
-        void Start()
-        {
-            Utilities.EventManager.OnShowMenuEvent += OnShowMenuEventHandler;
-        }
-
-        #endregion monobehaviour methods
-
         //###########################################################
 
         void SwitchState(eUiState newState, Utilities.EventManager.OnShowMenuEventArgs args = null)
@@ -100,7 +87,11 @@ namespace Game.UI
 
             eUiState previousState = this.currentState;
 
-            this.uiStates[this.currentState].Deactivate();
+            if (previousState != eUiState.NONE)
+            {
+                this.uiStates[this.currentState].Deactivate();
+            }
+
             this.currentState = newState;
             this.uiStates[this.currentState].Activate(args);
 

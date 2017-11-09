@@ -7,6 +7,7 @@
         Intro,
         End,
         LoadingScreen,
-        PillarEntrance
+        PillarEntrance,
+        NONE
     }
 } //end of namespace

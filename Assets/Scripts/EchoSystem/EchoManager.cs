@@ -5,7 +5,6 @@ namespace Game.EchoSystem
 {
     public class EchoManager : MonoBehaviour
     {
-        public bool AI;
         public bool demo;
         public Vector3 demoVelocity;
 
@@ -31,44 +30,46 @@ namespace Game.EchoSystem
         //##################################################################
 
         #region Singleton
-        public static EchoManager instance;
-        void Awake()
-        {
-            if (!instance)
-            {
-                instance = this;
-            }
-            else if (instance != this)
-                Destroy(gameObject);
-        }
+        //public static EchoManager instance;
+        //void Awake()
+        //{
+        //    if (!instance)
+        //    {
+        //        instance = this;
+        //    }
+        //    else if (instance != this)
+        //        Destroy(gameObject);
+        //}
         #endregion
 
         //##################################################################
+        //##################################################################
+
+        #region initialization
 
         public void InitializeEchoManager(GameControl.IGameControllerBase gameController)
         {
-            //this.camera = gameController.CameraController.EchoCameraEffect;
+            this.camera = gameController.CameraController.EchoCameraEffect;
             this.playerTransform = gameController.PlayerController.Player.transform;
 
             this.pool = new GameObject("Echo Pool").transform;
             this.pool.SetParent(this.transform);
+
+            Utilities.EventManager.OnEclipseEvent += OnEclipseEventHandler;
         }
 
-        void Start()
-        {
-            camera = FindObjectOfType<PoS_Camera>().GetComponent<EchoCameraEffect>();
-            playerTransform = FindObjectOfType<ThirdPersonController>()?.transform ?? FindObjectOfType<global::Player>().transform; //to fix
-            pool = new GameObject().transform;
-            pool.name = "Echo Pool";
-        }
+        #endregion initialization
+
+        //##################################################################
+        //##################################################################
 
         void Update()
         {
-            if (!eclipse && !AI)
+            if (!eclipse)
             {
-                if (Input.GetButtonUp("Drift"))
+                if (Input.GetButtonDown("Drift"))
                     Drift();
-                if (Input.GetButtonUp("Echo"))
+                if (Input.GetButtonDown("Echo"))
                     CreateEcho();
             }
         }
@@ -79,7 +80,7 @@ namespace Game.EchoSystem
         {
             if (echoes.Count > 0)
             {
-                if (!AI) camera.SetFov(70, 0.15f, true);
+                camera.SetFov(70, 0.15f, true);
                 Echo targetEcho = echoes[echoes.Count - 1];
                 playerTransform.position = targetEcho.transform.position; // We should reference Player and move this script in a Manager object
                 if (!targetEcho.isActive)
@@ -101,36 +102,36 @@ namespace Game.EchoSystem
                 echoes[0].Break();
         }
 
-        //##################################################################
-
-        public void FreezeAll()
+        void FreezeAll()
         {
-            eclipse = true;
             for (int i = 0; i < echoes.Count; i++)
+            {
                 echoes[i].Freeze();
+            }
+
             for (int i = 0; i < nonEchoes.Count; i++)
+            {
                 nonEchoes[i].Freeze();
+            }
         }
 
-        public void UnfreezeAll()
+        void UnfreezeAll()
         {
-            eclipse = false;
             for (int i = 0; i < echoes.Count; i++)
+            {
                 echoes[i].Unfreeze();
+            }
+
             for (int i = 0; i < nonEchoes.Count; i++)
+            {
                 nonEchoes[i].Unfreeze();
+            }
         }
 
-        public void BreakAll()
-        {
-            for (int i = echoes.Count - 1; i >= 0; i--)
-                echoes[i].Break();
-        }
-
-        //public void SetEchoesParent(Transform parent)
+        //public void BreakAll()
         //{
-        //    for (int i = 0; i < echoes.Count; i++)
-        //        echoes[i].transform.parent = parent;
+        //    for (int i = echoes.Count - 1; i >= 0; i--)
+        //        echoes[i].Break();
         //}
 
         T InstantiateFromPool<T>(T prefab, Vector3 position) where T : MonoBehaviour
@@ -152,6 +153,24 @@ namespace Game.EchoSystem
         public void BreakParticles(Vector3 position)
         {
             InstantiateFromPool(breakEchoParticles, position);
+        }
+
+        //##################################################################
+
+        void OnEclipseEventHandler(object sender, Utilities.EventManager.OnEclipseEventArgs args)
+        {
+            if (args.EclipseOn)
+            {
+                this.eclipse = true;
+
+                FreezeAll();
+            }
+            else
+            {
+                this.eclipse = false;
+
+                UnfreezeAll();
+            }
         }
 
         //##################################################################

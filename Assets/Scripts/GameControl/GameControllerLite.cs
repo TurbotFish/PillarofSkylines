@@ -108,10 +108,13 @@ namespace Game.GameControl
             //initializing game
             this.playerController.InitializePlayerController(this);
             this.CameraController.InitializeCameraController(this);
+
             if (worldController != null)
             {
                 worldController.InitializeWorldController(this.playerController.transform);
             }
+
+            this.echoManager.InitializeEchoManager(this);
 
             yield return null;
             //***********************
