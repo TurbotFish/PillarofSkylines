@@ -77,13 +77,19 @@ namespace Game.World.ChunkSystem
             {
                 var renderDistance = this.data.GetRenderDistance(subChunk.Layer);
 
-                if (distance >= renderDistance.x && distance < renderDistance.y && !subChunk.IsActive)
+                if (distance >= renderDistance.x && distance < renderDistance.y)
                 {
-                    subChunk.ActivateSubChunk();
+                    if (!subChunk.IsActive)
+                    {
+                        subChunk.ActivateSubChunk();
+                    }
                 }
-                else if (subChunk.IsActive)
+                else
                 {
-                    subChunk.DeactivateSubChunk();
+                    if (subChunk.IsActive)
+                    {
+                        subChunk.DeactivateSubChunk();
+                    }
                 }
             }
         }

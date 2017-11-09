@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: fea8ae02a70995d4795511941a4ab0b8
+timeCreated: 1490259289
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - echoPrefab: {fileID: 114833618769350118, guid: 8afdec8e63331ca49ae652bf3dd98123,
+      type: 2}
+  - breakEchoParticles: {fileID: 114877186217377050, guid: e20ad88a67c394244a11a2b8472a035b,
+      type: 2}
+  - pool: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

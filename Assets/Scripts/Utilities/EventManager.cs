@@ -17,10 +17,10 @@ namespace Game.Utilities
 
         public class OnMenuSwitchedEventArgs : EventArgs
         {
-            public Player.UI.eUiState NewUiState { get; private set; }
-            public Player.UI.eUiState PreviousUiState { get; private set; }
+            public UI.eUiState NewUiState { get; private set; }
+            public UI.eUiState PreviousUiState { get; private set; }
 
-            public OnMenuSwitchedEventArgs(Player.UI.eUiState newUiState, Player.UI.eUiState previousUiState)
+            public OnMenuSwitchedEventArgs(UI.eUiState newUiState, UI.eUiState previousUiState)
             {
                 this.NewUiState = newUiState;
                 this.PreviousUiState = previousUiState;
@@ -76,12 +76,12 @@ namespace Game.Utilities
             /// <summary>
             /// The id of the menu to switch to.
             /// </summary>
-            public Player.UI.eUiState Menu { get; private set; }
+            public UI.eUiState Menu { get; private set; }
 
             /// <summary>
             /// Default Contructor.
             /// </summary>
-            public OnShowMenuEventArgs(Player.UI.eUiState menu)
+            public OnShowMenuEventArgs(UI.eUiState menu)
             {
                 this.Menu = menu;
             }
@@ -97,7 +97,7 @@ namespace Game.Utilities
             /// <summary>
             /// Constructor for the Pillar entrance menu.
             /// </summary>
-            public OnShowPillarEntranceMenuEventArgs(World.ePillarId pillarId) : base(Player.UI.eUiState.PillarEntrance)
+            public OnShowPillarEntranceMenuEventArgs(World.ePillarId pillarId) : base(UI.eUiState.PillarEntrance)
             {
                 this.PillarId = pillarId;
             }

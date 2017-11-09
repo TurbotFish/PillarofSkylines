@@ -17,7 +17,6 @@ namespace Game
         [SerializeField]
         Transform pillar;
 
-        Game.EchoSystem.EchoManager echoes;
         global::Player player;
 
         #region Singleton
@@ -36,21 +35,18 @@ namespace Game
 
         void Start()
         {
-            echoes = Game.EchoSystem.EchoManager.instance;
             player = FindObjectOfType<global::Player>(); //to fix
 
-            Game.Utilities.EventManager.OnEclipseEvent += HandleEventEclipse;
+            Utilities.EventManager.OnEclipseEvent += HandleEventEclipse;
         }
 
-        public void StartEclipse()
+        void StartEclipse()
         {
-            echoes.FreezeAll();
             isEclipseActive = true;
         }
 
-        public void StopEclipse()
+        void StopEclipse()
         {
-            echoes.UnfreezeAll();
             isEclipseActive = false;
         }
 

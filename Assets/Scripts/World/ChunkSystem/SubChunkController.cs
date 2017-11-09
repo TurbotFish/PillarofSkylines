@@ -60,7 +60,7 @@ namespace Game.World.ChunkSystem
         public void ActivateSubChunk()
         {
             this.IsActive = true;
-
+            
             StartCoroutine(ActivateSubChunkRoutine());
         }
 

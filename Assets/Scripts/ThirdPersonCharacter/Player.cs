@@ -348,7 +348,7 @@ public class Player : MonoBehaviour {
 	}
 
 	void HandleEventMenuSwitched (object sender, Game.Utilities.EventManager.OnMenuSwitchedEventArgs args){
-		if (args.NewUiState == Game.Player.UI.eUiState.HUD)
+		if (args.NewUiState == Game.UI.eUiState.HUD)
 		{
 			readingInputs = true;
 		}

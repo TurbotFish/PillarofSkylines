@@ -24,14 +24,18 @@ namespace Game.GameControl
 
 
         //
+        UI.UiController uiController;
+        public UI.UiController UiController { get { return this.uiController; } }
+
+
+        //
         Player.PlayerController playerController;
         public Player.PlayerController PlayerController { get { return this.playerController; } }
 
+        public CameraControl.CameraController CameraController { get; private set; }
+
         World.ChunkSystem.WorldController worldController;
         public World.ChunkSystem.WorldController WorldController { get { return this.worldController; } }
-
-        Player.UI.UiController uiController;
-        public Player.UI.UiController UiController { get { return this.uiController; } }
 
         //###############################################################
         //###############################################################
@@ -39,6 +43,24 @@ namespace Game.GameControl
         void Start()
         {
             StartCoroutine(LoadScenesRoutine());
+        }
+
+        //###############################################################
+        //###############################################################
+
+        IEnumerator LoadScenesRoutine()
+        {
+            yield return null;
+            yield return null;
+            //***********************
+
+            //getting references in game controller
+            this.playerModel = GetComponentInChildren<Player.PlayerModel>();
+            this.echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
+            this.eclipseManager = GetComponentInChildren<EclipseManager>();
+
+            //initializing game controller
+            this.playerModel.InitializePlayerModel();
 
             //cleaning up, just in case
             var echoManagers = FindObjectsOfType<EchoSystem.EchoManager>();
@@ -58,60 +80,53 @@ namespace Game.GameControl
                     Destroy(eclipseManager.gameObject);
                 }
             }
-        }
 
-        //###############################################################
-        //###############################################################
-
-        IEnumerator LoadScenesRoutine()
-        {
-            yield return null;
-
-            //***********************
             //getting references in local scene
-            this.playerModel = GetComponentInChildren<Player.PlayerModel>();
-            this.echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
-            this.eclipseManager = GetComponentInChildren<EclipseManager>();
-
-            this.playerController = SearchForScriptInScene<Player.PlayerController>(SceneManager.GetActiveScene());
-            this.worldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(SceneManager.GetActiveScene());
+            this.playerController = FindObjectOfType<Player.PlayerController>();
+            this.CameraController = FindObjectOfType<CameraControl.CameraController>();
+            this.worldController = FindObjectOfType<World.ChunkSystem.WorldController>();
 
             yield return null;
             //***********************
+
             //loading UI scene
             SceneManager.LoadScene(UI_SCENE_NAME, LoadSceneMode.Additive);
 
             yield return null;
+            //***********************
 
             //getting references in UI scene
             var uiScene = SceneManager.GetSceneByName(UI_SCENE_NAME);
+            this.uiController = SearchForScriptInScene<UI.UiController>(uiScene);
 
-            this.uiController = SearchForScriptInScene<Player.UI.UiController>(uiScene);
+            //initializing ui
+            this.uiController.InitializeUi(this);
 
             yield return null;
             //***********************
-            //initializing
-            this.playerModel.InitializePlayerModel();
 
+            //initializing game
             this.playerController.InitializePlayerController(this);
+            this.CameraController.InitializeCameraController(this);
 
             if (worldController != null)
             {
                 worldController.InitializeWorldController(this.playerController.transform);
             }
 
-            this.uiController.InitializeUi(this.playerModel);
+            this.echoManager.InitializeEchoManager(this);
 
             yield return null;
             //***********************
-            //starting the game
+
+            //starting game
             if (this.showIntroMenu)
             {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.Intro));
+                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.Intro));
             }
             else
             {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.HUD));
+                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.HUD));
             }
         }
 
