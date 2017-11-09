@@ -28,16 +28,18 @@ namespace Game.GameControl
 
 
         //
-        Player.PlayerController playerController;
-        public Player.PlayerController PlayerController { get { return this.playerController; } }
+        UiSceneInfo uiSceneInfo = new UiSceneInfo();
+        public UI.UiController UiController { get { return this.uiSceneInfo.UiController; } }
 
 
         //
+        Player.PlayerController playerController;
+        public Player.PlayerController PlayerController { get { return this.playerController; } }
+
+        public CameraControl.CameraController CameraController { get; private set; }
+
         OpenWorldSceneInfo openWorldSceneInfo = new OpenWorldSceneInfo();
         public World.ChunkSystem.WorldController WorldController { get { return this.openWorldSceneInfo.WorldController; } }
-
-        UiSceneInfo uiSceneInfo = new UiSceneInfo();
-        public Player.UI.UiController UiController { get { return this.uiSceneInfo.UiController; } }
 
         Dictionary<World.ePillarId, PillarSceneInfo> pillarSceneDictionary = new Dictionary<World.ePillarId, PillarSceneInfo>();
 
@@ -71,31 +73,43 @@ namespace Game.GameControl
         {
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
-            //getting references in main scene
+            //getting references in game controller
             this.playerModel = GetComponentInChildren<Player.PlayerModel>();
             this.timeController = GetComponentInChildren<TimeController>();
             this.echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
             this.eclipseManager = GetComponentInChildren<EclipseManager>();
 
+            //initializing game controller
+            this.playerModel.InitializePlayerModel();
+
+            //gatting references in main scene
             this.playerController = FindObjectOfType<Player.PlayerController>();
+            this.CameraController = FindObjectOfType<CameraControl.CameraController>();
 
             yield return null;
+            //***********************
 
             //loading ui scene
             SceneManager.LoadScene(UI_SCENE_NAME, LoadSceneMode.Additive);
 
             yield return null;
+            //***********************
 
             //getting references in ui scene
             this.uiSceneInfo.Scene = SceneManager.GetSceneByName(UI_SCENE_NAME);
-            this.uiSceneInfo.UiController = SearchForScriptInScene<Player.UI.UiController>(this.uiSceneInfo.Scene);
+            this.uiSceneInfo.UiController = SearchForScriptInScene<UI.UiController>(this.uiSceneInfo.Scene);
+
+            //initializing ui
+            this.uiSceneInfo.UiController.InitializeUi(this);
 
             yield return null;
+            //***********************
 
             //loading open world scene
             SceneManager.LoadScene(this.sceneNames.GetOpenWorldSceneName(), LoadSceneMode.Additive);
 
             yield return null;
+            //***********************
 
             //getting references in open world scene
             this.openWorldSceneInfo.Scene = SceneManager.GetSceneByName(this.sceneNames.GetOpenWorldSceneName());
@@ -105,6 +119,7 @@ namespace Game.GameControl
             this.openWorldSceneInfo.SpawnPointManager = SearchForScriptInScene<World.SpawnPointSystem.SpawnPointManager>(this.openWorldSceneInfo.Scene);
 
             yield return null;
+            //***********************
 
             //pillar scenes
             var pillarIdValues = Enum.GetValues(typeof(World.ePillarId)).Cast<World.ePillarId>();
@@ -122,6 +137,7 @@ namespace Game.GameControl
                 SceneManager.LoadScene(name, LoadSceneMode.Additive);
 
                 yield return null;
+                //***********************
 
                 //getting references in pillar scene
                 var pillarScene = SceneManager.GetSceneByName(name);
@@ -141,23 +157,25 @@ namespace Game.GameControl
                 }
 
                 yield return null;
+                //***********************
             }
 
-            //initializing
-            this.playerModel.InitializePlayerModel();
+            //initializing game
             this.playerController.InitializePlayerController(this);
-
-            this.uiSceneInfo.UiController.InitializeUi(this.playerModel);
-
+            this.CameraController.InitializeCameraController(this);
             this.openWorldSceneInfo.WorldController.InitializeWorldController(this.playerController.transform);
 
+            yield return null;
+            //***********************
 
             //starting the game
+            SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
+
             var teleportPlayerEventArgs = new Utilities.EventManager.OnTeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnPoint(), true);
             Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
             Utilities.EventManager.SendOnSceneChangedEvent(this, new Utilities.EventManager.OnSceneChangedEventArgs());
-            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.Intro));
+            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.Intro));
         }
 
         #endregion initialization methods
@@ -183,7 +201,7 @@ namespace Game.GameControl
         IEnumerator ActivatePillarScene(World.ePillarId pillarId)
         {
             //todo: pause game
-            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.LoadingScreen));
+            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.LoadingScreen));
 
             yield return null;
 
@@ -217,7 +235,7 @@ namespace Game.GameControl
             yield return new WaitForSeconds(0.1f);
 
             //
-            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.HUD));
+            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.HUD));
             //todo: unpause game
         }
 
@@ -234,7 +252,7 @@ namespace Game.GameControl
         IEnumerator ActivateOpenWorldScene()
         {
             //todo: pause game
-            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.LoadingScreen));
+            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.LoadingScreen));
 
             yield return null;
 
@@ -267,7 +285,7 @@ namespace Game.GameControl
             yield return new WaitForSeconds(0.1f);
 
             //
-            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.HUD));
+            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.HUD));
             //todo: unpause game
         }
 
