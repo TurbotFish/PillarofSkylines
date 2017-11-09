@@ -54,7 +54,7 @@ namespace Game.GameControl
             //load resources
             this.sceneNames = Resources.Load<SceneNamesData>("ScriptableObjects/SceneNamesData");
 
-            //load everything
+            //load everything            
             StartCoroutine(LoadScenesRoutine());
 
             //register to events
@@ -69,6 +69,8 @@ namespace Game.GameControl
 
         IEnumerator LoadScenesRoutine()
         {
+            SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
+
             //getting references in main scene
             this.playerModel = GetComponentInChildren<Player.PlayerModel>();
             this.timeController = GetComponentInChildren<TimeController>();
@@ -86,7 +88,6 @@ namespace Game.GameControl
 
             //getting references in ui scene
             this.uiSceneInfo.Scene = SceneManager.GetSceneByName(UI_SCENE_NAME);
-
             this.uiSceneInfo.UiController = SearchForScriptInScene<Player.UI.UiController>(this.uiSceneInfo.Scene);
 
             yield return null;
@@ -98,7 +99,6 @@ namespace Game.GameControl
 
             //getting references in open world scene
             this.openWorldSceneInfo.Scene = SceneManager.GetSceneByName(this.sceneNames.GetOpenWorldSceneName());
-            CleanScene(this.openWorldSceneInfo.Scene);
             SceneManager.SetActiveScene(this.openWorldSceneInfo.Scene);
 
             this.openWorldSceneInfo.WorldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(this.openWorldSceneInfo.Scene);
@@ -125,8 +125,6 @@ namespace Game.GameControl
 
                 //getting references in pillar scene
                 var pillarScene = SceneManager.GetSceneByName(name);
-                CleanScene(pillarScene);
-
                 var pillarInfo = new PillarSceneInfo()
                 {
                     Scene = pillarScene,
@@ -166,6 +164,11 @@ namespace Game.GameControl
 
         //###############################################################
         //###############################################################
+
+        void OnSceneLoadedEventHandler(Scene scene, LoadSceneMode loadSceneMode)
+        {
+            CleanScene(scene);
+        }
 
         void OnEnterPillarEventHandler(object sender, Utilities.EventManager.OnEnterPillarEventArgs args)
         {

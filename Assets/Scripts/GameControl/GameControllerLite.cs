@@ -65,6 +65,8 @@ namespace Game.GameControl
 
         IEnumerator LoadScenesRoutine()
         {
+            yield return null;
+
             //***********************
             //getting references in local scene
             this.playerModel = GetComponentInChildren<Player.PlayerModel>();
