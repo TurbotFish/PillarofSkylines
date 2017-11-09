@@ -22,6 +22,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoSubSurfaceScattering ();
 		DoMain ();
 		DoSecondary ();
+		DoWind ();
 		DoDistanceDither ();
 		DoDebug ();
 	}
@@ -398,6 +399,18 @@ public class CustomPBR_GUI : ShaderGUI {
 
 		if (refrac) {
 			editor.ShaderProperty (refracAmount, MakeLabel (refracAmount));
+		}
+	}
+
+	void DoWind(){
+		GUILayout.Label ("WIP", EditorStyles.boldLabel);
+		EditorGUI.BeginChangeCheck ();
+		bool windOn = EditorGUILayout.Toggle ("Wind", IsKeywordEnabled ("_VERTEX_WIND"));
+		bool playerOn = EditorGUILayout.Toggle ("Bending", IsKeywordEnabled ("_VERTEX_BEND"));
+
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_VERTEX_WIND", windOn);
+			SetKeyword ("_VERTEX_BEND", playerOn);
 		}
 	}
 

@@ -19,7 +19,7 @@
 	#endif
 #endif
 
-float4 _Tint;
+float4 _Color;
 sampler2D _MainTex;
 float4 _MainTex_ST;
 float _AlphaCutoff;
@@ -63,7 +63,7 @@ struct Interpolators {
 };
 
 float GetAlpha(Interpolators i){
-		float alpha = _Tint.a;
+		float alpha = _Color.a;
 		#if SHADOWS_NEED_UV
 			alpha *= tex2D(_MainTex, i.uv.xy).a;
 		#endif
