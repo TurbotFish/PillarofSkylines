@@ -11,7 +11,7 @@ public class PoS_Camera : MonoBehaviour {
 	public enum eCameraState {
 		Default, Idle, PlayerControl,
 		Resetting, AroundCorner, FollowBehind,
-		Slope, Air
+		Slope, Air, LookAt
 	}
 
 	[Header("Position")]
@@ -296,16 +296,18 @@ public class PoS_Camera : MonoBehaviour {
             if (playerState == ePlayerState.onGround) {
                 
                 LookForPointsofInterest();
+                if (state != eCameraState.LookAt) {
+                    additionalDistance = 0;
+                    if (playerVelocity != Vector3.zero) {
+                        state = eCameraState.Default;
+                        SetTargetRotation(slopeValue + manualPitch, null, resetDamp);
 
-                additionalDistance = 0;
-                if (playerVelocity != Vector3.zero) {
-					state = eCameraState.Default;
-                    SetTargetRotation(slopeValue + manualPitch, null, resetDamp);
-
-				} else {
-					state = eCameraState.Idle;
-                    SetTargetRotation(slopeValue + manualPitch, null, resetDamp);
+                    } else {
+                        state = eCameraState.Idle;
+                        SetTargetRotation(slopeValue + manualPitch, null, resetDamp);
+                    }
                 }
+
 			} else {
 				state = eCameraState.Air;
                 if (additionalDistance > -distanceReductionWhenFalling)
@@ -342,16 +344,38 @@ public class PoS_Camera : MonoBehaviour {
     void LookForPointsofInterest() {
         Collider[] points = Physics.OverlapSphere(camPosition, maxDistanceToPoI, layerPoI);
 
-        if (points.Length == 0) return;
-        
-        bool[] isEligible = new bool[points.Length];
-
-        for (int i = 0; i < points.Length; i++) {
-            isEligible[i] = !Physics.Linecast(camPosition, points[i].transform.position, blockingLayer);
-            
-            if (isEligible[i])
-                print("salut je suis " + points[i] + " tu peux me regarder si tu veux");
+        if (points.Length == 0) {
+            state = eCameraState.Default;
+            return;
         }
+
+        float[] priorityList = new float[points.Length];
+
+        Collider targetPoI = null;
+
+        for (int i = 0, j = 0; i < points.Length; i++) {
+            if (!Physics.Linecast(camPosition, points[i].transform.position, blockingLayer)) {
+
+                Debug.DrawLine(camPosition, points[i].transform.position, Color.green);
+
+                // Si le PoI est plus petit que les autres, il devient ma cible
+                // peut être faire un truc avec la distance aussi
+                if (targetPoI == null || points[i].bounds.extents.x < targetPoI.bounds.extents.x) {
+                    targetPoI = points[i];
+                }
+
+                priorityList[j] = points[i].bounds.extents.x;
+
+                print("salut je suis " + points[i] + " tu peux me regarder si tu veux");
+            }
+        }
+
+        if (targetPoI == null) return;
+
+        Transform targetPoint = targetPoI.transform;
+        state = eCameraState.LookAt;
+        SetTargetRotation(null, GetYawTowardsPoint(targetPoint.position), autoResetDamp);
+
     }
 
     /// <summary>
@@ -453,7 +477,7 @@ public class PoS_Camera : MonoBehaviour {
 
 				if (delta > 1 && delta < 100) {
                     SetTargetRotation(null, GetYawBehindPlayer(), slideDamp);
-					state = eCameraState.AroundCorner;
+					state = eCameraState.Resetting;
 
 					//yaw = newYaw;
 					//camRotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
@@ -478,17 +502,29 @@ public class PoS_Camera : MonoBehaviour {
 		my.rotation = Quaternion.Lerp(my.rotation, camRotation, t);
 	}
 
-	float GetYawBehindPlayer() {
-		return SignedAngle(targetSpace * Vector3.forward, target.parent.rotation * Vector3.forward, target.up);
+    #region ValueMethods
+    Vector3 worldForward = new Vector3(0, 0, 1);
+
+    float GetYawTowardsPoint(Vector3 point) {
+        Vector3 direction = point - camPosition;
+        float distance = direction.magnitude;
+        direction /= distance;
+        Quaternion newq = Quaternion.LookRotation(direction, Vector3.up);
+
+        return SignedAngle(targetSpace * worldForward, newq * worldForward, target.up);
+    }
+    float GetYawBehindPlayer() {
+		return SignedAngle(targetSpace * worldForward, target.parent.rotation * worldForward, target.up);
 	}
-	public float SignedAngle(Vector3 v1, Vector3 v2, Vector3 n) {
+	float SignedAngle(Vector3 v1, Vector3 v2, Vector3 n) {
 		return Mathf.Atan2(
 			Vector3.Dot(n, Vector3.Cross(v1, v2)),
 			Vector3.Dot(v1, v2)) * 57.29578f; // Radian to Degrees constant
 	}
+    #endregion
 
-	#region Temporary Offset
-	Vector3 contextualOffset;
+    #region Temporary Offset
+    Vector3 contextualOffset;
 	bool cameraBounce;
 
 	public void SetVerticalOffset(float verticalOffset) {
