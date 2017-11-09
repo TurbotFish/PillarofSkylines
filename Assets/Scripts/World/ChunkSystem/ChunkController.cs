@@ -77,11 +77,11 @@ namespace Game.World.ChunkSystem
             {
                 var renderDistance = this.data.GetRenderDistance(subChunk.Layer);
 
-                if (distance >= renderDistance.x && distance < renderDistance.y)
+                if (distance >= renderDistance.x && distance < renderDistance.y && !subChunk.IsActive)
                 {
                     subChunk.ActivateSubChunk();
                 }
-                else
+                else if (subChunk.IsActive)
                 {
                     subChunk.DeactivateSubChunk();
                 }
@@ -100,7 +100,7 @@ namespace Game.World.ChunkSystem
             ChunkCopyTransform.localPosition = this.transform.localPosition;
 
             var boundsGo = Instantiate(this.bounds.gameObject, ChunkCopyTransform, true);
-            boundsGo.layer = this.bounds.gameObject.layer;           
+            boundsGo.layer = this.bounds.gameObject.layer;
 
             foreach (var subChunk in this.subChunkList)
             {

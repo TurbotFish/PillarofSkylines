@@ -19,6 +19,8 @@ namespace Game.World.ChunkSystem
         Transform myTransform;
         List<GameObject> childList = new List<GameObject>();
 
+        public bool IsActive { get; private set; }
+
 #if UNITY_EDITOR
         public void Editor_InitializeSubChunk(eSubChunkLayer layer)
         {
@@ -40,6 +42,8 @@ namespace Game.World.ChunkSystem
             {
                 this.childList.Add(this.myTransform.GetChild(i).gameObject);
             }
+
+            this.IsActive = true;
         }
 
         /// <summary>
@@ -55,6 +59,8 @@ namespace Game.World.ChunkSystem
         /// </summary>
         public void ActivateSubChunk()
         {
+            this.IsActive = true;
+
             StartCoroutine(ActivateSubChunkRoutine());
         }
 
@@ -63,6 +69,8 @@ namespace Game.World.ChunkSystem
         /// </summary>
         public void DeactivateSubChunk()
         {
+            this.IsActive = false;
+
             StartCoroutine(DeactivateSubChunkRoutine());
         }
 
