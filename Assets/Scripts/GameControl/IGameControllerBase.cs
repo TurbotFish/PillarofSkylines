@@ -8,7 +8,7 @@ namespace Game.GameControl
     public interface IGameControllerBase
     {
         Player.PlayerModel PlayerModel { get; }
-        EchoManager EchoManager { get; }
+        EchoSystem.EchoManager EchoManager { get; }
 
         Player.PlayerController PlayerController { get; }
         World.ChunkSystem.WorldController WorldController { get; }

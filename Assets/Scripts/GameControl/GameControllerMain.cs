@@ -20,11 +20,17 @@ namespace Game.GameControl
 
         TimeController timeController;
 
-        EchoManager echoManager;
-        public EchoManager EchoManager { get { return this.echoManager; } }
+        EchoSystem.EchoManager echoManager;
+        public EchoSystem.EchoManager EchoManager { get { return this.echoManager; } }
 
+        EclipseManager eclipseManager;
+        public EclipseManager EclipseManager { get { return this.eclipseManager; } }
+
+
+        //
         Player.PlayerController playerController;
         public Player.PlayerController PlayerController { get { return this.playerController; } }
+
 
         //
         OpenWorldSceneInfo openWorldSceneInfo = new OpenWorldSceneInfo();
@@ -34,6 +40,7 @@ namespace Game.GameControl
         public Player.UI.UiController UiController { get { return this.uiSceneInfo.UiController; } }
 
         Dictionary<World.ePillarId, PillarSceneInfo> pillarSceneDictionary = new Dictionary<World.ePillarId, PillarSceneInfo>();
+
 
         //
         bool isPillarActive = false;
@@ -65,6 +72,8 @@ namespace Game.GameControl
             //getting references in main scene
             this.playerModel = GetComponentInChildren<Player.PlayerModel>();
             this.timeController = GetComponentInChildren<TimeController>();
+            this.echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
+            this.eclipseManager = GetComponentInChildren<EclipseManager>();
 
             this.playerController = FindObjectOfType<Player.PlayerController>();
 
@@ -146,7 +155,9 @@ namespace Game.GameControl
 
 
             //starting the game
-            Utilities.EventManager.SendOnPlayerSpawnedEvent(this, new Utilities.EventManager.OnPlayerSpawnedEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnPoint()));
+            var teleportPlayerEventArgs = new Utilities.EventManager.OnTeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnPoint(), true);
+            Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
+
             Utilities.EventManager.SendOnSceneChangedEvent(this, new Utilities.EventManager.OnSceneChangedEventArgs());
             Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(Player.UI.eUiState.Intro));
         }
@@ -195,7 +206,9 @@ namespace Game.GameControl
             yield return null;
 
             //
-            Utilities.EventManager.SendOnPlayerSpawnedEvent(this, new Utilities.EventManager.OnPlayerSpawnedEventArgs(info.SpawnPointManager.GetInitialSpawnPoint()));
+            var teleportPlayerEventArgs = new Utilities.EventManager.OnTeleportPlayerEventArgs(info.SpawnPointManager.GetInitialSpawnPoint(), true);
+            Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
+
             Utilities.EventManager.SendOnSceneChangedEvent(this, new Utilities.EventManager.OnSceneChangedEventArgs(pillarId));
 
             yield return new WaitForSeconds(0.1f);
@@ -243,8 +256,8 @@ namespace Game.GameControl
             yield return null;
 
             //
-            var playerSpawnedEventArgs = new Utilities.EventManager.OnPlayerSpawnedEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetPillarExitPoint(this.activePillarId));
-            Utilities.EventManager.SendOnPlayerSpawnedEvent(this, playerSpawnedEventArgs);
+            var teleportPlayerEventArgs = new Utilities.EventManager.OnTeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetPillarExitPoint(this.activePillarId), true);
+            Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
             Utilities.EventManager.SendOnSceneChangedEvent(this, new Utilities.EventManager.OnSceneChangedEventArgs());
 
@@ -264,13 +277,6 @@ namespace Game.GameControl
 
             foreach (var gameObject in scene.GetRootGameObjects())
             {
-                result = gameObject.GetComponent<T>();
-
-                if (result != null)
-                {
-                    break;
-                }
-
                 result = gameObject.GetComponentInChildren<T>();
 
                 if (result != null)
@@ -315,10 +321,16 @@ namespace Game.GameControl
             }
 
             //cleaning up old EchoManagers
-            var echoManagers = SearchForScriptsInScene<EchoManager>(scene);
+            var echoManagers = SearchForScriptsInScene<EchoSystem.EchoManager>(scene);
             foreach (var echoManager in echoManagers)
             {
                 Destroy(echoManager.gameObject);
+            }
+
+            var eclipseManagers = SearchForScriptsInScene<EclipseManager>(scene);
+            foreach (var eclipseManager in eclipseManagers)
+            {
+                Destroy(eclipseManager.gameObject);
             }
         }
 

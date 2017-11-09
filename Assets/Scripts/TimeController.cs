@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game.GameControl
+namespace Game
 {
     public class TimeController : MonoBehaviour
     {

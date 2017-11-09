@@ -17,21 +17,29 @@ namespace Game.World.ChunkSystem
         [SerializeField]
         int numberOfRepetitions;
 
-        Transform playerTransform;
+        //################
 
         ChunkSystemData data;
+
+        Transform playerTransform;
+
         List<RegionController> regionList = new List<RegionController>();
-        Vector3 previousPlayerPos = Vector3.zero;
 
         List<GameObject> worldCopies = new List<GameObject>();
         List<RegionController> regionCopyList = new List<RegionController>();
 
         bool isInitialized = false;
+        Vector3 previousPlayerPos = Vector3.zero;
 
-        //############################################
+        //####################################################################
+        //####################################################################
 
-        void Start()
+        public void InitializeWorldController(Transform playerTransform)
         {
+            this.isInitialized = true;
+
+            this.playerTransform = playerTransform;
+
             this.data = Resources.Load<ChunkSystemData>("ScriptableObjects/ChunkSystemData");
 
             int childCount = this.transform.childCount;
@@ -48,6 +56,43 @@ namespace Game.World.ChunkSystem
             }
 
             //copying
+            CreateCopies();
+        }
+
+        //####################################################################
+        //####################################################################
+
+        void FixedUpdate()
+        {
+            if (!this.isInitialized)
+            {
+                return;
+            }
+
+            var currentPlayerPos = this.playerTransform.position;
+            float posDelta = Vector3.Distance(this.previousPlayerPos, currentPlayerPos);
+
+            if (posDelta >= this.data.GetMinUpdateDistance())
+            {
+                foreach (var region in this.regionList)
+                {
+                    region.UpdateRegion(currentPlayerPos);
+                }
+
+                foreach (var region in this.regionCopyList)
+                {
+                    region.UpdateRegion(currentPlayerPos);
+                }
+
+                this.previousPlayerPos = currentPlayerPos;
+            }
+        }
+
+        //####################################################################
+        //####################################################################
+
+        void CreateCopies()
+        {
             if (repeatAxes.x || repeatAxes.y || repeatAxes.z)
             {
                 for (int x = -1 * this.numberOfRepetitions; x <= this.numberOfRepetitions; x++)
@@ -80,8 +125,11 @@ namespace Game.World.ChunkSystem
 
                             foreach (var region in this.regionList)
                             {
-                                var regionGo = region.CreateCopy(go.transform);
-                                this.regionCopyList.Add(regionGo.GetComponent<RegionController>());
+                                var regionCopyGo = region.CreateCopy(go.transform);
+                                var regionCopyScript = regionCopyGo.GetComponent<RegionController>();
+
+                                regionCopyScript.InitializeRegion(this.data);
+                                this.regionCopyList.Add(regionCopyScript);
                             }
 
                             //moving the copy has to be done after creating all the children
@@ -92,37 +140,8 @@ namespace Game.World.ChunkSystem
             }
         }
 
-        void FixedUpdate()
-        {
-            if (!this.isInitialized)
-            {
-                return;
-            }
-
-            var currentPlayerPos = this.playerTransform.position;
-            float posDelta = Vector3.Distance(this.previousPlayerPos, currentPlayerPos);
-
-            if (posDelta >= this.data.GetMinUpdateDistance())
-            {
-                foreach (var region in this.regionList)
-                {
-                    region.UpdateRegion(currentPlayerPos);
-                }
-
-                this.previousPlayerPos = currentPlayerPos;
-            }
-        }
-
-        //############################################
-
-        public void InitializeWorldController(Transform playerTransform)
-        {
-            this.isInitialized = true;
-
-            this.playerTransform = playerTransform;
-        }
-
-        //############################################
+        //####################################################################
+        //####################################################################
 
         #region Gizmo
 
@@ -133,6 +152,15 @@ namespace Game.World.ChunkSystem
 
         void OnDrawGizmos()
         {
+            //if (this.isInitialized && Application.isEditor && Application.isPlaying)
+            //{
+            //    float size = this.data.GetRenderDistance(eSubChunkLayer.Near_VeryLarge).y * 2;
+            //    var colour = Color.yellow;
+            //    colour.a = 0.3f;
+            //    Gizmos.color = colour;
+            //    Gizmos.DrawCube(this.playerTransform.position, new Vector3(size, size, size));
+            //}
+
             if (drawGizmo)
             {
                 Gizmos.color = gizmoColor;
@@ -140,5 +168,8 @@ namespace Game.World.ChunkSystem
             }
         }
         #endregion
+
+        //####################################################################
+        //####################################################################
     }
 }

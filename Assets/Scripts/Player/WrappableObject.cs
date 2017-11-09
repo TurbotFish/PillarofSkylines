@@ -17,7 +17,6 @@ namespace Game.Player
         AxisInfo zAxisInfo;
 
         bool isInitialized = false;
-        bool teleporting = false;
 
         public void InitializeWrappableObject(World.ChunkSystem.WorldController worldController)
         {
@@ -50,18 +49,18 @@ namespace Game.Player
                 return;
             }
 
-            teleporting = false;
+            bool teleporting = false;
             Vector3 playerPos = this.myTransform.position;
             Vector3 teleportOffset = Vector3.zero;
 
             if (this.worldController.RepeatAxes.x)
             {
-                if(playerPos.x < this.xAxisInfo.minPos)
+                if (playerPos.x < this.xAxisInfo.minPos)
                 {
                     teleportOffset.x = this.xAxisInfo.worldSize;
                     teleporting = true;
                 }
-                else if(playerPos.x > this.xAxisInfo.maxPos)
+                else if (playerPos.x > this.xAxisInfo.maxPos)
                 {
                     teleportOffset.x = -this.xAxisInfo.worldSize;
                     teleporting = true;
@@ -70,12 +69,12 @@ namespace Game.Player
 
             if (this.worldController.RepeatAxes.y)
             {
-                if(playerPos.y < this.yAxisInfo.minPos)
+                if (playerPos.y < this.yAxisInfo.minPos)
                 {
                     teleportOffset.y = this.yAxisInfo.worldSize;
                     teleporting = true;
                 }
-                else if(playerPos.y > this.yAxisInfo.maxPos)
+                else if (playerPos.y > this.yAxisInfo.maxPos)
                 {
                     teleportOffset.y = -this.yAxisInfo.worldSize;
                     teleporting = true;
@@ -84,12 +83,12 @@ namespace Game.Player
 
             if (this.worldController.RepeatAxes.z)
             {
-                if(playerPos.z < this.zAxisInfo.minPos)
+                if (playerPos.z < this.zAxisInfo.minPos)
                 {
                     teleportOffset.z = this.zAxisInfo.worldSize;
                     teleporting = true;
                 }
-                else if(playerPos.z > this.zAxisInfo.maxPos)
+                else if (playerPos.z > this.zAxisInfo.maxPos)
                 {
                     teleportOffset.z = -this.zAxisInfo.worldSize;
                     teleporting = true;
@@ -99,13 +98,17 @@ namespace Game.Player
             if (teleporting)
             {
                 Vector3 newPlayerPos = playerPos + teleportOffset;
-                this.myTransform.position = newPlayerPos;
 
-                foreach(var follower in this.followers)
-                {
-                    Vector3 newFollowerPos = follower.position + teleportOffset;
-                    follower.position = newFollowerPos;
-                }
+                //this.myTransform.position = newPlayerPos;
+
+                var teleportPlayerEventArgs = new Utilities.EventManager.OnTeleportPlayerEventArgs(newPlayerPos, false);
+                Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
+
+                //foreach (var follower in this.followers)
+                //{
+                    //Vector3 newFollowerPos = follower.position + teleportOffset;
+                    //follower.position = newFollowerPos;
+                //}
             }
         }
 
