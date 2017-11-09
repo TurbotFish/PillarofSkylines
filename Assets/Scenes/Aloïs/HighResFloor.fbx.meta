@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 58de0c1b9e6f5df4a8edf7ec3c10d72c
-timeCreated: 1509729901
+guid: 93968a67351a6cc4f99a81469429ee2b
+timeCreated: 1510229245
 licenseType: Pro
 ModelImporter:
   serializedVersion: 21
@@ -9,11 +9,9 @@ ModelImporter:
     400000: //RootNode
     2300000: //RootNode
     3300000: //RootNode
-    4300000: foliageSquare_C
-    6400000: //RootNode
-    9500000: //RootNode
+    4300000: Plane
   materials:
-    importMaterials: 0
+    importMaterials: 1
     materialName: 0
     materialSearch: 1
   animations:
@@ -41,11 +39,11 @@ ModelImporter:
     lODScreenPercentages: []
     globalScale: 1
     meshCompression: 0
-    addColliders: 1
+    addColliders: 0
     importVisibility: 1
     importBlendShapes: 1
-    importCameras: 0
-    importLights: 0
+    importCameras: 1
+    importLights: 1
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
@@ -60,9 +58,9 @@ ModelImporter:
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
-    tangentImportMode: 1
+    tangentImportMode: 3
     normalCalculationMode: 4
-  importAnimation: 0
+  importAnimation: 1
   copyAvatar: 0
   humanDescription:
     serializedVersion: 2

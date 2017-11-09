@@ -21,6 +21,7 @@ Shader "Alo/PBR/CustomPBR" {
 		_ShadowTransition ("Transition", Range(0,1)) = 0.22 //Custom celshaded
 		_ShadowStrength ("Strength", Range(0,1)) = 0.4 //Custom celshaded
 
+		//bonjour alois
 		[NoScaleOffset] _EmissionMap ("Emission", 2D) = "black"{}
 		_Emission ("Emission", Color) = (0, 0, 0)
 
