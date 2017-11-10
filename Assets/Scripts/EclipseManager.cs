@@ -5,52 +5,59 @@ namespace Game
 {
     public class EclipseManager : MonoBehaviour
     {
-
-        [TestButton("Start Eclipse", "StartEclipse", isActiveInEditor = false)]
-        [TestButton("Stop Eclipse", "StopEclipse", isActiveInEditor = false)]
-        public bool isEclipseActive;
-
-        public float rotationDuration = 1;
-        public Vector3 regularGravity;
-        public Vector3 eclipseGravity;
+        //[TestButton("Start Eclipse", "StartEclipse", isActiveInEditor = false)]
+        //[TestButton("Stop Eclipse", "StopEclipse", isActiveInEditor = false)]        
 
         [SerializeField]
-        Transform pillar;
+        float rotationDuration = 0.5f;
+
+        [SerializeField]
+        Vector3 regularGravity = new Vector3(0, -1, 0);
+
+        [SerializeField]
+        Vector3 eclipseGravity = new Vector3(1, 0, 0);
 
         global::Player player;
 
+        bool isEclipseActive;
+
+        //###############################################################
+
         #region Singleton
-        public static EclipseManager instance;
-        void Awake()
-        {
-            if (!instance)
-            {
-                instance = this;
-                //DontDestroyOnLoad(gameObject);
-            }
-            else if (instance != this)
-                Destroy(gameObject);
-        }
-        #endregion
+        //public static EclipseManager instance;
+        //void Awake()
+        //{
+        //    if (!instance)
+        //    {
+        //        instance = this;
+        //        //DontDestroyOnLoad(gameObject);
+        //    }
+        //    else if (instance != this)
+        //        Destroy(gameObject);
+        //}
+        #endregion Singleton
 
-        void Start()
-        {
-            player = FindObjectOfType<global::Player>(); //to fix
+        //###############################################################
+        //###############################################################
 
-            Utilities.EventManager.OnEclipseEvent += HandleEventEclipse;
-        }
+        #region initialization
 
-        void StartEclipse()
+        public void InitializeEclipseManager(GameControl.IGameControllerBase gameController)
         {
-            isEclipseActive = true;
-        }
+            this.player = gameController.PlayerController.Player;
 
-        void StopEclipse()
-        {
-            isEclipseActive = false;
+            Utilities.EventManager.OnEclipseEvent += OnEclipseEventHandler;
+            Utilities.EventManager.OnSceneChangedEvent += OnSceneChangedEventHandler;
         }
 
-        void HandleEventEclipse(object sender, Game.Utilities.EventManager.OnEclipseEventArgs args)
+        #endregion initialization
+
+        //###############################################################
+        //###############################################################
+
+        #region event handlers
+
+        void OnEclipseEventHandler(object sender, Game.Utilities.EventManager.OnEclipseEventArgs args)
         {
             if (args.EclipseOn)
             {
@@ -60,10 +67,43 @@ namespace Game
             {
                 StopEclipse();
             }
-            StartCoroutine("ChangeGravity", args.EclipseOn);
         }
 
-        IEnumerator ChangeGravity(bool eclipseOn)
+        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
+        {
+            StopEclipse();
+        }
+
+        #endregion event handlers
+
+        //###############################################################
+        //###############################################################
+
+        void StartEclipse()
+        {
+            if (this.isEclipseActive)
+            {
+                return;
+            }
+
+            this.isEclipseActive = true;
+            StopAllCoroutines();
+            StartCoroutine(ChangeGravityRoutine(true));
+        }
+
+        void StopEclipse()
+        {
+            if (!this.isEclipseActive)
+            {
+                return;
+            }
+
+            this.isEclipseActive = false;
+            StopAllCoroutines();
+            StartCoroutine(ChangeGravityRoutine(false));
+        }
+
+        IEnumerator ChangeGravityRoutine(bool eclipseOn)
         {
             float gravityTimer = 0;
             player.SetVelocity(new Vector3(0f, 10f, 0f), false, false);
@@ -89,5 +129,7 @@ namespace Game
                 player.ChangeGravityDirection(regularGravity);
             }
         }
+
+        //###############################################################
     }
 } //end of namespace
