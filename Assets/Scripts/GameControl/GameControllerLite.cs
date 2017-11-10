@@ -115,6 +115,7 @@ namespace Game.GameControl
             }
 
             this.echoManager.InitializeEchoManager(this);
+            this.EclipseManager.InitializeEclipseManager(this);
 
             yield return null;
             //***********************

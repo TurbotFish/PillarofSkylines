@@ -97,7 +97,6 @@ public class CharacControllerRecu : MonoBehaviour
 		//Recursively check if the movement meets obstacles
 		velocity = CollisionDetection(velocity, myTransform.position + playerAngle * center, new RaycastHit());
 		if (climbingStep) {
-//			print("moved player up");
 			transform.position += stepOffset;
 			stepOffset = Vector3.zero;
 		}
@@ -217,12 +216,12 @@ public class CharacControllerRecu : MonoBehaviour
 
 			//Detect the obstacle met from above to check if it's a step
 //			Debug.DrawRay(myTransform.position + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up * (height + radius * 2), Color.red);
-			if (myPlayer.currentPlayerState == ePlayerState.onGround && Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up, out hit2, height + radius * 2, collisionMask)) {
+			if ((myPlayer.currentPlayerState == ePlayerState.onGround || climbingStep) && Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up, out hit2, height + radius * 2, collisionMask)) {
 				collisions.stepHeight = (height + radius * 2) - hit2.distance;
 				// Once checked if it's a step, check if it's not too high, and if it's not a slope
 //				print("new ground angle : " + Vector3.Angle(hit2.normal, myTransform.up) + ", step height : " + collisions.stepHeight + ", dot product : " + Vector3.Dot(hit.normal, hit2.normal));
 				if (Vector3.Angle(hit2.normal, myTransform.up) < myPlayer.maxSlopeAngle && collisions.stepHeight < myPlayer.maxStepHeight && Vector3.Dot(hit.normal, hit2.normal) < .95f) {
-					if (Physics.SphereCast(myTransform.position + movementVector + extraVelocity + myTransform.up * collisions.stepHeight, radius, -myTransform.up, out hit2, collisions.stepHeight, collisionMask)) {
+					if (Physics.SphereCast(myTransform.position + movementVector + extraVelocity + myTransform.up * (collisions.stepHeight + radius), radius, -myTransform.up, out hit2, collisions.stepHeight, collisionMask)) {
 						stepOffset += myTransform.up * (collisions.stepHeight - hit2.distance);
 //						print("step added via sphere : " + stepOffset);
 					} else {
@@ -230,7 +229,6 @@ public class CharacControllerRecu : MonoBehaviour
 //						print("step not added via sphere : " + stepOffset);
 					}
 					climbingStep = true;
-//					print("added step offset");
 				} else {
 //					print("stopped climbing 1");
 					climbingStep = false;
