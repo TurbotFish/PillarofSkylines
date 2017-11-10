@@ -85,7 +85,7 @@ public class CharacControllerRecu : MonoBehaviour
 
 
 	public Vector3 Move(Vector3 velocity) {
-//		print("---------------------------------new movement----------------------------------");
+		print("---------------------------------new movement----------------------------------");
 		playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
 		collisions.initialVelocityOnThisFrame = velocity;
 
@@ -97,7 +97,6 @@ public class CharacControllerRecu : MonoBehaviour
 		//Recursively check if the movement meets obstacles
 		velocity = CollisionDetection(velocity, myTransform.position + playerAngle * center, new RaycastHit());
 		if (climbingStep) {
-//			print("moved player up");
 			transform.position += stepOffset;
 			stepOffset = Vector3.zero;
 		}
@@ -143,7 +142,7 @@ public class CharacControllerRecu : MonoBehaviour
 		if (collisions.below && !Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask)) {
 			if (Physics.SphereCast(myTransform.position + myTransform.up * radius, radius, -myTransform.up, out hit2, collisions.stepHeight, collisionMask)) {
 				transform.position += -myTransform.up * hit2.distance;
-//				print("adjusted position on step");
+				print("adjusted position on step");
 			}
 		}
 		if (collisions.below && !climbingStep) {
@@ -216,27 +215,26 @@ public class CharacControllerRecu : MonoBehaviour
 			Vector3 extraVelocity = (velocity - movementVector);
 
 			//Detect the obstacle met from above to check if it's a step
-//			Debug.DrawRay(myTransform.position + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up * (height + radius * 2), Color.red);
-			if (myPlayer.currentPlayerState == ePlayerState.onGround && Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up, out hit2, height + radius * 2, collisionMask)) {
+			Debug.DrawRay(myTransform.position + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up * (height + radius * 2), Color.red);
+			if ((myPlayer.currentPlayerState == ePlayerState.onGround || climbingStep) && Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up, out hit2, height + radius * 2, collisionMask)) {
 				collisions.stepHeight = (height + radius * 2) - hit2.distance;
 				// Once checked if it's a step, check if it's not too high, and if it's not a slope
 //				print("new ground angle : " + Vector3.Angle(hit2.normal, myTransform.up) + ", step height : " + collisions.stepHeight + ", dot product : " + Vector3.Dot(hit.normal, hit2.normal));
 				if (Vector3.Angle(hit2.normal, myTransform.up) < myPlayer.maxSlopeAngle && collisions.stepHeight < myPlayer.maxStepHeight && Vector3.Dot(hit.normal, hit2.normal) < .95f) {
-					if (Physics.SphereCast(myTransform.position + movementVector + extraVelocity + myTransform.up * collisions.stepHeight, radius, -myTransform.up, out hit2, collisions.stepHeight, collisionMask)) {
+					if (Physics.SphereCast(myTransform.position + movementVector + extraVelocity + myTransform.up * (collisions.stepHeight + radius), radius, -myTransform.up, out hit2, collisions.stepHeight, collisionMask)) {
 						stepOffset += myTransform.up * (collisions.stepHeight - hit2.distance);
-//						print("step added via sphere : " + stepOffset);
+						print("step added via sphere : " + stepOffset);
 					} else {
 						stepOffset = myTransform.up * collisions.stepHeight;
-//						print("step not added via sphere : " + stepOffset);
+						print("step not added via sphere : " + stepOffset);
 					}
 					climbingStep = true;
-//					print("added step offset");
 				} else {
-//					print("stopped climbing 1");
+					print("stopped climbing 1");
 					climbingStep = false;
 				}
 			} else {
-//				print("stopped climbing 2");
+				print("stopped climbing 2");
 				climbingStep = false;
 			}
 
@@ -270,7 +268,7 @@ public class CharacControllerRecu : MonoBehaviour
 			}
 		} else {
 			if (collisionNumber == 0) {
-//				print("stopped climbing 3");
+				print("stopped climbing 3");
 				climbingStep = false;
 			}
 
