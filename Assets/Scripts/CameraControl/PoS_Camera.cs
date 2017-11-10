@@ -69,7 +69,7 @@ public class PoS_Camera : MonoBehaviour {
 	public float panoramaDistance = 15;
 	public float timeToTriggerPanorama = 10;
 	public float panoramaDezoomSpeed = 1f;
-
+    
 	[Header("Eclipse")]
 	public bool isEclipse = false;
 
