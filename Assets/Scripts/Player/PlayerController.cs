@@ -30,7 +30,11 @@ namespace Game.Player
 
             this.player.InitializePlayer(gameController.PlayerModel);
             this.interactionController.InitializeFavourController(gameController.PlayerModel, player);
-            this.wrappableObject.InitializeWrappableObject(gameController.WorldController);
+
+            if (gameController.WorldController != null)
+            {
+                this.wrappableObject.InitializeWrappableObject(gameController.WorldController);
+            }
         }
     }
 }
