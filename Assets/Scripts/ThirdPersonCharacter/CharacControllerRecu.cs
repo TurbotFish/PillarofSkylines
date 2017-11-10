@@ -138,8 +138,8 @@ public class CharacControllerRecu : MonoBehaviour
 	void CollisionUpdate(Vector3 velocity) {
 		//Send casts to check if there's stuff around the player and set bools depending on the results
 
-		collisions.below = Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask) || climbingStep;
-		if (collisions.below && !Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask)) {
+		collisions.below = Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius*.95f, -myTransform.up, out hit, skinWidth * 4, collisionMask) || climbingStep;
+		if (collisions.below && !Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius*.95f, -myTransform.up, out hit, skinWidth * 4, collisionMask)) {
 			if (Physics.SphereCast(myTransform.position + myTransform.up * radius, radius, -myTransform.up, out hit2, collisions.stepHeight, collisionMask)) {
 				transform.position += -myTransform.up * hit2.distance;
 //				print("adjusted position on step");
@@ -157,11 +157,11 @@ public class CharacControllerRecu : MonoBehaviour
 				currentCloud = null;
 			}
 		}
-		collisions.above = Physics.SphereCast(myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) - myTransform.up * skinWidth * 2, radius, myTransform.up, out hit, skinWidth * 4, collisionMask);
+		collisions.above = Physics.SphereCast(myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) - myTransform.up * skinWidth * 2, radius*.95f, myTransform.up, out hit, skinWidth * 4, collisionMask);
 		if (collisions.above && hit.collider.CompareTag("cloud")) {
 			collisions.above = false;
 		}
-		collisions.side = Physics.CapsuleCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2), myTransform.position + playerAngle * (center + capsuleHeightModifier / 2), radius
+		collisions.side = Physics.CapsuleCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2), myTransform.position + playerAngle * (center + capsuleHeightModifier / 2), radius*.95f
 			, Vector3.ProjectOnPlane(collisions.initialVelocityOnThisFrame, (collisions.below ? collisions.currentGroundNormal : myTransform.up)), out hit, skinWidth * 2, collisionMask);
 		if (collisions.side) {
 			collisions.currentWallNormal = hit.normal;
@@ -215,8 +215,11 @@ public class CharacControllerRecu : MonoBehaviour
 			Vector3 extraVelocity = (velocity - movementVector);
 
 			//Detect the obstacle met from above to check if it's a step
-//			Debug.DrawRay(myTransform.position + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up * (height + radius * 2), Color.red);
-			if ((myPlayer.currentPlayerState == ePlayerState.onGround || climbingStep) && Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up, out hit2, height + radius * 2, collisionMask)) {
+			Debug.DrawRay(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up * (height + radius * 2), Color.red);
+			Debug.DrawRay(myTransform.position + movementVector + myTransform.up * (height + radius * 2), Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), Color.red);
+			if ((myPlayer.currentPlayerState == ePlayerState.onGround || climbingStep)
+				&& Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up, out hit2, height + radius * 2, collisionMask)
+				&& !Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2),  Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up), (radius + skinWidth), collisionMask)) {
 				collisions.stepHeight = (height + radius * 2) - hit2.distance;
 				// Once checked if it's a step, check if it's not too high, and if it's not a slope
 //				print("new ground angle : " + Vector3.Angle(hit2.normal, myTransform.up) + ", step height : " + collisions.stepHeight + ", dot product : " + Vector3.Dot(hit.normal, hit2.normal));
