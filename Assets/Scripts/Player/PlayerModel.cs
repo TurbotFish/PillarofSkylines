@@ -67,15 +67,11 @@ namespace Game.Player
             UnlockAbilityGroup(eAbilityGroup.test);
         }
 
+        //###########################################################
+        //###########################################################
+
         #region monobehaviour methods
 
-        // Use this for initialization
-        void Start()
-        {
-
-        }
-
-        // Update is called once per frame
         void Update()
         {
 #if UNITY_EDITOR
@@ -301,6 +297,9 @@ namespace Game.Player
         #endregion ability flagging methods
 
         //###########################################################
+        //###########################################################
+
+        #region pillar state methods
 
         public void SetPillarDestroyed(World.ePillarId pillarId)
         {
@@ -322,6 +321,13 @@ namespace Game.Player
             return false;
         }
 
+        #endregion pillar state methods
+
+        //###########################################################
+        //###########################################################
+
+        #region favour methods
+
         public void SetFavourPickedUp(string favourId)
         {
             if (!this.pickedUpFavours.Contains(favourId))
@@ -339,6 +345,8 @@ namespace Game.Player
 
             return false;
         }
+
+        #endregion favour methods
 
         //###########################################################
     }
