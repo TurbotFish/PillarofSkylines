@@ -745,7 +745,7 @@ public class Player : MonoBehaviour {
 
 		animator.SetBool ("OnGround", controller.collisions.below);
 		animator.SetFloat ("Forward", inputRaw.magnitude);
-		//animator.SetFloat ("Turn", Vector3.Dot (transform.right, inputRaw));
+		animator.SetFloat ("Turn", Mathf.Lerp (0f, Vector3.SignedAngle (transform.forward, Vector3.ProjectOnPlane (TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime)/7f);
 		animator.SetFloat ("Jump", turnedVelocity.y/5);
 		float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
 		float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputRaw.magnitude;
