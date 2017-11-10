@@ -59,8 +59,13 @@ namespace Game.World.ChunkSystem
         /// </summary>
         public void ActivateSubChunk()
         {
+            if (this.IsActive)
+            {
+                return;
+            }
+
             this.IsActive = true;
-            
+            StopAllCoroutines();
             StartCoroutine(ActivateSubChunkRoutine());
         }
 
@@ -69,8 +74,13 @@ namespace Game.World.ChunkSystem
         /// </summary>
         public void DeactivateSubChunk()
         {
-            this.IsActive = false;
+            if (!this.IsActive)
+            {
+                return;
+            }
 
+            this.IsActive = false;
+            StopAllCoroutines();
             StartCoroutine(DeactivateSubChunkRoutine());
         }
 
@@ -133,6 +143,8 @@ namespace Game.World.ChunkSystem
 
         IEnumerator DeactivateSubChunkRoutine()
         {
+            yield return new WaitForSecondsRealtime(0.5f);
+
             foreach (var go in this.childList)
             {
                 go.SetActive(false);
