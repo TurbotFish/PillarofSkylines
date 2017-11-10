@@ -20,11 +20,8 @@ namespace Game.GameControl
 
         TimeController timeController;
 
-        EchoSystem.EchoManager echoManager;
-        public EchoSystem.EchoManager EchoManager { get { return this.echoManager; } }
-
-        EclipseManager eclipseManager;
-        public EclipseManager EclipseManager { get { return this.eclipseManager; } }
+        public EchoSystem.EchoManager EchoManager { get; private set; }
+        public EclipseManager EclipseManager { get; private set; }
 
 
         //
@@ -76,8 +73,8 @@ namespace Game.GameControl
             //getting references in game controller
             this.playerModel = GetComponentInChildren<Player.PlayerModel>();
             this.timeController = GetComponentInChildren<TimeController>();
-            this.echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
-            this.eclipseManager = GetComponentInChildren<EclipseManager>();
+            this.EchoManager = GetComponentInChildren<EchoSystem.EchoManager>();
+            this.EclipseManager = GetComponentInChildren<EclipseManager>();
 
             //initializing game controller
             this.playerModel.InitializePlayerModel();
@@ -166,7 +163,8 @@ namespace Game.GameControl
 
             this.openWorldSceneInfo.WorldController.InitializeWorldController(this.playerController.transform);
 
-            this.echoManager.InitializeEchoManager(this);
+            this.EchoManager.InitializeEchoManager(this);
+            this.EclipseManager.InitializeEclipseManager(this);
 
             yield return null;
             //***********************
