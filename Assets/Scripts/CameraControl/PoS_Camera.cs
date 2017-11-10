@@ -37,20 +37,23 @@ public class PoS_Camera : MonoBehaviour {
 	public bool followBehind;
 	public float timeBeforeAutoReset = 5;
 	public float autoResetDamp = 1;
-
-    public float maxJumpHeight = 10;
-    public float distanceReductionWhenFalling = 6;
-	public float recoilOnImpact = 20;
-
+    
 	public MinMax distanceBasedOnPitch = new MinMax(1, 12);
 	public AnimationCurve distanceFromRotation;
 
 	public MinMax fovBasedOnPitch = new MinMax(60, 75);
 	public AnimationCurve fovFromRotation;
 
+    [Header("Falling")]
+    public float maxJumpHeight = 10;
+    public float distanceReductionWhenFalling = 6;
+    public float fallingDamp = 2;
+    public float recoilOnImpact = 20;
+
+    [Header("Edge of Cliff")]
 	public float distanceToCheckGroundForward = 2;
 	public float cliffMinDepth = 5;
-
+    
     [Header("Points of Interest")]
     public LayerMask layerPoI;
     public float maxDistanceToPoI = 300;
@@ -330,10 +333,12 @@ public class PoS_Camera : MonoBehaviour {
                 if (additionalDistance > -distanceReductionWhenFalling) // Dans les airs je zoom vers le perso
                     additionalDistance -= deltaTime / autoResetDamp;
 
-                // Si on tombe et qu'on est plus haut que la maxJumpHeight, on dit qu'on tombe dans le vide et on se penche vers l'avant
-                if (playerVelocity.y < 0 && !Physics.Raycast(target.position, -target.up + (playerVelocity.z * target.forward/2) + (playerVelocity.x * target.right/2), maxJumpHeight, controller.collisionMask))
-                    SetTargetRotation(pitchRotationLimit.max, null, autoResetDamp);
+                Debug.DrawRay(target.position + (playerVelocity.z * Vector3.forward + playerVelocity.x * Vector3.right)/4, -target.up, Color.magenta, 0.5f);
 
+                // Si on tombe et qu'on est plus haut que la maxJumpHeight, on dit qu'on tombe dans le vide et on se penche vers l'avant
+                if (playerVelocity.y < 0 && !Physics.Raycast(target.position + (playerVelocity.z * Vector3.forward + playerVelocity.x * Vector3.right) / 4, -target.up, maxJumpHeight, controller.collisionMask))
+                    SetTargetRotation(pitchRotationLimit.max, null, fallingDamp);
+                
                 else if(targetPitch != pitchRotationLimit.max) { // peut être qu'on devrait ajuster le targetPitch selon la distance du rayon (genre si on est haut mais ça va on se penche mais pas trop)
                     autoAdjustPitch = false;
                     autoAdjustYaw = false;
