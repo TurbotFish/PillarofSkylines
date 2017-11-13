@@ -85,7 +85,7 @@ public class CharacControllerRecu : MonoBehaviour
 
 
 	public Vector3 Move(Vector3 velocity) {
-//		print("---------------------------------new movement----------------------------------");
+		print("---------------------------------new movement----------------------------------");
 		playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
 		collisions.initialVelocityOnThisFrame = velocity;
 
@@ -138,11 +138,11 @@ public class CharacControllerRecu : MonoBehaviour
 	void CollisionUpdate(Vector3 velocity) {
 		//Send casts to check if there's stuff around the player and set bools depending on the results
 
-		collisions.below = Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius*.95f, -myTransform.up, out hit, skinWidth * 4, collisionMask) || climbingStep;
-		if (collisions.below && !Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius*.95f, -myTransform.up, out hit, skinWidth * 4, collisionMask)) {
+		collisions.below = Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask) || climbingStep;
+		if (collisions.below && !Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask)) {
 			if (Physics.SphereCast(myTransform.position + myTransform.up * radius, radius, -myTransform.up, out hit2, collisions.stepHeight, collisionMask)) {
 				transform.position += -myTransform.up * hit2.distance;
-//				print("adjusted position on step");
+				print("adjusted position on step by : " + hit2.distance);
 			}
 		}
 		if (collisions.below && !climbingStep) {
@@ -157,11 +157,11 @@ public class CharacControllerRecu : MonoBehaviour
 				currentCloud = null;
 			}
 		}
-		collisions.above = Physics.SphereCast(myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) - myTransform.up * skinWidth * 2, radius*.95f, myTransform.up, out hit, skinWidth * 4, collisionMask);
+		collisions.above = Physics.SphereCast(myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) - myTransform.up * skinWidth * 2, radius, myTransform.up, out hit, skinWidth * 4, collisionMask);
 		if (collisions.above && hit.collider.CompareTag("cloud")) {
 			collisions.above = false;
 		}
-		collisions.side = Physics.CapsuleCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2), myTransform.position + playerAngle * (center + capsuleHeightModifier / 2), radius*.95f
+		collisions.side = Physics.CapsuleCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2), myTransform.position + playerAngle * (center + capsuleHeightModifier / 2), radius
 			, Vector3.ProjectOnPlane(collisions.initialVelocityOnThisFrame, (collisions.below ? collisions.currentGroundNormal : myTransform.up)), out hit, skinWidth * 2, collisionMask);
 		if (collisions.side) {
 			collisions.currentWallNormal = hit.normal;
@@ -178,7 +178,7 @@ public class CharacControllerRecu : MonoBehaviour
 		float rayLength = velocity.magnitude;
 		Vector3 newOrigin = position;
 
-//		print("pass " + (collisionNumber + 1));
+		//		print("pass " + (collisionNumber + 1));
 
 		//Send a first capsule cast in the direction of the velocity
 		if (Physics.CapsuleCast(newOrigin - (playerAngle * capsuleHeightModifier / 2), newOrigin + (playerAngle * capsuleHeightModifier / 2), radius, velocity, out hit, rayLength
@@ -222,22 +222,22 @@ public class CharacControllerRecu : MonoBehaviour
 				&& !Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2),  Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up), (radius + skinWidth), collisionMask)) {
 				collisions.stepHeight = (height + radius * 2) - hit2.distance;
 				// Once checked if it's a step, check if it's not too high, and if it's not a slope
-//				print("new ground angle : " + Vector3.Angle(hit2.normal, myTransform.up) + ", step height : " + collisions.stepHeight + ", dot product : " + Vector3.Dot(hit.normal, hit2.normal));
+				print("new ground angle : " + Vector3.Angle(hit2.normal, myTransform.up) + ", step height : " + collisions.stepHeight + ", dot product : " + Vector3.Dot(hit.normal, hit2.normal));
 				if (Vector3.Angle(hit2.normal, myTransform.up) < myPlayer.maxSlopeAngle && collisions.stepHeight < myPlayer.maxStepHeight && Vector3.Dot(hit.normal, hit2.normal) < .95f) {
 					if (Physics.SphereCast(myTransform.position + movementVector + extraVelocity + myTransform.up * (collisions.stepHeight + radius), radius, -myTransform.up, out hit2, collisions.stepHeight, collisionMask)) {
 						stepOffset += myTransform.up * (collisions.stepHeight - hit2.distance);
-//						print("step added via sphere : " + stepOffset);
+						print("step added via sphere : " + stepOffset.y);
 					} else {
 						stepOffset = myTransform.up * collisions.stepHeight;
-//						print("step not added via sphere : " + stepOffset);
+						print("step not added via sphere : " + stepOffset.y);
 					}
 					climbingStep = true;
 				} else {
-//					print("stopped climbing 1");
+					print("stopped climbing 1");
 					climbingStep = false;
 				}
 			} else {
-//				print("stopped climbing 2");
+				print("stopped climbing 2");
 				climbingStep = false;
 			}
 
@@ -271,7 +271,7 @@ public class CharacControllerRecu : MonoBehaviour
 			}
 		} else {
 			if (collisionNumber == 0) {
-//				print("stopped climbing 3");
+				print("stopped climbing 3");
 				climbingStep = false;
 			}
 
