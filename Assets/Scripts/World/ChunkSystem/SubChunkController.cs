@@ -17,9 +17,11 @@ namespace Game.World.ChunkSystem
         bool doNotWrap = false;
 
         Transform myTransform;
-        List<GameObject> childList = new List<GameObject>();
-
         public bool IsActive { get; private set; }
+
+        List<GameObject> childList = new List<GameObject>();
+        System.Object childListLock = new System.Object();
+        
 
 #if UNITY_EDITOR
         public void Editor_InitializeSubChunk(eSubChunkLayer layer)
@@ -143,10 +145,13 @@ namespace Game.World.ChunkSystem
                 return;
             }
 
-            this.childList.Clear();
-            for (int i = 0; i < this.myTransform.childCount; i++)
+            lock (this.childListLock)
             {
-                this.childList.Add(this.myTransform.GetChild(i).gameObject);
+                this.childList.Clear();
+                for (int i = 0; i < this.myTransform.childCount; i++)
+                {
+                    this.childList.Add(this.myTransform.GetChild(i).gameObject);
+                }
             }
         }
 
@@ -155,23 +160,33 @@ namespace Game.World.ChunkSystem
 
         IEnumerator ActivateSubChunkRoutine()
         {
-            foreach (var go in this.childList)
+            lock (this.childListLock)
             {
-                go.SetActive(true);
+                for (int i = 0; i < this.childList.Count; i++)
+                {
+                    this.childList[i].SetActive(true);
 
-                yield return null;
+                    if (i % 10 == 0)
+                    {
+                        yield return null;
+                    }
+                }
             }
         }
 
         IEnumerator DeactivateSubChunkRoutine()
         {
-            yield return new WaitForSecondsRealtime(0.5f);
-
-            foreach (var go in this.childList)
+            lock (this.childListLock)
             {
-                go.SetActive(false);
+                for (int i = 0; i < this.childList.Count; i++)
+                {
+                    this.childList[i].SetActive(false);
 
-                yield return null;
+                    if (i % 10 == 0)
+                    {
+                        yield return null;
+                    }
+                }
             }
         }
 

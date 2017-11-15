@@ -48,7 +48,6 @@ namespace Game.World.ChunkSystem
         /// </summary>
         public void ActivatePillarChunk()
         {
-            Debug.LogErrorFormat("PillarChunk activated: {0}", this.name);
             this.isActive = true;
 
             foreach (var subChunk in this.subChunkList)
@@ -62,7 +61,6 @@ namespace Game.World.ChunkSystem
         /// </summary>
         public void DeactivatePillarChunk()
         {
-            Debug.LogErrorFormat("PillarChunk deactivated: {0}", this.name);
             this.isActive = false;
 
             foreach (var subChunk in this.subChunkList)
