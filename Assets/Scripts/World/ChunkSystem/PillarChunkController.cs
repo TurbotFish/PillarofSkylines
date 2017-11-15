@@ -46,28 +46,28 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
-        public void Activate()
+        public void ActivatePillarChunk()
         {
+            Debug.LogErrorFormat("PillarChunk activated: {0}", this.name);
             this.isActive = true;
 
-            this.bounds.gameObject.SetActive(true);
             foreach (var subChunk in this.subChunkList)
             {
-                subChunk.ActivateSubChunk();
+                subChunk.ActivateSubChunk(true);
             }
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public void Deactivate()
+        public void DeactivatePillarChunk()
         {
+            Debug.LogErrorFormat("PillarChunk deactivated: {0}", this.name);
             this.isActive = false;
 
-            this.bounds.gameObject.SetActive(false);
             foreach (var subChunk in this.subChunkList)
             {
-                subChunk.DeactivateSubChunk();
+                subChunk.DeactivateSubChunk(true);
             }
         }
     }
