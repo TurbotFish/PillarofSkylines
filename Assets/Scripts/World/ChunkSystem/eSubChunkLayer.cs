@@ -9,6 +9,7 @@ namespace Game.World.ChunkSystem
         Near_Small,
         Near_Medium,
         Near_Large,
+        Near_VeryLarge,
         FarAway
     }
 }

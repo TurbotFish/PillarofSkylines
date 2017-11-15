@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 [AddComponentMenu("Camera/Third Person Camera")]
 [RequireComponent(typeof(Camera))]
@@ -11,7 +12,7 @@ public class PoS_Camera : MonoBehaviour {
 	public enum eCameraState {
 		Default, Idle, PlayerControl,
 		Resetting, AroundCorner, FollowBehind,
-		Slope, Air
+		Slope, Air, LookAt
 	}
 
 	[Header("Position")]
@@ -36,17 +37,26 @@ public class PoS_Camera : MonoBehaviour {
 	public bool followBehind;
 	public float timeBeforeAutoReset = 5;
 	public float autoResetDamp = 1;
-
-	public float recoilOnImpact = 20;
-
+    
 	public MinMax distanceBasedOnPitch = new MinMax(1, 12);
 	public AnimationCurve distanceFromRotation;
 
 	public MinMax fovBasedOnPitch = new MinMax(60, 75);
 	public AnimationCurve fovFromRotation;
 
-	public float cliffEdgeMaxWidth = 2;
+    [Header("Falling")]
+    public float maxJumpHeight = 10;
+    public float distanceReductionWhenFalling = 6;
+    public float fallingDamp = 2;
+    public float recoilOnImpact = 20;
+
+    [Header("Edge of Cliff")]
+	public float distanceToCheckGroundForward = 2;
 	public float cliffMinDepth = 5;
+    
+    [Header("Points of Interest")]
+    public LayerMask layerPoI;
+    public float maxDistanceToPoI = 300;
 
 	[Header("Collision")]
 	public float rayRadius = .2f;
@@ -59,7 +69,7 @@ public class PoS_Camera : MonoBehaviour {
 	public float panoramaDistance = 15;
 	public float timeToTriggerPanorama = 10;
 	public float panoramaDezoomSpeed = 1f;
-
+    
 	[Header("Eclipse")]
 	public bool isEclipse = false;
 
@@ -82,9 +92,9 @@ public class PoS_Camera : MonoBehaviour {
 	float deltaTime;
 	float lastInput;
 	float autoDamp;
-	float manualPitch, manualYaw;
+    float targetYaw, targetPitch;
+    float manualPitch, manualYaw;
     float recoilIntensity;
-	float slopeValue;
 	bool resetting, autoAdjustYaw, autoAdjustPitch;
     bool canAutoReset;
 	bool placedByPlayer, onEdgeOfCliff;
@@ -144,23 +154,8 @@ public class PoS_Camera : MonoBehaviour {
 
 		negDistance.z = -currentDistance;
 		Vector3 targetWithOffset = targetPos + my.right * offset.x + my.up * offset.y;
-
-		{ // Contextual Offset
-			if (cameraBounce) {
-				targetWithOffset += contextualOffset.y * target.up * recoilIntensity;
-				contextualOffset.y = Mathf.Lerp(contextualOffset.y, 0, deltaTime / smoothDamp);
-				if (Mathf.Abs(contextualOffset.y - 0) < .01f)
-					cameraBounce = false;
-                // use impactFromSpeed (animCurve) to attenuate the impact on low speed
-                // impactFromSpeed on recoilOnImpact
-            }
-            if (onEdgeOfCliff)
-				contextualOffset = Vector3.Lerp(contextualOffset, player.transform.forward * (Mathf.Max(0, pitch) / 20), deltaTime / autoResetDamp);
-			else
-				contextualOffset = Vector3.Lerp(contextualOffset, Vector3.zero, deltaTime / autoResetDamp);
-			targetWithOffset += contextualOffset;
-		}
-
+        targetWithOffset += GetContextualOffset();
+        
 		camPosition = camRotation * negDistance + targetWithOffset;
 
 		SmoothMovement();
@@ -186,11 +181,18 @@ public class PoS_Camera : MonoBehaviour {
 		if (value != 0) zoomValue = zoomDistance.Clamp(currentDistance - value * zoomSpeed);
 	}
 
+    IEnumerator _ZoomAt(float value, float damp) {
+        while(Mathf.Abs(zoomValue - value) > 0.01f) {
+            zoomValue = Mathf.Lerp(zoomValue, value, damp);
+            yield return null;
+        }
+    }
+
 	/// <summary>
 	/// Zoom in a (0,1) value between minimum and maximum distance
 	/// </summary>
-	public void ZoomAt(float value) {
-		zoomValue = value;
+	public void ZoomAt(float value, float damp) {
+        StartCoroutine(_ZoomAt(value, damp));
 	}
 
 	public void ResetZoom() {
@@ -219,6 +221,11 @@ public class PoS_Camera : MonoBehaviour {
 	}
     #endregion
     
+    /// <summary>
+    /// Appelé quand le player spawn, change de scène ou qu'il est téléporté par le worldWrapper
+    /// </summary>
+    /// <param name="sender"> </param>
+    /// <param name="args"> Contient la position vers laquelle tp, et un bool pour savoir si on a changé de scène. </param>
     void OnTeleportPlayer(object sender, Game.Utilities.EventManager.OnTeleportPlayerEventArgs args) {
         if (args.IsNewScene) {
             PlaceBehindPlayerNoLerp();
@@ -232,6 +239,9 @@ public class PoS_Camera : MonoBehaviour {
         }
     }
 
+    /// <summary>
+    /// Hard reset de la caméra, la place immédiatement à sa position par défaut (utilisé quand le player spawn).
+    /// </summary>
     void PlaceBehindPlayerNoLerp() {
         currentDistance = distance;
         yaw = GetYawBehindPlayer();
@@ -242,6 +252,25 @@ public class PoS_Camera : MonoBehaviour {
         camPosition = my.position = my.rotation * negDistance + targetWithOffset;
     }
 
+    Vector3 GetContextualOffset() {
+        Vector3 offset = new Vector3(0,0,0);
+        if (cameraBounce) {
+            offset += contextualOffset.y * target.up * recoilIntensity;
+            contextualOffset.y = Mathf.Lerp(contextualOffset.y, 0, deltaTime / smoothDamp);
+            if (Mathf.Abs(contextualOffset.y - 0) < .01f)
+                cameraBounce = false;
+            // use impactFromSpeed (animCurve) to attenuate the impact on low speed
+            // impactFromSpeed on recoilOnImpact
+        }
+        if (onEdgeOfCliff) // Appliquer l'offset contextuel sur le bord des falaises
+            contextualOffset = Vector3.Lerp(contextualOffset, player.transform.forward * (Mathf.Max(0, pitch) / 20), deltaTime / autoResetDamp);
+        else
+            contextualOffset = Vector3.Lerp(contextualOffset, Vector3.zero, deltaTime / autoResetDamp);
+        return offset + contextualOffset;
+    }
+
+    // pas trop satisfait par l'organisation de cette méthode
+    // au début elle servait juste à prendre les inputs mais elle gère aussi les états vu que c'est interconnecté du coup elle est devenue un peu grosse
     void GetInputsAndStates() {
 		input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
 		input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
@@ -251,9 +280,10 @@ public class PoS_Camera : MonoBehaviour {
         
 		targetSpace = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, target.up), Vector3.Cross(Vector3.up, target.up));
         
-        Vector3 groundNormal = controller.collisions.currentGroundNormal;
-        slopeValue = Vector3.Dot(Vector3.ProjectOnPlane(my.forward, target.parent.up), groundNormal) * 60;
-        // ON REPROJETE LE FORWARD POUR PAS FAIRE DES BÊTISES PENDANT QUE LE PERSO TOURNE
+        // Get the value of the slope we're walking on (or we're about to walk on) also check if we're on a cliff
+        float slopeValue = CheckGroundAndReturnSlopeValue();
+
+        // Il nous faut une fonction SetState() pour pouvoir faire des trucs uniquement lors d'un changement de State
 
         if (input.magnitude != 0) {
 			state = eCameraState.PlayerControl;
@@ -267,36 +297,53 @@ public class PoS_Camera : MonoBehaviour {
             canAutoReset = true;
 
 		} else if (state != eCameraState.Resetting) {
-            /*if (canAutoReset && Time.time > lastInput + timeBeforeAutoReset && !onEdgeOfCliff) { // Si ça fait genre 5 secondes qu'on n'a pas touché à la caméra on reset parce que bon
-                state = eCameraState.Resetting;
-                SetTargetRotation(defaultPitch - slopeValue, GetYawBehindPlayer(), autoResetDamp);
-                manualPitch = defaultPitch - slopeValue;
-                canAutoReset = false;
-            } else */
-
-            // POUR LES BORDS
-            onEdgeOfCliff = playerState == ePlayerState.onGround &&
-                            !Physics.Raycast(target.position, player.transform.forward, 1, blockingLayer)
-                         && !Physics.Raycast(target.position + player.transform.forward * cliffEdgeMaxWidth,
-                            -target.up, cliffMinDepth, blockingLayer);
 
             if (playerState == ePlayerState.onGround) {
-
-                additionalDistance = 0;
-                if (playerVelocity != Vector3.zero) {
-					state = eCameraState.Default;
-                    SetTargetRotation(slopeValue + manualPitch, null, resetDamp);
-
-				} else {
-					state = eCameraState.Idle;
-                    SetTargetRotation(slopeValue + manualPitch, null, resetDamp);
+                
+                if (state == eCameraState.Air) { // Si on était dans les airs avant
+                    manualPitch = defaultPitch; // On reset le pitch
+                    additionalDistance = 0; // On reset le zoom
                 }
+
+                if (Time.time > lastInput + timeBeforeAutoReset) { // Si ça fait genre 5 secondes qu'on n'a pas touché à la caméra on passe en mode automatique
+                    
+                    LookForPointsofInterest(); // D'abord on check les PoI
+
+                    if (state != eCameraState.LookAt && canAutoReset) { // Si y a pas de PoI on se replace tout seul derrière le joueur
+                        state = eCameraState.Resetting;
+                        SetTargetRotation(defaultPitch - slopeValue, GetYawBehindPlayer(), autoResetDamp);
+                        manualPitch = defaultPitch - slopeValue;
+                        canAutoReset = false; // On n'autoReset qu'une fois
+                    }
+
+                } else {
+                    if (playerVelocity != Vector3.zero) {
+                        state = eCameraState.Default;
+                        SetTargetRotation(slopeValue + manualPitch, null, resetDamp);
+
+                    } else {
+                        state = eCameraState.Idle;
+                        SetTargetRotation(slopeValue + manualPitch, null, resetDamp);
+                    }
+                }
+
 			} else {
 				state = eCameraState.Air;
-                if (additionalDistance > -5)
+                canAutoReset = true;
+                if (additionalDistance > -distanceReductionWhenFalling) // Dans les airs je zoom vers le perso
                     additionalDistance -= deltaTime / autoResetDamp;
-				autoAdjustPitch = false;
-				autoAdjustYaw = false;
+
+                Debug.DrawRay(target.position + (playerVelocity.z * Vector3.forward + playerVelocity.x * Vector3.right)/4, -target.up, Color.magenta, 0.5f);
+
+                // Si on tombe et qu'on est plus haut que la maxJumpHeight, on dit qu'on tombe dans le vide et on se penche vers l'avant
+                if (playerVelocity.y < 0 && !Physics.Raycast(target.position + (playerVelocity.z * Vector3.forward + playerVelocity.x * Vector3.right) / 4, -target.up, maxJumpHeight, controller.collisionMask))
+                    SetTargetRotation(pitchRotationLimit.max, null, fallingDamp);
+                
+                else if(targetPitch != pitchRotationLimit.max) { // peut être qu'on devrait ajuster le targetPitch selon la distance du rayon (genre si on est haut mais ça va on se penche mais pas trop)
+                    autoAdjustPitch = false;
+                    autoAdjustYaw = false;
+                }
+
 			}
 		}
 
@@ -316,7 +363,84 @@ public class PoS_Camera : MonoBehaviour {
 		}
 	}
 
-	void DoRotation() {
+    void LookForPointsofInterest() {
+        Collider[] points = Physics.OverlapSphere(camPosition, maxDistanceToPoI, layerPoI, QueryTriggerInteraction.Collide);
+
+        if (points.Length == 0) {
+            state = eCameraState.Default;
+            return;
+        }
+        
+        Collider targetPoI = null;
+        float currentPoIScore = 300f;
+        RaycastHit hit;
+
+        for (int i = 0, j = 0; i < points.Length; i++) {
+            // S'il n'y a pas de mur entre moi et le PoI, je peux le voir, donc je peux potentiellement me tourner vers lui
+            if (!Physics.Linecast(camPosition, points[i].transform.position, out hit, blockingLayer)) {
+                
+                // Si le PoI est plus petit que les autres, il devient ma cible
+                // peut être faire un truc avec la distance aussi
+                if (targetPoI == null || (points[i].bounds.extents.x + Vector3.Distance(points[i].transform.position, camPosition)) < currentPoIScore) {
+                    currentPoIScore = points[i].bounds.extents.x + Vector3.Distance(points[i].transform.position, camPosition);
+                    targetPoI = points[i];
+                }
+                //print("salut je suis " + points[i] + " tu peux me regarder si tu veux");
+            }
+        }
+        if (targetPoI == null) return;
+
+        // si le joueur va dans la direction opposée au PoI, on ne veut peut être pas se tourner vers lui ?
+        // same pour la caméra ? si le PoI est dans mon dos je veux ptet pas y aller ?
+
+        Transform targetPoint = targetPoI.transform;
+        state = eCameraState.LookAt;
+        SetTargetRotation(GetRotationTowardsPoint(targetPoint.position), autoResetDamp);
+    }
+
+    /// <summary>
+    /// Checks whether we're on a cliff or on a slope and returns the value of that slope
+    /// </summary>
+    float CheckGroundAndReturnSlopeValue() {
+        Vector3 groundNormal = controller.collisions.currentGroundNormal;
+
+        // Si on est au sol et qu'il n'y a pas de mur devant
+        if (playerState == ePlayerState.onGround && !Physics.Raycast(target.position, player.transform.forward, 1, controller.collisionMask)) {
+
+            RaycastHit groundInFront;
+
+            if (Physics.Raycast(target.position + player.transform.forward * distanceToCheckGroundForward,
+                            -target.up, out groundInFront, cliffMinDepth, controller.collisionMask)) {
+                
+                NotOnEdgeOfCliff(); // Y a du sol devant donc on n'est pas au bord d'une falaise
+
+                if ((targetSpace * groundInFront.normal).y > 0.99f)
+                    groundNormal = target.up; // Si devant c'est environ du sol plat, on reset slopeValue
+
+                else if (Vector3.Angle(groundNormal, groundInFront.normal) > 10)
+                    groundNormal = groundInFront.normal; // Si la pente devant a plus de X degrés de différence, on prend sa slopeValue
+
+            } else {// on est au sol, y a pas de mur devant, et y a pas de sol devant non plus, donc on est au bord d'une falaise
+                onEdgeOfCliff = true;
+                canAutoReset = false;
+            }
+
+        } else // soit on n'est pas au sol, soit on est au sol mais y a un mur devant, donc on n'est pas au bord d'une falaise
+            NotOnEdgeOfCliff();
+
+        return Vector3.Dot(Vector3.ProjectOnPlane(my.forward, target.parent.up), groundNormal) * 60;
+        // Ici on recalcule le forward en aplatissant celui de la caméra pour éviter des erreurs quand le perso tourne
+    }
+
+    void NotOnEdgeOfCliff() {
+        if (onEdgeOfCliff) {
+            lastInput = Time.time;
+            canAutoReset = true;
+        }
+        onEdgeOfCliff = false;
+    }
+
+    void DoRotation() {
 		rotationSpeed.x = Mathf.Lerp(minRotationSpeed.x, maxRotationSpeed.x, currentDistance / maxDistance);
 		rotationSpeed.y = Mathf.Lerp(minRotationSpeed.y, maxRotationSpeed.y, currentDistance / maxDistance);
 
@@ -335,7 +459,14 @@ public class PoS_Camera : MonoBehaviour {
 		camRotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
 	}
 
-    float targetYaw, targetPitch;
+    void SetTargetRotation(Vector2 rotation, float damp) {
+        autoAdjustPitch = true;
+        autoAdjustYaw = true;
+        targetPitch = rotation.x;
+        targetYaw = rotation.y;
+        autoDamp = damp;
+    }
+
     void SetTargetRotation(float? newTargetPitch, float? newTargetYaw, float damp) {
         autoAdjustPitch = newTargetPitch != null;
         autoAdjustYaw = newTargetYaw != null;
@@ -373,20 +504,20 @@ public class PoS_Camera : MonoBehaviour {
 		if (blockedByAWall && hit.distance > 0) {// If we hit something, hitDistance cannot be 0, nor higher than idealDistance
 			lastHitDistance = Mathf.Min(hit.distance - rayRadius, idealDistance);
 
+            // Les angles on fera ça plus tard
 			if (state != eCameraState.PlayerControl && currentDistance >= hit.distance) { // auto move around corners
-				float targetYaw = GetYawBehindPlayer();
-				float newYaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / slideDamp);
-				float delta = Mathf.Abs(Mathf.DeltaAngle(newYaw, targetYaw));
-
+				float tempYaw = GetYawBehindPlayer();
+				float newYaw = Mathf.LerpAngle(yaw, tempYaw, deltaTime / slideDamp);
+				float delta = Mathf.Abs(Mathf.DeltaAngle(newYaw, tempYaw));
+                
 				Debug.DrawLine(hit.point, hit.point + hit.normal, Color.magenta);
 
 				Vector3 centerOfSphereCast = startPos + (rayEnd - startPos).normalized * hit.distance;
 				Vector3 hitDirection = (hit.point - centerOfSphereCast).normalized;
 
 				if (delta > 1 && delta < 100) {
-					targetYaw = GetYawBehindPlayer();
-					state = eCameraState.AroundCorner;
-					autoDamp = slideDamp;
+                    SetTargetRotation(null, GetYawBehindPlayer(), slideDamp);
+					state = eCameraState.Resetting;
 
 					//yaw = newYaw;
 					//camRotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
@@ -411,17 +542,50 @@ public class PoS_Camera : MonoBehaviour {
 		my.rotation = Quaternion.Lerp(my.rotation, camRotation, t);
 	}
 
-	float GetYawBehindPlayer() {
-		return SignedAngle(targetSpace * Vector3.forward, target.parent.rotation * Vector3.forward, target.up);
+    #region ValueMethods
+    Vector3 worldForward = new Vector3(0, 0, 1),
+            worldRight = new Vector3(1, 0, 0);
+
+    Vector2 GetRotationTowardsPoint(Vector3 point) {
+        Vector3 direction = point - camPosition;
+        float distance = direction.magnitude;
+        direction /= distance;
+        Quaternion newq = Quaternion.LookRotation(direction, Vector3.up);
+
+        return new Vector2(SignedAngle(targetSpace * worldRight, newq * worldRight, target.right), SignedAngle(targetSpace * worldForward, newq * worldForward, target.up));
+    }
+
+    float GetPitchTowardsPoint(Vector3 point) {
+        Vector3 direction = point - camPosition;
+        float distance = direction.magnitude;
+        direction /= distance;
+        Quaternion newq = Quaternion.LookRotation(direction, Vector3.up);
+        
+        return SignedAngle(targetSpace * worldRight, newq * worldRight, target.right);
+    }
+
+    float GetYawTowardsPoint(Vector3 point) {
+        Vector3 direction = point - camPosition;
+        float distance = direction.magnitude;
+        direction /= distance;
+        Quaternion newq = Quaternion.LookRotation(direction, Vector3.up);
+
+        return SignedAngle(targetSpace * worldForward, newq * worldForward, target.up);
+    }
+
+    float GetYawBehindPlayer() {
+		return SignedAngle(targetSpace * worldForward, target.parent.rotation * worldForward, target.up);
 	}
-	public float SignedAngle(Vector3 v1, Vector3 v2, Vector3 n) {
+
+	float SignedAngle(Vector3 v1, Vector3 v2, Vector3 n) {
 		return Mathf.Atan2(
 			Vector3.Dot(n, Vector3.Cross(v1, v2)),
 			Vector3.Dot(v1, v2)) * 57.29578f; // Radian to Degrees constant
 	}
+    #endregion
 
-	#region Temporary Offset
-	Vector3 contextualOffset;
+    #region Temporary Offset
+    Vector3 contextualOffset;
 	bool cameraBounce;
 
 	public void SetVerticalOffset(float verticalOffset) {

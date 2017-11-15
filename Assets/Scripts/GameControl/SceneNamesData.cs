@@ -11,24 +11,28 @@ namespace Game.GameControl
         [HideInInspector]
         Object openWorldScene;
 
+        [SerializeField]
+        [HideInInspector]
+        string openWorldSceneName;
+
         public string GetOpenWorldSceneName()
         {
-            return this.openWorldScene.name;
+            return this.openWorldSceneName;
         }
-
-#if UNITY_EDITOR
-        public Object OpenWorldScene { get { return this.openWorldScene; } set { this.openWorldScene = value; } }
-#endif
 
         [SerializeField]
         [HideInInspector]
         List<Object> pillarScenes = new List<Object>();
 
+        [SerializeField]
+        [HideInInspector]
+        List<string> pillarSceneNames = new List<string>();
+
         public string GetPillarSceneName(World.ePillarId pillarId)
         {
-            if (this.pillarScenes.Count > (int)pillarId && this.pillarScenes[(int)pillarId] != null)
+            if (this.pillarScenes.Count > (int)pillarId /*&& this.pillarScenes[(int)pillarId] != null*/)
             {
-                return this.pillarScenes[(int)pillarId].name;
+                return this.pillarSceneNames[(int)pillarId];
             }
             else
             {
@@ -37,7 +41,35 @@ namespace Game.GameControl
         }
 
 #if UNITY_EDITOR
-        public List<Object> PillarScenes { get { return this.pillarScenes; } set { this.pillarScenes = value; } }
+        public Object OpenWorldScene_Editor { get { return this.openWorldScene; } set { this.openWorldScene = value; } }
+
+        public List<Object> PillarScenes_Editor { get { return this.pillarScenes; } set { this.pillarScenes = value; } }
+
+        public void ResetStrings()
+        {
+            if (this.openWorldScene != null)
+            {
+                this.openWorldSceneName = this.openWorldScene.name;
+            }
+            else
+            {
+                this.openWorldSceneName = string.Empty;
+            }
+
+            this.pillarSceneNames.Clear();
+            foreach (var scene in this.pillarScenes)
+            {
+                if (scene != null)
+                {
+                    this.pillarSceneNames.Add(scene.name);
+                }
+                else
+                {
+                    this.pillarSceneNames.Add(string.Empty);
+                }
+            }
+        }
 #endif
+
     }
 } //end of namespace

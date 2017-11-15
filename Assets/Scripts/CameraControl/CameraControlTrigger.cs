@@ -5,6 +5,7 @@ public class CameraControlTrigger : MonoBehaviour {
     new PoS_Camera camera;
 
     [SerializeField] float zoomValue = 3;
+    [SerializeField] float damp = 1;
     [SerializeField] bool enablePanoramaMode = false;
     [SerializeField] bool alignWithDirection = true;
 
@@ -14,7 +15,7 @@ public class CameraControlTrigger : MonoBehaviour {
 
     void OnTriggerEnter(Collider col) {
         if (col.tag == "Player") {
-            camera.ZoomAt(zoomValue);
+            camera.ZoomAt(zoomValue, damp);
             camera.enablePanoramaMode = enablePanoramaMode;
         }
     }

@@ -8,10 +8,14 @@ namespace Game.GameControl
     public interface IGameControllerBase
     {
         Player.PlayerModel PlayerModel { get; }
-        EchoManager EchoManager { get; }
+        EchoSystem.EchoManager EchoManager { get; }
+        EclipseManager EclipseManager { get; }
 
         Player.PlayerController PlayerController { get; }
+        CameraControl.CameraController CameraController { get; }
+        
+        UI.UiController UiController { get; }
+
         World.ChunkSystem.WorldController WorldController { get; }
-        Player.UI.UiController UiController { get; }
     }
 }

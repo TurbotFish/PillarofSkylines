@@ -18,27 +18,30 @@ namespace Game.GameControl
             //
             var sceneNameData = target as SceneNamesData;
 
-            sceneNameData.OpenWorldScene = EditorGUILayout.ObjectField("OpenWorldScene", sceneNameData.OpenWorldScene, typeof(SceneAsset), false);
+            sceneNameData.OpenWorldScene_Editor = EditorGUILayout.ObjectField("OpenWorldScene", sceneNameData.OpenWorldScene_Editor, typeof(SceneAsset), false);
 
             //
             EditorGUILayout.LabelField("Pillar Scenes");
 
             var pillarIdValues = Enum.GetValues(typeof(World.ePillarId)).Cast<World.ePillarId>();
 
-            foreach(var pillarId in pillarIdValues)
+            foreach (var pillarId in pillarIdValues)
             {
                 int index = (int)pillarId;
 
-                if(sceneNameData.PillarScenes.Count <= index)
+                if (sceneNameData.PillarScenes_Editor.Count <= index)
                 {
-                    while (sceneNameData.PillarScenes.Count <= index)
+                    while (sceneNameData.PillarScenes_Editor.Count <= index)
                     {
-                        sceneNameData.PillarScenes.Add(null);
+                        sceneNameData.PillarScenes_Editor.Add(null);
                     }
                 }
 
-                sceneNameData.PillarScenes[index] = EditorGUILayout.ObjectField(pillarId.ToString(), sceneNameData.PillarScenes[index], typeof(SceneAsset), false);
+                sceneNameData.PillarScenes_Editor[index] = EditorGUILayout.ObjectField(pillarId.ToString(), sceneNameData.PillarScenes_Editor[index], typeof(SceneAsset), false);
             }
+
+            //
+            sceneNameData.ResetStrings();
 
             //
             EditorUtility.SetDirty(sceneNameData);
