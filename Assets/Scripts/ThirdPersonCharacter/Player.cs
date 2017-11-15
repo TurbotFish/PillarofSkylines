@@ -452,7 +452,7 @@ public class Player : MonoBehaviour {
 				break;
 
 
-				#region in air
+			#region in air
 			case ePlayerState.inAir:
 				
 				permissiveJumpTime -= Time.deltaTime;
@@ -652,7 +652,7 @@ public class Player : MonoBehaviour {
 		#endregion direction calculations
 
 
-		//Turns the velocity in world space and calls the controller to check if the calculated velocity will run into walls and stuff
+		//Turns the velocity in world space and calls the controller to check if the calculated velocity will run into walls and stuff, and then move the player
 		turnedVelocity = TurnLocalToSpace(velocity);
 		if (currentPlayerState == ePlayerState.gliding) {
 			velocity = controller.Move (velocity * Time.deltaTime);
