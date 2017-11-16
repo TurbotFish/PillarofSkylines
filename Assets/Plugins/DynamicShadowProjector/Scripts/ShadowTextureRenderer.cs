@@ -301,6 +301,8 @@ namespace DynamicShadowProjector {
 		private bool m_isVisible = false;
 		private bool m_shadowTextureValid = false;
 
+        [SerializeField] float PoS_farClipPlane = 20; // PoS change, hardcoded for now
+
 		public bool isProjectorVisible
 		{
 			get { return m_isVisible; }
@@ -427,7 +429,8 @@ namespace DynamicShadowProjector {
 			m_camera.forceIntoRenderTexture = true;
 #endif
 			m_camera.enabled = true;
-			CreateRenderTexture();
+            
+            CreateRenderTexture();
 			return true;
 		}
 
@@ -589,7 +592,7 @@ namespace DynamicShadowProjector {
 			m_camera.orthographicSize = m_projector.orthographicSize;
 			m_camera.fieldOfView = m_projector.fieldOfView;
 			m_camera.aspect = m_projector.aspectRatio;
-			m_camera.farClipPlane = m_projector.farClipPlane;
+            m_camera.farClipPlane = m_projector.farClipPlane;
 #if UNITY_5_6
 			// workaround for Unity 5.6
 			// Unity 5.6 has a bug whereby a temporary render texture does not work if m_camera.targetTexture != null. This bug is fixed in Unity 2017.
@@ -607,16 +610,16 @@ namespace DynamicShadowProjector {
 					|| m_camera.orthographic != m_projector.orthographic
 					|| m_camera.orthographicSize != m_projector.orthographicSize
 					|| m_camera.fieldOfView != m_projector.fieldOfView
-					|| m_camera.aspect != m_projector.aspectRatio
-					|| m_camera.farClipPlane != m_projector.farClipPlane)
+					|| m_camera.aspect != m_projector.aspectRatio)
+					|| m_camera.farClipPlane != m_projector.farClipPlane
 			) {
 				ForceRenderTexture();
 			}
 #endif
 			if (m_camera != null && !m_camera.enabled) {
 				m_camera.enabled = true;
-			}
-		}
+            }
+        }
 
 		void OnPreCull()
 		{
@@ -656,7 +659,7 @@ namespace DynamicShadowProjector {
 			m_camera.orthographicSize = m_projector.orthographicSize;
 			m_camera.fieldOfView = m_projector.fieldOfView;
 			m_camera.aspect = m_projector.aspectRatio;
-			m_camera.farClipPlane = m_projector.farClipPlane;
+            m_camera.farClipPlane = m_projector.farClipPlane;
 			// view clip test
 			bool isVisible = true;
 			if (!m_projector.enabled) {
@@ -929,6 +932,18 @@ namespace DynamicShadowProjector {
 #else
 			m_camera.targetTexture = m_shadowTexture;
 #endif
+            // Adjust Projector Far Clip Plane to not draw on stacked platforms
+            RaycastHit hit;
+            int layerMask = ~m_projector.ignoreLayers;
+            if (Physics.Raycast(transform.position, transform.forward, out hit, m_camera.farClipPlane, layerMask)) {
+                float distance = hit.distance;
+                m_projector.farClipPlane = distance + 1;
+
+            } else if (m_projector.farClipPlane != PoS_farClipPlane)
+                m_projector.farClipPlane = PoS_farClipPlane;
+            
+            // End of PoS Custom additions
+
 			if (m_superSampling != TextureSuperSample.x1 || HasShadowColor()) {
 				m_downsampleShader.color = m_shadowColor;
 				// downsample

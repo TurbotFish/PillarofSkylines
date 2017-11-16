@@ -57,7 +57,8 @@ namespace DynamicShadowProjector.Editor {
 			}
 			EditorGUILayout.EndHorizontal();
 			bool isGUIEnabled = GUI.enabled;
-			EditorGUILayout.PropertyField(serializedObject.FindProperty("m_shadowColor"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("PoS_farClipPlane"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("m_shadowColor"));
 			EditorGUILayout.IntPopup(serializedObject.FindProperty("m_textureWidth"), s_textureSizeDisplayOption, s_textureSizeOption);
 			EditorGUILayout.IntPopup(serializedObject.FindProperty("m_textureHeight"), s_textureSizeDisplayOption, s_textureSizeOption);
 			EditorGUILayout.PropertyField(serializedObject.FindProperty("m_multiSampling"));

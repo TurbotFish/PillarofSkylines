@@ -70,7 +70,7 @@ DSP_V2F_PROJECTOR_LIGHT DSPProjectorVertLightLinearFalloff(float4 vertex : POSIT
 	o.pos = UnityObjectToClipPos (vertex);
 	o.uvShadow = mul (unity_Projector, vertex);
 	float z = mul(unity_ProjectorClip, vertex).x;
-	o.alpha.x = _ClipScale * z;
+	o.alpha.x = _ClipScale * z; // On devrait changer le falloff pour qu'il n'arrive qu'à la fin du clipspace, histoire d'avoir un truc fonctionnel pour les plateformes stackées
 	o.alpha.y = DSPCalculateDiffuseLightAlpha(vertex, normal) * (1.0f - z); // falloff
 	UNITY_TRANSFER_FOG(o, o.pos);
 	return o;
@@ -81,7 +81,7 @@ DSP_V2F_PROJECTOR DSPProjectorVertLinearFalloff(float4 vertex : POSITION, float3
 	DSP_V2F_PROJECTOR o;
 	o.pos = UnityObjectToClipPos (vertex);
 	o.uvShadow = mul (unity_Projector, vertex);
-	float z = mul(unity_ProjectorClip, vertex).x;
+	float z = mul(unity_ProjectorClip, vertex).x - 0.5f;
 	o.alpha.x = _ClipScale * z;
 	o.alpha.y = DSPCalculateDiffuseShadowAlpha(vertex, normal);
 	o.alpha.y *= (1.0f - z); // falloff
