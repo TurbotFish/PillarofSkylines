@@ -21,6 +21,7 @@ public class PoS_Camera : MonoBehaviour {
 	public Vector2 offsetFar = new Vector2(0, 2),
 	offsetClose = new Vector2(2, 0);
 	public float defaultPitch = 15;
+    public Vector2 obliqueness;
 
 	[Header("Control")]
 	public Bool3 invertAxis;
@@ -123,6 +124,7 @@ public class PoS_Camera : MonoBehaviour {
 		manualPitch = defaultPitch;
 		state = eCameraState.Default;
 
+        SetObliqueness();
         PlaceBehindPlayerNoLerp();
     }
 
@@ -361,6 +363,13 @@ public class PoS_Camera : MonoBehaviour {
             Vector3 targetWithOffset = args.Position + my.right * offset.x + my.up * offset.y;
             camPosition = my.rotation * negDistance + targetWithOffset;
         }
+    }
+
+    void SetObliqueness() {
+        Matrix4x4 mat = camera.projectionMatrix;
+        mat[0, 2] = obliqueness.x;
+        mat[1, 2] = obliqueness.y;
+        camera.projectionMatrix = mat;
     }
 
     /// <summary>
