@@ -326,6 +326,32 @@ namespace Game.Utilities
         #endregion eye killed events
 
         //###########################################################
+        //###########################################################
+
+        #region favour picked up event
+
+        public class FavourPickedUpEventArgs : EventArgs
+        {
+            public int FavourId { get; private set; }
+
+            public FavourPickedUpEventArgs(int favourId)
+            {
+                this.FavourId = favourId;
+            }
+        }
+
+        public delegate void FavourPickedUpEventHandler(object sender, FavourPickedUpEventArgs args);
+
+        public static event FavourPickedUpEventHandler FavourPickedUpEvent;
+
+        public static void SendFavourPickedUpEvent(object sender, FavourPickedUpEventArgs args)
+        {
+            FavourPickedUpEvent?.Invoke(sender, args);
+        }
+
+        #endregion favour picked up event
+
+        //###########################################################
 
         #endregion gameplay events
 

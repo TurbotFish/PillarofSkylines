@@ -17,7 +17,7 @@ namespace Game.Player
 
         //
         bool favourPickUpInRange = false;
-        Collider favourPickUpCollider;
+        World.Interaction.Favour favour;
 
         PillarEntranceInfo pillarEntranceInfo = new PillarEntranceInfo();
 
@@ -71,24 +71,28 @@ namespace Game.Player
                 //favour
                 if (this.favourPickUpInRange)
                 {
-                    //pick up favour
-                    this.playerModel.Favours++;
-                    this.playerModel.SetFavourPickedUp(DetermineFavourId(this.favourPickUpCollider));
-
-                    //play favour pick up animation
-                    PlayMakerFSM[] temp = favourPickUpCollider.transform.parent.GetComponents<PlayMakerFSM>();
-                    foreach (var fsm in temp)
+                    if (!this.favour.FavourPickedUp)
                     {
-                        if (fsm.FsmName == "Faveur_activation")
+                        //pick up favour
+                        this.playerModel.Favours++;
+
+                        //play favour pick up animation
+                        PlayMakerFSM[] temp = this.favour.MyTransform.parent.GetComponents<PlayMakerFSM>();
+                        foreach (var fsm in temp)
                         {
-                            fsm.FsmVariables.GetFsmBool("Fav_activated").Value = true;
+                            if (fsm.FsmName == "Faveur_activation")
+                            {
+                                fsm.FsmVariables.GetFsmBool("Fav_activated").Value = true;
+                            }
                         }
+
+                        //send event
+                        Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(this.favour.InstanceId));
                     }
 
-                    //
+                    //clean up
                     this.favourPickUpInRange = false;
-                    this.favourPickUpCollider = null;
-
+                    this.favour = null;
                     HideUiMessage();
                 }
                 //pillar entrance
@@ -155,15 +159,21 @@ namespace Game.Player
                 {
                     //favour
                     case "Favour":
-                        string favourId = DetermineFavourId(other);
-
-                        if (!this.playerModel.IsFavourPickedUp(favourId))
+                        if (!this.favourPickUpInRange)
                         {
-                            this.favourPickUpInRange = true;
-                            this.favourPickUpCollider = other;
+                            this.favour = other.GetComponent<World.Interaction.Favour>();
 
-                            ShowUiMessage("Press [X] to pick up a Favour!");
-                        }                       
+                            if (!this.favour.FavourPickedUp)
+                            {
+                                this.favourPickUpInRange = true;
+
+                                ShowUiMessage("Press [X] to pick up a Favour!");
+                            }
+                            else
+                            {
+                                this.favour = null;
+                            }
+                        }                     
                         break;
                     //pillar entrance
                     case "Pillar":
@@ -217,7 +227,7 @@ namespace Game.Player
                     //favour
                     case "Favour":
                         this.favourPickUpInRange = false;
-                        this.favourPickUpCollider = null;
+                        this.favour = null;
 
                         HideUiMessage();
                         break;
@@ -305,7 +315,7 @@ namespace Game.Player
         void OnSceneChangedEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
         {
             this.favourPickUpInRange = false;
-            this.favourPickUpCollider = null;
+            this.favour = null;
 
             this.needleInRange = false;
             this.needlePickedUpCollider = null;

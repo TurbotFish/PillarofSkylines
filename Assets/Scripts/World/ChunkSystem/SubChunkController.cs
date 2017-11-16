@@ -35,7 +35,7 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
-        public void InitializeSubChunk()
+        public void InitializeSubChunk(WorldController worldController)
         {
             this.myTransform = this.transform;
 
@@ -43,6 +43,12 @@ namespace Game.World.ChunkSystem
             for (int i = 0; i < this.myTransform.childCount; i++)
             {
                 this.childList.Add(this.myTransform.GetChild(i).gameObject);
+            }
+
+            var worldObjects = GetComponentsInChildren<Interaction.IWorldObject>();
+            foreach(var worldObject in worldObjects)
+            {
+                worldObject.InitializeWorldObject(worldController);
             }
 
             this.IsActive = true;
@@ -144,6 +150,8 @@ namespace Game.World.ChunkSystem
             {
                 return;
             }
+
+            Debug.LogErrorFormat("SubChunk \"{0}\": OnTransformChildrenChanged called!", this.name);
 
             lock (this.childListLock)
             {

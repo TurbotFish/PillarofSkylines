@@ -18,9 +18,9 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
-        public override void InitializeRegion(ChunkSystemData data)
+        public override void InitializeRegion(WorldController worldController)
         {
-            base.InitializeRegion(data);
+            base.InitializeRegion(worldController);
 
             foreach (var chunk in this.chunkList)
             {

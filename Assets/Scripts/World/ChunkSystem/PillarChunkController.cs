@@ -15,9 +15,9 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
-        public override void InitializeChunk(ChunkSystemData data)
+        public override void InitializeChunk(WorldController worldController)
         {
-            base.InitializeChunk(data);
+            base.InitializeChunk(worldController);
         }
 
         /// <summary>
