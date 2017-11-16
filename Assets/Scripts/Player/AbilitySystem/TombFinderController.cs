@@ -7,14 +7,31 @@ namespace Game.Player.AbilitySystem
     public class TombFinderController : MonoBehaviour
     {
         PlayerModel model;
+        World.ChunkSystem.WorldController worldController;
 
-        bool isOpenWorldActive = false;
+        Transform myTransform;
+        ParticleSystem myParticleSystem;
+
+        bool isParticleSystemActive = false;
+        bool isInOpenWorld = false;
+        bool isFavourInWorld = false;
 
         //################################################################
 
         public void InitializeTombFinderController(GameControl.IGameControllerBase gameController)
         {
             this.model = gameController.PlayerModel;
+            this.worldController = gameController.WorldController;
+
+            if(this.model == null || this.worldController == null)
+            {
+                Debug.LogError("TombFinderController could not be initialized correctly!");
+                this.gameObject.SetActive(false);
+                return;
+            }
+
+            this.myTransform = this.transform;
+            this.myParticleSystem = GetComponent<ParticleSystem>();
 
             Utilities.EventManager.OnSceneChangedEvent += OnSceneChangedEventHandler;
             Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
@@ -23,16 +40,10 @@ namespace Game.Player.AbilitySystem
         //################################################################
         //################################################################
 
-        // Use this for initialization
-        void Start()
-        {
-
-        }
-
         // Update is called once per frame
         void Update()
         {
-
+            
         }
 
         //################################################################
@@ -42,16 +53,28 @@ namespace Game.Player.AbilitySystem
         {
             if (args.HasChangedToPillar)
             {
-                this.isOpenWorldActive = false;
+                this.isInOpenWorld = false;
             }
-            else
+            else 
             {
-                this.isOpenWorldActive = true;
+                this.isInOpenWorld = true;
             }
         }
 
         void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
         {
+            if(this.worldController.FindNearestFavour(this.myTransform.position) == null)
+            {
+                this.isFavourInWorld = false;
+            }
+        }
+
+        //################################################################
+        //################################################################
+
+        void OrientToNearestFavour()
+        {
+
         }
 
         //################################################################
