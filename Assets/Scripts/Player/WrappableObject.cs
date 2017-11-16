@@ -17,11 +17,12 @@ namespace Game.Player
         AxisInfo zAxisInfo;
 
         bool isInitialized = false;
+        bool isActive = false;
+
+        //#####################################################
 
         public void InitializeWrappableObject(World.ChunkSystem.WorldController worldController)
         {
-            this.isInitialized = true;
-
             this.worldController = worldController;
             this.myTransform = this.transform;
 
@@ -40,11 +41,18 @@ namespace Game.Player
             this.zAxisInfo.worldSize = worldSize.z;
             this.zAxisInfo.minPos = worldPos.z - worldSize.z / 2f;
             this.zAxisInfo.maxPos = worldPos.z + worldSize.z / 2f;
+
+            Utilities.EventManager.OnSceneChangedEvent += OnSceneChangedEventHandler;
+
+            this.isInitialized = true;
         }
+
+        //#####################################################
+        //#####################################################
 
         void Update()
         {
-            if (!this.isInitialized)
+            if (!this.isInitialized || !this.isActive)
             {
                 return;
             }
@@ -106,11 +114,28 @@ namespace Game.Player
 
                 //foreach (var follower in this.followers)
                 //{
-                    //Vector3 newFollowerPos = follower.position + teleportOffset;
-                    //follower.position = newFollowerPos;
+                //Vector3 newFollowerPos = follower.position + teleportOffset;
+                //follower.position = newFollowerPos;
                 //}
             }
         }
+
+        //#####################################################
+        //#####################################################
+
+        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
+        {
+            if (args.HasChangedToPillar)
+            {
+                this.isActive = false;
+            }
+            else
+            {
+                this.isActive = true;
+            }
+        }
+
+        //#####################################################
 
         struct AxisInfo
         {
