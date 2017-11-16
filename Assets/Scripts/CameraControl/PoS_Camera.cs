@@ -303,8 +303,12 @@ public class PoS_Camera : MonoBehaviour {
     /// Checks whether we're on a cliff or on a slope and returns the value of that slope
     /// </summary>
     float CheckGroundAndReturnSlopeValue() {
+        float limitVertical = 0.7f;
+
         Vector3 groundNormal = controller.collisions.currentGroundNormal;
 
+        //print("Ground Normal: " + groundNormal);
+        
         // Si on est au sol et qu'il n'y a pas de mur devant
         if (playerState == ePlayerState.onGround && !Physics.Raycast(target.position, player.transform.forward, 1, controller.collisionMask)) {
 
@@ -313,22 +317,27 @@ public class PoS_Camera : MonoBehaviour {
             if (Physics.Raycast(target.position + player.transform.forward * distanceToCheckGroundForward,
                             -target.up, out groundInFront, cliffMinDepth, controller.collisionMask)) {
 
+                //print("Ground In Front: " + groundInFront.normal);
                 NotOnEdgeOfCliff(); // Y a du sol devant donc on n'est pas au bord d'une falaise
 
                 if ((targetSpace * groundInFront.normal).y > 0.99f)
                     groundNormal = target.up; // Si devant c'est environ du sol plat, on reset slopeValue
-
-                else if (Vector3.Angle(groundNormal, groundInFront.normal) > 10)
-                    groundNormal = groundInFront.normal; // Si la pente devant a plus de X degrés de différence, on prend sa slopeValue
+                
+                else if (Vector3.Angle(groundNormal, groundInFront.normal) > 10 // Si la pente devant a plus de X degrés de différence
+                        && groundInFront.normal.y > limitVertical) // et qu'elle n'est pas quasi verticale (un mur)
+                    groundNormal = groundInFront.normal; // On prend sa slopeValue
 
             } else {// on est au sol, y a pas de mur devant, et y a pas de sol devant non plus, donc on est au bord d'une falaise
                 onEdgeOfCliff = true;
                 canAutoReset = false;
-                return 10;
+                //return 10;
             }
 
         } else // soit on n'est pas au sol, soit on est au sol mais y a un mur devant, donc on n'est pas au bord d'une falaise
             NotOnEdgeOfCliff();
+
+        if (groundNormal.y < limitVertical)
+            groundNormal = target.up; // Si on est quasi à la verticale, on considère qu'on est contre un mur, on repasse en caméra normale
 
         return Vector3.Dot(Vector3.ProjectOnPlane(my.forward, target.parent.up), groundNormal) * 60;
         // Ici on recalcule le forward en aplatissant celui de la caméra pour éviter des erreurs quand le perso tourne
@@ -398,7 +407,6 @@ public class PoS_Camera : MonoBehaviour {
         
         // Get the value of the slope we're walking on (or we're about to walk on) also check if we're on a cliff
         float slopeValue = CheckGroundAndReturnSlopeValue();
-
         // Il nous faut une fonction SetState() pour pouvoir faire des trucs uniquement lors d'un changement de State
 
         if (input.magnitude != 0) {
@@ -414,29 +422,36 @@ public class PoS_Camera : MonoBehaviour {
 
 		} else if (state != eCameraState.Resetting) {
 
-            if (playerState == ePlayerState.onGround) {
+            if (playerState == ePlayerState.onGround || playerState == ePlayerState.sliding) {
                 
                 if (state == eCameraState.Air) { // Si on était dans les airs avant
-                    manualPitch = defaultPitch; // On reset le pitch
-                    additionalDistance = 0; // On reset le zoom
+                    if (Mathf.DeltaAngle(slopeValue, 0) > 5)
+                        manualPitch = defaultPitch; // On reset le pitch
+                    additionalDistance = 0;    // On reset le zoom
+                    //lastInput = 0;
+                    //canAutoReset = true;
                 }
 
-                if (Time.time > lastInput + timeBeforeAutoReset) { // Si ça fait genre 5 secondes qu'on n'a pas touché à la caméra on passe en mode automatique
-
+                if (Time.time > lastInput + timeBeforeAutoReset && canAutoReset) { // Si ça fait genre 5 secondes qu'on n'a pas touché à la caméra on passe en mode automatique
                     if (nearPOI)
                         LookAtTargetPOI();
                     //LookForPointsofInterest(); // Ancienne version des POI (Systémique)
 
+                    canAutoReset = false;
+
+                    #if false // l'autoreset est enlevé pour l'instant parce que gênant, le faire que sous certaines conditions
                     if (state != eCameraState.LookAt && canAutoReset) { // Si y a pas de PoI on se replace tout seul derrière le joueur
                         state = eCameraState.Resetting;
-                        SetTargetRotation(defaultPitch - slopeValue, GetYawBehindPlayer(), autoResetDamp);
-                        manualPitch = defaultPitch - slopeValue;
+                        
+                        SetTargetRotation(defaultPitch + slopeValue, GetYawBehindPlayer(), autoResetDamp);
+                        manualPitch = defaultPitch;
                         canAutoReset = false; // On n'autoReset qu'une fois
                     }
-
+                    #endif
                 } else {
                     if (playerVelocity != Vector3.zero) {
                         state = eCameraState.Default;
+                        print("Default Camera: " + (slopeValue + manualPitch));
                         SetTargetRotation(slopeValue + manualPitch, null, resetDamp);
 
                     } else {
@@ -446,6 +461,7 @@ public class PoS_Camera : MonoBehaviour {
                 }
 
 			} else {
+                
 				state = eCameraState.Air;
                 canAutoReset = true;
                 
@@ -460,10 +476,17 @@ public class PoS_Camera : MonoBehaviour {
                     }
                 } else { // je suis en train de sauter
                     additionalDistance = 0;
+
+                    if (manualPitch <= defaultPitch) {
+                        manualPitch = targetPitch = defaultPitch;
+                    }
+
+                    #if false
                     if (targetPitch != pitchRotationLimit.max) { // peut être qu'on devrait ajuster le targetPitch selon la distance du rayon (genre si on est haut mais ça va on se penche mais pas trop)
                         autoAdjustPitch = false;
                         autoAdjustYaw = false;
                     }
+                    #endif
                 }
 
 			}
@@ -484,10 +507,10 @@ public class PoS_Camera : MonoBehaviour {
             if (playerState == ePlayerState.inAir) {
                 SetTargetRotation(pitchRotationLimit.max, GetYawBehindPlayer(), resetDamp);
             } else {
-                SetTargetRotation(defaultPitch, GetYawBehindPlayer(), resetDamp);
+                SetTargetRotation(defaultPitch + slopeValue, GetYawBehindPlayer(), resetDamp);
             }
-		}
-	}
+        }
+    }
 
     void DoRotation() {
 		rotationSpeed.x = Mathf.Lerp(minRotationSpeed.x, maxRotationSpeed.x, currentDistance / idealDistance);
@@ -591,7 +614,7 @@ public class PoS_Camera : MonoBehaviour {
 		my.rotation = Quaternion.Lerp(my.rotation, camRotation, t);
 	}
 
-    #region ValueMethods
+#region ValueMethods
     Vector3 worldForward = new Vector3(0, 0, 1),
             worldRight = new Vector3(1, 0, 0);
     
@@ -652,9 +675,9 @@ public class PoS_Camera : MonoBehaviour {
 			Vector3.Dot(n, Vector3.Cross(v1, v2)),
 			Vector3.Dot(v1, v2)) * 57.29578f; // Radian to Degrees constant
 	}
-    #endregion
+#endregion
 
-    #region Temporary Offset
+#region Temporary Offset
     Vector3 contextualOffset;
 	bool cameraBounce;
 
@@ -663,6 +686,6 @@ public class PoS_Camera : MonoBehaviour {
         contextualOffset.y = -verticalOffset;
 		cameraBounce = true;
 	}
-	#endregion
+#endregion
 
 }
