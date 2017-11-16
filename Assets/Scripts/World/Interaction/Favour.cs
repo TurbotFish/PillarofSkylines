@@ -5,7 +5,6 @@ using UnityEngine;
 
 namespace Game.World.Interaction
 {
-    [RequireComponent(typeof(BoxCollider))]
     public class Favour : MonoBehaviour, IWorldObject
     {
         [SerializeField]

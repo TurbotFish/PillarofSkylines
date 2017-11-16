@@ -15,6 +15,7 @@ namespace Game.Player.AbilitySystem
         bool isParticleSystemActive = false;
         bool isInOpenWorld = false;
         bool isFavourInWorld = false;
+        bool isInitialized = false;
 
         //################################################################
 
@@ -33,8 +34,12 @@ namespace Game.Player.AbilitySystem
             this.myTransform = this.transform;
             this.myParticleSystem = GetComponent<ParticleSystem>();
 
+            this.myParticleSystem.Stop();
+
             Utilities.EventManager.OnSceneChangedEvent += OnSceneChangedEventHandler;
             Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
+
+            this.isInitialized = true;
         }
 
         //################################################################
@@ -43,7 +48,29 @@ namespace Game.Player.AbilitySystem
         // Update is called once per frame
         void Update()
         {
-            
+            if (!this.isInitialized)
+            {
+                return;
+            }
+
+            bool abilityActive = this.model.CheckAbilityActive(eAbilityType.TombFinder);
+            //Debug.LogErrorFormat("TombFinderController: abilityActive={0}, isInOpenWorld={1}, isFavourInWorld={2}", abilityActive, isInOpenWorld, isFavourInWorld);
+
+            if(!this.isParticleSystemActive && (this.isInOpenWorld && this.isFavourInWorld && abilityActive))
+            {
+                this.myParticleSystem.Play();
+                this.isParticleSystemActive = true;
+            }
+            else if(this.isParticleSystemActive && !(this.isInOpenWorld && this.isFavourInWorld && abilityActive))
+            {
+                this.myParticleSystem.Stop();
+                this.isParticleSystemActive = false;
+            }
+
+            if (this.isParticleSystemActive)
+            {
+                OrientToNearestFavour();
+            }
         }
 
         //################################################################
@@ -58,6 +85,15 @@ namespace Game.Player.AbilitySystem
             else 
             {
                 this.isInOpenWorld = true;
+
+                if (this.worldController.FindNearestFavour(this.myTransform.position) == null)
+                {
+                    this.isFavourInWorld = false;
+                }
+                else
+                {
+                    this.isFavourInWorld = true;
+                }
             }
         }
 
@@ -67,6 +103,10 @@ namespace Game.Player.AbilitySystem
             {
                 this.isFavourInWorld = false;
             }
+            else
+            {
+                this.isFavourInWorld = true;
+            }
         }
 
         //################################################################
@@ -74,7 +114,16 @@ namespace Game.Player.AbilitySystem
 
         void OrientToNearestFavour()
         {
+            var favour = this.worldController.FindNearestFavour(this.myTransform.position);
 
+            if(favour == null)
+            {
+                return;
+            }
+
+            var relativePos = favour.MyTransform.position - this.myTransform.position;
+            Quaternion newRotation = Quaternion.LookRotation(relativePos);
+            this.myTransform.rotation = newRotation;
         }
 
         //################################################################
