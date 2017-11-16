@@ -30,13 +30,13 @@ namespace Game.World.ChunkSystem
 
                     if (pillarChunk.PillarState == ePillarState.Intact)
                     {
-                        pillarChunk.Activate();
+                        pillarChunk.ActivatePillarChunk();
 
                         this.intactPillarChunks.Add(pillarChunk);
                     }
                     else if (pillarChunk.PillarState == ePillarState.Destroyed)
                     {
-                        pillarChunk.Deactivate();
+                        pillarChunk.DeactivatePillarChunk();
 
                         this.destroyedPillarChunks.Add(pillarChunk);
                     }
@@ -65,12 +65,12 @@ namespace Game.World.ChunkSystem
         {
             foreach (var chunk in this.intactPillarChunks)
             {
-                chunk.Deactivate();
+                chunk.DeactivatePillarChunk();
             }
 
             foreach (var chunk in this.destroyedPillarChunks)
             {
-                chunk.Deactivate();
+                chunk.ActivatePillarChunk();
             }
         }
     }
