@@ -127,9 +127,9 @@ public class Player : MonoBehaviour {
 	[Tooltip("The number of jumps the player can do while in the air.")]
 	public int numberOfAerialJumps = 0;
 	/// <summary>
-	/// The efficiency of the aerial jump compared to the regular jump (2 makes it 2 times stronger, 0.5 makes it 2 times weaker (not really, play around with it)).
+	/// The efficiency of the aerial jump compared to the regular jump (2 makes it 2 times stronger, 0.5 makes it 2 times weaker (kinda)).
 	/// </summary>
-	[Tooltip("The efficiency of the aerial jump compared to the regular jump (2 makes it 2 times stronger, 0.5 makes it 2 times weaker (not really, play around with it)).")]
+	[Tooltip("The efficiency of the aerial jump compared to the regular jump (2 makes it 2 times stronger, 0.5 makes it 2 times weaker (kinda)).")]
 	public float coeffAerialJumpEfficiency = 1f;
 
 	/// <summary>
@@ -452,7 +452,7 @@ public class Player : MonoBehaviour {
 				break;
 
 
-				#region in air
+			#region in air
 			case ePlayerState.inAir:
 				
 				permissiveJumpTime -= Time.deltaTime;
@@ -652,7 +652,7 @@ public class Player : MonoBehaviour {
 		#endregion direction calculations
 
 
-		//Turns the velocity in world space and calls the controller to check if the calculated velocity will run into walls and stuff
+		//Turns the velocity in world space and calls the controller to check if the calculated velocity will run into walls and stuff, and then move the player
 		turnedVelocity = TurnLocalToSpace(velocity);
 		if (currentPlayerState == ePlayerState.gliding) {
 			velocity = controller.Move (velocity * Time.deltaTime);
