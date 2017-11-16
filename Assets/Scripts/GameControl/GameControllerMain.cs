@@ -61,6 +61,14 @@ namespace Game.GameControl
             Utilities.EventManager.OnEnterPillarEvent += OnEnterPillarEventHandler;
         }
 
+        //void Update() //for testing only!
+        //{
+        //    if (Input.GetKeyDown(KeyCode.T))
+        //    {
+        //        Utilities.EventManager.SendOnEyeKilledEvent(this);
+        //    }
+        //}
+
         //###############################################################
         //###############################################################
 
@@ -242,6 +250,8 @@ namespace Game.GameControl
 
         void OnEyeKilledEventHandler(object sender)
         {
+            Debug.LogError("OnEyeKilledEventHandler called!");
+
             if (!this.isPillarActive)
             {
                 throw new Exception("No Pillar is active!");
@@ -263,7 +273,7 @@ namespace Game.GameControl
             {
                 go.SetActive(false);
             }
-            this.playerModel.SetPillarDestroyed(this.activePillarId);
+            
             this.isPillarActive = false;
 
             yield return null;
@@ -274,6 +284,11 @@ namespace Game.GameControl
                 go.SetActive(true);
             }
             SceneManager.SetActiveScene(this.openWorldSceneInfo.Scene);
+
+            yield return null;
+
+            //switch pillar to destroyed state
+            this.playerModel.SetPillarDestroyed(this.activePillarId);
 
             yield return null;
 
