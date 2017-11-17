@@ -11,7 +11,7 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
-        public virtual void InitializeRegion(ChunkSystemData data)
+        public virtual void InitializeRegion(WorldController worldController)
         {
             int childCount = this.transform.childCount;
             for (int i = 0; i < childCount; i++)
@@ -27,7 +27,7 @@ namespace Game.World.ChunkSystem
                     }
 
                     this.chunkList.Add(chunk);
-                    chunk.InitializeChunk(data);
+                    chunk.InitializeChunk(worldController);
                 }
             }
         }

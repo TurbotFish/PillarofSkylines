@@ -11,20 +11,22 @@ namespace Game.Player.AbilitySystem
         //double jump
         [SerializeField]
         DoubleJump doubleJump = new DoubleJump();
-
         public DoubleJump DoubleJump { get { return this.doubleJump; } }
 
         //glide
         [SerializeField]
         Glide glide = new Glide();
-
         public Glide Glide { get { return this.glide; } }
 
         //dash
         [SerializeField]
         Dash dash = new Dash();
-
         public Dash Dash { get { return this.dash; } }
+
+        //tomb finder
+        [SerializeField]
+        TombFinder tombFinder = new TombFinder();
+        public TombFinder TombFinder { get { return this.tombFinder; } }
 
         //###########################################################
 
@@ -40,6 +42,8 @@ namespace Game.Player.AbilitySystem
                     return this.Glide;
                 case eAbilityType.Dash:
                     return this.Dash;
+                case eAbilityType.TombFinder:
+                    return this.tombFinder;
                 default:
                     throw new NotImplementedException();
             }
@@ -51,7 +55,8 @@ namespace Game.Player.AbilitySystem
             {
                 this.doubleJump,
                 this.glide,
-                this.dash
+                this.dash,
+                this.tombFinder
             };
         }
 

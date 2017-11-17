@@ -15,9 +15,9 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// Initializes the Chunk.
         /// </summary>
-        public virtual void InitializeChunk(ChunkSystemData data)
+        public virtual void InitializeChunk(WorldController worldController)
         {
-            this.data = data;
+            this.data = worldController.ChunkSystemData;
 
             int childCount = this.transform.childCount;
 
@@ -47,7 +47,7 @@ namespace Game.World.ChunkSystem
                 if (subChunk != null)
                 {
                     this.subChunkList.Add(subChunk);
-                    subChunk.InitializeSubChunk();
+                    subChunk.InitializeSubChunk(worldController);
                 }
             }
         }

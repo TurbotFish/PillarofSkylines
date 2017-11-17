@@ -121,6 +121,8 @@ namespace Game.GameControl
             //***********************
 
             //starting game
+            Utilities.EventManager.SendOnSceneChangedEvent(this, new Utilities.EventManager.OnSceneChangedEventArgs());
+
             if (this.showIntroMenu)
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.Intro));
