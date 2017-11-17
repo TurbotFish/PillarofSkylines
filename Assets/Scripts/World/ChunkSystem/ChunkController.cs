@@ -81,14 +81,14 @@ namespace Game.World.ChunkSystem
                 {
                     if (!subChunk.IsActive)
                     {
-                        subChunk.ActivateSubChunk();
+                        subChunk.SetSubChunkActive(true);
                     }
                 }
                 else
                 {
                     if (subChunk.IsActive)
                     {
-                        subChunk.DeactivateSubChunk();
+                        subChunk.SetSubChunkActive(false);
                     }
                 }
             }
