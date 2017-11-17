@@ -33,8 +33,14 @@ namespace Game.World.ChunkSystem
         bool isInitialized = false;
         Vector3 previousPlayerPos = Vector3.zero;
 
+        System.Object activationLock = new System.Object();
+        LinkedList<GameObject> objectsToActivate = new LinkedList<GameObject>();
+        LinkedList<GameObject> objectsToDeactivate = new LinkedList<GameObject>();
+
         //####################################################################
         //####################################################################
+
+        #region initialization
 
         public void InitializeWorldController(Transform playerTransform)
         {
@@ -64,16 +70,21 @@ namespace Game.World.ChunkSystem
             CreateCopies();
         }
 
+        #endregion initialization
+
         //####################################################################
         //####################################################################
 
-        void FixedUpdate()
+        #region update
+
+        void Update()
         {
             if (!this.isInitialized)
             {
                 return;
             }
 
+            //updating world
             var currentPlayerPos = this.playerTransform.position;
             float posDelta = Vector3.Distance(this.previousPlayerPos, currentPlayerPos);
 
@@ -91,10 +102,35 @@ namespace Game.World.ChunkSystem
 
                 this.previousPlayerPos = currentPlayerPos;
             }
+
+            //object activation
+            lock (this.activationLock)
+            {
+                int quota = 10;
+                int activationQuota = Mathf.Min(quota, this.objectsToActivate.Count);
+                quota -= activationQuota;
+                int deactivationQuota = Mathf.Min(quota, this.objectsToDeactivate.Count);
+
+                for(int i = 0; i < activationQuota; i++)
+                {
+                    this.objectsToActivate.First.Value.SetActive(true);
+                    this.objectsToActivate.RemoveFirst();
+                }
+
+                for(int i = 0; i < deactivationQuota; i++)
+                {
+                    this.objectsToDeactivate.First.Value.SetActive(false);
+                    this.objectsToDeactivate.RemoveFirst();
+                }
+            }
         }
+
+        #endregion update
 
         //####################################################################
         //####################################################################
+
+        #region copying
 
         void CreateCopies()
         {
@@ -145,6 +181,8 @@ namespace Game.World.ChunkSystem
             }
         }
 
+        #endregion copying
+
         //####################################################################
         //####################################################################
 
@@ -184,6 +222,48 @@ namespace Game.World.ChunkSystem
         }
 
         #endregion favour methods
+
+        //####################################################################
+        //####################################################################
+
+        #region subChunk activation
+
+        public void QueueObjectsToSetActive(List<GameObject> objectList, bool active)
+        {
+            lock (this.activationLock)
+            {
+                if (active)
+                {
+                    for (int i = 0; i < objectList.Count; i++)
+                    {
+                        var currentObject = objectList[i];
+
+                        if (!this.objectsToActivate.Contains(currentObject))
+                        {
+                            this.objectsToActivate.AddLast(currentObject);
+                        }
+
+                        this.objectsToDeactivate.Remove(currentObject);
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < objectList.Count; i++)
+                    {
+                        var currentObject = objectList[i];
+
+                        this.objectsToActivate.Remove(currentObject);
+
+                        if (!this.objectsToDeactivate.Contains(currentObject))
+                        {
+                            this.objectsToDeactivate.AddLast(currentObject);
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion subChunk activation
 
         //####################################################################
         //####################################################################
