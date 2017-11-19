@@ -30,6 +30,4 @@ public class EditorDebugMaster : EditorWindow {
         cam.position = viewPos.position;
         cam.rotation = viewPos.rotation;
     }
-    
-
 }
