@@ -20,15 +20,12 @@ public class CameraControlTrigger : MonoBehaviour {
 
     void OnTriggerEnter(Collider col) {
         if (col.tag == "Player") {
-            if (zoomValue > 0) {
+            if (zoomValue > 0)
                 camera.ZoomAt(zoomValue, damp);
-            }
-            if (pointOfInterest) {
+            if (pointOfInterest)
                 camera.SetPointOfInterest(pointOfInterest.position);
-            }
-            if (alignWithForwardAxis) {
+            if (alignWithForwardAxis)
                 camera.SetAxisAlignment(transform.forward);
-            }
 
             camera.enablePanoramaMode = enablePanoramaMode;
         }
@@ -36,9 +33,13 @@ public class CameraControlTrigger : MonoBehaviour {
 
     void OnTriggerExit(Collider col) {
         if (col.tag == "Player") {
-            camera.ResetZoom();
-            camera.ClearPointOfInterest();
-            camera.RemoveAxisAlignment();
+            if (zoomValue > 0)
+                camera.ResetZoom();
+            if (pointOfInterest)
+                camera.ClearPointOfInterest(pointOfInterest.position);
+            if (alignWithForwardAxis)
+                camera.RemoveAxisAlignment(transform.forward);
+
             camera.enablePanoramaMode = true;
         }
     }
