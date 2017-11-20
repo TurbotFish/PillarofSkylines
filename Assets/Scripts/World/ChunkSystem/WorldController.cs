@@ -175,6 +175,8 @@ namespace Game.World.ChunkSystem
 
                             //moving the copy has to be done after creating all the children
                             go.transform.Translate(new Vector3(x * this.worldSize.x, y * this.worldSize.y, z * this.worldSize.z));
+
+                            this.worldCopies.Add(go);
                         }
                     }
                 }

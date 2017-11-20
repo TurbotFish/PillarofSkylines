@@ -6,7 +6,7 @@ namespace Game.UI
 {
     public class IntroMenuController : MonoBehaviour, IUiState
     {
-        Player.PlayerModel playerModel;
+        //Player.PlayerModel playerModel;
 
         public bool IsActive { get; private set; }
 
@@ -40,7 +40,7 @@ namespace Game.UI
 
         void IUiState.Initialize(Player.PlayerModel playerModel)
         {
-            this.playerModel = playerModel;
+            //this.playerModel = playerModel;
         }
 
         void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)

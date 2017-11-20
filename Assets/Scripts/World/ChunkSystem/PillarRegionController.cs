@@ -61,8 +61,36 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
+        public override void UpdateRegion(Vector3 playerPos)
+        {
+            if(this.currentPillarState == ePillarState.Intact)
+            {
+                foreach(var chunk in this.intactPillarChunks)
+                {
+                    chunk.UpdateChunk(playerPos);
+                }
+            }
+            else if(this.currentPillarState == ePillarState.Destroyed)
+            {
+                foreach(var chunk in this.destroyedPillarChunks)
+                {
+                    chunk.UpdateChunk(playerPos);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         void OnPillarDestroyedEventHandler(object sender, Utilities.EventManager.PillarDestroyedEventArgs args)
         {
+            if (args.PillarId != this.PillarId)
+            {
+                return;
+            }
+
+            this.currentPillarState = ePillarState.Destroyed;
+
             foreach (var chunk in this.intactPillarChunks)
             {
                 chunk.DeactivatePillarChunk();
