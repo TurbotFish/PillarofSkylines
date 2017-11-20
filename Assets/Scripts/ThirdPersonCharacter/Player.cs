@@ -303,6 +303,8 @@ public class Player : MonoBehaviour {
 	bool pressedDash = false;
 	bool pressedSprint = false;
 	bool pressingSprint = false;
+	float leftTrigger;
+	float rightTrigger;
 
 	bool leftStickAtZero = false;
 
