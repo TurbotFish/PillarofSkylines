@@ -100,7 +100,7 @@ public class PoS_Camera : MonoBehaviour {
 	bool autoAdjustYaw, autoAdjustPitch;
     bool canAutoReset;
 	bool placedByPlayer, onEdgeOfCliff;
-
+    
 	#endregion
 
 	#region MonoBehaviour
@@ -264,8 +264,8 @@ public class PoS_Camera : MonoBehaviour {
 			if (playerState == ePlayerState.onGround || playerState == ePlayerState.sliding) {
 
 				if (state == eCameraState.Air) { // Si on était dans les airs avant
-					if (Mathf.DeltaAngle(slopeValue, 0) > 5)
-						manualPitch = defaultPitch; // On reset le pitch
+                    if (!onEdgeOfCliff)
+    					manualPitch = defaultPitch; // On reset le pitch si on n'est pas au bord d'une falaise
 					additionalDistance = 0;    // On reset le zoom
 					//lastInput = 0;
 					//canAutoReset = true;

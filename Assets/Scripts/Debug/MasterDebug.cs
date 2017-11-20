@@ -4,7 +4,7 @@
 public class MasterDebug : MonoBehaviour {
 
     [SerializeField] Player player;
-
+    
 	void Start () {
         if (player)
             player.numberOfAerialJumps = 1000;
