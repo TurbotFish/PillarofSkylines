@@ -524,9 +524,12 @@ public class Player : MonoBehaviour {
 				targetVelocity = inputToSlope * characSpeed * (pressingSprint ? sprintCoeff : 1);
 				flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, groundControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f) * (leftStickAtZero ? groundNoInputCoeff : 1f));
 				// Detects if the player is moving up or down the slope, and multiply their speed based on that slope
-				if (Vector3.Angle(transform.up, controller.collisions.currentGroundNormal) > minSlopeAngle)
-					flatVelocity *= 1 + slopeCoeff * Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (maxSlopeAngle);
-				
+				if (Vector3.Angle(transform.up, controller.collisions.currentGroundNormal) > minSlopeAngle) {
+//					print("Current velocity : " + flatVelocity);
+					flatVelocity *= .99f + slopeCoeff * Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (maxSlopeAngle);
+//					print("New velocity : " + flatVelocity + " modified by : " + (slopeCoeff * Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (maxSlopeAngle)));
+				}
+
 				if (pressedJump) {
 					pressedJump = false;
 					velocity.y = 0f;
