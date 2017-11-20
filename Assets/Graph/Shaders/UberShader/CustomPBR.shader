@@ -55,6 +55,9 @@ Shader "Alo/PBR/CustomPBR" {
 		_DistFromCam ("Distance From Camera", Float) = 0
 
 		_RefractionAmount ("Refraction Amount", Range(-0.1,0.1)) = 0
+
+		//_PlayerPos ("Player World Position", Vector) = (1,1,1,0)
+		_MaxBendAngle ("Maximum Bending Angle", Float) = 40
 	}
 
 	CGINCLUDE
