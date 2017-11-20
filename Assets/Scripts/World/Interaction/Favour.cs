@@ -38,12 +38,16 @@ namespace Game.World.Interaction
 
         void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
         {
-            if(args.FavourId == this.instanceId)
+            if (args.FavourId == this.instanceId)
             {
                 if (!this.FavourPickedUp)
                 {
                     this.FavourPickedUp = true;
-                    this.myCollider.enabled = false;
+
+                    if (this.myCollider != null || !this.myCollider.Equals(null)) //check because all colliders are removed in the duplicated worlds
+                    {
+                        this.myCollider.enabled = false;
+                    }
                 }
             }
         }
