@@ -201,17 +201,17 @@ public class CharacControllerRecu : MonoBehaviour
 				&& !Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2),  Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up), (radius + skinWidth), collisionMask)) {
 				collisions.stepHeight = (height + radius * 2) - hit2.distance;
 				// Once checked if it's a step, check if it's not too high, and if it's not a slope
-//				print("new ground angle : " + Vector3.Angle(hit2.normal, myTransform.up) + ", step height : " + collisions.stepHeight + ", dot product : " + Vector3.Dot(hit.normal, hit2.normal));
-				if (Vector3.Angle(hit2.normal, myTransform.up) < myPlayer.maxSlopeAngle && collisions.stepHeight < myPlayer.maxStepHeight && Vector3.Dot(hit.normal, hit2.normal) < .95f) {
+				print("detected collision at " + hit2.point + ", new ground angle : " + Vector3.Angle(hit2.normal, myTransform.up) + ", step height : " + collisions.stepHeight + ", dot product : " + Vector3.Dot(hit.normal, hit2.normal));
+				if (Vector3.Angle(hit2.normal, myTransform.up) < myPlayer.maxSlopeAngle && collisions.stepHeight < myPlayer.maxStepHeight && Vector3.Dot(hit.normal, hit2.normal) < .95f && Vector3.Dot(hit.normal, hit2.normal) > 0f) {
 					stepOffset = myTransform.up * collisions.stepHeight;
-//					print("step added : " + stepOffset.y);
+					print("step added : " + stepOffset.y);
 					climbingStep = true;
 				} else {
-//					print("stopped climbing 1");
+					print("stopped climbing 1");
 					climbingStep = false;
 				}
 			} else {
-//				print("stopped climbing 2");
+				print("stopped climbing 2");
 				climbingStep = false;
 			}
 
@@ -245,7 +245,7 @@ public class CharacControllerRecu : MonoBehaviour
 			}
 		} else {
 			if (collisionNumber == 0) {
-//				print("stopped climbing 3");
+				print("stopped climbing 3");
 				climbingStep = false;
 			}
 
