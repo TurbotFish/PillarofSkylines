@@ -136,9 +136,18 @@ public class CharacControllerRecu : MonoBehaviour
 
 
 	void CollisionUpdate(Vector3 velocity) {
-		//Send casts to check if there's stuff around the player and set bools depending on the results
 
+		// EN TEST POUR BIEN RESTER COLLER AU SOL, à voir ce que ça vaut
+		if (myPlayer.currentPlayerState == ePlayerState.onGround) {
+			if (Physics.SphereCast(myTransform.position + myTransform.up * (radius + skinWidth), radius, -myTransform.up, out hit2, myPlayer.maxStepHeight, collisionMask)) {
+				transform.position += -myTransform.up * (hit2.distance - skinWidth);
+//				print("adjusted position on ground by : " + hit2.distance);
+			}
+		}
+
+		//Send casts to check if there's stuff around the player and set bools depending on the results
 		collisions.below = Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask) || climbingStep;
+		// POUR BIEN SE COLLER AU SOL EN MONTANT UNE MARCHE
 		if (collisions.below && !Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask)) {
 			if (Physics.SphereCast(myTransform.position + myTransform.up * radius, radius, -myTransform.up, out hit2, collisions.stepHeight, collisionMask)) {
 				transform.position += -myTransform.up * hit2.distance;
