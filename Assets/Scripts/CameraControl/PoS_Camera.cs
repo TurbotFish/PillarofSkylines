@@ -37,6 +37,7 @@ public class PoS_Camera : MonoBehaviour {
 	public bool followBehind;
 	public float timeBeforeAutoReset = 5;
 	public float autoResetDamp = 1;
+    public float axisAlignDamp = .8f;
     
 	public MinMax distanceBasedOnPitch = new MinMax(1, 12);
 	public AnimationCurve distanceFromRotation;
@@ -57,7 +58,6 @@ public class PoS_Camera : MonoBehaviour {
     /// Facteur divisant la distance d'offset sur le bord d'un précipice en fonction de la distance à la caméra.
     /// </summary>
     /// On divise la distance récupérée initialement, par "min" lorsque la caméra est à zéro de distance, par "max" lorsqu'elle est à "maxdistance"
-
     public MinMax cliffOffsetDivision = new MinMax(100, 20);
     
 	[Header("Collision")]
@@ -163,10 +163,10 @@ public class PoS_Camera : MonoBehaviour {
             PlaceBehindPlayerNoLerp();
             // on reset les paramètres par défaut de la caméra
             ResetZoom();
-            ClearPointOfInterest();
+            nearPOI = false;
+            axisAligned = Vector3.zero;
             enablePanoramaMode = true;
         } else {
-            print("yo je me tp là: " + lastFrameOffset);
             my.position = args.Position - lastFrameOffset;
             negDistance.z = -currentDistance;
             Vector3 targetWithOffset = args.Position + my.right * offset.x + my.up * offset.y;
@@ -267,12 +267,12 @@ public class PoS_Camera : MonoBehaviour {
 					if (Mathf.DeltaAngle(slopeValue, 0) > 5)
 						manualPitch = defaultPitch; // On reset le pitch
 					additionalDistance = 0;    // On reset le zoom
-											   //lastInput = 0;
-											   //canAutoReset = true;
+					//lastInput = 0;
+					//canAutoReset = true;
 				}
-
+                
 				if (nearPOI) // Points of Interest have priority over axis alignment
-					LookAtTargetPOI();
+					LookAtTargetPOI(); // TODO: manual priority just in case?
 				else if (axisAligned.sqrMagnitude != 0)
 					AlignWithAxis();
 
@@ -532,7 +532,9 @@ public class PoS_Camera : MonoBehaviour {
         lastInput = 0; // allows the autoReset to take place immediately
     }
 
-    public void ClearPointOfInterest() {
+    public void ClearPointOfInterest(Vector3 point) {
+        if (targetPOI != point)
+            return; // Attempting to clear a point that is not currently set
         nearPOI = false;
     }
 
@@ -542,12 +544,9 @@ public class PoS_Camera : MonoBehaviour {
     }
     
     void LookAtTargetPOI() {
-        // Pour voir si le joueur est environ dans la direction du POI, on prend la différence entre :
-        // - la distance au carrée entre le joueur et le POI
-        // - et la distance au carrée entre le joueur + son forward et le POI
-        float sqrDeltaOrientation = Vector3.SqrMagnitude(targetPOI - target.position) - Vector3.SqrMagnitude(targetPOI - (target.position + target.parent.forward));
-		
-        if (IcanSee(targetPOI) && sqrDeltaOrientation > -300) { // hardcoded TOFIX
+        float dotProduct = Vector3.Dot(target.parent.forward, (targetPOI - target.position).normalized);
+        
+        if (IcanSee(targetPOI) && dotProduct > -0.1f) { // TODO: pas hardcoded, check overtime
             state = eCameraState.LookAt;
             SetTargetRotation(GetRotationTowardsPoint(targetPOI), autoResetDamp);
         }
@@ -601,16 +600,18 @@ public class PoS_Camera : MonoBehaviour {
     }
 
     void AlignWithAxis() {
-        print("align with axis");
         state = eCameraState.LookAt;
         float dotProduct = Vector3.Dot(target.parent.forward, axisAligned);
         if (dotProduct > 0f)
-            SetTargetRotation(GetRotationTowardsDirection(axisAligned), autoResetDamp);
+            SetTargetRotation(GetRotationTowardsDirection(axisAligned), axisAlignDamp);
         else
-            SetTargetRotation(GetRotationTowardsDirection(-axisAligned), autoResetDamp);
+            SetTargetRotation(GetRotationTowardsDirection(-axisAligned), axisAlignDamp);
+        targetPitch += defaultPitch;
     }
 
-    public void RemoveAxisAlignment() {
+    public void RemoveAxisAlignment(Vector3 direction) {
+        if (axisAligned != direction)
+            return; // Attempting to clear a direction that isn't currently set
         axisAligned = Vector3.zero;
     }
 
