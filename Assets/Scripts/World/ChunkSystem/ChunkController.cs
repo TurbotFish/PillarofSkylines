@@ -104,6 +104,7 @@ namespace Game.World.ChunkSystem
             chunkCopyGameObject.layer = gameObject.layer;
             newBounds.isTrigger = bounds.isTrigger;
             newBounds.size = bounds.size;
+            newBounds.center = bounds.center;
 
             foreach (var subChunk in this.subChunkList)
             {
