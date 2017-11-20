@@ -5,6 +5,7 @@ using UnityEditorInternal;
 public class AssignPrefab : EditorWindow {
 
 	[SerializeField] GameObject prefab;
+	[SerializeField] bool keepChildren;
 
 	[MenuItem("Tools/Assign Prefab", false, 90)]
 	public static void ShowWindow() {
@@ -19,6 +20,21 @@ public class AssignPrefab : EditorWindow {
 
 		prefab = EditorGUILayout.ObjectField("Prefab to Assign", prefab, typeof(GameObject), false) as GameObject;
 		EditorGUILayout.Space();
+
+		foreach (GameObject target in Selection.gameObjects) {
+			if (target.transform.childCount > 0) {
+				if (!keepChildren)
+					EditorGUILayout.HelpBox(target.name + " has children which will be deleted upon action.", MessageType.Error);
+
+				keepChildren = EditorGUILayout.Toggle("Keep Children ", keepChildren);
+
+				if (keepChildren)
+					EditorGUILayout.HelpBox("Keeping children might lead to duplicates.", MessageType.Warning);
+
+				EditorGUILayout.Space();
+				break;
+			}
+		}
 		
 		EditorGUI.BeginDisabledGroup(Selection.gameObjects.Length == 0);
 		if (GUILayout.Button("Assign Prefab")) {
@@ -50,16 +66,30 @@ public class AssignPrefab : EditorWindow {
 
 		newTarget.name = target.name;
 		newTarget.transform.parent = target.transform.parent;
-		bool flag = false;
 		for (int i = 0; i < components.Length; i++) {
 			if (ComponentUtility.CopyComponent(components[i])) {
 				var comp = newTarget.GetComponent(components[i].GetType());
-				flag = comp ? ComponentUtility.PasteComponentValues(comp) : ComponentUtility.PasteComponentAsNew(newTarget);
+				if (comp)
+					ComponentUtility.PasteComponentValues(comp);
+				else
+					ComponentUtility.PasteComponentAsNew(newTarget);
 			}
 		}
 
 		ObjectReferenceUtility.ReplaceAllReferences(target, newTarget);
 
+		if (keepChildren) {
+			foreach (Transform child in target.transform) {
+				Vector3 localPos = child.localPosition;
+				Quaternion localRot = child.localRotation;
+				Vector3 localScale = child.localScale;
+				child.parent = newTarget.transform;
+				child.localPosition = localPos;
+				child.localRotation = localRot;
+				child.localScale = localScale;
+			}
+		}
+		
 		Undo.DestroyObjectImmediate(target);
 
 		Selection.activeGameObject = newTarget;

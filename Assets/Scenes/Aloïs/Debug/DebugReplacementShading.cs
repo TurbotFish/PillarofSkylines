@@ -20,6 +20,7 @@ public class DebugReplacementShading : MonoBehaviour {
 	bool replacementReady;
 
 	public enum DebugMode {
+        None,
 		SlopeCheck,
 		Checker
 	};
@@ -53,8 +54,9 @@ public class DebugReplacementShading : MonoBehaviour {
 	}
 
 	void DoTheShaderThing(){
-		if(!replacementReady)
+		if(!replacementReady || debugMode == DebugMode.None)
 			return;
+
 		if (debugMode == DebugMode.Checker) {
 			Shader.SetGlobalFloat("_CheckerScale", .5f / checkerScale);
 			Shader.SetGlobalFloat("_CheckerMinContrast", contrastMin);

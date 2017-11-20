@@ -3,20 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ParticlesTeleporter : MonoBehaviour {
-
-	Vector3 velocity;
-	//public Transform target;
-	//Vector3 _startPosition;
-	//Vector3 _startEuler;
-	public List<ParticleSystem> particles;
-
-	// Use this for initialization
-	void Awake () {
-		//_startEuler = transform.localEulerAngles;
-		//_startPosition = transform.localPosition;
-	}
 	
-	// Update is called once per frame
+	public List<ParticleSystem> particles;
+	
 	void Update () {
 		if (Input.GetKeyDown (KeyCode.P)) {
 			HoldParticles ();
@@ -40,12 +29,6 @@ public class ParticlesTeleporter : MonoBehaviour {
 			var module = particles [i].main;
 			module.simulationSpace = ParticleSystemSimulationSpace.World;
 		}
-	}
-
-
-	public void SetVelocity(Vector3 v)
-	{
-		velocity = v;
 	}
 
 	public void Stop()

@@ -10,8 +10,10 @@ public class CameraControlTrigger : MonoBehaviour {
 
     [Header("Parameters")]
     [SerializeField] Transform pointOfInterest;
+    [SerializeField] bool alignWithForwardAxis = false;
+    [Space]
     [SerializeField] bool enablePanoramaMode = false;
-
+    
     private void Start() {
         camera = FindObjectOfType<PoS_Camera>();
     }
@@ -24,6 +26,9 @@ public class CameraControlTrigger : MonoBehaviour {
             if (pointOfInterest) {
                 camera.SetPointOfInterest(pointOfInterest.position);
             }
+            if (alignWithForwardAxis) {
+                camera.SetAxisAlignment(transform.forward);
+            }
 
             camera.enablePanoramaMode = enablePanoramaMode;
         }
@@ -33,7 +38,16 @@ public class CameraControlTrigger : MonoBehaviour {
         if (col.tag == "Player") {
             camera.ResetZoom();
             camera.ClearPointOfInterest();
+            camera.RemoveAxisAlignment();
             camera.enablePanoramaMode = true;
+        }
+    }
+
+    private void OnDrawGizmos() {
+        if (alignWithForwardAxis) {
+            float length = GetComponent<Collider>().bounds.extents.z;
+            Gizmos.color = Color.blue;
+            Gizmos.DrawLine(transform.position - transform.forward * length, transform.position + transform.forward * length);
         }
     }
 }

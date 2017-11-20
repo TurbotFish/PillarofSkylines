@@ -281,7 +281,7 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	Animator animator;
 
-	PoS_Camera camera;
+	new PoS_Camera camera;
 
 	//[HideInInspector]
 	public ePlayerState currentPlayerState;

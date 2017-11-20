@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlantPhysics : MonoBehaviour {
 
@@ -20,8 +18,7 @@ public class PlantPhysics : MonoBehaviour {
 	void Start () {
 		RandomSeed ();
 	}
-
-
+	
 	// Update is called once per frame
 	void FixedUpdate () {
 		displaceAngle = Vector3.Angle (arc.position - transform.position, goal.position - transform.position);
