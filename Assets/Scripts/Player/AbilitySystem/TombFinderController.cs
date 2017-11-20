@@ -61,7 +61,7 @@ namespace Game.Player.AbilitySystem
                 this.myParticleSystem.Play();
                 this.isParticleSystemActive = true;
             }
-            else if(this.isParticleSystemActive && !(this.isInOpenWorld && this.isFavourInWorld && abilityActive))
+            else if(this.isParticleSystemActive && (!this.isInOpenWorld || !this.isFavourInWorld || !abilityActive))
             {
                 this.myParticleSystem.Stop();
                 this.isParticleSystemActive = false;
