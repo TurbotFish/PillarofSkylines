@@ -10,7 +10,7 @@ namespace Game.UI
         [SerializeField]
         TMPro.TextMeshProUGUI messageView;
 
-        Player.PlayerModel playerModel;
+        //Player.PlayerModel playerModel;
 
         public bool IsActive { get; private set; }
 
@@ -46,7 +46,7 @@ namespace Game.UI
 
         void IUiState.Initialize(Player.PlayerModel playerModel)
         {
-            this.playerModel = playerModel;
+            //this.playerModel = playerModel;
 
             this.messageView.text = "";
         }

@@ -20,6 +20,7 @@ namespace Game.Player
         World.Interaction.Favour favour;
 
         PillarEntranceInfo pillarEntranceInfo = new PillarEntranceInfo();
+        bool pillarExitInRange = false;
 
         bool needleInRange = false;
         Collider needlePickedUpCollider;
@@ -100,6 +101,12 @@ namespace Game.Player
                 {
                     Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowPillarEntranceMenuEventArgs(this.pillarEntranceInfo.CurrentPillarEntrance.PillarId));
                 }
+                //pillar exit
+                else if (this.pillarExitInRange)
+                {
+                    Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(false));
+                }
+                //needle
                 else if (this.needleInRange)
                 {
                     this.needleInRange = false;
@@ -111,13 +118,14 @@ namespace Game.Player
 
                     HideUiMessage();
                 }
+                //eye
                 else if (this.eyeInRange)
                 {
                     this.eyeInRange = false;
 
                     playerModel.hasNeedle = false;
 
-                    Utilities.EventManager.SendOnEyeKilledEvent(this);
+                    Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(true));
                     Debug.Log("oeil mort");
 
                     HideUiMessage();
@@ -178,14 +186,27 @@ namespace Game.Player
                     //pillar entrance
                     case "Pillar":
                         var pillarEntrance = other.GetComponent<World.Interaction.PillarEntrance>();
-
-                        if (!this.playerModel.IsPillarDestroyed(pillarEntrance.PillarId) && this.playerModel.Favours >= this.playerModel.PillarData.GetPillarEntryPrice(pillarEntrance.PillarId))
+                        if (pillarEntrance != null)
                         {
-                            this.pillarEntranceInfo.IsPillarEntranceInRange = true;
-                            this.pillarEntranceInfo.CurrentPillarEntrance = pillarEntrance;
+                            if (!this.playerModel.IsPillarDestroyed(pillarEntrance.PillarId))
+                            {
+                                this.pillarEntranceInfo.IsPillarEntranceInRange = true;
+                                this.pillarEntranceInfo.CurrentPillarEntrance = pillarEntrance;
 
-                            ShowUiMessage("Press [X] to enter the Pillar!");
+                                ShowUiMessage("Press [X] to enter the Pillar!");
+                            }
+                            break;
                         }
+
+                        var pillarExit = other.GetComponent<World.Interaction.PillarExit>();
+                        if(pillarExit != null)
+                        {
+                            this.pillarExitInRange = true;
+
+                            ShowUiMessage("Press [X] to leave the Pillar!");
+                            break;
+                        }
+
                         break;
                     //needle
                     case "Needle":
@@ -236,6 +257,8 @@ namespace Game.Player
                         this.pillarEntranceInfo.IsPillarEntranceInRange = false;
                         this.pillarEntranceInfo.CurrentPillarEntrance = null;
 
+                        this.pillarExitInRange = false;
+
                         HideUiMessage();
                         break;
                     //needle
@@ -280,11 +303,6 @@ namespace Game.Player
             Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
         }
 
-        static string DetermineFavourId(Collider favourCollider)
-        {
-            return string.Format("{0}-{1}", favourCollider.name, favourCollider.transform.position);
-        }
-
         #endregion helper methods
 
         //########################################################################
@@ -324,6 +342,8 @@ namespace Game.Player
 
             this.pillarEntranceInfo.IsPillarEntranceInRange = false;
             this.pillarEntranceInfo.CurrentPillarEntrance = null;
+
+            this.pillarExitInRange = false;
 
             HideUiMessage();
         }

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+//[ExecuteInEditMode]
 public class VertexOffset : MonoBehaviour {
 
 	public GameObject _go;
@@ -11,7 +12,10 @@ public class VertexOffset : MonoBehaviour {
 	}
 
 	void Update(){
-		_mat.SetVector ("_PlayerPos", new Vector4 (transform.position.x, transform.position.y, transform.position.z, 0));
+		Vector4 _vec = new Vector4(transform.position.x, transform.position.y, transform.position.z, 0);
+		_mat.SetVector ("_PlayerPos", _vec);
+
+		//Shader.SetGlobalVector("_PlayerPos", _vec);
 	}
 
 

@@ -18,7 +18,7 @@ namespace Game.GameControl
         Player.PlayerModel playerModel;
         public Player.PlayerModel PlayerModel { get { return this.playerModel; } }
 
-        TimeController timeController;
+        //TimeController timeController;
 
         public EchoSystem.EchoManager EchoManager { get; private set; }
         public EclipseManager EclipseManager { get; private set; }
@@ -57,7 +57,7 @@ namespace Game.GameControl
             StartCoroutine(LoadScenesRoutine());
 
             //register to events
-            Utilities.EventManager.OnEyeKilledEvent += OnEyeKilledEventHandler;
+            Utilities.EventManager.LeavePillarEvent += OnLeavePillarEventHandler;
             Utilities.EventManager.OnEnterPillarEvent += OnEnterPillarEventHandler;
         }
 
@@ -80,7 +80,7 @@ namespace Game.GameControl
 
             //getting references in game controller
             this.playerModel = GetComponentInChildren<Player.PlayerModel>();
-            this.timeController = GetComponentInChildren<TimeController>();
+            //this.timeController = GetComponentInChildren<TimeController>();
             this.EchoManager = GetComponentInChildren<EchoSystem.EchoManager>();
             this.EclipseManager = GetComponentInChildren<EclipseManager>();
 
@@ -248,7 +248,7 @@ namespace Game.GameControl
             //todo: unpause game
         }
 
-        void OnEyeKilledEventHandler(object sender)
+        void OnLeavePillarEventHandler(object sender, Utilities.EventManager.LeavePillarEventArgs args)
         {
             Debug.LogError("OnEyeKilledEventHandler called!");
 
@@ -257,10 +257,10 @@ namespace Game.GameControl
                 throw new Exception("No Pillar is active!");
             }
 
-            StartCoroutine(ActivateOpenWorldScene());
+            StartCoroutine(ActivateOpenWorldScene(args.PillarDestroyed));
         }
 
-        IEnumerator ActivateOpenWorldScene()
+        IEnumerator ActivateOpenWorldScene(bool pillarDestroyed)
         {
             //todo: pause game
             Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.LoadingScreen));
@@ -273,7 +273,7 @@ namespace Game.GameControl
             {
                 go.SetActive(false);
             }
-            
+
             this.isPillarActive = false;
 
             yield return null;
@@ -288,7 +288,10 @@ namespace Game.GameControl
             yield return null;
 
             //switch pillar to destroyed state
-            this.playerModel.SetPillarDestroyed(this.activePillarId);
+            if (pillarDestroyed)
+            {
+                this.playerModel.SetPillarDestroyed(this.activePillarId);
+            }
 
             yield return null;
 

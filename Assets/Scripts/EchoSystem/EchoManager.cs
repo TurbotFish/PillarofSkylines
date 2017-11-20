@@ -13,10 +13,12 @@ namespace Game.EchoSystem
         [SerializeField]
         BreakEchoParticles breakEchoParticles;
 
-        [TestButton("Freeze All Echoes", "FreezeAll", isActiveInEditor = false)]
-        [TestButton("Unfreeze All Echoes", "UnfreezeAll", isActiveInEditor = false)]
+        //[TestButton("Freeze All Echoes", "FreezeAll", isActiveInEditor = false)]
+        //[TestButton("Unfreeze All Echoes", "UnfreezeAll", isActiveInEditor = false)]
+
         public List<Echo> echoes;
-        public int maxEchoes = 3;
+        [SerializeField]
+        int maxEchoes = 3;
 
         public List<Echo> nonEchoes; // For echoes that were not created by the player
 

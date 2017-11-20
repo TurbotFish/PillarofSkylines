@@ -43,7 +43,7 @@ namespace Game.UI
         eUiState currentState = eUiState.NONE;
         Dictionary<eUiState, IUiState> uiStates = new Dictionary<eUiState, IUiState>();
 
-        bool isInitialized = false;
+        //bool isInitialized = false;
 
         //###########################################################
 
@@ -63,7 +63,7 @@ namespace Game.UI
 
             foreach (var uiState in uiStates.Values)
             {
-                if ((object)uiState != this.loadingScreenController)
+                if (!uiState.Equals(this.loadingScreenController))
                     uiState.Initialize(this.gameController.PlayerModel);
                 uiState.Deactivate();
             }
@@ -72,7 +72,7 @@ namespace Game.UI
 
             Utilities.EventManager.OnShowMenuEvent += OnShowMenuEventHandler;
 
-            this.isInitialized = true;
+            //this.isInitialized = true;
         }
 
         //###########################################################
