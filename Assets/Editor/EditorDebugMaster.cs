@@ -28,4 +28,16 @@ public class EditorDebugMaster : EditorWindow {
         cam.position = viewPos.position;
         cam.rotation = viewPos.rotation;
     }
+
+
+	[MenuItem("PoS Debug/Bring Player &F", false, -10)]
+	public static void BringPlayer() {
+		
+		Transform player = FindObjectOfType<Player>().transform;
+		Transform viewPos = SceneView.lastActiveSceneView.camera.transform;
+		float nearClipPlane = SceneView.lastActiveSceneView.camera.nearClipPlane;
+
+		player.position = viewPos.position + viewPos.forward * nearClipPlane * 100f + Vector3.up * 1f;
+		
+	}
 }
