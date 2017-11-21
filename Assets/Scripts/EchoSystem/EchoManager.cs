@@ -170,7 +170,7 @@ namespace Game.EchoSystem
             else
             {
                 this.eclipse = false;
-
+                print("c plu l'eclipse");
                 UnfreezeAll();
             }
         }

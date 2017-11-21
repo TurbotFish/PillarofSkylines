@@ -141,14 +141,11 @@ public class PoS_Camera : MonoBehaviour {
 		DoRotation();
 		EvaluatePositionFromRotation();
 		SmoothMovement();
-        
-        Vector3 characterUp = target.parent.up; // TODO: only change this value when there's a change of gravity?
-        target.LookAt(target.position + Vector3.ProjectOnPlane(my.forward, characterUp), characterUp); // Reoriente the character's rotator
+        RealignPlayer();
 
         if (enablePanoramaMode)
 			DoPanorama();
 	}
-
     #endregion
 
     #region General Methods
@@ -160,20 +157,26 @@ public class PoS_Camera : MonoBehaviour {
     /// <param name="args"> Contient la position vers laquelle tp, et un bool pour savoir si on a changé de scène. </param>
     void OnTeleportPlayer(object sender, Game.Utilities.EventManager.OnTeleportPlayerEventArgs args) {
         if (args.IsNewScene) {
-            PlaceBehindPlayerNoLerp();
             // on reset les paramètres par défaut de la caméra
-            ResetZoom();
+            currentDistance = distance;
+            ResetZoom(); // TODO: Check why this doesn't work in build
             nearPOI = false;
             axisAligned = Vector3.zero;
             enablePanoramaMode = true;
-        } else {
-            my.position = args.Position - lastFrameOffset;
-            negDistance.z = -currentDistance;
-            Vector3 targetWithOffset = args.Position + my.right * offset.x + my.up * offset.y;
-            camPosition = my.rotation * negDistance + targetWithOffset;
         }
+        my.position = args.Position - lastFrameOffset;
+        negDistance.z = -currentDistance;
+        Vector3 targetWithOffset = args.Position + my.right * offset.x + my.up * offset.y;
+        camPosition = my.rotation * negDistance + targetWithOffset;
     }
 	
+    void RealignPlayer() {
+        // TODO: During a camera realignment, wait before realigning player
+
+        Vector3 characterUp = target.parent.up; // TODO: only change this value when there's a change of gravity?
+        target.LookAt(target.position + Vector3.ProjectOnPlane(my.forward, characterUp), characterUp); // Reoriente the character's rotator
+    }
+
     /// <summary>
     /// Hard reset de la caméra, la place immédiatement à sa position par défaut (utilisé quand le player spawn).
     /// </summary>
@@ -530,6 +533,7 @@ public class PoS_Camera : MonoBehaviour {
         nearPOI = true;
         targetPOI = point;
         lastInput = 0; // allows the autoReset to take place immediately
+        facingTime = -1; // allow immediate alignment
     }
 
     public void ClearPointOfInterest(Vector3 point) {
@@ -544,65 +548,49 @@ public class PoS_Camera : MonoBehaviour {
     }
     
     void LookAtTargetPOI() {
-        float dotProduct = Vector3.Dot(target.parent.forward, (targetPOI - target.position).normalized);
-        
-        if (IcanSee(targetPOI) && dotProduct > -0.1f) { // TODO: pas hardcoded, check overtime
+        if (IcanSee(targetPOI) && FacingDirection((targetPOI - target.position).normalized)) {
             state = eCameraState.LookAt;
             SetTargetRotation(GetRotationTowardsPoint(targetPOI), autoResetDamp);
         }
     }
+    #endregion
+    
+    bool currentFacingDirection;
+    float maxFacingTime = 0.5f; // TODO: softcode that
+    float facingTime = -1;
 
-	#if false
-	/// <summary>
-	/// Old, systemic version of Points of Interest
-	/// </summary>
-	void LookForPointsofInterest() {
-        Collider[] points = Physics.OverlapSphere(camPosition, maxDistanceToPoI, layerPoI, QueryTriggerInteraction.Collide);
+    bool FacingDirection(Vector3 direction) {
+        bool temp = Vector3.Dot(target.parent.forward, direction) > 0f;
 
-        if (points.Length == 0) {
-            state = eCameraState.Default;
-            return;
-        }
+        if (facingTime == -1) {
+            facingTime = 0;
+            return currentFacingDirection = temp;
 
-        Collider targetPoI = null;
-        float currentPoIScore = 300f;
-
-        for (int i = 0, j = 0; i < points.Length; i++) {
-            // S'il n'y a pas de mur entre moi et le PoI, je peux le voir, donc je peux potentiellement me tourner vers lui
-            if (IcanSee(points[i].transform.position)) {
-
-                // Si le PoI est plus petit que les autres, il devient ma cible
-                // peut être faire un truc avec la distance aussi
-                if (targetPoI == null || (points[i].bounds.extents.x + Vector3.Distance(points[i].transform.position, camPosition)) < currentPoIScore) {
-                    currentPoIScore = points[i].bounds.extents.x + Vector3.Distance(points[i].transform.position, camPosition);
-                    targetPoI = points[i];
-                }
-                //print("salut je suis " + points[i] + " tu peux me regarder si tu veux");
+        } else if (temp != currentFacingDirection) {
+            facingTime += deltaTime;
+            if (facingTime >= maxFacingTime) {
+                facingTime = 0;
+                return currentFacingDirection = temp;
             }
-        }
-        if (targetPoI == null) return;
-        
-        targetPOI = targetPoI.transform.position;
-        LookAtTargetPOI();
+        } else
+            facingTime = 0;
+        return currentFacingDirection;
     }
-	#endif
-	
-	#endregion
-
-	#region Align with Axis
+    
+    #region Align with Axis
 
     Vector3 axisAligned = Vector3.zero;
 
     public void SetAxisAlignment(Vector3 direction) {
         axisAligned = direction;
         canAutoReset = true;
+        facingTime = -1; // allow instant alignment
         lastInput = 0; // allows the autoReset to take place immediately
     }
 
     void AlignWithAxis() {
         state = eCameraState.LookAt;
-        float dotProduct = Vector3.Dot(target.parent.forward, axisAligned);
-        if (dotProduct > 0f)
+        if (FacingDirection(axisAligned))
             SetTargetRotation(GetRotationTowardsDirection(axisAligned), axisAlignDamp);
         else
             SetTargetRotation(GetRotationTowardsDirection(-axisAligned), axisAlignDamp);
