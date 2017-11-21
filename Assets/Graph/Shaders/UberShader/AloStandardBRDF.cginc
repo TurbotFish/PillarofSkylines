@@ -335,12 +335,21 @@ half4 BRDF1_Alo_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity
 
 half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity, half smoothness,
     half3 normal, half3 viewDir,
-    UnityLight light, UnityIndirect gi, half thickness, half3 diffuseSSS)
+    UnityLight light, UnityIndirect gi, half thickness, half celShadingMask)
 {
     half3 halfDir = Unity_SafeNormalize (light.dir + viewDir);
 
-    half nl = saturate(dot(normal, light.dir));
+    #if defined(DIRECTIONAL)
+	    //no CS
+	    half noCS = saturate(dot(normal, light.dir));
 
+	    //with CS
+	    half withCS = clamp(step(0.22,saturate(dot(normal, light.dir))), 0.7,1.0);
+
+	    half nl = lerp(noCS, withCS, celShadingMask);
+    #else
+    	half nl = saturate(dot(normal, light.dir));
+    #endif
 
     //half nl = clamp(step(0.4,saturate(dot(normal, light.dir))), 0.7,1.0);//celshading
     half nh = saturate(dot(normal, halfDir));
@@ -433,7 +442,7 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
 
 
     //SSS
-    color += saturate(diffuseSSS * light.color) * I;
+    color += saturate(float3(0.8, 0.5, 0.0) * light.color) * I;
    //color += saturate(float3(0.0,0.8,0.3) * light.color) * I;
     
     return half4(color, 1);
