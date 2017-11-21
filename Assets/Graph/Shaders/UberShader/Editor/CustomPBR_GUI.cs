@@ -25,6 +25,9 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoWind ();
 		DoDistanceDither ();
 		DoDebug ();
+
+		//unity bug
+		//DoDynamicBatching ();
 	}
 
 	void DoMain(){
@@ -165,7 +168,7 @@ public class CustomPBR_GUI : ShaderGUI {
 			SetKeyword ("_CELSHADED", celShaded);
 		}
 		EditorGUI.indentLevel += 2;
-		if (celShaded) {
+		if (celShaded && IsKeywordEnabled("_RENDERING_TRANSPARENT")) {
 			editor.ShaderProperty (shadowTransition, MakeLabel (shadowTransition));
 			editor.ShaderProperty (shadowStrength, MakeLabel (shadowStrength));
 		}
@@ -201,10 +204,13 @@ public class CustomPBR_GUI : ShaderGUI {
 				editor.ShaderProperty (atten, MakeLabel (atten));
 				editor.ShaderProperty (ambient, MakeLabel (ambient));
 				//editor.ShaderProperty (diffuse, MakeLabel (diffuse));
-			} else {
+			} 
+			/*
+			else {
 				bool useSSSColour2 = EditorGUILayout.Toggle ("The other colour", IsKeywordEnabled ("_SSSColour2"));
 				SetKeyword ("_SSSColour2", useSSSColour2);
 			}
+			*/
 			editor.TexturePropertySingleLine (MakeLabel (thickness, "Thickness (R)"), thickness, IsKeywordEnabled ("_RENDERING_TRANSPARENT") ? FindProperty ("_DiffuseSSS") : null);
 		}
 		EditorGUI.indentLevel -= 1;
@@ -403,7 +409,7 @@ public class CustomPBR_GUI : ShaderGUI {
 	}
 
 	void DoWind(){
-		GUILayout.Label ("WIP", EditorStyles.boldLabel);
+		GUILayout.Label ("Vertex Offset", EditorStyles.boldLabel);
 		EditorGUI.BeginChangeCheck ();
 		bool windOn = EditorGUILayout.Toggle ("Wind", IsKeywordEnabled ("_VERTEX_WIND"));
 		bool playerOn = EditorGUILayout.Toggle ("Bending", IsKeywordEnabled ("_VERTEX_BEND"));
@@ -411,6 +417,20 @@ public class CustomPBR_GUI : ShaderGUI {
 		if (EditorGUI.EndChangeCheck ()) {
 			SetKeyword ("_VERTEX_WIND", windOn);
 			SetKeyword ("_VERTEX_BEND", playerOn);
+		}
+	}
+
+	void DoDynamicBatching(){
+		GUILayout.Label ("Dynamic Batching", EditorStyles.boldLabel);
+		EditorGUI.BeginChangeCheck ();
+		bool batchingEnabled = target.GetTag ("DisableBatching", false, "False") == "False" ? true : false;
+		bool batchingOn = EditorGUILayout.Toggle ("Batching Enabled", batchingEnabled);
+
+		if (EditorGUI.EndChangeCheck ()) {
+			Debug.Log (batchingEnabled);
+			foreach (Material mat in editor.targets) {
+				mat.SetOverrideTag("DisableBatching", batchingOn ? "False" : "True");
+			}
 		}
 	}
 

@@ -53,11 +53,15 @@
 		float _RefractionAmount;
 	#endif
 
-	float4 _PlayerPos;
+	float3 _PlayerPos;
 
-	#if defined(_VERTEX_WIND)
+	#if defined(_VERTEX_BEND) || defined(_VERTEX_WIND)
 		float _MaxBendAngle;
+		float _WindIntensity;
+		sampler2D _WindTex;
 	#endif
+
+
 
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
@@ -155,6 +159,14 @@
 		return mask;
 	}
 
+	half GetCelShadingMask(){
+		half mask = 0;
+		#if defined(_CELSHADED)
+			mask = 1;
+		#endif
+		return mask;
+	}
+
 	float3 GetAlbedo(Interpolators i){
 		float3 albedo = tex2D(_MainTex, i.uv.xy).rgb * _Color.rgb;
 		#if defined(_DETAIL_ALBEDO_MAP)
@@ -179,7 +191,7 @@
 
 	float GetThickness(Interpolators i){
 		#if defined(_SSS) && !defined(_LOCAL_NORMAL_DEBUG)
-			float thickness = 1.0 - tex2D(_ThicknessMap, i.uv).r;
+			float thickness = 1.0 - tex2D(_ThicknessMap, i.uv).a;
 			return thickness;
 		#else
 			return 1.0;
@@ -268,22 +280,33 @@
 
 
 
-		#if defined(_VERTEX_WIND)
+		#if defined(_VERTEX_BEND) || defined(_VERTEX_WIND)
 			float4 pivotWS =  mul(unity_ObjectToWorld,float4(0,0,0,1));
-			float2 player2Vert2D = pivotWS.xz - _PlayerPos.xz;
-			float3 player2Vert3D = pivotWS.xyz - _PlayerPos.xyz;
-			float sqrDist = dot(player2Vert3D, player2Vert3D); 
-			float bendPercent = 1 - saturate((sqrDist - 0.2)/(0.6 - 0.2));
-			float bendAmount = bendPercent * _MaxBendAngle * v.vertex.y * v.vertex.y;
-			v.vertex.xyz = ApplyWind(v.vertex.xyz, normalize(float3(player2Vert2D.y,0, -player2Vert2D.x)) * bendAmount);
+			float rotationMask = saturate(v.vertex.y * 0.8 + 0.3);
 
+			#if defined(_VERTEX_BEND)
+				float2 player2Vert2D = pivotWS.xz - _PlayerPos.xz;
+				float3 player2Vert3D = pivotWS.xyz - _PlayerPos.xyz;
+				float sqrDist = dot(player2Vert3D, player2Vert3D); 
+				float bendPercent = 1 - saturate((sqrDist - 0.3)/(0.8 - 0.2));
+				float bendAmount = bendPercent * _MaxBendAngle * rotationMask;
+				float3 _bendRotation = normalize(float3(player2Vert2D.y,0, -player2Vert2D.x)) * bendAmount;
+				v.vertex.xyz = ApplyWind(v.vertex.xyz, _bendRotation);
+				v.normal = ApplyWind(v.normal.xyz, _bendRotation);
 
-		//ifdef(_VERTEX_BEND)
-		/////////////
-		//Rotation test
-		//v.vertex.xyz = ApplyWind(v.vertex.xyz, float3(0,0,45));
+			#endif
 
-		/////////////
+			#if defined(_VERTEX_WIND)
+				float2 windDir = normalize(float2(3,0));
+				float windIntensity = tex2Dlod(_WindTex, float4(_Time.x, _Time.x, 0,0)).r;
+				windIntensity = saturate(windIntensity + 0.2);
+				float windSpeed = 2;
+				float _offset = (pivotWS.x * (0.9) * -sign(windDir.x) + pivotWS.z * (0.6) * -sign(windDir.y)) * 0.5;
+				float angle = windIntensity * (sin(_Time.y * windSpeed + _offset) * 0.65+0.35) * _MaxBendAngle * rotationMask;
+				float3 _windRotation = float3( windDir.y, 0, -windDir.x) * angle;
+				v.vertex.xyz = ApplyWind(v.vertex.xyz, _windRotation);
+				v.normal = ApplyWind(v.normal.xyz, _windRotation);
+			#endif
 		#endif
 
 		i.pos = UnityObjectToClipPos(v.vertex);
@@ -545,9 +568,11 @@
 			alpha = 1 - oneMinusReflectivity + alpha * oneMinusReflectivity;
 		#endif
 
+		float thickness = GetThickness(i);
+
 		#if defined(_REFRACTION)
 			#if defined(_SSS)
-					float4 refracColour = tex2Dproj(_BackgroundTex, UNITY_PROJ_COORD(i.grabPos + i.refraction * GetThickness(i)));
+					float4 refracColour = tex2Dproj(_BackgroundTex, UNITY_PROJ_COORD(i.grabPos + i.refraction * thickness));
 
 				#else
 					float4 refracColour = tex2Dproj(_BackgroundTex, UNITY_PROJ_COORD(i.grabPos + i.refraction));
@@ -580,10 +605,10 @@
 				color.rgb = exp2(-color.rgb);
 			#endif
 			output.gBuffer0.rgb = albedo;
-			output.gBuffer0.a = GetThickness(i);
+			output.gBuffer0.a = thickness;
 			output.gBuffer1.rgb = specularTint;
 			output.gBuffer1.a = GetSmoothness(i);
-			output.gBuffer2.rgba = float4(i.normal.xyz * 0.5 + 0.5, GetSSSColourMask());
+			output.gBuffer2.rgba = float4(i.normal.xyz * 0.5 + 0.5, GetCelShadingMask());
 			output.gBuffer3 = color;
 
 		#else
