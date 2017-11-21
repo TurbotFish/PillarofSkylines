@@ -74,6 +74,7 @@ namespace Game.Player.CharacterController
         RaycastHit hit;
         RaycastHit hit2;
         Vector3 wallDir;
+        RaycastHit sideHit;
 
         void Start()
         {
@@ -198,13 +199,58 @@ namespace Game.Player.CharacterController
             {
                 collisions.above = false;
             }
-            collisions.side = Physics.CapsuleCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2), myTransform.position + playerAngle * (center + capsuleHeightModifier / 2), radius
-                , Vector3.ProjectOnPlane(collisions.initialVelocityOnThisFrame, (collisions.below ? collisions.currentGroundNormal : myTransform.up)), out hit, skinWidth * 2, collisionMask);
-            if (collisions.side)
+
+            //***********************************************************
+            //side collision
+
+            if (collisions.side) //here we check if the player is still "touching" the wall he previously collided with
             {
-                collisions.currentWallNormal = hit.normal;
+                RaycastHit searchHit;
+
+                bool colliding = Physics.CapsuleCast(
+                   myTransform.position + playerAngle * (center - capsuleHeightModifier / 2),
+                   myTransform.position + playerAngle * (center + capsuleHeightModifier / 2),
+                   radius,
+                   -sideHit.normal,
+                   out searchHit,
+                   skinWidth * 2,
+                   collisionMask
+                );
+
+                if(colliding && searchHit.transform.Equals(sideHit.transform))
+                {
+                    sideHit = searchHit;
+                    collisions.currentWallNormal = sideHit.normal;
+                }
+                else
+                {
+                    collisions.side = false;
+                }
             }
-        }
+
+            if (!collisions.side) //if the player is not touching the previous wall anymore, check for a new collision
+            {
+                collisions.side = Physics.CapsuleCast(
+                    myTransform.position + playerAngle * (center - capsuleHeightModifier / 2),
+                    myTransform.position + playerAngle * (center + capsuleHeightModifier / 2),
+                    radius,
+                    Vector3.ProjectOnPlane(
+                        collisions.initialVelocityOnThisFrame,
+                        (collisions.below ? collisions.currentGroundNormal : myTransform.up)
+                    ),
+                    out sideHit,
+                    skinWidth * 2,
+                    collisionMask
+                );
+
+                if (collisions.side)
+                {
+                    Debug.LogErrorFormat("hitName = {0}; hitNormal={1}", sideHit.collider.name, sideHit.normal);
+
+                    collisions.currentWallNormal = sideHit.normal;
+                }
+            }
+        } //end of CollisionUpdate
 
 
         //Recursively check if the movement meets obstacles

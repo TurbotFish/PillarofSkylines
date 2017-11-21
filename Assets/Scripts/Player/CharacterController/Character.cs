@@ -468,11 +468,6 @@ namespace Game.Player.CharacterController
             //		Debug.Log("state : " + currentPlayerState + " momentum : " + keepMomentum);
             switch (currentPlayerState)
             {
-                default:
-                    Debug.LogWarning("pas de player state >:c");
-                    break;
-
-
                 #region in air
                 case ePlayerState.inAir:
 
@@ -689,8 +684,21 @@ namespace Game.Player.CharacterController
 
                     }
                     break;
-                    #endregion in wind tunnel
+                #endregion in wind tunnel
 
+                #region wall drifting
+                case ePlayerState.WallDrifting:
+
+                    flatVelocity.x = flatVelocity.z = 0; //player can't move while wall drifting
+                    velocity.y = Mathf.Lerp(velocity.y, playerMod.AbilityData.WallRun.WallDriftTargetSpeed, playerMod.AbilityData.WallRun.WallDriftSlowdownFactor * Time.deltaTime);
+                    Debug.LogErrorFormat("Wall drifting speed = {0}", velocity.y);
+
+                    break;
+                #endregion wall drifting
+
+                default:
+                    Debug.LogWarning("pas de player state >:c");
+                    break;
             }
 
             velocity = new Vector3(0, velocity.y, 0);
@@ -743,6 +751,21 @@ namespace Game.Player.CharacterController
                     else if (inWindTunnel)
                     {
                         currentPlayerState = ePlayerState.inWindTunnel;
+                    }
+                    //start wall drifting
+                    else if (controller.collisions.side && velocity.y <= 0)
+                    {
+                        //var normalizedVelocity = velocity.normalized;
+                        var normalizedVelocity = transform.forward;
+
+                        float dotProduct = Vector2.Dot(normalizedVelocity, controller.collisions.currentWallNormal);
+                        Debug.LogErrorFormat("in air && colliding with wall: playerForward={0}; wallNormal={1} dot={2}", normalizedVelocity, controller.collisions.currentWallNormal, dotProduct);
+
+                        if (dotProduct <= playerMod.AbilityData.WallRun.TriggerDotProduct)
+                        {
+                            Debug.LogError("starting wall drifting");
+                            currentPlayerState = ePlayerState.WallDrifting;
+                        }
                     }
                     break;
 
@@ -805,6 +828,38 @@ namespace Game.Player.CharacterController
                     {
                         currentPlayerState = ePlayerState.inAir;
                         keepMomentum = true;
+                    }
+                    break;
+
+                //is wall drifting
+                case ePlayerState.WallDrifting:
+                    //landing on the ground
+                    if (controller.collisions.below)
+                    {
+                        Debug.LogError("wall drifting && on ground");
+                        if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle)
+                        {
+                            camera.SetVerticalOffset(-TurnSpaceToLocal(controller.collisions.initialVelocityOnThisFrame).y * landingCameraOffsetStrength);
+                            currentPlayerState = ePlayerState.onGround;
+                            if (leftStickAtZero)
+                            {
+                                velocity = Vector3.zero;
+                            }
+                            else
+                            {
+                                velocity = Vector3.ProjectOnPlane(velocity, transform.right);
+                            }
+                        }
+                        else if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < minWallAngle)
+                        {
+                            currentPlayerState = ePlayerState.sliding;
+                        }
+                    }
+                    //not touching a wall anymore
+                    else if (!controller.collisions.side)
+                    {
+                        Debug.LogError("wall drifting && not touching wall");
+                        currentPlayerState = ePlayerState.inAir;
                     }
                     break;
             }
@@ -929,6 +984,9 @@ namespace Game.Player.CharacterController
         gliding,
         dashing,
         sliding,
-        inWindTunnel
+        inWindTunnel,
+        WallDrifting,
+        WallRunningHorizontal,
+        WallRunningVertical
     }
 } //end of namespace
