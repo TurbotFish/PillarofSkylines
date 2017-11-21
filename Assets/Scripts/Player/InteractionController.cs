@@ -13,7 +13,7 @@ namespace Game.Player
     {
         //
         PlayerModel playerModel;
-		global::Player myPlayer;
+        Game.Player.CharacterController.Player myPlayer;
 
         //
         bool favourPickUpInRange = false;
@@ -39,7 +39,7 @@ namespace Game.Player
         /// <summary>
         /// 
         /// </summary>
-		public void InitializeFavourController(PlayerModel playerModel, global::Player player)
+		public void InitializeFavourController(PlayerModel playerModel, Game.Player.CharacterController.Player player)
         {
             this.playerModel = playerModel;
 			myPlayer = player;
