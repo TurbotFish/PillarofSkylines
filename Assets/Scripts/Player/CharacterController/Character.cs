@@ -4,7 +4,7 @@ using Game.Player;
 namespace Game.Player.CharacterController
 {
     [RequireComponent(typeof(CharacControllerRecu))]
-    public class Player : MonoBehaviour
+    public class Character : MonoBehaviour
     {
 
 

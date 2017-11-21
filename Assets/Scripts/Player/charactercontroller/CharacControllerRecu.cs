@@ -55,7 +55,7 @@ namespace Game.Player.CharacterController
         public CollisionInfo collisions;
         public CapsuleCollider favourCollider;
         Transform myTransform;
-        Player myPlayer;
+        Character myPlayer;
 
         /// <summary>
         /// The number of collisions detected on this frame.
@@ -79,7 +79,7 @@ namespace Game.Player.CharacterController
         {
             favourCollider = GetComponentInChildren<CapsuleCollider>();
             myTransform = transform;
-            myPlayer = GetComponent<Player>();
+            myPlayer = GetComponent<Character>();
             favourCollider.center = center;
             favourCollider.radius = radius;
             favourCollider.height = height + radius * 2;

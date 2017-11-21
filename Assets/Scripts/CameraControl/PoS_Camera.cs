@@ -82,7 +82,7 @@ public class PoS_Camera : MonoBehaviour {
 	Vector2 input;
 	Vector2 rotationSpeed;
 	Vector2 offset;
-	Game.Player.CharacterController.Player player;
+	Game.Player.CharacterController.Character player;
     Game.Player.CharacterController.CharacControllerRecu controller;
 	Transform my;
 
@@ -110,7 +110,7 @@ public class PoS_Camera : MonoBehaviour {
 		Cursor.lockState = CursorLockMode.Locked;
 
 		my = transform;
-		player = target.GetComponentInParent<Game.Player.CharacterController.Player>();
+		player = target.GetComponentInParent<Game.Player.CharacterController.Character>();
 		controller = player.GetComponent<Game.Player.CharacterController.CharacControllerRecu>();
         
 		currentDistance = zoomValue = idealDistance = distance;
