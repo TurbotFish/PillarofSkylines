@@ -24,13 +24,12 @@ public class AssignPrefab : EditorWindow {
 		foreach (GameObject target in Selection.gameObjects) {
 			if (target.transform.childCount > 0) {
 				if (!keepChildren)
-					EditorGUILayout.HelpBox(target.name + " has children which will be deleted upon action.", MessageType.Error);
+					EditorGUILayout.HelpBox(target.name + " has children, some might be lost upon action.", MessageType.Warning);
+                else
+                    EditorGUILayout.HelpBox("Keeping children might lead to duplicates.", MessageType.Warning);
 
-				keepChildren = EditorGUILayout.Toggle("Keep Children ", keepChildren);
-
-				if (keepChildren)
-					EditorGUILayout.HelpBox("Keeping children might lead to duplicates.", MessageType.Warning);
-
+                keepChildren = EditorGUILayout.Toggle("Keep Children ", keepChildren);
+                
 				EditorGUILayout.Space();
 				break;
 			}
