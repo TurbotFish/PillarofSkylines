@@ -16,7 +16,7 @@ Shader "S_TreeLeaves"
 
 	SubShader
 	{
-		Tags{ "RenderType" = "TransparentCutout"  "Queue" = "Geometry+0" }
+		Tags{ "RenderType" = "Transparent"  "Queue" = "Geometry+0" }
 		Cull Back
 		CGINCLUDE
 		#include "UnityPBSLighting.cginc"
@@ -194,19 +194,19 @@ Shader "S_TreeLeaves"
 }
 /*ASEBEGIN
 Version=13201
--1913;29;1906;1004;1702.41;582.54;1.3;True;True
+-1913;29;1906;1004;1302.093;357.5715;1;True;True
 Node;AmplifyShaderEditor.RangedFloatNode;5;-823.5671,4.93866;Float;False;Property;_Tiling;Tiling;3;1;[HDR];2;0;0;0;1;FLOAT
 Node;AmplifyShaderEditor.RangedFloatNode;7;-824.5671,110.9387;Float;False;Property;_Falloff;Falloff;4;0;5;0;0;0;1;FLOAT
-Node;AmplifyShaderEditor.TriplanarNode;1;-597.5671,-73.06134;Float;True;Spherical;Object;False;Albedo;_Albedo;white;1;None;Mid Texture 0;_MidTexture0;white;1;None;Bot Texture 0;_BotTexture0;white;2;None;Triplanar Sampler;5;0;SAMPLER2D;;False;1;SAMPLER2D;;False;2;SAMPLER2D;;False;3;FLOAT;1.0;False;4;FLOAT;1.0;False;5;FLOAT4;FLOAT;FLOAT;FLOAT;FLOAT
 Node;AmplifyShaderEditor.TriplanarNode;8;-597.567,105.9387;Float;True;Spherical;Object;True;Normal;_Normal;bump;2;None;Mid Texture 1;_MidTexture1;white;1;None;Bot Texture 1;_BotTexture1;white;2;None;Triplanar Sampler;5;0;SAMPLER2D;;False;1;SAMPLER2D;;False;2;SAMPLER2D;;False;3;FLOAT;1.0;False;4;FLOAT;1.0;False;5;FLOAT3;FLOAT;FLOAT;FLOAT;FLOAT
 Node;AmplifyShaderEditor.RangedFloatNode;13;-466.1094,328.7601;Float;False;Property;_NormalIntensity;Normal Intensity;6;0;1;0;0;0;1;FLOAT
 Node;AmplifyShaderEditor.ColorNode;9;-512.567,-245.0613;Float;False;Property;_Tint;Tint;5;0;1,1,1,1;0;5;COLOR;FLOAT;FLOAT;FLOAT;FLOAT
+Node;AmplifyShaderEditor.TriplanarNode;1;-597.5671,-73.06134;Float;True;Spherical;Object;False;Albedo;_Albedo;white;1;None;Mid Texture 0;_MidTexture0;white;1;None;Bot Texture 0;_BotTexture0;white;2;None;Triplanar Sampler;5;0;SAMPLER2D;;False;1;SAMPLER2D;;False;2;SAMPLER2D;;False;3;FLOAT;1.0;False;4;FLOAT;1.0;False;5;FLOAT4;FLOAT;FLOAT;FLOAT;FLOAT
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;11;-172.3096,307.96;Float;False;2;2;0;FLOAT3;0,0,0;False;1;FLOAT;0.0,0,0;False;1;FLOAT3
 Node;AmplifyShaderEditor.SimpleMultiplyOpNode;10;-176.567,-125.0613;Float;False;2;2;0;COLOR;0,0,0,0;False;1;FLOAT4;0,0,0,0;False;1;COLOR
-Node;AmplifyShaderEditor.StandardSurfaceOutputNode;0;63,22;Float;False;True;2;Float;ASEMaterialInspector;0;0;Standard;S_TreeLeaves;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;Back;0;0;False;0;0;Custom;0.5;True;True;0;True;TransparentCutout;Geometry;All;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;False;0;255;255;0;0;0;0;False;0;4;10;25;False;0.5;True;0;Zero;Zero;0;Zero;Zero;Add;Add;0;False;0;0,0,0,0;VertexOffset;False;Cylindrical;False;Relative;0;;0;-1;-1;-1;0;0;0;15;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT;0.0;False;4;FLOAT;0.0;False;5;FLOAT;0.0;False;6;FLOAT3;0,0,0;False;7;FLOAT3;0,0,0;False;8;FLOAT;0.0;False;9;FLOAT;0.0;False;10;OBJECT;0.0;False;11;FLOAT3;0,0,0;False;12;FLOAT3;0,0,0;False;14;FLOAT4;0,0,0,0;False;15;FLOAT3;0,0,0;False;0
+Node;AmplifyShaderEditor.StandardSurfaceOutputNode;0;63,22;Float;False;True;2;Float;ASEMaterialInspector;0;0;Standard;S_TreeLeaves;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;False;Back;0;0;False;0;0;Custom;0.5;True;True;0;True;Transparent;Geometry;All;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;False;0;255;255;0;0;0;0;False;0;4;10;25;False;0.5;True;0;Zero;Zero;0;Zero;Zero;Add;Add;0;False;0;0,0,0,0;VertexOffset;False;Cylindrical;False;Relative;0;;0;-1;-1;-1;0;0;0;15;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT;0.0;False;4;FLOAT;0.0;False;5;FLOAT;0.0;False;6;FLOAT3;0,0,0;False;7;FLOAT3;0,0,0;False;8;FLOAT;0.0;False;9;FLOAT;0.0;False;10;OBJECT;0.0;False;11;FLOAT3;0,0,0;False;12;FLOAT3;0,0,0;False;14;FLOAT4;0,0,0,0;False;15;FLOAT3;0,0,0;False;0
+WireConnection;8;3;5;0
 WireConnection;1;3;5;0
 WireConnection;1;4;7;0
-WireConnection;8;3;5;0
 WireConnection;11;0;8;0
 WireConnection;11;1;13;0
 WireConnection;10;0;9;0
@@ -215,4 +215,4 @@ WireConnection;0;0;10;0
 WireConnection;0;1;11;0
 WireConnection;0;9;1;4
 ASEEND*/
-//CHKSM=78D208851ED9A760B6D79D89440BD5DBC0715279
+//CHKSM=1F671B95DB4ACC1AC9EF3B17641A51CD651BA254
