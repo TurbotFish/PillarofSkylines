@@ -18,13 +18,10 @@ namespace Game.GameControl
         Player.PlayerModel playerModel;
         public Player.PlayerModel PlayerModel { get { return this.playerModel; } }
 
-        TimeController timeController;
+        //TimeController timeController;
 
-        EchoSystem.EchoManager echoManager;
-        public EchoSystem.EchoManager EchoManager { get { return this.echoManager; } }
-
-        EclipseManager eclipseManager;
-        public EclipseManager EclipseManager { get { return this.eclipseManager; } }
+        public EchoSystem.EchoManager EchoManager { get; private set; }
+        public EclipseManager EclipseManager { get; private set; }
 
 
         //
@@ -60,9 +57,17 @@ namespace Game.GameControl
             StartCoroutine(LoadScenesRoutine());
 
             //register to events
-            Utilities.EventManager.OnEyeKilledEvent += OnEyeKilledEventHandler;
+            Utilities.EventManager.LeavePillarEvent += OnLeavePillarEventHandler;
             Utilities.EventManager.OnEnterPillarEvent += OnEnterPillarEventHandler;
         }
+
+        //void Update() //for testing only!
+        //{
+        //    if (Input.GetKeyDown(KeyCode.T))
+        //    {
+        //        Utilities.EventManager.SendOnEyeKilledEvent(this);
+        //    }
+        //}
 
         //###############################################################
         //###############################################################
@@ -75,9 +80,9 @@ namespace Game.GameControl
 
             //getting references in game controller
             this.playerModel = GetComponentInChildren<Player.PlayerModel>();
-            this.timeController = GetComponentInChildren<TimeController>();
-            this.echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
-            this.eclipseManager = GetComponentInChildren<EclipseManager>();
+            //this.timeController = GetComponentInChildren<TimeController>();
+            this.EchoManager = GetComponentInChildren<EchoSystem.EchoManager>();
+            this.EclipseManager = GetComponentInChildren<EclipseManager>();
 
             //initializing game controller
             this.playerModel.InitializePlayerModel();
@@ -166,7 +171,8 @@ namespace Game.GameControl
 
             this.openWorldSceneInfo.WorldController.InitializeWorldController(this.playerController.transform);
 
-            this.echoManager.InitializeEchoManager(this);
+            this.EchoManager.InitializeEchoManager(this);
+            this.EclipseManager.InitializeEclipseManager(this);
 
             yield return null;
             //***********************
@@ -242,17 +248,19 @@ namespace Game.GameControl
             //todo: unpause game
         }
 
-        void OnEyeKilledEventHandler(object sender)
+        void OnLeavePillarEventHandler(object sender, Utilities.EventManager.LeavePillarEventArgs args)
         {
+            Debug.LogError("OnEyeKilledEventHandler called!");
+
             if (!this.isPillarActive)
             {
                 throw new Exception("No Pillar is active!");
             }
 
-            StartCoroutine(ActivateOpenWorldScene());
+            StartCoroutine(ActivateOpenWorldScene(args.PillarDestroyed));
         }
 
-        IEnumerator ActivateOpenWorldScene()
+        IEnumerator ActivateOpenWorldScene(bool pillarDestroyed)
         {
             //todo: pause game
             Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.LoadingScreen));
@@ -265,7 +273,7 @@ namespace Game.GameControl
             {
                 go.SetActive(false);
             }
-            this.playerModel.SetPillarDestroyed(this.activePillarId);
+
             this.isPillarActive = false;
 
             yield return null;
@@ -276,6 +284,14 @@ namespace Game.GameControl
                 go.SetActive(true);
             }
             SceneManager.SetActiveScene(this.openWorldSceneInfo.Scene);
+
+            yield return null;
+
+            //switch pillar to destroyed state
+            if (pillarDestroyed)
+            {
+                this.playerModel.SetPillarDestroyed(this.activePillarId);
+            }
 
             yield return null;
 

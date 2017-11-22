@@ -18,19 +18,30 @@ namespace Game.Player
 
         WrappableObject wrappableObject;
 
+        public AbilitySystem.TombFinderController TombFinderController { get; private set; }
+
         /// <summary>
         /// Initializes the Player Prefab with references to outside scripts.
         /// </summary>
         /// <param name="gameController"></param>
         public void InitializePlayerController(GameControl.IGameControllerBase gameController)
         {
-			this.player = this.transform.GetComponent<global::Player> ();
+            //getting all references
+			this.player = GetComponent<global::Player> ();
 			this.interactionController = GetComponentInChildren<InteractionController> ();
-            this.wrappableObject = this.transform.GetComponent<WrappableObject>();
+            this.wrappableObject = GetComponent<WrappableObject>();
+            this.TombFinderController = GetComponentInChildren<AbilitySystem.TombFinderController>();
 
+            //initializing all the things
             this.player.InitializePlayer(gameController.PlayerModel);
             this.interactionController.InitializeFavourController(gameController.PlayerModel, player);
-            this.wrappableObject.InitializeWrappableObject(gameController.WorldController);
+
+            if (gameController.WorldController != null)
+            {
+                this.wrappableObject.InitializeWrappableObject(gameController.WorldController);
+            }
+
+            this.TombFinderController.InitializeTombFinderController(gameController);
         }
     }
 }

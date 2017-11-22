@@ -127,9 +127,9 @@ public class Player : MonoBehaviour {
 	[Tooltip("The number of jumps the player can do while in the air.")]
 	public int numberOfAerialJumps = 0;
 	/// <summary>
-	/// The efficiency of the aerial jump compared to the regular jump (2 makes it 2 times stronger, 0.5 makes it 2 times weaker (not really, play around with it)).
+	/// The efficiency of the aerial jump compared to the regular jump (2 makes it 2 times stronger, 0.5 makes it 2 times weaker (kinda)).
 	/// </summary>
-	[Tooltip("The efficiency of the aerial jump compared to the regular jump (2 makes it 2 times stronger, 0.5 makes it 2 times weaker (not really, play around with it)).")]
+	[Tooltip("The efficiency of the aerial jump compared to the regular jump (2 makes it 2 times stronger, 0.5 makes it 2 times weaker (kinda)).")]
 	public float coeffAerialJumpEfficiency = 1f;
 
 	/// <summary>
@@ -281,7 +281,7 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	Animator animator;
 
-	PoS_Camera camera;
+	new PoS_Camera camera;
 
 	//[HideInInspector]
 	public ePlayerState currentPlayerState;
@@ -452,7 +452,7 @@ public class Player : MonoBehaviour {
 				break;
 
 
-				#region in air
+			#region in air
 			case ePlayerState.inAir:
 				
 				permissiveJumpTime -= Time.deltaTime;
@@ -524,9 +524,12 @@ public class Player : MonoBehaviour {
 				targetVelocity = inputToSlope * characSpeed * (pressingSprint ? sprintCoeff : 1);
 				flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, groundControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f) * (leftStickAtZero ? groundNoInputCoeff : 1f));
 				// Detects if the player is moving up or down the slope, and multiply their speed based on that slope
-				if (Vector3.Angle(transform.up, controller.collisions.currentGroundNormal) > minSlopeAngle)
-					flatVelocity *= 1 + slopeCoeff * Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (maxSlopeAngle);
-				
+				if (Vector3.Angle(transform.up, controller.collisions.currentGroundNormal) > minSlopeAngle) {
+//					print("Current velocity : " + flatVelocity);
+					flatVelocity *= .99f + slopeCoeff * Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (maxSlopeAngle);
+//					print("New velocity : " + flatVelocity + " modified by : " + (slopeCoeff * Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (maxSlopeAngle)));
+				}
+
 				if (pressedJump) {
 					pressedJump = false;
 					velocity.y = 0f;
@@ -652,7 +655,7 @@ public class Player : MonoBehaviour {
 		#endregion direction calculations
 
 
-		//Turns the velocity in world space and calls the controller to check if the calculated velocity will run into walls and stuff
+		//Turns the velocity in world space and calls the controller to check if the calculated velocity will run into walls and stuff, and then move the player
 		turnedVelocity = TurnLocalToSpace(velocity);
 		if (currentPlayerState == ePlayerState.gliding) {
 			velocity = controller.Move (velocity * Time.deltaTime);
@@ -745,7 +748,7 @@ public class Player : MonoBehaviour {
 
 		animator.SetBool ("OnGround", controller.collisions.below);
 		animator.SetFloat ("Forward", inputRaw.magnitude);
-		//animator.SetFloat ("Turn", Vector3.Dot (transform.right, inputRaw));
+		animator.SetFloat ("Turn", Mathf.Lerp (0f, Vector3.SignedAngle (transform.forward, Vector3.ProjectOnPlane (TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime)/7f);
 		animator.SetFloat ("Jump", turnedVelocity.y/5);
 		float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
 		float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputRaw.magnitude;

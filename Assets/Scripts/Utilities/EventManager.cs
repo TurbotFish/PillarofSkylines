@@ -312,18 +312,54 @@ namespace Game.Utilities
         //###########################################################
         //###########################################################
 
-        #region eye killed events
+        #region leave pillar event
 
-        public delegate void OnEyeKilledEventHandler(object sender);
-
-        public static event OnEyeKilledEventHandler OnEyeKilledEvent;
-
-        public static void SendOnEyeKilledEvent(object sender)
+        public class LeavePillarEventArgs
         {
-            OnEyeKilledEvent?.Invoke(sender);
+            public bool PillarDestroyed { get; private set; }
+
+            public LeavePillarEventArgs(bool pillarDestroyed)
+            {
+                this.PillarDestroyed = pillarDestroyed;
+            }
         }
 
-        #endregion eye killed events
+        public delegate void LeavePillarEventHandler(object sender, LeavePillarEventArgs args);
+
+        public static event LeavePillarEventHandler LeavePillarEvent;
+
+        public static void SendLeavePillarEvent(object sender, LeavePillarEventArgs args)
+        {
+            LeavePillarEvent?.Invoke(sender, args);
+        }
+
+        #endregion leave pillar event
+
+        //###########################################################
+        //###########################################################
+
+        #region favour picked up event
+
+        public class FavourPickedUpEventArgs : EventArgs
+        {
+            public int FavourId { get; private set; }
+
+            public FavourPickedUpEventArgs(int favourId)
+            {
+                this.FavourId = favourId;
+            }
+        }
+
+        public delegate void FavourPickedUpEventHandler(object sender, FavourPickedUpEventArgs args);
+
+        public static event FavourPickedUpEventHandler FavourPickedUpEvent;
+
+        public static void SendFavourPickedUpEvent(object sender, FavourPickedUpEventArgs args)
+        {
+            FavourPickedUpEvent?.Invoke(sender, args);
+        }
+
+        #endregion favour picked up event
 
         //###########################################################
 

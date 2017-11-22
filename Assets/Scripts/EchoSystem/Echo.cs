@@ -15,17 +15,18 @@ namespace Game.EchoSystem
         Material solidMaterial;
         Material defaultMaterial;
 
-        ParticleSystem particles;
-        new Renderer renderer;
+        ParticleSystem myParticleSystem;
+        Renderer myRenderer;
+
         EchoManager echoManager;
         int pickUpLayer;
         Transform pool;
 
         void Start()
         {
-            particles = GetComponentInChildren<ParticleSystem>();
-            renderer = particles.GetComponent<Renderer>();
-            defaultMaterial = renderer.sharedMaterial;
+            this.myParticleSystem = GetComponentInChildren<ParticleSystem>();
+            myRenderer = myParticleSystem.GetComponent<Renderer>();
+            defaultMaterial = myRenderer.sharedMaterial;
 
             collider = GetComponent<BoxCollider>();
             collider.isTrigger = true;
@@ -72,10 +73,10 @@ namespace Game.EchoSystem
 
         public void Freeze()
         {
-            if (!particles) Start();
-            particles.Pause();
-            renderer.sharedMaterial = solidMaterial;
-            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            if (!myParticleSystem) Start();
+            myParticleSystem.Pause();
+            myRenderer.sharedMaterial = solidMaterial;
+            myRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             gameObject.layer = 0;
             isFrozen = true;
 
@@ -85,10 +86,10 @@ namespace Game.EchoSystem
 
         public void Unfreeze()
         {
-            if (!particles) Start();
-            particles.Play();
-            renderer.sharedMaterial = defaultMaterial;
-            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            if (!myParticleSystem) Start();
+            myParticleSystem.Play();
+            myRenderer.sharedMaterial = defaultMaterial;
+            myRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             gameObject.layer = pickUpLayer;
             isFrozen = false;
 

@@ -15,9 +15,9 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
-        public override void InitializeChunk(ChunkSystemData data)
+        public override void InitializeChunk(WorldController worldController)
         {
-            base.InitializeChunk(data);
+            base.InitializeChunk(worldController);
         }
 
         /// <summary>
@@ -46,28 +46,26 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
-        public void Activate()
+        public void ActivatePillarChunk()
         {
             this.isActive = true;
 
-            this.bounds.gameObject.SetActive(true);
             foreach (var subChunk in this.subChunkList)
             {
-                subChunk.ActivateSubChunk();
+                subChunk.SetSubChunkActive(true, true);
             }
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public void Deactivate()
+        public void DeactivatePillarChunk()
         {
             this.isActive = false;
 
-            this.bounds.gameObject.SetActive(false);
             foreach (var subChunk in this.subChunkList)
             {
-                subChunk.DeactivateSubChunk();
+                subChunk.SetSubChunkActive(false, true);
             }
         }
     }
