@@ -64,7 +64,7 @@ public class Limb : BezierSpline {
 			if (scaleInvert)
 				_curvature = -_curvature;
 
-			float curvatureFactor = 1 - Mathf.Clamp01((endPoint.position - transform.position).magnitude*exagerationFactor/Mathf.Abs(_curvature));
+			//float curvatureFactor = 1 - Mathf.Clamp01((endPoint.position - transform.position).magnitude*exagerationFactor/Mathf.Abs(_curvature));
 			//arc = Vector3.Lerp (endPoint.position, transform.position, 0.5f) + GetPerpendicularVector(endPoint.position-transform.position)*_curvature*curvatureFactor;
 			arc = arcPoint.position;
 

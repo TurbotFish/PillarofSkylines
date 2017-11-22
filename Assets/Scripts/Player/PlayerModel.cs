@@ -11,7 +11,8 @@ namespace Game.Player
     {
         DoubleJump,
         Glide,
-        Dash
+        Dash,
+        TombFinder
     }
 
     public enum eAbilityGroup
@@ -55,8 +56,6 @@ namespace Game.Player
 
         //
         List<World.ePillarId> destoyedPillars = new List<World.ePillarId>();
-        List<string> pickedUpFavours = new List<string>();
-
 
         //###########################################################
 
@@ -322,31 +321,6 @@ namespace Game.Player
         }
 
         #endregion pillar state methods
-
-        //###########################################################
-        //###########################################################
-
-        #region favour methods
-
-        public void SetFavourPickedUp(string favourId)
-        {
-            if (!this.pickedUpFavours.Contains(favourId))
-            {
-                this.pickedUpFavours.Add(favourId);
-            }
-        }
-
-        public bool IsFavourPickedUp(string favourId)
-        {
-            if (this.pickedUpFavours.Contains(favourId))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        #endregion favour methods
 
         //###########################################################
     }

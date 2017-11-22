@@ -5,38 +5,33 @@ using UnityEngine;
 
 namespace Game.World.ChunkSystem
 {
+    [RequireComponent(typeof(BoxCollider))]
     public class ChunkController : MonoBehaviour
     {
         protected ChunkSystemData data;
 
-        protected Collider bounds;
+        protected BoxCollider bounds;
         protected List<SubChunkController> subChunkList = new List<SubChunkController>();
 
         /// <summary>
         /// Initializes the Chunk.
         /// </summary>
-        public virtual void InitializeChunk(ChunkSystemData data)
+        public virtual void InitializeChunk(WorldController worldController)
         {
-            this.data = data;
+            this.data = worldController.ChunkSystemData;
 
             int childCount = this.transform.childCount;
 
             //find the bounds
-            for (int i = 0; i < childCount; i++)
-            {
-                var child = this.transform.GetChild(i);
-                var bounds = child.GetComponent<Collider>();
+            this.bounds = GetComponent<BoxCollider>();
 
-                if (bounds != null && bounds.gameObject.layer == 14)
-                {
-                    this.bounds = bounds;
-                    break;
-                }
-            }
             if (this.bounds == null)
             {
                 Debug.LogErrorFormat("Chunk \"{0}\": could not find bounds collider!", this.name);
             }
+
+            gameObject.layer = 14;
+            this.bounds.isTrigger = true;
 
             //find all the SubChunks
             for (int i = 0; i < childCount; i++)
@@ -47,7 +42,7 @@ namespace Game.World.ChunkSystem
                 if (subChunk != null)
                 {
                     this.subChunkList.Add(subChunk);
-                    subChunk.InitializeSubChunk();
+                    subChunk.InitializeSubChunk(worldController);
                 }
             }
         }
@@ -81,14 +76,14 @@ namespace Game.World.ChunkSystem
                 {
                     if (!subChunk.IsActive)
                     {
-                        subChunk.ActivateSubChunk();
+                        subChunk.SetSubChunkActive(true);
                     }
                 }
                 else
                 {
                     if (subChunk.IsActive)
                     {
-                        subChunk.DeactivateSubChunk();
+                        subChunk.SetSubChunkActive(false);
                     }
                 }
             }
@@ -99,14 +94,17 @@ namespace Game.World.ChunkSystem
         /// </summary>
         public virtual void CreateCopy(Transform parent)
         {
-            var chunkCopyGameObject = new GameObject(this.gameObject.name, this.GetType());
+            var chunkCopyGameObject = new GameObject(this.gameObject.name, this.GetType(), typeof(BoxCollider));
 
             var ChunkCopyTransform = chunkCopyGameObject.transform;
             ChunkCopyTransform.parent = parent;
             ChunkCopyTransform.localPosition = this.transform.localPosition;
 
-            var boundsGo = Instantiate(this.bounds.gameObject, ChunkCopyTransform, true);
-            boundsGo.layer = this.bounds.gameObject.layer;
+            var newBounds = chunkCopyGameObject.GetComponent<BoxCollider>();
+            chunkCopyGameObject.layer = gameObject.layer;
+            newBounds.isTrigger = bounds.isTrigger;
+            newBounds.size = bounds.size;
+            newBounds.center = bounds.center;
 
             foreach (var subChunk in this.subChunkList)
             {

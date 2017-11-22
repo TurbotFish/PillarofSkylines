@@ -16,12 +16,14 @@ namespace Game.World.ChunkSystem
         [SerializeField]
         bool doNotWrap = false;
 
+        WorldController worldController;
+
         Transform myTransform;
         public bool IsActive { get; private set; }
 
         List<GameObject> childList = new List<GameObject>();
         System.Object childListLock = new System.Object();
-        
+
 
 #if UNITY_EDITOR
         public void Editor_InitializeSubChunk(eSubChunkLayer layer)
@@ -35,14 +37,22 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
-        public void InitializeSubChunk()
+        public void InitializeSubChunk(WorldController worldController)
         {
+            this.worldController = worldController;
+
             this.myTransform = this.transform;
 
             this.childList.Clear();
             for (int i = 0; i < this.myTransform.childCount; i++)
             {
                 this.childList.Add(this.myTransform.GetChild(i).gameObject);
+            }
+
+            var worldObjects = GetComponentsInChildren<Interaction.IWorldObject>();
+            foreach (var worldObject in worldObjects)
+            {
+                worldObject.InitializeWorldObject(worldController);
             }
 
             this.IsActive = true;
@@ -54,58 +64,6 @@ namespace Game.World.ChunkSystem
         void InitializeSubChunkCopy(SubChunkController originalSubChunk)
         {
             this.layer = originalSubChunk.Layer;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void ActivateSubChunk(bool immediate = false)
-        {
-            if (this.IsActive)
-            {
-                return;
-            }
-
-            this.IsActive = true;
-            StopAllCoroutines();
-
-            if (immediate)
-            {
-                foreach (var go in this.childList)
-                {
-                    go.SetActive(true);
-                }
-            }
-            else
-            {               
-                StartCoroutine(ActivateSubChunkRoutine());
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void DeactivateSubChunk(bool immediate = false)
-        {
-            if (!this.IsActive)
-            {
-                return;
-            }
-
-            this.IsActive = false;
-            StopAllCoroutines();
-
-            if (immediate)
-            {
-                foreach (var go in this.childList)
-                {
-                    go.SetActive(false);
-                }
-            }
-            else
-            {
-                StartCoroutine(DeactivateSubChunkRoutine());
-            }
         }
 
         /// <summary>
@@ -138,27 +96,41 @@ namespace Game.World.ChunkSystem
         //############################################################################
         //############################################################################
 
-        void OnTransformChildrenChanged()
+        /// <summary>
+        /// Activates or deactivates all GameObjects in the SubChunk.
+        /// If <paramref name="immediate"/> is true, all objects are de-activated at once which causes some lag.
+        /// Otherwise the de-activation is spread out over several frames (handled by the <see cref="WorldController"/>).
+        /// </summary>
+        public void SetSubChunkActive(bool active, bool immediate = false)
         {
-            if (this.myTransform == null)
+            if (this.IsActive == active)
             {
                 return;
             }
 
-            lock (this.childListLock)
-            {
-                this.childList.Clear();
-                for (int i = 0; i < this.myTransform.childCount; i++)
+            this.IsActive = active;
+            StopAllCoroutines();
+
+            lock (this.childListLock) {
+                if (immediate)
                 {
-                    this.childList.Add(this.myTransform.GetChild(i).gameObject);
+                    foreach (var go in this.childList)
+                    {
+                        go.SetActive(active);
+                    }
                 }
+                else
+                {
+                    this.worldController.QueueObjectsToSetActive(this.childList, active);
+                    //StartCoroutine(SetActiveRoutine(active));
+            }
             }
         }
 
-        //############################################################################
-        //############################################################################
-
-        IEnumerator ActivateSubChunkRoutine()
+        /// <summary>
+        /// 
+        /// </summary>
+        IEnumerator SetActiveRoutine(bool active)
         {
             lock (this.childListLock)
             {
@@ -174,22 +146,28 @@ namespace Game.World.ChunkSystem
             }
         }
 
-        IEnumerator DeactivateSubChunkRoutine()
+        //############################################################################
+        //############################################################################
+
+        void OnTransformChildrenChanged()
         {
+            if (this.myTransform == null)
+            {
+                return;
+            }
+
+            Debug.LogErrorFormat("SubChunk \"{0}\": OnTransformChildrenChanged called!", this.name);
+
             lock (this.childListLock)
             {
-                for (int i = 0; i < this.childList.Count; i++)
+                this.childList.Clear();
+                for (int i = 0; i < this.myTransform.childCount; i++)
                 {
-                    this.childList[i].SetActive(false);
-
-                    if (i % 10 == 0)
-                    {
-                        yield return null;
-                    }
+                    this.childList.Add(this.myTransform.GetChild(i).gameObject);
                 }
             }
         }
 
         //############################################################################
     }
-}
+} //end of namespace

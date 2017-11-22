@@ -17,9 +17,10 @@ namespace Game.Player
 
         //
         bool favourPickUpInRange = false;
-        Collider favourPickUpCollider;
+        World.Interaction.Favour favour;
 
         PillarEntranceInfo pillarEntranceInfo = new PillarEntranceInfo();
+        bool pillarExitInRange = false;
 
         bool needleInRange = false;
         Collider needlePickedUpCollider;
@@ -71,24 +72,28 @@ namespace Game.Player
                 //favour
                 if (this.favourPickUpInRange)
                 {
-                    //pick up favour
-                    this.playerModel.Favours++;
-                    this.playerModel.SetFavourPickedUp(DetermineFavourId(this.favourPickUpCollider));
-
-                    //play favour pick up animation
-                    PlayMakerFSM[] temp = favourPickUpCollider.transform.parent.GetComponents<PlayMakerFSM>();
-                    foreach (var fsm in temp)
+                    if (!this.favour.FavourPickedUp)
                     {
-                        if (fsm.FsmName == "Faveur_activation")
+                        //pick up favour
+                        this.playerModel.Favours++;
+
+                        //play favour pick up animation
+                        PlayMakerFSM[] temp = this.favour.MyTransform.parent.GetComponents<PlayMakerFSM>();
+                        foreach (var fsm in temp)
                         {
-                            fsm.FsmVariables.GetFsmBool("Fav_activated").Value = true;
+                            if (fsm.FsmName == "Faveur_activation")
+                            {
+                                fsm.FsmVariables.GetFsmBool("Fav_activated").Value = true;
+                            }
                         }
+
+                        //send event
+                        Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(this.favour.InstanceId));
                     }
 
-                    //
+                    //clean up
                     this.favourPickUpInRange = false;
-                    this.favourPickUpCollider = null;
-
+                    this.favour = null;
                     HideUiMessage();
                 }
                 //pillar entrance
@@ -96,6 +101,12 @@ namespace Game.Player
                 {
                     Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowPillarEntranceMenuEventArgs(this.pillarEntranceInfo.CurrentPillarEntrance.PillarId));
                 }
+                //pillar exit
+                else if (this.pillarExitInRange)
+                {
+                    Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(false));
+                }
+                //needle
                 else if (this.needleInRange)
                 {
                     this.needleInRange = false;
@@ -107,13 +118,14 @@ namespace Game.Player
 
                     HideUiMessage();
                 }
+                //eye
                 else if (this.eyeInRange)
                 {
                     this.eyeInRange = false;
 
                     playerModel.hasNeedle = false;
 
-                    Utilities.EventManager.SendOnEyeKilledEvent(this);
+                    Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(true));
                     Debug.Log("oeil mort");
 
                     HideUiMessage();
@@ -155,27 +167,46 @@ namespace Game.Player
                 {
                     //favour
                     case "Favour":
-                        string favourId = DetermineFavourId(other);
-
-                        if (!this.playerModel.IsFavourPickedUp(favourId))
+                        if (!this.favourPickUpInRange)
                         {
-                            this.favourPickUpInRange = true;
-                            this.favourPickUpCollider = other;
+                            this.favour = other.GetComponent<World.Interaction.Favour>();
 
-                            ShowUiMessage("Press [X] to pick up a Favour!");
-                        }                       
+                            if (!this.favour.FavourPickedUp)
+                            {
+                                this.favourPickUpInRange = true;
+
+                                ShowUiMessage("Press [X] to pick up a Favour!");
+                            }
+                            else
+                            {
+                                this.favour = null;
+                            }
+                        }                     
                         break;
                     //pillar entrance
                     case "Pillar":
                         var pillarEntrance = other.GetComponent<World.Interaction.PillarEntrance>();
-
-                        if (!this.playerModel.IsPillarDestroyed(pillarEntrance.PillarId) && this.playerModel.Favours >= this.playerModel.PillarData.GetPillarEntryPrice(pillarEntrance.PillarId))
+                        if (pillarEntrance != null)
                         {
-                            this.pillarEntranceInfo.IsPillarEntranceInRange = true;
-                            this.pillarEntranceInfo.CurrentPillarEntrance = pillarEntrance;
+                            if (!this.playerModel.IsPillarDestroyed(pillarEntrance.PillarId))
+                            {
+                                this.pillarEntranceInfo.IsPillarEntranceInRange = true;
+                                this.pillarEntranceInfo.CurrentPillarEntrance = pillarEntrance;
 
-                            ShowUiMessage("Press [X] to enter the Pillar!");
+                                ShowUiMessage("Press [X] to enter the Pillar!");
+                            }
+                            break;
                         }
+
+                        var pillarExit = other.GetComponent<World.Interaction.PillarExit>();
+                        if(pillarExit != null)
+                        {
+                            this.pillarExitInRange = true;
+
+                            ShowUiMessage("Press [X] to leave the Pillar!");
+                            break;
+                        }
+
                         break;
                     //needle
                     case "Needle":
@@ -217,7 +248,7 @@ namespace Game.Player
                     //favour
                     case "Favour":
                         this.favourPickUpInRange = false;
-                        this.favourPickUpCollider = null;
+                        this.favour = null;
 
                         HideUiMessage();
                         break;
@@ -225,6 +256,8 @@ namespace Game.Player
                     case "Pillar":
                         this.pillarEntranceInfo.IsPillarEntranceInRange = false;
                         this.pillarEntranceInfo.CurrentPillarEntrance = null;
+
+                        this.pillarExitInRange = false;
 
                         HideUiMessage();
                         break;
@@ -270,11 +303,6 @@ namespace Game.Player
             Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
         }
 
-        static string DetermineFavourId(Collider favourCollider)
-        {
-            return string.Format("{0}-{1}", favourCollider.name, favourCollider.transform.position);
-        }
-
         #endregion helper methods
 
         //########################################################################
@@ -305,7 +333,7 @@ namespace Game.Player
         void OnSceneChangedEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
         {
             this.favourPickUpInRange = false;
-            this.favourPickUpCollider = null;
+            this.favour = null;
 
             this.needleInRange = false;
             this.needlePickedUpCollider = null;
@@ -314,6 +342,8 @@ namespace Game.Player
 
             this.pillarEntranceInfo.IsPillarEntranceInRange = false;
             this.pillarEntranceInfo.CurrentPillarEntrance = null;
+
+            this.pillarExitInRange = false;
 
             HideUiMessage();
         }

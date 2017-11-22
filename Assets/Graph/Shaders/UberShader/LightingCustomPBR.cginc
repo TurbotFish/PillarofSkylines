@@ -53,9 +53,11 @@
 		float _RefractionAmount;
 	#endif
 
-	//#if defined(_VERTEX_WIND)
-		float4 _PlayerPos;
-	//#endif
+	float4 _PlayerPos;
+
+	#if defined(_VERTEX_WIND)
+		float _MaxBendAngle;
+	#endif
 
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
@@ -264,13 +266,16 @@
 	Interpolators MyVertexProgram(VertexData v) {
 		Interpolators i;
 
+
+
 		#if defined(_VERTEX_WIND)
-
-//			float3 playerDir = mul(unity_ObjectToWorld,v.vertex).xyz - _PlayerPos.xyz;
-//			float sqrDist = dot(playerDir, playerDir);
-//			sqrDist = clamp(0,1, sqrDist);
-//			v.vertex.z -= clamp(0,2,1/sqrDist);// * step(0.6, sqrDist);
-
+			float4 pivotWS =  mul(unity_ObjectToWorld,float4(0,0,0,1));
+			float2 player2Vert2D = pivotWS.xz - _PlayerPos.xz;
+			float3 player2Vert3D = pivotWS.xyz - _PlayerPos.xyz;
+			float sqrDist = dot(player2Vert3D, player2Vert3D); 
+			float bendPercent = 1 - saturate((sqrDist - 0.2)/(0.6 - 0.2));
+			float bendAmount = bendPercent * _MaxBendAngle * v.vertex.y * v.vertex.y;
+			v.vertex.xyz = ApplyWind(v.vertex.xyz, normalize(float3(player2Vert2D.y,0, -player2Vert2D.x)) * bendAmount);
 
 
 		//ifdef(_VERTEX_BEND)
