@@ -20,7 +20,7 @@ public class EditorDebugMaster : EditorWindow {
             shaderScript.enabled = false;
     }
 
-    [MenuItem("PoS Debug/Select Camera #C", false, -10)]
+    [MenuItem("PoS Debug/Select Camera %#C", false, -10)]
     public static void SelectCamera() {
         Transform cam = FindObjectOfType<PoS_Camera>().transform;
         Transform viewPos = SceneView.lastActiveSceneView.camera.transform;
