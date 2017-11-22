@@ -59,9 +59,14 @@
 		float _MaxBendAngle;
 		float _WindIntensity;
 		sampler2D _WindTex;
+		float _VertMaskMultiplier;
+		float _VertMaskFlat;
 	#endif
 
-
+	#if defined(_VERTEX_BEND)
+		float _BendingDistMin;
+		float _BendingDistMax;
+	#endif
 
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
@@ -80,6 +85,10 @@
 		float3 normal : NORMAL;
 		float4 tangent : TANGENT;
 		float2 uv : TEXCOORD0;
+
+		#if defined(_VERTEX_MASK_COLOUR)
+			float4 vertColour : COLOR;
+		#endif
 	};
 
 	struct Interpolators {
@@ -139,26 +148,6 @@
 		#endif
 	}
 
-	//float GetPackedDiffuseSSS(){
-	//	float _PackedColour = 0;
-	//	#if defined(_SSS)
-	//		float _Green = floor(_DiffuseSSS.g * 10) * 0.1;
-	//		float _Red = floor(_DiffuseSSS.r * 10) * 0.01;
-	//		float _Blue = floor(_DiffuseSSS.b * 10) * 0.001;
-	//		_PackedColour = saturate(_Green + _Red + _Blue);
-	//	#endif
-
-	//	return _PackedColour;
-	//}
-
-	half GetSSSColourMask(){
-		half mask = 0;
-		#if defined(_SSSColour2)
-			mask = 1;
-		#endif
-		return mask;
-	}
-
 	half GetCelShadingMask(){
 		half mask = 0;
 		#if defined(_CELSHADED)
@@ -178,7 +167,6 @@
 
 	//checker test
 	float3 GetAlbedoDebug(Interpolators i){
-
 		float xValue = floor(i.worldPos.x * 0.5) - floor(floor(i.worldPos.x * 0.5) * 0.5) * 2.0;
 		float yValue = floor(i.worldPos.y * 0.5) - floor(floor(i.worldPos.y * 0.5) * 0.5) * 2.0;
 		float zValue = floor(i.worldPos.z * 0.5) - floor(floor(i.worldPos.z * 0.5) * 0.5) * 2.0;
@@ -281,14 +269,20 @@
 
 
 		#if defined(_VERTEX_BEND) || defined(_VERTEX_WIND)
+
+			#if defined(_VERTEX_MASK_COLOUR)
+				float rotationMask = v.vertColour.r;
+			#elif defined(_VERTEX_MASK_CUSTOM)
+				float rotationMask = saturate(v.vertex.y * _VertMaskMultiplier + _VertMaskFlat);
+			#endif
 			float4 pivotWS =  mul(unity_ObjectToWorld,float4(0,0,0,1));
-			float rotationMask = saturate(v.vertex.y * 0.8 + 0.3);
+
 
 			#if defined(_VERTEX_BEND)
 				float2 player2Vert2D = pivotWS.xz - _PlayerPos.xz;
 				float3 player2Vert3D = pivotWS.xyz - _PlayerPos.xyz;
 				float sqrDist = dot(player2Vert3D, player2Vert3D); 
-				float bendPercent = 1 - saturate((sqrDist - 0.3)/(0.8 - 0.2));
+				float bendPercent = 1 - saturate((sqrDist - _BendingDistMin)/(_BendingDistMax - _BendingDistMin));
 				float bendAmount = bendPercent * _MaxBendAngle * rotationMask;
 				float3 _bendRotation = normalize(float3(player2Vert2D.y,0, -player2Vert2D.x)) * bendAmount;
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _bendRotation);
@@ -298,11 +292,15 @@
 
 			#if defined(_VERTEX_WIND)
 				float2 windDir = normalize(float2(3,0));
+				//float3 windDirTemp = mul(unity_WorldToObject, float4(normalize(float3(3,0,0)),0)).xyz;
+				//float2 windDir = normalize(windDirTemp.xz);
 				float windIntensity = tex2Dlod(_WindTex, float4(_Time.x, _Time.x, 0,0)).r;
-				windIntensity = saturate(windIntensity + 0.2);
+				windIntensity = saturate(windIntensity + 0.2);//not necessary with a good wind map
+				//float windIntensity = 1;
 				float windSpeed = 2;
-				float _offset = (pivotWS.x * (0.9) * -sign(windDir.x) + pivotWS.z * (0.6) * -sign(windDir.y)) * 0.5;
+				float _offset = (pivotWS.x * (0.9) * -sign(windDir.x) + pivotWS.z * (0.6) * -sign(windDir.y) + pivotWS.y * 0.8) * 0.5;
 				float angle = windIntensity * (sin(_Time.y * windSpeed + _offset) * 0.65+0.35) * _MaxBendAngle * rotationMask;
+				//float angle = 60;
 				float3 _windRotation = float3( windDir.y, 0, -windDir.x) * angle;
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _windRotation);
 				v.normal = ApplyWind(v.normal.xyz, _windRotation);
@@ -370,7 +368,7 @@
 			light.color = _LightColor0.rgb * attenuation;
 
 			//tweak the colour of received shadows here
-			//light.color = lerp(float3(0,0.23,0.23),_LightColor0.rgb,  attenuation);
+			//light.color = lerp(float3(1,0,0),_LightColor0.rgb,  attenuation);
 
 		#endif
 		return light;

@@ -22,7 +22,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoSubSurfaceScattering ();
 		DoMain ();
 		DoSecondary ();
-		DoWind ();
+		DoVertexOffset ();
 		DoDistanceDither ();
 		DoDebug ();
 
@@ -408,15 +408,72 @@ public class CustomPBR_GUI : ShaderGUI {
 		}
 	}
 
-	void DoWind(){
+	void DoVertexOffset(){
 		GUILayout.Label ("Vertex Offset", EditorStyles.boldLabel);
+		if (IsKeywordEnabled ("_VERTEX_WIND") || IsKeywordEnabled ("_VERTEX_BEND")) {
+			VertexMask maskType = VertexMask.Custom;
+			if (IsKeywordEnabled ("_VERTEX_MASK_COLOUR")) {
+				maskType = VertexMask.VertexColour;
+			}
+
+			MaterialProperty maxAngle = FindProperty ("_MaxBendAngle");
+			editor.ShaderProperty (maxAngle, "Angle Max");
+
+//			OffsetPlane plane = OffsetPlane.YZ;
+//			if (IsKeywordEnabled ("_VERTEX_OFFSET_XY")) {
+//				plane = OffsetPlane.XY;
+//			} else if (IsKeywordEnabled ("_VERTEX_OFFSET_XZ")) {
+//				plane = OffsetPlane.XZ;
+//			}
+
+
+			EditorGUI.BeginChangeCheck ();
+			maskType = (VertexMask)EditorGUILayout.EnumPopup (MakeLabel ("Vertex Mask"), maskType);
+//			plane = (OffsetPlane)EditorGUILayout.EnumPopup(MakeLabel("Offset Plane")
+
+			if (EditorGUI.EndChangeCheck ()) {
+				RecordAction ("Vertex Mask");
+				SetKeyword ("_VERTEX_MASK_CUSTOM", maskType == VertexMask.Custom);
+				SetKeyword ("_VERTEX_MASK_COLOUR", maskType == VertexMask.VertexColour);
+			}
+
+			if (maskType == VertexMask.Custom) {
+				MaterialProperty multiplier = FindProperty ("_VertMaskMultiplier");
+				MaterialProperty flatOffset = FindProperty ("_VertMaskFlat");
+				editor.ShaderProperty (multiplier, MakeLabel ("Multiplier", "0.8 worked ok"));
+				editor.ShaderProperty (flatOffset, MakeLabel ("Vertical Offset", "0.3 worked ok"));
+			}
+
+		}
+		DoWind ();
+		DoBending ();
+	}
+
+	void DoWind(){
 		EditorGUI.BeginChangeCheck ();
 		bool windOn = EditorGUILayout.Toggle ("Wind", IsKeywordEnabled ("_VERTEX_WIND"));
-		bool playerOn = EditorGUILayout.Toggle ("Bending", IsKeywordEnabled ("_VERTEX_BEND"));
 
 		if (EditorGUI.EndChangeCheck ()) {
 			SetKeyword ("_VERTEX_WIND", windOn);
-			SetKeyword ("_VERTEX_BEND", playerOn);
+		}
+
+
+	}
+
+	void DoBending(){
+		MaterialProperty minDist = FindProperty ("_BendingDistMin");
+		MaterialProperty maxDist = FindProperty ("_BendingDistMax");
+
+		EditorGUI.BeginChangeCheck ();
+		bool bendingOn = EditorGUILayout.Toggle ("Bending", IsKeywordEnabled ("_VERTEX_BEND"));
+
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_VERTEX_BEND", bendingOn);
+		}
+
+		if (bendingOn) {
+			editor.ShaderProperty (minDist, MakeLabel ("Full Effect Dist"));
+			editor.ShaderProperty (maxDist, MakeLabel ("No Effect Dist"));
 		}
 	}
 
@@ -434,6 +491,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		}
 	}
 
+	#region debug
 	void DoCheckerDebug(){
 
 		EditorGUI.BeginChangeCheck ();
@@ -452,6 +510,7 @@ public class CustomPBR_GUI : ShaderGUI {
 			SetKeyword ("_LOCAL_NORMAL_DEBUG", displayNormals);
 		}
 	}
+	#endregion
 
 	enum SmoothnessSource {
 		Uniform, Albedo, Metallic
@@ -463,6 +522,14 @@ public class CustomPBR_GUI : ShaderGUI {
 
 	enum CullingMode {
 		Back, Front, Off
+	}
+
+	enum VertexMask {
+		Custom, VertexColour
+	}
+
+	enum OffsetPlane {
+		XZ, YZ, XY
 	}
 
 	struct RenderingSettings {

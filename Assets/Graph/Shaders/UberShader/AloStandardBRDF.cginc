@@ -344,7 +344,7 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
 	    half noCS = saturate(dot(normal, light.dir));
 
 	    //with CS
-	    half withCS = clamp(step(0.22,saturate(dot(normal, light.dir))), 0.7,1.0);
+	    half withCS = clamp(step(0.22,saturate(dot(normal, light.dir))), 0.4,1.0);
 
 	    half nl = lerp(noCS, withCS, celShadingMask);
     #else
