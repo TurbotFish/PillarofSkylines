@@ -1,13 +1,9 @@
 fileFormatVersion: 2
 guid: 8690c963b6edbbf4d9c918fa1e35ebc5
-timeCreated: 1511269192
+timeCreated: 1511356791
 licenseType: Pro
 ShaderImporter:
-  defaultTextures:
-  - _T_Groundtile1_MaskMat: {fileID: 2800000, guid: 938a868ad17c3f3478204c336122e376,
-      type: 3}
-  - _T_Groundtile1_MaskAdd: {fileID: 2800000, guid: eccfaad10c9d84d4e9596a9f65cee708,
-      type: 3}
+  defaultTextures: []
   userData: 
   assetBundleName: 
   assetBundleVariant: 
