@@ -41,12 +41,14 @@ namespace Game.World.ChunkSystem
         {
             this.worldController = worldController;
 
-            this.myTransform = this.transform;
+            myTransform = transform;
 
-            this.childList.Clear();
-            for (int i = 0; i < this.myTransform.childCount; i++)
+            gameObject.SetActive(true);
+
+            childList.Clear();
+            for (int i = 0; i < myTransform.childCount; i++)
             {
-                this.childList.Add(this.myTransform.GetChild(i).gameObject);
+                childList.Add(myTransform.GetChild(i).gameObject);
             }
 
             var worldObjects = GetComponentsInChildren<Interaction.IWorldObject>();
@@ -55,7 +57,7 @@ namespace Game.World.ChunkSystem
                 worldObject.InitializeWorldObject(worldController);
             }
 
-            this.IsActive = true;
+            IsActive = true;
         }
 
         /// <summary>

@@ -7,7 +7,6 @@ namespace Game.Player.CharacterController
     public class Character : MonoBehaviour
     {
 
-
         #region general
         [Header("General")]
         /// <summary>
@@ -332,18 +331,27 @@ namespace Game.Player.CharacterController
         bool isInitialized = false;
 
         /// <summary>
-        /// When this timer is > 0 and the player is in the air, gravity and left stick input are ignored.
+        /// When this timer is > 0, the left stick input is ignored.
         /// </summary>
-        float jumpingTimer = 0f;
+        float ignoreLeftStickTimer = 0f;
+
+        /// <summary>
+        /// When this timer is > 0, gravity is ignored.
+        /// </summary>
+        float ignoreGravityTimer = 0f;
 
         /// <summary>
         /// Timer for the horizontal wall run.
         /// </summary>
         float wallRunHorizontalTimer = 0f;
 
+        /// <summary>
+        /// Timer for the vertical wall run.
+        /// </summary>
+        float wallRunVerticalTimer = 0f;
+
         #endregion private variables
 
-        //#############################################################################
         //#############################################################################
 
         #region initialization
@@ -386,7 +394,6 @@ namespace Game.Player.CharacterController
         #endregion initialization
 
         //#############################################################################
-        //#############################################################################
 
         #region event handling
 
@@ -417,8 +424,6 @@ namespace Game.Player.CharacterController
         #endregion event handling
 
         //#############################################################################
-        //#############################################################################
-
 
         void Update()
         {
@@ -433,14 +438,24 @@ namespace Game.Player.CharacterController
 
             dashTimer -= Time.deltaTime;
 
-            if (jumpingTimer >= 0)
+            if (ignoreLeftStickTimer >= 0)
             {
-                jumpingTimer -= Time.deltaTime;
+                ignoreLeftStickTimer -= Time.deltaTime;
+            }
+
+            if (ignoreGravityTimer >= 0)
+            {
+                ignoreGravityTimer -= Time.deltaTime;
             }
 
             if (wallRunHorizontalTimer >= 0)
             {
                 wallRunHorizontalTimer -= Time.deltaTime;
+            }
+
+            if (wallRunVerticalTimer >= 0)
+            {
+                wallRunVerticalTimer -= Time.deltaTime;
             }
 
             #endregion update timers
@@ -451,7 +466,7 @@ namespace Game.Player.CharacterController
             #region turn the player
             //Turn the player in the direction of his input
             if (canTurnPlayer
-                && !(jumpingTimer > 0 && currentPlayerState == ePlayerState.inAir)
+                && ignoreLeftStickTimer <= 0
                 && inputRaw.magnitude > 0f)
             {
                 if (currentPlayerState != ePlayerState.gliding)
@@ -551,7 +566,7 @@ namespace Game.Player.CharacterController
                     targetVelocity = inputToCamera * characSpeed;
 
                     //gravity
-                    if (jumpingTimer <= 0)
+                    if (ignoreGravityTimer <= 0)
                     {
                         velocity.y -= gravityStrength * Time.deltaTime;
                     }
@@ -577,10 +592,16 @@ namespace Game.Player.CharacterController
                             }
                         }
                     }
+
                     if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash))
                     {
-                        StartDash();
+                        QuitStateInAir();
+
+                        EnterStateDash();
+
+                        break;
                     }
+
                     if (pressedJump)
                     {
                         if (permissiveJumpTime > 0f)
@@ -599,6 +620,7 @@ namespace Game.Player.CharacterController
                             Instantiate(jumpParticles, transform.position, Quaternion.identity, transform);
                         }
                     }
+
                     if (pressedSprint && playerMod.CheckAbilityActive(eAbilityType.Glide))
                     {
                         glideParticles.Play();
@@ -606,8 +628,9 @@ namespace Game.Player.CharacterController
                         glideHorizontalAngle = 0f;
                         currentPlayerState = ePlayerState.gliding;
                         playerMod.FlagAbility(eAbilityType.Glide);
-                    }
 
+                        break;
+                    }
 
                     break;
 
@@ -649,7 +672,7 @@ namespace Game.Player.CharacterController
                     }
                     if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash))
                     {
-                        StartDash();
+                        EnterStateDash();
                     }
                     break;
 
@@ -666,7 +689,9 @@ namespace Game.Player.CharacterController
 
                     if (dashDuration <= 0)
                     {
-                        EndDash();
+                        QuitStateDash();
+
+                        EnterStateInAir();
                     }
                     break;
 
@@ -763,7 +788,7 @@ namespace Game.Player.CharacterController
                     windVelocity = Vector3.zero;
                     if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash))
                     {
-                        StartDash();
+                        EnterStateDash();
 
                     }
                     break;
@@ -772,7 +797,7 @@ namespace Game.Player.CharacterController
                 #region direction calculations - wall drifting
 
                 case ePlayerState.WallDrifting:
-
+                    //jumping
                     if (pressedJump)
                     {
                         lastJumpAerial = false;
@@ -782,18 +807,20 @@ namespace Game.Player.CharacterController
                         var dir = controller.collisions.currentWallNormal;
                         transform.forward = dir;
 
+                        flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * (transform.up + dir * 2).normalized;
                         velocity.y = 0f;
-                        flatVelocity = playerMod.AbilityData.WallRun.WallJumpStrength * (Vector3.up + dir).normalized;
 
-                        jumpingTimer = playerMod.AbilityData.WallRun.WallJumpTime;
+                        ignoreGravityTimer = ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.Duration;
 
                         EnterStateInAir();
+
+                        break;
                     }
-                    else
-                    {
-                        flatVelocity = Vector3.zero; //player can't move while wall drifting
-                        velocity.y = Mathf.Lerp(velocity.y, playerMod.AbilityData.WallRun.WallDriftTargetSpeed, playerMod.AbilityData.WallRun.WallDriftSlowdownFactor * Time.deltaTime);
-                    }
+
+                    float wallDriftSpeed = Mathf.Lerp(velocity.magnitude, playerMod.AbilityData.WallRun.WallDrift.TargetSpeed, playerMod.AbilityData.WallRun.WallDrift.SlowdownFactor);
+
+                    flatVelocity = -transform.up * wallDriftSpeed;
+                    velocity.y = 0f;
 
                     break;
 
@@ -802,7 +829,7 @@ namespace Game.Player.CharacterController
                 #region direction calculation - wall run horizontal
 
                 case ePlayerState.WallRunningHorizontal:
-
+                    //
                     if (pressedJump)
                     {
                         Debug.Log("A");
@@ -810,34 +837,84 @@ namespace Game.Player.CharacterController
 
                         QuitStateWallRunHorizontal();
 
-                        var dir = (Vector3.up * 2 + controller.collisions.currentWallNormal + transform.forward).normalized;
+                        var dir = (Vector3.up + controller.collisions.currentWallNormal + transform.forward).normalized;
                         transform.forward = new Vector3(dir.x, 0, dir.z).normalized;
 
                         velocity.y = 0f;
-                        flatVelocity = playerMod.AbilityData.WallRun.WallJumpStrength * dir;
+                        flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * dir;
 
-                        jumpingTimer = playerMod.AbilityData.WallRun.WallJumpTime;
+                        ignoreGravityTimer = ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.Duration;
 
                         EnterStateInAir();
+
+                        break;
                     }
-                    else if(wallRunHorizontalTimer <= 0)
+                    //
+                    if (wallRunHorizontalTimer <= 0)
                     {
                         Debug.Log("B");
                         QuitStateWallRunHorizontal();
 
                         EnterStateWallDrift();
+
+                        break;
                     }
-                    else
-                    {
-                        Debug.Log("C");
-                        velocity.y = -gravityStrength * playerMod.AbilityData.WallRun.WallRunHorizontalGravityMultiplier * Time.deltaTime;
-                        flatVelocity = transform.forward * Mathf.Lerp(flatVelocity.magnitude, playerMod.AbilityData.WallRun.WallRunHorizontalTargetSpeed, 0.6f * Time.deltaTime);
-                    }
+                    //default
+                    Debug.Log("C");
+                    velocity.y = -gravityStrength * playerMod.AbilityData.WallRun.WallRunHorizontal.GravityMultiplier * Time.deltaTime;
+                    flatVelocity = transform.forward * Mathf.Lerp(flatVelocity.magnitude, playerMod.AbilityData.WallRun.WallRunHorizontal.TargetSpeed, 0.6f * Time.deltaTime);
 
                     break;
-                
+
                 #endregion direction calculation - wall run horizontal
-                
+
+                #region direction calculation - wall run vertical
+
+                case ePlayerState.WallRunningVertical:
+                    //jump
+                    if (pressedJump)
+                    {
+                        lastJumpAerial = false;
+
+                        QuitStateWallRunVertical();
+
+                        var dir = controller.collisions.currentWallNormal;
+                        transform.forward = dir;
+
+                        flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * (transform.up + dir * 2).normalized;
+                        velocity.y = 0f;
+
+                        ignoreGravityTimer = ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.Duration;
+
+                        EnterStateInAir();
+
+                        break;
+                    }
+                    //time's over
+                    if (wallRunVerticalTimer <= 0)
+                    {
+                        QuitStateWallRunVertical();
+
+                        EnterStateWallDrift();
+
+                        break;
+                    }
+                    //default
+                    float wallRunSpeed = playerMod.AbilityData.WallRun.WallRunVertical.TargetSpeed;
+                    float factor = playerMod.AbilityData.WallRun.WallRunVertical.SlowdownFactor;
+                    if (velocity.magnitude <= wallRunSpeed)
+                    {
+                        factor = playerMod.AbilityData.WallRun.WallRunVertical.AccelerationFactor;
+                    }
+                    wallRunSpeed = Mathf.Lerp(velocity.magnitude, wallRunSpeed, factor);
+
+                    flatVelocity = transform.up * wallRunSpeed;
+                    velocity.y = 0f;
+
+                    break;
+
+                #endregion direction calculation - wall run vertical
+
                 default:
                     Debug.LogWarning("pas de player state >:c");
                     break;
@@ -881,6 +958,8 @@ namespace Game.Player.CharacterController
                 #region update state - in air
 
                 case ePlayerState.inAir:
+
+                    //land on the ground
                     if (controller.collisions.below)
                     {
                         if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle)
@@ -901,22 +980,34 @@ namespace Game.Player.CharacterController
                             currentPlayerState = ePlayerState.sliding;
                         }
                     }
+                    //enter wind tunnel
                     else if (inWindTunnel)
                     {
+                        QuitStateInAir();
+
                         currentPlayerState = ePlayerState.inWindTunnel;
+
+                        break;
+                    }
+                    //start horizontal wall run
+                    if (CheckCanStartWallRunHorizontal())
+                    {
+                        QuitStateInAir();
+
+                        EnterStateWallRunHorizontal();
+
+                        break;
                     }
                     //start wall drifting
-                    else if (controller.collisions.side && velocity.y <= 0)
+                    if (CheckCanStartWallDrift(true))
                     {
-                        float dotProduct = Vector2.Dot(transform.forward, controller.collisions.currentWallNormal);
+                        QuitStateInAir();
 
-                        if (dotProduct <= playerMod.AbilityData.WallRun.TriggerDotProduct)
-                        {
-                            //QuitStateInAir();
+                        EnterStateWallDrift();
 
-                            EnterStateWallDrift();
-                        }
+                        break;
                     }
+
                     break;
 
                 #endregion update state - in air
@@ -924,18 +1015,48 @@ namespace Game.Player.CharacterController
                 #region update state - on ground
 
                 case ePlayerState.onGround:
-                    if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle && Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < minWallAngle)
+
+                    //start sliding
+                    if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > maxSlopeAngle
+                        && Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < minWallAngle)
                     {
                         currentPlayerState = ePlayerState.sliding;
+
+                        break;
                     }
+                    //start falling
                     if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) > minWallAngle || !controller.collisions.below)
                     {
-                        currentPlayerState = ePlayerState.inAir;
+                        QuitStateOnGround();
+
+                        EnterStateInAir();
+
+                        break;
                     }
+                    //enter wind tunnel
                     if (inWindTunnel)
                     {
-                        currentPlayerState = ePlayerState.inWindTunnel;
+                        QuitStateOnGround();
+
+                        EnterStateInWindTunnel();
+
+                        break;
                     }
+                    //start a vertical wall run
+                    if (controller.collisions.side && velocity.magnitude >= playerMod.AbilityData.WallRun.WallRunVertical.MinTriggerSpeed)
+                    {
+                        float dotProduct = Vector3.Dot(transform.forward, controller.collisions.currentWallNormal);
+
+                        if (dotProduct <= playerMod.AbilityData.WallRun.General.TriggerDotProduct)
+                        {
+                            QuitStateOnGround();
+
+                            EnterStateWallRunVertical();
+
+                            break;
+                        }
+                    }
+
                     break;
 
                 #endregion update state - on ground
@@ -944,29 +1065,35 @@ namespace Game.Player.CharacterController
 
                 case ePlayerState.dashing:
 
-                    if (!controller.collisions.below && controller.collisions.side)
+                    //touching a wall
+                    if (controller.collisions.side) //this is redundant be saves on doing all the checks when the player is not touching a wall
                     {
-                        var wallNormal = controller.collisions.currentWallNormal;
-                        var playerForward = transform.forward;
-                        float dot = Vector3.Dot(wallNormal, playerForward);
-
-                        if (dot == -1)
+                        //start a vertical wall run
+                        if (CheckCanStartWallRunVertical())
                         {
-                            EndDash();
+                            QuitStateDash();
+
+                            EnterStateWallRunVertical();
+
+                            break;
+                        }
+                        //start a horizontal wall run
+                        if (CheckCanStartWallRunHorizontal())
+                        {
+                            QuitStateDash();
+
+                            EnterStateWallRunHorizontal();
+
+                            break;
+                        }
+                        //start a wall drift
+                        if (CheckCanStartWallDrift(true))
+                        {
+                            QuitStateDash();
 
                             EnterStateWallDrift();
-                        }
-                        else if (dot <= playerMod.AbilityData.WallRun.TriggerDotProduct && controller.collisions.currentWallNormal.y >= 0)
-                        {
-                            EndDash();
 
-                            var simpleWallNormal = new Vector3(wallNormal.x, 0, wallNormal.z).normalized;
-                            var simplePlayerForward = new Vector3(playerForward.x, 0, playerForward.z).normalized;
-                            var simpleCross = Vector3.Cross(simpleWallNormal, simplePlayerForward);
-
-                            var dir = -Vector3.Cross(wallNormal, simpleCross);
-
-                            EnterStateWallRunHorizontal(dir);
+                            break;
                         }
                     }
 
@@ -1037,24 +1164,68 @@ namespace Game.Player.CharacterController
                             QuitStateWallDrift();
 
                             EnterStateOnGround();
+
+                            break;
                         }
                         else if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < minWallAngle)
                         {
                             QuitStateWallDrift();
 
                             EnterStateSliding();
+
+                            break;
                         }
                     }
                     //not touching a wall anymore
-                    else if (!controller.collisions.side)
+                    if (!controller.collisions.side)
                     {
                         QuitStateWallDrift();
 
                         EnterStateInAir();
+
+                        break;
                     }
+
                     break;
 
-                    #endregion update state - wall drift
+                #endregion update state - wall drift
+
+                #region update state - wall run vertical
+
+                case ePlayerState.WallRunningVertical:
+                    //landing on the ground
+                    if (controller.collisions.below)
+                    {
+                        if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < maxSlopeAngle)
+                        {
+                            QuitStateWallRunVertical();
+
+                            EnterStateOnGround();
+
+                            break;
+                        }
+                        else if (Vector3.Angle(controller.collisions.currentGroundNormal, transform.up) < minWallAngle)
+                        {
+                            QuitStateWallRunVertical();
+
+                            EnterStateSliding();
+
+                            break;
+                        }
+                    }
+                    //not touching a wall anymore
+                    if (!controller.collisions.side)
+                    {
+                        QuitStateWallRunVertical();
+
+                        EnterStateInAir();
+
+                        break;
+                    }
+
+                    break;
+
+                    #endregion update state - wall run vertical
             }
             #endregion update state
 
@@ -1083,23 +1254,44 @@ namespace Game.Player.CharacterController
         }
 
         //#############################################################################
-        //#############################################################################
 
         #region state change methods
+
+        //*******************************************
+
+        #region state change - in air
 
         /// <summary>
         /// Sets the state of the player to <see cref="ePlayerState.inAir"/>.
         /// </summary>
         void EnterStateInAir()
         {
+            Debug.Log("EnterStateInAir");
+
             currentPlayerState = ePlayerState.inAir;
         }
+
+        /// <summary>
+        /// Quits the state <see cref="ePlayerState.inAir"/>.
+        /// </summary>
+        void QuitStateInAir()
+        {
+            Debug.Log("QuitStateInAir");
+        }
+
+        #endregion state change - in air
+
+        //*******************************************
+
+        #region state change - on ground
 
         /// <summary>
         /// Sets the state of the player to <see cref="ePlayerState.onGround"/>.
         /// </summary>
         void EnterStateOnGround()
         {
+            Debug.Log("EnterStateOnGround");
+
             camera.SetVerticalOffset(-TurnSpaceToLocal(controller.collisions.initialVelocityOnThisFrame).y * landingCameraOffsetStrength);
             currentPlayerState = ePlayerState.onGround;
             if (leftStickAtZero)
@@ -1112,6 +1304,20 @@ namespace Game.Player.CharacterController
             }
         }
 
+        /// <summary>
+        /// Quits the state <see cref="ePlayerState.onGround"/>.
+        /// </summary>
+        void QuitStateOnGround()
+        {
+            Debug.Log("QuitStateOnGround");
+        }
+
+        #endregion state change - on ground
+
+        //*******************************************
+
+        #region state change - glide
+
         void EndGlide()
         {
             flatVelocity = TurnSpaceToLocal(flatVelocity);
@@ -1120,9 +1326,15 @@ namespace Game.Player.CharacterController
             keepMomentum = true;
         }
 
-        void StartDash()
+        #endregion state change - glide
+
+        //*******************************************
+
+        #region state change - dash
+
+        void EnterStateDash()
         {
-            Debug.Log("StartDash");
+            Debug.Log("EnterStateDash");
 
             playerMod.FlagAbility(eAbilityType.Dash);
             currentPlayerState = ePlayerState.dashing;
@@ -1132,17 +1344,23 @@ namespace Game.Player.CharacterController
             dashParticles.Play();
         }
 
-        void EndDash()
+        void QuitStateDash()
         {
-            Debug.Log("EndDash");
+            Debug.Log("QuitStateDash");
 
             dashDuration = 0f;
             dashTimer = dashCooldown;
 
             canTurnPlayer = true;
-            currentPlayerState = ePlayerState.inAir;
+            //currentPlayerState = ePlayerState.inAir;
             playerMod.UnflagAbility(eAbilityType.Dash);
         }
+
+        #endregion state change - dash
+
+        //*******************************************
+
+        #region state change - sliding
 
         /// <summary>
         /// Sets the state of the player to <see cref="ePlayerState.sliding"/>.
@@ -1151,6 +1369,36 @@ namespace Game.Player.CharacterController
         {
             currentPlayerState = ePlayerState.sliding;
         }
+
+        #endregion state change - sliding
+
+        //*******************************************
+
+        #region state change - in wind tunnel
+
+        /// <summary>
+        /// Sets the state of the player to <see cref="ePlayerState.inWindTunnel"/>.
+        /// </summary>
+        void EnterStateInWindTunnel()
+        {
+            Debug.Log("EnterStateInWindTunnel");
+
+            currentPlayerState = ePlayerState.inWindTunnel;
+        }
+
+        /// <summary>
+        /// Quits the state <see cref="ePlayerState.inWindTunnel"/>.
+        /// </summary>
+        void QuitStateInWindTunnel()
+        {
+            Debug.Log("QuitStateInWindTunnel");
+        }
+
+        #endregion state change - in wind tunnel
+
+        //*******************************************
+
+        #region state change - wall drift
 
         /// <summary>
         /// Sets the state of the player to <see cref="ePlayerState.WallDrifting"/>.
@@ -1174,18 +1422,32 @@ namespace Game.Player.CharacterController
             canTurnPlayer = true;
         }
 
+        #endregion state change - wall drift
+
+        //*******************************************
+
+        #region state change - wall run horizontal
+
         /// <summary>
         /// Sets the state of the player to <see cref="ePlayerState.WallRunningHorizontal"/>.
         /// </summary>
-        void EnterStateWallRunHorizontal(Vector3 direction)
+        void EnterStateWallRunHorizontal()
         {
             Debug.Log("EnterWallRunHorizontal");
 
             currentPlayerState = ePlayerState.WallRunningHorizontal;
             canTurnPlayer = false;
-            transform.forward = direction;
 
-            wallRunHorizontalTimer = playerMod.AbilityData.WallRun.WallRunHorizontalTime;
+            var wallNormal = controller.collisions.currentWallNormal;
+            var playerForward = transform.forward;
+
+            var simpleWallNormal = new Vector3(wallNormal.x, 0, wallNormal.z).normalized;
+            var simplePlayerForward = new Vector3(playerForward.x, 0, playerForward.z).normalized;
+            var simpleCross = Vector3.Cross(simpleWallNormal, simplePlayerForward);
+
+            transform.forward = -Vector3.Cross(wallNormal, simpleCross);
+
+            wallRunHorizontalTimer = playerMod.AbilityData.WallRun.WallRunHorizontal.Duration;
         }
 
         /// <summary>
@@ -1198,9 +1460,139 @@ namespace Game.Player.CharacterController
             canTurnPlayer = true;
         }
 
+        #endregion state change - wall run horizontal
+
+        //*******************************************
+
+        #region state change - wall run vertical
+
+        /// <summary>
+        /// Sets the state of the player to <see cref="ePlayerState.WallRunningVertical"/>.
+        /// </summary>
+        void EnterStateWallRunVertical()
+        {
+            Debug.Log("EnterStateWallRunVertical");
+
+            currentPlayerState = ePlayerState.WallRunningVertical;
+            canTurnPlayer = false;
+            transform.forward = -controller.collisions.currentWallNormal;
+
+            wallRunVerticalTimer = playerMod.AbilityData.WallRun.WallRunVertical.Duration;
+        }
+
+        /// <summary>
+        /// Quits the state <see cref="ePlayerState.WallRunningVertical"/>.
+        /// </summary>
+        void QuitStateWallRunVertical()
+        {
+            Debug.Log("QuitStateWallRunVertical");
+
+            canTurnPlayer = true;
+            wallRunVerticalTimer = 0f;
+        }
+
+        #endregion state change - wall run vertical
+
+        //*******************************************
+
         #endregion state change methods
 
         //#############################################################################
+
+        #region ability checks
+
+        /// <summary>
+        /// Checks whether a wall drift can be started.
+        /// </summary>
+        bool CheckCanStartWallDrift(bool checkPlayerForward)
+        {
+            //
+            bool isTouchingWall = controller.collisions.side;
+
+            //
+            bool isFalling = velocity.y <= 0;
+
+            //
+            bool directionOK = true;
+            if (checkPlayerForward)
+            {
+                directionOK = CheckWallRunPlayerForward();
+            }
+
+            //
+            bool stickOK = CheckWallRunStick();
+
+            //
+            return (isTouchingWall && isFalling && directionOK && stickOK);
+        }
+
+        /// <summary>
+        /// Checks whether a horizontal wall run can be started.
+        /// </summary>
+        /// <returns></returns>
+        bool CheckCanStartWallRunHorizontal()
+        {
+            //
+            bool isTouchingWall = controller.collisions.side;
+
+            //
+            bool hasDashed = (dashTimer >= 0 || dashDuration >= 0);
+
+            //
+            bool directionOK = CheckWallRunPlayerForward(-0.95f);
+
+            //
+            bool stickOK = CheckWallRunStick();
+
+            //
+            return (isTouchingWall && hasDashed && directionOK && stickOK);
+        }
+
+        /// <summary>
+        /// Checks whether a vertical wall run can be started.
+        /// </summary>
+        /// <returns></returns>
+        bool CheckCanStartWallRunVertical()
+        {
+            //
+            bool isTouchingWall = controller.collisions.side;
+
+            //
+            bool isOnTheGround = controller.collisions.below;
+
+            //
+            bool isFastEnough = (velocity.magnitude <= playerMod.AbilityData.WallRun.WallRunVertical.MinTriggerSpeed);
+
+            //
+            bool directionOK = CheckWallRunPlayerForward();
+
+            //
+            bool stickOK = CheckWallRunStick();
+
+            //
+            return (isTouchingWall && isOnTheGround && isFastEnough && directionOK && stickOK);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool CheckWallRunPlayerForward(float minDotProduct = -1)
+        {
+            float dotProduct = Vector3.Dot(transform.forward, controller.collisions.currentWallNormal);
+            return (minDotProduct <= dotProduct && dotProduct <= playerMod.AbilityData.WallRun.General.TriggerDotProduct);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        bool CheckWallRunStick()
+        {
+            var stick = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
+            return (stick.z >= playerMod.AbilityData.WallRun.General.StickMinVerticalTrigger) && (Mathf.Abs(stick.x) <= playerMod.AbilityData.WallRun.General.StickMaxHorizontalTrigger);
+        }
+
+        #endregion ability checks
+
         //#############################################################################
 
         #region public utilty functions
