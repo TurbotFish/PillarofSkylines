@@ -291,6 +291,7 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	[HideInInspector]
 	public Vector3 velocity = Vector3.zero;
+	Vector3 externalVelocity = Vector3.zero;
 
 	public Vector3 gravity = -Vector3.up;
 
@@ -658,10 +659,11 @@ public class Player : MonoBehaviour {
 		//Turns the velocity in world space and calls the controller to check if the calculated velocity will run into walls and stuff, and then move the player
 		turnedVelocity = TurnLocalToSpace(velocity);
 		if (currentPlayerState == ePlayerState.gliding) {
-			velocity = controller.Move (velocity * Time.deltaTime);
+			velocity = controller.Move (velocity * Time.deltaTime + externalVelocity);
 		} else {
-			velocity = controller.Move (turnedVelocity * Time.deltaTime);
+			velocity = controller.Move (turnedVelocity * Time.deltaTime + externalVelocity);
 		}
+		externalVelocity = Vector3.zero;
 
 		#region update state
 
@@ -794,7 +796,11 @@ public class Player : MonoBehaviour {
 	#region public utilty functions
 
 	public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool framerateDependant){
-		velocity += (worldSpace? TurnSpaceToLocal(newVelocity) : newVelocity) * (framerateDependant ? Time.deltaTime : 1);
+		if (framerateDependant) {
+			velocity += (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
+		} else {
+			externalVelocity += (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
+		}
 	}
 
 	public void SetVelocity(Vector3 newVelocity, bool worldSpace, bool framerateDependant){

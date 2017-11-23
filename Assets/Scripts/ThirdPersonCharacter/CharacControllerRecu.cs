@@ -63,7 +63,7 @@ public class CharacControllerRecu : MonoBehaviour
 	/// <summary>
 	/// The cloud the player is currently on (null if not on a cloud).
 	/// </summary>
-	Cloud currentCloud;
+	MovingPlatform currentPF;
 
 	bool climbingStep;
 	Vector3 stepOffset;
@@ -156,14 +156,15 @@ public class CharacControllerRecu : MonoBehaviour
 		}
 		if (collisions.below && !climbingStep) {
 			collisions.currentGroundNormal = hit.normal;
-			if (currentCloud == null && hit.collider.CompareTag("cloud")) {
-				currentCloud = hit.collider.GetComponent<Cloud>();
-				currentCloud.AddPlayer(myPlayer);
+			if (currentPF == null && hit.collider.CompareTag("MovingPlatform")) {
+				currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
+				print("pf : " + currentPF + ", player : " + myPlayer);
+				currentPF.AddPlayer(myPlayer);
 			}
 		} else {
-			if (currentCloud != null) {
-				currentCloud.RemovePlayer();
-				currentCloud = null;
+			if (currentPF != null) {
+				currentPF.RemovePlayer();
+				currentPF = null;
 			}
 		}
 		collisions.above = Physics.SphereCast(myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) - myTransform.up * skinWidth * 2, radius, myTransform.up, out hit, skinWidth * 4, collisionMask);
