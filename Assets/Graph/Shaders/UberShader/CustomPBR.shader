@@ -57,7 +57,8 @@ Shader "Alo/PBR/CustomPBR" {
 		_RefractionAmount ("Refraction Amount", Range(-0.1,0.1)) = 0
 
 		//_PlayerPos ("Player World Position", Vector) = (1,1,1,0)
-		_MaxBendAngle ("Maximum Bending Angle", Float) = 40
+		_MaxBendAngle ("Maximum Bending Angle", Float) = 90
+
 	}
 
 	CGINCLUDE
@@ -72,6 +73,7 @@ Shader "Alo/PBR/CustomPBR" {
 
 		Tags {
 			"RenderType" = "Opaque"
+			//"DisableBatching" = "True"
 		}
 
 		GrabPass{
@@ -111,9 +113,9 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ _DISTANCE_DITHER
 			#pragma shader_feature _CULL_BACK _CULL_FRONT _CULL_OFF
 			#pragma shader_feature _ _REFRACTION
-			#pragma shader_feature _ _VERTEX_WIND
-			#pragma shader_feature _ _VERTEX_BEND
 
+			#pragma multi_compile _ _VERTEX_WIND
+			#pragma multi_compile _ _VERTEX_BEND
 			#pragma multi_compile _ SHADOWS_SCREEN
 			#pragma multi_compile _ VERTEXLIGHT_ON
 			#pragma multi_compile_fog
@@ -161,9 +163,9 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ _DISTANCE_DITHER
 			#pragma shader_feature _CULL_BACK _CULL_FRONT _CULL_OFF
 			#pragma shader_feature _ _REFRACTION
-			#pragma shader_feature _ _VERTEX_WIND
-			#pragma shader_feature _ _VERTEX_BEND
 
+			#pragma multi_compile _ _VERTEX_WIND
+			#pragma multi_compile _ _VERTEX_BEND
 			#pragma multi_compile_fwdadd_fullshadows
 			#pragma multi_compile_fog
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
@@ -206,12 +208,13 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ CHECKER_DEBUG
 			#pragma shader_feature _ NORMAL_DISTANCE_FADE
 			#pragma shader_feature _ _DISTANCE_DITHER
-			#pragma shader_feature _ _VERTEX_WIND
-			#pragma shader_feature _ _VERTEX_BEND
+
 
 			#pragma shader_feature _ _CELSHADED
 			#pragma shader_feature _ _REFRACTION
 
+			#pragma multi_compile _ _VERTEX_WIND
+			#pragma multi_compile _ _VERTEX_BEND
 			#pragma multi_compile _ UNITY_HDR_ON
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
 

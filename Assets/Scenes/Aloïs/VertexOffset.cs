@@ -8,7 +8,7 @@ public class VertexOffset : MonoBehaviour {
 	Material _mat;
 
 	void Start(){
-		_mat = _go.GetComponent<Renderer> ().material;
+		_mat = _go.GetComponent<Renderer> ().sharedMaterial;
 	}
 
 	void Update(){
