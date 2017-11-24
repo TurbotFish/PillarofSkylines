@@ -147,7 +147,11 @@ namespace Game.Player.CharacterController
 						position = hit.point + (wall.transform.position - hit.point)*.01f;
 				} while (!wall.gameObject.Equals(hit.transform.gameObject) && foundSmth);
 
-				OutOfWallDirection += hit.normal;
+				if (foundSmth) {
+					OutOfWallDirection += hit.normal;
+				} else {
+					OutOfWallDirection += transform.up;
+				}
 //				print("added : " + hit.normal + " from : " + hit.transform.name);
 
 				/*
@@ -169,13 +173,13 @@ namespace Game.Player.CharacterController
 
 
             }
-
+			/*
 			if (collisions.below) {
 				OutOfWallDirection += collisions.currentGroundNormal;
 			}
 			if (collisions.side) {
 				OutOfWallDirection += collisions.currentWallNormal;
-			}
+			}*/
 
             Physics.Raycast(myTransform.position + velocity + playerAngle * center, -OutOfWallDirection, out hit, radius + height / 2, collisionMask);
             OutOfWallDirection = OutOfWallDirection.normalized * (radius + height / 2);
