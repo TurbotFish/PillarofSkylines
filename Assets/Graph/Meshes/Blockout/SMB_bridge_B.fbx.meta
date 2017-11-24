@@ -10,6 +10,7 @@ ModelImporter:
     2300000: //RootNode
     3300000: //RootNode
     4300000: SMB_bridge_B
+    4300002: SMB_bridge_C
     6400000: //RootNode
     9500000: //RootNode
   materials:
@@ -60,7 +61,7 @@ ModelImporter:
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
-    tangentImportMode: 3
+    tangentImportMode: 1
     normalCalculationMode: 4
   importAnimation: 0
   copyAvatar: 0
@@ -84,6 +85,6 @@ ModelImporter:
   animationType: 0
   humanoidOversampling: 1
   additionalBone: 0
-  userData: 
+  userData: DIO_applied
   assetBundleName: 
   assetBundleVariant: 

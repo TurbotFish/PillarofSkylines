@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: fa1146fbf06b8314e859b23db6827852
-timeCreated: 1509717138
+guid: 29fcd5ac3e5082741b811f2787093af6
+timeCreated: 1511518715
 licenseType: Pro
 ModelImporter:
   serializedVersion: 21
@@ -9,10 +9,8 @@ ModelImporter:
     400000: //RootNode
     2300000: //RootNode
     3300000: //RootNode
-    4300000: SMB_bridge_A
-    4300002: SMB_bridge_C
+    4300000: Object001
     6400000: //RootNode
-    9500000: //RootNode
   materials:
     importMaterials: 0
     materialName: 0
