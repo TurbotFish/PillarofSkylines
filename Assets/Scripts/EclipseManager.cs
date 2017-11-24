@@ -18,6 +18,7 @@ namespace Game
         Vector3 eclipseGravity = new Vector3(1, 0, 0);
 
         Game.Player.CharacterController.Character player;
+        Eclipse eclipsePostEffect;
 
         bool isEclipseActive;
 
@@ -45,6 +46,7 @@ namespace Game
         public void InitializeEclipseManager(GameControl.IGameControllerBase gameController)
         {
             this.player = gameController.PlayerController.Player;
+            this.eclipsePostEffect = gameController.CameraController.EclipseEffect;
 
             Utilities.EventManager.OnEclipseEvent += OnEclipseEventHandler;
             Utilities.EventManager.OnSceneChangedEvent += OnSceneChangedEventHandler;
@@ -107,15 +109,21 @@ namespace Game
         {
             float gravityTimer = 0;
             player.SetVelocity(new Vector3(0f, 10f, 0f), false, false);
+            if (eclipseOn)
+                eclipsePostEffect.enabled = true;
+
             while (gravityTimer < rotationDuration)
             {
+                float t = gravityTimer / rotationDuration;
                 if (eclipseOn)
                 {
-                    player.ChangeGravityDirection(Vector3.Lerp(regularGravity, eclipseGravity, gravityTimer / rotationDuration));
+                    player.ChangeGravityDirection(Vector3.Lerp(regularGravity, eclipseGravity, t));
+                    eclipsePostEffect.Intensity = Mathf.Lerp(0, 1, t);
                 }
                 else
                 {
-                    player.ChangeGravityDirection(Vector3.Lerp(eclipseGravity, regularGravity, gravityTimer / rotationDuration));
+                    player.ChangeGravityDirection(Vector3.Lerp(eclipseGravity, regularGravity, t));
+                    eclipsePostEffect.Intensity = Mathf.Lerp(1, 0, t);
                 }
                 gravityTimer += Time.deltaTime;
                 yield return null;
@@ -123,10 +131,12 @@ namespace Game
             if (eclipseOn)
             {
                 player.ChangeGravityDirection(eclipseGravity);
+                eclipsePostEffect.Intensity = 1;
             }
             else
             {
                 player.ChangeGravityDirection(regularGravity);
+                eclipsePostEffect.enabled = false;
             }
         }
 
