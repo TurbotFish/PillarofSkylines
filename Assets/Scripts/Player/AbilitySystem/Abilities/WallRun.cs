@@ -36,7 +36,11 @@ namespace Game.Player.AbilitySystem
         {
             base.OnValidate();
 
-
+            general.OnValidate();
+            wallJump.OnValidate();
+            wallDrift.OnValidate();
+            wallRunHorizontal.OnValidate();
+            wallRunVertical.OnValidate();
         }
 
         //########################################################### 
@@ -50,17 +54,17 @@ namespace Game.Player.AbilitySystem
             "\n'0': the player forward and the wall are perpendicular." +
             "\n'1' the player faces away from the wall.")]
             [SerializeField]
-            float triggerDotProduct = -0.5f;
+            float triggerDotProduct;
             public float TriggerDotProduct { get { return triggerDotProduct; } }
 
-            [Tooltip("")]
+            [Tooltip("The minimal value of the vertical axis of the left stick required to activate or stay in wall run mode.")]
             [SerializeField]
-            float stickMinVerticalTrigger = 0.4f;
+            float stickMinVerticalTrigger;
             public float StickMinVerticalTrigger { get { return stickMinVerticalTrigger; } }
 
-            [Tooltip("")]
+            [Tooltip("The maximal value (absolute) of the horizontal axis of the left stick required to activate or stay in wall run mode.")]
             [SerializeField]
-            float stickMaxHorizontalTrigger = 0.4f;
+            float stickMaxHorizontalTrigger;
             public float StickMaxHorizontalTrigger { get { return stickMaxHorizontalTrigger; } }
 
             //******************************
@@ -77,9 +81,9 @@ namespace Game.Player.AbilitySystem
         public class WallDriftData
         {
             //wall drift target speed
-            [Tooltip("")]
+            [Tooltip("The speed the player tends towards during a wall drift.")]
             [SerializeField]
-            float targetSpeed = 10f;
+            float targetSpeed;
             public float TargetSpeed { get { return targetSpeed; } }
 
             //wall drift slowdown factor
@@ -87,7 +91,7 @@ namespace Game.Player.AbilitySystem
                 "'1': instant slowdown" +
                 "\n'0': no slowdown")]
             [SerializeField]
-            float slowdownFactor = 0.8f;
+            float slowdownFactor;
             public float SlowdownFactor { get { return slowdownFactor; } }
 
             //******************************
@@ -102,15 +106,15 @@ namespace Game.Player.AbilitySystem
         public class WallJumpData
         {
             //wall jump time
-            [Tooltip("")]
+            [Tooltip("The duration during which gravity is ignored and the player can't turn.")]
             [SerializeField]
-            float duration = 1f;
+            float duration;
             public float Duration { get { return duration; } }
 
             //wall jump strength
-            [Tooltip("")]
+            [Tooltip("The initial \"speed\" of the jump.")]
             [SerializeField]
-            float strength = 30f;
+            float strength;
             public float Strength { get { return strength; } }
 
             //******************************
@@ -125,21 +129,21 @@ namespace Game.Player.AbilitySystem
         public class WallRunHorizontalData
         {
             //wall run horizontal time
-            [Tooltip("")]
+            [Tooltip("The duration of a horizontal wall run.")]
             [SerializeField]
-            float duration = 4f;
+            float duration;
             public float Duration { get { return duration; } }
 
             //wall run horizontal target speed
-            [Tooltip("")]
+            [Tooltip("The speed the player tends towards during a horizontal wall run.")]
             [SerializeField]
-            float targetSpeed = 8;
+            float targetSpeed;
             public float TargetSpeed { get { return targetSpeed; } }
 
             //wall run horizontal gravity multiplier
-            [Tooltip("")]
+            [Tooltip("The rate by which gravity is reduced during a horizontal wall run.")]
             [SerializeField]
-            float gravityMultiplier = 0.2f;
+            float gravityMultiplier;
             public float GravityMultiplier { get { return gravityMultiplier; } }
 
             //******************************
@@ -154,34 +158,40 @@ namespace Game.Player.AbilitySystem
         public class WallRunVerticalData
         {
             //wall run vertical min speed
-            [Tooltip("")]
+            [Tooltip("The minimal speed required to activate a vertical wall run.")]
             [SerializeField]
-            float minTriggerSpeed = 1f;
+            float minTriggerSpeed;
             public float MinTriggerSpeed { get { return minTriggerSpeed; } }
 
             //wall run vertical target speed
-            [Tooltip("")]
+            [Tooltip("The speed the player tends towards during a vertical wall run.")]
             [SerializeField]
-            float targetSpeed = 4;
+            float targetSpeed;
             public float TargetSpeed { get { return targetSpeed; } }
 
             //wall run vertical acceleration factor
-            [Tooltip("")]
+            [Tooltip("How \"fast\" the player accelerates.")]
             [SerializeField]
-            float accelerationFactor = 0.8f;
+            float accelerationFactor;
             public float AccelerationFactor { get { return accelerationFactor; } }
 
             //wall run vertical slowdown factor
-            [Tooltip("")]
+            [Tooltip("How \"fast\" the player slows down.")]
             [SerializeField]
-            float slowdownFactor = 0.6f;
+            float slowdownFactor;
             public float SlowdownFactor { get { return slowdownFactor; } }
 
             //wall run vertical time
-            [Tooltip("")]
+            [Tooltip("The base duration of a vertical wall run.")]
             [SerializeField]
-            float duration = 4f;
-            public float Duration { get { return duration; } }
+            float baseDuration;
+            public float BaseDuration { get { return baseDuration; } }
+
+            //wall run vertical duration multiplier
+            [Tooltip("The speed of the player multiplied by this value is added to the duration.")]
+            [SerializeField]
+            float durationMultiplier;
+            public float DurationMultiplier { get { return durationMultiplier; } }
 
             //******************************
 

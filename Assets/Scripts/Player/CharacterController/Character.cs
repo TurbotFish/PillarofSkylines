@@ -161,6 +161,8 @@ namespace Game.Player.CharacterController
 
         float permissiveJumpTime;
 
+        Vector3 jumpDirection;
+
         #endregion jump variables
 
         #region glide variables
@@ -797,7 +799,7 @@ namespace Game.Player.CharacterController
                 #region direction calculations - wall drifting
 
                 case ePlayerState.WallDrifting:
-                    //jumping
+                    //jump
                     if (pressedJump)
                     {
                         lastJumpAerial = false;
@@ -807,7 +809,9 @@ namespace Game.Player.CharacterController
                         var dir = controller.collisions.currentWallNormal;
                         transform.forward = dir;
 
-                        flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * (transform.up + dir * 2).normalized;
+                        jumpDirection = (transform.up + dir * 2).normalized;
+
+                        flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * jumpDirection;
                         velocity.y = 0f;
 
                         ignoreGravityTimer = ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.Duration;
@@ -816,7 +820,16 @@ namespace Game.Player.CharacterController
 
                         break;
                     }
+                    //interrupt
+                    if (!CheckWallRunStick())
+                    {
+                        QuitStateWallDrift();
 
+                        EnterStateInAir();
+
+                        break;
+                    }
+                    //default
                     float wallDriftSpeed = Mathf.Lerp(velocity.magnitude, playerMod.AbilityData.WallRun.WallDrift.TargetSpeed, playerMod.AbilityData.WallRun.WallDrift.SlowdownFactor);
 
                     flatVelocity = -transform.up * wallDriftSpeed;
@@ -829,19 +842,20 @@ namespace Game.Player.CharacterController
                 #region direction calculation - wall run horizontal
 
                 case ePlayerState.WallRunningHorizontal:
-                    //
+                    //jump
                     if (pressedJump)
                     {
-                        Debug.Log("A");
                         lastJumpAerial = false;
 
                         QuitStateWallRunHorizontal();
 
-                        var dir = (Vector3.up + controller.collisions.currentWallNormal + transform.forward).normalized;
+                        var dir = (controller.collisions.currentWallNormal + transform.forward).normalized;
                         transform.forward = new Vector3(dir.x, 0, dir.z).normalized;
 
+                        jumpDirection = (transform.up + dir * 2).normalized;
+
                         velocity.y = 0f;
-                        flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * dir;
+                        flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * jumpDirection;
 
                         ignoreGravityTimer = ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.Duration;
 
@@ -849,10 +863,18 @@ namespace Game.Player.CharacterController
 
                         break;
                     }
-                    //
+                    //interrupt
+                    if (!CheckWallRunStick())
+                    {
+                        QuitStateWallRunHorizontal();
+
+                        EnterStateInAir();
+
+                        break;
+                    }
+                    //time over
                     if (wallRunHorizontalTimer <= 0)
                     {
-                        Debug.Log("B");
                         QuitStateWallRunHorizontal();
 
                         EnterStateWallDrift();
@@ -860,7 +882,6 @@ namespace Game.Player.CharacterController
                         break;
                     }
                     //default
-                    Debug.Log("C");
                     velocity.y = -gravityStrength * playerMod.AbilityData.WallRun.WallRunHorizontal.GravityMultiplier * Time.deltaTime;
                     flatVelocity = transform.forward * Mathf.Lerp(flatVelocity.magnitude, playerMod.AbilityData.WallRun.WallRunHorizontal.TargetSpeed, 0.6f * Time.deltaTime);
 
@@ -881,10 +902,21 @@ namespace Game.Player.CharacterController
                         var dir = controller.collisions.currentWallNormal;
                         transform.forward = dir;
 
-                        flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * (transform.up + dir * 2).normalized;
+                        jumpDirection = (transform.up + dir * 2).normalized;
+
+                        flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * jumpDirection;
                         velocity.y = 0f;
 
-                        ignoreGravityTimer = ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.Duration;
+                        /*ignoreGravityTimer =*/ ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.Duration;
+
+                        EnterStateInAir();
+
+                        break;
+                    }
+                    //interrupt
+                    if (!CheckWallRunStick())
+                    {
+                        QuitStateWallRunVertical();
 
                         EnterStateInAir();
 
@@ -1477,7 +1509,7 @@ namespace Game.Player.CharacterController
             canTurnPlayer = false;
             transform.forward = -controller.collisions.currentWallNormal;
 
-            wallRunVerticalTimer = playerMod.AbilityData.WallRun.WallRunVertical.Duration;
+            wallRunVerticalTimer = playerMod.AbilityData.WallRun.WallRunVertical.BaseDuration + velocity.magnitude * playerMod.AbilityData.WallRun.WallRunVertical.DurationMultiplier;
         }
 
         /// <summary>
@@ -1583,7 +1615,7 @@ namespace Game.Player.CharacterController
         }
 
         /// <summary>
-        /// 
+        /// Checks whether the player is holding the left stick in position to activate or stay in wall run mode.
         /// </summary>
         bool CheckWallRunStick()
         {
