@@ -1,19 +1,17 @@
 fileFormatVersion: 2
-guid: 936b36a45e6c64d4f92910e934481f4c
-timeCreated: 1510830658
+guid: e804b4256209b4348b698c25a62318a6
+timeCreated: 1511521582
 licenseType: Pro
 ModelImporter:
   serializedVersion: 21
   fileIDToRecycleName:
     100000: //RootNode
-    100002: trunk_B005
     400000: //RootNode
-    400002: trunk_B005
-    2300000: trunk_B005
-    3300000: trunk_B005
-    4300000: trunk_B005
+    2300000: //RootNode
+    3300000: //RootNode
+    4300000: SM_detail_woodplateS_C
   materials:
-    importMaterials: 1
+    importMaterials: 0
     materialName: 0
     materialSearch: 1
   animations:
@@ -44,8 +42,8 @@ ModelImporter:
     addColliders: 0
     importVisibility: 1
     importBlendShapes: 1
-    importCameras: 1
-    importLights: 1
+    importCameras: 0
+    importLights: 0
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
@@ -60,9 +58,9 @@ ModelImporter:
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
-    tangentImportMode: 3
+    tangentImportMode: 1
     normalCalculationMode: 4
-  importAnimation: 1
+  importAnimation: 0
   copyAvatar: 0
   humanDescription:
     serializedVersion: 2
