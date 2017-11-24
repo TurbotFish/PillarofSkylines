@@ -1539,6 +1539,9 @@ namespace Game.Player.CharacterController
         bool CheckCanStartWallDrift(bool checkPlayerForward)
         {
             //
+            bool isAbilityActive = playerMod.CheckAbilityActive(eAbilityType.WallRun);
+
+            //
             bool isTouchingWall = controller.collisions.side;
 
             //
@@ -1555,7 +1558,7 @@ namespace Game.Player.CharacterController
             bool stickOK = CheckWallRunStick();
 
             //
-            return (isTouchingWall && isFalling && directionOK && stickOK);
+            return (isAbilityActive && isTouchingWall && isFalling && directionOK && stickOK);
         }
 
         /// <summary>
@@ -1564,6 +1567,9 @@ namespace Game.Player.CharacterController
         /// <returns></returns>
         bool CheckCanStartWallRunHorizontal()
         {
+            //
+            bool isAbilityActive = playerMod.CheckAbilityActive(eAbilityType.WallRun);
+
             //
             bool isTouchingWall = controller.collisions.side;
 
@@ -1577,7 +1583,7 @@ namespace Game.Player.CharacterController
             bool stickOK = CheckWallRunStick();
 
             //
-            return (isTouchingWall && hasDashed && directionOK && stickOK);
+            return (isAbilityActive && isTouchingWall && hasDashed && directionOK && stickOK);
         }
 
         /// <summary>
@@ -1586,6 +1592,9 @@ namespace Game.Player.CharacterController
         /// <returns></returns>
         bool CheckCanStartWallRunVertical()
         {
+            //
+            bool isAbilityActive = playerMod.CheckAbilityActive(eAbilityType.WallRun);
+
             //
             bool isTouchingWall = controller.collisions.side;
 
@@ -1602,7 +1611,7 @@ namespace Game.Player.CharacterController
             bool stickOK = CheckWallRunStick();
 
             //
-            return (isTouchingWall && isOnTheGround && isFastEnough && directionOK && stickOK);
+            return (isAbilityActive && isTouchingWall && isOnTheGround && isFastEnough && directionOK && stickOK);
         }
 
         /// <summary>
