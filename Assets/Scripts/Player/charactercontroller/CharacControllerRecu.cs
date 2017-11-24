@@ -138,33 +138,52 @@ namespace Game.Player.CharacterController
             Vector3 OutOfWallDirection = Vector3.zero;
             foreach (Collider wall in wallsOverPlayer)
             {
-                print("collider : " + wall.name);
+//                print("collider : " + wall.name);
+				bool foundSmth = false;
+				Vector3 position = myTransform.position + velocity + playerAngle * center;
+				do {
+					foundSmth = Physics.Linecast(position, wall.transform.position, out hit, collisionMask);
+					if (foundSmth)
+						position = hit.point + (wall.transform.position - hit.point)*.01f;
+				} while (!wall.gameObject.Equals(hit.transform.gameObject) && foundSmth);
 
+				OutOfWallDirection += hit.normal;
+//				print("added : " + hit.normal + " from : " + hit.transform.name);
+
+				/*
                 if (Physics.Linecast(myTransform.position + velocity + playerAngle * center, wall.transform.position, out hit, collisionMask))
                 {
-                    OutOfWallDirection += hit.normal;
-                    print("added : " + hit.normal);
-                }
-
-
-                /*if (wall.bounds.Contains(myTransform.position)) {
-                    print("from inside");
-                    OutOfWallDirection += (wall.ClosestPointOnBounds(myTransform.position) - myTransform.position);
-                    print("added : " + (wall.ClosestPointOnBounds(myTransform.position) - myTransform.position)*100 + " from : " + myTransform.position + " to : " + wall.ClosestPointOnBounds(myTransform.position));
-                } else {
-                    print("from outside");
-                    OutOfWallDirection += (myTransform.position - wall.ClosestPointOnBounds(myTransform.position));
-                    print("added : " + (myTransform.position - wall.ClosestPointOnBounds(myTransform.position))*100 + " from : " + wall.ClosestPointOnBounds(myTransform.position) + " to : " + myTransform.position);
+					if (wall.gameObject.Equals(hit.transform.gameObject)) {
+						OutOfWallDirection += hit.normal;
+						print("added : " + hit.normal + " from : " + hit.transform.name);
+					} else {
+						print("retry");
+						if (Physics.Linecast(hit.point + (wall.transform.position - hit.point)*.01f, wall.transform.position, out hit, collisionMask)) {
+							if (wall.gameObject.Equals(hit.transform.gameObject)) {
+								OutOfWallDirection += hit.normal;
+								print("added : " + hit.normal + " from : " + hit.transform.name);
+							} 
+						}
+					}
                 }*/
+
+
             }
+
+			if (collisions.below) {
+				OutOfWallDirection += collisions.currentGroundNormal;
+			}
+			if (collisions.side) {
+				OutOfWallDirection += collisions.currentWallNormal;
+			}
+
             Physics.Raycast(myTransform.position + velocity + playerAngle * center, -OutOfWallDirection, out hit, radius + height / 2, collisionMask);
             OutOfWallDirection = OutOfWallDirection.normalized * (radius + height / 2);
 
-            print("moved towards : " + OutOfWallDirection);
+//            print("moved towards : " + OutOfWallDirection);
             if (Physics.CapsuleCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + OutOfWallDirection, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + OutOfWallDirection, radius
                 , -OutOfWallDirection, out hit, radius + height, collisionMask))
             {
-                print("collided");
                 myTransform.Translate(OutOfWallDirection * (1 - hit.distance), Space.World);
                 return ConfirmMovement(velocity);
             }
@@ -173,35 +192,6 @@ namespace Game.Player.CharacterController
                 myTransform.Translate(OutOfWallDirection, Space.World);
                 return ConfirmMovement(velocity);
             }
-            /*
-            wallsOverPlayer = Physics.OverlapCapsule(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + velocity, 
-                myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + velocity, radius, collisionMaskNoCloud);
-            if (wallsOverPlayer.Length == 0) {
-                return ConfirmMovement(velocity);
-            } else {
-                return AdjustPlayerPosition(velocity);
-            }*/
-
-            /*
-            wallDir = Vector3.zero;
-            Debug.LogWarning("Oh oh, tu vas dans un mur. " + collisions.below);
-            if (collisions.below) {
-                wallDir = collisions.currentGroundNormal;
-            } else if (collisions.side) {
-                wallDir = collisions.currentWallNormal;
-            } else if (Physics.Raycast(transform.position + playerAngle * center, collisions.initialVelocityOnThisFrame, out hit, collisions.initialVelocityOnThisFrame.magnitude + radius + height / 2 + skinWidth, collisionMask)) {
-                wallDir = hit.normal;
-            }
-            if (Physics.Raycast(transform.position + playerAngle * center + collisions.initialVelocityOnThisFrame, -wallDir, out hit, radius + height / 2 + skinWidth, collisionMask)) {
-                Vector3 destination = (hit.point + (hit.normal * (Mathf.Abs(Vector3.Dot(transform.up, hit.normal)) * height / 2 + radius + skinWidth))) - myTransform.up * (height / 2 + radius); 
-                if (!Physics.CheckCapsule(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + (destination - myTransform.position)
-                    , myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + (destination - myTransform.position), radius, collisionMaskNoCloud)) {
-                    myTransform.Translate(destination - myTransform.position, Space.World);
-                    finalVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * (velocity) / Time.deltaTime;
-                }
-            } else {
-                finalVelocity = Vector3.zero;
-            }*/
         }
 
 
