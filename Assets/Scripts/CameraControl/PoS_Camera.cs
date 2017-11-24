@@ -268,7 +268,7 @@ public class PoS_Camera : MonoBehaviour {
 		float slopeValue = CheckGroundAndReturnSlopeValue();
 		// TODO: Il nous faut une fonction SetState() pour pouvoir faire des trucs uniquement lors d'un changement de State
         
-        if (resetType == eResetType.ManualAir && playerState == ePlayerState.onGround) {
+        if (resetType == eResetType.ManualAir && playerState == Game.Player.CharacterController.ePlayerState.onGround) {
             state = eCameraState.Default;
             resetType = eResetType.None;
         }
