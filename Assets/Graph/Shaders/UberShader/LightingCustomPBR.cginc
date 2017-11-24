@@ -368,7 +368,7 @@
 			light.color = _LightColor0.rgb * attenuation;
 
 			//tweak the colour of received shadows here
-			//light.color = lerp(float3(1,0,0),_LightColor0.rgb,  attenuation);
+			//light.color = lerp(float3(1,0,0),_LightColor0.rgb,  0);
 
 		#endif
 		return light;
@@ -603,7 +603,7 @@
 				color.rgb = exp2(-color.rgb);
 			#endif
 			output.gBuffer0.rgb = albedo;
-			output.gBuffer0.a = thickness;
+			//output.gBuffer0.a = thickness;
 			output.gBuffer1.rgb = specularTint;
 			output.gBuffer1.a = GetSmoothness(i);
 			output.gBuffer2.rgba = float4(i.normal.xyz * 0.5 + 0.5, GetCelShadingMask());
