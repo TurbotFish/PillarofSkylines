@@ -128,8 +128,6 @@ public class CharacControllerRecu : MonoBehaviour
 		foreach (Collider wall in wallsOverPlayer) {
 			print("collider : " + wall.name);
 
-
-			print("from outside" + (myTransform.position + velocity + playerAngle * center));
 			if (Physics.Linecast(myTransform.position + velocity + playerAngle * center, wall.transform.position, out hit, collisionMask)) {
 				OutOfWallDirection += hit.normal;
 				print("added : " + hit.normal);
@@ -150,8 +148,15 @@ public class CharacControllerRecu : MonoBehaviour
 		OutOfWallDirection = OutOfWallDirection.normalized * (radius + height/2);
 
 		print("moved towards : " + OutOfWallDirection);
-		myTransform.Translate(OutOfWallDirection, Space.World);
-		return ConfirmMovement(velocity);
+		if (Physics.CapsuleCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + OutOfWallDirection, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + OutOfWallDirection, radius
+			, -OutOfWallDirection, out hit, radius + height, collisionMask)) {
+			print("collided");
+			myTransform.Translate(OutOfWallDirection * (1-hit.distance), Space.World);
+			return ConfirmMovement(velocity);
+		} else {
+			myTransform.Translate(OutOfWallDirection, Space.World);
+			return ConfirmMovement(velocity);
+		}
 		/*
 		wallsOverPlayer = Physics.OverlapCapsule(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + velocity, 
 			myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + velocity, radius, collisionMaskNoCloud);
@@ -190,7 +195,7 @@ public class CharacControllerRecu : MonoBehaviour
 			currentPF.RemovePlayer();
 			currentPF = null;
 		}
-		// EN TEST POUR BIEN RESTER COLLER AU SOL, à voir ce que ça vaut
+		// EN TEST POUR BIEN RESTER AU SOL, à voir ce que ça vaut
 		if (myPlayer.currentPlayerState == ePlayerState.onGround) {
 			if (Physics.SphereCast(myTransform.position + myTransform.up * (radius + skinWidth), radius, -myTransform.up, out hit2, myPlayer.maxStepHeight, collisionMask)) {
 				transform.position += -myTransform.up * (hit2.distance - skinWidth);
