@@ -310,10 +310,10 @@ namespace Game.Player.CharacterController
 
             if (collisions.side) //register with moving platforms
             {
-                if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
+                if (currentPF == null && sideHit.collider.CompareTag("MovingPlatform"))
                 {
-                    currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
-                    currentPF.AddPlayer(myPlayer, hit.point);
+                    currentPF = sideHit.collider.GetComponentInParent<MovingPlatform>();
+                    currentPF.AddPlayer(myPlayer, sideHit.point);
                 }
             }
 
