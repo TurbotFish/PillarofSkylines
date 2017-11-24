@@ -87,10 +87,15 @@ namespace Game.World.ChunkSystem
                 go.GetComponent<SubChunkController>().InitializeSubChunkCopy(this);
 
                 var colliders = go.GetComponentsInChildren<Collider>(true);
-
-                foreach (var collider in colliders)
+                for (int i = 0; i < colliders.Length; i++)
                 {
-                    Destroy(collider);
+                    Destroy(colliders[i]);
+                }
+
+                var renderers = go.GetComponentsInChildren<Renderer>(true);
+                for (int i = 0; i < renderers.Length; i++)
+                {
+                    renderers[i].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 }
             }
         }
@@ -113,7 +118,8 @@ namespace Game.World.ChunkSystem
             this.IsActive = active;
             StopAllCoroutines();
 
-            lock (this.childListLock) {
+            lock (this.childListLock)
+            {
                 if (immediate)
                 {
                     foreach (var go in this.childList)
@@ -125,7 +131,7 @@ namespace Game.World.ChunkSystem
                 {
                     this.worldController.QueueObjectsToSetActive(this.childList, active);
                     //StartCoroutine(SetActiveRoutine(active));
-            }
+                }
             }
         }
 

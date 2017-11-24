@@ -878,6 +878,7 @@ namespace Game.Player.CharacterController
                     {
                         QuitStateWallRunHorizontal();
 
+                        Debug.LogWarning("Entering wall drift without check!");
                         EnterStateWallDrift();
 
                         break;
@@ -908,7 +909,7 @@ namespace Game.Player.CharacterController
                         flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * jumpDirection;
                         velocity.y = 0f;
 
-                        /*ignoreGravityTimer =*/ ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.Duration;
+                        ignoreGravityTimer = ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.Duration;
 
                         EnterStateInAir();
 
@@ -928,6 +929,7 @@ namespace Game.Player.CharacterController
                     {
                         QuitStateWallRunVertical();
 
+                        Debug.LogWarning("Entering wall drift without check!");
                         EnterStateWallDrift();
 
                         break;
@@ -1077,18 +1079,13 @@ namespace Game.Player.CharacterController
                         break;
                     }
                     //start a vertical wall run
-                    if (controller.collisions.side && velocity.magnitude >= playerMod.AbilityData.WallRun.WallRunVertical.MinTriggerSpeed)
+                    if (CheckCanStartWallRunVertical())
                     {
-                        float dotProduct = Vector3.Dot(transform.forward, controller.collisions.currentWallNormal);
+                        QuitStateOnGround();
 
-                        if (dotProduct <= playerMod.AbilityData.WallRun.General.TriggerDotProduct)
-                        {
-                            QuitStateOnGround();
+                        EnterStateWallRunVertical();
 
-                            EnterStateWallRunVertical();
-
-                            break;
-                        }
+                        break;
                     }
 
                     break;
