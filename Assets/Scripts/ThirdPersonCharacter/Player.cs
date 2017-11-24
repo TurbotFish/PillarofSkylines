@@ -834,6 +834,11 @@ public class Player : MonoBehaviour {
 		transform.Rotate (Vector3.Cross(transform.up, -gravity), Vector3.SignedAngle(transform.up, -gravity, Vector3.Cross(transform.up, -gravity)),Space.World);
 	}
 
+	public void ChangeGravityDirection(Vector3 newGravity, Vector3 point){
+		gravity = newGravity.normalized;
+		transform.RotateAround (point, Vector3.Cross(transform.up, -gravity),  Vector3.SignedAngle(transform.up, -gravity, Vector3.Cross(transform.up, -gravity)));
+	}
+
 
 	public void InitializePlayer(PlayerModel playmod) {
         this.isInitialized = true;
