@@ -3,7 +3,7 @@
         Tags { "RenderType"="Opaque" "Queue"="Geometry"}
         ColorMask 0
         ZWrite off
-        Cull off
+
         Pass {
             Stencil {
                 Ref 4
