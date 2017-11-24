@@ -10,10 +10,22 @@ public class PoS_Camera : MonoBehaviour {
 
 	public eCameraState state;
 	public enum eCameraState {
-		Default, Idle, PlayerControl,
-		Resetting, AroundCorner, FollowBehind,
-		Slope, Air, LookAt
+        Default = 0,
+        Idle = 1,
+        Air = 2,
+        Slope = 20,
+        FollowBehind = 40,
+        Resetting = 80,
+        AroundCorner = 85,
+        LookAt = 90,
+        PlayerControl = 100,
 	}
+
+    public eResetType resetType;
+    public enum eResetType {
+        None, ManualGround, ManualAir,
+        AxisAlign, InverseAxisAlign, POI,
+    }
 
 	[Header("Position")]
 	public Transform target;
@@ -37,7 +49,7 @@ public class PoS_Camera : MonoBehaviour {
 	public bool followBehind;
 	public float timeBeforeAutoReset = 5;
 	public float autoResetDamp = 1;
-    public float axisAlignDamp = .8f;
+    public float axisAlignDamp = 1f;
     
 	public MinMax distanceBasedOnPitch = new MinMax(1, 12);
 	public AnimationCurve distanceFromRotation;
@@ -141,14 +153,11 @@ public class PoS_Camera : MonoBehaviour {
 		DoRotation();
 		EvaluatePositionFromRotation();
 		SmoothMovement();
-        
-        Vector3 characterUp = target.parent.up; // TODO: only change this value when there's a change of gravity?
-        target.LookAt(target.position + Vector3.ProjectOnPlane(my.forward, characterUp), characterUp); // Reoriente the character's rotator
+        RealignPlayer();
 
         if (enablePanoramaMode)
 			DoPanorama();
 	}
-
     #endregion
 
     #region General Methods
@@ -160,20 +169,29 @@ public class PoS_Camera : MonoBehaviour {
     /// <param name="args"> Contient la position vers laquelle tp, et un bool pour savoir si on a changé de scène. </param>
     void OnTeleportPlayer(object sender, Game.Utilities.EventManager.OnTeleportPlayerEventArgs args) {
         if (args.IsNewScene) {
-            PlaceBehindPlayerNoLerp();
             // on reset les paramètres par défaut de la caméra
+            currentDistance = distance;
             ResetZoom();
             nearPOI = false;
             axisAligned = Vector3.zero;
             enablePanoramaMode = true;
-        } else {
-            my.position = args.Position - lastFrameOffset;
-            negDistance.z = -currentDistance;
-            Vector3 targetWithOffset = args.Position + my.right * offset.x + my.up * offset.y;
-            camPosition = my.rotation * negDistance + targetWithOffset;
         }
+        my.position = args.Position - lastFrameOffset;
+        negDistance.z = -currentDistance;
+        Vector3 targetWithOffset = args.Position + my.right * offset.x + my.up * offset.y;
+        camPosition = my.rotation * negDistance + targetWithOffset;
     }
 	
+    void RealignPlayer() {
+        // TODO: During a camera realignment, wait before realigning player
+        
+        Vector3 characterUp = target.parent.up; // TODO: only change this value when there's a change of gravity?
+        if (state == eCameraState.LookAt && inverseFacingDirection)
+            target.LookAt(target.position + Vector3.ProjectOnPlane(  startFacingDirection != inverseFacingDirection  ? -axisAligned : axisAligned, characterUp), characterUp); // Reoriente the character's rotator
+        else
+            target.LookAt(target.position + Vector3.ProjectOnPlane(my.forward, characterUp), characterUp); // Reoriente the character's rotator
+    }
+
     /// <summary>
     /// Hard reset de la caméra, la place immédiatement à sa position par défaut (utilisé quand le player spawn).
     /// </summary>
@@ -200,6 +218,7 @@ public class PoS_Camera : MonoBehaviour {
             if (((autoAdjustYaw && Mathf.Abs(Mathf.DeltaAngle(yaw, targetYaw)) < 1f) || !autoAdjustYaw)
                 && ((autoAdjustPitch && Mathf.Abs(Mathf.DeltaAngle(pitch, targetPitch)) < 1f) || !autoAdjustPitch)) {
                 state = eCameraState.Default;
+                resetType = eResetType.None;
             }
         }
     }
@@ -245,12 +264,21 @@ public class PoS_Camera : MonoBehaviour {
 		playerVelocity = player.velocity;
 
 		targetSpace = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, target.up), Vector3.Cross(Vector3.up, target.up));
-
-		// Get the value of the slope we're walking on (or we're about to walk on) also check if we're on a cliff
+        
 		float slopeValue = CheckGroundAndReturnSlopeValue();
-		// Il nous faut une fonction SetState() pour pouvoir faire des trucs uniquement lors d'un changement de State
+		// TODO: Il nous faut une fonction SetState() pour pouvoir faire des trucs uniquement lors d'un changement de State
+        
+        if (resetType == eResetType.ManualAir && playerState == ePlayerState.onGround) {
+            state = eCameraState.Default;
+            resetType = eResetType.None;
+        }
 
-		if (input.magnitude != 0) { // Contrôle manuel
+        if (inverseFacingDirection && Input.GetAxis("Vertical") >= 0) {
+            startFacingDirection ^= true;
+            inverseFacingDirection = false;
+        }
+
+        if (input.sqrMagnitude != 0) { // Contrôle manuel
 			state = eCameraState.PlayerControl;
 			manualPitch = pitch - slopeValue;
 			autoAdjustPitch = false;
@@ -259,10 +287,10 @@ public class PoS_Camera : MonoBehaviour {
 			lastInput = Time.time;
 			canAutoReset = true;
 
-		} else if (state != eCameraState.Resetting) {
+        } else if (state != eCameraState.Resetting) {
 
 			if (playerState == ePlayerState.onGround || playerState == ePlayerState.sliding) {
-
+                
 				if (state == eCameraState.Air) { // Si on était dans les airs avant
                     if (!onEdgeOfCliff)
     					manualPitch = defaultPitch; // On reset le pitch si on n'est pas au bord d'une falaise
@@ -295,14 +323,16 @@ public class PoS_Camera : MonoBehaviour {
 				}
 
 				if (state != eCameraState.LookAt) {
-					if (playerVelocity != Vector3.zero) {
+                    if (playerVelocity != Vector3.zero) {
 						state = eCameraState.Default;
 						SetTargetRotation(slopeValue + manualPitch, null, resetDamp);
 
 					} else {
 						state = eCameraState.Idle;
 						SetTargetRotation(slopeValue + manualPitch, null, resetDamp);
-					}
+                        inverseFacingDirection = false;
+                        startFacingDirection = currentFacingDirection;
+                    }
 				}
 
 			} else { // Le joueur est dans les airs
@@ -321,12 +351,16 @@ public class PoS_Camera : MonoBehaviour {
 			manualPitch = defaultPitch;
 			lastInput = Time.time;
 			canAutoReset = true;
-			state = eCameraState.Resetting;
+            facingTime = -1;
+            state = eCameraState.Resetting;
 
-			if (playerState == ePlayerState.inAir) // dans les airs, la caméra pointe vers le bas
-				SetTargetRotation(pitchRotationLimit.max, GetYawBehindPlayer(), resetDamp);
-			else // au sol, la caméra se met derrière le joueur
-				SetTargetRotation(defaultPitch + slopeValue, GetYawBehindPlayer(), resetDamp);
+            if (playerState == ePlayerState.inAir) { // dans les airs, la caméra pointe vers le bas
+                resetType = eResetType.ManualAir;
+                SetTargetRotation(pitchRotationLimit.max, GetYawBehindPlayer(), resetDamp);
+            } else { // au sol, la caméra se met derrière le joueur
+                resetType = eResetType.ManualGround;
+                SetTargetRotation(defaultPitch + slopeValue, GetYawBehindPlayer(), resetDamp);
+            }
 		}
 	}
 
@@ -437,7 +471,7 @@ public class PoS_Camera : MonoBehaviour {
 			lastHitDistance = Mathf.Min(hit.distance - rayRadius, idealDistance);
 
 			// Les angles on fera ça plus tard
-			if (state != eCameraState.PlayerControl && currentDistance >= hit.distance) { // auto move around corners
+			if (state <= eCameraState.AroundCorner && currentDistance >= hit.distance) { // auto move around corners
 				float tempYaw = GetYawBehindPlayer();
 				float newYaw = Mathf.LerpAngle(yaw, tempYaw, deltaTime / slideDamp);
 				float delta = Mathf.Abs(Mathf.DeltaAngle(newYaw, tempYaw));
@@ -505,7 +539,7 @@ public class PoS_Camera : MonoBehaviour {
 	bool inPanorama = false;
 
 	void DoPanorama() {
-		if (!Input.anyKey && input.magnitude == 0 && playerVelocity == Vector3.zero)
+		if (!Input.anyKey && input.sqrMagnitude == 0 && playerVelocity == Vector3.zero)
 			panoramaTimer += deltaTime;
 		else {
 			panoramaTimer = 0;
@@ -530,12 +564,14 @@ public class PoS_Camera : MonoBehaviour {
         nearPOI = true;
         targetPOI = point;
         lastInput = 0; // allows the autoReset to take place immediately
+        facingTime = -1; // allow immediate alignment
     }
 
     public void ClearPointOfInterest(Vector3 point) {
         if (targetPOI != point)
             return; // Attempting to clear a point that is not currently set
         nearPOI = false;
+        state = eCameraState.Default;
     }
 
     bool IcanSee(Vector3 point) {
@@ -544,65 +580,54 @@ public class PoS_Camera : MonoBehaviour {
     }
     
     void LookAtTargetPOI() {
-        float dotProduct = Vector3.Dot(target.parent.forward, (targetPOI - target.position).normalized);
-        
-        if (IcanSee(targetPOI) && dotProduct > -0.1f) { // TODO: pas hardcoded, check overtime
+        if (IcanSee(targetPOI) && FacingDirection((targetPOI - target.position).normalized)) {
             state = eCameraState.LookAt;
             SetTargetRotation(GetRotationTowardsPoint(targetPOI), autoResetDamp);
         }
     }
+    #endregion
+    
+    bool startFacingDirection, currentFacingDirection, inverseFacingDirection;
+    float maxInverseFacingTime = 0.5f; // TODO: softcode that
+    float facingTime = -1;
 
-	#if false
-	/// <summary>
-	/// Old, systemic version of Points of Interest
-	/// </summary>
-	void LookForPointsofInterest() {
-        Collider[] points = Physics.OverlapSphere(camPosition, maxDistanceToPoI, layerPoI, QueryTriggerInteraction.Collide);
+    bool FacingDirection(Vector3 direction) {
+        float dot = Vector3.Dot(target.parent.forward, direction);
+        bool temp = currentFacingDirection ? dot > -0.8f : dot > 0.8f;
 
-        if (points.Length == 0) {
-            state = eCameraState.Default;
-            return;
-        }
+        if (facingTime == -1) {
+            facingTime = 0;
+            if (Input.GetAxis("Vertical") <= 0)
+                temp ^= true;
+            return startFacingDirection = currentFacingDirection = temp;
 
-        Collider targetPoI = null;
-        float currentPoIScore = 300f;
-
-        for (int i = 0, j = 0; i < points.Length; i++) {
-            // S'il n'y a pas de mur entre moi et le PoI, je peux le voir, donc je peux potentiellement me tourner vers lui
-            if (IcanSee(points[i].transform.position)) {
-
-                // Si le PoI est plus petit que les autres, il devient ma cible
-                // peut être faire un truc avec la distance aussi
-                if (targetPoI == null || (points[i].bounds.extents.x + Vector3.Distance(points[i].transform.position, camPosition)) < currentPoIScore) {
-                    currentPoIScore = points[i].bounds.extents.x + Vector3.Distance(points[i].transform.position, camPosition);
-                    targetPoI = points[i];
-                }
-                //print("salut je suis " + points[i] + " tu peux me regarder si tu veux");
+        } else if (temp != currentFacingDirection && playerVelocity.sqrMagnitude > 0.01f) {
+            facingTime += deltaTime;
+            if (facingTime >= maxInverseFacingTime) {
+                facingTime = 0;
+                inverseFacingDirection ^= true;
+                return currentFacingDirection = temp;
             }
-        }
-        if (targetPoI == null) return;
-        
-        targetPOI = targetPoI.transform.position;
-        LookAtTargetPOI();
+        } else
+            facingTime = 0;
+        return currentFacingDirection;
     }
-	#endif
-	
-	#endregion
-
-	#region Align with Axis
+    
+    #region Align with Axis
 
     Vector3 axisAligned = Vector3.zero;
 
     public void SetAxisAlignment(Vector3 direction) {
         axisAligned = direction;
         canAutoReset = true;
+        facingTime = -1; // allow instant alignment
         lastInput = 0; // allows the autoReset to take place immediately
+        inverseFacingDirection = false;
     }
 
     void AlignWithAxis() {
         state = eCameraState.LookAt;
-        float dotProduct = Vector3.Dot(target.parent.forward, axisAligned);
-        if (dotProduct > 0f)
+        if (FacingDirection(axisAligned))
             SetTargetRotation(GetRotationTowardsDirection(axisAligned), axisAlignDamp);
         else
             SetTargetRotation(GetRotationTowardsDirection(-axisAligned), axisAlignDamp);
@@ -613,8 +638,8 @@ public class PoS_Camera : MonoBehaviour {
         if (axisAligned != direction)
             return; // Attempting to clear a direction that isn't currently set
         axisAligned = Vector3.zero;
+        state = eCameraState.Default;
     }
-
 	#endregion
 
 	#region Slopes and Cliffs

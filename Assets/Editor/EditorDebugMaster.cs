@@ -20,7 +20,7 @@ public class EditorDebugMaster : EditorWindow {
             shaderScript.enabled = false;
     }
 
-    [MenuItem("PoS Debug/Select Camera #C", false, -10)]
+    [MenuItem("PoS Debug/Select Camera %#C", false, -10)]
     public static void SelectCamera() {
         Transform cam = FindObjectOfType<PoS_Camera>().transform;
         Transform viewPos = SceneView.lastActiveSceneView.camera.transform;
@@ -37,7 +37,7 @@ public class EditorDebugMaster : EditorWindow {
 		Transform viewPos = SceneView.lastActiveSceneView.camera.transform;
 		float nearClipPlane = SceneView.lastActiveSceneView.camera.nearClipPlane;
 
-		player.position = viewPos.position + viewPos.forward * nearClipPlane * 100f + Vector3.up * 1f;
+		player.position = viewPos.position + viewPos.forward * nearClipPlane * 100f + player.up * 1f;
 		
 	}
 }
