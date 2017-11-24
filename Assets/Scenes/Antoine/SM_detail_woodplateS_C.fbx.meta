@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 7095fc8bb7ef1c14898e44bf1e2ed4fe
-timeCreated: 1511200677
+guid: e804b4256209b4348b698c25a62318a6
+timeCreated: 1511521582
 licenseType: Pro
 ModelImporter:
   serializedVersion: 21
@@ -9,7 +9,7 @@ ModelImporter:
     400000: //RootNode
     2300000: //RootNode
     3300000: //RootNode
-    4300000: trefleA001
+    4300000: SM_detail_woodplateS_C
   materials:
     importMaterials: 0
     materialName: 0

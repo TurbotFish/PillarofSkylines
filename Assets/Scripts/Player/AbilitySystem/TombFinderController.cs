@@ -10,7 +10,7 @@ namespace Game.Player.AbilitySystem
         World.ChunkSystem.WorldController worldController;
 
         Transform myTransform;
-        ParticleSystem myParticleSystem;
+		List<ParticleSystem> myParticleSystems = new List<ParticleSystem>();
 
         bool isParticleSystemActive = false;
         bool isInOpenWorld = false;
@@ -32,10 +32,12 @@ namespace Game.Player.AbilitySystem
             }
 
             this.myTransform = this.transform;
-            this.myParticleSystem = GetComponent<ParticleSystem>();
+			this.myParticleSystems.Add(GetComponent<ParticleSystem>());
+			this.myParticleSystems.Add (GetComponentInChildren<ParticleSystem> ());
 
-            this.myParticleSystem.Stop();
-
+			foreach (ParticleSystem ps in this.myParticleSystems) {
+				ps.Stop ();
+			}
             Utilities.EventManager.OnSceneChangedEvent += OnSceneChangedEventHandler;
             Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
 
@@ -58,12 +60,16 @@ namespace Game.Player.AbilitySystem
 
             if(!this.isParticleSystemActive && (this.isInOpenWorld && this.isFavourInWorld && abilityActive))
             {
-                this.myParticleSystem.Play();
+				foreach (ParticleSystem ps in this.myParticleSystems) {
+					ps.Play ();
+				}
                 this.isParticleSystemActive = true;
             }
             else if(this.isParticleSystemActive && (!this.isInOpenWorld || !this.isFavourInWorld || !abilityActive))
             {
-                this.myParticleSystem.Stop();
+				foreach (ParticleSystem ps in this.myParticleSystems) {
+					ps.Stop ();
+				}
                 this.isParticleSystemActive = false;
             }
 
