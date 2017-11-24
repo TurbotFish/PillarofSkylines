@@ -10,12 +10,10 @@ public class SetChildrenActiveOnEclipse : MonoBehaviour {
         int j = 0;
         foreach(Transform child in transform) {
             children[j] = child.gameObject;
+            child.gameObject.SetActive(!setActive);
             j++;
         }
-
-        for (int i = 0; i < children.Length; i++)
-            children[i].SetActive(setActive);
-
+        
         Game.Utilities.EventManager.OnEclipseEvent += OnEclipseEventHandler;
     }
 
