@@ -61,11 +61,12 @@ namespace Game.Player.CharacterController
         /// The number of collisions detected on this frame.
         /// </summary>
         int collisionNumber;
+        Collider[] wallsOverPlayer;
 
         /// <summary>
         /// The cloud the player is currently on (null if not on a cloud).
         /// </summary>
-        Cloud currentCloud;
+        MovingPlatform currentPF;
 
         bool climbingStep;
         Vector3 stepOffset;
@@ -109,41 +110,14 @@ namespace Game.Player.CharacterController
 
             Vector3 finalVelocity = Vector3.zero;
             /// Check if calculated movement will end up in a wall, if so try to adjust movement
-            if (!Physics.CheckCapsule(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + velocity, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + velocity, radius, collisionMaskNoCloud))
+            wallsOverPlayer = Physics.OverlapCapsule(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + velocity, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + velocity, radius, collisionMaskNoCloud);
+            if (wallsOverPlayer.Length == 0)
             {
-                myTransform.Translate(velocity, Space.World);
-                finalVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * velocity / Time.deltaTime;
+                finalVelocity = ConfirmMovement(velocity);
             }
             else
             {
-                wallDir = Vector3.zero;
-                Debug.LogWarning("Oh oh, tu vas dans un mur. " + collisions.below);
-                if (collisions.below)
-                {
-                    wallDir = collisions.currentGroundNormal;
-                }
-                else if (collisions.side)
-                {
-                    wallDir = collisions.currentWallNormal;
-                }
-                else if (Physics.Raycast(transform.position + playerAngle * center, collisions.initialVelocityOnThisFrame, out hit, collisions.initialVelocityOnThisFrame.magnitude + radius + height / 2 + skinWidth, collisionMask))
-                {
-                    wallDir = hit.normal;
-                }
-                if (Physics.Raycast(transform.position + playerAngle * center + collisions.initialVelocityOnThisFrame, -wallDir, out hit, radius + height / 2 + skinWidth, collisionMask))
-                {
-                    Vector3 destination = (hit.point + (hit.normal * (Mathf.Abs(Vector3.Dot(transform.up, hit.normal)) * height / 2 + radius + skinWidth))) - myTransform.up * (height / 2 + radius);
-                    if (!Physics.CheckCapsule(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + (destination - myTransform.position)
-                        , myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + (destination - myTransform.position), radius, collisionMaskNoCloud))
-                    {
-                        myTransform.Translate(destination - myTransform.position, Space.World);
-                        finalVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * (velocity) / Time.deltaTime;
-                    }
-                }
-                else
-                {
-                    finalVelocity = Vector3.zero;
-                }
+                AdjustPlayerPosition(velocity);
             }
 
             //Update collision informations
@@ -152,11 +126,94 @@ namespace Game.Player.CharacterController
             return finalVelocity;
         }
 
+        Vector3 ConfirmMovement(Vector3 velocity)
+        {
+            myTransform.Translate(velocity, Space.World);
+            return (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * velocity / Time.deltaTime;
+        }
+
+        Vector3 AdjustPlayerPosition(Vector3 velocity)
+        {
+
+            Vector3 OutOfWallDirection = Vector3.zero;
+            foreach (Collider wall in wallsOverPlayer)
+            {
+                print("collider : " + wall.name);
+
+                if (Physics.Linecast(myTransform.position + velocity + playerAngle * center, wall.transform.position, out hit, collisionMask))
+                {
+                    OutOfWallDirection += hit.normal;
+                    print("added : " + hit.normal);
+                }
+
+
+                /*if (wall.bounds.Contains(myTransform.position)) {
+                    print("from inside");
+                    OutOfWallDirection += (wall.ClosestPointOnBounds(myTransform.position) - myTransform.position);
+                    print("added : " + (wall.ClosestPointOnBounds(myTransform.position) - myTransform.position)*100 + " from : " + myTransform.position + " to : " + wall.ClosestPointOnBounds(myTransform.position));
+                } else {
+                    print("from outside");
+                    OutOfWallDirection += (myTransform.position - wall.ClosestPointOnBounds(myTransform.position));
+                    print("added : " + (myTransform.position - wall.ClosestPointOnBounds(myTransform.position))*100 + " from : " + wall.ClosestPointOnBounds(myTransform.position) + " to : " + myTransform.position);
+                }*/
+            }
+            Physics.Raycast(myTransform.position + velocity + playerAngle * center, -OutOfWallDirection, out hit, radius + height / 2, collisionMask);
+            OutOfWallDirection = OutOfWallDirection.normalized * (radius + height / 2);
+
+            print("moved towards : " + OutOfWallDirection);
+            if (Physics.CapsuleCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + OutOfWallDirection, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + OutOfWallDirection, radius
+                , -OutOfWallDirection, out hit, radius + height, collisionMask))
+            {
+                print("collided");
+                myTransform.Translate(OutOfWallDirection * (1 - hit.distance), Space.World);
+                return ConfirmMovement(velocity);
+            }
+            else
+            {
+                myTransform.Translate(OutOfWallDirection, Space.World);
+                return ConfirmMovement(velocity);
+            }
+            /*
+            wallsOverPlayer = Physics.OverlapCapsule(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + velocity, 
+                myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + velocity, radius, collisionMaskNoCloud);
+            if (wallsOverPlayer.Length == 0) {
+                return ConfirmMovement(velocity);
+            } else {
+                return AdjustPlayerPosition(velocity);
+            }*/
+
+            /*
+            wallDir = Vector3.zero;
+            Debug.LogWarning("Oh oh, tu vas dans un mur. " + collisions.below);
+            if (collisions.below) {
+                wallDir = collisions.currentGroundNormal;
+            } else if (collisions.side) {
+                wallDir = collisions.currentWallNormal;
+            } else if (Physics.Raycast(transform.position + playerAngle * center, collisions.initialVelocityOnThisFrame, out hit, collisions.initialVelocityOnThisFrame.magnitude + radius + height / 2 + skinWidth, collisionMask)) {
+                wallDir = hit.normal;
+            }
+            if (Physics.Raycast(transform.position + playerAngle * center + collisions.initialVelocityOnThisFrame, -wallDir, out hit, radius + height / 2 + skinWidth, collisionMask)) {
+                Vector3 destination = (hit.point + (hit.normal * (Mathf.Abs(Vector3.Dot(transform.up, hit.normal)) * height / 2 + radius + skinWidth))) - myTransform.up * (height / 2 + radius); 
+                if (!Physics.CheckCapsule(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + (destination - myTransform.position)
+                    , myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + (destination - myTransform.position), radius, collisionMaskNoCloud)) {
+                    myTransform.Translate(destination - myTransform.position, Space.World);
+                    finalVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * (velocity) / Time.deltaTime;
+                }
+            } else {
+                finalVelocity = Vector3.zero;
+            }*/
+        }
+
 
         void CollisionUpdate(Vector3 velocity)
         {
 
-            // EN TEST POUR BIEN RESTER COLLER AU SOL, à voir ce que ça vaut
+            if (currentPF != null)
+            {
+                currentPF.RemovePlayer();
+                currentPF = null;
+            }
+            // EN TEST POUR BIEN RESTER AU SOL, à voir ce que ça vaut
             if (myPlayer.currentPlayerState == ePlayerState.onGround)
             {
                 if (Physics.SphereCast(myTransform.position + myTransform.up * (radius + skinWidth), radius, -myTransform.up, out hit2, myPlayer.maxStepHeight, collisionMask))
@@ -180,24 +237,24 @@ namespace Game.Player.CharacterController
             if (collisions.below && !climbingStep)
             {
                 collisions.currentGroundNormal = hit.normal;
-                if (currentCloud == null && hit.collider.CompareTag("cloud"))
+                if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
                 {
-                    currentCloud = hit.collider.GetComponent<Cloud>();
-                    currentCloud.AddPlayer(myPlayer);
-                }
-            }
-            else
-            {
-                if (currentCloud != null)
-                {
-                    currentCloud.RemovePlayer();
-                    currentCloud = null;
+                    currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
+                    currentPF.AddPlayer(myPlayer, hit.point);
                 }
             }
             collisions.above = Physics.SphereCast(myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) - myTransform.up * skinWidth * 2, radius, myTransform.up, out hit, skinWidth * 4, collisionMask);
-            if (collisions.above && hit.collider.CompareTag("cloud"))
+            if (collisions.above)
             {
-                collisions.above = false;
+                if (hit.collider.CompareTag("cloud"))
+                {
+                    collisions.above = false;
+                }
+                if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
+                {
+                    currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
+                    currentPF.AddPlayer(myPlayer, hit.point);
+                }
             }
 
             //***********************************************************
@@ -217,7 +274,7 @@ namespace Game.Player.CharacterController
                    collisionMask
                 );
 
-                if(colliding && searchHit.transform.Equals(sideHit.transform))
+                if (colliding && searchHit.transform.Equals(sideHit.transform))
                 {
                     sideHit = searchHit;
                     collisions.currentWallNormal = sideHit.normal;
@@ -250,6 +307,17 @@ namespace Game.Player.CharacterController
                     collisions.currentWallNormal = sideHit.normal;
                 }
             }
+
+            if (collisions.side) //register with moving platforms
+            {
+                if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
+                {
+                    currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
+                    currentPF.AddPlayer(myPlayer, hit.point);
+                }
+            }
+
+            //***********************************************************
         } //end of CollisionUpdate
 
 
