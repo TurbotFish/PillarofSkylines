@@ -107,7 +107,8 @@
 			float a = (newIteration.r +newIteration.g + newIteration.b)/3;
 			final = lerp(final, saturate(1-(1-final)*(1-newIteration)), saturate((a+_Threshold) * (1 - j/float(_Iterations))));
 		}
-
+		
+		final = float4(final.b, final.g, final.r, final.a);
 		final = lerp(src, final, _Intensity);
 		/*
 		float3 hsv = MyRGB2HSV(final.rgb);
