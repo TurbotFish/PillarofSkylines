@@ -28,6 +28,11 @@ namespace Game.Player.AbilitySystem
         TombFinder tombFinder = new TombFinder();
         public TombFinder TombFinder { get { return this.tombFinder; } }
 
+        //wall run
+        [SerializeField]
+        WallRun wallRun = new WallRun();
+        public WallRun WallRun { get { return this.wallRun; } }
+
         //###########################################################
 
         #region methods
@@ -44,6 +49,8 @@ namespace Game.Player.AbilitySystem
                     return this.Dash;
                 case eAbilityType.TombFinder:
                     return this.tombFinder;
+                case eAbilityType.WallRun:
+                    return this.wallRun;
                 default:
                     throw new NotImplementedException();
             }
@@ -56,7 +63,8 @@ namespace Game.Player.AbilitySystem
                 this.doubleJump,
                 this.glide,
                 this.dash,
-                this.tombFinder
+                this.tombFinder,
+                this.wallRun
             };
         }
 
@@ -69,6 +77,8 @@ namespace Game.Player.AbilitySystem
             this.doubleJump.OnValidate();
             this.glide.OnValidate();
             this.dash.OnValidate();
+            this.tombFinder.OnValidate();
+            this.wallRun.OnValidate();
         }
     }
 } //end of namespace

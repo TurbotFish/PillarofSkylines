@@ -18,30 +18,31 @@ namespace Game.World.ChunkSystem
         /// </summary>
         public virtual void InitializeChunk(WorldController worldController)
         {
-            this.data = worldController.ChunkSystemData;
+            data = worldController.ChunkSystemData;
 
-            int childCount = this.transform.childCount;
+            gameObject.SetActive(true);
 
             //find the bounds
-            this.bounds = GetComponent<BoxCollider>();
+            bounds = GetComponent<BoxCollider>();
 
-            if (this.bounds == null)
+            if (bounds == null)
             {
-                Debug.LogErrorFormat("Chunk \"{0}\": could not find bounds collider!", this.name);
+                Debug.LogErrorFormat("Chunk \"{0}\": could not find bounds collider!", name);
             }
 
             gameObject.layer = 14;
-            this.bounds.isTrigger = true;
+            bounds.isTrigger = true;
 
             //find all the SubChunks
+            int childCount = transform.childCount;
             for (int i = 0; i < childCount; i++)
             {
-                var child = this.transform.GetChild(i);
+                var child = transform.GetChild(i);
                 var subChunk = child.GetComponent<SubChunkController>();
 
                 if (subChunk != null)
                 {
-                    this.subChunkList.Add(subChunk);
+                    subChunkList.Add(subChunk);
                     subChunk.InitializeSubChunk(worldController);
                 }
             }

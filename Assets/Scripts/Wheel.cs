@@ -6,7 +6,8 @@ public class Wheel : MovingPlatform {
 
 	public float speed;
 
-	Vector3 centerToPlayer, newPlayerPos;
+
+	Vector3 centerToPlayer, newPlayerPos, initialGravity;
 	Quaternion currentRotation;
 
 	// Update is called once per frame
@@ -17,12 +18,19 @@ public class Wheel : MovingPlatform {
 
 		if (currPlayer != null) {
 			currPlayer.transform.RotateAround(transform.position, transform.forward, speed * Time.deltaTime);
+			currPlayer.ChangeGravityDirection(initialGravity, impactPoint);
 			/*
 			centerToPlayer = currPlayer.transform.position - transform.position;
 			newPlayerPos = currentRotation * centerToPlayer;
 			AddVelocityToPlayer(newPlayerPos - centerToPlayer);
 			*/
 		}
+	}
+
+	override public void AddPlayer(Game.Player.CharacterController.Character player, Vector3 playerImpactPoint) {
+		currPlayer = player;
+		initialGravity = player.gravity;
+		impactPoint = playerImpactPoint;
 	}
 
 	void AddVelocityToPlayer(Vector3 velocity) {

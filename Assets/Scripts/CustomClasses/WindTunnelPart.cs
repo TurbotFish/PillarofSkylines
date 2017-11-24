@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class WindTunnelPart : MonoBehaviour {
 
-	Player currentPlayer;
+    Game.Player.CharacterController.Character currentPlayer;
 	public float windStrength;
 	public float tunnelAttraction;
 	public int idInTunnel;
@@ -18,7 +18,7 @@ public class WindTunnelPart : MonoBehaviour {
 		}
 	}
 
-	public void AddPlayer(Player player){
+	public void AddPlayer(Game.Player.CharacterController.Character player){
 		currentPlayer = player;
 	}
 

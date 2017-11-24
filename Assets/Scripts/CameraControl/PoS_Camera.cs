@@ -94,11 +94,11 @@ public class PoS_Camera : MonoBehaviour {
 	Vector2 input;
 	Vector2 rotationSpeed;
 	Vector2 offset;
-	Player player;
-	CharacControllerRecu controller;
+	Game.Player.CharacterController.Character player;
+    Game.Player.CharacterController.CharacControllerRecu controller;
 	Transform my;
 
-	ePlayerState playerState;
+    Game.Player.CharacterController.ePlayerState playerState;
 
 	float yaw, pitch;
 	float maxDistance, currentDistance, idealDistance;
@@ -122,8 +122,8 @@ public class PoS_Camera : MonoBehaviour {
 		Cursor.lockState = CursorLockMode.Locked;
 
 		my = transform;
-		player = target.GetComponentInParent<Player>();
-		controller = player.GetComponent<CharacControllerRecu>();
+		player = target.GetComponentInParent<Game.Player.CharacterController.Character>();
+		controller = player.GetComponent<Game.Player.CharacterController.CharacControllerRecu>();
         
 		currentDistance = zoomValue = idealDistance = distance;
 		maxDistance = canZoom ? zoomDistance.max : distance;
@@ -268,7 +268,7 @@ public class PoS_Camera : MonoBehaviour {
 		float slopeValue = CheckGroundAndReturnSlopeValue();
 		// TODO: Il nous faut une fonction SetState() pour pouvoir faire des trucs uniquement lors d'un changement de State
         
-        if (resetType == eResetType.ManualAir && playerState == ePlayerState.onGround) {
+        if (resetType == eResetType.ManualAir && playerState == Game.Player.CharacterController.ePlayerState.onGround) {
             state = eCameraState.Default;
             resetType = eResetType.None;
         }
@@ -289,7 +289,7 @@ public class PoS_Camera : MonoBehaviour {
 
         } else if (state != eCameraState.Resetting) {
 
-			if (playerState == ePlayerState.onGround || playerState == ePlayerState.sliding) {
+			if (playerState == Game.Player.CharacterController.ePlayerState.onGround || playerState == Game.Player.CharacterController.ePlayerState.sliding) {
                 
 				if (state == eCameraState.Air) { // Si on était dans les airs avant
                     if (!onEdgeOfCliff)
@@ -342,7 +342,7 @@ public class PoS_Camera : MonoBehaviour {
 			}
 		}
 
-		if (playerState == ePlayerState.gliding || playerState == ePlayerState.inWindTunnel) {
+		if (playerState == Game.Player.CharacterController.ePlayerState.gliding || playerState == Game.Player.CharacterController.ePlayerState.inWindTunnel) {
 			SetTargetRotation(-2 * playerVelocity.y + defaultPitch, GetYawBehindPlayer(), resetDamp);
 			state = eCameraState.FollowBehind;
 		}
@@ -351,18 +351,19 @@ public class PoS_Camera : MonoBehaviour {
 			manualPitch = defaultPitch;
 			lastInput = Time.time;
 			canAutoReset = true;
+
             facingTime = -1;
             state = eCameraState.Resetting;
 
-            if (playerState == ePlayerState.inAir) { // dans les airs, la caméra pointe vers le bas
+            if (playerState == Game.Player.CharacterController.ePlayerState.inAir) { // dans les airs, la caméra pointe vers le bas
                 resetType = eResetType.ManualAir;
                 SetTargetRotation(pitchRotationLimit.max, GetYawBehindPlayer(), resetDamp);
             } else { // au sol, la caméra se met derrière le joueur
                 resetType = eResetType.ManualGround;
                 SetTargetRotation(defaultPitch + slopeValue, GetYawBehindPlayer(), resetDamp);
             }
-		}
-	}
+        }
+    }
 
 	void AirStateCamera() {
 		if (playerVelocity.y < 0) { // je suis en train de tomber
@@ -653,7 +654,7 @@ public class PoS_Camera : MonoBehaviour {
         Vector3 groundNormal = controller.collisions.currentGroundNormal;
 		
         // Si on est au sol et qu'il n'y a pas de mur devant
-        if (playerState == ePlayerState.onGround && !Physics.Raycast(target.position, player.transform.forward, 1, controller.collisionMask)) {
+        if (playerState == Game.Player.CharacterController.ePlayerState.onGround && !Physics.Raycast(target.position, player.transform.forward, 1, controller.collisionMask)) {
 
             RaycastHit groundInFront;
 

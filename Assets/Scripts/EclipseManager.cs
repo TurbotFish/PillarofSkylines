@@ -17,7 +17,7 @@ namespace Game
         [SerializeField]
         Vector3 eclipseGravity = new Vector3(1, 0, 0);
 
-        global::Player player;
+        Game.Player.CharacterController.Character player;
         Eclipse eclipsePostEffect;
 
         bool isEclipseActive;

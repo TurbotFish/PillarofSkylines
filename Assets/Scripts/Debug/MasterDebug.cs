@@ -3,7 +3,7 @@
 [ExecuteInEditMode]
 public class MasterDebug : MonoBehaviour {
 
-    [SerializeField] Player player;
+    [SerializeField] Game.Player.CharacterController.Character player;
     
 	void Start () {
         if (player)

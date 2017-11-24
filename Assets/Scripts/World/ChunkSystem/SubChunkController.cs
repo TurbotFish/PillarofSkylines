@@ -41,12 +41,14 @@ namespace Game.World.ChunkSystem
         {
             this.worldController = worldController;
 
-            this.myTransform = this.transform;
+            myTransform = transform;
 
-            this.childList.Clear();
-            for (int i = 0; i < this.myTransform.childCount; i++)
+            gameObject.SetActive(true);
+
+            childList.Clear();
+            for (int i = 0; i < myTransform.childCount; i++)
             {
-                this.childList.Add(this.myTransform.GetChild(i).gameObject);
+                childList.Add(myTransform.GetChild(i).gameObject);
             }
 
             var worldObjects = GetComponentsInChildren<Interaction.IWorldObject>();
@@ -55,7 +57,7 @@ namespace Game.World.ChunkSystem
                 worldObject.InitializeWorldObject(worldController);
             }
 
-            this.IsActive = true;
+            IsActive = true;
         }
 
         /// <summary>
@@ -85,10 +87,15 @@ namespace Game.World.ChunkSystem
                 go.GetComponent<SubChunkController>().InitializeSubChunkCopy(this);
 
                 var colliders = go.GetComponentsInChildren<Collider>(true);
-
-                foreach (var collider in colliders)
+                for (int i = 0; i < colliders.Length; i++)
                 {
-                    Destroy(collider);
+                    Destroy(colliders[i]);
+                }
+
+                var renderers = go.GetComponentsInChildren<Renderer>(true);
+                for (int i = 0; i < renderers.Length; i++)
+                {
+                    renderers[i].shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 }
             }
         }
@@ -111,7 +118,8 @@ namespace Game.World.ChunkSystem
             this.IsActive = active;
             StopAllCoroutines();
 
-            lock (this.childListLock) {
+            lock (this.childListLock)
+            {
                 if (immediate)
                 {
                     foreach (var go in this.childList)
@@ -123,7 +131,7 @@ namespace Game.World.ChunkSystem
                 {
                     this.worldController.QueueObjectsToSetActive(this.childList, active);
                     //StartCoroutine(SetActiveRoutine(active));
-            }
+                }
             }
         }
 
