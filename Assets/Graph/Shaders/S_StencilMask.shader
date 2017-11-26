@@ -1,8 +1,9 @@
 ﻿Shader "Custom/S_StencilMask" {
     SubShader {
-        Tags { "RenderType"="Opaque" "Queue"="Geometry-1"}
+        Tags { "RenderType"="Opaque" "Queue"="Geometry"}
         ColorMask 0
         ZWrite off
+		Cull Back
 
         Pass {
             Stencil {

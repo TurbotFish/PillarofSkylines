@@ -100,14 +100,11 @@ public class PoS_Camera : MonoBehaviour {
 
     Game.Player.CharacterController.ePlayerState playerState;
 
-	float yaw, pitch;
-	float maxDistance, currentDistance, idealDistance;
-	float additionalDistance;
+	float yaw, pitch, targetYaw, targetPitch, manualPitch;
+	float maxDistance, currentDistance, idealDistance, additionalDistance;
 	float deltaTime;
 	float lastInput;
 	float autoDamp;
-    float targetYaw, targetPitch;
-    float manualPitch;
     float recoilIntensity;
 	bool autoAdjustYaw, autoAdjustPitch;
     bool canAutoReset;
@@ -224,6 +221,16 @@ public class PoS_Camera : MonoBehaviour {
         }
     }
 
+	/// <summary>
+	/// Allows the camera to reset automatically.
+	/// </summary>
+	/// <param name="allow"> Whether or not to allow the automatic reset. </param>
+	/// <param name="immediate"> If true, a reset takes place immediately, else, wait for resetTime. </param>
+	void AllowAutoReset(bool allow, bool immediate = false) {
+		canAutoReset = allow;
+		lastInput = immediate ? 0 : Time.time;
+	}
+
 	void EvaluatePositionFromRotation() {
 		float distanceFromAngle = Mathf.Lerp(0, 1, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
 		idealDistance = 1 + zoomValue * distanceFromAngle + additionalDistance;
@@ -282,11 +289,8 @@ public class PoS_Camera : MonoBehaviour {
         if (input.sqrMagnitude != 0) { // Contrôle manuel
 			state = eCameraState.PlayerControl;
 			manualPitch = pitch - slopeValue;
-			autoAdjustPitch = false;
-			autoAdjustYaw = false;
-			autoDamp = smoothDamp;
-			lastInput = Time.time;
-			canAutoReset = true;
+			SetTargetRotation(null, null, smoothDamp);
+			AllowAutoReset(true, false);
 
         } else if (state != eCameraState.Resetting) {
 
@@ -296,22 +300,17 @@ public class PoS_Camera : MonoBehaviour {
                     if (!onEdgeOfCliff)
     					manualPitch = defaultPitch; // On reset le pitch si on n'est pas au bord d'une falaise
 					additionalDistance = 0;    // On reset le zoom
-					//lastInput = 0;
-					//canAutoReset = true;
+					AllowAutoReset(true, true);
 				}
                 
-				if (nearPOI) // Points of Interest have priority over axis alignment
-					LookAtTargetPOI(); // TODO: manual priority just in case?
-				else if (axisAligned.sqrMagnitude != 0)
-					AlignWithAxis();
-
                 if (Time.time > lastInput + timeBeforeAutoReset && canAutoReset) { // Si ça fait genre 5 secondes qu'on n'a pas touché à la caméra on passe en mode automatique
-					#if false // l'autoreset est enlevé pour l'instant parce que gênant, le faire que sous certaines conditions
-                    if (nearPOI)
-                        LookAtTargetPOI();
-                    //LookForPointsofInterest(); // Ancienne version des POI (Systémique)
 
-                    canAutoReset = false;
+					if (nearPOI) // Points of Interest have priority over axis alignment
+						LookAtTargetPOI(); // TODO: manual priority just in case?
+					else if (axisAligned.sqrMagnitude != 0)
+						AlignWithAxis();
+
+					#if false // l'autoreset est enlevé pour l'instant parce que gênant, le faire que sous certaines conditions
 
                     if (state != eCameraState.LookAt && canAutoReset) { // Si y a pas de PoI on se replace tout seul derrière le joueur
                         state = eCameraState.Resetting;
@@ -338,7 +337,7 @@ public class PoS_Camera : MonoBehaviour {
 
 			} else { // Le joueur est dans les airs
 				state = eCameraState.Air;
-				canAutoReset = true;
+				AllowAutoReset(true);
 				AirStateCamera();
 			}
 		}
@@ -350,10 +349,9 @@ public class PoS_Camera : MonoBehaviour {
 
 		if (Input.GetButton("ResetCamera")) {
 			manualPitch = defaultPitch;
-			lastInput = Time.time;
-			canAutoReset = true;
+			AllowAutoReset(true);
 
-            facingTime = -1;
+			facingTime = -1;
             state = eCameraState.Resetting;
 
             if (playerState == Game.Player.CharacterController.ePlayerState.inAir) { // dans les airs, la caméra pointe vers le bas
@@ -565,8 +563,8 @@ public class PoS_Camera : MonoBehaviour {
     public void SetPointOfInterest(Vector3 point) {
         nearPOI = true;
         targetPOI = point;
-        lastInput = 0; // allows the autoReset to take place immediately
-        facingTime = -1; // allow immediate alignment
+		AllowAutoReset(true, true);
+		facingTime = -1; // allow immediate alignment
     }
 
     public void ClearPointOfInterest(Vector3 point) {
@@ -621,9 +619,8 @@ public class PoS_Camera : MonoBehaviour {
 
     public void SetAxisAlignment(Vector3 direction) {
         axisAligned = direction;
-        canAutoReset = true;
-        facingTime = -1; // allow instant alignment
-        lastInput = 0; // allows the autoReset to take place immediately
+		AllowAutoReset(true, true);
+		facingTime = -1; // allow instant alignment
         inverseFacingDirection = false;
     }
 
@@ -673,9 +670,9 @@ public class PoS_Camera : MonoBehaviour {
 
             } else {// on est au sol, y a pas de mur devant, et y a pas de sol devant non plus, donc on est au bord d'une falaise
                 onEdgeOfCliff = true;
-                canAutoReset = false;
+				AllowAutoReset(false);
 
-                groundNormal.y -= 0.1f;
+				groundNormal.y -= 0.1f;
                 groundNormal.Normalize();
 				// TODO: pencher la caméra automatiquement lorsque l'on arrive près d'un bord
 				// mais : seulement si le sol actuel est plat ?
@@ -693,8 +690,7 @@ public class PoS_Camera : MonoBehaviour {
 
     void NotOnEdgeOfCliff() {
         if (onEdgeOfCliff) {
-            lastInput = Time.time;
-            canAutoReset = true;
+			AllowAutoReset(true);
         }
         onEdgeOfCliff = false;
     }

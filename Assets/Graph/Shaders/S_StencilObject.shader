@@ -4,7 +4,7 @@
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 	}
 	SubShader {
-		Tags { "RenderType"="Transparent" "Queue"="Transparent" }
+		Tags { "RenderType"="Opaque" "Queue"="Transparent" }
 		Pass {
 			Stencil {
 				Ref 4
