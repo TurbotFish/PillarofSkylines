@@ -101,9 +101,16 @@ namespace Game.EchoSystem
 
         void CreateEcho()
         {
-            if (echoList.Count >= maxEchoes || isEclipseActive)
+            if (isEclipseActive)
             {
                 return;
+            }
+
+            if(echoList.Count == maxEchoes)
+            {
+                var oldestEcho = echoList[0];
+                Destroy(oldestEcho.gameObject);
+                echoList.RemoveAt(0);
             }
 
             var newEcho = Instantiate(echoPrefab, playerTransform.position, playerTransform.rotation);
