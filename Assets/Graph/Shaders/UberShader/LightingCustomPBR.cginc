@@ -149,9 +149,9 @@
 	}
 
 	half GetCelShadingMask(){
-		half mask = 0;
+		half mask = 1;
 		#if defined(_CELSHADED)
-			mask = 1;
+			mask = 0;
 		#endif
 		return mask;
 	}
