@@ -105,11 +105,17 @@ namespace Game.Player.AbilitySystem
         [Serializable]
         public class WallJumpData
         {
-            //wall jump time
-            [Tooltip("The duration during which gravity is ignored and the player can't turn.")]
+            //ignore gravity duration
+            [Tooltip("The duration during which gravity is ignored.")]
             [SerializeField]
-            float duration;
-            public float Duration { get { return duration; } }
+            float ignoreGravityDuration;
+            public float IgnoreGravityDuration { get { return ignoreGravityDuration; } }
+
+            //ignore stick duration
+            [Tooltip("The duration during which the player character cannot turn.")]
+            [SerializeField]
+            float ignoreStickDuration;
+            public float IgnoreStickDuration { get { return ignoreStickDuration; } }
 
             //wall jump strength
             [Tooltip("The initial \"speed\" of the jump.")]

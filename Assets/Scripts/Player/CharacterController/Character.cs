@@ -831,7 +831,8 @@ namespace Game.Player.CharacterController
                         flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * jumpDirection;
                         velocity.y = 0f;
 
-                        ignoreGravityTimer = ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.Duration;
+                        ignoreGravityTimer = playerMod.AbilityData.WallRun.WallJump.IgnoreGravityDuration;
+                        ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.IgnoreStickDuration;
 
                         EnterStateInAir();
 
@@ -874,7 +875,8 @@ namespace Game.Player.CharacterController
                         velocity.y = 0f;
                         flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * jumpDirection;
 
-                        ignoreGravityTimer = ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.Duration;
+                        ignoreGravityTimer = playerMod.AbilityData.WallRun.WallJump.IgnoreGravityDuration;
+                        ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.IgnoreStickDuration;
 
                         EnterStateInAir();
 
@@ -925,7 +927,8 @@ namespace Game.Player.CharacterController
                         flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * jumpDirection;
                         velocity.y = 0f;
 
-                        ignoreGravityTimer = ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.Duration;
+                        ignoreGravityTimer = playerMod.AbilityData.WallRun.WallJump.IgnoreGravityDuration;
+                        ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.IgnoreStickDuration;
 
                         EnterStateInAir();
 
