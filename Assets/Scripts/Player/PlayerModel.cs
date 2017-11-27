@@ -18,7 +18,8 @@ namespace Game.Player
 
     public enum eAbilityGroup
     {
-        test
+        Default,
+        GroupA
     }
 
     /// <summary>
@@ -64,7 +65,7 @@ namespace Game.Player
         {
             this.pillarData = Resources.Load<World.PillarData>("ScriptableObjects/PillarData");
 
-            UnlockAbilityGroup(eAbilityGroup.test);
+            UnlockAbilityGroup(eAbilityGroup.Default);
         }
 
         //###########################################################
@@ -306,6 +307,7 @@ namespace Game.Player
             if (!this.destoyedPillars.Contains(pillarId))
             {
                 this.destoyedPillars.Add(pillarId);
+                UnlockAbilityGroup(pillarData.GetPillarAbilityGroup(pillarId));
 
                 Utilities.EventManager.SendPillarDestroyedEvent(this, new Utilities.EventManager.PillarDestroyedEventArgs(pillarId));
             }

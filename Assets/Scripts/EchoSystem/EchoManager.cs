@@ -5,16 +5,10 @@ namespace Game.EchoSystem
 {
     public class EchoManager : MonoBehaviour
     {
-        public bool demo;
-        public Vector3 demoVelocity;
-
         [SerializeField]
         Echo echoPrefab;
         [SerializeField]
         BreakEchoParticles breakEchoParticles;
-
-        //[TestButton("Freeze All Echoes", "FreezeAll", isActiveInEditor = false)]
-        //[TestButton("Unfreeze All Echoes", "UnfreezeAll", isActiveInEditor = false)]
 
         public List<Echo> echoes;
         [SerializeField]
@@ -25,49 +19,39 @@ namespace Game.EchoSystem
         [HideInInspector]
         public Transform pool;
         Transform playerTransform;
-        new EchoCameraEffect camera;
+        EchoCameraEffect echoCamera;
 
-        bool eclipse;
+        List<Echo> echoList = new List<Echo>();
 
-        //##################################################################
+        bool isEclipseActive;
 
-        #region Singleton
-        //public static EchoManager instance;
-        //void Awake()
-        //{
-        //    if (!instance)
-        //    {
-        //        instance = this;
-        //    }
-        //    else if (instance != this)
-        //        Destroy(gameObject);
-        //}
-        #endregion
+        Transform MyTransform { get; set; }
 
-        //##################################################################
         //##################################################################
 
         #region initialization
 
         public void InitializeEchoManager(GameControl.IGameControllerBase gameController)
         {
-            this.camera = gameController.CameraController.EchoCameraEffect;
-            this.playerTransform = gameController.PlayerController.Player.transform;
+            echoCamera = gameController.CameraController.EchoCameraEffect;
+            playerTransform = gameController.PlayerController.Player.transform;
 
-            this.pool = new GameObject("Echo Pool").transform;
-            this.pool.SetParent(this.transform);
+            MyTransform = transform;
+
+            pool = new GameObject("Echo Pool").transform;
+            pool.SetParent(transform);
 
             Utilities.EventManager.OnEclipseEvent += OnEclipseEventHandler;
+            Utilities.EventManager.OnSceneChangedEvent += OnSceneChangedEventHandler;
         }
 
         #endregion initialization
 
         //##################################################################
-        //##################################################################
 
         void Update()
         {
-            if (!eclipse)
+            if (!isEclipseActive)
             {
                 if (Input.GetButtonDown("Drift"))
                     Drift();
@@ -78,56 +62,97 @@ namespace Game.EchoSystem
 
         //##################################################################
 
+        #region private methods
+
         void Drift()
         {
-            if (echoes.Count > 0)
-            {
-                camera.SetFov(70, 0.15f, true);
-                Echo targetEcho = echoes[echoes.Count - 1];
-                playerTransform.position = targetEcho.transform.position; // We should reference Player and move this script in a Manager object
-                if (!targetEcho.isActive)
-                    targetEcho.Break();
+            //Debug.LogErrorFormat("EchoManager: Drift: echo count = {0}", echoList.Count);
 
-                if (demo)
-                {
-                    GetComponent<Rigidbody>().velocity = demoVelocity;
-                }
+            if (echoList.Count > 0)
+            {
+                echoCamera.SetFov(70, 0.15f, true);
+
+                var targetEcho = echoList[echoList.Count - 1];
+                echoList.Remove(targetEcho);
+
+                var eventArgs = new Utilities.EventManager.OnTeleportPlayerEventArgs(targetEcho.MyTransform.position, false);
+                Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+
+                Instantiate(breakEchoParticles, targetEcho.MyTransform.position, targetEcho.MyTransform.rotation);
+
+                Destroy(targetEcho.gameObject);
             }
+
+            //**
+            //if (echoes.Count > 0)
+            //{
+            //    echoCamera.SetFov(70, 0.15f, true);
+
+            //    Echo targetEcho = echoes[echoes.Count - 1];
+
+            //    playerTransform.position = targetEcho.transform.position; // We should reference Player and move this script in a Manager object
+
+            //    if (!targetEcho.isActive)
+            //    {
+            //        targetEcho.Break();
+            //    }
+            //}
         }
 
         void CreateEcho()
         {
-            Echo newEcho = InstantiateFromPool(echoPrefab, playerTransform.position);
-            newEcho.playerEcho = true;
-            echoes.Add(newEcho);
-            if (echoes.Count > maxEchoes)
-                echoes[0].Break();
+            if (echoList.Count >= maxEchoes || isEclipseActive)
+            {
+                return;
+            }
+
+            var newEcho = Instantiate(echoPrefab, playerTransform.position, playerTransform.rotation);
+            echoList.Add(newEcho);
+
+            //**
+            //Echo newEcho = InstantiateFromPool(echoPrefab, playerTransform.position);
+            //newEcho.playerEcho = true;
+            //echoes.Add(newEcho);
+            //if (echoes.Count > maxEchoes)
+            //    echoes[0].Break();
         }
 
         void FreezeAll()
         {
-            for (int i = 0; i < echoes.Count; i++)
+            for (int i = 0; i < echoList.Count; i++)
             {
-                echoes[i].Freeze();
+                echoList[i].Freeze();
             }
 
-            for (int i = 0; i < nonEchoes.Count; i++)
-            {
-                nonEchoes[i].Freeze();
-            }
+            //**
+            //for (int i = 0; i < echoes.Count; i++)
+            //{
+            //    echoes[i].Freeze();
+            //}
+
+            //for (int i = 0; i < nonEchoes.Count; i++)
+            //{
+            //    nonEchoes[i].Freeze();
+            //}
         }
 
         void UnfreezeAll()
         {
-            for (int i = 0; i < echoes.Count; i++)
+            for (int i = 0; i < echoList.Count; i++)
             {
-                echoes[i].Unfreeze();
+                echoList[i].Unfreeze();
             }
 
-            for (int i = 0; i < nonEchoes.Count; i++)
-            {
-                nonEchoes[i].Unfreeze();
-            }
+            //**
+            //for (int i = 0; i < echoes.Count; i++)
+            //{
+            //    echoes[i].Unfreeze();
+            //}
+
+            //for (int i = 0; i < nonEchoes.Count; i++)
+            //{
+            //    nonEchoes[i].Unfreeze();
+            //}
         }
 
         //public void BreakAll()
@@ -157,19 +182,23 @@ namespace Game.EchoSystem
             InstantiateFromPool(breakEchoParticles, position);
         }
 
+        #endregion private methods
+
         //##################################################################
+
+        #region event handlers
 
         void OnEclipseEventHandler(object sender, Utilities.EventManager.OnEclipseEventArgs args)
         {
             if (args.EclipseOn)
             {
-                eclipse = true;
+                isEclipseActive = true;
 
                 FreezeAll();
             }
             else
             {
-                eclipse = false;
+                isEclipseActive = false;
 
                 UnfreezeAll();
             }
@@ -177,13 +206,19 @@ namespace Game.EchoSystem
 
         void OnSceneChangedEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
         {
-            eclipse = false;
+            //Debug.LogErrorFormat("EchoManager: OnSceneChangedEventHandler: echo count = {0}", echoList.Count);
 
-            for(int i = 0; i < echoes.Count; i++)
+            isEclipseActive = false;
+
+            for (int i = 0; i < echoList.Count; i++)
             {
-                echoes[i].Break();
+                Destroy(echoList[i].gameObject);
             }
+
+            echoList.Clear();
         }
+
+        #endregion event handlers
 
         //##################################################################
     }
