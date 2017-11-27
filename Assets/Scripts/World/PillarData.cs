@@ -35,6 +35,8 @@ namespace Game.World
 
         //#####################################################
 
+        #region pillar ability groups
+
         [SerializeField]
         [HideInInspector]
         List<Player.eAbilityGroup> pillarAbilityGroups = new List<Player.eAbilityGroup>();
@@ -54,5 +56,9 @@ namespace Game.World
                 return 0;
             }
         }
+
+        #endregion pillar ability groups
+
+        //#####################################################
     }
 }

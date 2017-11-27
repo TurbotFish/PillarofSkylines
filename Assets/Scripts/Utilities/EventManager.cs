@@ -124,23 +124,23 @@ namespace Game.Utilities
 
         #region favour amount changed event
 
-        public class OnFavourAmountChangedEventArgs : EventArgs
+        public class FavourAmountChangedEventArgs : EventArgs
         {
             public int FavourAmount { get; private set; }
 
-            public OnFavourAmountChangedEventArgs(int favourAmount)
+            public FavourAmountChangedEventArgs(int favourAmount)
             {
                 this.FavourAmount = favourAmount;
             }
         }
 
-        public delegate void OnFavourAmountChangedEventHandler(object sender, OnFavourAmountChangedEventArgs args);
+        public delegate void FavourAmountChangedEventHandler(object sender, FavourAmountChangedEventArgs args);
 
-        public static event OnFavourAmountChangedEventHandler OnFavourAmountChangedEvent;
+        public static event FavourAmountChangedEventHandler FavourAmountChangedEvent;
 
-        public static void SendOnFavourAmountChangedEvent(object sender, OnFavourAmountChangedEventArgs args)
+        public static void SendFavourAmountChangedEvent(object sender, FavourAmountChangedEventArgs args)
         {
-            OnFavourAmountChangedEvent?.Invoke(sender, args);
+            FavourAmountChangedEvent?.Invoke(sender, args);
         }
 
         #endregion favour amount changed event
@@ -182,7 +182,7 @@ namespace Game.Utilities
 
         #region teleport player event
 
-        public class OnTeleportPlayerEventArgs : EventArgs
+        public class TeleportPlayerEventArgs : EventArgs
         {
             /// <summary>
             /// The Position the Player should be teleported to.
@@ -194,18 +194,18 @@ namespace Game.Utilities
             /// </summary>
             public bool IsNewScene { get; private set; }
 
-            public OnTeleportPlayerEventArgs(Vector3 position, bool isNewScene)
+            public TeleportPlayerEventArgs(Vector3 position, bool isNewScene)
             {
                 Position = position;
                 IsNewScene = isNewScene;
             }
         }
 
-        public delegate void OnTeleportPlayerEventHandler(object sender, OnTeleportPlayerEventArgs args);
+        public delegate void TeleportPlayerEventHandler(object sender, TeleportPlayerEventArgs args);
 
-        public static event OnTeleportPlayerEventHandler TeleportPlayerEvent;
+        public static event TeleportPlayerEventHandler TeleportPlayerEvent;
 
-        public static void SendTeleportPlayerEvent(object sender, OnTeleportPlayerEventArgs args)
+        public static void SendTeleportPlayerEvent(object sender, TeleportPlayerEventArgs args)
         {
             TeleportPlayerEvent?.Invoke(sender, args);
         }
@@ -216,7 +216,7 @@ namespace Game.Utilities
 
         #region scene changed event
 
-        public class OnSceneChangedEventArgs : EventArgs
+        public class SceneChangedEventArgs : EventArgs
         {
             public bool HasChangedToPillar { get; private set; }
             public World.ePillarId PillarId { get; private set; }
@@ -224,7 +224,7 @@ namespace Game.Utilities
             /// <summary>
             /// Change to Open World.
             /// </summary>
-            public OnSceneChangedEventArgs()
+            public SceneChangedEventArgs()
             {
                 this.HasChangedToPillar = false;
             }
@@ -233,20 +233,20 @@ namespace Game.Utilities
             /// Change to Pillar.
             /// </summary>
             /// <param name="pillarId"></param>
-            public OnSceneChangedEventArgs(World.ePillarId pillarId)
+            public SceneChangedEventArgs(World.ePillarId pillarId)
             {
                 this.HasChangedToPillar = true;
                 this.PillarId = pillarId;
             }
         }
 
-        public delegate void OnSceneChangedEventHandler(object sender, OnSceneChangedEventArgs args);
+        public delegate void SceneChangedEventHandler(object sender, SceneChangedEventArgs args);
 
-        public static event OnSceneChangedEventHandler OnSceneChangedEvent;
+        public static event SceneChangedEventHandler SceneChangedEvent;
 
-        public static void SendOnSceneChangedEvent(object sender, OnSceneChangedEventArgs args)
+        public static void SendSceneChangedEvent(object sender, SceneChangedEventArgs args)
         {
-            OnSceneChangedEvent?.Invoke(sender, args);
+            SceneChangedEvent?.Invoke(sender, args);
             Debug.Log("Event sent: SceneChanged");
         }
 
@@ -256,52 +256,51 @@ namespace Game.Utilities
 
         #region enter pillar event
 
-        public class OnEnterPillarEventArgs : EventArgs
+        public class EnterPillarEventArgs : EventArgs
         {
             public World.ePillarId PillarId { get; private set; }
 
-            public OnEnterPillarEventArgs(World.ePillarId pillarId)
+            public EnterPillarEventArgs(World.ePillarId pillarId)
             {
                 this.PillarId = pillarId;
             }
         }
 
-        public delegate void OnEnterPillarEventHandler(object sender, OnEnterPillarEventArgs args);
+        public delegate void EnterPillarEventHandler(object sender, EnterPillarEventArgs args);
 
-        public static event OnEnterPillarEventHandler OnEnterPillarEvent;
+        public static event EnterPillarEventHandler EnterPillarEvent;
 
-        public static void SendOnEnterPillarEvent(object sender, OnEnterPillarEventArgs args)
+        public static void SendEnterPillarEvent(object sender, EnterPillarEventArgs args)
         {
-            OnEnterPillarEvent?.Invoke(sender, args);
+            EnterPillarEvent?.Invoke(sender, args);
         }
 
         #endregion enter pillar event
 
         //***********************************************************
 
-        #region eclipse events
+        #region eclipse event
 
-        public class OnEclipseEventArgs : EventArgs
+        public class EclipseEventArgs : EventArgs
         {
             public bool EclipseOn;
 
-            public OnEclipseEventArgs(bool eclipseOn)
+            public EclipseEventArgs(bool eclipseOn)
             {
                 EclipseOn = eclipseOn;
             }
         }
 
-        public delegate void OnEclipseEventHandler(object sender, OnEclipseEventArgs args);
+        public delegate void EclipseEventHandler(object sender, EclipseEventArgs args);
 
-        public static event OnEclipseEventHandler OnEclipseEvent;
+        public static event EclipseEventHandler EclipseEvent;
 
-        public static void SendOnEclipseEvent(object sender, OnEclipseEventArgs args)
+        public static void SendEclipseEvent(object sender, EclipseEventArgs args)
         {
-            OnEclipseEvent?.Invoke(sender, args);
+            EclipseEvent?.Invoke(sender, args);
         }
 
-        #endregion eclipse events
-
+        #endregion eclipse event
 
         //***********************************************************
 

@@ -26,10 +26,10 @@ namespace Game.UI.AbilityMenu
         {
             this.favourAmountText.text = favourAmount.ToString();
 
-            Utilities.EventManager.OnFavourAmountChangedEvent += OnFavourAmountChangedEventHandler;
+            Utilities.EventManager.FavourAmountChangedEvent += OnFavourAmountChangedEventHandler;
         }
 
-        void OnFavourAmountChangedEventHandler(object sender, Utilities.EventManager.OnFavourAmountChangedEventArgs args)
+        void OnFavourAmountChangedEventHandler(object sender, Utilities.EventManager.FavourAmountChangedEventArgs args)
         {
             this.favourAmountText.text = args.FavourAmount.ToString();
         }

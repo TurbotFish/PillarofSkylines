@@ -8,14 +8,14 @@ public class PillarEye : MonoBehaviour {
 
     private void OnEnable() {
         rend = GetComponent<Renderer>();
-        Game.Utilities.EventManager.OnEclipseEvent += OnEclipseEventHandler;
+        Game.Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
     }
 
     private void OnDisable() {
-        Game.Utilities.EventManager.OnEclipseEvent -= OnEclipseEventHandler;
+        Game.Utilities.EventManager.EclipseEvent -= OnEclipseEventHandler;
     }
 
-    void OnEclipseEventHandler(object sender, Game.Utilities.EventManager.OnEclipseEventArgs args) {
+    void OnEclipseEventHandler(object sender, Game.Utilities.EventManager.EclipseEventArgs args) {
 
         if (args.EclipseOn) {
             //eclipse on

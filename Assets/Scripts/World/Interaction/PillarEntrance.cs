@@ -8,6 +8,6 @@ namespace Game.World.Interaction
     {
         [SerializeField]
         ePillarId pillarId;
-        public ePillarId PillarId { get { return this.pillarId; } }
+        public ePillarId PillarId { get { return pillarId; } }
     }
 }

@@ -40,7 +40,7 @@ namespace Game.Player.AbilitySystem
 			foreach (ParticleSystem ps in this.myParticleSystems) {
 				ps.Stop ();
 			}
-            Utilities.EventManager.OnSceneChangedEvent += OnSceneChangedEventHandler;
+            Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
             Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
 
             this.isInitialized = true;
@@ -84,7 +84,7 @@ namespace Game.Player.AbilitySystem
         //################################################################
         //################################################################
 
-        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
+        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
             if (args.HasChangedToPillar)
             {
