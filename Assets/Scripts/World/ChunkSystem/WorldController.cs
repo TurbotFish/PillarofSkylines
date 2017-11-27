@@ -88,7 +88,7 @@ namespace Game.World.ChunkSystem
             var currentPlayerPos = this.playerTransform.position;
             float posDelta = Vector3.Distance(this.previousPlayerPos, currentPlayerPos);
 
-            if (posDelta >= this.ChunkSystemData.GetMinUpdateDistance())
+            if (posDelta >= this.ChunkSystemData.MinUpdateDistance)
             {
                 foreach (var region in this.regionList)
                 {

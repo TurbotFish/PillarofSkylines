@@ -14,14 +14,14 @@ public class SetChildrenActiveOnEclipse : MonoBehaviour {
             j++;
         }
         
-        Game.Utilities.EventManager.OnEclipseEvent += OnEclipseEventHandler;
+        Game.Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
     }
 
     private void OnDisable() {
-        Game.Utilities.EventManager.OnEclipseEvent -= OnEclipseEventHandler;
+        Game.Utilities.EventManager.EclipseEvent -= OnEclipseEventHandler;
     }
 
-    void OnEclipseEventHandler(object sender, Game.Utilities.EventManager.OnEclipseEventArgs args) {
+    void OnEclipseEventHandler(object sender, Game.Utilities.EventManager.EclipseEventArgs args) {
 
         for (int i = 0; i < children.Length; i++)
             children[i].SetActive(setActive == args.EclipseOn);

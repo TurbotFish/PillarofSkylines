@@ -31,8 +31,8 @@ namespace Game
             this.player = gameController.PlayerController.Player;
             this.eclipsePostEffect = gameController.CameraController.EclipseEffect;
 
-            Utilities.EventManager.OnEclipseEvent += OnEclipseEventHandler;
-            Utilities.EventManager.OnSceneChangedEvent += OnSceneChangedEventHandler;
+            Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
+            Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
         }
 
         #endregion initialization
@@ -41,7 +41,7 @@ namespace Game
 
         #region event handlers
 
-        void OnEclipseEventHandler(object sender, Game.Utilities.EventManager.OnEclipseEventArgs args)
+        void OnEclipseEventHandler(object sender, Game.Utilities.EventManager.EclipseEventArgs args)
         {
             if (args.EclipseOn)
             {
@@ -53,7 +53,7 @@ namespace Game
             }
         }
 
-        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
+        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
             StopEclipse();
         }

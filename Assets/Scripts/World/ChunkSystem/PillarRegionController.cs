@@ -6,14 +6,18 @@ namespace Game.World.ChunkSystem
 {
     public class PillarRegionController : RegionController
     {
+        //##################################################################
+
         [SerializeField]
         ePillarId pillarId;
-        public ePillarId PillarId { get { return this.pillarId; } }
+        public ePillarId PillarId { get { return pillarId; } }
 
         List<PillarChunkController> intactPillarChunks = new List<PillarChunkController>();
         List<PillarChunkController> destroyedPillarChunks = new List<PillarChunkController>();
 
         ePillarState currentPillarState = ePillarState.Intact;
+
+        //##################################################################
 
         /// <summary>
         /// 
@@ -22,8 +26,10 @@ namespace Game.World.ChunkSystem
         {
             base.InitializeRegion(worldController);
 
-            foreach (var chunk in this.chunkList)
+            for (int i = 0; i < chunkList.Count; i++)
             {
+                var chunk = chunkList[i];
+
                 if (chunk is PillarChunkController)
                 {
                     var pillarChunk = chunk as PillarChunkController;
@@ -32,13 +38,13 @@ namespace Game.World.ChunkSystem
                     {
                         pillarChunk.ActivatePillarChunk();
 
-                        this.intactPillarChunks.Add(pillarChunk);
+                        intactPillarChunks.Add(pillarChunk);
                     }
                     else if (pillarChunk.PillarState == ePillarState.Destroyed)
                     {
                         pillarChunk.DeactivatePillarChunk();
 
-                        this.destroyedPillarChunks.Add(pillarChunk);
+                        destroyedPillarChunks.Add(pillarChunk);
                     }
                 }
             }
@@ -55,51 +61,65 @@ namespace Game.World.ChunkSystem
 
             var pillarOriginal = originalRegion as PillarRegionController;
 
-            this.pillarId = pillarOriginal.PillarId;
+            pillarId = pillarOriginal.PillarId;
         }
+
+        //##################################################################
 
         /// <summary>
         /// 
         /// </summary>
         public override void UpdateRegion(Vector3 playerPos)
         {
-            if(this.currentPillarState == ePillarState.Intact)
+            if (currentPillarState == ePillarState.Intact)
             {
-                foreach(var chunk in this.intactPillarChunks)
+                for (int i = 0; i < intactPillarChunks.Count; i++)
                 {
+                    var chunk = intactPillarChunks[i];
+
                     chunk.UpdateChunk(playerPos);
                 }
             }
-            else if(this.currentPillarState == ePillarState.Destroyed)
+            else if (currentPillarState == ePillarState.Destroyed)
             {
-                foreach(var chunk in this.destroyedPillarChunks)
+                for (int i = 0; i < destroyedPillarChunks.Count; i++)
                 {
+                    var chunk = destroyedPillarChunks[i];
+
                     chunk.UpdateChunk(playerPos);
                 }
             }
         }
+
+        //##################################################################
 
         /// <summary>
         /// 
         /// </summary>
         void OnPillarDestroyedEventHandler(object sender, Utilities.EventManager.PillarDestroyedEventArgs args)
         {
-            if (args.PillarId != this.PillarId)
+            if (args.PillarId != PillarId)
             {
                 return;
             }
 
-            this.currentPillarState = ePillarState.Destroyed;
+            currentPillarState = ePillarState.Destroyed;
 
-            foreach (var chunk in this.intactPillarChunks)
+            for (int i = 0; i < intactPillarChunks.Count; i++)
             {
+                var chunk = intactPillarChunks[i];
+
                 chunk.DeactivatePillarChunk();
             }
 
-            foreach (var chunk in this.destroyedPillarChunks)
+            for (int i = 0; i < destroyedPillarChunks.Count; i++)
             {
+                var chunk = destroyedPillarChunks[i];
+
                 chunk.ActivatePillarChunk();
             }
         }
+
+        //##################################################################
     }
 }

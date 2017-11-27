@@ -58,7 +58,7 @@ namespace Game.GameControl
 
             //register to events
             Utilities.EventManager.LeavePillarEvent += OnLeavePillarEventHandler;
-            Utilities.EventManager.OnEnterPillarEvent += OnEnterPillarEventHandler;
+            Utilities.EventManager.EnterPillarEvent += OnEnterPillarEventHandler;
         }
 
         //void Update() //for testing only!
@@ -180,10 +180,10 @@ namespace Game.GameControl
             //starting the game
             SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
 
-            var teleportPlayerEventArgs = new Utilities.EventManager.OnTeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnPoint(), true);
+            var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnPoint(), true);
             Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
-            Utilities.EventManager.SendOnSceneChangedEvent(this, new Utilities.EventManager.OnSceneChangedEventArgs());
+            Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());
             Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.Intro));
         }
 
@@ -197,7 +197,7 @@ namespace Game.GameControl
             CleanScene(scene);
         }
 
-        void OnEnterPillarEventHandler(object sender, Utilities.EventManager.OnEnterPillarEventArgs args)
+        void OnEnterPillarEventHandler(object sender, Utilities.EventManager.EnterPillarEventArgs args)
         {
             if (this.isPillarActive)
             {
@@ -236,10 +236,10 @@ namespace Game.GameControl
             yield return null;
 
             //
-            var teleportPlayerEventArgs = new Utilities.EventManager.OnTeleportPlayerEventArgs(info.SpawnPointManager.GetInitialSpawnPoint(), true);
+            var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(info.SpawnPointManager.GetInitialSpawnPoint(), true);
             Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
-            Utilities.EventManager.SendOnSceneChangedEvent(this, new Utilities.EventManager.OnSceneChangedEventArgs(pillarId));
+            Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs(pillarId));
 
             yield return new WaitForSeconds(0.1f);
 
@@ -296,10 +296,10 @@ namespace Game.GameControl
             yield return null;
 
             //
-            var teleportPlayerEventArgs = new Utilities.EventManager.OnTeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetPillarExitPoint(this.activePillarId), true);
+            var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetPillarExitPoint(this.activePillarId), true);
             Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
-            Utilities.EventManager.SendOnSceneChangedEvent(this, new Utilities.EventManager.OnSceneChangedEventArgs());
+            Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());
 
             yield return new WaitForSeconds(0.1f);
 

@@ -41,8 +41,8 @@ namespace Game.EchoSystem
             pool = new GameObject("Echo Pool").transform;
             pool.SetParent(transform);
 
-            Utilities.EventManager.OnEclipseEvent += OnEclipseEventHandler;
-            Utilities.EventManager.OnSceneChangedEvent += OnSceneChangedEventHandler;
+            Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
+            Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
         }
 
         #endregion initialization
@@ -75,7 +75,7 @@ namespace Game.EchoSystem
                 var targetEcho = echoList[echoList.Count - 1];
                 echoList.Remove(targetEcho);
 
-                var eventArgs = new Utilities.EventManager.OnTeleportPlayerEventArgs(targetEcho.MyTransform.position, false);
+                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, false);
                 Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
 
                 Instantiate(breakEchoParticles, targetEcho.MyTransform.position, targetEcho.MyTransform.rotation);
@@ -188,7 +188,7 @@ namespace Game.EchoSystem
 
         #region event handlers
 
-        void OnEclipseEventHandler(object sender, Utilities.EventManager.OnEclipseEventArgs args)
+        void OnEclipseEventHandler(object sender, Utilities.EventManager.EclipseEventArgs args)
         {
             if (args.EclipseOn)
             {
@@ -204,7 +204,7 @@ namespace Game.EchoSystem
             }
         }
 
-        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
+        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
             //Debug.LogErrorFormat("EchoManager: OnSceneChangedEventHandler: echo count = {0}", echoList.Count);
 

@@ -412,7 +412,7 @@ namespace Game.Player.CharacterController
             }
         }
 
-        void HandleEventTeleportPlayer(object sender, Game.Utilities.EventManager.OnTeleportPlayerEventArgs args)
+        void HandleEventTeleportPlayer(object sender, Game.Utilities.EventManager.TeleportPlayerEventArgs args)
         {
             transform.position = args.Position;
 

@@ -47,7 +47,7 @@ namespace Game.Player
             set
             {
                 this.favours = value;
-                Utilities.EventManager.SendOnFavourAmountChangedEvent(this, new Utilities.EventManager.OnFavourAmountChangedEventArgs(this.favours));
+                Utilities.EventManager.SendFavourAmountChangedEvent(this, new Utilities.EventManager.FavourAmountChangedEventArgs(this.favours));
             }
         }
 

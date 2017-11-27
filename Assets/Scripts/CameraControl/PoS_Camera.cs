@@ -164,7 +164,7 @@ public class PoS_Camera : MonoBehaviour {
     /// </summary>
     /// <param name="sender"> </param>
     /// <param name="args"> Contient la position vers laquelle tp, et un bool pour savoir si on a changé de scène. </param>
-    void OnTeleportPlayer(object sender, Game.Utilities.EventManager.OnTeleportPlayerEventArgs args) {
+    void OnTeleportPlayer(object sender, Game.Utilities.EventManager.TeleportPlayerEventArgs args) {
         print("je me tp, alors... c'est une nouvelle scène ou pas ? " + args.IsNewScene);
         if (args.IsNewScene) {
             // on reset les paramètres par défaut de la caméra
