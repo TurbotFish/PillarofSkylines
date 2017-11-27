@@ -75,12 +75,10 @@ namespace Game.Player
 
         void Update()
         {
-#if UNITY_EDITOR
-            if (Input.GetKeyUp(KeyCode.P))
+            if (Input.GetKeyUp(KeyCode.F2))
             {
                 this.Favours++;
             }
-#endif
         }
 
         #endregion monobehaviour methods

@@ -36,7 +36,6 @@ public class PlatformPlanter : MonoBehaviour {
         } else if (Input.GetKey(KeyCode.Mouse1) && Time.time - cooldown > lastTimePlanted) {
 
             Time.timeScale = 0.2f;
-            Cursor.lockState = CursorLockMode.None;
             aiming = true;
         }
 
