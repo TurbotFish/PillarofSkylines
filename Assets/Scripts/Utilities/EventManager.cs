@@ -202,7 +202,7 @@ namespace Game.Utilities
             public OnTeleportPlayerEventArgs(Vector3 position, bool isNewScene)
             {
                 Position = position;
-                IsNewScene = IsNewScene;
+                IsNewScene = isNewScene;
             }
         }
 
