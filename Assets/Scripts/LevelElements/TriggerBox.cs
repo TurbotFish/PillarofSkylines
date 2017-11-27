@@ -13,15 +13,21 @@ public class TriggerBox : Trigger {
     [SerializeField]
     bool definitiveActivation;
     [SerializeField]
+    bool toggle;
+    [SerializeField]
     float delayBeforeDeactivation;
 
     private void OnTriggerEnter(Collider other) {
-        if (other.tag == tagToActivate)
-            TriggerState = true;
+        if (other.tag == tagToActivate) {
+            if (toggle)
+                TriggerState ^= true;
+            else
+                TriggerState = true;
+        }
     }
 
     private IEnumerator OnTriggerExit(Collider other) {
-        if (definitiveActivation) yield break;
+        if (definitiveActivation || toggle) yield break;
         if (other.tag == tagToActivate) {
             yield return new WaitForSeconds(delayBeforeDeactivation);
             TriggerState = false;
