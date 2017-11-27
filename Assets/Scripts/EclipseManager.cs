@@ -24,23 +24,6 @@ namespace Game
 
         //###############################################################
 
-        #region Singleton
-        //public static EclipseManager instance;
-        //void Awake()
-        //{
-        //    if (!instance)
-        //    {
-        //        instance = this;
-        //        //DontDestroyOnLoad(gameObject);
-        //    }
-        //    else if (instance != this)
-        //        Destroy(gameObject);
-        //}
-        #endregion Singleton
-
-        //###############################################################
-        //###############################################################
-
         #region initialization
 
         public void InitializeEclipseManager(GameControl.IGameControllerBase gameController)
@@ -54,7 +37,6 @@ namespace Game
 
         #endregion initialization
 
-        //###############################################################
         //###############################################################
 
         #region event handlers
@@ -78,7 +60,6 @@ namespace Game
 
         #endregion event handlers
 
-        //###############################################################
         //###############################################################
 
         void StartEclipse()
