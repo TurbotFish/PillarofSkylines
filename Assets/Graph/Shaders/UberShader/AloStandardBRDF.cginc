@@ -335,7 +335,7 @@ half4 BRDF1_Alo_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity
 
 half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivity, half smoothness,
     half3 normal, half3 viewDir,
-    UnityLight light, UnityIndirect gi, half thickness, half celShadingMask)
+    UnityLight light, UnityIndirect gi, half celShadingMask)
 {
     half3 halfDir = Unity_SafeNormalize (light.dir + viewDir);
 
@@ -344,7 +344,7 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
 	    half noCS = saturate(dot(normal, light.dir));
 
 	    //with CS
-	    half withCS = clamp(step(0.22,saturate(dot(normal, light.dir))), 0.7,1.0);
+	    half withCS = clamp(step(0.22,saturate(dot(normal, light.dir))), 0.4,1.0);
 
 	    half nl = lerp(noCS, withCS, celShadingMask);
     #else
@@ -422,14 +422,14 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
 #endif
 
 	
-	//SSS
-	float3 L = light.dir;
-	float3 VD = viewDir;
-	float3 N = normal;
-
-	float3 H = normalize(L+N*0.8);
-	float VDdotH = pow(saturate(dot(VD,-H)), 1.13) * 3.2;
-	float I = thickness * (VDdotH + 1) * 1;
+//	//SSS
+//	float3 L = light.dir;
+//	float3 VD = viewDir;
+//	float3 N = normal;
+//
+//	float3 H = normalize(L+N*0.8);
+//	float VDdotH = pow(saturate(dot(VD,-H)), 1.13) * 3.2;
+//	float I = thickness * (VDdotH + 1) * 1;
 
 
 
@@ -442,7 +442,7 @@ half4 BRDF2_Unity_PBS (half3 diffColor, half3 specColor, half oneMinusReflectivi
 
 
     //SSS
-    color += saturate(float3(0.8, 0.5, 0.0) * light.color) * I;
+    //color += saturate(float3(0.8, 0.5, 0.0) * light.color) * I;
    //color += saturate(float3(0.0,0.8,0.3) * light.color) * I;
     
     return half4(color, 1);

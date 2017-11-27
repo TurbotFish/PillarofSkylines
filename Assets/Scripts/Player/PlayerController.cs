@@ -10,8 +10,8 @@ namespace Game.Player
     /// </summary>
     public class PlayerController : MonoBehaviour
     {
-        global::Player player;
-        public global::Player Player { get { return this.player; } }
+        Game.Player.CharacterController.Character player;
+        public Game.Player.CharacterController.Character Player { get { return this.player; } }
 
         InteractionController interactionController;
         public InteractionController InteractionController { get { return this.interactionController; } }
@@ -27,7 +27,7 @@ namespace Game.Player
         public void InitializePlayerController(GameControl.IGameControllerBase gameController)
         {
             //getting all references
-			this.player = GetComponent<global::Player> ();
+			this.player = GetComponent<Game.Player.CharacterController.Character> ();
 			this.interactionController = GetComponentInChildren<InteractionController> ();
             this.wrappableObject = GetComponent<WrappableObject>();
             this.TombFinderController = GetComponentInChildren<AbilitySystem.TombFinderController>();

@@ -27,7 +27,7 @@ public class Wheel : MovingPlatform {
 		}
 	}
 
-	override public void AddPlayer(Player player, Vector3 playerImpactPoint) {
+	override public void AddPlayer(Game.Player.CharacterController.Character player, Vector3 playerImpactPoint) {
 		currPlayer = player;
 		initialGravity = player.gravity;
 		impactPoint = playerImpactPoint;

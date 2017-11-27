@@ -33,7 +33,7 @@ public class EditorDebugMaster : EditorWindow {
 	[MenuItem("PoS Debug/Bring Player &F", false, -10)]
 	public static void BringPlayer() {
 		
-		Transform player = FindObjectOfType<Player>().transform;
+		Transform player = FindObjectOfType<Game.Player.CharacterController.Character>().transform;
 		Transform viewPos = SceneView.lastActiveSceneView.camera.transform;
 		float nearClipPlane = SceneView.lastActiveSceneView.camera.nearClipPlane;
 

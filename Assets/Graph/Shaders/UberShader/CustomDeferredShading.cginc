@@ -146,7 +146,7 @@
 
 
 		float oneMinusReflectivity = 1 - SpecularStrength(specularTint);
-		float thickness = 1.0 - tex2D(_CameraGBufferTexture0, uv).a;
+		//float thickness = 1.0 - tex2D(_CameraGBufferTexture0, uv).a;
 
 		UnityLight light = CreateLight(uv, worldPos, viewPos.z);
 		UnityIndirect indirectLight;
@@ -156,7 +156,7 @@
 
 		float4 color = ALO_BRDF_PBS(
 			albedo, specularTint, oneMinusReflectivity, smoothness,
-			normal, viewDir, light, indirectLight, thickness, celShadingMask
+			normal, viewDir, light, indirectLight, celShadingMask
 		);
 
 		#if !defined(UNITY_HDR_ON)

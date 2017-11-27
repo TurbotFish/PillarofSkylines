@@ -15,19 +15,27 @@ public class CustomPBR_GUI : ShaderGUI {
 		this.target = editor.target as Material;
 		this.editor = editor;
 		this.properties = properties;
+
+
+		target.SetShaderPassEnabled ("Always", false);
+
+
 		DoRenderingMode ();
+
 		DoCulling ();
 		DoCelShading ();
 		DoRefraction ();
 		DoSubSurfaceScattering ();
 		DoMain ();
 		DoSecondary ();
-		DoWind ();
+		DoVertexOffset ();
 		DoDistanceDither ();
 		DoDebug ();
 
 		//unity bug
 		//DoDynamicBatching ();
+		DoIsPlayer();
+		DoRenderQueue ();
 	}
 
 	void DoMain(){
@@ -42,7 +50,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoMetallic ();
 		DoSmoothness ();
 		DoNormals ();
-		DoFadeNormals ();
+		//DoFadeNormals ();
 		//DoOcclusion ();
 		DoEmission ();
 		DoDetailMask ();
@@ -88,6 +96,10 @@ public class CustomPBR_GUI : ShaderGUI {
 		if (EditorGUI.EndChangeCheck () && tex != map.textureValue) {
 			SetKeyword ("_NORMAL_MAP", map.textureValue);
 		}
+
+		if (map.textureValue != null) {
+			DoFadeNormals ();
+		}
 	}
 
 	void DoFadeNormals(){
@@ -109,7 +121,7 @@ public class CustomPBR_GUI : ShaderGUI {
 
 	void DoDistanceDither(){
 		
-		GUILayout.Label ("Distance Dithering", EditorStyles.boldLabel);
+		GUILayout.Label ("Dithering", EditorStyles.boldLabel);
 		MaterialProperty _distMin = FindProperty ("_DitherDistMin");
 		MaterialProperty _distMax = FindProperty ("_DitherDistMax");
 		EditorGUI.BeginChangeCheck ();
@@ -178,42 +190,97 @@ public class CustomPBR_GUI : ShaderGUI {
 	void DoSubSurfaceScattering(){
 		GUILayout.Label ("Sub Surface Scattering", EditorStyles.boldLabel);
 
-		MaterialProperty power = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_PowerSSS") : null;
-		MaterialProperty scale = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_ScaleSSS") : null;
-		MaterialProperty distortion = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_DistortionSSS") : null;
-		MaterialProperty atten = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_AttenuationSSS") : null;
-		MaterialProperty ambient = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_AmbientSSS") : null;
-		//MaterialProperty diffuse = IsKeywordEnabled("_RENDERING_TRANSPARENT") ? FindProperty ("_DiffuseSSS") : null;
-
+		MaterialProperty power = FindProperty ("_PowerSSS");
+		MaterialProperty scale = FindProperty ("_ScaleSSS");
+		MaterialProperty distortion = FindProperty ("_DistortionSSS");
+		MaterialProperty atten = FindProperty ("_AttenuationSSS");
+		MaterialProperty ambient = FindProperty ("_AmbientSSS");
 		MaterialProperty thickness = FindProperty ("_ThicknessMap");
 		Texture tex = thickness.textureValue;
 
 		EditorGUI.BeginChangeCheck ();
 
-		bool subSurfaceOn = EditorGUILayout.Toggle ("Translucency", IsKeywordEnabled ("_SSS"));
+		bool sssOn = EditorGUILayout.Toggle ("Translucency", IsKeywordEnabled ("_SSS"));
 
 		if (EditorGUI.EndChangeCheck ()) {
-			SetKeyword ("_SSS", subSurfaceOn);
+			SetKeyword ("_SSS", sssOn);
 		}
-		EditorGUI.indentLevel += 1;
-		if (subSurfaceOn) {
-			if (IsKeywordEnabled ("_RENDERING_TRANSPARENT")) {
-				editor.ShaderProperty (power, MakeLabel (power));
-				editor.ShaderProperty (scale, MakeLabel (scale));
-				editor.ShaderProperty (distortion, MakeLabel (distortion));
-				editor.ShaderProperty (atten, MakeLabel (atten));
-				editor.ShaderProperty (ambient, MakeLabel (ambient));
-				//editor.ShaderProperty (diffuse, MakeLabel (diffuse));
-			} 
-			/*
-			else {
-				bool useSSSColour2 = EditorGUILayout.Toggle ("The other colour", IsKeywordEnabled ("_SSSColour2"));
-				SetKeyword ("_SSSColour2", useSSSColour2);
+
+		if (sssOn) {
+
+			DoTranslucencyMode ();
+
+			editor.TexturePropertySingleLine (MakeLabel (thickness, "Thickness (A)"), thickness, FindProperty ("_DiffuseSSS"));
+			EditorGUI.indentLevel += 2;
+			editor.ShaderProperty (power, MakeLabel (power));
+			editor.ShaderProperty (scale, MakeLabel (scale));
+			editor.ShaderProperty (distortion, MakeLabel (distortion));
+			editor.ShaderProperty (atten, MakeLabel (atten));
+			editor.ShaderProperty (ambient, MakeLabel (ambient));
+			EditorGUI.indentLevel -= 2;
+		} else {
+			RenderingSettings settings = RenderingSettings.modes [0];
+			if (IsKeywordEnabled ("RENDERING_CUTOUT")) {
+				settings = RenderingSettings.modes [1];
+			} else if (IsKeywordEnabled ("_RENDERING_FADE")) {
+				settings = RenderingSettings.modes [2];
+			} else if (IsKeywordEnabled ("_RENDERING_TRANSPARENT")) {
+				settings = RenderingSettings.modes [3];
 			}
-			*/
-			editor.TexturePropertySingleLine (MakeLabel (thickness, "Thickness (R)"), thickness, IsKeywordEnabled ("_RENDERING_TRANSPARENT") ? FindProperty ("_DiffuseSSS") : null);
+
+			foreach (Material m in editor.targets) {
+				
+				m.renderQueue = (int)settings.queue;
+
+				m.SetOverrideTag ("RenderType", settings.renderType);
+				m.SetInt ("_SrcBlend", (int)settings.srcBlend);
+				m.SetInt ("_DstBlend", (int)settings.dstBlend);
+				m.SetInt ("_ZWrite", settings.zWrite ? 1 : 0);
+			}
 		}
-		EditorGUI.indentLevel -= 1;
+		
+
+	}
+
+	void DoTranslucencyMode(){
+		TranslucencyModes sssMode = TranslucencyModes.OpaqueSSS;
+		if (IsKeywordEnabled ("_RENDERING_FADE")) {
+			sssMode = TranslucencyModes.FadeSSS;
+		} else if (IsKeywordEnabled ("_RENDERING_TRANSPARENT")) {
+			sssMode = TranslucencyModes.TransparentSSS;
+		} else if (IsKeywordEnabled ("_RENDERING_CUTOUT")) {
+			sssMode = TranslucencyModes.CutoutSSS;
+		}
+
+		EditorGUI.BeginChangeCheck ();
+		sssMode = (TranslucencyModes)EditorGUILayout.EnumPopup (MakeLabel ("SSS Mode"), sssMode);
+		if (EditorGUI.EndChangeCheck ()) {
+			RecordAction ("Translucency Mode");
+
+			SetKeyword ("_RENDERING_CUTOUT", sssMode == TranslucencyModes.CutoutSSS);
+			SetKeyword ("_RENDERING_FADE", sssMode == TranslucencyModes.FadeSSS);
+			SetKeyword ("_RENDERING_TRANSPARENT", sssMode == TranslucencyModes.TransparentSSS);
+
+
+			RenderingSettings settings = RenderingSettings.modes [4];
+			if (sssMode == TranslucencyModes.FadeSSS) {
+				settings = RenderingSettings.modes [5];
+			} else if (sssMode == TranslucencyModes.TransparentSSS) {
+				settings = RenderingSettings.modes [6];
+			}
+
+			foreach (Material m in editor.targets) {
+				
+
+				m.renderQueue = (int)settings.queue;
+
+				m.SetOverrideTag ("RenderType", settings.renderType);
+				m.SetInt ("_SrcBlend", (int)settings.srcBlend);
+				m.SetInt ("_DstBlend", (int)settings.dstBlend);
+				m.SetInt ("_ZWrite", settings.zWrite ? 1 : 0);
+			}
+
+		}
 	}
 
 	void DoOcclusion(){
@@ -319,7 +386,9 @@ public class CustomPBR_GUI : ShaderGUI {
 
 			RenderingSettings settings = RenderingSettings.modes [(int)mode];
 			foreach (Material m in editor.targets) {
+				
 				m.renderQueue = (int)settings.queue;
+
 				m.SetOverrideTag ("RenderType", settings.renderType);
 				m.SetInt ("_SrcBlend", (int)settings.srcBlend);
 				m.SetInt ("_DstBlend", (int)settings.dstBlend);
@@ -333,6 +402,11 @@ public class CustomPBR_GUI : ShaderGUI {
 		}
 	}
 
+	void DoRenderQueue(){
+		MaterialProperty queue = FindProperty ("_RenderQueue");
+		target.SetInt ("_RenderQueue", target.renderQueue);
+		editor.ShaderProperty (queue, MakeLabel (queue));
+	}
 
 	void DoCulling(){
 		CullMode mode = CullMode.Back;
@@ -368,39 +442,35 @@ public class CustomPBR_GUI : ShaderGUI {
 	void DoRefraction(){
 		GUILayout.Label ("Refraction", EditorStyles.boldLabel);
 
-		RenderingMode mode = RenderingMode.Opaque;
-		if (IsKeywordEnabled ("_RENDERING_CUTOUT")) {
-			mode = RenderingMode.Cutout;
-			shouldShowAlphaCutoff = true;
-		} else if (IsKeywordEnabled ("_RENDERING_FADE")) {
-			mode = RenderingMode.Fade;	
-		} else if (IsKeywordEnabled ("_RENDERING_TRANSPARENT")) {
-			mode = RenderingMode.Transparent;	
-		}
-
+//		RenderingMode mode = RenderingMode.Opaque;
+//		if (IsKeywordEnabled ("_RENDERING_CUTOUT")) {
+//			mode = RenderingMode.Cutout;
+//			shouldShowAlphaCutoff = true;
+//		} else if (IsKeywordEnabled ("_RENDERING_FADE")) {
+//			mode = RenderingMode.Fade;	
+//		} else if (IsKeywordEnabled ("_RENDERING_TRANSPARENT")) {
+//			mode = RenderingMode.Transparent;	
+//		}
 
 		MaterialProperty refracAmount = FindProperty ("_RefractionAmount");
-
-		if (mode != RenderingMode.Transparent) {
-			SetKeyword ("_REFRACTION", false);
-		}
 
 		EditorGUI.BeginChangeCheck ();
 		bool refrac = EditorGUILayout.Toggle ("Refraction", IsKeywordEnabled ("_REFRACTION"));
 
 		if (EditorGUI.EndChangeCheck ()) {
 			SetKeyword ("_REFRACTION", refrac);
-			SetKeyword ("_RENDERING_TRANSPARENT", refrac);
 
-			RenderingSettings settings = RenderingSettings.modes [refrac ? 4 : 0];
-			foreach (Material m in editor.targets) {
-				m.SetShaderPassEnabled ("Always", refrac);
-				m.renderQueue = (int)settings.queue;
-				m.SetOverrideTag ("RenderType", settings.renderType);
-				m.SetInt ("_SrcBlend", (int)settings.srcBlend);
-				m.SetInt ("_DstBlend", (int)settings.dstBlend);
-				m.SetInt ("_ZWrite", settings.zWrite ? 1 : 0);
-			}
+//			foreach (Material m in editor.targets) {
+//				if (refrac) {
+//					m.renderQueue = (int)RenderQueue.Transparent;
+//				} else {
+//					if (mode == RenderingMode.Opaque) {
+//						m.renderQueue = (int)RenderQueue.Geometry;
+//					} else if (mode == RenderingMode.Cutout) {
+//						m.renderQueue = (int)RenderQueue.AlphaTest;
+//					}
+//				}
+//			}
 		}
 
 		if (refrac) {
@@ -408,15 +478,72 @@ public class CustomPBR_GUI : ShaderGUI {
 		}
 	}
 
-	void DoWind(){
+	void DoVertexOffset(){
 		GUILayout.Label ("Vertex Offset", EditorStyles.boldLabel);
+		if (IsKeywordEnabled ("_VERTEX_WIND") || IsKeywordEnabled ("_VERTEX_BEND")) {
+			VertexMask maskType = VertexMask.Custom;
+			if (IsKeywordEnabled ("_VERTEX_MASK_COLOUR")) {
+				maskType = VertexMask.VertexColour;
+			}
+
+			MaterialProperty maxAngle = FindProperty ("_MaxBendAngle");
+			editor.ShaderProperty (maxAngle, "Angle Max");
+
+//			OffsetPlane plane = OffsetPlane.YZ;
+//			if (IsKeywordEnabled ("_VERTEX_OFFSET_XY")) {
+//				plane = OffsetPlane.XY;
+//			} else if (IsKeywordEnabled ("_VERTEX_OFFSET_XZ")) {
+//				plane = OffsetPlane.XZ;
+//			}
+
+
+			EditorGUI.BeginChangeCheck ();
+			maskType = (VertexMask)EditorGUILayout.EnumPopup (MakeLabel ("Vertex Mask"), maskType);
+//			plane = (OffsetPlane)EditorGUILayout.EnumPopup(MakeLabel("Offset Plane")
+
+			if (EditorGUI.EndChangeCheck ()) {
+				RecordAction ("Vertex Mask");
+				SetKeyword ("_VERTEX_MASK_CUSTOM", maskType == VertexMask.Custom);
+				SetKeyword ("_VERTEX_MASK_COLOUR", maskType == VertexMask.VertexColour);
+			}
+
+			if (maskType == VertexMask.Custom) {
+				MaterialProperty multiplier = FindProperty ("_VertMaskMultiplier");
+				MaterialProperty flatOffset = FindProperty ("_VertMaskFlat");
+				editor.ShaderProperty (multiplier, MakeLabel ("Multiplier", "0.8 worked ok"));
+				editor.ShaderProperty (flatOffset, MakeLabel ("Vertical Offset", "0.3 worked ok"));
+			}
+
+		}
+		DoWind ();
+		DoBending ();
+	}
+
+	void DoWind(){
 		EditorGUI.BeginChangeCheck ();
 		bool windOn = EditorGUILayout.Toggle ("Wind", IsKeywordEnabled ("_VERTEX_WIND"));
-		bool playerOn = EditorGUILayout.Toggle ("Bending", IsKeywordEnabled ("_VERTEX_BEND"));
 
 		if (EditorGUI.EndChangeCheck ()) {
 			SetKeyword ("_VERTEX_WIND", windOn);
-			SetKeyword ("_VERTEX_BEND", playerOn);
+		}
+
+
+	}
+
+	void DoBending(){
+		MaterialProperty minDist = FindProperty ("_BendingDistMin");
+		MaterialProperty maxDist = FindProperty ("_BendingDistMax");
+
+		EditorGUI.BeginChangeCheck ();
+		bool bendingOn = EditorGUILayout.Toggle ("Bending", IsKeywordEnabled ("_VERTEX_BEND"));
+
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_VERTEX_BEND", bendingOn);
+		}
+
+		if (bendingOn) {
+			editor.ShaderProperty (minDist, MakeLabel ("Full Effect Dist"));
+			editor.ShaderProperty (maxDist, MakeLabel ("No Effect Dist"));
 		}
 	}
 
@@ -427,13 +554,28 @@ public class CustomPBR_GUI : ShaderGUI {
 		bool batchingOn = EditorGUILayout.Toggle ("Batching Enabled", batchingEnabled);
 
 		if (EditorGUI.EndChangeCheck ()) {
-			Debug.Log (batchingEnabled);
+			//Debug.Log (batchingEnabled);
 			foreach (Material mat in editor.targets) {
 				mat.SetOverrideTag("DisableBatching", batchingOn ? "False" : "True");
 			}
 		}
 	}
 
+	void DoIsPlayer(){
+		EditorGUI.BeginChangeCheck ();
+
+		bool avatarShader = EditorGUILayout.Toggle ("Avatar Shader", IsKeywordEnabled ("_PLAYER_SHADER"));
+
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_PLAYER_SHADER", avatarShader);
+		}
+
+		if (avatarShader) {
+			target.renderQueue = (int)RenderQueue.Geometry+501;
+		}
+	}
+
+	#region debug
 	void DoCheckerDebug(){
 
 		EditorGUI.BeginChangeCheck ();
@@ -452,17 +594,30 @@ public class CustomPBR_GUI : ShaderGUI {
 			SetKeyword ("_LOCAL_NORMAL_DEBUG", displayNormals);
 		}
 	}
+	#endregion
 
 	enum SmoothnessSource {
 		Uniform, Albedo, Metallic
 	}
 
 	enum RenderingMode {
-		Opaque, Cutout, Fade, Transparent
+		Opaque, Cutout, Fade, Transparent, CustomSSS
+	}
+
+	enum TranslucencyModes {
+		OpaqueSSS, CutoutSSS, FadeSSS, TransparentSSS
 	}
 
 	enum CullingMode {
 		Back, Front, Off
+	}
+
+	enum VertexMask {
+		Custom, VertexColour
+	}
+
+	enum OffsetPlane {
+		XZ, YZ, XY
 	}
 
 	struct RenderingSettings {
@@ -500,14 +655,38 @@ public class CustomPBR_GUI : ShaderGUI {
 				dstBlend = BlendMode.OneMinusSrcAlpha,
 				zWrite = false
 			},
-			//special refraction setting
+			//opaque SSS
 			new RenderingSettings(){
 				queue = RenderQueue.Transparent,
 				renderType = "Custom",
 				srcBlend = BlendMode.One,
 				dstBlend = BlendMode.Zero,
 				zWrite = true
-			}
+			},
+			//fade SSS
+			new RenderingSettings(){
+				queue = RenderQueue.Transparent,
+				renderType = "Custom",
+				srcBlend = BlendMode.SrcAlpha,
+				dstBlend = BlendMode.OneMinusSrcAlpha,
+				zWrite = true
+			},
+			//transparent SSS
+			new RenderingSettings(){
+				queue = RenderQueue.Transparent,
+				renderType = "Custom",
+				srcBlend = BlendMode.One,
+				dstBlend = BlendMode.OneMinusSrcAlpha,
+				zWrite = true
+			}//,
+//			//avatar
+//			new RenderingSettings(){
+//				queue = RenderQueue.GeometryLast,
+//				renderType = "Custom",
+//				srcBlend = BlendMode.One,
+//				dstBlend = BlendMode.Zero,
+//				zWrite = true
+//			}
 		};
 	}
 
@@ -518,4 +697,5 @@ public class CustomPBR_GUI : ShaderGUI {
 	void RecordAction(string label){
 		editor.RegisterPropertyChangeUndo (label);
 	}
+
 }

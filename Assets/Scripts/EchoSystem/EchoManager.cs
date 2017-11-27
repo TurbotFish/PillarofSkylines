@@ -163,15 +163,25 @@ namespace Game.EchoSystem
         {
             if (args.EclipseOn)
             {
-                this.eclipse = true;
+                eclipse = true;
 
                 FreezeAll();
             }
             else
             {
-                this.eclipse = false;
-                print("c plu l'eclipse");
+                eclipse = false;
+
                 UnfreezeAll();
+            }
+        }
+
+        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
+        {
+            eclipse = false;
+
+            for(int i = 0; i < echoes.Count; i++)
+            {
+                echoes[i].Break();
             }
         }
 

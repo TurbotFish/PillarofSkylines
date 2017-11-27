@@ -12,7 +12,8 @@ namespace Game.Player
         DoubleJump,
         Glide,
         Dash,
-        TombFinder
+        TombFinder,
+        WallRun
     }
 
     public enum eAbilityGroup

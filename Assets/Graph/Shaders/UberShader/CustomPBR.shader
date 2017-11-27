@@ -32,7 +32,7 @@ Shader "Alo/PBR/CustomPBR" {
 
 		_AlphaCutoff ("Alpha Cutoff", Range(0,1)) = 0.5
 
-		_ThicknessMap ("Thickness Map", 2D) = "black" {}
+		_ThicknessMap ("Thickness", 2D) = "black" {}
 		_DistortionSSS ("Distortion", Range(0,1)) = 1
 		_ScaleSSS ("Scale", Range(0,10)) = 1
 		_PowerSSS ("Power", Range(0,10)) = 1
@@ -57,7 +57,13 @@ Shader "Alo/PBR/CustomPBR" {
 		_RefractionAmount ("Refraction Amount", Range(-0.1,0.1)) = 0
 
 		//_PlayerPos ("Player World Position", Vector) = (1,1,1,0)
-		_MaxBendAngle ("Maximum Bending Angle", Float) = 90
+		_MaxBendAngle ("Maximum Bending Angle", Float) = 40
+		_BendingDistMin ("Full Bending Distance", Float) = 0.3
+		_BendingDistMax ("No Bending Distance", Float) = 0.8
+		_VertMaskMultiplier ("Vertex Mask Multiplier", Float) = 1
+		_VertMaskFlat ("Vertex Mask Vertical Offset", Float) = 0.2
+
+		_RenderQueue ("Render Queue", int) = 2000
 
 	}
 
@@ -80,7 +86,6 @@ Shader "Alo/PBR/CustomPBR" {
 			Tags{ "LightMode" = "Always"}
 			"_BackgroundTex"
 		}
-
 
 		Pass {
 			Tags {
@@ -113,6 +118,9 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ _DISTANCE_DITHER
 			#pragma shader_feature _CULL_BACK _CULL_FRONT _CULL_OFF
 			#pragma shader_feature _ _REFRACTION
+			#pragma shader_feature _VERTEX_MASK_CUSTOM _VERTEX_MASK_COLOUR
+			#pragma shader_feature _VERTEX_OFFSET_XZ _VERTEX_OFFSET_YZ _VERTEX_OFFSET_XY
+			#pragma shader_feature _ _PLAYER_SHADER
 
 			#pragma multi_compile _ _VERTEX_WIND
 			#pragma multi_compile _ _VERTEX_BEND
@@ -163,6 +171,9 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ _DISTANCE_DITHER
 			#pragma shader_feature _CULL_BACK _CULL_FRONT _CULL_OFF
 			#pragma shader_feature _ _REFRACTION
+			#pragma shader_feature _VERTEX_MASK_CUSTOM _VERTEX_MASK_COLOUR
+			#pragma shader_feature _VERTEX_OFFSET_XZ _VERTEX_OFFSET_YZ _VERTEX_OFFSET_XY
+			#pragma shader_feature _ _PLAYER_SHADER
 
 			#pragma multi_compile _ _VERTEX_WIND
 			#pragma multi_compile _ _VERTEX_BEND
@@ -208,7 +219,9 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _ CHECKER_DEBUG
 			#pragma shader_feature _ NORMAL_DISTANCE_FADE
 			#pragma shader_feature _ _DISTANCE_DITHER
-
+			#pragma shader_feature _VERTEX_MASK_CUSTOM _VERTEX_MASK_COLOUR
+			#pragma shader_feature _VERTEX_OFFSET_XZ _VERTEX_OFFSET_YZ _VERTEX_OFFSET_XY
+			#pragma shader_feature _ _PLAYER_SHADER
 
 			#pragma shader_feature _ _CELSHADED
 			#pragma shader_feature _ _REFRACTION
