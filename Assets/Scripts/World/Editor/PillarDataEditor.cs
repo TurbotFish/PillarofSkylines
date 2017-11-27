@@ -19,14 +19,17 @@ namespace Game.World
             var pillarData = target as PillarData;
 
             //entry prices
-            EditorGUILayout.LabelField("Entry prices");
+            //EditorGUILayout.LabelField("Entry prices");
 
             var pillarIdValues = Enum.GetValues(typeof(World.ePillarId)).Cast<World.ePillarId>();
 
             foreach (var pillarId in pillarIdValues)
             {
+                EditorGUILayout.LabelField(pillarId.ToString());
+
                 int index = (int)pillarId;
 
+                //**
                 if (pillarData.PillarEntryPriceList.Count <= index)
                 {
                     while (pillarData.PillarEntryPriceList.Count <= index)
@@ -35,7 +38,7 @@ namespace Game.World
                     }
                 }
 
-                int newValue = EditorGUILayout.IntField(pillarId.ToString(), pillarData.PillarEntryPriceList[index]);
+                int newValue = EditorGUILayout.IntField("Entry Price", pillarData.PillarEntryPriceList[index]);
 
                 if(newValue <= 0)
                 {
@@ -43,6 +46,17 @@ namespace Game.World
                 }
 
                 pillarData.PillarEntryPriceList[index] = newValue;
+
+                //**
+                if(pillarData.PillarAbilityGroups.Count <= index)
+                {
+                    while (pillarData.PillarAbilityGroups.Count <= index)
+                    {
+                        pillarData.PillarAbilityGroups.Add(0);
+                    }
+                }
+
+                pillarData.PillarAbilityGroups[index] = (Player.eAbilityGroup)EditorGUILayout.EnumPopup("Ability Group", pillarData.PillarAbilityGroups[index]);
             }
 
             //
