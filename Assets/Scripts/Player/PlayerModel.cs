@@ -18,7 +18,8 @@ namespace Game.Player
 
     public enum eAbilityGroup
     {
-        test
+        Default,
+        GroupA
     }
 
     /// <summary>
@@ -46,7 +47,7 @@ namespace Game.Player
             set
             {
                 this.favours = value;
-                Utilities.EventManager.SendOnFavourAmountChangedEvent(this, new Utilities.EventManager.OnFavourAmountChangedEventArgs(this.favours));
+                Utilities.EventManager.SendFavourAmountChangedEvent(this, new Utilities.EventManager.FavourAmountChangedEventArgs(this.favours));
             }
         }
 
@@ -64,7 +65,7 @@ namespace Game.Player
         {
             this.pillarData = Resources.Load<World.PillarData>("ScriptableObjects/PillarData");
 
-            UnlockAbilityGroup(eAbilityGroup.test);
+            UnlockAbilityGroup(eAbilityGroup.Default);
         }
 
         //###########################################################
@@ -74,12 +75,10 @@ namespace Game.Player
 
         void Update()
         {
-#if UNITY_EDITOR
-            if (Input.GetKeyUp(KeyCode.P))
+            if (Input.GetKeyUp(KeyCode.F2))
             {
                 this.Favours++;
             }
-#endif
         }
 
         #endregion monobehaviour methods
@@ -306,6 +305,7 @@ namespace Game.Player
             if (!this.destoyedPillars.Contains(pillarId))
             {
                 this.destoyedPillars.Add(pillarId);
+                UnlockAbilityGroup(pillarData.GetPillarAbilityGroup(pillarId));
 
                 Utilities.EventManager.SendPillarDestroyedEvent(this, new Utilities.EventManager.PillarDestroyedEventArgs(pillarId));
             }

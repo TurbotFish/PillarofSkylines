@@ -45,7 +45,7 @@ namespace Game.Player
 			myPlayer = player;
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
-            Utilities.EventManager.OnSceneChangedEvent += OnSceneChangedEventHandler;
+            Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
         }
 
         #endregion initialization
@@ -114,7 +114,7 @@ namespace Game.Player
 
                     playerModel.hasNeedle = true;
 
-                    Utilities.EventManager.SendOnEclipseEvent(this, new Utilities.EventManager.OnEclipseEventArgs(true));
+                    Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(true));
 
                     HideUiMessage();
                 }
@@ -141,7 +141,7 @@ namespace Game.Player
                 this.isDriftButtonDown = true;
                 playerModel.hasNeedle = false;
                 this.needlePickedUpCollider.enabled = true;
-                Utilities.EventManager.SendOnEclipseEvent(this, new Utilities.EventManager.OnEclipseEventArgs(false));
+                Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(false));
             }
             else if (!Input.GetButton("Drift") && this.isDriftButtonDown)
             {
@@ -330,7 +330,7 @@ namespace Game.Player
         /// <summary>
         /// "Reset everything!"  "Everything?"  "EVERYTHING!"
         /// </summary>
-        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
+        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
             this.favourPickUpInRange = false;
             this.favour = null;

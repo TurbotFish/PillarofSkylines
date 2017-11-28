@@ -22,14 +22,14 @@ namespace Game.World.Interaction
 
         void IWorldObject.InitializeWorldObject(WorldController worldController)
         {
-            if (!this.instanceIdSet)
+            if (!instanceIdSet)
             {
-                this.instanceId = this.GetInstanceID();
-                this.instanceIdSet = true;
+                instanceId = GetInstanceID();
+                instanceIdSet = true;
             }
 
-            this.MyTransform = this.transform;
-            this.myCollider = GetComponent<BoxCollider>();
+            MyTransform = transform;
+            myCollider = GetComponent<BoxCollider>();
 
             Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
 
@@ -38,15 +38,15 @@ namespace Game.World.Interaction
 
         void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
         {
-            if (args.FavourId == this.instanceId)
+            if (args.FavourId == instanceId)
             {
-                if (!this.FavourPickedUp)
+                if (!FavourPickedUp)
                 {
-                    this.FavourPickedUp = true;
+                    FavourPickedUp = true;
 
-                    if (this.myCollider != null || !this.myCollider.Equals(null)) //check because all colliders are removed in the duplicated worlds
+                    if (myCollider != null || !myCollider.Equals(null)) //check because all colliders are removed in the duplicated worlds
                     {
-                        this.myCollider.enabled = false;
+                        myCollider.enabled = false;
                     }
                 }
             }

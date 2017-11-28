@@ -22,9 +22,15 @@ namespace Game.EchoSystem
         int pickUpLayer;
         Transform pool;
 
+        public Transform MyTransform { get; private set; }
+
+        //##################################################################
+
         void Start()
         {
-            this.myParticleSystem = GetComponentInChildren<ParticleSystem>();
+            MyTransform = transform;
+
+            myParticleSystem = GetComponentInChildren<ParticleSystem>();
             myRenderer = myParticleSystem.GetComponent<Renderer>();
             defaultMaterial = myRenderer.sharedMaterial;
 
@@ -40,44 +46,59 @@ namespace Game.EchoSystem
             if (!playerEcho) echoManager.nonEchoes.Add(this);
         }
 
-        void OnTriggerEnter(Collider col)
-        {
-            if (isActive)
-            { // Si un truc rentre dans un écho, il est détruit
-                Break();
-            }
-        }
+        //##################################################################
 
-        void OnTriggerExit(Collider col)
-        {
-            if (col.tag == "Player")
-            {
-                if (isActive)
-                    Break();
-                else
-                    isActive = true;
-            }
-        }
+        #region collision stuff
 
-        public void Break()
-        {
-            isActive = false;
-            echoManager.BreakParticles(transform.position);
-            gameObject.SetActive(false);
-            if (playerEcho)
-            {
-                transform.parent = pool;
-                echoManager.echoes.Remove(this);
-            }
-        }
+        //void OnTriggerEnter(Collider col)
+        //{
+        //    if (isActive)
+        //    { // Si un truc rentre dans un écho, il est détruit
+        //        Break();
+        //    }
+        //}
+
+        //void OnTriggerExit(Collider col)
+        //{
+        //    if (col.tag == "Player")
+        //    {
+        //        if (isActive)
+        //            Break();
+        //        else
+        //            isActive = true;
+        //    }
+        //}
+
+        #endregion collision stuff
+
+        //##################################################################
+
+        //void Break()
+        //{
+        //    isActive = false;
+        //    echoManager.BreakParticles(transform.position);
+        //    gameObject.SetActive(false);
+        //    if (playerEcho)
+        //    {
+        //        transform.parent = pool;
+        //        echoManager.echoes.Remove(this);
+        //    }
+        //}
 
         public void Freeze()
         {
-            if (!myParticleSystem) Start();
+            if (!myParticleSystem)
+            {
+                Start();
+            }
+
             myParticleSystem.Pause();
+
             myRenderer.sharedMaterial = solidMaterial;
             myRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+
             gameObject.layer = 0;
+
             isFrozen = true;
 
             collider.size *= colliderSizeWhenSolid;
@@ -86,15 +107,24 @@ namespace Game.EchoSystem
 
         public void Unfreeze()
         {
-            if (!myParticleSystem) Start();
+            if (!myParticleSystem)
+            {
+                Start();
+            }
+
             myParticleSystem.Play();
+
             myRenderer.sharedMaterial = defaultMaterial;
             myRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+
             gameObject.layer = pickUpLayer;
+
             isFrozen = false;
 
             collider.size = defaultColliderSize;
             collider.isTrigger = true;
         }
+
+        //##################################################################
     }
 } //end of namespace

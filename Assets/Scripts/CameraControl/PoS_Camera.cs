@@ -164,7 +164,7 @@ public class PoS_Camera : MonoBehaviour {
     /// </summary>
     /// <param name="sender"> </param>
     /// <param name="args"> Contient la position vers laquelle tp, et un bool pour savoir si on a changé de scène. </param>
-    void OnTeleportPlayer(object sender, Game.Utilities.EventManager.OnTeleportPlayerEventArgs args) {
+    void OnTeleportPlayer(object sender, Game.Utilities.EventManager.TeleportPlayerEventArgs args) {
         print("je me tp, alors... c'est une nouvelle scène ou pas ? " + args.IsNewScene);
         if (args.IsNewScene) {
             // on reset les paramètres par défaut de la caméra
@@ -304,7 +304,7 @@ public class PoS_Camera : MonoBehaviour {
 				}
                 
                 if (Time.time > lastInput + timeBeforeAutoReset && canAutoReset) { // Si ça fait genre 5 secondes qu'on n'a pas touché à la caméra on passe en mode automatique
-
+                    
 					if (nearPOI) // Points of Interest have priority over axis alignment
 						LookAtTargetPOI(); // TODO: manual priority just in case?
 					else if (axisAligned.sqrMagnitude != 0)
@@ -594,7 +594,6 @@ public class PoS_Camera : MonoBehaviour {
     bool FacingDirection(Vector3 direction) {
         float dot = Vector3.Dot(target.parent.forward, direction);
         bool temp = currentFacingDirection ? dot > -0.8f : dot > 0.8f;
-
         if (facingTime == -1) {
             facingTime = 0;
             if (Input.GetAxis("Vertical") <= 0)
@@ -637,7 +636,6 @@ public class PoS_Camera : MonoBehaviour {
         if (axisAligned != direction)
             return; // Attempting to clear a direction that isn't currently set
         axisAligned = Vector3.zero;
-        state = eCameraState.Default;
     }
 	#endregion
 
@@ -647,7 +645,9 @@ public class PoS_Camera : MonoBehaviour {
     /// Checks whether we're on a cliff or on a slope and returns the value of that slope
     /// </summary>
     float CheckGroundAndReturnSlopeValue() {
-        float limitVertical = 0.7f; // hardcoded
+        float limitVertical = 0.7f; // TODO: softcode
+        float slopeSameAngleBuffer = 10; // TODO: softcode
+        float minSlopeLength = 1; // TODO: softcode
 
         Vector3 groundNormal = controller.collisions.currentGroundNormal;
 		
@@ -659,14 +659,35 @@ public class PoS_Camera : MonoBehaviour {
             if (Physics.Raycast(target.position + player.transform.forward * distanceToCheckGroundForward,
                             -target.up, out groundInFront, cliffMinDepth, controller.collisionMask)) {
 
-                NotOnEdgeOfCliff(); // Y a du sol devant donc on n'est pas au bord d'une falaise
+                Debug.DrawRay(target.position + player.transform.forward * distanceToCheckGroundForward,
+                            -target.up * cliffMinDepth, Color.red);
 
-                if ((targetSpace * groundInFront.normal).y > 0.999f)
-                    groundNormal = target.up; // Si devant c'est environ du sol plat, on reset slopeValue
+                NotOnEdgeOfCliff(); // Y a du sol devant donc on n'est pas au bord d'une falaise
                 
-                else if (Vector3.Angle(groundNormal, groundInFront.normal) > 10 // Si la pente devant a plus de X degrés de différence
-                        && groundInFront.normal.y > limitVertical) // et qu'elle n'est pas quasi verticale (un mur)
-                    groundNormal = groundInFront.normal; // On prend sa slopeValue
+                if ((targetSpace * groundInFront.normal).y > 0.999f)
+                    groundNormal = target.up; // Si devant c'est environ du sol plat, on reset slopeValue; pas besoin de calculs en plus
+
+                else {
+                    RaycastHit groundFurther;
+                    // on check entre le sol actuel et le sol devant pour voir la taille d'une pente
+                    if (Physics.Raycast(target.position + player.transform.forward * (distanceToCheckGroundForward + minSlopeLength),
+                                -target.up, out groundFurther, cliffMinDepth, controller.collisionMask)) {
+
+                        Debug.DrawRay(target.position + player.transform.forward * (distanceToCheckGroundForward + minSlopeLength),
+                                    -target.up * cliffMinDepth, Color.red);
+
+                        print("groundNormal: " + groundNormal + " | groundInFront: " + groundInFront.normal + " | groundEndOfSlope: " + groundFurther.normal);
+
+                        if (Vector3.Angle(groundFurther.normal, groundInFront.normal) < slopeSameAngleBuffer // Si la pente devant et la pente plus loin sont environ la même
+                            && Vector3.Angle(groundNormal, groundInFront.normal) > slopeSameAngleBuffer // et la pente devant a plus de X degrés de différence avec celle actuelle
+                            && groundInFront.normal.y > limitVertical) // et qu'elle n'est pas quasi verticale (un mur)
+                            groundNormal = groundInFront.normal; // On prend sa slopeValue
+                        else
+                            groundNormal = target.up; // Sinon on dit que c'est plat ?
+
+
+                    } // Sinon : ne rien faire, on garde le sol actuel
+                }
 
             } else {// on est au sol, y a pas de mur devant, et y a pas de sol devant non plus, donc on est au bord d'une falaise
                 onEdgeOfCliff = true;

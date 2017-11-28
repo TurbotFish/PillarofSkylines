@@ -15,7 +15,7 @@ public class CameraControlTrigger : MonoBehaviour {
     [SerializeField] bool enablePanoramaMode = false;
     
     private void Start() {
-        camera = FindObjectOfType<PoS_Camera>();
+        camera = FindObjectOfType<PoS_Camera>(); // TODO: fix that
     }
 
     void OnTriggerEnter(Collider col) {

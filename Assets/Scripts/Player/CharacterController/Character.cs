@@ -248,8 +248,8 @@ namespace Game.Player.CharacterController
 
         [Header("Dash")]
 
-        public float dashSpeed = 1f;
-        public float dashRange = 5f;
+        public float dashSpeed = .2f;
+        public float dashTime = .5f;
         public float dashCooldown = 1f;
         float dashTimer = 0f;
         float dashDuration = 0f;
@@ -412,7 +412,7 @@ namespace Game.Player.CharacterController
             }
         }
 
-        void HandleEventTeleportPlayer(object sender, Game.Utilities.EventManager.OnTeleportPlayerEventArgs args)
+        void HandleEventTeleportPlayer(object sender, Game.Utilities.EventManager.TeleportPlayerEventArgs args)
         {
             transform.position = args.Position;
 
@@ -690,7 +690,7 @@ namespace Game.Player.CharacterController
 
                 case ePlayerState.dashing:
 
-                    flatVelocity = transform.forward * ((dashRange / dashSpeed) / Time.deltaTime);
+					flatVelocity = transform.forward * dashSpeed;
                     flatVelocity = TurnSpaceToLocal(flatVelocity);
                     flatVelocity.y = 0f;
                     velocity.y = 0f;
@@ -831,7 +831,8 @@ namespace Game.Player.CharacterController
                         flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * jumpDirection;
                         velocity.y = 0f;
 
-                        ignoreGravityTimer = ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.Duration;
+                        ignoreGravityTimer = playerMod.AbilityData.WallRun.WallJump.IgnoreGravityDuration;
+                        ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.IgnoreStickDuration;
 
                         EnterStateInAir();
 
@@ -847,7 +848,7 @@ namespace Game.Player.CharacterController
                         break;
                     }
                     //default
-                    float wallDriftSpeed = Mathf.Lerp(velocity.magnitude, playerMod.AbilityData.WallRun.WallDrift.TargetSpeed, playerMod.AbilityData.WallRun.WallDrift.SlowdownFactor);
+					float wallDriftSpeed = Mathf.Lerp(velocity.magnitude, playerMod.AbilityData.WallRun.WallDrift.TargetSpeed, playerMod.AbilityData.WallRun.WallDrift.SlowdownFactor * Time.deltaTime);
 
                     flatVelocity = -transform.up * wallDriftSpeed;
                     velocity.y = 0f;
@@ -874,7 +875,8 @@ namespace Game.Player.CharacterController
                         velocity.y = 0f;
                         flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * jumpDirection;
 
-                        ignoreGravityTimer = ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.Duration;
+                        ignoreGravityTimer = playerMod.AbilityData.WallRun.WallJump.IgnoreGravityDuration;
+                        ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.IgnoreStickDuration;
 
                         EnterStateInAir();
 
@@ -925,7 +927,8 @@ namespace Game.Player.CharacterController
                         flatVelocity = playerMod.AbilityData.WallRun.WallJump.Strength * jumpDirection;
                         velocity.y = 0f;
 
-                        ignoreGravityTimer = ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.Duration;
+                        ignoreGravityTimer = playerMod.AbilityData.WallRun.WallJump.IgnoreGravityDuration;
+                        ignoreLeftStickTimer = playerMod.AbilityData.WallRun.WallJump.IgnoreStickDuration;
 
                         EnterStateInAir();
 
@@ -1453,7 +1456,7 @@ namespace Game.Player.CharacterController
             currentPlayerState = ePlayerState.dashing;
             canTurnPlayer = false;
 
-            dashDuration = dashSpeed;
+            dashDuration = dashTime;
             dashParticles.Play();
         }
 
@@ -1535,7 +1538,7 @@ namespace Game.Player.CharacterController
             playerMod.FlagAbility(eAbilityType.WallRun);
 
             canTurnPlayer = false;
-            transform.forward = -controller.collisions.currentWallNormal;
+			transform.forward = Vector3.ProjectOnPlane(-controller.collisions.currentWallNormal, transform.up);
         }
 
         /// <summary>
@@ -1732,7 +1735,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         bool CheckWallRunStick()
         {
-            var stick = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
+            var stick = inputToCamera;
             return (stick.z >= playerMod.AbilityData.WallRun.General.StickMinVerticalTrigger) && (Mathf.Abs(stick.x) <= playerMod.AbilityData.WallRun.General.StickMaxHorizontalTrigger);
         }
 

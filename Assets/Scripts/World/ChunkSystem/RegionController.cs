@@ -6,17 +6,21 @@ namespace Game.World.ChunkSystem
 {
     public class RegionController : MonoBehaviour
     {
+        //##################################################################
+
         protected List<ChunkController> chunkList = new List<ChunkController>();
+
+        //##################################################################
 
         /// <summary>
         /// 
         /// </summary>
         public virtual void InitializeRegion(WorldController worldController)
         {
-            int childCount = this.transform.childCount;
+            int childCount = transform.childCount;
             for (int i = 0; i < childCount; i++)
             {
-                var child = this.transform.GetChild(i);
+                var child = transform.GetChild(i);
                 var chunk = child.GetComponent<ChunkController>();
 
                 if (chunk != null)
@@ -26,7 +30,7 @@ namespace Game.World.ChunkSystem
                         chunk.gameObject.SetActive(true);
                     }
 
-                    this.chunkList.Add(chunk);
+                    chunkList.Add(chunk);
                     chunk.InitializeChunk(worldController);
                 }
             }
@@ -40,13 +44,17 @@ namespace Game.World.ChunkSystem
 
         }
 
+        //##################################################################
+
         /// <summary>
         /// 
         /// </summary>
         public virtual void UpdateRegion(Vector3 playerPos)
         {
-            foreach (var chunk in this.chunkList)
+            for (int i = 0; i < chunkList.Count; i++)
             {
+                var chunk = chunkList[i];
+
                 chunk.UpdateChunk(playerPos);
             }
         }
@@ -54,20 +62,24 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
-        public virtual GameObject CreateCopy(Transform parent)
+        public GameObject CreateCopy(Transform parent)
         {
-            var go = new GameObject(this.gameObject.name, this.GetType());
+            var go = new GameObject(gameObject.name, GetType());
 
             var regionCopyTransform = go.transform;
             regionCopyTransform.parent = parent;
-            regionCopyTransform.localPosition = this.transform.localPosition;          
+            regionCopyTransform.localPosition = transform.localPosition;
 
-            foreach(var chunk in this.chunkList)
+            for (int i = 0; i < chunkList.Count; i++)
             {
+                var chunk = chunkList[i];
+
                 chunk.CreateCopy(regionCopyTransform);
             }
 
             return go;
         }
+
+        //##################################################################
     }
 }

@@ -6,11 +6,15 @@ namespace Game.World.ChunkSystem
 {
     public class PillarChunkController : ChunkController
     {
+        //##################################################################
+
         [SerializeField]
         ePillarState pillarState;
-        public ePillarState PillarState { get { return this.pillarState; } }
+        public ePillarState PillarState { get { return pillarState; } }
 
         bool isActive = false;
+
+        //##################################################################
 
         /// <summary>
         /// 
@@ -29,29 +33,35 @@ namespace Game.World.ChunkSystem
 
             var pillarChunkParent = originalChunk as PillarChunkController;
 
-            this.pillarState = pillarChunkParent.PillarState;
+            pillarState = pillarChunkParent.PillarState;
         }
+
+        //##################################################################
 
         /// <summary>
         /// 
         /// </summary>
         public override void UpdateChunk(Vector3 playerPos)
         {
-            if (this.isActive)
+            if (isActive)
             {
                 base.UpdateChunk(playerPos);
             }
         }
+
+        //##################################################################
 
         /// <summary>
         /// 
         /// </summary>
         public void ActivatePillarChunk()
         {
-            this.isActive = true;
+            isActive = true;
 
-            foreach (var subChunk in this.subChunkList)
+            for (int i = 0; i < subChunkList.Count; i++)
             {
+                var subChunk = subChunkList[i];
+
                 subChunk.SetSubChunkActive(true, true);
             }
         }
@@ -61,12 +71,16 @@ namespace Game.World.ChunkSystem
         /// </summary>
         public void DeactivatePillarChunk()
         {
-            this.isActive = false;
+            isActive = false;
 
-            foreach (var subChunk in this.subChunkList)
+            for (int i = 0; i < subChunkList.Count; i++)
             {
+                var subChunk = subChunkList[i];
+
                 subChunk.SetSubChunkActive(false, true);
             }
         }
+
+        //##################################################################
     }
 }
