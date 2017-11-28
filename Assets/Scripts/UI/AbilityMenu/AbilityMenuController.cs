@@ -21,7 +21,7 @@ namespace Game.UI.AbilityMenu
 
         List<Player.eAbilityType> abilityOrder = new List<Player.eAbilityType>();
         int selectedAbilityIndex = 0;
-        Player.eAbilityType selectedAbility { get { return this.abilityOrder[this.selectedAbilityIndex]; } }
+        Player.eAbilityType selectedAbility { get { return abilityOrder[selectedAbilityIndex]; } }
 
         float selectionDelayTimer = 0;
         bool activationButtonDown = false;
@@ -37,77 +37,102 @@ namespace Game.UI.AbilityMenu
                 return;
             }
 
+            //exit ability menu
             if (Input.GetButtonDown("MenuButton"))
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HUD));
                 return;
             }
 
-            //###########################################################
+            //**********************************************
+            //updating the state of the ability element views
+
+            for (int i = 0; i < abilityOrder.Count; i++)
+            {
+                var abilityType = abilityOrder[i];
+                eAbilityElementState state;
+
+                if (!playerModel.CheckAbilityUnlocked(abilityType))
+                {
+                    state = eAbilityElementState.Locked;
+                }
+                else if (playerModel.CheckAbilityActive(abilityType))
+                {
+                    state = eAbilityElementState.Activated;
+                }
+                else
+                {
+                    state = eAbilityElementState.Deactivated;
+                }
+
+                leftColumnView.SetAbilityState(abilityType, state);
+            }
+
+            //**********************************************
 
             float stickValue = Input.GetAxis("Vertical");
 
-            if (Input.GetButton("Jump") && !this.activationButtonDown)
+            if (Input.GetButton("Jump") && !activationButtonDown)
             {
-                if(!this.playerModel.CheckAbilityActive(this.selectedAbility) && this.playerModel.ActivateAbility(this.selectedAbility))
+                if (playerModel.CheckAbilityActive(selectedAbility))
                 {
-                    this.leftColumnView.SetAbilityActive(this.playerModel.AbilityData.GetAbility(this.selectedAbility), true);
+                    playerModel.DeactivateAbility(selectedAbility);
                 }
-                else if(this.playerModel.CheckAbilityActive(this.selectedAbility) && this.playerModel.DeactivateAbility(this.selectedAbility))
+                else
                 {
-                    this.leftColumnView.SetAbilityActive(this.playerModel.AbilityData.GetAbility(this.selectedAbility), false);
+                    playerModel.ActivateAbility(selectedAbility);
                 }
 
                 this.activationButtonDown = true;
             }
             else if (!Input.GetButton("Jump"))
             {
-                this.activationButtonDown = false;
+                activationButtonDown = false;
             }
 
-            //###########################################################
+            //**********************************************
 
             if (Mathf.Approximately(stickValue, 0f))
             {
-                this.selectionDelayTimer = 0f;
+                selectionDelayTimer = 0f;
             }
 
-            if (this.selectionDelayTimer > 0)
+            if (selectionDelayTimer > 0)
             {
-                this.selectionDelayTimer -= Time.unscaledDeltaTime;
+                selectionDelayTimer -= Time.unscaledDeltaTime;
 
-                if (this.selectionDelayTimer <= 0)
+                if (selectionDelayTimer <= 0)
                 {
-                    this.selectionDelayTimer = 0;
+                    selectionDelayTimer = 0;
                 }
             }
             else
             {
                 if (stickValue < -0.8f)
                 {
-                    this.selectedAbilityIndex++;
+                    selectedAbilityIndex++;
 
-                    if (this.selectedAbilityIndex >= this.abilityOrder.Count)
+                    if (selectedAbilityIndex >= abilityOrder.Count)
                     {
-                        this.selectedAbilityIndex = 0;
+                        selectedAbilityIndex = 0;
                     }
 
-                    this.leftColumnView.SetAbilitySelected(this.playerModel.AbilityData.GetAbility(this.selectedAbility));
+                    leftColumnView.SetAbilitySelected(playerModel.AbilityData.GetAbility(selectedAbility));
 
-                    this.selectionDelayTimer += this.defaultSelectionDelay;
+                    selectionDelayTimer += defaultSelectionDelay;
                 }
                 else if (stickValue > 0.8f)
                 {
-                    this.selectedAbilityIndex--;
+                    selectedAbilityIndex--;
 
-                    if (this.selectedAbilityIndex < 0)
+                    if (selectedAbilityIndex < 0)
                     {
-                        this.selectedAbilityIndex = this.abilityOrder.Count - 1;
+                        selectedAbilityIndex = abilityOrder.Count - 1;
                     }
 
-                    this.leftColumnView.SetAbilitySelected(this.playerModel.AbilityData.GetAbility(this.selectedAbility));
+                    leftColumnView.SetAbilitySelected(playerModel.AbilityData.GetAbility(selectedAbility));
 
-                    this.selectionDelayTimer += this.defaultSelectionDelay;
+                    selectionDelayTimer += defaultSelectionDelay;
                 }
             }
 
@@ -122,41 +147,32 @@ namespace Game.UI.AbilityMenu
         {
             this.playerModel = playerModel;
 
-            this.topBarView.Initialize(playerModel.Favours);
+            topBarView.Initialize(playerModel.Favours);
 
             foreach (var ability in playerModel.AbilityData.GetAllAbilities())
             {
-                this.abilityOrder.Add(ability.Type);
-                this.leftColumnView.CreateAbilityElement(ability, playerModel.CheckAbilityGroupUnlocked(ability.Group));
+                abilityOrder.Add(ability.Type);
+                leftColumnView.CreateAbilityElement(ability, playerModel.CheckAbilityGroupUnlocked(ability.Group));
             }
 
-            this.leftColumnView.SetAbilitySelected(this.playerModel.AbilityData.GetAbility(this.selectedAbility));
+            leftColumnView.SetAbilitySelected(playerModel.AbilityData.GetAbility(selectedAbility));
         }
 
         void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
         {
-            if (this.IsActive)
+            if (IsActive)
             {
                 return;
             }
 
-            this.IsActive = true;
-            this.gameObject.SetActive(true);
-
-            
+            IsActive = true;
+            gameObject.SetActive(true);
         }
 
         void IUiState.Deactivate()
         {
-            //bool wasActive = this.IsActive;
-
-            this.IsActive = false;
-            this.gameObject.SetActive(false);
-
-            //if (wasActive)
-            //{
-            //    Utilities.EventManager.SendOnMenuClosedEvent(this, new Utilities.EventManager.OnMenuClosedEventArgs(eUiState.AbilityMenu));
-            //}
+            IsActive = false;
+            gameObject.SetActive(false);
         }
 
         //###########################################################

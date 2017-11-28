@@ -30,11 +30,11 @@ namespace Game.Player
         //ability data
         [SerializeField]
         AbilitySystem.AbilityData abilityData;
-        public AbilitySystem.AbilityData AbilityData { get { return this.abilityData; } }
+        public AbilitySystem.AbilityData AbilityData { get { return abilityData; } }
 
         //pillar data
         World.PillarData pillarData;
-        public World.PillarData PillarData { get { return this.pillarData; } }
+        public World.PillarData PillarData { get { return pillarData; } }
 
         //
         public bool hasNeedle;
@@ -177,6 +177,18 @@ namespace Game.Player
             {
                 return false;
             }
+        }
+
+        public bool CheckAbilityUnlocked(eAbilityType abilityType)
+        {
+            var ability = this.abilityData.GetAbility(abilityType);
+
+            if (CheckAbilityGroupUnlocked(ability.Group))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public List<eAbilityType> GetAllActiveAbilities()
