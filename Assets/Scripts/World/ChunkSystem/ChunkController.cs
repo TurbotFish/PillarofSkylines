@@ -65,11 +65,31 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// Update all the things!
         /// </summary>
-        public virtual void UpdateChunk(Vector3 playerPos)
+        public virtual void UpdateChunk(Vector3 playerPos, Vector3 cameraPos)
         {
+            var corners = Utilities.PillarMath.GetBoxColliderCorners(bounds);
+            var cameraDir = (playerPos - cameraPos).normalized;
+            bool colliderVisible = false;
             float distance = 0;
 
-            if (!this.bounds.bounds.Contains(playerPos))
+            for (int i = 0; i < corners.Count; i++)
+            {
+                var cornerDir = (corners[i] - cameraPos).normalized;
+                float dotProduct = Vector3.Dot(cameraDir, cornerDir);
+
+                if(dotProduct > 0)
+                {
+                    colliderVisible = true;
+                    break;
+                }
+            }
+
+            if (!colliderVisible)
+            {
+                Debug.LogFormat("Chunk \"{0}\" behind camera!", name);
+                distance = float.MaxValue;
+            }
+            else if (!this.bounds.bounds.Contains(playerPos))
             {
                 var closestPoint = bounds.ClosestPoint(playerPos);
                 distance = Vector3.Distance(playerPos, closestPoint);

@@ -41,11 +41,11 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
-        public override void UpdateChunk(Vector3 playerPos)
+        public override void UpdateChunk(Vector3 playerPos, Vector3 cameraPos)
         {
             if (isActive)
             {
-                base.UpdateChunk(playerPos);
+                base.UpdateChunk(playerPos, cameraPos);
             }
         }
 

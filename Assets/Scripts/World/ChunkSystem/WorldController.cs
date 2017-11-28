@@ -24,30 +24,32 @@ namespace Game.World.ChunkSystem
         public ChunkSystemData ChunkSystemData { get; private set; }
 
         Transform playerTransform;
+        Transform cameraTransform;
 
         List<RegionController> regionList = new List<RegionController>();
 
         List<GameObject> worldCopies = new List<GameObject>();
-        List<RegionController> regionCopyList = new List<RegionController>();
 
         List<Interaction.Favour> favourList = new List<Interaction.Favour>();
 
         bool isInitialized = false;
-        Vector3 previousPlayerPos = Vector3.zero;
 
         System.Object activationLock = new System.Object();
         LinkedList<GameObject> objectsToActivate = new LinkedList<GameObject>();
         LinkedList<GameObject> objectsToDeactivate = new LinkedList<GameObject>();
 
+        int regionUpdateIndex = 0;
+
         //##################################################################
 
         #region initialization
 
-        public void InitializeWorldController(Transform playerTransform)
+        public void InitializeWorldController(Transform playerTransform, Transform cameraTransform)
         {
             isInitialized = true;
 
             this.playerTransform = playerTransform;
+            this.cameraTransform = cameraTransform;
 
             ChunkSystemData = Resources.Load<ChunkSystemData>("ScriptableObjects/ChunkSystemData");
 
@@ -84,29 +86,16 @@ namespace Game.World.ChunkSystem
                 return;
             }
 
+            //******************************************
             //updating world
-            var currentPlayerPos = playerTransform.position;
-            float posDelta = Vector3.Distance(previousPlayerPos, currentPlayerPos);
+            regionList[regionUpdateIndex++].UpdateRegion(playerTransform.position, cameraTransform.position);
 
-            if (posDelta >= ChunkSystemData.MinUpdateDistance)
+            if(regionUpdateIndex == regionList.Count)
             {
-                for (int i = 0; i < regionList.Count; i++)
-                {
-                    var region = regionList[i];
-
-                    region.UpdateRegion(currentPlayerPos);
-                }
-
-                for (int i = 0; i < regionCopyList.Count; i++)
-                {
-                    var region = regionCopyList[i];
-
-                    region.UpdateRegion(currentPlayerPos);
-                }
-
-                previousPlayerPos = currentPlayerPos;
+                regionUpdateIndex = 0;
             }
 
+            //******************************************
             //object activation
             lock (activationLock)
             {
@@ -137,6 +126,8 @@ namespace Game.World.ChunkSystem
 
         void CreateCopies()
         {
+            var newRegionsList = new List<RegionController>();
+
             if (repeatAxes.x || repeatAxes.y || repeatAxes.z)
             {
                 for (int x = -1 * numberOfRepetitions; x <= numberOfRepetitions; x++)
@@ -175,7 +166,7 @@ namespace Game.World.ChunkSystem
                                 var regionCopyScript = regionCopyGo.GetComponent<RegionController>();
 
                                 regionCopyScript.InitializeRegion(this);
-                                regionCopyList.Add(regionCopyScript);
+                                newRegionsList.Add(regionCopyScript);
                             }
 
                             //moving the copy has to be done after creating all the children
@@ -185,6 +176,11 @@ namespace Game.World.ChunkSystem
                         }
                     }
                 }
+            }
+
+            for(int i = 0; i < newRegionsList.Count; i++)
+            {
+                regionList.Add(newRegionsList[i]);
             }
         }
 

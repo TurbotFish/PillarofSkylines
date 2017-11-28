@@ -169,7 +169,7 @@ namespace Game.GameControl
             this.playerController.InitializePlayerController(this);
             this.CameraController.InitializeCameraController(this);
 
-            this.openWorldSceneInfo.WorldController.InitializeWorldController(this.playerController.transform);
+            this.openWorldSceneInfo.WorldController.InitializeWorldController(this.playerController.transform, CameraController.transform);
 
             this.EchoManager.InitializeEchoManager(this);
             this.EclipseManager.InitializeEclipseManager(this);
