@@ -71,7 +71,7 @@ namespace Game.EchoSystem
                 var targetEcho = echoList[echoList.Count - 1];
                 echoList.Remove(targetEcho);
 
-                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, false);
+                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, targetEcho.MyTransform.rotation, false);
                 Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
 
                 Instantiate(breakEchoParticles, targetEcho.MyTransform.position, targetEcho.MyTransform.rotation);

@@ -416,8 +416,7 @@ namespace Game.Player.CharacterController
         {
             transform.position = args.Position;
 
-            if (args.IsNewScene)
-            {
+            if (args.IsNewScene)            {
                 velocity = Vector3.zero;
                 currentPlayerState = ePlayerState.inAir;
                 ChangeGravityDirection(Vector3.down);

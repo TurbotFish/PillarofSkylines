@@ -118,7 +118,6 @@ public class PoS_Camera : MonoBehaviour {
 		camera = GetComponent<Camera>();
 		Cursor.lockState = CursorLockMode.Locked;
 
-        print("Cursor State: " + Cursor.lockState);
         my = transform;
 		player = target.GetComponentInParent<Game.Player.CharacterController.Character>();
 		controller = player.GetComponent<Game.Player.CharacterController.CharacControllerRecu>();

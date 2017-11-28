@@ -40,20 +40,20 @@ namespace Game.GameControl
         //###############################################################
         //###############################################################
 
-        void Start() {
-            print("Cursor State: " + Cursor.lockState);
+        void Start()
+        {
             StartCoroutine(LoadScenesRoutine());
         }
 
         //###############################################################
         //###############################################################
 
-        IEnumerator LoadScenesRoutine() {
+        IEnumerator LoadScenesRoutine()
+        {
             yield return null;
-            print("Cursor State: " + Cursor.lockState);
             yield return null;
             //***********************
-            print("Cursor State: " + Cursor.lockState);
+
             //getting references in game controller
             this.playerModel = GetComponentInChildren<Player.PlayerModel>();
             this.echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
@@ -88,13 +88,13 @@ namespace Game.GameControl
 
             yield return null;
             //***********************
-            
+
             //loading UI scene
             SceneManager.LoadScene(UI_SCENE_NAME, LoadSceneMode.Additive);
 
             yield return null;
             //***********************
-            
+
             //getting references in UI scene
             var uiScene = SceneManager.GetSceneByName(UI_SCENE_NAME);
             this.uiController = SearchForScriptInScene<UI.UiController>(uiScene);
@@ -104,7 +104,7 @@ namespace Game.GameControl
 
             yield return null;
             //***********************
-            
+
             //initializing game
             this.playerController.InitializePlayerController(this);
             this.CameraController.InitializeCameraController(this);
@@ -119,7 +119,7 @@ namespace Game.GameControl
 
             yield return null;
             //***********************
-            
+
             //starting game
             Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());
 

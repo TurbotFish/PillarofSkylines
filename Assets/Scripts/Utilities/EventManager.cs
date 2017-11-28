@@ -190,13 +190,18 @@ namespace Game.Utilities
             public Vector3 Position { get; private set; }
 
             /// <summary>
+            /// The Rotation the Player should have after teleportation (only on New Scene)
+            /// </summary>
+            public Quaternion Rotation { get; private set; }
+
+            /// <summary>
             /// value='true' means that the current scene was switched. value='false' means that the player is teleported inside the current scene.
             /// </summary>
             public bool IsNewScene { get; private set; }
 
-            public TeleportPlayerEventArgs(Vector3 position, bool isNewScene)
-            {
+            public TeleportPlayerEventArgs(Vector3 position, Quaternion rotation, bool isNewScene) {
                 Position = position;
+                Rotation = rotation;
                 IsNewScene = isNewScene;
             }
         }
