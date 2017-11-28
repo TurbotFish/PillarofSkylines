@@ -7,25 +7,26 @@ public class ParticlesFollowSpline : MonoBehaviour {
 	public LineRenderer lr;
 	public float speed;
 	public float rotSpeed;
-	int _currentPos;
+	public int _currentPos;
+	public int _maxPos;
 	float _counterPos;
 	float _counterRot;
 
 	// Use this for initialization
 	void Start () {
-		_currentPos = 0;
+		//_currentPos = 0;
 	}
-	
+		
 	// Update is called once per frame
-	void Update () {
+	void LateUpdate () {
 
 		if (_currentPos != -1) {
 			_counterPos += (speed * Time.deltaTime)/Vector3.Distance(lr.GetPosition(_currentPos),lr.GetPosition(_currentPos+1));
-			transform.position = Vector3.Lerp (lr.GetPosition(_currentPos), lr.GetPosition(_currentPos + 1), _counterPos);
+			transform.position = Vector3.Lerp (lr.GetPosition(_currentPos), lr.GetPosition(_currentPos + 1), Mathf.Clamp01(_counterPos));
 			if (_counterPos >= 1) {
 				_counterPos = 0;
 				_currentPos++;
-				if (_currentPos + 1 >= lr.positionCount-1) {
+				if (_currentPos + 1 >= _maxPos/*lr.positionCount-1*/) {
 					_currentPos = -1;
 					Destroy (gameObject, 1f);
 				}

@@ -13,10 +13,15 @@ public class WindTunnelTrails : MonoBehaviour {
 	public MinMax width;
 	public MinMax length;
 	public MinMax currentWidth;
+	public MinMax posTravel;
 
 	[Header("colors")]
 	public Gradient opacity;
 	public Gradient colors;
+
+	[Header("material")]
+	public float scrollSpeed;
+	Material mat;
 
 	float nextSpawn;
 	float lastTime;
@@ -25,6 +30,8 @@ public class WindTunnelTrails : MonoBehaviour {
 	void Start () {
 		nextSpawn = 0;
 		lastTime = 0;
+		mat = windCurrent.material;
+
 	}
 
 	// Update is called once per frame
@@ -32,6 +39,8 @@ public class WindTunnelTrails : MonoBehaviour {
 		if (Time.time - lastTime > nextSpawn) {
 			SpawnTrail ();
 		}
+
+		mat.mainTextureOffset += new Vector2 (scrollSpeed, 0);
 	}
 
 
@@ -39,6 +48,8 @@ public class WindTunnelTrails : MonoBehaviour {
 	{
 		GameObject trail = Instantiate (trailPrefab, windCurrent.GetPosition (0), Quaternion.identity) as GameObject;
 		ParticlesFollowSpline flw = trail.GetComponent<ParticlesFollowSpline> ();
+		flw._currentPos = Random.Range (0, windCurrent.positionCount - 3);
+		flw._maxPos = Mathf.Clamp (Mathf.RoundToInt(flw._currentPos + Random.Range (posTravel.min, posTravel.max)), 1, windCurrent.positionCount - 1);
 		flw.lr = windCurrent;
 		flw.speed = Random.Range (speed.min, speed.max);
 		float sign = (Random.value > 0.5f)?1:-1f;
