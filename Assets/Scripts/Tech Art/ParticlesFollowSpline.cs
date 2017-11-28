@@ -11,23 +11,24 @@ public class ParticlesFollowSpline : MonoBehaviour {
 	public int _maxPos;
 	float _counterPos;
 	float _counterRot;
-
+	bool move;
 	// Use this for initialization
 	void Start () {
 		//_currentPos = 0;
+		move = true;
 	}
 		
 	// Update is called once per frame
 	void LateUpdate () {
 
-		if (_currentPos != -1) {
+		if (move) {
 			_counterPos += (speed * Time.deltaTime)/Vector3.Distance(lr.GetPosition(_currentPos),lr.GetPosition(_currentPos+1));
 			transform.position = Vector3.Lerp (lr.GetPosition(_currentPos), lr.GetPosition(_currentPos + 1), Mathf.Clamp01(_counterPos));
 			if (_counterPos >= 1) {
 				_counterPos = 0;
 				_currentPos++;
 				if (_currentPos + 1 >= _maxPos/*lr.positionCount-1*/) {
-					_currentPos = -1;
+					move = false;
 					Destroy (gameObject, 1f);
 				}
 			}

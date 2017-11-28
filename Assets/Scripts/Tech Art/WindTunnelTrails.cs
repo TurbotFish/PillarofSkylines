@@ -35,7 +35,7 @@ public class WindTunnelTrails : MonoBehaviour {
 	}
 
 	// Update is called once per frame
-	void Update () {
+	void FixedUpdate () {
 		if (Time.time - lastTime > nextSpawn) {
 			SpawnTrail ();
 		}
@@ -55,7 +55,7 @@ public class WindTunnelTrails : MonoBehaviour {
 		float sign = (Random.value > 0.5f)?1:-1f;
 		flw.rotSpeed = sign * Random.Range (rotSpeed.min, rotSpeed.max);
 		TrailRenderer tr = flw.GetComponentInChildren<TrailRenderer> ();
-		tr.transform.localPosition = new Vector3 (Random.Range(currentWidth.min,currentWidth.max),0,0);
+		tr.transform.localPosition = new Vector3 (Random.Range(windCurrent.widthMultiplier + currentWidth.min,windCurrent.widthMultiplier + currentWidth.max),0,0);
 		tr.widthMultiplier = Random.Range (width.min, width.max);
 		tr.time = Random.Range (length.min, length.max);
 		nextSpawn = Random.Range (spawnInterval.min, spawnInterval.max);
