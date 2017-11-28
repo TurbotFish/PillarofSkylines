@@ -650,33 +650,35 @@ public class PoS_Camera : MonoBehaviour {
         float minSlopeLength = 1; // TODO: softcode
 
         Vector3 groundNormal = controller.collisions.currentGroundNormal;
-		
+        Vector3 targetUp = target.up;
+        Vector3 targetPos = target.position;
+
         // Si on est au sol et qu'il n'y a pas de mur devant
-        if (playerState == Game.Player.CharacterController.ePlayerState.onGround && !Physics.Raycast(target.position, player.transform.forward, 1, controller.collisionMask)) {
+        if (playerState == Game.Player.CharacterController.ePlayerState.onGround && !Physics.Raycast(targetPos, player.transform.forward, 1, controller.collisionMask)) {
 
             RaycastHit groundInFront;
 
-            if (Physics.Raycast(target.position + player.transform.forward * distanceToCheckGroundForward,
-                            -target.up, out groundInFront, cliffMinDepth, controller.collisionMask)) {
+            if (Physics.Raycast(targetPos + player.transform.forward * distanceToCheckGroundForward,
+                            -targetUp, out groundInFront, cliffMinDepth, controller.collisionMask)) {
 
-                Debug.DrawRay(target.position + player.transform.forward * distanceToCheckGroundForward,
-                            -target.up * cliffMinDepth, Color.red);
+                Debug.DrawRay(targetPos + player.transform.forward * distanceToCheckGroundForward,
+                            -targetUp * cliffMinDepth, Color.red);
 
                 NotOnEdgeOfCliff(); // Y a du sol devant donc on n'est pas au bord d'une falaise
 
                 print("GroundNormal dans targetSpace: " + (targetSpace * groundInFront.normal));
 
                 if ((targetSpace * groundInFront.normal).y > 0.999f)
-                    groundNormal = target.up; // Si devant c'est environ du sol plat, on reset slopeValue; pas besoin de calculs en plus
+                    groundNormal = targetUp; // Si devant c'est environ du sol plat, on reset slopeValue; pas besoin de calculs en plus
 
                 else {
                     RaycastHit groundFurther;
                     // on check entre le sol actuel et le sol devant pour voir la taille d'une pente
-                    if (Physics.Raycast(target.position + player.transform.forward * (distanceToCheckGroundForward + minSlopeLength),
-                                -target.up, out groundFurther, cliffMinDepth, controller.collisionMask)) {
+                    if (Physics.Raycast(targetPos + player.transform.forward * (distanceToCheckGroundForward + minSlopeLength),
+                                -targetUp, out groundFurther, cliffMinDepth, controller.collisionMask)) {
 
-                        Debug.DrawRay(target.position + player.transform.forward * (distanceToCheckGroundForward + minSlopeLength),
-                                    -target.up * cliffMinDepth, Color.red);
+                        Debug.DrawRay(targetPos + player.transform.forward * (distanceToCheckGroundForward + minSlopeLength),
+                                    -targetUp * cliffMinDepth, Color.red);
 
                         print("groundNormal: " + groundNormal + " | groundInFront: " + groundInFront.normal + " | groundEndOfSlope: " + groundFurther.normal);
 
@@ -685,7 +687,7 @@ public class PoS_Camera : MonoBehaviour {
                             && groundInFront.normal.y > limitVertical) // et qu'elle n'est pas quasi verticale (un mur)
                             groundNormal = groundInFront.normal; // On prend sa slopeValue
                         else
-                            groundNormal = target.up; // Sinon on dit que c'est plat ?
+                            groundNormal = targetUp; // Sinon on dit que c'est plat ?
                             // on devrait plutôt faire une moyenne
 
                     } // Sinon : ne rien faire, on garde le sol actuel
@@ -705,7 +707,7 @@ public class PoS_Camera : MonoBehaviour {
             NotOnEdgeOfCliff();
 
         if (groundNormal.y < limitVertical)
-            groundNormal = target.up; // Si on est quasi à la verticale, on considère qu'on est contre un mur, on repasse en caméra normale
+            groundNormal = targetUp; // Si on est quasi à la verticale, on considère qu'on est contre un mur, on repasse en caméra normale
 
         return Vector3.Dot(Vector3.ProjectOnPlane(my.forward, target.parent.up), groundNormal) * 60;
         // Ici on recalcule le forward en aplatissant celui de la caméra pour éviter des erreurs quand le perso tourne
