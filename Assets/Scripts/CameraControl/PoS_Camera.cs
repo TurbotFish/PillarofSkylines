@@ -165,7 +165,7 @@ public class PoS_Camera : MonoBehaviour {
     /// <param name="sender"> </param>
     /// <param name="args"> Contient la position vers laquelle tp, et un bool pour savoir si on a changé de scène. </param>
     void OnTeleportPlayer(object sender, Game.Utilities.EventManager.TeleportPlayerEventArgs args) {
-        print("je me tp, alors... c'est une nouvelle scène ou pas ? " + args.IsNewScene);
+        Cursor.lockState = CursorLockMode.Locked;
         if (args.IsNewScene) {
             // on reset les paramètres par défaut de la caméra
             currentDistance = distance;
@@ -663,7 +663,9 @@ public class PoS_Camera : MonoBehaviour {
                             -target.up * cliffMinDepth, Color.red);
 
                 NotOnEdgeOfCliff(); // Y a du sol devant donc on n'est pas au bord d'une falaise
-                
+
+                print("GroundNormal dans targetSpace: " + (targetSpace * groundInFront.normal));
+
                 if ((targetSpace * groundInFront.normal).y > 0.999f)
                     groundNormal = target.up; // Si devant c'est environ du sol plat, on reset slopeValue; pas besoin de calculs en plus
 
@@ -684,7 +686,7 @@ public class PoS_Camera : MonoBehaviour {
                             groundNormal = groundInFront.normal; // On prend sa slopeValue
                         else
                             groundNormal = target.up; // Sinon on dit que c'est plat ?
-
+                            // on devrait plutôt faire une moyenne
 
                     } // Sinon : ne rien faire, on garde le sol actuel
                 }
