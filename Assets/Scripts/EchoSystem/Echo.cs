@@ -6,7 +6,7 @@ namespace Game.EchoSystem
     public class Echo : MonoBehaviour
     {
         new BoxCollider collider;
-        public bool isActive, isFrozen, playerEcho;
+        public bool isActive, isFrozen;
 
         public float colliderSizeWhenSolid = 2;
         Vector3 defaultColliderSize;
@@ -20,7 +20,6 @@ namespace Game.EchoSystem
 
         EchoManager echoManager;
         int pickUpLayer;
-        Transform pool;
 
         public Transform MyTransform { get; private set; }
 
@@ -41,9 +40,6 @@ namespace Game.EchoSystem
             pickUpLayer = gameObject.layer;
 
             echoManager = FindObjectOfType<EchoManager>();
-            pool = echoManager.pool;
-
-            if (!playerEcho) echoManager.nonEchoes.Add(this);
         }
 
         //##################################################################
