@@ -118,7 +118,8 @@ public class PoS_Camera : MonoBehaviour {
 		camera = GetComponent<Camera>();
 		Cursor.lockState = CursorLockMode.Locked;
 
-		my = transform;
+        print("Cursor State: " + Cursor.lockState);
+        my = transform;
 		player = target.GetComponentInParent<Game.Player.CharacterController.Character>();
 		controller = player.GetComponent<Game.Player.CharacterController.CharacControllerRecu>();
         
@@ -165,7 +166,7 @@ public class PoS_Camera : MonoBehaviour {
     /// <param name="sender"> </param>
     /// <param name="args"> Contient la position vers laquelle tp, et un bool pour savoir si on a changé de scène. </param>
     void OnTeleportPlayer(object sender, Game.Utilities.EventManager.TeleportPlayerEventArgs args) {
-        Cursor.lockState = CursorLockMode.Locked;
+
         if (args.IsNewScene) {
             // on reset les paramètres par défaut de la caméra
             currentDistance = distance;
@@ -726,6 +727,7 @@ public class PoS_Camera : MonoBehaviour {
     bool cameraBounce;
 
     public void SetVerticalOffset(float verticalOffset) {
+        return;
         recoilIntensity = recoilOnImpact * verticalOffset;
         contextualOffset.y = -verticalOffset;
         cameraBounce = true;
