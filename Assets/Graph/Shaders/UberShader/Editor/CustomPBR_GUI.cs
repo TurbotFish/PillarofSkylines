@@ -209,8 +209,9 @@ public class CustomPBR_GUI : ShaderGUI {
 		if (sssOn) {
 
 			DoTranslucencyMode ();
+			DoTranslucencyDiffuse ();
 
-			editor.TexturePropertySingleLine (MakeLabel (thickness, "Thickness (A)"), thickness, FindProperty ("_DiffuseSSS"));
+			editor.TexturePropertySingleLine (MakeLabel (thickness, "Thickness (A)"), thickness, IsKeywordEnabled("_SSS_DIFFUSE_MAP") ? null : FindProperty ("_DiffuseSSS"));
 			EditorGUI.indentLevel += 2;
 			editor.ShaderProperty (power, MakeLabel (power));
 			editor.ShaderProperty (scale, MakeLabel (scale));
@@ -240,6 +241,20 @@ public class CustomPBR_GUI : ShaderGUI {
 		}
 		
 
+	}
+
+	void DoTranslucencyDiffuse(){
+		DiffuseSSS mode = DiffuseSSS.Picker;
+		if (IsKeywordEnabled ("_SSS_DIFFUSE_MAP")) {
+			mode = DiffuseSSS.Map;
+		}
+
+		EditorGUI.BeginChangeCheck ();
+		mode = (DiffuseSSS)EditorGUILayout.EnumPopup (MakeLabel ("SSS Diffuse Mode"), mode);
+		if (EditorGUI.EndChangeCheck ()) {
+			RecordAction ("Diffuse SSS");
+			SetKeyword ("_SSS_DIFFUSE_MAP", mode == DiffuseSSS.Map);
+		}
 	}
 
 	void DoTranslucencyMode(){
@@ -601,7 +616,7 @@ public class CustomPBR_GUI : ShaderGUI {
 	}
 
 	enum RenderingMode {
-		Opaque, Cutout, Fade, Transparent, CustomSSS
+		Opaque, Cutout, Fade, Transparent
 	}
 
 	enum TranslucencyModes {
@@ -618,6 +633,10 @@ public class CustomPBR_GUI : ShaderGUI {
 
 	enum OffsetPlane {
 		XZ, YZ, XY
+	}
+
+	enum DiffuseSSS {
+		Map, Picker
 	}
 
 	struct RenderingSettings {

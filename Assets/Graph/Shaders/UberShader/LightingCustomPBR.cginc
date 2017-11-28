@@ -179,7 +179,13 @@
 
 	float GetThickness(Interpolators i){
 		#if defined(_SSS) && !defined(_LOCAL_NORMAL_DEBUG)
-			float thickness = 1.0 - tex2D(_ThicknessMap, i.uv).a;
+			float4 sssMapSample = tex2D(_ThicknessMap, i.uv);
+			float thickness = 1.0 - sssMapSample.a;
+
+			#if defined(_SSS_DIFFUSE_MAP)
+				_DiffuseSSS = sssMapSample.rgb;
+			#endif
+
 			return thickness;
 		#else
 			return 1.0;
