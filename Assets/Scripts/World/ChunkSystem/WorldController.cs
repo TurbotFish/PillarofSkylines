@@ -6,6 +6,8 @@ namespace Game.World.ChunkSystem
 {
     public class WorldController : MonoBehaviour
     {
+        //##################################################################
+
         [SerializeField]
         Vector3 worldSize;
         public Vector3 WorldSize { get { return this.worldSize; } }
@@ -17,7 +19,7 @@ namespace Game.World.ChunkSystem
         [SerializeField]
         int numberOfRepetitions;
 
-        //################
+        //##################################################################
 
         public ChunkSystemData ChunkSystemData { get; private set; }
 
@@ -37,28 +39,27 @@ namespace Game.World.ChunkSystem
         LinkedList<GameObject> objectsToActivate = new LinkedList<GameObject>();
         LinkedList<GameObject> objectsToDeactivate = new LinkedList<GameObject>();
 
-        //####################################################################
-        //####################################################################
+        //##################################################################
 
         #region initialization
 
         public void InitializeWorldController(Transform playerTransform)
         {
-            this.isInitialized = true;
+            isInitialized = true;
 
             this.playerTransform = playerTransform;
 
-            this.ChunkSystemData = Resources.Load<ChunkSystemData>("ScriptableObjects/ChunkSystemData");
+            ChunkSystemData = Resources.Load<ChunkSystemData>("ScriptableObjects/ChunkSystemData");
 
-            int childCount = this.transform.childCount;
+            int childCount = transform.childCount;
             for (int i = 0; i < childCount; i++)
             {
-                var child = this.transform.GetChild(i);
+                var child = transform.GetChild(i);
                 var region = child.GetComponent<RegionController>();
 
                 if (region != null)
                 {
-                    this.regionList.Add(region);
+                    regionList.Add(region);
                     region.InitializeRegion(this);
                 }
             }
@@ -72,63 +73,65 @@ namespace Game.World.ChunkSystem
 
         #endregion initialization
 
-        //####################################################################
-        //####################################################################
+        //##################################################################
 
         #region update
 
         void Update()
         {
-            if (!this.isInitialized)
+            if (!isInitialized)
             {
                 return;
             }
 
             //updating world
-            var currentPlayerPos = this.playerTransform.position;
-            float posDelta = Vector3.Distance(this.previousPlayerPos, currentPlayerPos);
+            var currentPlayerPos = playerTransform.position;
+            float posDelta = Vector3.Distance(previousPlayerPos, currentPlayerPos);
 
-            if (posDelta >= this.ChunkSystemData.MinUpdateDistance)
+            if (posDelta >= ChunkSystemData.MinUpdateDistance)
             {
-                foreach (var region in this.regionList)
+                for (int i = 0; i < regionList.Count; i++)
                 {
+                    var region = regionList[i];
+
                     region.UpdateRegion(currentPlayerPos);
                 }
 
-                foreach (var region in this.regionCopyList)
+                for (int i = 0; i < regionCopyList.Count; i++)
                 {
+                    var region = regionCopyList[i];
+
                     region.UpdateRegion(currentPlayerPos);
                 }
 
-                this.previousPlayerPos = currentPlayerPos;
+                previousPlayerPos = currentPlayerPos;
             }
 
             //object activation
-            lock (this.activationLock)
+            lock (activationLock)
             {
                 int quota = 10;
-                int activationQuota = Mathf.Min(quota, this.objectsToActivate.Count);
+                int activationQuota = Mathf.Min(quota, objectsToActivate.Count);
                 quota -= activationQuota;
-                int deactivationQuota = Mathf.Min(quota, this.objectsToDeactivate.Count);
+                int deactivationQuota = Mathf.Min(quota, objectsToDeactivate.Count);
 
-                for(int i = 0; i < activationQuota; i++)
+                for (int i = 0; i < activationQuota; i++)
                 {
-                    this.objectsToActivate.First.Value.SetActive(true);
-                    this.objectsToActivate.RemoveFirst();
+                    objectsToActivate.First.Value.SetActive(true);
+                    objectsToActivate.RemoveFirst();
                 }
 
-                for(int i = 0; i < deactivationQuota; i++)
+                for (int i = 0; i < deactivationQuota; i++)
                 {
-                    this.objectsToDeactivate.First.Value.SetActive(false);
-                    this.objectsToDeactivate.RemoveFirst();
+                    objectsToDeactivate.First.Value.SetActive(false);
+                    objectsToDeactivate.RemoveFirst();
                 }
             }
         }
 
         #endregion update
 
-        //####################################################################
-        //####################################################################
+        //##################################################################
 
         #region copying
 
@@ -136,23 +139,23 @@ namespace Game.World.ChunkSystem
         {
             if (repeatAxes.x || repeatAxes.y || repeatAxes.z)
             {
-                for (int x = -1 * this.numberOfRepetitions; x <= this.numberOfRepetitions; x++)
+                for (int x = -1 * numberOfRepetitions; x <= numberOfRepetitions; x++)
                 {
-                    if (x != 0 && !this.repeatAxes.x)
+                    if (x != 0 && !repeatAxes.x)
                     {
                         continue;
                     }
 
-                    for (int y = -1 * this.numberOfRepetitions; y <= this.numberOfRepetitions; y++)
+                    for (int y = -1 * numberOfRepetitions; y <= numberOfRepetitions; y++)
                     {
-                        if (y != 0 && !this.repeatAxes.y)
+                        if (y != 0 && !repeatAxes.y)
                         {
                             continue;
                         }
 
-                        for (int z = -1 * this.numberOfRepetitions; z <= this.numberOfRepetitions; z++)
+                        for (int z = -1 * numberOfRepetitions; z <= numberOfRepetitions; z++)
                         {
-                            if (z != 0 && !this.repeatAxes.z)
+                            if (z != 0 && !repeatAxes.z)
                             {
                                 continue;
                             }
@@ -162,21 +165,23 @@ namespace Game.World.ChunkSystem
                             }
 
                             var go = new GameObject(string.Format("WorldCopy{0}{1}{2}", x, y, z));
-                            go.transform.parent = this.transform;
+                            go.transform.parent = transform;
 
-                            foreach (var region in this.regionList)
+                            for (int i = 0; i < regionList.Count; i++)
                             {
+                                var region = regionList[i];
+
                                 var regionCopyGo = region.CreateCopy(go.transform);
                                 var regionCopyScript = regionCopyGo.GetComponent<RegionController>();
 
                                 regionCopyScript.InitializeRegion(this);
-                                this.regionCopyList.Add(regionCopyScript);
+                                regionCopyList.Add(regionCopyScript);
                             }
 
                             //moving the copy has to be done after creating all the children
-                            go.transform.Translate(new Vector3(x * this.worldSize.x, y * this.worldSize.y, z * this.worldSize.z));
+                            go.transform.Translate(new Vector3(x * worldSize.x, y * worldSize.y, z * worldSize.z));
 
-                            this.worldCopies.Add(go);
+                            worldCopies.Add(go);
                         }
                     }
                 }
@@ -185,32 +190,31 @@ namespace Game.World.ChunkSystem
 
         #endregion copying
 
-        //####################################################################
-        //####################################################################
+        //##################################################################
 
         #region favour methods
 
         public void RegisterFavour(Interaction.Favour favour)
         {
-            if (!this.favourList.Contains(favour))
+            if (!favourList.Contains(favour))
             {
-                this.favourList.Add(favour);
+                favourList.Add(favour);
             }
         }
 
         public Interaction.Favour FindNearestFavour(Vector3 position)
         {
-            if (this.favourList.Count == 0)
+            if (favourList.Count == 0)
             {
                 return null;
             }
 
-            var nearestFavour = this.favourList[0];
+            var nearestFavour = favourList[0];
             float shortestDistance = Vector3.Distance(position, nearestFavour.MyTransform.position);
 
-            for (int i = 1; i < this.favourList.Count; i++)
+            for (int i = 1; i < favourList.Count; i++)
             {
-                var favour = this.favourList[i];
+                var favour = favourList[i];
                 float distance = Vector3.Distance(position, favour.MyTransform.position);
 
                 if (distance < shortestDistance)
@@ -225,14 +229,13 @@ namespace Game.World.ChunkSystem
 
         #endregion favour methods
 
-        //####################################################################
-        //####################################################################
+        //##################################################################
 
         #region subChunk activation
 
         public void QueueObjectsToSetActive(List<GameObject> objectList, bool active)
         {
-            lock (this.activationLock)
+            lock (activationLock)
             {
                 if (active)
                 {
@@ -240,12 +243,12 @@ namespace Game.World.ChunkSystem
                     {
                         var currentObject = objectList[i];
 
-                        if (!this.objectsToActivate.Contains(currentObject))
+                        if (!objectsToActivate.Contains(currentObject))
                         {
-                            this.objectsToActivate.AddLast(currentObject);
+                            objectsToActivate.AddLast(currentObject);
                         }
 
-                        this.objectsToDeactivate.Remove(currentObject);
+                        objectsToDeactivate.Remove(currentObject);
                     }
                 }
                 else
@@ -254,11 +257,11 @@ namespace Game.World.ChunkSystem
                     {
                         var currentObject = objectList[i];
 
-                        this.objectsToActivate.Remove(currentObject);
+                        objectsToActivate.Remove(currentObject);
 
-                        if (!this.objectsToDeactivate.Contains(currentObject))
+                        if (!objectsToDeactivate.Contains(currentObject))
                         {
-                            this.objectsToDeactivate.AddLast(currentObject);
+                            objectsToDeactivate.AddLast(currentObject);
                         }
                     }
                 }
@@ -267,15 +270,14 @@ namespace Game.World.ChunkSystem
 
         #endregion subChunk activation
 
-        //####################################################################
-        //####################################################################
+        //##################################################################
 
         #region event handlers
 
         void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
         {
             var favoursToRemove = new List<Interaction.Favour>();
-            foreach (var favour in this.favourList)
+            foreach (var favour in favourList)
             {
                 if (favour.InstanceId == args.FavourId)
                 {
@@ -285,14 +287,13 @@ namespace Game.World.ChunkSystem
 
             foreach (var favour in favoursToRemove)
             {
-                this.favourList.Remove(favour);
+                favourList.Remove(favour);
             }
         }
 
         #endregion event handlers
 
-        //####################################################################
-        //####################################################################
+        //##################################################################
 
         #region Gizmo
 
@@ -312,7 +313,7 @@ namespace Game.World.ChunkSystem
             //    Gizmos.DrawCube(this.playerTransform.position, new Vector3(size, size, size));
             //}
 
-            if (drawGizmo)
+            if (drawGizmo && isInitialized && Application.isEditor && Application.isPlaying)
             {
                 Gizmos.color = gizmoColor;
                 Gizmos.DrawCube(transform.position, worldSize);
@@ -320,7 +321,6 @@ namespace Game.World.ChunkSystem
         }
         #endregion
 
-        //####################################################################
-        //####################################################################
+        //##################################################################
     }
 }
