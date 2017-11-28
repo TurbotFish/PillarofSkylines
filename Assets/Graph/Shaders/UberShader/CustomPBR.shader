@@ -121,6 +121,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _VERTEX_MASK_CUSTOM _VERTEX_MASK_COLOUR
 			#pragma shader_feature _VERTEX_OFFSET_XZ _VERTEX_OFFSET_YZ _VERTEX_OFFSET_XY
 			#pragma shader_feature _ _PLAYER_SHADER
+			#pragma shader_feature _ _SSS_DIFFUSE_MAP
 
 			#pragma multi_compile _ _VERTEX_WIND
 			#pragma multi_compile _ _VERTEX_BEND
@@ -174,6 +175,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _VERTEX_MASK_CUSTOM _VERTEX_MASK_COLOUR
 			#pragma shader_feature _VERTEX_OFFSET_XZ _VERTEX_OFFSET_YZ _VERTEX_OFFSET_XY
 			#pragma shader_feature _ _PLAYER_SHADER
+			#pragma shader_feature _ _SSS_DIFFUSE_MAP
 
 			#pragma multi_compile _ _VERTEX_WIND
 			#pragma multi_compile _ _VERTEX_BEND
@@ -213,7 +215,6 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 			#pragma shader_feature _ _RENDERING_CUTOUT
 			#pragma shader_feature _ _SSS
-			#pragma shader_feature _ _SSSColour2
 			#pragma shader_feature _CULL_BACK _CULL_FRONT _CULL_OFF
 			#pragma shader_feature _LOCAL_NORMAL_DEBUG
 			#pragma shader_feature _ CHECKER_DEBUG
@@ -222,6 +223,7 @@ Shader "Alo/PBR/CustomPBR" {
 			#pragma shader_feature _VERTEX_MASK_CUSTOM _VERTEX_MASK_COLOUR
 			#pragma shader_feature _VERTEX_OFFSET_XZ _VERTEX_OFFSET_YZ _VERTEX_OFFSET_XY
 			#pragma shader_feature _ _PLAYER_SHADER
+			#pragma shader_feature _ _SSS_DIFFUSE_MAP
 
 			#pragma shader_feature _ _CELSHADED
 			#pragma shader_feature _ _REFRACTION
