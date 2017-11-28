@@ -32,7 +32,7 @@ public class ParticlesFollowSpline : MonoBehaviour {
 					Destroy (gameObject, 1f);
 				}
 			}
-			if (_counterPos < lr.positionCount-3)
+			if (_counterPos < lr.positionCount-3 && move)
 				transform.LookAt (Vector3.Lerp(lr.GetPosition (_currentPos + 1),lr.GetPosition (_currentPos + 2),_counterPos));
 			transform.localEulerAngles = new Vector3(transform.localEulerAngles.x,transform.localEulerAngles.y, _counterRot + 10*rotSpeed * Time.deltaTime);
 			_counterRot = transform.localEulerAngles.z;
