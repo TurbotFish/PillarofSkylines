@@ -89,7 +89,7 @@ namespace Game.Player.CharacterController
 
 
 		public Vector3 Move(Vector3 velocity) {
-//			print("---------------------------------new movement----------------------------------");
+			print("---------------------------------new movement----------------------------------");
 			playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
 			collisions.initialVelocityOnThisFrame = velocity;
 
@@ -145,33 +145,7 @@ namespace Game.Player.CharacterController
 					OutOfWallDirection += transform.up;
 				}
 //				print("added : " + hit.normal + " from : " + hit.transform.name);
-
-				/*
-                if (Physics.Linecast(myTransform.position + velocity + playerAngle * center, wall.transform.position, out hit, collisionMask))
-                {
-					if (wall.gameObject.Equals(hit.transform.gameObject)) {
-						OutOfWallDirection += hit.normal;
-						print("added : " + hit.normal + " from : " + hit.transform.name);
-					} else {
-						print("retry");
-						if (Physics.Linecast(hit.point + (wall.transform.position - hit.point)*.01f, wall.transform.position, out hit, collisionMask)) {
-							if (wall.gameObject.Equals(hit.transform.gameObject)) {
-								OutOfWallDirection += hit.normal;
-								print("added : " + hit.normal + " from : " + hit.transform.name);
-							} 
-						}
-					}
-                }*/
-
-
 			}
-			/*
-			if (collisions.below) {
-				OutOfWallDirection += collisions.currentGroundNormal;
-			}
-			if (collisions.side) {
-				OutOfWallDirection += collisions.currentWallNormal;
-			}*/
 
 			Physics.Raycast(myTransform.position + velocity + playerAngle * center, -OutOfWallDirection, out hit, radius + height / 2, collisionMask);
 			OutOfWallDirection = OutOfWallDirection.normalized * (radius + height / 2);
@@ -311,8 +285,8 @@ namespace Game.Player.CharacterController
 //				print("detected coll to : " + movementVector * 100 + " extra : " + extraVelocity * 100 + " direction : " + veloNorm * 100);
 
 				//Detect the obstacle met from above to check if it's a step
-				Debug.DrawRay(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up * (height + radius * 2), Color.red);
-				Debug.DrawRay(myTransform.position + movementVector + myTransform.up * (height + radius * 2), Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), Color.red);
+//				Debug.DrawRay(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up * (height + radius * 2), Color.red);
+//				Debug.DrawRay(myTransform.position + movementVector + myTransform.up * (height + radius * 2), Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), Color.red);
 				if ((myPlayer.currentPlayerState == ePlayerState.onGround || climbingStep)
 				                && Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up, out hit2, height + radius * 2, collisionMask)
 				                && !Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2), Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up), (radius + skinWidth), collisionMask)) {
@@ -373,6 +347,7 @@ namespace Game.Player.CharacterController
 			if (collisionNumber > 4) {
 				Debug.LogWarning("whoa that was a lot of collisions there (" + collisionNumber + ").");
 			}
+			print("coll nmber : " + collisionNumber);
 			Debug.DrawRay(newOrigin, movementVector, Color.red);
 
 
