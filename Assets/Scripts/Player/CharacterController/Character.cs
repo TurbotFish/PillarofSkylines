@@ -690,7 +690,7 @@ namespace Game.Player.CharacterController
 
                 case ePlayerState.dashing:
 
-					flatVelocity = transform.forward * dashSpeed;
+					flatVelocity = transform.forward * dashSpeed * Time.deltaTime;
                     flatVelocity = TurnSpaceToLocal(flatVelocity);
                     flatVelocity.y = 0f;
                     velocity.y = 0f;
