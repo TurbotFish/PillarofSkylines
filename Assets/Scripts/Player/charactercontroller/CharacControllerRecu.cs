@@ -89,7 +89,7 @@ namespace Game.Player.CharacterController
 
 
 		public Vector3 Move(Vector3 velocity) {
-			print("---------------------------------new movement----------------------------------");
+//			print("---------------------------------new movement----------------------------------");
 			playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
 			collisions.initialVelocityOnThisFrame = velocity;
 
@@ -276,7 +276,7 @@ namespace Game.Player.CharacterController
                 , ((veloNorm.y > 0 || myPlayer.currentPlayerState == ePlayerState.gliding) ? collisionMaskNoCloud : collisionMask))) {
 				collisionNumber++;
 
-				print("met smth ! name : " + hit.collider.name + " at : " + hit.point + " distance : " + hit.distance);
+//				print("met smth ! name : " + hit.collider.name + " at : " + hit.point + " distance : " + hit.distance);
 
 				//When an obstacle is met, remember the amount of movement needed to get to the obstacle
 				movementVector += veloNorm * (hit.distance - skinWidth);
@@ -323,18 +323,18 @@ namespace Game.Player.CharacterController
 					} else {
 						if (collisionNumber > 1) {
 							if (Vector3.Dot(hit.normal, oldHit.normal) < 0) {
-								print("recu 1");
+//								print("recu 1");
 								reflection = CollisionDetection(Vector3.Project(extraVelocity, Vector3.Cross(hit.normal, oldHit.normal)), position + movementVector, hit);
 							} else {
-								print("recu 2");
+//								print("recu 2");
 								reflection = CollisionDetection(Vector3.ProjectOnPlane(extraVelocity, hit.normal), position + movementVector, hit);
 							}
 						} else {
 							if (collisions.below && Vector3.Dot(hit.normal, collisions.currentGroundNormal) < 0) {
-								print("recu 3");
+//								print("recu 3");
 								reflection = CollisionDetection(Vector3.Project(extraVelocity, Vector3.Cross(hit.normal, collisions.currentGroundNormal)), position + movementVector, hit);
 							} else {
-								print("recu 4");
+//								print("recu 4");
 								reflection = CollisionDetection(Vector3.ProjectOnPlane(extraVelocity, hit.normal), position + movementVector, hit);
 							}
 						}
@@ -355,7 +355,7 @@ namespace Game.Player.CharacterController
 			if (collisionNumber > 4) {
 				Debug.LogWarning("whoa that was a lot of collisions there (" + collisionNumber + ").");
 			}
-			print("coll nmber : " + collisionNumber);
+//			print("coll nmber : " + collisionNumber);
 			Debug.DrawRay(newOrigin, movementVector, Color.red);
 
 
