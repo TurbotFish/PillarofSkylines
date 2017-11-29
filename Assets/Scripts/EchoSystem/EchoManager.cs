@@ -20,6 +20,7 @@ namespace Game.EchoSystem
         List<Echo> echoList = new List<Echo>();
 
         bool isEclipseActive;
+        bool driftInputDown;
 
         Transform MyTransform { get; set; }
 
@@ -44,11 +45,14 @@ namespace Game.EchoSystem
 
         void Update()
         {
-            if (!isEclipseActive)
-            {
-                if (Input.GetButtonDown("Drift"))
-                {
+            if (!isEclipseActive) {
+
+                float driftInput = Input.GetAxis("Right Trigger");
+                if (driftInput > 0.9f && !driftInputDown) {
+                    driftInputDown = true;
                     Drift();
+                } else if (driftInput < 0.8f) {
+                    driftInputDown = false;
                 }
 
                 if (Input.GetButtonDown("Echo"))

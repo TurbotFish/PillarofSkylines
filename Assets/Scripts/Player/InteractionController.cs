@@ -244,7 +244,8 @@ namespace Game.Player
 						break;
                     //echo
                     case "Echo":
-                        Destroy(other.gameObject);
+                        Debug.LogWarning("Echo destruction on collision not coded yet");
+                        ///Destroy(other.gameObject);
                         break;
 					//wind
 					case "Wind":
