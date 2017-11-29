@@ -131,7 +131,7 @@ namespace Game.World.ChunkSystem
             }
 
             var objectActivationTime = stopwatch.Elapsed;
-            Debug.LogFormat("WorldController: Update: A={0}; B={1}", worldUpdateTime.Milliseconds / 1000f, objectActivationTime.Milliseconds / 1000f);
+            //Debug.LogFormat("WorldController: Update: A={0}; B={1}", worldUpdateTime.Milliseconds / 1000f, objectActivationTime.Milliseconds / 1000f);
         }
 
         #endregion update

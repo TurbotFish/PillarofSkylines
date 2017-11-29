@@ -5,24 +5,6 @@ using UnityEngine;
 namespace Game.Player
 {
     /// <summary>
-    /// The list of the abilities of the player
-    /// </summary>
-    public enum eAbilityType
-    {
-        DoubleJump,
-        Glide,
-        Dash,
-        TombFinder,
-        WallRun
-    }
-
-    public enum eAbilityGroup
-    {
-        Default,
-        GroupA
-    }
-
-    /// <summary>
     /// This class stores data about the player: favours, abilities, stats, ...
     /// </summary>
     public class PlayerModel : MonoBehaviour
@@ -69,7 +51,6 @@ namespace Game.Player
         }
 
         //###########################################################
-        //###########################################################
 
         #region monobehaviour methods
 
@@ -83,7 +64,6 @@ namespace Game.Player
 
         #endregion monobehaviour methods
 
-        //###########################################################
         //###########################################################
 
         #region ability group unlocking methods
@@ -159,7 +139,6 @@ namespace Game.Player
         #endregion ability group unlocking methods
 
         //###########################################################
-        //###########################################################
 
         #region ability activation methods
 
@@ -169,14 +148,7 @@ namespace Game.Player
         /// <returns>Returns true if the ability is activated, false otherwise.</returns>
         public bool CheckAbilityActive(eAbilityType abilityType)
         {
-            if (this.activatedAbilities.Contains(abilityType))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return activatedAbilities.Contains(abilityType);
         }
 
         public bool CheckAbilityUnlocked(eAbilityType abilityType)
@@ -247,7 +219,6 @@ namespace Game.Player
         #endregion ability activation methods
 
         //###########################################################
-        //###########################################################
 
         #region ability flagging methods
 
@@ -308,7 +279,6 @@ namespace Game.Player
         #endregion ability flagging methods
 
         //###########################################################
-        //###########################################################
 
         #region pillar state methods
 
@@ -336,5 +306,20 @@ namespace Game.Player
         #endregion pillar state methods
 
         //###########################################################
+
+        public eAbilityState GetAbilityState(eAbilityType abilityType)
+        {
+            if (activatedAbilities.Contains(abilityType))
+            {
+                return eAbilityState.active;
+            }
+
+            if (unlockedAbilityGroups.Contains(abilityData.GetAbility(abilityType).Group))
+            {
+                return eAbilityState.available;
+            }
+
+            return eAbilityState.locked;
+        }
     }
 } //end of namespace
