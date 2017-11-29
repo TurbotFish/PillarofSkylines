@@ -40,6 +40,8 @@ namespace Game.World.ChunkSystem
 
         int regionUpdateIndex = 0;
 
+        System.Diagnostics.Stopwatch stopwatch;
+
         //##################################################################
 
         #region initialization
@@ -88,18 +90,27 @@ namespace Game.World.ChunkSystem
 
             //******************************************
             //updating world
-            regionList[regionUpdateIndex++].UpdateRegion(playerTransform.position, cameraTransform.position);
-
-            if(regionUpdateIndex == regionList.Count)
+            stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            for (int i = 0; i < ChunkSystemData.RegionUpdatesPerFrame; i++)
             {
-                regionUpdateIndex = 0;
+                regionList[regionUpdateIndex++].UpdateRegion(playerTransform.position, cameraTransform.position);
+
+                if (regionUpdateIndex == regionList.Count)
+                {
+                    regionUpdateIndex = 0;
+                }
             }
+            stopwatch.Stop();
+            var worldUpdateTime = stopwatch.Elapsed;
 
             //******************************************
             //object activation
             lock (activationLock)
             {
-                int quota = 10;
+                //Debug.LogFormat("WorldController: Update: object activation: to activate = {0}; to deactivate = {1}", objectsToActivate.Count, objectsToDeactivate.Count);
+                stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+                int quota = ChunkSystemData.ObjectActivationsPerFrame;
                 int activationQuota = Mathf.Min(quota, objectsToActivate.Count);
                 quota -= activationQuota;
                 int deactivationQuota = Mathf.Min(quota, objectsToDeactivate.Count);
@@ -115,7 +126,12 @@ namespace Game.World.ChunkSystem
                     objectsToDeactivate.First.Value.SetActive(false);
                     objectsToDeactivate.RemoveFirst();
                 }
+
+                stopwatch.Stop();
             }
+
+            var objectActivationTime = stopwatch.Elapsed;
+            Debug.LogFormat("WorldController: Update: A={0}; B={1}", worldUpdateTime.Milliseconds / 1000f, objectActivationTime.Milliseconds / 1000f);
         }
 
         #endregion update
@@ -178,7 +194,7 @@ namespace Game.World.ChunkSystem
                 }
             }
 
-            for(int i = 0; i < newRegionsList.Count; i++)
+            for (int i = 0; i < newRegionsList.Count; i++)
             {
                 regionList.Add(newRegionsList[i]);
             }
