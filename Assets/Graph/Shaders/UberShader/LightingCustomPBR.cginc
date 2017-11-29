@@ -303,8 +303,8 @@
 				float windIntensity = tex2Dlod(_WindTex, float4(_Time.x, _Time.x, 0,0)).r;
 				windIntensity = saturate(windIntensity + 0.2);//not necessary with a good wind map
 				//float windIntensity = 1;
-				float windSpeed = 2;
-				float _offset = (pivotWS.x * (0.9) * -sign(windDir.x) + pivotWS.z * (0.6) * -sign(windDir.y) + pivotWS.y * 0.8) * 0.5;
+				float windSpeed = 3;
+				float _offset = (pivotWS.x * (0.9) * -sign(windDir.x) + pivotWS.z * (2.9) * -sign(windDir.y) + pivotWS.y * 0.8) * 0.5;
 				float angle = windIntensity * (sin(_Time.y * windSpeed + _offset) * 0.65+0.35) * _MaxBendAngle * rotationMask;
 				//float angle = 60;
 				float3 _windRotation = float3( windDir.y, 0, -windDir.x) * angle;
