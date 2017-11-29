@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MovingPlatform : MonoBehaviour {
 
-	public Player currPlayer;
+	public Game.Player.CharacterController.Character currPlayer;
 
 	public Vector3 impactPoint;
 
@@ -12,7 +12,7 @@ public class MovingPlatform : MonoBehaviour {
 		transform.tag = "MovingPlatform";
 	}
 
-	virtual public void AddPlayer(Player player, Vector3 playerImpactPoint) {
+	virtual public void AddPlayer(Game.Player.CharacterController.Character player, Vector3 playerImpactPoint) {
 		currPlayer = player;
 		impactPoint = playerImpactPoint;
 	}

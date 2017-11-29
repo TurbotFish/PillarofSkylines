@@ -8,40 +8,45 @@ namespace Game.World.ChunkSystem
     [RequireComponent(typeof(BoxCollider))]
     public class ChunkController : MonoBehaviour
     {
+        //##################################################################
+
         protected ChunkSystemData data;
 
         protected BoxCollider bounds;
         protected List<SubChunkController> subChunkList = new List<SubChunkController>();
+
+        //##################################################################
 
         /// <summary>
         /// Initializes the Chunk.
         /// </summary>
         public virtual void InitializeChunk(WorldController worldController)
         {
-            this.data = worldController.ChunkSystemData;
+            data = worldController.ChunkSystemData;
 
-            int childCount = this.transform.childCount;
+            gameObject.SetActive(true);
 
             //find the bounds
-            this.bounds = GetComponent<BoxCollider>();
+            bounds = GetComponent<BoxCollider>();
 
-            if (this.bounds == null)
+            if (bounds == null)
             {
-                Debug.LogErrorFormat("Chunk \"{0}\": could not find bounds collider!", this.name);
+                Debug.LogErrorFormat("Chunk \"{0}\": could not find bounds collider!", name);
             }
 
             gameObject.layer = 14;
-            this.bounds.isTrigger = true;
+            bounds.isTrigger = true;
 
             //find all the SubChunks
+            int childCount = transform.childCount;
             for (int i = 0; i < childCount; i++)
             {
-                var child = this.transform.GetChild(i);
+                var child = transform.GetChild(i);
                 var subChunk = child.GetComponent<SubChunkController>();
 
                 if (subChunk != null)
                 {
-                    this.subChunkList.Add(subChunk);
+                    subChunkList.Add(subChunk);
                     subChunk.InitializeSubChunk(worldController);
                 }
             }
@@ -55,6 +60,8 @@ namespace Game.World.ChunkSystem
 
         }
 
+        //##################################################################
+
         /// <summary>
         /// Update all the things!
         /// </summary>
@@ -64,13 +71,15 @@ namespace Game.World.ChunkSystem
 
             if (!this.bounds.bounds.Contains(playerPos))
             {
-                var closestPoint = this.bounds.ClosestPoint(playerPos);
+                var closestPoint = bounds.ClosestPoint(playerPos);
                 distance = Vector3.Distance(playerPos, closestPoint);
             }
 
-            foreach (var subChunk in this.subChunkList)
+            for (int i = 0; i < subChunkList.Count; i++)
             {
-                var renderDistance = this.data.GetRenderDistance(subChunk.Layer);
+                var subChunk = subChunkList[i];
+
+                var renderDistance = data.GetRenderDistance(subChunk.Layer);
 
                 if (distance >= renderDistance.x && distance < renderDistance.y)
                 {
@@ -92,13 +101,13 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// Creates a copy of the Chunk and attaches it to the given Transform.
         /// </summary>
-        public virtual void CreateCopy(Transform parent)
+        public void CreateCopy(Transform parent)
         {
-            var chunkCopyGameObject = new GameObject(this.gameObject.name, this.GetType(), typeof(BoxCollider));
+            var chunkCopyGameObject = new GameObject(gameObject.name, GetType(), typeof(BoxCollider));
 
             var ChunkCopyTransform = chunkCopyGameObject.transform;
             ChunkCopyTransform.parent = parent;
-            ChunkCopyTransform.localPosition = this.transform.localPosition;
+            ChunkCopyTransform.localPosition = transform.localPosition;
 
             var newBounds = chunkCopyGameObject.GetComponent<BoxCollider>();
             chunkCopyGameObject.layer = gameObject.layer;
@@ -106,12 +115,16 @@ namespace Game.World.ChunkSystem
             newBounds.size = bounds.size;
             newBounds.center = bounds.center;
 
-            foreach (var subChunk in this.subChunkList)
+            for (int i = 0; i < subChunkList.Count; i++)
             {
+                var subChunk = subChunkList[i];
+
                 subChunk.CreateCopy(ChunkCopyTransform);
             }
 
             chunkCopyGameObject.GetComponent<ChunkController>().InitializeChunkCopy(this);
         }
+
+        //##################################################################
     }
 }

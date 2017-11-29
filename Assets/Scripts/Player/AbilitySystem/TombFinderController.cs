@@ -6,6 +6,7 @@ namespace Game.Player.AbilitySystem
 {
     public class TombFinderController : MonoBehaviour
     {
+        CharacterController.Character player;
         PlayerModel model;
         World.ChunkSystem.WorldController worldController;
 
@@ -23,6 +24,7 @@ namespace Game.Player.AbilitySystem
         {
             this.model = gameController.PlayerModel;
             this.worldController = gameController.WorldController;
+            this.player = gameController.PlayerController.Player;
 
             if(this.model == null || this.worldController == null)
             {
@@ -38,7 +40,7 @@ namespace Game.Player.AbilitySystem
 			foreach (ParticleSystem ps in this.myParticleSystems) {
 				ps.Stop ();
 			}
-            Utilities.EventManager.OnSceneChangedEvent += OnSceneChangedEventHandler;
+            Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
             Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
 
             this.isInitialized = true;
@@ -58,14 +60,14 @@ namespace Game.Player.AbilitySystem
             bool abilityActive = this.model.CheckAbilityActive(eAbilityType.TombFinder);
             //Debug.LogErrorFormat("TombFinderController: abilityActive={0}, isInOpenWorld={1}, isFavourInWorld={2}", abilityActive, isInOpenWorld, isFavourInWorld);
 
-            if(!this.isParticleSystemActive && (this.isInOpenWorld && this.isFavourInWorld && abilityActive))
+            if(!this.isParticleSystemActive && (this.isInOpenWorld && this.isFavourInWorld && abilityActive && player.velocity.sqrMagnitude == 0))
             {
 				foreach (ParticleSystem ps in this.myParticleSystems) {
 					ps.Play ();
 				}
                 this.isParticleSystemActive = true;
             }
-            else if(this.isParticleSystemActive && (!this.isInOpenWorld || !this.isFavourInWorld || !abilityActive))
+            else if(this.isParticleSystemActive && (!this.isInOpenWorld || !this.isFavourInWorld || !abilityActive || player.velocity.sqrMagnitude != 0))
             {
 				foreach (ParticleSystem ps in this.myParticleSystems) {
 					ps.Stop ();
@@ -82,7 +84,7 @@ namespace Game.Player.AbilitySystem
         //################################################################
         //################################################################
 
-        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
+        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
             if (args.HasChangedToPillar)
             {

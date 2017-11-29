@@ -13,7 +13,7 @@ namespace Game.Player
     {
         //
         PlayerModel playerModel;
-		global::Player myPlayer;
+        Game.Player.CharacterController.Character myPlayer;
 
         //
         bool favourPickUpInRange = false;
@@ -25,11 +25,13 @@ namespace Game.Player
         bool needleInRange = false;
         Collider needlePickedUpCollider;
 
+        bool needleSlotInRange = false;
+
         bool eyeInRange = false;
 
         //
         bool isActive = false;
-        bool isSprintButtonDown = false;
+        bool isInteractButtonDown = false;
         bool isDriftButtonDown = false;
 
         //########################################################################
@@ -39,13 +41,13 @@ namespace Game.Player
         /// <summary>
         /// 
         /// </summary>
-		public void InitializeFavourController(PlayerModel playerModel, global::Player player)
+		public void InitializeFavourController(PlayerModel playerModel, Game.Player.CharacterController.Character player)
         {
             this.playerModel = playerModel;
 			myPlayer = player;
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
-            Utilities.EventManager.OnSceneChangedEvent += OnSceneChangedEventHandler;
+            Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
         }
 
         #endregion initialization
@@ -65,9 +67,9 @@ namespace Game.Player
                 return;
             }
 
-            if (Input.GetButton("Sprint") && !this.isSprintButtonDown)
+            if (Input.GetButton("Interact") && !this.isInteractButtonDown)
             {
-                this.isSprintButtonDown = true;
+                this.isInteractButtonDown = true;
 
                 //favour
                 if (this.favourPickUpInRange)
@@ -114,7 +116,17 @@ namespace Game.Player
 
                     playerModel.hasNeedle = true;
 
-                    Utilities.EventManager.SendOnEclipseEvent(this, new Utilities.EventManager.OnEclipseEventArgs(true));
+                    Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(true));
+
+                    HideUiMessage();
+                }
+                //needle
+                else if (this.needleSlotInRange) {
+                    this.needleSlotInRange = false;
+
+                    playerModel.hasNeedle ^= true;
+
+                    Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(playerModel.hasNeedle));
 
                     HideUiMessage();
                 }
@@ -131,9 +143,9 @@ namespace Game.Player
                     HideUiMessage();
                 }
             }
-            else if (!Input.GetButton("Sprint") && this.isSprintButtonDown)
+            else if (!Input.GetButton("Interact") && this.isInteractButtonDown)
             {
-                this.isSprintButtonDown = false;
+                this.isInteractButtonDown = false;
             }
 
             if (Input.GetButton("Drift") && !this.isDriftButtonDown && playerModel.hasNeedle)
@@ -141,7 +153,7 @@ namespace Game.Player
                 this.isDriftButtonDown = true;
                 playerModel.hasNeedle = false;
                 this.needlePickedUpCollider.enabled = true;
-                Utilities.EventManager.SendOnEclipseEvent(this, new Utilities.EventManager.OnEclipseEventArgs(false));
+                Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(false));
             }
             else if (!Input.GetButton("Drift") && this.isDriftButtonDown)
             {
@@ -215,6 +227,12 @@ namespace Game.Player
 
                         ShowUiMessage("Press [X] to take the needle");
                         break;
+                    //needle slot
+                    case "NeedleSlot":
+                        needleSlotInRange = true;
+
+                        ShowUiMessage(playerModel.hasNeedle ? "Press [X] to plant the needle" : "Press [X] to take the needle");
+                        break;
                     //eye
                     case "Eye":
                         if (playerModel.hasNeedle)
@@ -224,6 +242,11 @@ namespace Game.Player
                             ShowUiMessage("Press [X] to plant the needle");
                         }
 						break;
+                    //echo
+                    case "Echo":
+                        Debug.LogWarning("Echo destruction on collision not coded yet");
+                        ///Destroy(other.gameObject);
+                        break;
 					//wind
 					case "Wind":
 						other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer);
@@ -265,6 +288,12 @@ namespace Game.Player
                     case "Needle":
                         this.needleInRange = false;
                         this.needlePickedUpCollider = null;
+
+                        HideUiMessage();
+                        break;
+                    //needle slot
+                    case "NeedleSlot":
+                        needleSlotInRange = false;
 
                         HideUiMessage();
                         break;
@@ -330,7 +359,7 @@ namespace Game.Player
         /// <summary>
         /// "Reset everything!"  "Everything?"  "EVERYTHING!"
         /// </summary>
-        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
+        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
             this.favourPickUpInRange = false;
             this.favour = null;

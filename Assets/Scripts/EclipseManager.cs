@@ -17,28 +17,11 @@ namespace Game
         [SerializeField]
         Vector3 eclipseGravity = new Vector3(1, 0, 0);
 
-        global::Player player;
+        Game.Player.CharacterController.Character player;
         Eclipse eclipsePostEffect;
 
         bool isEclipseActive;
 
-        //###############################################################
-
-        #region Singleton
-        //public static EclipseManager instance;
-        //void Awake()
-        //{
-        //    if (!instance)
-        //    {
-        //        instance = this;
-        //        //DontDestroyOnLoad(gameObject);
-        //    }
-        //    else if (instance != this)
-        //        Destroy(gameObject);
-        //}
-        #endregion Singleton
-
-        //###############################################################
         //###############################################################
 
         #region initialization
@@ -48,18 +31,17 @@ namespace Game
             this.player = gameController.PlayerController.Player;
             this.eclipsePostEffect = gameController.CameraController.EclipseEffect;
 
-            Utilities.EventManager.OnEclipseEvent += OnEclipseEventHandler;
-            Utilities.EventManager.OnSceneChangedEvent += OnSceneChangedEventHandler;
+            Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
+            Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
         }
 
         #endregion initialization
 
         //###############################################################
-        //###############################################################
 
         #region event handlers
 
-        void OnEclipseEventHandler(object sender, Game.Utilities.EventManager.OnEclipseEventArgs args)
+        void OnEclipseEventHandler(object sender, Game.Utilities.EventManager.EclipseEventArgs args)
         {
             if (args.EclipseOn)
             {
@@ -71,14 +53,13 @@ namespace Game
             }
         }
 
-        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
+        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
             StopEclipse();
         }
 
         #endregion event handlers
 
-        //###############################################################
         //###############################################################
 
         void StartEclipse()

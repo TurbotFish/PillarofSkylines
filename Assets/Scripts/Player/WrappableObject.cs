@@ -42,7 +42,7 @@ namespace Game.Player
             this.zAxisInfo.minPos = worldPos.z - worldSize.z / 2f;
             this.zAxisInfo.maxPos = worldPos.z + worldSize.z / 2f;
 
-            Utilities.EventManager.OnSceneChangedEvent += OnSceneChangedEventHandler;
+            Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
 
             this.isInitialized = true;
         }
@@ -109,7 +109,7 @@ namespace Game.Player
 
                 //this.myTransform.position = newPlayerPos;
 
-                var teleportPlayerEventArgs = new Utilities.EventManager.OnTeleportPlayerEventArgs(newPlayerPos, false);
+                var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(newPlayerPos, Quaternion.identity, false);
                 Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
                 //foreach (var follower in this.followers)
@@ -123,7 +123,7 @@ namespace Game.Player
         //#####################################################
         //#####################################################
 
-        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.OnSceneChangedEventArgs args)
+        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
             if (args.HasChangedToPillar)
             {

@@ -18,7 +18,7 @@ public class Cloud : MonoBehaviour {
 	CS_Cloud myCloudCS;
 	float initialCloudFade;
 
-	Player player;
+	Game.Player.CharacterController.Character player;
 	Collider myCollider;
 
 	bool dissipating;
@@ -91,7 +91,7 @@ public class Cloud : MonoBehaviour {
 		#endregion dissipation cycle
 	}
 
-	public void AddPlayer(Player newPlayer) {
+	public void AddPlayer(Game.Player.CharacterController.Character newPlayer) {
 		player = newPlayer;
 		if (!dissipating) {
 			dissipating = true;

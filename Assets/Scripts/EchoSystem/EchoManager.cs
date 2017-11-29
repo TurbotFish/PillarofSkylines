@@ -5,175 +5,156 @@ namespace Game.EchoSystem
 {
     public class EchoManager : MonoBehaviour
     {
-        public bool demo;
-        public Vector3 demoVelocity;
-
         [SerializeField]
         Echo echoPrefab;
+
         [SerializeField]
         BreakEchoParticles breakEchoParticles;
 
-        //[TestButton("Freeze All Echoes", "FreezeAll", isActiveInEditor = false)]
-        //[TestButton("Unfreeze All Echoes", "UnfreezeAll", isActiveInEditor = false)]
-
-        public List<Echo> echoes;
         [SerializeField]
         int maxEchoes = 3;
 
-        public List<Echo> nonEchoes; // For echoes that were not created by the player
-
-        [HideInInspector]
-        public Transform pool;
         Transform playerTransform;
-        new EchoCameraEffect camera;
+        EchoCameraEffect echoCamera;
 
-        bool eclipse;
+        List<Echo> echoList = new List<Echo>();
 
-        //##################################################################
+        bool isEclipseActive;
+        bool driftInputDown;
 
-        #region Singleton
-        //public static EchoManager instance;
-        //void Awake()
-        //{
-        //    if (!instance)
-        //    {
-        //        instance = this;
-        //    }
-        //    else if (instance != this)
-        //        Destroy(gameObject);
-        //}
-        #endregion
+        Transform MyTransform { get; set; }
 
-        //##################################################################
         //##################################################################
 
         #region initialization
 
         public void InitializeEchoManager(GameControl.IGameControllerBase gameController)
         {
-            this.camera = gameController.CameraController.EchoCameraEffect;
-            this.playerTransform = gameController.PlayerController.Player.transform;
+            echoCamera = gameController.CameraController.EchoCameraEffect;
+            playerTransform = gameController.PlayerController.Player.transform;
 
-            this.pool = new GameObject("Echo Pool").transform;
-            this.pool.SetParent(this.transform);
+            MyTransform = transform;
 
-            Utilities.EventManager.OnEclipseEvent += OnEclipseEventHandler;
+            Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
+            Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
         }
 
         #endregion initialization
 
         //##################################################################
-        //##################################################################
 
         void Update()
         {
-            if (!eclipse)
-            {
-                if (Input.GetButtonDown("Drift"))
+            if (!isEclipseActive) {
+
+                float driftInput = Input.GetAxis("Right Trigger");
+                if (driftInput > 0.9f && !driftInputDown) {
+                    driftInputDown = true;
                     Drift();
+                } else if (driftInput < 0.8f) {
+                    driftInputDown = false;
+                }
+
                 if (Input.GetButtonDown("Echo"))
+                {
                     CreateEcho();
+                }
             }
         }
 
         //##################################################################
 
+        #region private methods
+
         void Drift()
         {
-            if (echoes.Count > 0)
+            if (echoList.Count > 0)
             {
-                camera.SetFov(70, 0.15f, true);
-                Echo targetEcho = echoes[echoes.Count - 1];
-                playerTransform.position = targetEcho.transform.position; // We should reference Player and move this script in a Manager object
-                if (!targetEcho.isActive)
-                    targetEcho.Break();
+                echoCamera.SetFov(70, 0.15f, true);
 
-                if (demo)
-                {
-                    GetComponent<Rigidbody>().velocity = demoVelocity;
-                }
+                var targetEcho = echoList[echoList.Count - 1];
+                echoList.Remove(targetEcho);
+
+                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, targetEcho.MyTransform.rotation, false);
+                Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+
+                Instantiate(breakEchoParticles, targetEcho.MyTransform.position, targetEcho.MyTransform.rotation);
+
+                Destroy(targetEcho.gameObject);
             }
         }
 
         void CreateEcho()
         {
-            Echo newEcho = InstantiateFromPool(echoPrefab, playerTransform.position);
-            newEcho.playerEcho = true;
-            echoes.Add(newEcho);
-            if (echoes.Count > maxEchoes)
-                echoes[0].Break();
+            if (isEclipseActive)
+            {
+                return;
+            }
+
+            if (echoList.Count == maxEchoes)
+            {
+                var oldestEcho = echoList[0];
+                Destroy(oldestEcho.gameObject);
+                echoList.RemoveAt(0);
+            }
+
+            var newEcho = Instantiate(echoPrefab, playerTransform.position, playerTransform.rotation);
+            echoList.Add(newEcho);
         }
 
         void FreezeAll()
         {
-            for (int i = 0; i < echoes.Count; i++)
+            for (int i = 0; i < echoList.Count; i++)
             {
-                echoes[i].Freeze();
-            }
-
-            for (int i = 0; i < nonEchoes.Count; i++)
-            {
-                nonEchoes[i].Freeze();
+                echoList[i].Freeze();
             }
         }
 
         void UnfreezeAll()
         {
-            for (int i = 0; i < echoes.Count; i++)
+            for (int i = 0; i < echoList.Count; i++)
             {
-                echoes[i].Unfreeze();
-            }
-
-            for (int i = 0; i < nonEchoes.Count; i++)
-            {
-                nonEchoes[i].Unfreeze();
+                echoList[i].Unfreeze();
             }
         }
 
-        //public void BreakAll()
-        //{
-        //    for (int i = echoes.Count - 1; i >= 0; i--)
-        //        echoes[i].Break();
-        //}
-
-        T InstantiateFromPool<T>(T prefab, Vector3 position) where T : MonoBehaviour
-        {
-            T poolObject = pool.GetComponentInChildren<T>();
-
-            if (poolObject != null)
-            {
-                poolObject.transform.parent = null;
-                poolObject.transform.position = position;
-                poolObject.gameObject.SetActive(true);
-
-            }
-            else
-                poolObject = Instantiate(prefab, position, Quaternion.identity);
-            return poolObject;
-        }
-
-        public void BreakParticles(Vector3 position)
-        {
-            InstantiateFromPool(breakEchoParticles, position);
-        }
+        #endregion private methods
 
         //##################################################################
 
-        void OnEclipseEventHandler(object sender, Utilities.EventManager.OnEclipseEventArgs args)
+        #region event handlers
+
+        void OnEclipseEventHandler(object sender, Utilities.EventManager.EclipseEventArgs args)
         {
             if (args.EclipseOn)
             {
-                this.eclipse = true;
+                isEclipseActive = true;
 
                 FreezeAll();
             }
             else
             {
-                this.eclipse = false;
-                print("c plu l'eclipse");
+                isEclipseActive = false;
+
                 UnfreezeAll();
             }
         }
+
+        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
+        {
+            //Debug.LogErrorFormat("EchoManager: OnSceneChangedEventHandler: echo count = {0}", echoList.Count);
+
+            isEclipseActive = false;
+
+            for (int i = 0; i < echoList.Count; i++)
+            {
+                Destroy(echoList[i].gameObject);
+            }
+
+            echoList.Clear();
+        }
+
+        #endregion event handlers
 
         //##################################################################
     }

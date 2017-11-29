@@ -11,9 +11,9 @@ namespace Game.World.SpawnPointSystem
         eSpawnPointType type;
         public eSpawnPointType Type
         {
-            get { return this.type; }
+            get { return type; }
 #if UNITY_EDITOR
-            set { this.type = value; }
+            set { type = value; }
 #endif
         }
 
@@ -22,9 +22,9 @@ namespace Game.World.SpawnPointSystem
         ePillarId pillar;
         public ePillarId Pillar
         {
-            get { return this.pillar; }
+            get { return pillar; }
 #if UNITY_EDITOR
-            set { this.pillar = value; }
+            set { pillar = value; }
 #endif
         }
     }
