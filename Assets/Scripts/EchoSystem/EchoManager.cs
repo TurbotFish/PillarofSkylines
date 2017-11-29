@@ -14,8 +14,9 @@ namespace Game.EchoSystem
         [SerializeField]
         int maxEchoes = 3;
 
-        Transform playerTransform;
-        EchoCameraEffect echoCamera;
+		Transform playerTransform;
+		EchoCameraEffect echoCamera;
+		EchoParticleSystem echoParticles;
 
         List<Echo> echoList = new List<Echo>();
 
@@ -32,6 +33,7 @@ namespace Game.EchoSystem
         {
             echoCamera = gameController.CameraController.EchoCameraEffect;
             playerTransform = gameController.PlayerController.Player.transform;
+			echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();
 
             MyTransform = transform;
 
@@ -80,7 +82,8 @@ namespace Game.EchoSystem
 
                 Instantiate(breakEchoParticles, targetEcho.MyTransform.position, targetEcho.MyTransform.rotation);
 
-                Destroy(targetEcho.gameObject);
+				Destroy(targetEcho.gameObject);
+				echoParticles.SetEchoNumber(maxEchoes - echoList.Count);
             }
         }
 
@@ -100,6 +103,7 @@ namespace Game.EchoSystem
 
             var newEcho = Instantiate(echoPrefab, playerTransform.position, playerTransform.rotation);
             echoList.Add(newEcho);
+			echoParticles.SetEchoNumber(maxEchoes - echoList.Count);
         }
 
         void FreezeAll()
