@@ -59,6 +59,18 @@ namespace Game.World.ChunkSystem
             }
         }
 
+        public List<Renderer> UpdateChunkSystem(Vector3 playerPos, Vector3 cameraPos)
+        {
+            var result = new List<Renderer>();
+
+            for (int i = 0; i < chunkList.Count; i++)
+            {
+                result.AddRange(chunkList[i].UpdateChunkSystem(playerPos, cameraPos));
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// 
         /// </summary>

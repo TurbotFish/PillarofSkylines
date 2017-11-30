@@ -12,7 +12,7 @@ namespace Game.World.ChunkSystem
 
         protected ChunkSystemData data;
 
-        protected BoxCollider bounds;
+        protected BoxCollider chunkBounds;
         protected List<SubChunkController> subChunkList = new List<SubChunkController>();
 
         //##################################################################
@@ -27,15 +27,15 @@ namespace Game.World.ChunkSystem
             gameObject.SetActive(true);
 
             //find the bounds
-            bounds = GetComponent<BoxCollider>();
+            chunkBounds = GetComponent<BoxCollider>();
 
-            if (bounds == null)
+            if (chunkBounds == null)
             {
                 Debug.LogErrorFormat("Chunk \"{0}\": could not find bounds collider!", name);
             }
 
             gameObject.layer = 14;
-            bounds.isTrigger = true;
+            chunkBounds.isTrigger = true;
 
             //find all the SubChunks
             int childCount = transform.childCount;
@@ -67,7 +67,7 @@ namespace Game.World.ChunkSystem
         /// </summary>
         public virtual void UpdateChunk(Vector3 playerPos, Vector3 cameraPos)
         {
-            var corners = Utilities.PillarMath.GetBoxColliderCorners(bounds);
+            var corners = Utilities.PillarMath.GetBoxColliderCorners(chunkBounds);
             var cameraDir = (playerPos - cameraPos).normalized;
             bool colliderVisible = false;
 
@@ -96,9 +96,9 @@ namespace Game.World.ChunkSystem
             {
                 float distance = 0;
 
-                if (!this.bounds.bounds.Contains(playerPos))
+                if (!this.chunkBounds.bounds.Contains(playerPos))
                 {
-                    var closestPoint = bounds.ClosestPoint(playerPos);
+                    var closestPoint = chunkBounds.ClosestPoint(playerPos);
                     distance = Vector3.Distance(playerPos, closestPoint);
                 }
 
@@ -126,6 +126,54 @@ namespace Game.World.ChunkSystem
             }
         }
 
+        public List<Renderer> UpdateChunkSystem(Vector3 playerPos, Vector3 cameraPos)
+        {
+            var result = new List<Renderer>();
+            float distance;
+
+            if (chunkBounds.bounds.Contains(playerPos))
+            {
+                distance = 0;
+            }
+            else
+            {
+                distance = Vector3.Distance(playerPos, chunkBounds.ClosestPoint(playerPos));
+
+                //check if chunk is behind player
+                var corners = Utilities.PillarMath.GetBoxColliderCorners(chunkBounds);
+                var cameraDir = (playerPos - cameraPos).normalized;
+
+                for (int i = 0; i < corners.Count; i++)
+                {
+                    var cornerDir = (corners[i] - cameraPos).normalized;
+                    float dotProduct = Vector3.Dot(cameraDir, cornerDir);
+
+                    if (dotProduct > 0)
+                    {
+                        distance *= 5f;
+                        break;
+                    }
+                }
+            }
+
+            //
+            for (int i = 0; i < subChunkList.Count; i++)
+            {
+                var subChunk = subChunkList[i];
+                var renderDistance = data.GetRenderDistance(subChunk.Layer);
+                bool newState = false;
+
+                if (distance >= renderDistance.x && distance < renderDistance.y)
+                {
+                    newState = true;
+                }
+
+                result.AddRange(subChunk.SetSubChunkActive(newState));
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Creates a copy of the Chunk and attaches it to the given Transform.
         /// </summary>
@@ -139,9 +187,9 @@ namespace Game.World.ChunkSystem
 
             var newBounds = chunkCopyGameObject.GetComponent<BoxCollider>();
             chunkCopyGameObject.layer = gameObject.layer;
-            newBounds.isTrigger = bounds.isTrigger;
-            newBounds.size = bounds.size;
-            newBounds.center = bounds.center;
+            newBounds.isTrigger = chunkBounds.isTrigger;
+            newBounds.size = chunkBounds.size;
+            newBounds.center = chunkBounds.center;
 
             for (int i = 0; i < subChunkList.Count; i++)
             {

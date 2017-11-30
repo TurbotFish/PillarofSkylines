@@ -26,6 +26,7 @@ namespace Game.World.ChunkSystem
         public bool IsCopy { get; private set; }
 
         List<GameObject> childList = new List<GameObject>();
+        List<Renderer> rendererList = new List<Renderer>();
         System.Object childListLock = new System.Object();
 
         //##################################################################
@@ -50,8 +51,9 @@ namespace Game.World.ChunkSystem
 
             gameObject.SetActive(true);
 
-            //fill child list
-            FillChildList();
+            //fill renderer list
+            //FillChildList();
+            FillRendererList();
 
             //initialize world objects
             var worldObjects = GetComponentsInChildren<Interaction.IWorldObject>();
@@ -86,7 +88,8 @@ namespace Game.World.ChunkSystem
 
             Debug.LogFormat("SubChunk \"{0}\": OnTransformChildrenChanged called!", name);
 
-            FillChildList();
+            //FillChildList();
+            FillRendererList();
         }
 
         //##################################################################
@@ -130,66 +133,123 @@ namespace Game.World.ChunkSystem
         /// If <paramref name="immediate"/> is true, all objects are de-activated at once which causes some lag.
         /// Otherwise the de-activation is spread out over several frames (handled by the <see cref="WorldController"/>).
         /// </summary>
-        public void SetSubChunkActive(bool active, bool immediate = false)
+        //public void SetSubChunkActive(bool active, int a, bool immediate = false)
+        //{
+        //    if (IsActive == active)
+        //    {
+        //        return;
+        //    }
+
+        //    IsActive = active;
+        //    StopAllCoroutines();
+
+        //    lock (childListLock)
+        //    {
+        //        if (immediate)
+        //        {
+        //            for (int i = 0; i < childList.Count; i++)
+        //            {
+        //                childList[i].SetActive(active);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            worldController.QueueObjectsToSetActive(childList, active);
+        //        }
+        //    }
+        //}
+
+        public List<Renderer> SetSubChunkActive(bool active, bool immediate = false)
         {
-            if (IsActive == active)
+            var result = new List<Renderer>();
+
+            if(IsActive == active)
             {
-                return;
+                return result;
             }
-
-            IsActive = active;
-            StopAllCoroutines();
-
-            lock (childListLock)
+            else if (immediate)
             {
-                if (immediate)
+                lock (childListLock)
                 {
-                    for (int i = 0; i < childList.Count; i++)
+                    //Debug.Log("PRE ERROR: ")
+                    for (int i = 0; i < rendererList.Count; i++)
                     {
-                        childList[i].SetActive(active);
+                        rendererList[i].enabled = active;
                     }
                 }
-                else
-                {
-                    worldController.QueueObjectsToSetActive(childList, active);
-                }
             }
+            else
+            {
+                result.AddRange(rendererList);
+            }
+
+            return result;
         }
 
         //##################################################################
 
-        void FillChildList()
+        void FillRendererList()
         {
-            lock (childListLock)
-            {
-                childList.Clear();
+            rendererList.Clear();
 
-                var candidates = new Stack<Transform>();
-                for (int i = 0; i < myTransform.childCount; i++)
+            var candidateStack = new Stack<Transform>();
+            for (int i = 0; i < myTransform.childCount; i++)
+            {
+                candidateStack.Push(myTransform.GetChild(i));
+            }
+
+            while (candidateStack.Count > 0)
+            {
+                var candidate = candidateStack.Pop();
+
+                var renderers = candidate.GetComponents<Renderer>();
+                if (renderers.Length > 0)
                 {
-                    childList.Add(myTransform.GetChild(i).gameObject);
-                    //candidates.Push(myTransform.GetChild(i));
+                    rendererList.AddRange(renderers);
                 }
 
-                while (candidates.Count > 0)
+                if (candidate.childCount > 0)
                 {
-                    var candidate = candidates.Pop();
-                    var components = candidate.GetComponents<Component>();
-
-                    if (components.Length > 1)
+                    for (int i = 0; i < candidate.childCount; i++)
                     {
-                        childList.Add(candidate.gameObject);
-                    }
-                    else
-                    {
-                        for (int i = 0; i < candidate.childCount; i++)
-                        {
-                            candidates.Push(candidate.GetChild(i));
-                        }
+                        candidateStack.Push(candidate.GetChild(i));
                     }
                 }
             }
         }
+
+        //void FillChildList()
+        //{
+        //    lock (childListLock)
+        //    {
+        //        childList.Clear();
+
+        //        var candidates = new Stack<Transform>();
+        //        for (int i = 0; i < myTransform.childCount; i++)
+        //        {
+        //            childList.Add(myTransform.GetChild(i).gameObject);
+        //            //candidates.Push(myTransform.GetChild(i));
+        //        }
+
+        //        while (candidates.Count > 0)
+        //        {
+        //            var candidate = candidates.Pop();
+        //            var components = candidate.GetComponents<Component>();
+
+        //            if (components.Length > 1)
+        //            {
+        //                childList.Add(candidate.gameObject);
+        //            }
+        //            else
+        //            {
+        //                for (int i = 0; i < candidate.childCount; i++)
+        //                {
+        //                    candidates.Push(candidate.GetChild(i));
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
 
         //##################################################################
     }
