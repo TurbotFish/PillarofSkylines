@@ -14,12 +14,14 @@ namespace Game.EchoSystem
         [SerializeField]
         int maxEchoes = 3;
 
-        Transform playerTransform;
-        EchoCameraEffect echoCamera;
+		Transform playerTransform;
+		EchoCameraEffect echoCamera;
+		EchoParticleSystem echoParticles;
 
         List<Echo> echoList = new List<Echo>();
 
         bool isEclipseActive;
+        bool driftInputDown;
 
         Transform MyTransform { get; set; }
 
@@ -31,6 +33,7 @@ namespace Game.EchoSystem
         {
             echoCamera = gameController.CameraController.EchoCameraEffect;
             playerTransform = gameController.PlayerController.Player.transform;
+			echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();
 
             MyTransform = transform;
 
@@ -44,11 +47,14 @@ namespace Game.EchoSystem
 
         void Update()
         {
-            if (!isEclipseActive)
-            {
-                if (Input.GetButtonDown("Drift"))
-                {
+            if (!isEclipseActive) {
+
+                float driftInput = Input.GetAxis("Right Trigger");
+                if (driftInput > 0.9f && !driftInputDown) {
+                    driftInputDown = true;
                     Drift();
+                } else if (driftInput < 0.8f) {
+                    driftInputDown = false;
                 }
 
                 if (Input.GetButtonDown("Echo"))
@@ -71,12 +77,13 @@ namespace Game.EchoSystem
                 var targetEcho = echoList[echoList.Count - 1];
                 echoList.Remove(targetEcho);
 
-                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, false);
+                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, targetEcho.MyTransform.rotation, false);
                 Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
 
                 Instantiate(breakEchoParticles, targetEcho.MyTransform.position, targetEcho.MyTransform.rotation);
 
-                Destroy(targetEcho.gameObject);
+				Destroy(targetEcho.gameObject);
+				echoParticles.SetEchoNumber(maxEchoes - echoList.Count);
             }
         }
 
@@ -96,6 +103,7 @@ namespace Game.EchoSystem
 
             var newEcho = Instantiate(echoPrefab, playerTransform.position, playerTransform.rotation);
             echoList.Add(newEcho);
+			echoParticles.SetEchoNumber(maxEchoes - echoList.Count);
         }
 
         void FreezeAll()

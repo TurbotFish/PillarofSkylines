@@ -57,23 +57,17 @@ namespace Game.Player.AbilitySystem
             float triggerDotProduct;
             public float TriggerDotProduct { get { return triggerDotProduct; } }
 
-            [Tooltip("The minimal value of the vertical axis of the left stick required to activate or stay in wall run mode.")]
+            [Tooltip("The minimal value of the dot product between the direction of the wall and the left stick required to activate or stay in wall run mode.")]
             [SerializeField]
-            float stickMinVerticalTrigger;
-            public float StickMinVerticalTrigger { get { return stickMinVerticalTrigger; } }
-
-            [Tooltip("The maximal value (absolute) of the horizontal axis of the left stick required to activate or stay in wall run mode.")]
-            [SerializeField]
-            float stickMaxHorizontalTrigger;
-            public float StickMaxHorizontalTrigger { get { return stickMaxHorizontalTrigger; } }
+            float stickMinTrigger;
+            public float StickMinTrigger { get { return stickMinTrigger; } }
 
             //******************************
 
             public void OnValidate()
             {
                 triggerDotProduct = Mathf.Clamp(triggerDotProduct, -1, 1);
-                stickMinVerticalTrigger = Mathf.Clamp01(stickMinVerticalTrigger);
-                stickMaxHorizontalTrigger = Mathf.Clamp01(stickMaxHorizontalTrigger);
+                stickMinTrigger = Mathf.Clamp01(stickMinTrigger);
             }
         }
 

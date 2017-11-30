@@ -63,6 +63,23 @@ namespace Game.World.SpawnPointSystem
                 return Vector3.zero;
             }
         }
+        
+        /// <summary>
+        /// Returns the rotation of the initial spawn point of the current level.
+        /// In the open world this is where the player starts the game, in a pillar it is where the player enters the pillar.
+        /// </summary>
+        public Quaternion GetInitialSpawnOrientation() {
+            if (!isInitialized) {
+                Initialize();
+            }
+
+            if (initialSpawnPoint != null) {
+                return initialSpawnPoint.transform.rotation;
+            } else {
+                Debug.LogError("SpawnPointManager: no initial spawn point found!");
+                return Quaternion.identity;
+            }
+        }
 
         /// <summary>
         /// Returns the position in the open world where the player spawns after exiting the pillar.
@@ -82,6 +99,22 @@ namespace Game.World.SpawnPointSystem
             {
                 Debug.LogErrorFormat("SpawnPointManager: no spawn point found for pillar {0}!", pillarId.ToString());
                 return Vector3.zero;
+            }
+        }
+
+        /// <summary>
+        /// Returns the rotation the player should have when leaving the Pillar.
+        /// </summary>
+        public Quaternion GetPillarExitOrientation(ePillarId pillarId) {
+            if (!isInitialized) {
+                Initialize();
+            }
+
+            if (pillarExitPointDictionary.ContainsKey(pillarId)) {
+                return pillarExitPointDictionary[pillarId].transform.rotation;
+            } else {
+                Debug.LogErrorFormat("SpawnPointManager: no spawn point found for pillar {0}!", pillarId.ToString());
+                return Quaternion.identity;
             }
         }
 

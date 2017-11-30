@@ -416,8 +416,8 @@ namespace Game.Player.CharacterController
         {
             transform.position = args.Position;
 
-            if (args.IsNewScene)
-            {
+            if (args.IsNewScene) {
+                transform.rotation = args.Rotation;
                 velocity = Vector3.zero;
                 currentPlayerState = ePlayerState.inAir;
                 ChangeGravityDirection(Vector3.down);
@@ -690,7 +690,7 @@ namespace Game.Player.CharacterController
 
                 case ePlayerState.dashing:
 
-					flatVelocity = transform.forward * dashSpeed;
+					flatVelocity = transform.forward * dashSpeed * Time.deltaTime;
                     flatVelocity = TurnSpaceToLocal(flatVelocity);
                     flatVelocity.y = 0f;
                     velocity.y = 0f;
@@ -1665,6 +1665,7 @@ namespace Game.Player.CharacterController
             bool stickOK = CheckWallRunStick();
 
             //
+//			print ("isAbilityActive " + isAbilityActive + " isTouchingWall " + isTouchingWall +" isFalling " + isFalling + " directionOK " + directionOK + " stickOK " + stickOK);
             return (isAbilityActive && isTouchingWall && isFalling && directionOK && stickOK);
         }
 
@@ -1736,7 +1737,8 @@ namespace Game.Player.CharacterController
         bool CheckWallRunStick()
         {
             var stick = inputToCamera;
-            return (stick.z >= playerMod.AbilityData.WallRun.General.StickMinVerticalTrigger) && (Mathf.Abs(stick.x) <= playerMod.AbilityData.WallRun.General.StickMaxHorizontalTrigger);
+			float dotproduct = Vector3.Dot(inputToCamera, transform.forward);
+			return (dotproduct >= playerMod.AbilityData.WallRun.General.StickMinTrigger && !leftStickAtZero);
         }
 
         #endregion ability checks
