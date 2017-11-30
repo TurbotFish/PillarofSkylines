@@ -169,7 +169,7 @@ namespace Game.GameControl
             this.playerController.InitializePlayerController(this);
             this.CameraController.InitializeCameraController(this);
 
-            this.openWorldSceneInfo.WorldController.InitializeWorldController(this.playerController.transform);
+            this.openWorldSceneInfo.WorldController.InitializeWorldController(this.playerController.transform, CameraController.transform);
 
             this.EchoManager.InitializeEchoManager(this);
             this.EclipseManager.InitializeEclipseManager(this);
@@ -180,7 +180,7 @@ namespace Game.GameControl
             //starting the game
             SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
 
-            var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnPoint(), true);
+            var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnPoint(), this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnOrientation(), true);
             Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
             Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());
@@ -236,7 +236,7 @@ namespace Game.GameControl
             yield return null;
 
             //
-            var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(info.SpawnPointManager.GetInitialSpawnPoint(), true);
+            var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(info.SpawnPointManager.GetInitialSpawnPoint(), info.SpawnPointManager.GetInitialSpawnOrientation(), true);
             Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
             Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs(pillarId));
@@ -296,7 +296,7 @@ namespace Game.GameControl
             yield return null;
 
             //
-            var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetPillarExitPoint(this.activePillarId), true);
+            var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetPillarExitPoint(this.activePillarId), this.openWorldSceneInfo.SpawnPointManager.GetPillarExitOrientation(this.activePillarId), true);
             Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
             Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());

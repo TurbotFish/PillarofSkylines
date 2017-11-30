@@ -69,7 +69,7 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
-        public override void UpdateRegion(Vector3 playerPos)
+        public override void UpdateRegion(Vector3 playerPos, Vector3 cameraPos)
         {
             if (currentPillarState == ePillarState.Intact)
             {
@@ -77,7 +77,7 @@ namespace Game.World.ChunkSystem
                 {
                     var chunk = intactPillarChunks[i];
 
-                    chunk.UpdateChunk(playerPos);
+                    chunk.UpdateChunk(playerPos, cameraPos);
                 }
             }
             else if (currentPillarState == ePillarState.Destroyed)
@@ -86,7 +86,7 @@ namespace Game.World.ChunkSystem
                 {
                     var chunk = destroyedPillarChunks[i];
 
-                    chunk.UpdateChunk(playerPos);
+                    chunk.UpdateChunk(playerPos, cameraPos);
                 }
             }
         }

@@ -416,8 +416,8 @@ namespace Game.Player.CharacterController
         {
             transform.position = args.Position;
 
-            if (args.IsNewScene)
-            {
+            if (args.IsNewScene) {
+                transform.rotation = args.Rotation;
                 velocity = Vector3.zero;
                 currentPlayerState = ePlayerState.inAir;
                 ChangeGravityDirection(Vector3.down);
@@ -1344,7 +1344,7 @@ namespace Game.Player.CharacterController
             float m_RunCycleLegOffset = 0.2f;
 
             animator.SetBool("OnGround", controller.collisions.below);
-            animator.SetFloat("Forward", inputRaw.magnitude);
+            animator.SetFloat("Forward", velocity.magnitude / characSpeed);
             animator.SetFloat("Turn", Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime) / 7f);
             animator.SetFloat("Jump", turnedVelocity.y / 5);
             float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
@@ -1665,6 +1665,7 @@ namespace Game.Player.CharacterController
             bool stickOK = CheckWallRunStick();
 
             //
+//			print ("isAbilityActive " + isAbilityActive + " isTouchingWall " + isTouchingWall +" isFalling " + isFalling + " directionOK " + directionOK + " stickOK " + stickOK);
             return (isAbilityActive && isTouchingWall && isFalling && directionOK && stickOK);
         }
 
@@ -1736,7 +1737,8 @@ namespace Game.Player.CharacterController
         bool CheckWallRunStick()
         {
             var stick = inputToCamera;
-            return (stick.z >= playerMod.AbilityData.WallRun.General.StickMinVerticalTrigger) && (Mathf.Abs(stick.x) <= playerMod.AbilityData.WallRun.General.StickMaxHorizontalTrigger);
+			float dotproduct = Vector3.Dot(inputToCamera, transform.forward);
+			return (dotproduct >= playerMod.AbilityData.WallRun.General.StickMinTrigger && !leftStickAtZero);
         }
 
         #endregion ability checks

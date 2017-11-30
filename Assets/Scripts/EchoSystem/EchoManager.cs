@@ -7,23 +7,21 @@ namespace Game.EchoSystem
     {
         [SerializeField]
         Echo echoPrefab;
+
         [SerializeField]
         BreakEchoParticles breakEchoParticles;
 
-        public List<Echo> echoes;
         [SerializeField]
         int maxEchoes = 3;
 
-        public List<Echo> nonEchoes; // For echoes that were not created by the player
-
-        [HideInInspector]
-        public Transform pool;
-        Transform playerTransform;
-        EchoCameraEffect echoCamera;
+		Transform playerTransform;
+		EchoCameraEffect echoCamera;
+		EchoParticleSystem echoParticles;
 
         List<Echo> echoList = new List<Echo>();
 
         bool isEclipseActive;
+        bool driftInputDown;
 
         Transform MyTransform { get; set; }
 
@@ -35,11 +33,9 @@ namespace Game.EchoSystem
         {
             echoCamera = gameController.CameraController.EchoCameraEffect;
             playerTransform = gameController.PlayerController.Player.transform;
+			echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();
 
             MyTransform = transform;
-
-            pool = new GameObject("Echo Pool").transform;
-            pool.SetParent(transform);
 
             Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
@@ -51,12 +47,20 @@ namespace Game.EchoSystem
 
         void Update()
         {
-            if (!isEclipseActive)
-            {
-                if (Input.GetButtonDown("Drift"))
+            if (!isEclipseActive) {
+
+                float driftInput = Input.GetAxis("Right Trigger");
+                if (driftInput > 0.9f && !driftInputDown) {
+                    driftInputDown = true;
                     Drift();
+                } else if (driftInput < 0.8f) {
+                    driftInputDown = false;
+                }
+
                 if (Input.GetButtonDown("Echo"))
+                {
                     CreateEcho();
+                }
             }
         }
 
@@ -66,8 +70,6 @@ namespace Game.EchoSystem
 
         void Drift()
         {
-            //Debug.LogErrorFormat("EchoManager: Drift: echo count = {0}", echoList.Count);
-
             if (echoList.Count > 0)
             {
                 echoCamera.SetFov(70, 0.15f, true);
@@ -75,28 +77,14 @@ namespace Game.EchoSystem
                 var targetEcho = echoList[echoList.Count - 1];
                 echoList.Remove(targetEcho);
 
-                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, false);
+                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, targetEcho.MyTransform.rotation, false);
                 Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
 
                 Instantiate(breakEchoParticles, targetEcho.MyTransform.position, targetEcho.MyTransform.rotation);
 
-                Destroy(targetEcho.gameObject);
+				Destroy(targetEcho.gameObject);
+				echoParticles.SetEchoNumber(maxEchoes - echoList.Count);
             }
-
-            //**
-            //if (echoes.Count > 0)
-            //{
-            //    echoCamera.SetFov(70, 0.15f, true);
-
-            //    Echo targetEcho = echoes[echoes.Count - 1];
-
-            //    playerTransform.position = targetEcho.transform.position; // We should reference Player and move this script in a Manager object
-
-            //    if (!targetEcho.isActive)
-            //    {
-            //        targetEcho.Break();
-            //    }
-            //}
         }
 
         void CreateEcho()
@@ -106,7 +94,7 @@ namespace Game.EchoSystem
                 return;
             }
 
-            if(echoList.Count == maxEchoes)
+            if (echoList.Count == maxEchoes)
             {
                 var oldestEcho = echoList[0];
                 Destroy(oldestEcho.gameObject);
@@ -115,13 +103,7 @@ namespace Game.EchoSystem
 
             var newEcho = Instantiate(echoPrefab, playerTransform.position, playerTransform.rotation);
             echoList.Add(newEcho);
-
-            //**
-            //Echo newEcho = InstantiateFromPool(echoPrefab, playerTransform.position);
-            //newEcho.playerEcho = true;
-            //echoes.Add(newEcho);
-            //if (echoes.Count > maxEchoes)
-            //    echoes[0].Break();
+			echoParticles.SetEchoNumber(maxEchoes - echoList.Count);
         }
 
         void FreezeAll()
@@ -130,17 +112,6 @@ namespace Game.EchoSystem
             {
                 echoList[i].Freeze();
             }
-
-            //**
-            //for (int i = 0; i < echoes.Count; i++)
-            //{
-            //    echoes[i].Freeze();
-            //}
-
-            //for (int i = 0; i < nonEchoes.Count; i++)
-            //{
-            //    nonEchoes[i].Freeze();
-            //}
         }
 
         void UnfreezeAll()
@@ -149,44 +120,6 @@ namespace Game.EchoSystem
             {
                 echoList[i].Unfreeze();
             }
-
-            //**
-            //for (int i = 0; i < echoes.Count; i++)
-            //{
-            //    echoes[i].Unfreeze();
-            //}
-
-            //for (int i = 0; i < nonEchoes.Count; i++)
-            //{
-            //    nonEchoes[i].Unfreeze();
-            //}
-        }
-
-        //public void BreakAll()
-        //{
-        //    for (int i = echoes.Count - 1; i >= 0; i--)
-        //        echoes[i].Break();
-        //}
-
-        T InstantiateFromPool<T>(T prefab, Vector3 position) where T : MonoBehaviour
-        {
-            T poolObject = pool.GetComponentInChildren<T>();
-
-            if (poolObject != null)
-            {
-                poolObject.transform.parent = null;
-                poolObject.transform.position = position;
-                poolObject.gameObject.SetActive(true);
-
-            }
-            else
-                poolObject = Instantiate(prefab, position, Quaternion.identity);
-            return poolObject;
-        }
-
-        public void BreakParticles(Vector3 position)
-        {
-            InstantiateFromPool(breakEchoParticles, position);
         }
 
         #endregion private methods

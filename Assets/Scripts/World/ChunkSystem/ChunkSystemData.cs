@@ -18,6 +18,16 @@ namespace Game.World.ChunkSystem
         float minUpdateDistance = 1f;
         public float MinUpdateDistance { get { return minUpdateDistance; } }
 
+        [Tooltip("The amount of regions that are updated every frame. This is for the chunk system.")]
+        [SerializeField]
+        int regionUpdatesPerFrame;
+        public int RegionUpdatesPerFrame { get { return regionUpdatesPerFrame; } }
+
+        [Tooltip("The amount of gameobjects in subchunks that are activated or deactivated every frame.")]
+        [SerializeField]
+        int objectActivationsPerFrame;
+        public int ObjectActivationsPerFrame { get { return objectActivationsPerFrame; } }
+
         //##################################################################
 
         public Vector2 GetRenderDistance(eSubChunkLayer layer)

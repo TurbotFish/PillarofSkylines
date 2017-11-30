@@ -25,11 +25,13 @@ namespace Game.Player
         bool needleInRange = false;
         Collider needlePickedUpCollider;
 
+        bool needleSlotInRange = false;
+
         bool eyeInRange = false;
 
         //
         bool isActive = false;
-        bool isSprintButtonDown = false;
+        bool isInteractButtonDown = false;
         bool isDriftButtonDown = false;
 
         //########################################################################
@@ -65,9 +67,9 @@ namespace Game.Player
                 return;
             }
 
-            if (Input.GetButton("Sprint") && !this.isSprintButtonDown)
+            if (Input.GetButton("Interact") && !this.isInteractButtonDown)
             {
-                this.isSprintButtonDown = true;
+                this.isInteractButtonDown = true;
 
                 //favour
                 if (this.favourPickUpInRange)
@@ -118,6 +120,16 @@ namespace Game.Player
 
                     HideUiMessage();
                 }
+                //needle
+                else if (this.needleSlotInRange) {
+                    this.needleSlotInRange = false;
+
+                    playerModel.hasNeedle ^= true;
+
+                    Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(playerModel.hasNeedle));
+
+                    HideUiMessage();
+                }
                 //eye
                 else if (this.eyeInRange)
                 {
@@ -131,9 +143,9 @@ namespace Game.Player
                     HideUiMessage();
                 }
             }
-            else if (!Input.GetButton("Sprint") && this.isSprintButtonDown)
+            else if (!Input.GetButton("Interact") && this.isInteractButtonDown)
             {
-                this.isSprintButtonDown = false;
+                this.isInteractButtonDown = false;
             }
 
             if (Input.GetButton("Drift") && !this.isDriftButtonDown && playerModel.hasNeedle)
@@ -215,6 +227,12 @@ namespace Game.Player
 
                         ShowUiMessage("Press [X] to take the needle");
                         break;
+                    //needle slot
+                    case "NeedleSlot":
+                        needleSlotInRange = true;
+
+                        ShowUiMessage(playerModel.hasNeedle ? "Press [X] to plant the needle" : "Press [X] to take the needle");
+                        break;
                     //eye
                     case "Eye":
                         if (playerModel.hasNeedle)
@@ -224,6 +242,11 @@ namespace Game.Player
                             ShowUiMessage("Press [X] to plant the needle");
                         }
 						break;
+                    //echo
+                    case "Echo":
+                        Debug.LogWarning("Echo destruction on collision not coded yet");
+                        ///Destroy(other.gameObject);
+                        break;
 					//wind
 					case "Wind":
 						other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer);
@@ -265,6 +288,12 @@ namespace Game.Player
                     case "Needle":
                         this.needleInRange = false;
                         this.needlePickedUpCollider = null;
+
+                        HideUiMessage();
+                        break;
+                    //needle slot
+                    case "NeedleSlot":
+                        needleSlotInRange = false;
 
                         HideUiMessage();
                         break;

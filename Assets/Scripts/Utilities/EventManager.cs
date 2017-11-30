@@ -172,6 +172,33 @@ namespace Game.Utilities
 
         //***********************************************************
 
+        #region ability state changed
+
+        public class AbilityStateChangedEventArgs : EventArgs
+        {
+            public Player.eAbilityType AbilityType { get; private set; }
+            public Player.eAbilityState AbilityState { get; private set; }
+
+            public AbilityStateChangedEventArgs(Player.eAbilityType abilityType, Player.eAbilityState abilityState)
+            {
+                AbilityType = abilityType;
+                AbilityState = abilityState;
+            }
+        }
+
+        public delegate void AbilityStateChangedEventHandler(object sender, AbilityStateChangedEventArgs args);
+
+        public static event AbilityStateChangedEventHandler AbilityStateChangedEvent;
+
+        public static void SendAbilityStateChangedEvent(object sender, AbilityStateChangedEventArgs args)
+        {
+            AbilityStateChangedEvent?.Invoke(sender, args);
+        }
+
+        #endregion ability state changed
+
+        //***********************************************************
+
         #endregion model events
 
         //###########################################################
@@ -190,13 +217,18 @@ namespace Game.Utilities
             public Vector3 Position { get; private set; }
 
             /// <summary>
+            /// The Rotation the Player should have after teleportation (only on New Scene)
+            /// </summary>
+            public Quaternion Rotation { get; private set; }
+
+            /// <summary>
             /// value='true' means that the current scene was switched. value='false' means that the player is teleported inside the current scene.
             /// </summary>
             public bool IsNewScene { get; private set; }
 
-            public TeleportPlayerEventArgs(Vector3 position, bool isNewScene)
-            {
+            public TeleportPlayerEventArgs(Vector3 position, Quaternion rotation, bool isNewScene) {
                 Position = position;
+                Rotation = rotation;
                 IsNewScene = isNewScene;
             }
         }
