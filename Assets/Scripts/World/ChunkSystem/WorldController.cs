@@ -313,7 +313,7 @@ namespace Game.World.ChunkSystem
             //    Gizmos.DrawCube(this.playerTransform.position, new Vector3(size, size, size));
             //}
 
-            if (drawGizmo && isInitialized && Application.isEditor && Application.isPlaying)
+            if (drawGizmo && Application.isEditor)
             {
                 Gizmos.color = gizmoColor;
                 Gizmos.DrawCube(transform.position, worldSize);
