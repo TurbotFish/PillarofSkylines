@@ -53,7 +53,12 @@ namespace Game.Player.CharacterController
         /// The maximum height of step the player can climb.
         /// </summary>
         [Tooltip("The maximum height of step the player can climb.")]
-        public float maxStepHeight = 1f;
+		public float maxStepHeight = 1f;
+		/// <summary>
+		/// The distance at which the player stops when encountering a cliff with no input.
+		/// </summary>
+		[Tooltip("The distance at which the player stops when encountering a cliff with no input.")]
+		public float distanceStoppingCliff = .1f;
         #endregion general
 
         #region speed and controls variables
@@ -675,14 +680,19 @@ namespace Game.Player.CharacterController
                         lastJumpAerial = false;
 
                         EnterStateInAir();
-                    }
-                    if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash))
+					} else if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash))
                     {
                         QuitStateOnGround();
 
                         EnterStateDash();
-                    }
+						//If the player is going off a cliff when the left stick is at zero, stop the player
+					} else if (leftStickAtZero) {
+						if (!Physics.Raycast(transform.position + transform.up * controller.skinWidth + (Vector3.ProjectOnPlane(transform.forward, controller.collisions.currentGroundNormal).normalized * distanceStoppingCliff), -controller.collisions.currentGroundNormal, maxStepHeight, controller.collisionMask)){
+							flatVelocity = Vector3.zero;
+						}
+					}
                     break;
+
 
                 #endregion direction calculations - on ground
 
@@ -1345,7 +1355,7 @@ namespace Game.Player.CharacterController
 
             animator.SetBool("OnGround", controller.collisions.below);
             animator.SetFloat("Forward", velocity.magnitude / characSpeed);
-            animator.SetFloat("Turn", Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime) / 7f);
+			animator.SetFloat("Turn", (leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime) / 7f));
             animator.SetFloat("Jump", turnedVelocity.y / 5);
             float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
             float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputRaw.magnitude;
