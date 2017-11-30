@@ -47,7 +47,7 @@ namespace Game.Player
         {
             this.pillarData = Resources.Load<World.PillarData>("ScriptableObjects/PillarData");
 
-            UnlockAbilityGroup(eAbilityGroup.Default);
+            UnlockAbilityGroup(eAbilityGroup.GroupBlue_Default);
         }
 
         //###########################################################
@@ -74,7 +74,7 @@ namespace Game.Player
         /// <returns>Returns true if the ability group is unlocked, false otherwise.</returns>
         public bool CheckAbilityGroupUnlocked(eAbilityGroup abilityGroup)
         {
-            if (this.unlockedAbilityGroups.Contains(abilityGroup))
+            if (unlockedAbilityGroups.Contains(abilityGroup))
             {
                 return true;
             }
@@ -90,9 +90,22 @@ namespace Game.Player
         /// <returns>Returns true if the ability group is now unlocked, false otherwise.</returns>
         public bool UnlockAbilityGroup(eAbilityGroup abilityGroup)
         {
-            if (!this.unlockedAbilityGroups.Contains(abilityGroup))
+            if (!unlockedAbilityGroups.Contains(abilityGroup))
             {
-                this.unlockedAbilityGroups.Add(abilityGroup);
+                unlockedAbilityGroups.Add(abilityGroup);
+
+                //send events
+                var abilities = abilityData.GetAllAbilities();
+                for (int i = 0; i < abilities.Count; i++)
+                {
+                    var ability = abilities[i];
+
+                    if (ability.Group == abilityGroup)
+                    {
+                        Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(ability.Type, eAbilityState.available));
+                    }
+                }
+
                 return true;
             }
             else
@@ -107,14 +120,14 @@ namespace Game.Player
         /// <returns>Returns true if the ability group is now locked, false otherwise.</returns>
         public bool LockAbilityGroup(eAbilityGroup abilityGroup)
         {
-            if (this.unlockedAbilityGroups.Contains(abilityGroup))
+            if (unlockedAbilityGroups.Contains(abilityGroup))
             {
-                this.unlockedAbilityGroups.Remove(abilityGroup);
+                unlockedAbilityGroups.Remove(abilityGroup);
 
                 var abilitiesToDeactivate = new List<eAbilityType>();
-                foreach (var abilityType in this.activatedAbilities)
+                foreach (var abilityType in activatedAbilities)
                 {
-                    var ability = this.abilityData.GetAbility(abilityType);
+                    var ability = abilityData.GetAbility(abilityType);
 
                     if (ability.Group == abilityGroup)
                     {
@@ -124,8 +137,20 @@ namespace Game.Player
 
                 foreach (var abilityType in abilitiesToDeactivate)
                 {
-                    this.activatedAbilities.Remove(abilityType);
-                    this.flaggedAbilities.Remove(abilityType);
+                    activatedAbilities.Remove(abilityType);
+                    flaggedAbilities.Remove(abilityType);
+                }
+
+                //send events
+                var abilities = abilityData.GetAllAbilities();
+                for (int i = 0; i < abilities.Count; i++)
+                {
+                    var ability = abilities[i];
+
+                    if (ability.Group == abilityGroup)
+                    {
+                        Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(ability.Type, eAbilityState.locked));
+                    }
                 }
 
                 return true;
@@ -151,9 +176,12 @@ namespace Game.Player
             return activatedAbilities.Contains(abilityType);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool CheckAbilityUnlocked(eAbilityType abilityType)
         {
-            var ability = this.abilityData.GetAbility(abilityType);
+            var ability = abilityData.GetAbility(abilityType);
 
             if (CheckAbilityGroupUnlocked(ability.Group))
             {
@@ -163,9 +191,12 @@ namespace Game.Player
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public List<eAbilityType> GetAllActiveAbilities()
         {
-            return new List<eAbilityType>(this.activatedAbilities);
+            return new List<eAbilityType>(activatedAbilities);
         }
 
         /// <summary>
@@ -174,16 +205,19 @@ namespace Game.Player
         /// </summary>
         public bool ActivateAbility(eAbilityType abilityType)
         {
-            var ability = this.abilityData.GetAbility(abilityType);
+            var ability = abilityData.GetAbility(abilityType);
 
-            if (this.activatedAbilities.Contains(abilityType))
+            if (activatedAbilities.Contains(abilityType))
             {
                 return true;
             }
-            else if (CheckAbilityGroupUnlocked(ability.Group) && this.Favours >= ability.ActivationPrice)
+            else if (CheckAbilityGroupUnlocked(ability.Group) && Favours >= ability.ActivationPrice)
             {
-                this.Favours -= ability.ActivationPrice;
-                this.activatedAbilities.Add(abilityType);
+                Favours -= ability.ActivationPrice;
+                activatedAbilities.Add(abilityType);
+
+                Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(abilityType, eAbilityState.active));
+
                 return true;
             }
             else
@@ -198,16 +232,19 @@ namespace Game.Player
         /// </summary>
         public bool DeactivateAbility(eAbilityType abilityType)
         {
-            var ability = this.abilityData.GetAbility(abilityType);
+            var ability = abilityData.GetAbility(abilityType);
 
-            if (!this.activatedAbilities.Contains(abilityType))
+            if (!activatedAbilities.Contains(abilityType))
             {
                 return true;
             }
-            else if (!this.flaggedAbilities.Contains(abilityType))
+            else if (!flaggedAbilities.Contains(abilityType))
             {
-                this.Favours += ability.ActivationPrice;
-                this.activatedAbilities.Remove(abilityType);
+                Favours += ability.ActivationPrice;
+                activatedAbilities.Remove(abilityType);
+
+                Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(abilityType, eAbilityState.available));
+
                 return true;
             }
             else
@@ -309,17 +346,20 @@ namespace Game.Player
 
         public eAbilityState GetAbilityState(eAbilityType abilityType)
         {
+            var ability = abilityData.GetAbility(abilityType);
+
             if (activatedAbilities.Contains(abilityType))
             {
                 return eAbilityState.active;
             }
-
-            if (unlockedAbilityGroups.Contains(abilityData.GetAbility(abilityType).Group))
+            else if (unlockedAbilityGroups.Contains(ability.Group) && Favours >= ability.ActivationPrice)
             {
                 return eAbilityState.available;
             }
-
-            return eAbilityState.locked;
+            else
+            {
+                return eAbilityState.locked;
+            }
         }
     }
 } //end of namespace

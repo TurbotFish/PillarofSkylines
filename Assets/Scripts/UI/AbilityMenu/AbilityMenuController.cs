@@ -10,20 +10,14 @@ namespace Game.UI.AbilityMenu
 
         const float CIRCLE_INTERVAL = 360f / 12f;
 
-        //[SerializeField]
-        //TopBarView topBarView;
-
-        //[SerializeField]
-        //LeftColumnView leftColumnView;
-
-        [SerializeField]
-        float defaultSelectionDelay = 0.2f;
-
         [Tooltip("If the total value of the 2 axes of the left stick is less than this value, no slot is selected.")]
         [SerializeField]
         float stickDeadWeight;
 
         [Header("")]
+        [SerializeField]
+        CenterView centerView;
+
         [SerializeField]
         GroupView orangeGroup;
 
@@ -39,7 +33,7 @@ namespace Game.UI.AbilityMenu
         [Header("")]
         [SerializeField]
         Color lockedAbilityColour;
-        public Color LockedAbilityColour { get { return LockedAbilityColour; } }
+        public Color LockedAbilityColour { get { return lockedAbilityColour; } }
 
         [SerializeField]
         Color availableAbilityColour;
@@ -55,25 +49,18 @@ namespace Game.UI.AbilityMenu
 
         public bool IsActive { get; private set; }
 
-        //List<Player.eAbilityType> abilityOrder = new List<Player.eAbilityType>();
-        //Player.eAbilityType SelectedAbility { get { return abilityOrder[selectedAbilityIndex]; } }
-
         List<SlotView> slotList = new List<SlotView>();
         int selectedSlotIndex = 0;
         SlotView SelectedSlot
         {
             get
             {
-                if (selectedSlotIndex == -1)
-                {
-                    return null;
-                }
+                if (selectedSlotIndex == -1) { return null; }
 
                 return slotList[selectedSlotIndex];
             }
         }
 
-        float selectionDelayTimer = 0;
         bool activationButtonDown = false;
 
         //##################################################################
@@ -92,16 +79,7 @@ namespace Game.UI.AbilityMenu
                 slotList[i].Initialize(playerModel, this, playerModel.AbilityData.AbilitySlots[i]);
             }
 
-
-            //topBarView.Initialize(playerModel.Favours);
-
-            //foreach (var ability in playerModel.AbilityData.GetAllAbilities())
-            //{
-            //    abilityOrder.Add(ability.Type);
-            //    leftColumnView.CreateAbilityElement(ability, playerModel.CheckAbilityGroupUnlocked(ability.Group));
-            //}
-
-            //leftColumnView.SetAbilitySelected(playerModel.AbilityData.GetAbility(SelectedAbility));
+            centerView.Initialize(playerModel, this);
         }
 
         void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
@@ -140,40 +118,18 @@ namespace Game.UI.AbilityMenu
             }
 
             //**********************************************
-            //updating the state of the ability element views
-
-            //for (int i = 0; i < abilityOrder.Count; i++)
-            //{
-            //    var abilityType = abilityOrder[i];
-            //    eAbilityElementState state;
-
-            //    if (!playerModel.CheckAbilityUnlocked(abilityType))
-            //    {
-            //        state = eAbilityElementState.Locked;
-            //    }
-            //    else if (playerModel.CheckAbilityActive(abilityType))
-            //    {
-            //        state = eAbilityElementState.Activated;
-            //    }
-            //    else
-            //    {
-            //        state = eAbilityElementState.Deactivated;
-            //    }
-
-            //    leftColumnView.SetAbilityState(abilityType, state);
-            //}
-
-            //**********************************************
             //handle ability activation
 
             if (Input.GetButton("Jump") && !activationButtonDown && SelectedSlot != null)
             {
                 if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
                 {
+                    Debug.LogFormat("Ability Menu: deactivating ability {0}", SelectedSlot.AbilityType);
                     playerModel.DeactivateAbility(SelectedSlot.AbilityType);
                 }
                 else
                 {
+                    Debug.LogFormat("Ability Menu: activating ability {0}", SelectedSlot.AbilityType);
                     playerModel.ActivateAbility(SelectedSlot.AbilityType);
                 }
 
@@ -191,70 +147,51 @@ namespace Game.UI.AbilityMenu
 
             float weight = Mathf.Abs(leftStick.x) + Mathf.Abs(leftStick.y);
 
-            if(weight < stickDeadWeight)
+            if (weight < stickDeadWeight)
             {
                 selectedSlotIndex = -1;
+
+                centerView.SetContent(null);
             }
             else
             {
                 float angle = Vector2.SignedAngle(Vector2.up, leftStick.normalized);
-                if(angle < 180f)
+
+                if (angle < 0f)
                 {
-                    angle = 360f + angle;
+                    angle *= -1;
                 }
+                else
+                {
+                    angle = 360f - angle;
+                }
+
                 angle += CIRCLE_INTERVAL * 0.5f;
 
-                int slot = Mathf.RoundToInt(angle % CIRCLE_INTERVAL);
+                if (angle >= 360f)
+                {
+                    angle -= 360f;
+                }
 
-                Debug.LogFormat("AbilityMenuController: Update: selected slot = {0}", slot);
+                selectedSlotIndex = (int)(angle / CIRCLE_INTERVAL);
+
+                centerView.SetContent(playerModel.AbilityData.GetAbility(SelectedSlot.AbilityType));
+
+                //Debug.LogFormat("AbilityMenuController: Update: stick={0} ; angle={1} ; slot = {2}", leftStick, angle, selectedSlotIndex);
             }
 
-
-            //float stickValue = Input.GetAxis("Vertical");
-
-            //if (Mathf.Approximately(stickValue, 0f))
-            //{
-            //    selectionDelayTimer = 0f;
-            //}
-
-            //if (selectionDelayTimer > 0)
-            //{
-            //    selectionDelayTimer -= Time.unscaledDeltaTime;
-
-            //    if (selectionDelayTimer <= 0)
-            //    {
-            //        selectionDelayTimer = 0;
-            //    }
-            //}
-            //else
-            //{
-            //    if (stickValue < -0.8f)
-            //    {
-            //        selectedSlotIndex++;
-
-            //        if (selectedSlotIndex >= abilityOrder.Count)
-            //        {
-            //            selectedSlotIndex = 0;
-            //        }
-
-            //        leftColumnView.SetAbilitySelected(playerModel.AbilityData.GetAbility(SelectedAbility));
-
-            //        selectionDelayTimer += defaultSelectionDelay;
-            //    }
-            //    else if (stickValue > 0.8f)
-            //    {
-            //        selectedSlotIndex--;
-
-            //        if (selectedSlotIndex < 0)
-            //        {
-            //            selectedSlotIndex = abilityOrder.Count - 1;
-            //        }
-
-            //        leftColumnView.SetAbilitySelected(playerModel.AbilityData.GetAbility(SelectedAbility));
-
-            //        selectionDelayTimer += defaultSelectionDelay;
-            //    }
-            //}
+            //setting the selection state of all the slots
+            for (int i = 0; i < slotList.Count; i++)
+            {
+                if (i == selectedSlotIndex)
+                {
+                    slotList[i].SetSelected(true);
+                }
+                else
+                {
+                    slotList[i].SetSelected(false);
+                }
+            }
 
             //**********************************************
         }

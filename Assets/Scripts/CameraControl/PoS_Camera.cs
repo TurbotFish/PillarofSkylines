@@ -666,7 +666,7 @@ public class PoS_Camera : MonoBehaviour {
 
                 NotOnEdgeOfCliff(); // Y a du sol devant donc on n'est pas au bord d'une falaise
 
-                print("GroundNormal dans targetSpace: " + (targetSpace * groundInFront.normal));
+                //print("GroundNormal dans targetSpace: " + (targetSpace * groundInFront.normal));
 
                 if ((targetSpace * groundInFront.normal).y > 0.999f)
                     groundNormal = targetUp; // Si devant c'est environ du sol plat, on reset slopeValue; pas besoin de calculs en plus
@@ -680,7 +680,7 @@ public class PoS_Camera : MonoBehaviour {
                         Debug.DrawRay(targetPos + player.transform.forward * (distanceToCheckGroundForward + minSlopeLength),
                                     -targetUp * cliffMinDepth, Color.red);
 
-                        print("groundNormal: " + groundNormal + " | groundInFront: " + groundInFront.normal + " | groundEndOfSlope: " + groundFurther.normal);
+                        //print("groundNormal: " + groundNormal + " | groundInFront: " + groundInFront.normal + " | groundEndOfSlope: " + groundFurther.normal);
 
                         if (Vector3.Angle(groundFurther.normal, groundInFront.normal) < slopeSameAngleBuffer // Si la pente devant et la pente plus loin sont environ la même
                             && Vector3.Angle(groundNormal, groundInFront.normal) > slopeSameAngleBuffer // et la pente devant a plus de X degrés de différence avec celle actuelle

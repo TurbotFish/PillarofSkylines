@@ -9,10 +9,6 @@ namespace Game.Player.AbilitySystem
     [CreateAssetMenu(menuName = "ScriptableObjects/AbilityData", fileName = "AbilityData")]
     public class AbilityData : ScriptableObject
     {
-        [SerializeField]
-        Sprite abilityBackgroundSprite;
-        public Sprite AbilityBackgroundSprite { get { return abilityBackgroundSprite; } }
-
         [Header("UI Ability Slots")]
         [Tooltip("List with the abilities as they appear in the ability menu. It starts with the topmost slot and continues clockwise.")]
         [SerializeField]

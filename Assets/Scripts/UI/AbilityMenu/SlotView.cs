@@ -20,7 +20,6 @@ namespace Game.UI.AbilityMenu
 
 
 
-        Player.PlayerModel playerModel;
         AbilityMenuController menuController;
 
         public Player.eAbilityType AbilityType { get; private set; }
@@ -29,14 +28,10 @@ namespace Game.UI.AbilityMenu
 
         public void Initialize(Player.PlayerModel playerModel, AbilityMenuController menuController, Player.eAbilityType abilityType)
         {
-            this.playerModel = playerModel;
             this.menuController = menuController;
+            AbilityType = abilityType;
 
-            this.AbilityType = abilityType;
-
-            backgroundImage.sprite = playerModel.AbilityData.AbilityBackgroundSprite;
             abilityImage.sprite = playerModel.AbilityData.GetAbility(abilityType).Icon;
-
             SetBackgroundColour(playerModel.GetAbilityState(abilityType));
             backgroundOutline.enabled = false;
 
