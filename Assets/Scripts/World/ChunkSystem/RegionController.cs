@@ -49,14 +49,16 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
-        public virtual void UpdateRegion(Vector3 playerPos, Vector3 cameraPos)
+        public virtual List<Renderer> UpdateChunkSystem(Vector3 playerPos, Vector3 cameraPos)
         {
+            var result = new List<Renderer>();
+
             for (int i = 0; i < chunkList.Count; i++)
             {
-                var chunk = chunkList[i];
-
-                chunk.UpdateChunk(playerPos, cameraPos);
+                result.AddRange(chunkList[i].UpdateChunkSystem(playerPos, cameraPos));
             }
+
+            return result;
         }
 
         /// <summary>
