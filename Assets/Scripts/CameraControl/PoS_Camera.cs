@@ -242,7 +242,7 @@ public class PoS_Camera : MonoBehaviour {
 	void AllowAutoReset(bool allow, bool immediate = false) {
         // TODO: immediate / not immediate / no opinion
 
-        print("Allow auto reset: (immediate ? " + immediate + ")");
+        //print("Allow auto reset: (immediate ? " + immediate + ")");
 		canAutoReset = allow;
         
 		lastInput = immediate ? 0 : Time.time;
