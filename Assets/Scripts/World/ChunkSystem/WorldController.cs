@@ -34,11 +34,7 @@ namespace Game.World.ChunkSystem
 
         bool isInitialized = false;
 
-        System.Object activationLock = new System.Object();
         Queue<Renderer> rendererQueue = new Queue<Renderer>();
-        LinkedList<GameObject> objectsToActivate = new LinkedList<GameObject>();
-        LinkedList<GameObject> objectsToDeactivate = new LinkedList<GameObject>();
-
         int regionUpdateIndex = 0;
 
         System.Diagnostics.Stopwatch stopwatch;
@@ -96,8 +92,6 @@ namespace Game.World.ChunkSystem
 
             for (int i = 0; i < ChunkSystemData.RegionUpdatesPerFrame; i++)
             {
-                //regionList[regionUpdateIndex++].UpdateRegion(playerTransform.position, cameraTransform.position);
-
                 var renderersToSwitch = regionList[regionUpdateIndex++].UpdateChunkSystem(playerTransform.position, cameraTransform.position);
                 for (int j = 0; j < renderersToSwitch.Count; j++)
                 {
@@ -132,36 +126,7 @@ namespace Game.World.ChunkSystem
 
             var objectActivationTime = stopwatch.Elapsed;
 
-            Debug.LogFormat("WorldController: Update: A={0}; B={1}", worldUpdateTime.Milliseconds /*/ 1000f*/, objectActivationTime.Milliseconds /*/ 1000f*/);
-
-            //*****************
-            //lock (activationLock)
-            //{
-            //    //Debug.LogFormat("WorldController: Update: object activation: to activate = {0}; to deactivate = {1}", objectsToActivate.Count, objectsToDeactivate.Count);
-            //    stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-            //    int quota = ChunkSystemData.ObjectActivationsPerFrame;
-            //    int activationQuota = Mathf.Min(quota, objectsToActivate.Count);
-            //    quota -= activationQuota;
-            //    int deactivationQuota = Mathf.Min(quota, objectsToDeactivate.Count);
-
-            //    for (int i = 0; i < activationQuota; i++)
-            //    {
-            //        objectsToActivate.First.Value.SetActive(true);
-            //        objectsToActivate.RemoveFirst();
-            //    }
-
-            //    for (int i = 0; i < deactivationQuota; i++)
-            //    {
-            //        objectsToDeactivate.First.Value.SetActive(false);
-            //        objectsToDeactivate.RemoveFirst();
-            //    }
-
-            //    stopwatch.Stop();
-            //}
-
-            //var objectActivationTime = stopwatch.Elapsed;
-            //Debug.LogFormat("WorldController: Update: A={0}; B={1}", worldUpdateTime.Milliseconds / 1000f, objectActivationTime.Milliseconds / 1000f);
+            //Debug.LogFormat("WorldController: Update: A={0}; B={1}", worldUpdateTime.Milliseconds /*/ 1000f*/, objectActivationTime.Milliseconds /*/ 1000f*/);
         }
 
         #endregion update
@@ -270,47 +235,6 @@ namespace Game.World.ChunkSystem
         }
 
         #endregion favour methods
-
-        //##################################################################
-
-        #region subChunk activation
-
-        public void QueueObjectsToSetActive(List<GameObject> objectList, bool active)
-        {
-            lock (activationLock)
-            {
-                if (active)
-                {
-                    for (int i = 0; i < objectList.Count; i++)
-                    {
-                        var currentObject = objectList[i];
-
-                        if (!objectsToActivate.Contains(currentObject))
-                        {
-                            objectsToActivate.AddLast(currentObject);
-                        }
-
-                        objectsToDeactivate.Remove(currentObject);
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < objectList.Count; i++)
-                    {
-                        var currentObject = objectList[i];
-
-                        objectsToActivate.Remove(currentObject);
-
-                        if (!objectsToDeactivate.Contains(currentObject))
-                        {
-                            objectsToDeactivate.AddLast(currentObject);
-                        }
-                    }
-                }
-            }
-        }
-
-        #endregion subChunk activation
 
         //##################################################################
 

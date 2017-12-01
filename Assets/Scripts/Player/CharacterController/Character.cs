@@ -1373,7 +1373,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateInAir()
         {
-            Debug.Log("EnterStateInAir");
+            //Debug.Log("EnterStateInAir");
 
             currentPlayerState = ePlayerState.inAir;
         }
@@ -1383,7 +1383,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void QuitStateInAir()
         {
-            Debug.Log("QuitStateInAir");
+            //Debug.Log("QuitStateInAir");
         }
 
         #endregion state change - in air
@@ -1397,7 +1397,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateOnGround()
         {
-            Debug.Log("EnterStateOnGround");
+            //Debug.Log("EnterStateOnGround");
 
             camera.SetVerticalOffset(-TurnSpaceToLocal(controller.collisions.initialVelocityOnThisFrame).y * landingCameraOffsetStrength);
             currentPlayerState = ePlayerState.onGround;
@@ -1416,7 +1416,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void QuitStateOnGround()
         {
-            Debug.Log("QuitStateOnGround");
+            //Debug.Log("QuitStateOnGround");
         }
 
         #endregion state change - on ground
@@ -1427,14 +1427,14 @@ namespace Game.Player.CharacterController
 
         void EnterStateGliding()
         {
-            Debug.Log("EnterStateGliding");
+            //Debug.Log("EnterStateGliding");
 
             currentPlayerState = ePlayerState.gliding;
         }
 
         void QuitStateGliding()
         {
-            Debug.Log("QuitStateGliding");
+            //Debug.Log("QuitStateGliding");
 
             flatVelocity = TurnSpaceToLocal(flatVelocity);
             glideParticles.Stop();
@@ -1450,7 +1450,7 @@ namespace Game.Player.CharacterController
 
         void EnterStateDash()
         {
-            Debug.Log("EnterStateDash");
+            //Debug.Log("EnterStateDash");
 
             playerMod.FlagAbility(eAbilityType.Dash);
             currentPlayerState = ePlayerState.dashing;
@@ -1462,7 +1462,7 @@ namespace Game.Player.CharacterController
 
         void QuitStateDash()
         {
-            Debug.Log("QuitStateDash");
+            //Debug.Log("QuitStateDash");
 
             dashDuration = 0f;
             dashTimer = dashCooldown;
@@ -1483,14 +1483,14 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateSliding()
         {
-            Debug.Log("EnterStateSliding");
+            //Debug.Log("EnterStateSliding");
 
             currentPlayerState = ePlayerState.sliding;
         }
 
         void QuitStateSliding()
         {
-            Debug.Log("QuitStateSliding");
+            //Debug.Log("QuitStateSliding");
 
             keepMomentum = true;
         }
@@ -1506,7 +1506,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateInWindTunnel()
         {
-            Debug.Log("EnterStateInWindTunnel");
+            //Debug.Log("EnterStateInWindTunnel");
 
             currentPlayerState = ePlayerState.inWindTunnel;
         }
@@ -1516,7 +1516,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void QuitStateInWindTunnel()
         {
-            Debug.Log("QuitStateInWindTunnel");
+            //Debug.Log("QuitStateInWindTunnel");
 
             keepMomentum = true;
         }
@@ -1532,7 +1532,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateWallDrift()
         {
-            Debug.Log("EnterStateWallDrift");
+            //Debug.Log("EnterStateWallDrift");
 
             currentPlayerState = ePlayerState.WallDrifting;
             playerMod.FlagAbility(eAbilityType.WallRun);
@@ -1546,7 +1546,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void QuitStateWallDrift()
         {
-            Debug.Log("QuitStateWallDrift");
+            //Debug.Log("QuitStateWallDrift");
 
             playerMod.UnflagAbility(eAbilityType.WallRun);
 
@@ -1564,7 +1564,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateWallRunHorizontal()
         {
-            Debug.Log("EnterWallRunHorizontal");
+            //Debug.Log("EnterWallRunHorizontal");
 
             currentPlayerState = ePlayerState.WallRunningHorizontal;
             playerMod.FlagAbility(eAbilityType.WallRun);
@@ -1588,7 +1588,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void QuitStateWallRunHorizontal()
         {
-            Debug.Log("QuitStateWallRunHorizontal");
+            //Debug.Log("QuitStateWallRunHorizontal");
 
             playerMod.UnflagAbility(eAbilityType.WallRun);
 
@@ -1606,7 +1606,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateWallRunVertical()
         {
-            Debug.Log("EnterStateWallRunVertical");
+            //Debug.Log("EnterStateWallRunVertical");
 
             currentPlayerState = ePlayerState.WallRunningVertical;
             playerMod.FlagAbility(eAbilityType.WallRun);
@@ -1622,7 +1622,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void QuitStateWallRunVertical()
         {
-            Debug.Log("QuitStateWallRunVertical");
+            //Debug.Log("QuitStateWallRunVertical");
 
             playerMod.UnflagAbility(eAbilityType.WallRun);
 

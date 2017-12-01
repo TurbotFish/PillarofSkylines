@@ -65,68 +65,7 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// Update all the things!
         /// </summary>
-        public virtual void UpdateChunk(Vector3 playerPos, Vector3 cameraPos)
-        {
-            var corners = Utilities.PillarMath.GetBoxColliderCorners(chunkBounds);
-            var cameraDir = (playerPos - cameraPos).normalized;
-            bool colliderVisible = false;
-
-            for (int i = 0; i < corners.Count; i++)
-            {
-                var cornerDir = (corners[i] - cameraPos).normalized;
-                float dotProduct = Vector3.Dot(cameraDir, cornerDir);
-
-                if (dotProduct > 0)
-                {
-                    colliderVisible = true;
-                    break;
-                }
-            }
-
-            if (!colliderVisible)
-            {
-                //Debug.LogFormat("Chunk \"{0}\" behind camera!", name);
-
-                for (int i = 0; i < subChunkList.Count; i++)
-                {
-                    subChunkList[i].SetSubChunkActive(false);
-                }
-            }
-            else
-            {
-                float distance = 0;
-
-                if (!this.chunkBounds.bounds.Contains(playerPos))
-                {
-                    var closestPoint = chunkBounds.ClosestPoint(playerPos);
-                    distance = Vector3.Distance(playerPos, closestPoint);
-                }
-
-                for (int i = 0; i < subChunkList.Count; i++)
-                {
-                    var subChunk = subChunkList[i];
-
-                    var renderDistance = data.GetRenderDistance(subChunk.Layer);
-
-                    if (distance >= renderDistance.x && distance < renderDistance.y)
-                    {
-                        if (!subChunk.IsActive)
-                        {
-                            subChunk.SetSubChunkActive(true);
-                        }
-                    }
-                    else
-                    {
-                        if (subChunk.IsActive)
-                        {
-                            subChunk.SetSubChunkActive(false);
-                        }
-                    }
-                }
-            }
-        }
-
-        public List<Renderer> UpdateChunkSystem(Vector3 playerPos, Vector3 cameraPos)
+        public virtual List<Renderer> UpdateChunkSystem(Vector3 playerPos, Vector3 cameraPos)
         {
             var result = new List<Renderer>();
             float distance;
@@ -150,7 +89,7 @@ namespace Game.World.ChunkSystem
 
                     if (dotProduct > 0)
                     {
-                        distance *= 5f;
+                        distance *= 10f;
                         break;
                     }
                 }
