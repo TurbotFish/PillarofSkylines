@@ -10,7 +10,9 @@ public class CameraControlTrigger : MonoBehaviour {
 
     [Header("Parameters")]
     [SerializeField] Transform pointOfInterest;
+    [SerializeField] Transform overrideCameraTransform;
     [SerializeField] bool alignWithForwardAxis = false;
+    [SerializeField] bool lookInForwardDirection = false;
     [Space]
     [SerializeField] bool enablePanoramaMode = false;
     
@@ -24,8 +26,10 @@ public class CameraControlTrigger : MonoBehaviour {
                 camera.ZoomAt(zoomValue, damp);
             if (pointOfInterest)
                 camera.SetPointOfInterest(pointOfInterest.position);
-            if (alignWithForwardAxis)
-                camera.SetAxisAlignment(transform.forward);
+            if (alignWithForwardAxis || lookInForwardDirection)
+                camera.SetAxisAlignment(transform.forward, !lookInForwardDirection);
+            if (overrideCameraTransform)
+                camera.OverrideCamera(overrideCameraTransform.position, overrideCameraTransform.eulerAngles, damp);
 
             camera.enablePanoramaMode = enablePanoramaMode;
         }
@@ -39,6 +43,8 @@ public class CameraControlTrigger : MonoBehaviour {
                 camera.ClearPointOfInterest(pointOfInterest.position);
             if (alignWithForwardAxis)
                 camera.RemoveAxisAlignment(transform.forward);
+            if (overrideCameraTransform)
+                camera.StopOverride();
 
             camera.enablePanoramaMode = true;
         }
