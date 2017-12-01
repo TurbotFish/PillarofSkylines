@@ -21,11 +21,14 @@ namespace Game.World.ChunkSystem
         WorldController worldController;
 
         Transform myTransform;
+
         public bool IsActive { get; private set; }
+        public bool IsCopy { get; private set; }
 
         List<GameObject> childList = new List<GameObject>();
         System.Object childListLock = new System.Object();
 
+        //##################################################################
 
 #if UNITY_EDITOR
         public void Editor_InitializeSubChunk(eSubChunkLayer layer)
@@ -47,18 +50,16 @@ namespace Game.World.ChunkSystem
 
             gameObject.SetActive(true);
 
-            childList.Clear();
-            for (int i = 0; i < myTransform.childCount; i++)
-            {
-                childList.Add(myTransform.GetChild(i).gameObject);
-            }
+            //fill child list
+            FillChildList();
 
+            //initialize world objects
             var worldObjects = GetComponentsInChildren<Interaction.IWorldObject>();
             for (int i = 0; i < worldObjects.Length; i++)
             {
                 var worldObject = worldObjects[i];
 
-                worldObject.InitializeWorldObject(worldController);
+                worldObject.InitializeWorldObject(worldController, IsCopy);
             }
 
             IsActive = true;
@@ -70,6 +71,22 @@ namespace Game.World.ChunkSystem
         void InitializeSubChunkCopy(SubChunkController originalSubChunk)
         {
             layer = originalSubChunk.Layer;
+
+            IsCopy = true;
+        }
+
+        //##################################################################
+
+        void OnTransformChildrenChanged()
+        {
+            if (myTransform == null)
+            {
+                return;
+            }
+
+            Debug.LogFormat("SubChunk \"{0}\": OnTransformChildrenChanged called!", name);
+
+            FillChildList();
         }
 
         //##################################################################
@@ -129,9 +146,7 @@ namespace Game.World.ChunkSystem
                 {
                     for (int i = 0; i < childList.Count; i++)
                     {
-                        var go = childList[i];
-
-                        go.SetActive(active);
+                        childList[i].SetActive(active);
                     }
                 }
                 else
@@ -143,21 +158,35 @@ namespace Game.World.ChunkSystem
 
         //##################################################################
 
-        void OnTransformChildrenChanged()
+        void FillChildList()
         {
-            if (myTransform == null)
-            {
-                return;
-            }
-
-            Debug.LogFormat("SubChunk \"{0}\": OnTransformChildrenChanged called!", name);
-
             lock (childListLock)
             {
                 childList.Clear();
+
+                var candidates = new Stack<Transform>();
                 for (int i = 0; i < myTransform.childCount; i++)
                 {
                     childList.Add(myTransform.GetChild(i).gameObject);
+                    //candidates.Push(myTransform.GetChild(i));
+                }
+
+                while (candidates.Count > 0)
+                {
+                    var candidate = candidates.Pop();
+                    var components = candidate.GetComponents<Component>();
+
+                    if (components.Length > 1)
+                    {
+                        childList.Add(candidate.gameObject);
+                    }
+                    else
+                    {
+                        for (int i = 0; i < candidate.childCount; i++)
+                        {
+                            candidates.Push(candidate.GetChild(i));
+                        }
+                    }
                 }
             }
         }

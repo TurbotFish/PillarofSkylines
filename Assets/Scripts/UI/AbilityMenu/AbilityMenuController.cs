@@ -6,29 +6,102 @@ namespace Game.UI.AbilityMenu
 {
     public class AbilityMenuController : MonoBehaviour, IUiState
     {
+        //##################################################################
+
+        const float CIRCLE_INTERVAL = 360f / 12f;
+
+        [Tooltip("If the total value of the 2 axes of the left stick is less than this value, no slot is selected.")]
         [SerializeField]
-        TopBarView topBarView;
+        float stickDeadWeight;
+
+        [Header("")]
+        [SerializeField]
+        CenterView centerView;
 
         [SerializeField]
-        LeftColumnView leftColumnView;
+        GroupView orangeGroup;
 
         [SerializeField]
-        float defaultSelectionDelay = 0.2f;
+        GroupView yellowGroup;
+
+        [SerializeField]
+        GroupView blueGroup;
+
+        [SerializeField]
+        GroupView greenGroup;
+
+        [Header("")]
+        [SerializeField]
+        Color lockedAbilityColour;
+        public Color LockedAbilityColour { get { return lockedAbilityColour; } }
+
+        [SerializeField]
+        Color availableAbilityColour;
+        public Color AvailableAbilityColour { get { return availableAbilityColour; } }
+
+        [SerializeField]
+        Color activeAbilityColour;
+        public Color ActiveAbilityColour { get { return activeAbilityColour; } }
+
+
 
         Player.PlayerModel playerModel;
 
         public bool IsActive { get; private set; }
 
-        List<Player.eAbilityType> abilityOrder = new List<Player.eAbilityType>();
-        int selectedAbilityIndex = 0;
-        Player.eAbilityType selectedAbility { get { return this.abilityOrder[this.selectedAbilityIndex]; } }
+        List<SlotView> slotList = new List<SlotView>();
+        int selectedSlotIndex = 0;
+        SlotView SelectedSlot
+        {
+            get
+            {
+                if (selectedSlotIndex == -1) { return null; }
 
-        float selectionDelayTimer = 0;
+                return slotList[selectedSlotIndex];
+            }
+        }
+
         bool activationButtonDown = false;
 
-        //###########################################################
+        //##################################################################
 
-        #region monobehaviour methods
+        void IUiState.Initialize(Player.PlayerModel playerModel)
+        {
+            this.playerModel = playerModel;
+
+            slotList.AddRange(orangeGroup.Slots);
+            slotList.AddRange(yellowGroup.Slots);
+            slotList.AddRange(blueGroup.Slots);
+            slotList.AddRange(greenGroup.Slots);
+
+            for (int i = 0; i < slotList.Count; i++)
+            {
+                slotList[i].Initialize(playerModel, this, playerModel.AbilityData.AbilitySlots[i]);
+            }
+
+            centerView.Initialize(playerModel, this);
+        }
+
+        void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
+        {
+            if (IsActive)
+            {
+                return;
+            }
+
+            IsActive = true;
+            gameObject.SetActive(true);
+        }
+
+        void IUiState.Deactivate()
+        {
+            IsActive = false;
+            gameObject.SetActive(false);
+        }
+
+        //##################################################################
+
+        #region update
 
         void Update()
         {
@@ -37,128 +110,96 @@ namespace Game.UI.AbilityMenu
                 return;
             }
 
+            //exit ability menu
             if (Input.GetButtonDown("MenuButton"))
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HUD));
                 return;
             }
 
-            //###########################################################
+            //**********************************************
+            //handle ability activation
 
-            float stickValue = Input.GetAxis("Vertical");
-
-            if (Input.GetButton("Jump") && !this.activationButtonDown)
+            if (Input.GetButton("Jump") && !activationButtonDown && SelectedSlot != null)
             {
-                if(!this.playerModel.CheckAbilityActive(this.selectedAbility) && this.playerModel.ActivateAbility(this.selectedAbility))
+                if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
                 {
-                    this.leftColumnView.SetAbilityActive(this.playerModel.AbilityData.GetAbility(this.selectedAbility), true);
+                    Debug.LogFormat("Ability Menu: deactivating ability {0}", SelectedSlot.AbilityType);
+                    playerModel.DeactivateAbility(SelectedSlot.AbilityType);
                 }
-                else if(this.playerModel.CheckAbilityActive(this.selectedAbility) && this.playerModel.DeactivateAbility(this.selectedAbility))
+                else
                 {
-                    this.leftColumnView.SetAbilityActive(this.playerModel.AbilityData.GetAbility(this.selectedAbility), false);
+                    Debug.LogFormat("Ability Menu: activating ability {0}", SelectedSlot.AbilityType);
+                    playerModel.ActivateAbility(SelectedSlot.AbilityType);
                 }
 
-                this.activationButtonDown = true;
+                activationButtonDown = true;
             }
             else if (!Input.GetButton("Jump"))
             {
-                this.activationButtonDown = false;
+                activationButtonDown = false;
             }
 
-            //###########################################################
+            //**********************************************
+            //handle ability selection
 
-            if (Mathf.Approximately(stickValue, 0f))
+            var leftStick = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+
+            float weight = Mathf.Abs(leftStick.x) + Mathf.Abs(leftStick.y);
+
+            if (weight < stickDeadWeight)
             {
-                this.selectionDelayTimer = 0f;
-            }
+                selectedSlotIndex = -1;
 
-            if (this.selectionDelayTimer > 0)
-            {
-                this.selectionDelayTimer -= Time.unscaledDeltaTime;
-
-                if (this.selectionDelayTimer <= 0)
-                {
-                    this.selectionDelayTimer = 0;
-                }
+                centerView.SetContent(null);
             }
             else
             {
-                if (stickValue < -0.8f)
+                float angle = Vector2.SignedAngle(Vector2.up, leftStick.normalized);
+
+                if (angle < 0f)
                 {
-                    this.selectedAbilityIndex++;
-
-                    if (this.selectedAbilityIndex >= this.abilityOrder.Count)
-                    {
-                        this.selectedAbilityIndex = 0;
-                    }
-
-                    this.leftColumnView.SetAbilitySelected(this.playerModel.AbilityData.GetAbility(this.selectedAbility));
-
-                    this.selectionDelayTimer += this.defaultSelectionDelay;
+                    angle *= -1;
                 }
-                else if (stickValue > 0.8f)
+                else
                 {
-                    this.selectedAbilityIndex--;
+                    angle = 360f - angle;
+                }
 
-                    if (this.selectedAbilityIndex < 0)
-                    {
-                        this.selectedAbilityIndex = this.abilityOrder.Count - 1;
-                    }
+                angle += CIRCLE_INTERVAL * 0.5f;
 
-                    this.leftColumnView.SetAbilitySelected(this.playerModel.AbilityData.GetAbility(this.selectedAbility));
+                if (angle >= 360f)
+                {
+                    angle -= 360f;
+                }
 
-                    this.selectionDelayTimer += this.defaultSelectionDelay;
+                selectedSlotIndex = (int)(angle / CIRCLE_INTERVAL);
+
+                centerView.SetContent(playerModel.AbilityData.GetAbility(SelectedSlot.AbilityType));
+
+                //Debug.LogFormat("AbilityMenuController: Update: stick={0} ; angle={1} ; slot = {2}", leftStick, angle, selectedSlotIndex);
+            }
+
+            //setting the selection state of all the slots
+            for (int i = 0; i < slotList.Count; i++)
+            {
+                if (i == selectedSlotIndex)
+                {
+                    slotList[i].SetSelected(true);
+                }
+                else
+                {
+                    slotList[i].SetSelected(false);
                 }
             }
 
-            //###########################################################
+            //**********************************************
         }
 
-        #endregion monobehaviour methods
+        #endregion update
 
-        //###########################################################
 
-        void IUiState.Initialize(Player.PlayerModel playerModel)
-        {
-            this.playerModel = playerModel;
 
-            this.topBarView.Initialize(playerModel.Favours);
-
-            foreach (var ability in playerModel.AbilityData.GetAllAbilities())
-            {
-                this.abilityOrder.Add(ability.Type);
-                this.leftColumnView.CreateAbilityElement(ability, playerModel.CheckAbilityGroupUnlocked(ability.Group));
-            }
-
-            this.leftColumnView.SetAbilitySelected(this.playerModel.AbilityData.GetAbility(this.selectedAbility));
-        }
-
-        void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
-        {
-            if (this.IsActive)
-            {
-                return;
-            }
-
-            this.IsActive = true;
-            this.gameObject.SetActive(true);
-
-            
-        }
-
-        void IUiState.Deactivate()
-        {
-            //bool wasActive = this.IsActive;
-
-            this.IsActive = false;
-            this.gameObject.SetActive(false);
-
-            //if (wasActive)
-            //{
-            //    Utilities.EventManager.SendOnMenuClosedEvent(this, new Utilities.EventManager.OnMenuClosedEventArgs(eUiState.AbilityMenu));
-            //}
-        }
-
-        //###########################################################
+        //##################################################################
     }
 } //end of namespace
