@@ -241,8 +241,6 @@ public class PoS_Camera : MonoBehaviour {
 	/// <param name="immediate"> If true, a reset takes place immediately, else, wait for resetTime. </param>
 	void AllowAutoReset(bool allow, bool immediate = false) {
         // TODO: immediate / not immediate / no opinion
-
-        print("Allow auto reset: (immediate ? " + immediate + ")");
 		canAutoReset = allow;
         
 		lastInput = immediate ? 0 : Time.time;

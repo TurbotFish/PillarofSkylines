@@ -316,7 +316,8 @@ namespace Game.World.ChunkSystem
             if (drawGizmo && Application.isEditor)
             {
                 Gizmos.color = gizmoColor;
-                Gizmos.DrawCube(transform.position, worldSize);
+                //Gizmos.DrawCube(transform.position, worldSize);
+                Gizmos.DrawWireCube(transform.position, worldSize);
             }
         }
         #endregion
