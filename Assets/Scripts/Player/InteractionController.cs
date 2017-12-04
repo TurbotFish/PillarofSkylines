@@ -11,6 +11,8 @@ namespace Game.Player
     [RequireComponent(typeof(Collider))]
     public class InteractionController : MonoBehaviour
     {
+        //########################################################################
+
         //
         PlayerModel playerModel;
         Game.Player.CharacterController.Character myPlayer;
@@ -43,8 +45,8 @@ namespace Game.Player
         /// </summary>
 		public void InitializeFavourController(PlayerModel playerModel, Game.Player.CharacterController.Character player)
         {
-            this.playerModel = playerModel;
-			myPlayer = player;
+            playerModel = playerModel;
+            myPlayer = player;
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
@@ -52,7 +54,6 @@ namespace Game.Player
 
         #endregion initialization
 
-        //########################################################################
         //########################################################################
 
         #region input handling
@@ -62,25 +63,25 @@ namespace Game.Player
         /// </summary>
         void Update()
         {
-            if (!this.isActive)
+            if (!isActive)
             {
                 return;
             }
 
-            if (Input.GetButton("Interact") && !this.isInteractButtonDown)
+            if (Input.GetButton("Interact") && !isInteractButtonDown)
             {
-                this.isInteractButtonDown = true;
+                isInteractButtonDown = true;
 
                 //favour
-                if (this.favourPickUpInRange)
+                if (favourPickUpInRange)
                 {
-                    if (!this.favour.FavourPickedUp)
+                    if (!favour.FavourPickedUp)
                     {
                         //pick up favour
                         playerModel.ChangeFavourAmount(1);
 
                         //play favour pick up animation
-                        PlayMakerFSM[] temp = this.favour.MyTransform.parent.GetComponents<PlayMakerFSM>();
+                        PlayMakerFSM[] temp = favour.MyTransform.parent.GetComponents<PlayMakerFSM>();
                         foreach (var fsm in temp)
                         {
                             if (fsm.FsmName == "Faveur_activation")
@@ -90,29 +91,29 @@ namespace Game.Player
                         }
 
                         //send event
-                        Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(this.favour.InstanceId));
+                        Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(favour.InstanceId));
                     }
 
                     //clean up
-                    this.favourPickUpInRange = false;
-                    this.favour = null;
+                    favourPickUpInRange = false;
+                    favour = null;
                     HideUiMessage();
                 }
                 //pillar entrance
-                else if (this.pillarEntranceInfo.IsPillarEntranceInRange)
+                else if (pillarEntranceInfo.IsPillarEntranceInRange)
                 {
-                    Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowPillarEntranceMenuEventArgs(this.pillarEntranceInfo.CurrentPillarEntrance.PillarId));
+                    Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowPillarEntranceMenuEventArgs(pillarEntranceInfo.CurrentPillarEntrance.PillarId));
                 }
                 //pillar exit
-                else if (this.pillarExitInRange)
+                else if (pillarExitInRange)
                 {
                     Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(false));
                 }
                 //needle
-                else if (this.needleInRange)
+                else if (needleInRange)
                 {
-                    this.needleInRange = false;
-                    this.needlePickedUpCollider.enabled = false;
+                    needleInRange = false;
+                    needlePickedUpCollider.enabled = false;
 
                     playerModel.hasNeedle = true;
 
@@ -121,7 +122,8 @@ namespace Game.Player
                     HideUiMessage();
                 }
                 //needle
-                else if (this.needleSlotInRange) {
+                else if (needleSlotInRange)
+                {
                     this.needleSlotInRange = false;
 
                     playerModel.hasNeedle ^= true;
@@ -131,9 +133,9 @@ namespace Game.Player
                     HideUiMessage();
                 }
                 //eye
-                else if (this.eyeInRange)
+                else if (eyeInRange)
                 {
-                    this.eyeInRange = false;
+                    eyeInRange = false;
 
                     playerModel.hasNeedle = false;
 
@@ -143,27 +145,26 @@ namespace Game.Player
                     HideUiMessage();
                 }
             }
-            else if (!Input.GetButton("Interact") && this.isInteractButtonDown)
+            else if (!Input.GetButton("Interact") && isInteractButtonDown)
             {
-                this.isInteractButtonDown = false;
+                isInteractButtonDown = false;
             }
 
-            if (Input.GetButton("Drift") && !this.isDriftButtonDown && playerModel.hasNeedle)
+            if (Input.GetButton("Drift") && !isDriftButtonDown && playerModel.hasNeedle)
             {
-                this.isDriftButtonDown = true;
+                isDriftButtonDown = true;
                 playerModel.hasNeedle = false;
-                this.needlePickedUpCollider.enabled = true;
+                needlePickedUpCollider.enabled = true;
                 Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(false));
             }
-            else if (!Input.GetButton("Drift") && this.isDriftButtonDown)
+            else if (!Input.GetButton("Drift") && isDriftButtonDown)
             {
-                this.isDriftButtonDown = false;
+                isDriftButtonDown = false;
             }
         }
 
         #endregion input handling
 
-        //########################################################################
         //########################################################################
 
         #region collision handling
@@ -179,31 +180,31 @@ namespace Game.Player
                 {
                     //favour
                     case "Favour":
-                        if (!this.favourPickUpInRange)
+                        if (!favourPickUpInRange)
                         {
-                            this.favour = other.GetComponent<World.Interaction.Favour>();
+                            favour = other.GetComponent<World.Interaction.Favour>();
 
-                            if (!this.favour.FavourPickedUp)
+                            if (!favour.FavourPickedUp)
                             {
-                                this.favourPickUpInRange = true;
+                                favourPickUpInRange = true;
 
                                 ShowUiMessage("Press [X] to pick up a Favour!");
                             }
                             else
                             {
-                                this.favour = null;
+                                favour = null;
                             }
-                        }                     
+                        }
                         break;
                     //pillar entrance
                     case "Pillar":
                         var pillarEntrance = other.GetComponent<World.Interaction.PillarEntrance>();
                         if (pillarEntrance != null)
                         {
-                            if (!this.playerModel.IsPillarDestroyed(pillarEntrance.PillarId))
+                            if (!playerModel.IsPillarDestroyed(pillarEntrance.PillarId))
                             {
-                                this.pillarEntranceInfo.IsPillarEntranceInRange = true;
-                                this.pillarEntranceInfo.CurrentPillarEntrance = pillarEntrance;
+                                pillarEntranceInfo.IsPillarEntranceInRange = true;
+                                pillarEntranceInfo.CurrentPillarEntrance = pillarEntrance;
 
                                 ShowUiMessage("Press [X] to enter the Pillar!");
                             }
@@ -211,9 +212,9 @@ namespace Game.Player
                         }
 
                         var pillarExit = other.GetComponent<World.Interaction.PillarExit>();
-                        if(pillarExit != null)
+                        if (pillarExit != null)
                         {
-                            this.pillarExitInRange = true;
+                            pillarExitInRange = true;
 
                             ShowUiMessage("Press [X] to leave the Pillar!");
                             break;
@@ -222,8 +223,8 @@ namespace Game.Player
                         break;
                     //needle
                     case "Needle":
-                        this.needleInRange = true;
-                        this.needlePickedUpCollider = other;
+                        needleInRange = true;
+                        needlePickedUpCollider = other;
 
                         ShowUiMessage("Press [X] to take the needle");
                         break;
@@ -237,20 +238,20 @@ namespace Game.Player
                     case "Eye":
                         if (playerModel.hasNeedle)
                         {
-                            this.eyeInRange = true;
+                            eyeInRange = true;
 
                             ShowUiMessage("Press [X] to plant the needle");
                         }
-						break;
+                        break;
                     //echo
                     case "Echo":
                         Debug.LogWarning("Echo destruction on collision not coded yet");
                         ///Destroy(other.gameObject);
                         break;
-					//wind
-					case "Wind":
-						other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer);
-						break;
+                    //wind
+                    case "Wind":
+                        other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer);
+                        break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
@@ -270,24 +271,24 @@ namespace Game.Player
                 {
                     //favour
                     case "Favour":
-                        this.favourPickUpInRange = false;
-                        this.favour = null;
+                        favourPickUpInRange = false;
+                        favour = null;
 
                         HideUiMessage();
                         break;
                     //pillar entrance
                     case "Pillar":
-                        this.pillarEntranceInfo.IsPillarEntranceInRange = false;
-                        this.pillarEntranceInfo.CurrentPillarEntrance = null;
+                        pillarEntranceInfo.IsPillarEntranceInRange = false;
+                        pillarEntranceInfo.CurrentPillarEntrance = null;
 
-                        this.pillarExitInRange = false;
+                        pillarExitInRange = false;
 
                         HideUiMessage();
                         break;
                     //needle
                     case "Needle":
-                        this.needleInRange = false;
-                        this.needlePickedUpCollider = null;
+                        needleInRange = false;
+                        needlePickedUpCollider = null;
 
                         HideUiMessage();
                         break;
@@ -299,14 +300,14 @@ namespace Game.Player
                         break;
                     //eye
                     case "Eye":
-                        this.eyeInRange = false;
+                        eyeInRange = false;
 
                         HideUiMessage();
-						break;
-					//wind
-					case "Wind":
-						other.GetComponent<WindTunnelPart>().RemovePlayer();
-						break;
+                        break;
+                    //wind
+                    case "Wind":
+                        other.GetComponent<WindTunnelPart>().RemovePlayer();
+                        break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
@@ -317,7 +318,6 @@ namespace Game.Player
 
         #endregion collision handling
 
-        //########################################################################
         //########################################################################
 
         #region helper methods
@@ -335,7 +335,6 @@ namespace Game.Player
         #endregion helper methods
 
         //########################################################################
-        //########################################################################
 
         #region event handlers
 
@@ -344,15 +343,15 @@ namespace Game.Player
         /// </summary>
         void OnMenuSwitchedEventHandler(object sender, Utilities.EventManager.OnMenuSwitchedEventArgs args)
         {
-            if (!this.isActive && args.NewUiState == UI.eUiState.HUD)
+            if (!isActive && args.NewUiState == UI.eUiState.HUD)
             {
-                this.isActive = true;
-                Debug.Log("InteractionController activated!");
+                isActive = true;
+                //Debug.Log("InteractionController activated!");
             }
-            else if (this.isActive && args.PreviousUiState == UI.eUiState.HUD)
+            else if (isActive && args.PreviousUiState == UI.eUiState.HUD)
             {
-                this.isActive = false;
-                Debug.Log("InteractionController deactivated!");
+                isActive = false;
+                //Debug.Log("InteractionController deactivated!");
             }
         }
 
@@ -361,25 +360,24 @@ namespace Game.Player
         /// </summary>
         void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
-            this.favourPickUpInRange = false;
-            this.favour = null;
+            favourPickUpInRange = false;
+            favour = null;
 
-            this.needleInRange = false;
-            this.needlePickedUpCollider = null;
+            needleInRange = false;
+            needlePickedUpCollider = null;
 
-            this.eyeInRange = false;
+            eyeInRange = false;
 
-            this.pillarEntranceInfo.IsPillarEntranceInRange = false;
-            this.pillarEntranceInfo.CurrentPillarEntrance = null;
+            pillarEntranceInfo.IsPillarEntranceInRange = false;
+            pillarEntranceInfo.CurrentPillarEntrance = null;
 
-            this.pillarExitInRange = false;
+            pillarExitInRange = false;
 
             HideUiMessage();
         }
 
         #endregion event handlers
 
-        //########################################################################
         //########################################################################
 
         class PillarEntranceInfo

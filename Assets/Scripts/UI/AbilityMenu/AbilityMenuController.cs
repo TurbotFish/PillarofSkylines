@@ -168,7 +168,7 @@ namespace Game.UI.AbilityMenu
 
                     SetSelectedSlot((int)(angle / CIRCLE_INTERVAL));
 
-                    Debug.LogFormat("AbilityMenuController: Update: stick={0} ; angle={1} ; slot = {2}", leftStick, angle, selectedSlotIndex);
+                    //Debug.LogFormat("AbilityMenuController: Update: stick={0} ; angle={1} ; slot = {2}", leftStick, angle, selectedSlotIndex);
                 }
 
                 previousStickPos = leftStick;
@@ -184,7 +184,7 @@ namespace Game.UI.AbilityMenu
         public void OnPointerEnterSlot(SlotView slot)
         {
             //Debug.Log("aaa");
-            int slotIndex = slotList.IndexOf(slot); Debug.LogFormat("index={0}; selected={1}", slotIndex, selectedSlotIndex);
+            int slotIndex = slotList.IndexOf(slot);
 
             if (slotIndex != selectedSlotIndex)
             {
@@ -221,7 +221,8 @@ namespace Game.UI.AbilityMenu
 
         void SetSelectedSlot(int slotIndex)
         {
-            Debug.LogFormat("AbilityMenuController: SetSelectedSlot: index={0}", slotIndex);
+            //Debug.LogFormat("AbilityMenuController: SetSelectedSlot: index={0}", slotIndex);
+
             selectedSlotIndex = slotIndex;
 
             for (int i = 0; i < slotList.Count; i++)
@@ -255,12 +256,12 @@ namespace Game.UI.AbilityMenu
 
             if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
             {
-                Debug.LogFormat("Ability Menu: deactivating ability {0}", SelectedSlot.AbilityType);
+                //Debug.LogFormat("Ability Menu: deactivating ability {0}", SelectedSlot.AbilityType);
                 playerModel.DeactivateAbility(SelectedSlot.AbilityType);
             }
             else
             {
-                Debug.LogFormat("Ability Menu: activating ability {0}", SelectedSlot.AbilityType);
+                //Debug.LogFormat("Ability Menu: activating ability {0}", SelectedSlot.AbilityType);
                 playerModel.ActivateAbility(SelectedSlot.AbilityType);
             }
         }
