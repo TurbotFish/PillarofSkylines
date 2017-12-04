@@ -60,7 +60,7 @@ namespace Game.Player.AbilitySystem
                 case eAbilityType.WallRun:
                     return this.wallRun;
                 default:
-                    throw new NotImplementedException();
+                    return null;
             }
         }
 
