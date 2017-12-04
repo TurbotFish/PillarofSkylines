@@ -36,6 +36,8 @@ public class CustomPBR_GUI : ShaderGUI {
 		//DoDynamicBatching ();
 		DoIsPlayer();
 		DoRenderQueue ();
+
+		Debug.Log ("HELLOOOO");
 	}
 
 	void DoMain(){
@@ -427,10 +429,13 @@ public class CustomPBR_GUI : ShaderGUI {
 		CullMode mode = CullMode.Back;
 		if (IsKeywordEnabled("_CULL_BACK")) {
 			mode = CullMode.Back;
+//			Debug.Log ("GI");
 		} else if (IsKeywordEnabled("_CULL_FRONT")) {
 			mode = CullMode.Front;
+//			Debug.Log ("GO");
 		} else if (IsKeywordEnabled("_CULL_OFF")) {
 			mode = CullMode.Off;
+//			Debug.Log ("GA");
 		}
 
 		EditorGUI.BeginChangeCheck ();
@@ -445,11 +450,15 @@ public class CustomPBR_GUI : ShaderGUI {
 			foreach (Material m in editor.targets) {
 				if (mode == CullMode.Back) {
 					m.SetInt ("_Cull", (int)CullMode.Back);
+					Debug.Log ((int)CullMode.Back);
 				} else if (mode == CullMode.Front) {
 					m.SetInt ("_Cull", (int)CullMode.Front);
+					Debug.Log ((int)CullMode.Front);
 				} else if (mode == CullMode.Off) {
 					m.SetInt ("_Cull", (int)CullMode.Off);
+					Debug.Log ((int)CullMode.Off);
 				}
+				//Debug.Log (IsKeywordEnabled ("_CULL_BACK"));
 			}
 		}
 	}
