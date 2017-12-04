@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Game.UI.AbilityMenu
 {
-    public class SlotView : MonoBehaviour
+    public class SlotView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
     {
         //##################################################################
 
@@ -75,5 +76,20 @@ namespace Game.UI.AbilityMenu
         }
 
         //##################################################################
+
+        void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
+        {
+            Debug.LogFormat("OnPointerEnter: slot \"{0}\"", AbilityType.ToString());
+        }
+
+        void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
+        {
+            Debug.LogFormat("OnPointerExit: slot \"{0}\"", AbilityType.ToString());
+        }
+
+        void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
+        {
+            Debug.LogFormat("OnPointerClick: slot \"{0}\"", AbilityType.ToString());
+        }
     }
 } //end of namespace

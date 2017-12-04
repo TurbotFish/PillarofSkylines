@@ -53,7 +53,12 @@ namespace Game.Player.CharacterController
         /// The maximum height of step the player can climb.
         /// </summary>
         [Tooltip("The maximum height of step the player can climb.")]
-        public float maxStepHeight = 1f;
+		public float maxStepHeight = 1f;
+		/// <summary>
+		/// The distance at which the player stops when encountering a cliff with no input.
+		/// </summary>
+		[Tooltip("The distance at which the player stops when encountering a cliff with no input.")]
+		public float distanceStoppingCliff = .1f;
         #endregion general
 
         #region speed and controls variables
@@ -675,14 +680,19 @@ namespace Game.Player.CharacterController
                         lastJumpAerial = false;
 
                         EnterStateInAir();
-                    }
-                    if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash))
+					} else if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash))
                     {
                         QuitStateOnGround();
 
                         EnterStateDash();
-                    }
+						//If the player is going off a cliff when the left stick is at zero, stop the player
+					} else if (leftStickAtZero) {
+						if (!Physics.Raycast(transform.position + transform.up * controller.skinWidth + (Vector3.ProjectOnPlane(transform.forward, controller.collisions.currentGroundNormal).normalized * distanceStoppingCliff), -controller.collisions.currentGroundNormal, maxStepHeight, controller.collisionMask)){
+							flatVelocity = Vector3.zero;
+						}
+					}
                     break;
+
 
                 #endregion direction calculations - on ground
 
@@ -1345,7 +1355,7 @@ namespace Game.Player.CharacterController
 
             animator.SetBool("OnGround", controller.collisions.below);
             animator.SetFloat("Forward", velocity.magnitude / characSpeed);
-            animator.SetFloat("Turn", Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime) / 7f);
+			animator.SetFloat("Turn", (leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime) / 7f));
             animator.SetFloat("Jump", turnedVelocity.y / 5);
             float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
             float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputRaw.magnitude;
@@ -1373,7 +1383,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateInAir()
         {
-            Debug.Log("EnterStateInAir");
+            //Debug.Log("EnterStateInAir");
 
             currentPlayerState = ePlayerState.inAir;
         }
@@ -1383,7 +1393,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void QuitStateInAir()
         {
-            Debug.Log("QuitStateInAir");
+            //Debug.Log("QuitStateInAir");
         }
 
         #endregion state change - in air
@@ -1397,7 +1407,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateOnGround()
         {
-            Debug.Log("EnterStateOnGround");
+            //Debug.Log("EnterStateOnGround");
 
             camera.SetVerticalOffset(-TurnSpaceToLocal(controller.collisions.initialVelocityOnThisFrame).y * landingCameraOffsetStrength);
             currentPlayerState = ePlayerState.onGround;
@@ -1416,7 +1426,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void QuitStateOnGround()
         {
-            Debug.Log("QuitStateOnGround");
+            //Debug.Log("QuitStateOnGround");
         }
 
         #endregion state change - on ground
@@ -1427,14 +1437,14 @@ namespace Game.Player.CharacterController
 
         void EnterStateGliding()
         {
-            Debug.Log("EnterStateGliding");
+            //Debug.Log("EnterStateGliding");
 
             currentPlayerState = ePlayerState.gliding;
         }
 
         void QuitStateGliding()
         {
-            Debug.Log("QuitStateGliding");
+            //Debug.Log("QuitStateGliding");
 
             flatVelocity = TurnSpaceToLocal(flatVelocity);
             glideParticles.Stop();
@@ -1450,7 +1460,7 @@ namespace Game.Player.CharacterController
 
         void EnterStateDash()
         {
-            Debug.Log("EnterStateDash");
+            //Debug.Log("EnterStateDash");
 
             playerMod.FlagAbility(eAbilityType.Dash);
             currentPlayerState = ePlayerState.dashing;
@@ -1462,7 +1472,7 @@ namespace Game.Player.CharacterController
 
         void QuitStateDash()
         {
-            Debug.Log("QuitStateDash");
+            //Debug.Log("QuitStateDash");
 
             dashDuration = 0f;
             dashTimer = dashCooldown;
@@ -1483,14 +1493,14 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateSliding()
         {
-            Debug.Log("EnterStateSliding");
+            //Debug.Log("EnterStateSliding");
 
             currentPlayerState = ePlayerState.sliding;
         }
 
         void QuitStateSliding()
         {
-            Debug.Log("QuitStateSliding");
+            //Debug.Log("QuitStateSliding");
 
             keepMomentum = true;
         }
@@ -1506,7 +1516,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateInWindTunnel()
         {
-            Debug.Log("EnterStateInWindTunnel");
+            //Debug.Log("EnterStateInWindTunnel");
 
             currentPlayerState = ePlayerState.inWindTunnel;
         }
@@ -1516,7 +1526,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void QuitStateInWindTunnel()
         {
-            Debug.Log("QuitStateInWindTunnel");
+            //Debug.Log("QuitStateInWindTunnel");
 
             keepMomentum = true;
         }
@@ -1532,7 +1542,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateWallDrift()
         {
-            Debug.Log("EnterStateWallDrift");
+            //Debug.Log("EnterStateWallDrift");
 
             currentPlayerState = ePlayerState.WallDrifting;
             playerMod.FlagAbility(eAbilityType.WallRun);
@@ -1546,7 +1556,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void QuitStateWallDrift()
         {
-            Debug.Log("QuitStateWallDrift");
+            //Debug.Log("QuitStateWallDrift");
 
             playerMod.UnflagAbility(eAbilityType.WallRun);
 
@@ -1564,7 +1574,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateWallRunHorizontal()
         {
-            Debug.Log("EnterWallRunHorizontal");
+            //Debug.Log("EnterWallRunHorizontal");
 
             currentPlayerState = ePlayerState.WallRunningHorizontal;
             playerMod.FlagAbility(eAbilityType.WallRun);
@@ -1588,7 +1598,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void QuitStateWallRunHorizontal()
         {
-            Debug.Log("QuitStateWallRunHorizontal");
+            //Debug.Log("QuitStateWallRunHorizontal");
 
             playerMod.UnflagAbility(eAbilityType.WallRun);
 
@@ -1606,7 +1616,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateWallRunVertical()
         {
-            Debug.Log("EnterStateWallRunVertical");
+            //Debug.Log("EnterStateWallRunVertical");
 
             currentPlayerState = ePlayerState.WallRunningVertical;
             playerMod.FlagAbility(eAbilityType.WallRun);
@@ -1622,7 +1632,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void QuitStateWallRunVertical()
         {
-            Debug.Log("QuitStateWallRunVertical");
+            //Debug.Log("QuitStateWallRunVertical");
 
             playerMod.UnflagAbility(eAbilityType.WallRun);
 

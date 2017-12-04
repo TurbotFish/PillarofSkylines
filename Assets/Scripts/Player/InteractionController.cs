@@ -77,7 +77,7 @@ namespace Game.Player
                     if (!this.favour.FavourPickedUp)
                     {
                         //pick up favour
-                        this.playerModel.Favours++;
+                        playerModel.ChangeFavourAmount(1);
 
                         //play favour pick up animation
                         PlayMakerFSM[] temp = this.favour.MyTransform.parent.GetComponents<PlayMakerFSM>();

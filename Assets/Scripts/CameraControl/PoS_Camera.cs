@@ -224,10 +224,14 @@ public class PoS_Camera : MonoBehaviour {
         if (state == eCameraState.Resetting) {
             if (((autoAdjustYaw && Mathf.Abs(Mathf.DeltaAngle(yaw, targetYaw)) < 1f) || !autoAdjustYaw)
                 && ((autoAdjustPitch && Mathf.Abs(Mathf.DeltaAngle(pitch, targetPitch)) < 1f) || !autoAdjustPitch)) {
-                state = eCameraState.Default;
-                resetType = eResetType.None;
+                StopCurrentReset();
             }
         }
+    }
+
+    void StopCurrentReset() {
+        state = eCameraState.Default;
+        resetType = eResetType.None;
     }
 
 	/// <summary>
@@ -236,8 +240,12 @@ public class PoS_Camera : MonoBehaviour {
 	/// <param name="allow"> Whether or not to allow the automatic reset. </param>
 	/// <param name="immediate"> If true, a reset takes place immediately, else, wait for resetTime. </param>
 	void AllowAutoReset(bool allow, bool immediate = false) {
+        // TODO: immediate / not immediate / no opinion
 		canAutoReset = allow;
+        
 		lastInput = immediate ? 0 : Time.time;
+        if (immediate)
+            StopCurrentReset();
 	}
 
 	void EvaluatePositionFromRotation() {
@@ -295,10 +303,8 @@ public class PoS_Camera : MonoBehaviour {
         if (isGrounded && additionalDistance != 0)
             additionalDistance = 0;
 
-        if (resetType == eResetType.ManualAir && playerState == Game.Player.CharacterController.ePlayerState.onGround) {
-            state = eCameraState.Default;
-            resetType = eResetType.None;
-        }
+        if (resetType == eResetType.ManualAir && playerState == Game.Player.CharacterController.ePlayerState.onGround)
+            StopCurrentReset();
 
         if (inverseFacingDirection && Input.GetAxis("Vertical") >= 0) {
             startFacingDirection ^= true;
@@ -311,19 +317,31 @@ public class PoS_Camera : MonoBehaviour {
 			SetTargetRotation(null, null, smoothDamp);
 
         } else if (state != eCameraState.Resetting) {
-            // TODO: un switch sur playerState pour établir l'état de la caméra selon chaque state du joueur
+            // TODO: un switch sur playerState pour établir l'état de la caméra selon chaque state du joueur ?
+
+            // Auto reset après quelques secondes sans Input
+            if (Time.time > lastInput + timeBeforeAutoReset && canAutoReset) {
+
+                if (overriden)
+                    state = eCameraState.Overriden;
+                else if (nearPOI) // Points of Interest have priority over axis alignment
+                    LookAtTargetPOI(); // TODO: manual priority just in case?
+                else if (axisAligned.sqrMagnitude != 0)
+                    AlignWithAxis();
+            }
+
 
             if (isGrounded)
                 GroundStateCamera(slopeValue);
 			else 
 				AirStateCamera();
-		}
-
-		if (playerState == Game.Player.CharacterController.ePlayerState.gliding || playerState == Game.Player.CharacterController.ePlayerState.inWindTunnel) {
-			SetTargetRotation(-2 * playerVelocity.y + defaultPitch, GetYawBehindPlayer(), resetDamp);
-			state = eCameraState.FollowBehind;
-		}
-
+            
+            if (playerState == Game.Player.CharacterController.ePlayerState.gliding || playerState == Game.Player.CharacterController.ePlayerState.inWindTunnel) {
+                SetTargetRotation(-2 * playerVelocity.y + defaultPitch, GetYawBehindPlayer(), resetDamp);
+                state = eCameraState.FollowBehind;
+            }
+        }
+        
 		if (Input.GetButton("ResetCamera")) {
 			manualPitch = defaultPitch;
 			AllowAutoReset(true);
@@ -353,18 +371,7 @@ public class PoS_Camera : MonoBehaviour {
                 manualPitch = defaultPitch; // On reset le pitch si on n'est pas au bord d'une falaise
             AllowAutoReset(true, true);
         }
-
-        // Auto reset après quelques secondes sans Input
-        if (Time.time > lastInput + timeBeforeAutoReset && canAutoReset) {
-
-            if (overriden)
-                state = eCameraState.Overriden;
-            else if (nearPOI) // Points of Interest have priority over axis alignment
-                LookAtTargetPOI(); // TODO: manual priority just in case?
-            else if (axisAligned.sqrMagnitude != 0)
-                AlignWithAxis();
-        }
-
+        
         if (state < eCameraState.Overriden) {
             if (playerVelocity != Vector3.zero) {
                 state = eCameraState.Default;
@@ -545,9 +552,7 @@ public class PoS_Camera : MonoBehaviour {
 
                 NotOnEdgeOfCliff(); // Y a du sol devant donc on n'est pas au bord d'une falaise
 
-                print("GroundNormal dans targetSpace: " + (targetSpace * groundInFront.normal));
-
-                if ((targetSpace * groundInFront.normal).y > 0.999f)
+                if ((targetSpace * groundInFront.normal).y > 0.999f) // TODO: check pourquoi le y est négatif en éclipse
                     groundNormal = targetUp; // Si devant c'est environ du sol plat, on reset slopeValue; pas besoin de calculs en plus
 
                 else {
@@ -558,8 +563,6 @@ public class PoS_Camera : MonoBehaviour {
 
                         Debug.DrawRay(targetPos + player.transform.forward * (distanceToCheckGroundForward + minSlopeLength),
                                     -targetUp * cliffMinDepth, Color.red);
-
-                        print("groundNormal: " + groundNormal + " | groundInFront: " + groundInFront.normal + " | groundEndOfSlope: " + groundFurther.normal);
 
                         if (Vector3.Angle(groundFurther.normal, groundInFront.normal) < slopeSameAngleBuffer // Si la pente devant et la pente plus loin sont environ la même
                             && Vector3.Angle(groundNormal, groundInFront.normal) > slopeSameAngleBuffer // et la pente devant a plus de X degrés de différence avec celle actuelle
@@ -658,9 +661,10 @@ public class PoS_Camera : MonoBehaviour {
 
     #region Point of Interest
 
-    bool nearPOI;
+    bool nearPOI, alwaysLookAt = true;
     Vector3 targetPOI;
     public void SetPointOfInterest(Vector3 point) {
+        print("Setting POI");
         nearPOI = true;
         targetPOI = point;
 		AllowAutoReset(true, true);
@@ -680,7 +684,8 @@ public class PoS_Camera : MonoBehaviour {
     }
     
     void LookAtTargetPOI() {
-        if (IcanSee(targetPOI) && FacingDirection((targetPOI - target.position).normalized)) {
+        print("Look at POI");
+        if (alwaysLookAt || IcanSee(targetPOI) && FacingDirection((targetPOI - target.position).normalized)) {
             state = eCameraState.LookAt;
             SetTargetRotation(GetRotationTowardsPoint(targetPOI), autoResetDamp);
         }
@@ -715,8 +720,10 @@ public class PoS_Camera : MonoBehaviour {
     #region Align with Axis
 
     Vector3 axisAligned = Vector3.zero;
+    bool faceBothWays;
 
-    public void SetAxisAlignment(Vector3 direction) {
+    public void SetAxisAlignment(Vector3 direction, bool faceBothWays) {
+        this.faceBothWays = faceBothWays;
         axisAligned = direction;
 		AllowAutoReset(true, true);
 		facingTime = -1; // allow instant alignment
@@ -725,7 +732,7 @@ public class PoS_Camera : MonoBehaviour {
 
     void AlignWithAxis() {
         state = eCameraState.LookAt;
-        if (FacingDirection(axisAligned))
+        if (!faceBothWays || FacingDirection(axisAligned))
             SetTargetRotation(GetRotationTowardsDirection(axisAligned), axisAlignDamp);
         else
             SetTargetRotation(GetRotationTowardsDirection(-axisAligned), axisAlignDamp);
@@ -753,16 +760,18 @@ public class PoS_Camera : MonoBehaviour {
         autoDamp = overrideDamp = damp;
     }
 
+    public void StopOverride() {
+        overriden = false;
+    }
+
     #endregion
-
-
+    
 	#region Contextual Offset
     Vector3 contextualOffset;
     bool cameraBounce;
 
     public void SetVerticalOffset(float verticalOffset) {
-        print("Camera recoil verticalOffset: " + verticalOffset);
-        return;
+        return; // TODO: fix that buggy offset thingy
         recoilIntensity = recoilOnImpact * verticalOffset;
         contextualOffset.y = -verticalOffset;
         cameraBounce = true;

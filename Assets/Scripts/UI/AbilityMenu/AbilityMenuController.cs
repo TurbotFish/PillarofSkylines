@@ -143,7 +143,8 @@ namespace Game.UI.AbilityMenu
             //**********************************************
             //handle ability selection
 
-            var leftStick = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+            //var leftStick = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+            var leftStick = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
             float weight = Mathf.Abs(leftStick.x) + Mathf.Abs(leftStick.y);
 
@@ -177,7 +178,7 @@ namespace Game.UI.AbilityMenu
 
                 centerView.SetContent(playerModel.AbilityData.GetAbility(SelectedSlot.AbilityType));
 
-                //Debug.LogFormat("AbilityMenuController: Update: stick={0} ; angle={1} ; slot = {2}", leftStick, angle, selectedSlotIndex);
+                Debug.LogFormat("AbilityMenuController: Update: stick={0} ; angle={1} ; slot = {2}", leftStick, angle, selectedSlotIndex);
             }
 
             //setting the selection state of all the slots
