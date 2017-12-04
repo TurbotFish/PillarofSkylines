@@ -684,7 +684,6 @@ public class PoS_Camera : MonoBehaviour {
     }
     
     void LookAtTargetPOI() {
-        print("Look at POI");
         if (alwaysLookAt || IcanSee(targetPOI) && FacingDirection((targetPOI - target.position).normalized)) {
             state = eCameraState.LookAt;
             SetTargetRotation(GetRotationTowardsPoint(targetPOI), autoResetDamp);
