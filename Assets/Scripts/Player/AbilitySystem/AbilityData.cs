@@ -2,12 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using UnityEngine.UI;
 
 namespace Game.Player.AbilitySystem
 {
     [CreateAssetMenu(menuName = "ScriptableObjects/AbilityData", fileName = "AbilityData")]
     public class AbilityData : ScriptableObject
     {
+        [Header("UI Ability Slots")]
+        [Tooltip("List with the abilities as they appear in the ability menu. It starts with the topmost slot and continues clockwise.")]
+        [SerializeField]
+        List<eAbilityType> abilitySlots = new List<eAbilityType>(12);
+        public List<eAbilityType> AbilitySlots { get { return abilitySlots; } }
+
+        [Header("Details")]
         //double jump
         [SerializeField]
         DoubleJump doubleJump = new DoubleJump();
@@ -74,6 +82,18 @@ namespace Game.Player.AbilitySystem
 
         void OnValidate()
         {
+            while (abilitySlots.Count != 12)
+            {
+                if (abilitySlots.Count > 12)
+                {
+                    abilitySlots.RemoveAt(abilitySlots.Count - 1);
+                }
+                else if (abilitySlots.Count < 12)
+                {
+                    abilitySlots.Add(0);
+                }
+            }
+
             this.doubleJump.OnValidate();
             this.glide.OnValidate();
             this.dash.OnValidate();

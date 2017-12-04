@@ -111,7 +111,7 @@ namespace Game.GameControl
 
             if (worldController != null)
             {
-                worldController.InitializeWorldController(this.playerController.transform);
+                worldController.InitializeWorldController(this.playerController.transform, CameraController.transform);
             }
 
             this.echoManager.InitializeEchoManager(this);

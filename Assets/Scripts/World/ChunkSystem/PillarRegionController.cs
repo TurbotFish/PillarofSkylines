@@ -69,26 +69,26 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// 
         /// </summary>
-        public override void UpdateRegion(Vector3 playerPos)
+        public override List<Renderer> UpdateChunkSystem(Vector3 playerPos, Vector3 cameraPos)
         {
+            var result = new List<Renderer>();
+
             if (currentPillarState == ePillarState.Intact)
             {
                 for (int i = 0; i < intactPillarChunks.Count; i++)
                 {
-                    var chunk = intactPillarChunks[i];
-
-                    chunk.UpdateChunk(playerPos);
+                    result.AddRange(intactPillarChunks[i].UpdateChunkSystem(playerPos, cameraPos));
                 }
             }
             else if (currentPillarState == ePillarState.Destroyed)
             {
                 for (int i = 0; i < destroyedPillarChunks.Count; i++)
                 {
-                    var chunk = destroyedPillarChunks[i];
-
-                    chunk.UpdateChunk(playerPos);
+                    result.AddRange(destroyedPillarChunks[i].UpdateChunkSystem(playerPos, cameraPos));
                 }
             }
+
+            return result;
         }
 
         //##################################################################

@@ -44,6 +44,15 @@ namespace Game.UI.AbilityMenu
             }
         }
 
+        public void SetAbilityState(Player.eAbilityType type, AbilityMenu.eAbilityElementState state)
+        {
+            var abilities = from abilityElement in this.abilityElements
+                            where abilityElement.AbilityType == type
+                            select abilityElement;
+
+            abilities.First().SetState(state);
+        }
+
         public void SetAbilitySelected(Player.AbilitySystem.Ability ability)
         {
             foreach(var abilityElement in this.abilityElements)

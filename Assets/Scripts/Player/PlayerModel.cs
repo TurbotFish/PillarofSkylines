@@ -5,24 +5,6 @@ using UnityEngine;
 namespace Game.Player
 {
     /// <summary>
-    /// The list of the abilities of the player
-    /// </summary>
-    public enum eAbilityType
-    {
-        DoubleJump,
-        Glide,
-        Dash,
-        TombFinder,
-        WallRun
-    }
-
-    public enum eAbilityGroup
-    {
-        Default,
-        GroupA
-    }
-
-    /// <summary>
     /// This class stores data about the player: favours, abilities, stats, ...
     /// </summary>
     public class PlayerModel : MonoBehaviour
@@ -30,26 +12,17 @@ namespace Game.Player
         //ability data
         [SerializeField]
         AbilitySystem.AbilityData abilityData;
-        public AbilitySystem.AbilityData AbilityData { get { return this.abilityData; } }
+        public AbilitySystem.AbilityData AbilityData { get { return abilityData; } }
 
         //pillar data
         World.PillarData pillarData;
-        public World.PillarData PillarData { get { return this.pillarData; } }
+        public World.PillarData PillarData { get { return pillarData; } }
 
         //
         public bool hasNeedle;
 
         //
-        int favours = 0;
-        public int Favours
-        {
-            get { return this.favours; }
-            set
-            {
-                this.favours = value;
-                Utilities.EventManager.SendFavourAmountChangedEvent(this, new Utilities.EventManager.FavourAmountChangedEventArgs(this.favours));
-            }
-        }
+        public int Favours { get; private set; }
 
         //ability variables
         List<eAbilityGroup> unlockedAbilityGroups = new List<eAbilityGroup>();
@@ -65,10 +38,9 @@ namespace Game.Player
         {
             this.pillarData = Resources.Load<World.PillarData>("ScriptableObjects/PillarData");
 
-            UnlockAbilityGroup(eAbilityGroup.Default);
+            UnlockAbilityGroup(eAbilityGroup.GroupBlue_Default);
         }
 
-        //###########################################################
         //###########################################################
 
         #region monobehaviour methods
@@ -84,7 +56,6 @@ namespace Game.Player
         #endregion monobehaviour methods
 
         //###########################################################
-        //###########################################################
 
         #region ability group unlocking methods
 
@@ -94,14 +65,7 @@ namespace Game.Player
         /// <returns>Returns true if the ability group is unlocked, false otherwise.</returns>
         public bool CheckAbilityGroupUnlocked(eAbilityGroup abilityGroup)
         {
-            if (this.unlockedAbilityGroups.Contains(abilityGroup))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return unlockedAbilityGroups.Contains(abilityGroup);
         }
 
         /// <summary>
@@ -110,9 +74,22 @@ namespace Game.Player
         /// <returns>Returns true if the ability group is now unlocked, false otherwise.</returns>
         public bool UnlockAbilityGroup(eAbilityGroup abilityGroup)
         {
-            if (!this.unlockedAbilityGroups.Contains(abilityGroup))
+            if (!unlockedAbilityGroups.Contains(abilityGroup))
             {
-                this.unlockedAbilityGroups.Add(abilityGroup);
+                unlockedAbilityGroups.Add(abilityGroup);
+
+                //send events
+                var abilities = abilityData.GetAllAbilities();
+                for (int i = 0; i < abilities.Count; i++)
+                {
+                    var ability = abilities[i];
+
+                    if (ability.Group == abilityGroup)
+                    {
+                        Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(ability.Type, eAbilityState.available));
+                    }
+                }
+
                 return true;
             }
             else
@@ -127,14 +104,14 @@ namespace Game.Player
         /// <returns>Returns true if the ability group is now locked, false otherwise.</returns>
         public bool LockAbilityGroup(eAbilityGroup abilityGroup)
         {
-            if (this.unlockedAbilityGroups.Contains(abilityGroup))
+            if (unlockedAbilityGroups.Contains(abilityGroup))
             {
-                this.unlockedAbilityGroups.Remove(abilityGroup);
+                unlockedAbilityGroups.Remove(abilityGroup);
 
                 var abilitiesToDeactivate = new List<eAbilityType>();
-                foreach (var abilityType in this.activatedAbilities)
+                foreach (var abilityType in activatedAbilities)
                 {
-                    var ability = this.abilityData.GetAbility(abilityType);
+                    var ability = abilityData.GetAbility(abilityType);
 
                     if (ability.Group == abilityGroup)
                     {
@@ -144,8 +121,20 @@ namespace Game.Player
 
                 foreach (var abilityType in abilitiesToDeactivate)
                 {
-                    this.activatedAbilities.Remove(abilityType);
-                    this.flaggedAbilities.Remove(abilityType);
+                    activatedAbilities.Remove(abilityType);
+                    flaggedAbilities.Remove(abilityType);
+                }
+
+                //send events
+                var abilities = abilityData.GetAllAbilities();
+                for (int i = 0; i < abilities.Count; i++)
+                {
+                    var ability = abilities[i];
+
+                    if (ability.Group == abilityGroup)
+                    {
+                        Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(ability.Type, eAbilityState.locked));
+                    }
                 }
 
                 return true;
@@ -159,7 +148,6 @@ namespace Game.Player
         #endregion ability group unlocking methods
 
         //###########################################################
-        //###########################################################
 
         #region ability activation methods
 
@@ -169,19 +157,30 @@ namespace Game.Player
         /// <returns>Returns true if the ability is activated, false otherwise.</returns>
         public bool CheckAbilityActive(eAbilityType abilityType)
         {
-            if (this.activatedAbilities.Contains(abilityType))
+            return activatedAbilities.Contains(abilityType);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool CheckAbilityUnlocked(eAbilityType abilityType)
+        {
+            var ability = abilityData.GetAbility(abilityType);
+
+            if (CheckAbilityGroupUnlocked(ability.Group))
             {
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public List<eAbilityType> GetAllActiveAbilities()
         {
-            return new List<eAbilityType>(this.activatedAbilities);
+            return new List<eAbilityType>(activatedAbilities);
         }
 
         /// <summary>
@@ -190,16 +189,19 @@ namespace Game.Player
         /// </summary>
         public bool ActivateAbility(eAbilityType abilityType)
         {
-            var ability = this.abilityData.GetAbility(abilityType);
+            var ability = abilityData.GetAbility(abilityType);
 
-            if (this.activatedAbilities.Contains(abilityType))
+            if (activatedAbilities.Contains(abilityType))
             {
                 return true;
             }
-            else if (CheckAbilityGroupUnlocked(ability.Group) && this.Favours >= ability.ActivationPrice)
+            else if (CheckAbilityGroupUnlocked(ability.Group) && Favours >= ability.ActivationPrice)
             {
-                this.Favours -= ability.ActivationPrice;
-                this.activatedAbilities.Add(abilityType);
+                Favours -= ability.ActivationPrice;
+                activatedAbilities.Add(abilityType);
+
+                Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(abilityType, eAbilityState.active));
+
                 return true;
             }
             else
@@ -214,16 +216,19 @@ namespace Game.Player
         /// </summary>
         public bool DeactivateAbility(eAbilityType abilityType)
         {
-            var ability = this.abilityData.GetAbility(abilityType);
+            var ability = abilityData.GetAbility(abilityType);
 
-            if (!this.activatedAbilities.Contains(abilityType))
+            if (!activatedAbilities.Contains(abilityType))
             {
                 return true;
             }
-            else if (!this.flaggedAbilities.Contains(abilityType))
+            else if (!flaggedAbilities.Contains(abilityType))
             {
-                this.Favours += ability.ActivationPrice;
-                this.activatedAbilities.Remove(abilityType);
+                Favours += ability.ActivationPrice;
+                activatedAbilities.Remove(abilityType);
+
+                Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(abilityType, eAbilityState.available));
+
                 return true;
             }
             else
@@ -234,7 +239,6 @@ namespace Game.Player
 
         #endregion ability activation methods
 
-        //###########################################################
         //###########################################################
 
         #region ability flagging methods
@@ -296,7 +300,6 @@ namespace Game.Player
         #endregion ability flagging methods
 
         //###########################################################
-        //###########################################################
 
         #region pillar state methods
 
@@ -322,6 +325,52 @@ namespace Game.Player
         }
 
         #endregion pillar state methods
+
+        //###########################################################
+
+        public eAbilityState GetAbilityState(eAbilityType abilityType)
+        {
+            var ability = abilityData.GetAbility(abilityType);
+
+            if (activatedAbilities.Contains(abilityType))
+            {
+                return eAbilityState.active;
+            }
+            else if (unlockedAbilityGroups.Contains(ability.Group) && Favours >= ability.ActivationPrice)
+            {
+                return eAbilityState.available;
+            }
+            else
+            {
+                return eAbilityState.locked;
+            }
+        }
+
+        public void ChangeFavourAmount(int favourDelta)
+        {
+            Favours += favourDelta;
+
+            Utilities.EventManager.SendFavourAmountChangedEvent(this, new Utilities.EventManager.FavourAmountChangedEventArgs(Favours));
+
+            //send events
+            var abilities = abilityData.GetAllAbilities();
+            for (int i = 0; i < abilities.Count; i++)
+            {
+                var ability = abilities[i];
+
+                if (!CheckAbilityActive(ability.Type) && CheckAbilityGroupUnlocked(ability.Group))
+                {
+                    var newState = eAbilityState.locked;
+
+                    if (Favours >= ability.ActivationPrice)
+                    {
+                        newState = eAbilityState.available;
+                    }
+
+                    Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(ability.Type, newState));
+                }
+            }
+        }
 
         //###########################################################
     }
