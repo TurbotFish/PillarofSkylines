@@ -53,12 +53,12 @@ namespace Game.Player.CharacterController
         /// The maximum height of step the player can climb.
         /// </summary>
         [Tooltip("The maximum height of step the player can climb.")]
-		public float maxStepHeight = 1f;
-		/// <summary>
-		/// The distance at which the player stops when encountering a cliff with no input.
-		/// </summary>
-		[Tooltip("The distance at which the player stops when encountering a cliff with no input.")]
-		public float distanceStoppingCliff = .1f;
+        public float maxStepHeight = 1f;
+        /// <summary>
+        /// The distance at which the player stops when encountering a cliff with no input.
+        /// </summary>
+        [Tooltip("The distance at which the player stops when encountering a cliff with no input.")]
+        public float distanceStoppingCliff = .1f;
         #endregion general
 
         #region speed and controls variables
@@ -421,7 +421,8 @@ namespace Game.Player.CharacterController
         {
             transform.position = args.Position;
 
-            if (args.IsNewScene) {
+            if (args.IsNewScene)
+            {
                 transform.rotation = args.Rotation;
                 velocity = Vector3.zero;
                 currentPlayerState = ePlayerState.inAir;
@@ -680,17 +681,21 @@ namespace Game.Player.CharacterController
                         lastJumpAerial = false;
 
                         EnterStateInAir();
-					} else if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash))
+                    }
+                    else if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash))
                     {
                         QuitStateOnGround();
 
                         EnterStateDash();
-						//If the player is going off a cliff when the left stick is at zero, stop the player
-					} else if (leftStickAtZero) {
-						if (!Physics.Raycast(transform.position + transform.up * controller.skinWidth + (Vector3.ProjectOnPlane(transform.forward, controller.collisions.currentGroundNormal).normalized * distanceStoppingCliff), -controller.collisions.currentGroundNormal, maxStepHeight, controller.collisionMask)){
-							flatVelocity = Vector3.zero;
-						}
-					}
+                        //If the player is going off a cliff when the left stick is at zero, stop the player
+                    }
+                    else if (leftStickAtZero)
+                    {
+                        if (!Physics.Raycast(transform.position + transform.up * controller.skinWidth + (Vector3.ProjectOnPlane(transform.forward, controller.collisions.currentGroundNormal).normalized * distanceStoppingCliff), -controller.collisions.currentGroundNormal, maxStepHeight, controller.collisionMask))
+                        {
+                            flatVelocity = Vector3.zero;
+                        }
+                    }
                     break;
 
 
@@ -700,7 +705,7 @@ namespace Game.Player.CharacterController
 
                 case ePlayerState.dashing:
 
-					flatVelocity = transform.forward * dashSpeed;
+                    flatVelocity = transform.forward * dashSpeed;
                     flatVelocity = TurnSpaceToLocal(flatVelocity);
                     flatVelocity.y = 0f;
                     velocity.y = 0f;
@@ -815,8 +820,11 @@ namespace Game.Player.CharacterController
                     windVelocity = Vector3.zero;
                     if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash))
                     {
+                        QuitStateInWindTunnel();
+
                         EnterStateDash();
 
+                        break;
                     }
 
                     break;
@@ -858,7 +866,7 @@ namespace Game.Player.CharacterController
                         break;
                     }
                     //default
-					float wallDriftSpeed = Mathf.Lerp(velocity.magnitude, playerMod.AbilityData.WallRun.WallDrift.TargetSpeed, playerMod.AbilityData.WallRun.WallDrift.SlowdownFactor * Time.deltaTime);
+                    float wallDriftSpeed = Mathf.Lerp(velocity.magnitude, playerMod.AbilityData.WallRun.WallDrift.TargetSpeed, playerMod.AbilityData.WallRun.WallDrift.SlowdownFactor * Time.deltaTime);
 
                     flatVelocity = -transform.up * wallDriftSpeed;
                     velocity.y = 0f;
@@ -1355,7 +1363,7 @@ namespace Game.Player.CharacterController
 
             animator.SetBool("OnGround", controller.collisions.below);
             animator.SetFloat("Forward", velocity.magnitude / characSpeed);
-			animator.SetFloat("Turn", (leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime) / 7f));
+            animator.SetFloat("Turn", (leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime) / 7f));
             animator.SetFloat("Jump", turnedVelocity.y / 5);
             float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
             float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputRaw.magnitude;
@@ -1548,7 +1556,7 @@ namespace Game.Player.CharacterController
             playerMod.FlagAbility(eAbilityType.WallRun);
 
             canTurnPlayer = false;
-			transform.forward = Vector3.ProjectOnPlane(-controller.collisions.currentWallNormal, transform.up);
+            transform.forward = Vector3.ProjectOnPlane(-controller.collisions.currentWallNormal, transform.up);
         }
 
         /// <summary>
@@ -1644,6 +1652,13 @@ namespace Game.Player.CharacterController
 
         //*******************************************
 
+        void StartJump()
+        {
+
+        }
+
+        //*******************************************
+
         #endregion state change methods
 
         //#############################################################################
@@ -1675,7 +1690,7 @@ namespace Game.Player.CharacterController
             bool stickOK = CheckWallRunStick();
 
             //
-//			print ("isAbilityActive " + isAbilityActive + " isTouchingWall " + isTouchingWall +" isFalling " + isFalling + " directionOK " + directionOK + " stickOK " + stickOK);
+            //			print ("isAbilityActive " + isAbilityActive + " isTouchingWall " + isTouchingWall +" isFalling " + isFalling + " directionOK " + directionOK + " stickOK " + stickOK);
             return (isAbilityActive && isTouchingWall && isFalling && directionOK && stickOK);
         }
 
@@ -1747,8 +1762,8 @@ namespace Game.Player.CharacterController
         bool CheckWallRunStick()
         {
             var stick = inputToCamera;
-			float dotproduct = Vector3.Dot(inputToCamera, transform.forward);
-			return (dotproduct >= playerMod.AbilityData.WallRun.General.StickMinTrigger && !leftStickAtZero);
+            float dotproduct = Vector3.Dot(inputToCamera, transform.forward);
+            return (dotproduct >= playerMod.AbilityData.WallRun.General.StickMinTrigger && !leftStickAtZero);
         }
 
         #endregion ability checks
