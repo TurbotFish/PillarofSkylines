@@ -34,10 +34,7 @@ namespace Game.World.ChunkSystem
 
         bool isInitialized = false;
 
-        System.Object activationLock = new System.Object();
-        LinkedList<GameObject> objectsToActivate = new LinkedList<GameObject>();
-        LinkedList<GameObject> objectsToDeactivate = new LinkedList<GameObject>();
-
+        Queue<Renderer> rendererQueue = new Queue<Renderer>();
         int regionUpdateIndex = 0;
 
         System.Diagnostics.Stopwatch stopwatch;
@@ -90,48 +87,46 @@ namespace Game.World.ChunkSystem
 
             //******************************************
             //updating world
+
             stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
             for (int i = 0; i < ChunkSystemData.RegionUpdatesPerFrame; i++)
             {
-                regionList[regionUpdateIndex++].UpdateRegion(playerTransform.position, cameraTransform.position);
+                var renderersToSwitch = regionList[regionUpdateIndex++].UpdateChunkSystem(playerTransform.position, cameraTransform.position);
+                for (int j = 0; j < renderersToSwitch.Count; j++)
+                {
+                    rendererQueue.Enqueue(renderersToSwitch[i]);
+                }
 
                 if (regionUpdateIndex == regionList.Count)
                 {
                     regionUpdateIndex = 0;
                 }
             }
+
             stopwatch.Stop();
             var worldUpdateTime = stopwatch.Elapsed;
 
             //******************************************
             //object activation
-            lock (activationLock)
+
+            stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+            int quota = Mathf.Min(ChunkSystemData.ObjectActivationsPerFrame, rendererQueue.Count);
+            Renderer currentRenderer;
+
+            for (int i = 0; i < quota; i++)
             {
-                //Debug.LogFormat("WorldController: Update: object activation: to activate = {0}; to deactivate = {1}", objectsToActivate.Count, objectsToDeactivate.Count);
-                stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                currentRenderer = rendererQueue.Dequeue();
 
-                int quota = ChunkSystemData.ObjectActivationsPerFrame;
-                int activationQuota = Mathf.Min(quota, objectsToActivate.Count);
-                quota -= activationQuota;
-                int deactivationQuota = Mathf.Min(quota, objectsToDeactivate.Count);
-
-                for (int i = 0; i < activationQuota; i++)
-                {
-                    objectsToActivate.First.Value.SetActive(true);
-                    objectsToActivate.RemoveFirst();
-                }
-
-                for (int i = 0; i < deactivationQuota; i++)
-                {
-                    objectsToDeactivate.First.Value.SetActive(false);
-                    objectsToDeactivate.RemoveFirst();
-                }
-
-                stopwatch.Stop();
+                currentRenderer.enabled = !currentRenderer.enabled;
             }
 
+            stopwatch.Stop();
+
             var objectActivationTime = stopwatch.Elapsed;
-            //Debug.LogFormat("WorldController: Update: A={0}; B={1}", worldUpdateTime.Milliseconds / 1000f, objectActivationTime.Milliseconds / 1000f);
+
+            //Debug.LogFormat("WorldController: Update: A={0}; B={1}", worldUpdateTime.Milliseconds /*/ 1000f*/, objectActivationTime.Milliseconds /*/ 1000f*/);
         }
 
         #endregion update
@@ -243,47 +238,6 @@ namespace Game.World.ChunkSystem
 
         //##################################################################
 
-        #region subChunk activation
-
-        public void QueueObjectsToSetActive(List<GameObject> objectList, bool active)
-        {
-            lock (activationLock)
-            {
-                if (active)
-                {
-                    for (int i = 0; i < objectList.Count; i++)
-                    {
-                        var currentObject = objectList[i];
-
-                        if (!objectsToActivate.Contains(currentObject))
-                        {
-                            objectsToActivate.AddLast(currentObject);
-                        }
-
-                        objectsToDeactivate.Remove(currentObject);
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < objectList.Count; i++)
-                    {
-                        var currentObject = objectList[i];
-
-                        objectsToActivate.Remove(currentObject);
-
-                        if (!objectsToDeactivate.Contains(currentObject))
-                        {
-                            objectsToDeactivate.AddLast(currentObject);
-                        }
-                    }
-                }
-            }
-        }
-
-        #endregion subChunk activation
-
-        //##################################################################
-
         #region event handlers
 
         void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
@@ -325,10 +279,10 @@ namespace Game.World.ChunkSystem
             //    Gizmos.DrawCube(this.playerTransform.position, new Vector3(size, size, size));
             //}
 
-            if (drawGizmo && isInitialized && Application.isEditor && Application.isPlaying)
-            {
+            if (drawGizmo && Application.isEditor) {
                 Gizmos.color = gizmoColor;
-                Gizmos.DrawCube(transform.position, worldSize);
+                //Gizmos.DrawCube(transform.position, worldSize);
+                Gizmos.DrawWireCube(transform.position, worldSize);
             }
         }
         #endregion

@@ -22,16 +22,7 @@ namespace Game.Player
         public bool hasNeedle;
 
         //
-        int favours = 0;
-        public int Favours
-        {
-            get { return this.favours; }
-            set
-            {
-                this.favours = value;
-                Utilities.EventManager.SendFavourAmountChangedEvent(this, new Utilities.EventManager.FavourAmountChangedEventArgs(this.favours));
-            }
-        }
+        public int Favours { get; private set; }
 
         //ability variables
         List<eAbilityGroup> unlockedAbilityGroups = new List<eAbilityGroup>();
@@ -74,14 +65,7 @@ namespace Game.Player
         /// <returns>Returns true if the ability group is unlocked, false otherwise.</returns>
         public bool CheckAbilityGroupUnlocked(eAbilityGroup abilityGroup)
         {
-            if (unlockedAbilityGroups.Contains(abilityGroup))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return unlockedAbilityGroups.Contains(abilityGroup);
         }
 
         /// <summary>
@@ -361,5 +345,33 @@ namespace Game.Player
                 return eAbilityState.locked;
             }
         }
+
+        public void ChangeFavourAmount(int favourDelta)
+        {
+            Favours += favourDelta;
+
+            Utilities.EventManager.SendFavourAmountChangedEvent(this, new Utilities.EventManager.FavourAmountChangedEventArgs(Favours));
+
+            //send events
+            var abilities = abilityData.GetAllAbilities();
+            for (int i = 0; i < abilities.Count; i++)
+            {
+                var ability = abilities[i];
+
+                if (!CheckAbilityActive(ability.Type) && CheckAbilityGroupUnlocked(ability.Group))
+                {
+                    var newState = eAbilityState.locked;
+
+                    if (Favours >= ability.ActivationPrice)
+                    {
+                        newState = eAbilityState.available;
+                    }
+
+                    Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(ability.Type, newState));
+                }
+            }
+        }
+
+        //###########################################################
     }
 } //end of namespace

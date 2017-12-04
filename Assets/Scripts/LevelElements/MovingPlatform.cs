@@ -6,6 +6,7 @@ public class MovingPlatform : MonoBehaviour {
 
 	public Game.Player.CharacterController.Character currPlayer;
 
+	[HideInInspector]
 	public Vector3 impactPoint;
 
 	void Start () {
