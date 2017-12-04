@@ -18,7 +18,7 @@ namespace Game.EchoSystem
         ParticleSystem myParticleSystem;
         Renderer myRenderer;
 
-        EchoManager echoManager;
+        //EchoManager echoManager;
         int pickUpLayer;
 
         public Transform MyTransform { get; private set; }
@@ -39,7 +39,7 @@ namespace Game.EchoSystem
 
             pickUpLayer = gameObject.layer;
 
-            echoManager = FindObjectOfType<EchoManager>();
+            //echoManager = FindObjectOfType<EchoManager>();
         }
 
         //##################################################################
