@@ -7,6 +7,8 @@ namespace Game.World.Interaction
 {
     public class Favour : MonoBehaviour, IWorldObject
     {
+        //##################################################################
+
         [SerializeField]
         [HideInInspector]
         int instanceId = -1;
@@ -20,7 +22,9 @@ namespace Game.World.Interaction
         public Transform MyTransform { get; private set; }
         BoxCollider myCollider;
 
-        void IWorldObject.InitializeWorldObject(WorldController worldController)
+        //##################################################################
+
+        void IWorldObject.InitializeWorldObject(WorldController worldController, bool isCopy)
         {
             if (!instanceIdSet)
             {
@@ -35,6 +39,8 @@ namespace Game.World.Interaction
 
             worldController.RegisterFavour(this);
         }
+
+        //##################################################################
 
         void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
         {
@@ -51,5 +57,7 @@ namespace Game.World.Interaction
                 }
             }
         }
+
+        //##################################################################
     }
 } //end of namespace

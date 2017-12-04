@@ -65,34 +65,62 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// Update all the things!
         /// </summary>
-        public virtual void UpdateChunk(Vector3 playerPos)
+        public virtual void UpdateChunk(Vector3 playerPos, Vector3 cameraPos)
         {
-            float distance = 0;
+            var corners = Utilities.PillarMath.GetBoxColliderCorners(bounds);
+            var cameraDir = (playerPos - cameraPos).normalized;
+            bool colliderVisible = false;
 
-            if (!this.bounds.bounds.Contains(playerPos))
+            for (int i = 0; i < corners.Count; i++)
             {
-                var closestPoint = bounds.ClosestPoint(playerPos);
-                distance = Vector3.Distance(playerPos, closestPoint);
+                var cornerDir = (corners[i] - cameraPos).normalized;
+                float dotProduct = Vector3.Dot(cameraDir, cornerDir);
+
+                if (dotProduct > 0)
+                {
+                    colliderVisible = true;
+                    break;
+                }
             }
 
-            for (int i = 0; i < subChunkList.Count; i++)
+            if (!colliderVisible)
             {
-                var subChunk = subChunkList[i];
+                //Debug.LogFormat("Chunk \"{0}\" behind camera!", name);
 
-                var renderDistance = data.GetRenderDistance(subChunk.Layer);
-
-                if (distance >= renderDistance.x && distance < renderDistance.y)
+                for (int i = 0; i < subChunkList.Count; i++)
                 {
-                    if (!subChunk.IsActive)
-                    {
-                        subChunk.SetSubChunkActive(true);
-                    }
+                    subChunkList[i].SetSubChunkActive(false);
                 }
-                else
+            }
+            else
+            {
+                float distance = 0;
+
+                if (!this.bounds.bounds.Contains(playerPos))
                 {
-                    if (subChunk.IsActive)
+                    var closestPoint = bounds.ClosestPoint(playerPos);
+                    distance = Vector3.Distance(playerPos, closestPoint);
+                }
+
+                for (int i = 0; i < subChunkList.Count; i++)
+                {
+                    var subChunk = subChunkList[i];
+
+                    var renderDistance = data.GetRenderDistance(subChunk.Layer);
+
+                    if (distance >= renderDistance.x && distance < renderDistance.y)
                     {
-                        subChunk.SetSubChunkActive(false);
+                        if (!subChunk.IsActive)
+                        {
+                            subChunk.SetSubChunkActive(true);
+                        }
+                    }
+                    else
+                    {
+                        if (subChunk.IsActive)
+                        {
+                            subChunk.SetSubChunkActive(false);
+                        }
                     }
                 }
             }
