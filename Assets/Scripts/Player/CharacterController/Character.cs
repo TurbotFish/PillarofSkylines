@@ -1828,17 +1828,4 @@ namespace Game.Player.CharacterController
 
         //#############################################################################
     } //end of class
-
-    public enum ePlayerState
-    {
-        inAir,
-        onGround,
-        gliding,
-        dashing,
-        sliding,
-        inWindTunnel,
-        WallDrifting,
-        WallRunningHorizontal,
-        WallRunningVertical
-    }
 } //end of namespace
