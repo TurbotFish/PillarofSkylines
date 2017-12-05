@@ -3,7 +3,7 @@ using UnityEditor;
 
 public class EditorDebugMaster : EditorWindow {
     
-    [MenuItem("PoS Debug/Debug Replacement Shader Mode _F1", false, -10)]
+    [MenuItem("PoS Debug/Debug Replacement Shader Mode _F1", false)]
     public static void ChangeDebugShaderMode() {
         var shaderScript = Camera.main.GetComponent<DebugReplacementShading>();
 
@@ -20,7 +20,7 @@ public class EditorDebugMaster : EditorWindow {
             shaderScript.enabled = false;
     }
 
-    [MenuItem("PoS Debug/Select Camera %#C", false, -10)]
+    [MenuItem("PoS Debug/Select Camera %#C", false)]
     public static void SelectCamera() {
         Transform cam = FindObjectOfType<PoS_Camera>().transform;
         Transform viewPos = SceneView.lastActiveSceneView.camera.transform;
@@ -28,9 +28,8 @@ public class EditorDebugMaster : EditorWindow {
         cam.position = viewPos.position;
         cam.rotation = viewPos.rotation;
     }
-
-
-	[MenuItem("PoS Debug/Bring Player &F", false, -10)]
+    
+	[MenuItem("PoS Debug/Bring Player &F", false)]
 	public static void BringPlayer() {
 		
 		Transform player = FindObjectOfType<Game.Player.CharacterController.Character>().transform;
@@ -40,4 +39,25 @@ public class EditorDebugMaster : EditorWindow {
 		player.position = viewPos.position + viewPos.forward * nearClipPlane * 100f + player.up * 1f;
 		
 	}
+
+    [MenuItem("PoS Debug/Project Data/Scenes", false)]
+    public static void EditSceneData() {
+        Selection.activeObject = Resources.Load("ScriptableObjects/SceneNamesData");
+    }
+
+    [MenuItem("PoS Debug/Project Data/Pillars", false)]
+    public static void EditPillarData() {
+        Selection.activeObject = Resources.Load("ScriptableObjects/PillarData");
+    }
+
+    [MenuItem("PoS Debug/Project Data/Abilities", false)]
+    public static void EditAbilityData() {
+        Selection.activeObject = Resources.Load("ScriptableObjects/AbilityData");
+    }
+
+    [MenuItem("PoS Debug/Project Data/Chunk System", false)]
+    public static void EditChunkSystemData() {
+        Selection.activeObject = Resources.Load("ScriptableObjects/ChunkSystemData");
+    }
+    
 }
