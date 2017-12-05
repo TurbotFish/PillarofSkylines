@@ -45,7 +45,7 @@ namespace Game.Player
         /// </summary>
 		public void InitializeFavourController(PlayerModel playerModel, Game.Player.CharacterController.Character player)
         {
-            playerModel = playerModel;
+            this.playerModel = playerModel;
             myPlayer = player;
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;

@@ -349,11 +349,6 @@ namespace Game.Player.CharacterController
         float ignoreGravityTimer = 0f;
 
         /// <summary>
-        /// Timer for the horizontal wall run.
-        /// </summary>
-        float wallRunHorizontalTimer = 0f;
-
-        /// <summary>
         /// Timer for the vertical wall run.
         /// </summary>
         float wallRunVerticalTimer = 0f;
@@ -455,11 +450,6 @@ namespace Game.Player.CharacterController
             if (ignoreGravityTimer >= 0)
             {
                 ignoreGravityTimer -= Time.deltaTime;
-            }
-
-            if (wallRunHorizontalTimer >= 0)
-            {
-                wallRunHorizontalTimer -= Time.deltaTime;
             }
 
             if (wallRunVerticalTimer >= 0)
@@ -866,7 +856,7 @@ namespace Game.Player.CharacterController
                         break;
                     }
                     //default
-                    float wallDriftSpeed = Mathf.Lerp(velocity.magnitude, playerMod.AbilityData.WallRun.WallDrift.TargetSpeed, playerMod.AbilityData.WallRun.WallDrift.SlowdownFactor * Time.deltaTime);
+                    float wallDriftSpeed = Mathf.Lerp(velocity.magnitude, playerMod.AbilityData.WallRun.WallDrift.TargetSpeed, playerMod.AbilityData.WallRun.WallDrift.LerpFactor * Time.deltaTime);
 
                     flatVelocity = -transform.up * wallDriftSpeed;
                     velocity.y = 0f;
@@ -910,7 +900,7 @@ namespace Game.Player.CharacterController
                         break;
                     }
                     //time over
-                    if (wallRunHorizontalTimer <= 0)
+                    if (flatVelocity.magnitude < playerMod.AbilityData.WallRun.WallRunHorizontal.MinSpeed)
                     {
                         QuitStateWallRunHorizontal();
 
@@ -920,8 +910,16 @@ namespace Game.Player.CharacterController
                         break;
                     }
                     //default
-                    velocity.y = -gravityStrength * playerMod.AbilityData.WallRun.WallRunHorizontal.GravityMultiplier * Time.deltaTime;
-                    flatVelocity = transform.forward * Mathf.Lerp(flatVelocity.magnitude, playerMod.AbilityData.WallRun.WallRunHorizontal.TargetSpeed, 0.6f * Time.deltaTime);
+                    var forward = transform.forward * playerMod.AbilityData.WallRun.WallRunHorizontal.ForwardSpeed;
+                    var gravity = -Vector3.up * playerMod.AbilityData.WallRun.WallRunHorizontal.Gravity;
+                    var momentum = velocity * playerMod.AbilityData.WallRun.WallRunHorizontal.Momentum;
+                    var acceleration = momentum + gravity + forward;
+
+                    flatVelocity = acceleration;
+                    velocity = Vector3.zero;
+
+                    //velocity.y = -gravityStrength * playerMod.AbilityData.WallRun.WallRunHorizontal.GravityMultiplier * Time.deltaTime;
+                    //flatVelocity = transform.forward * Mathf.Lerp(flatVelocity.magnitude, playerMod.AbilityData.WallRun.WallRunHorizontal.TargetSpeed, 0.6f * Time.deltaTime);
 
                     break;
 
@@ -1582,7 +1580,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateWallRunHorizontal()
         {
-            //Debug.Log("EnterWallRunHorizontal");
+            Debug.Log("EnterWallRunHorizontal");
 
             currentPlayerState = ePlayerState.WallRunningHorizontal;
             playerMod.FlagAbility(eAbilityType.WallRun);
@@ -1597,8 +1595,6 @@ namespace Game.Player.CharacterController
             var simpleCross = Vector3.Cross(simpleWallNormal, simplePlayerForward);
 
             transform.forward = -Vector3.Cross(wallNormal, simpleCross);
-
-            wallRunHorizontalTimer = playerMod.AbilityData.WallRun.WallRunHorizontal.Duration;
         }
 
         /// <summary>
@@ -1606,7 +1602,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void QuitStateWallRunHorizontal()
         {
-            //Debug.Log("QuitStateWallRunHorizontal");
+            Debug.Log("QuitStateWallRunHorizontal");
 
             playerMod.UnflagAbility(eAbilityType.WallRun);
 
@@ -1707,7 +1703,7 @@ namespace Game.Player.CharacterController
             bool isTouchingWall = controller.collisions.side;
 
             //
-            bool hasDashed = (dashTimer >= 0 || dashDuration >= 0);
+            bool hasDashed = (dashTimer > 0 || dashDuration > 0);
 
             //
             bool directionOK = CheckWallRunPlayerForward(-0.95f);
@@ -1753,7 +1749,7 @@ namespace Game.Player.CharacterController
         bool CheckWallRunPlayerForward(float minDotProduct = -1)
         {
             float dotProduct = Vector3.Dot(transform.forward, controller.collisions.currentWallNormal);
-            return (minDotProduct <= dotProduct && dotProduct <= playerMod.AbilityData.WallRun.General.TriggerDotProduct);
+            return (minDotProduct <= dotProduct && dotProduct <= playerMod.AbilityData.WallRun.General.DirectionTrigger);
         }
 
         /// <summary>
@@ -1763,7 +1759,7 @@ namespace Game.Player.CharacterController
         {
             var stick = inputToCamera;
             float dotproduct = Vector3.Dot(inputToCamera, transform.forward);
-            return (dotproduct >= playerMod.AbilityData.WallRun.General.StickMinTrigger && !leftStickAtZero);
+            return (dotproduct >= playerMod.AbilityData.WallRun.General.StickTrigger && !leftStickAtZero);
         }
 
         #endregion ability checks
