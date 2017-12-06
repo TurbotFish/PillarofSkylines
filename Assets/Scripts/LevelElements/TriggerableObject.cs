@@ -17,16 +17,26 @@ public abstract class TriggerableObject : MonoBehaviour {
     TriggerOperator triggerWith = TriggerOperator.AllOfThem;
     [SerializeField]
     bool definitiveActivation;
+    
+    // Have a ToggleState() to toggle without needing to check states and all since toggle is immediate
 
-    public void UpdateState() {
-        bool needsUpdate = triggered; //get previous state
-        triggered = CheckTriggers();  //check triggers
-        needsUpdate ^= triggered;     //see if state has changed
+    public void UpdateState(bool toggle = false) {
 
-        if (needsUpdate) {
+        if (toggle) {
+            triggered ^= true;
             if (triggered) Activate();
-            else if (!definitiveActivation) Deactivate();
+            else Deactivate();
+
+        } else {
+            bool needsUpdate = triggered; //get previous state
+            triggered = CheckTriggers();  //check triggers
+            needsUpdate ^= triggered;     //see if state has changed
+            if (needsUpdate) {
+                if (triggered) Activate();
+                else if (!definitiveActivation) Deactivate();
+            }
         }
+
     }
 
     protected abstract void Activate();
@@ -38,7 +48,7 @@ public abstract class TriggerableObject : MonoBehaviour {
                 foreach (Trigger trigger in triggers)
                     if (!trigger.TriggerState) return false;
                 return true;
-
+            
             case TriggerOperator.OneOfThem:
                 foreach (Trigger trigger in triggers)
                     if (trigger.TriggerState) return true;
