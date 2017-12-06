@@ -307,6 +307,7 @@ namespace Game.Player.CharacterController
         #endregion other variables
 
         #region private variables
+
         bool readingInputs = true;
         /// <summary>
         /// Indicates whether may be turned in response to (left stick) input.
@@ -677,8 +678,8 @@ namespace Game.Player.CharacterController
                         QuitStateOnGround();
 
                         EnterStateDash();
-                        //If the player is going off a cliff when the left stick is at zero, stop the player
                     }
+                    //If the player is going off a cliff when the left stick is at zero, stop the player
                     else if (leftStickAtZero)
                     {
                         if (!Physics.Raycast(transform.position + transform.up * controller.skinWidth + (Vector3.ProjectOnPlane(transform.forward, controller.collisions.currentGroundNormal).normalized * distanceStoppingCliff), -controller.collisions.currentGroundNormal, maxStepHeight, controller.collisionMask))

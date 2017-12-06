@@ -8,50 +8,117 @@ namespace Game.Player.CharacterController
     {
         //#############################################################################
 
+        CharController character;
+        PlayerModel model;
+
         Dictionary<ePlayerState, IState> stateDict = new Dictionary<ePlayerState, IState>();
+        Dictionary<ePlayerState, StateCooldown> cooldownDict = new Dictionary<ePlayerState, StateCooldown>();
+        Dictionary<ePlayerState, eAbilityType> stateToAbilityLinkDict = new Dictionary<ePlayerState, eAbilityType>();
+        Dictionary<eAbilityType, ePlayerState> abilityToStateLinkDict = new Dictionary<eAbilityType, ePlayerState>();
+
         IState currentState;
         public ePlayerState CurrentState { get { return currentState.StateId; } }
 
-        Dictionary<ePlayerState, StateCooldown> cooldownDict = new Dictionary<ePlayerState, StateCooldown>();
-
         //#############################################################################
 
-        public StateMachine()
+        public StateMachine(CharController character, PlayerModel model)
         {
+            this.character = character;
+            this.model = model;
+
             currentState = new EmptyState();
         }
 
         //#############################################################################
 
-        public void Add(ePlayerState stateId, IState state) { stateDict.Add(stateId, state); }
-        public void Remove(ePlayerState stateId) { stateDict.Remove(stateId); }
-        public void Clear() { stateDict.Clear(); }
+        public void Add(ePlayerState stateId, IState state)
+        {
+            stateDict.Add(stateId, state);
+        }
+
+        public void Add(ePlayerState stateId, IState state, eAbilityType abilityType)
+        {
+            stateToAbilityLinkDict.Add(stateId, abilityType);
+            abilityToStateLinkDict.Add(abilityType, stateId);
+
+            Add(stateId, state);
+        }
+
+        public void Remove(ePlayerState stateId)
+        {
+            if (stateToAbilityLinkDict.ContainsKey(stateId))
+            {
+                abilityToStateLinkDict.Remove(stateToAbilityLinkDict[stateId]);
+                stateToAbilityLinkDict.Remove(stateId);
+            }
+
+            stateDict.Remove(stateId);
+        }
+
+        public void Clear()
+        {
+            abilityToStateLinkDict.Clear();
+            stateToAbilityLinkDict.Clear();
+            cooldownDict.Clear();
+            stateDict.Clear();
+        }
 
         //#############################################################################
 
-        public bool CheckCanEnterState(ePlayerState stateId)
+        public void SetStateCooldown(StateCooldown cooldown)
         {
-            return stateDict[stateId].CheckCanEnterState();
+            if (cooldownDict.ContainsKey(cooldown.StateId))
+            {
+                cooldownDict[cooldown.StateId] = cooldown;
+            }
+            else
+            {
+                cooldownDict.Add(cooldown.StateId, cooldown);
+            }
+        }
+
+        public bool CheckStateLocked(ePlayerState stateId)
+        {
+            if (
+                (stateToAbilityLinkDict.ContainsKey(stateId) && !model.CheckAbilityActive(stateToAbilityLinkDict[stateId]))
+                || !cooldownDict.ContainsKey(stateId)
+               )
+            {
+                return true; //locked
+            }
+
+            return false; //not locked
         }
 
         public bool ChangeState(BaseEnterArgs enterArgs)
         {
-            if (cooldownDict.ContainsKey(enterArgs.NewState) || !stateDict[enterArgs.NewState].CheckCanEnterState())
+            if (CheckStateLocked(enterArgs.NewState))
             {
                 return false;
             }
 
             currentState.Exit();
-            var nextState = stateDict[enterArgs.NewState];
-            nextState.Enter(enterArgs);
-            currentState = nextState;
+
+            if (stateToAbilityLinkDict.ContainsKey(enterArgs.PreviousState))
+            {
+                model.UnflagAbility(stateToAbilityLinkDict[enterArgs.PreviousState]);
+            }
+
+            currentState = stateDict[enterArgs.NewState];
+
+            if (stateToAbilityLinkDict.ContainsKey(enterArgs.NewState))
+            {
+                model.FlagAbility(stateToAbilityLinkDict[enterArgs.NewState]);
+            }
+
+            currentState.Enter(enterArgs);
 
             return true;
         }
 
         //#############################################################################
 
-        public void Update(float dt)
+        public StateReturnValues Update(float dt)
         {
             //updating the state cooldowns
             List<StateCooldown> cooldownList = new List<StateCooldown>(cooldownDict.Values);
@@ -67,12 +134,12 @@ namespace Game.Player.CharacterController
             }
 
             //updating the current state
-            currentState.Update(dt);
+            return currentState.Update(dt);
         }
 
-        public void HandleInput()
+        public void HandleInput(PlayerInputInfo inputInfo)
         {
-            currentState.HandleInput();
+            currentState.HandleInput(inputInfo);
         }
 
         //#############################################################################

@@ -5,10 +5,8 @@ namespace Game.Player.CharacterController.States
     {
         ePlayerState StateId { get; }
 
-        bool CheckCanEnterState();
-
-        void Update(float dt);
-        void HandleInput();
+        StateReturnValues Update(float dt);
+        void HandleInput(PlayerInputInfo inputInfo);
 
         void Enter(EnterArgs.BaseEnterArgs enterArgs);
         void Exit();
