@@ -37,7 +37,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoIsPlayer();
 		DoRenderQueue ();
 
-		Debug.Log ("HELLOOOO");
+		//Debug.Log ("HELLOOOO");
 	}
 
 	void DoMain(){
@@ -450,13 +450,13 @@ public class CustomPBR_GUI : ShaderGUI {
 			foreach (Material m in editor.targets) {
 				if (mode == CullMode.Back) {
 					m.SetInt ("_Cull", (int)CullMode.Back);
-					Debug.Log ((int)CullMode.Back);
+					//Debug.Log ((int)CullMode.Back);
 				} else if (mode == CullMode.Front) {
 					m.SetInt ("_Cull", (int)CullMode.Front);
-					Debug.Log ((int)CullMode.Front);
+					//Debug.Log ((int)CullMode.Front);
 				} else if (mode == CullMode.Off) {
 					m.SetInt ("_Cull", (int)CullMode.Off);
-					Debug.Log ((int)CullMode.Off);
+					//Debug.Log ((int)CullMode.Off);
 				}
 				//Debug.Log (IsKeywordEnabled ("_CULL_BACK"));
 			}
