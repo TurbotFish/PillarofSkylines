@@ -38,14 +38,15 @@ namespace Game.World.ChunkSystem
 
         //##################################################################
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public override void UpdateChunk(Vector3 playerPos, Vector3 cameraPos)
+        public override List<Renderer> UpdateChunkSystem(Vector3 playerPos, Vector3 cameraPos)
         {
             if (isActive)
             {
-                base.UpdateChunk(playerPos, cameraPos);
+                return base.UpdateChunkSystem(playerPos, cameraPos);
+            }
+            else
+            {
+                return new List<Renderer>();
             }
         }
 

@@ -18,15 +18,12 @@ namespace Game.World.ChunkSystem
         [SerializeField]
         bool doNotWrap = false;
 
-        WorldController worldController;
-
         Transform myTransform;
 
         public bool IsActive { get; private set; }
         public bool IsCopy { get; private set; }
 
-        List<GameObject> childList = new List<GameObject>();
-        System.Object childListLock = new System.Object();
+        List<Renderer> rendererList = new List<Renderer>();
 
         //##################################################################
 
@@ -44,14 +41,12 @@ namespace Game.World.ChunkSystem
         /// </summary>
         public void InitializeSubChunk(WorldController worldController)
         {
-            this.worldController = worldController;
-
             myTransform = transform;
 
             gameObject.SetActive(true);
 
-            //fill child list
-            FillChildList();
+            //fill renderer list
+            FillRendererList();
 
             //initialize world objects
             var worldObjects = GetComponentsInChildren<Interaction.IWorldObject>();
@@ -86,7 +81,7 @@ namespace Game.World.ChunkSystem
 
             Debug.LogFormat("SubChunk \"{0}\": OnTransformChildrenChanged called!", name);
 
-            FillChildList();
+            FillRendererList();
         }
 
         //##################################################################
@@ -130,62 +125,58 @@ namespace Game.World.ChunkSystem
         /// If <paramref name="immediate"/> is true, all objects are de-activated at once which causes some lag.
         /// Otherwise the de-activation is spread out over several frames (handled by the <see cref="WorldController"/>).
         /// </summary>
-        public void SetSubChunkActive(bool active, bool immediate = false)
+        public List<Renderer> SetSubChunkActive(bool active, bool immediate = false)
         {
+            var result = new List<Renderer>();
+
             if (IsActive == active)
             {
-                return;
+                return result;
+            }
+            else if (immediate)
+            {
+                for (int i = 0; i < rendererList.Count; i++)
+                {
+                    rendererList[i].enabled = active;
+                }
+            }
+            else
+            {
+                result.AddRange(rendererList);
+                //Debug.LogFormat("SubChunk: SetActive: name={0} ; value={1}", name, active);
             }
 
             IsActive = active;
-            StopAllCoroutines();
-
-            lock (childListLock)
-            {
-                if (immediate)
-                {
-                    for (int i = 0; i < childList.Count; i++)
-                    {
-                        childList[i].SetActive(active);
-                    }
-                }
-                else
-                {
-                    worldController.QueueObjectsToSetActive(childList, active);
-                }
-            }
+            return result;
         }
 
         //##################################################################
 
-        void FillChildList()
+        void FillRendererList()
         {
-            lock (childListLock)
-            {
-                childList.Clear();
+            rendererList.Clear();
 
-                var candidates = new Stack<Transform>();
-                for (int i = 0; i < myTransform.childCount; i++)
+            var candidateStack = new Stack<Transform>();
+            for (int i = 0; i < myTransform.childCount; i++)
+            {
+                candidateStack.Push(myTransform.GetChild(i));
+            }
+
+            while (candidateStack.Count > 0)
+            {
+                var candidate = candidateStack.Pop();
+
+                var renderers = candidate.GetComponents<Renderer>();
+                if (renderers.Length > 0)
                 {
-                    childList.Add(myTransform.GetChild(i).gameObject);
-                    //candidates.Push(myTransform.GetChild(i));
+                    rendererList.AddRange(renderers);
                 }
 
-                while (candidates.Count > 0)
+                if (candidate.childCount > 0)
                 {
-                    var candidate = candidates.Pop();
-                    var components = candidate.GetComponents<Component>();
-
-                    if (components.Length > 1)
+                    for (int i = 0; i < candidate.childCount; i++)
                     {
-                        childList.Add(candidate.gameObject);
-                    }
-                    else
-                    {
-                        for (int i = 0; i < candidate.childCount; i++)
-                        {
-                            candidates.Push(candidate.GetChild(i));
-                        }
+                        candidateStack.Push(candidate.GetChild(i));
                     }
                 }
             }

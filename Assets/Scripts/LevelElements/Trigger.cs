@@ -10,10 +10,11 @@ public abstract class Trigger : MonoBehaviour {
         set {
             _triggerState = value;
             foreach(TriggerableObject target in targets) {
-                target.UpdateState();
+                target.UpdateState(toggle);
             }
         }
     }
+    protected bool toggle;
 
     public List<TriggerableObject> targets;
 

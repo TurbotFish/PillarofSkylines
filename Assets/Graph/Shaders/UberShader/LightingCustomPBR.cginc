@@ -605,6 +605,12 @@
 
 		FragmentOutput output;
 		#if defined(DEFERRED_PASS)
+
+//			#if defined(_CULL_BACK)
+//				color.rgb = float3(1,1,0);
+//			#endif
+
+
 			#if !defined(UNITY_HDR_ON)
 				color.rgb = exp2(-color.rgb);
 			#endif

@@ -1,0 +1,9 @@
+Pour bien utiliser les decals:
+- Placer le script DecalRenderer.cs sur l'objet qui sur lequel le decal est dessiné.
+- Si ce n'est pas fait automatiquement, assigner le mesh renderer de l'objet à la variable Cube Mesh.
+- Placer le script Decal.cs sur un game object vide.
+- Choisir le type de decal (diffuse, normales, ou les deux).
+- Créer le material avec le shader correspondant (DecalDiffuse, DecalNormals ou DecalDiffuseAndNormals).
+- Placer le volume en contact avec l'objet sur lequel le decal sera dessiné.
+- S'il se passe des choses étranges après avoir changé des paramètres, désactiver/activer le composant.
+- Si cela ne suffit pas à résoudre les problèmes, aller voir Aloïs. Il ne saura pas régler la situation, mais il vous montrera sa fausse pince de Noël avec un lapin.

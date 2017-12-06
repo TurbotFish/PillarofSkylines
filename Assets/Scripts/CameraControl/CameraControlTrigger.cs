@@ -4,15 +4,32 @@ public class CameraControlTrigger : MonoBehaviour {
 
     new PoS_Camera camera;
     
-    [Header("Zoom")]
-    [SerializeField, Tooltip("Set to -1 to keep default zoom")] float zoomValue = -1;
-    [SerializeField, Tooltip("Dampening used to zoom in this trigger")] float damp = 1;
+    public enum CameraControl {
+        None = 0,
+        PointOfInterest = 1,
+        AlignWithForwardAxis = 2,
+        OverrideCameraTransform = 3
+    }
+    [HideInInspector, SerializeField] bool displayTarget;
 
+    [Header("Zoom")]
+    [SerializeField] bool editZoom;
+    [ConditionalHide("editZoom")]
+    [SerializeField, Tooltip("Set to -1 to keep default zoom")] float zoomValue = 5;
+    [ConditionalHide("editZoom")]
+    [SerializeField, Tooltip("Dampening used to zoom in this trigger")] float damp = 1;
+    
     [Header("Parameters")]
-    [SerializeField] Transform pointOfInterest;
-    [SerializeField] bool alignWithForwardAxis = false;
+    public CameraControl mode;
+
+    [ConditionalHide("displayTarget")]
+    [SerializeField] Transform target;
+    
+    [ConditionalHide("mode", 2)]
+    [SerializeField] bool lookInForwardDirection = false;
+    
     [Space]
-    [SerializeField] bool enablePanoramaMode = false;
+    [SerializeField] bool disablePanoramaMode = false;
     
     private void Start() {
         camera = FindObjectOfType<PoS_Camera>(); // TODO: fix that
@@ -20,35 +37,64 @@ public class CameraControlTrigger : MonoBehaviour {
 
     void OnTriggerEnter(Collider col) {
         if (col.tag == "Player") {
-            if (zoomValue > 0)
+            if (editZoom)
                 camera.ZoomAt(zoomValue, damp);
-            if (pointOfInterest)
-                camera.SetPointOfInterest(pointOfInterest.position);
-            if (alignWithForwardAxis)
-                camera.SetAxisAlignment(transform.forward);
 
-            camera.enablePanoramaMode = enablePanoramaMode;
+            switch(mode) {
+                case CameraControl.PointOfInterest:
+                    camera.SetPointOfInterest(target.position);
+                    break;
+                case CameraControl.AlignWithForwardAxis:
+                    camera.SetAxisAlignment(transform.forward, !lookInForwardDirection);
+                    break;
+                case CameraControl.OverrideCameraTransform:
+                    camera.OverrideCamera(target.position, target.eulerAngles, damp);
+                    break;
+                default: break;
+            }
+            
+            camera.enablePanoramaMode = !disablePanoramaMode;
         }
     }
 
     void OnTriggerExit(Collider col) {
         if (col.tag == "Player") {
-            if (zoomValue > 0)
+            if (editZoom)
                 camera.ResetZoom();
-            if (pointOfInterest)
-                camera.ClearPointOfInterest(pointOfInterest.position);
-            if (alignWithForwardAxis)
-                camera.RemoveAxisAlignment(transform.forward);
-
+            
+            switch (mode) {
+                case CameraControl.PointOfInterest:
+                    camera.ClearPointOfInterest(target.position);
+                    break;
+                case CameraControl.AlignWithForwardAxis:
+                    camera.RemoveAxisAlignment(transform.forward);
+                    break;
+                case CameraControl.OverrideCameraTransform:
+                    camera.StopOverride();
+                    break;
+                default: break;
+            }
+            
             camera.enablePanoramaMode = true;
         }
     }
 
     private void OnDrawGizmos() {
-        if (alignWithForwardAxis) {
+        if (mode == CameraControl.AlignWithForwardAxis) {
             float length = GetComponent<Collider>().bounds.extents.z;
             Gizmos.color = Color.blue;
             Gizmos.DrawLine(transform.position - transform.forward * length, transform.position + transform.forward * length);
         }
+    }
+
+    private void OnValidate() {
+        SetDisplay();
+    }
+
+    /// <summary>
+    /// Use to set what shows in the inspector
+    /// </summary>
+    void SetDisplay() {
+        displayTarget = mode == CameraControl.PointOfInterest || mode == CameraControl.OverrideCameraTransform;
     }
 }
