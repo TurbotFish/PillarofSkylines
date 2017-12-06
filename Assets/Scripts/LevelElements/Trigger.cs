@@ -19,7 +19,7 @@ public abstract class Trigger : MonoBehaviour {
     public List<TriggerableObject> targets;
 
     private void OnValidate() {
-        TriggerState = _triggerState;
+        //TriggerState = _triggerState;
         foreach(TriggerableObject target in targets) {
             if (!target.triggers.Contains(this)) {
                 target.triggers.Add(this);
