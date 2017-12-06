@@ -59,15 +59,15 @@ namespace Game.Player.AbilitySystem
 
             bool abilityActive = this.model.CheckAbilityActive(eAbilityType.TombFinder);
             //Debug.LogErrorFormat("TombFinderController: abilityActive={0}, isInOpenWorld={1}, isFavourInWorld={2}", abilityActive, isInOpenWorld, isFavourInWorld);
-
-            if(!this.isParticleSystemActive && (this.isInOpenWorld && this.isFavourInWorld && abilityActive && player.velocity.sqrMagnitude == 0))
+            
+            if(!this.isParticleSystemActive && (this.isInOpenWorld && this.isFavourInWorld && abilityActive && player.velocity.sqrMagnitude < 0.01f))
             {
 				foreach (ParticleSystem ps in this.myParticleSystems) {
 					ps.Play ();
 				}
                 this.isParticleSystemActive = true;
             }
-            else if(this.isParticleSystemActive && (!this.isInOpenWorld || !this.isFavourInWorld || !abilityActive || player.velocity.sqrMagnitude != 0))
+            else if(this.isParticleSystemActive && (!this.isInOpenWorld || !this.isFavourInWorld || !abilityActive || player.velocity.sqrMagnitude > 0.01f))
             {
 				foreach (ParticleSystem ps in this.myParticleSystems) {
 					ps.Stop ();

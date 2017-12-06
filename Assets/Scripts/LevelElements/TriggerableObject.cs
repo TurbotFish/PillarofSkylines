@@ -21,19 +21,22 @@ public abstract class TriggerableObject : MonoBehaviour {
     // Have a ToggleState() to toggle without needing to check states and all since toggle is immediate
 
     public void UpdateState(bool toggle = false) {
-        bool needsUpdate = triggered; //get previous state
 
         if (toggle) {
-            needsUpdate = true;
+            triggered ^= true;
+            if (triggered) Activate();
+            else Deactivate();
+
         } else {
+            bool needsUpdate = triggered; //get previous state
             triggered = CheckTriggers();  //check triggers
             needsUpdate ^= triggered;     //see if state has changed
+            if (needsUpdate) {
+                if (triggered) Activate();
+                else if (!definitiveActivation) Deactivate();
+            }
         }
 
-        if (needsUpdate) {
-            if (triggered) Activate();
-            else if (!definitiveActivation) Deactivate();
-        }
     }
 
     protected abstract void Activate();

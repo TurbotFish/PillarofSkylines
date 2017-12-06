@@ -138,7 +138,6 @@ namespace Game.Player
                     playerModel.hasNeedle = false;
 
                     Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(true));
-                    Debug.Log("oeil mort");
 
                     HideUiMessage();
                 }
@@ -235,17 +234,14 @@ namespace Game.Player
                         break;
                     //eye
                     case "Eye":
-                        if (playerModel.hasNeedle)
-                        {
+                        if (playerModel.hasNeedle) {
                             this.eyeInRange = true;
-
                             ShowUiMessage("Press [X] to plant the needle");
                         }
 						break;
                     //echo
                     case "Echo":
-                        Debug.LogWarning("Echo destruction on collision not coded yet");
-                        ///Destroy(other.gameObject);
+                        other.GetComponent<EchoSystem.Echo>().Break();
                         break;
 					//wind
 					case "Wind":
