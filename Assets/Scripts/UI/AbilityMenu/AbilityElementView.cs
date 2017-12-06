@@ -7,6 +7,8 @@ namespace Game.UI.AbilityMenu
 {
     public class AbilityElementView : MonoBehaviour
     {
+        //##################################################################
+
         [SerializeField]
         Outline backgroundOutline;
 
@@ -30,6 +32,8 @@ namespace Game.UI.AbilityMenu
 
         public Player.eAbilityType AbilityType { get; private set; }
 
+        //##################################################################
+
         public void Initialize(Player.AbilitySystem.Ability ability, bool unlocked)
         {
             this.abilityIcon.sprite = ability.Icon;
@@ -37,38 +41,64 @@ namespace Game.UI.AbilityMenu
 
             if (unlocked)
             {
-                this.backgroundImage.color = this.deactivatedColour;
+                backgroundImage.color = deactivatedColour;
             }
             else
             {
-                this.backgroundImage.color = this.lockedColour;
+                backgroundImage.color = lockedColour;
             }
 
-            this.backgroundOutline.enabled = false;
+            backgroundOutline.enabled = false;
 
-            this.AbilityType = ability.Type;
+            AbilityType = ability.Type;
+        }
+
+        //##################################################################
+
+        public void SetState(eAbilityElementState state)
+        {
+            switch (state)
+            {
+                case eAbilityElementState.Activated:
+                    backgroundImage.color = activatedColour;
+                    break;
+                case eAbilityElementState.Deactivated:
+                    backgroundImage.color = deactivatedColour;
+                    break;
+                case eAbilityElementState.Locked:
+                    backgroundImage.color = lockedColour;
+                    break;
+                default:
+                    Debug.LogErrorFormat("AbilityElementView: SetState: not implemented case: {0}", state.ToString());
+                    break;
+            }
         }
 
         public void SetActivated()
         {
-            this.backgroundImage.color = this.activatedColour;
+            backgroundImage.color = activatedColour;
         }
 
         public void SetDeactivated()
         {
-            this.backgroundImage.color = this.deactivatedColour;
+            backgroundImage.color = deactivatedColour;
         }
 
         public void SetSelected(bool selected)
         {
             if (selected)
             {
-                this.backgroundOutline.enabled = true;
+                backgroundOutline.enabled = true;
             }
             else
             {
-                this.backgroundOutline.enabled = false;
+                backgroundOutline.enabled = false;
             }
+        }
+
+        public void SetLocked()
+        {
+            backgroundImage.color = lockedColour;
         }
     }
 }

@@ -49,8 +49,8 @@ namespace Game.EchoSystem
         {
             if (!isEclipseActive) {
 
-                float driftInput = Input.GetAxis("Right Trigger");
-                if (driftInput > 0.9f && !driftInputDown) {
+				float driftInput = Input.GetAxis("Right Trigger") ;
+				if ((driftInput > 0.9f || Input.GetKeyDown(KeyCode.A)) && !driftInputDown) { // TODO -> input manager drift
                     driftInputDown = true;
                     Drift();
                 } else if (driftInput < 0.8f) {

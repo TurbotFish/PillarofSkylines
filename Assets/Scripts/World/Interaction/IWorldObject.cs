@@ -6,6 +6,6 @@ namespace Game.World.Interaction
 {
     public interface IWorldObject
     {
-        void InitializeWorldObject(ChunkSystem.WorldController worldController);
+        void InitializeWorldObject(ChunkSystem.WorldController worldController, bool isCopy);
     }
 } //end of namespace
