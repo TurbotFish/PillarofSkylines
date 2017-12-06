@@ -1,6 +1,6 @@
 ﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
-Shader "Alo/PBR/CustomPBR" {
+Shader "Alo/PBR/CustomPBR(Hubert)" {
 
 	Properties {
 		_Color ("Tint", Color) = (1.0,1.0,1.0,1.0)
