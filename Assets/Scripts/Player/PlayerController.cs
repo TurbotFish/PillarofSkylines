@@ -34,7 +34,7 @@ namespace Game.Player
 
             //initializing all the things
             this.player.InitializePlayer(gameController.PlayerModel);
-            this.interactionController.InitializeFavourController(gameController.PlayerModel, player);
+            this.interactionController.InitializeFavourController(gameController.PlayerModel, player, gameController.EchoManager);
 
             if (gameController.WorldController != null)
             {

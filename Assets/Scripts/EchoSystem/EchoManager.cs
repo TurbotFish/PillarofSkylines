@@ -14,6 +14,10 @@ namespace Game.EchoSystem
 
         [SerializeField]
         int maxEchoes = 3;
+        /// <summary>
+        /// Number of echoes placed by the player.
+        /// </summary>
+        int placedEchoes;
 
         Transform playerTransform;
         EchoCameraEffect echoCamera;
@@ -84,23 +88,34 @@ namespace Game.EchoSystem
         public void Break(Echo target) {
             if (echoList.Contains(target)) {
                 echoList.Remove(target);
-                echoParticles.SetEchoNumber(maxEchoes - echoList.Count);
+            }
+            if (target.playerEcho) {
+                placedEchoes--;
+                echoParticles.SetEchoNumber(maxEchoes - placedEchoes);
             }
             Instantiate(breakEchoParticles, target.MyTransform.position, target.MyTransform.rotation);
             Destroy(target.gameObject);
         }
 
         public void BreakAll() {
-            for (int i = 0; i < echoList.Count; i++)
-                Break(echoList[i]);
+            Echo[] killList = echoList.ToArray();
+            for (int i = 0; i < killList.Length; i++)
+                Break(killList[i]);
         }
 
-        void CreateEcho(bool isPlayerEcho) {
+        public void CreateEcho(bool isPlayerEcho) {
             if (isEclipseActive)
                 return;
 
-            if (echoList.Count == maxEchoes) {
-                var oldestEcho = echoList[0];
+            if (placedEchoes == maxEchoes) {
+                int i = 0;
+                var oldestEcho = echoList[i];
+
+                while(!oldestEcho.playerEcho) {
+                    i++;
+                    oldestEcho = echoList[i];
+                }
+
                 Break(oldestEcho);
             }
 
@@ -109,8 +124,10 @@ namespace Game.EchoSystem
             newEcho.echoManager = this;
             echoList.Add(newEcho);
 
-            if (isPlayerEcho)
-                echoParticles.SetEchoNumber(maxEchoes - echoList.Count);
+            if (isPlayerEcho) {
+                placedEchoes++;
+                echoParticles.SetEchoNumber(maxEchoes - placedEchoes);
+            }
         }
 
         void FreezeAll() {
