@@ -14,7 +14,7 @@ public abstract class Trigger : MonoBehaviour {
             }
         }
     }
-    protected bool toggle;
+    public bool toggle;
 
     public List<TriggerableObject> targets;
 
