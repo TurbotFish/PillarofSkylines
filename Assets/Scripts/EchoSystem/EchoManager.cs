@@ -52,12 +52,12 @@ namespace Game.EchoSystem
             if (!isEclipseActive)
             {
                 float driftInput = Input.GetAxis("Right Trigger");
-                if (driftInput > 0.9f && !driftInputDown)
+                if (driftInput > 0.7f && !driftInputDown)
                 {
                     driftInputDown = true;
                     Drift();
                 }
-                else if (driftInput < 0.8f)
+                else if (driftInput < 0.6f)
                 {
                     driftInputDown = false;
                 }
@@ -93,6 +93,8 @@ namespace Game.EchoSystem
                 echoParticles.SetEchoNumber(maxEchoes - echoList.Count);
             }
         }
+
+
 
         void CreateEcho()
         {
