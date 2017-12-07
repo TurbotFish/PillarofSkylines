@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Game.World.Interaction
 {
-    public class Favour : MonoBehaviour, IWorldObject
+    public class Favour : MonoBehaviour, IWorldObjectInitialization
     {
         //##################################################################
 
@@ -24,7 +24,7 @@ namespace Game.World.Interaction
 
         //##################################################################
 
-        void IWorldObject.InitializeWorldObject(WorldController worldController, bool isCopy)
+        void IWorldObjectInitialization.Initialize(WorldController worldController, bool isCopy)
         {
             if (!instanceIdSet)
             {
