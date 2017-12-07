@@ -193,9 +193,9 @@ public class PoS_Camera : MonoBehaviour {
         // TODO: During a camera realignment, wait before realigning player
         
         Vector3 characterUp = target.parent.up; // TODO: only change this value when there's a change of gravity?
-        if (state == eCameraState.LookAt && inverseFacingDirection)
-            target.LookAt(target.position + Vector3.ProjectOnPlane(  startFacingDirection != inverseFacingDirection  ? -axisAligned : axisAligned, characterUp), characterUp); // Reoriente the character's rotator
-        else
+        //if (state == eCameraState.LookAt && inverseFacingDirection)
+        //    target.LookAt(target.position + Vector3.ProjectOnPlane(  startFacingDirection != inverseFacingDirection  ? -axisAligned : axisAligned, characterUp), characterUp); // Reoriente the character's rotator
+        //else
             target.LookAt(target.position + Vector3.ProjectOnPlane(my.forward, characterUp), characterUp); // Reoriente the character's rotator
     }
 
@@ -221,7 +221,7 @@ public class PoS_Camera : MonoBehaviour {
         if (autoAdjustYaw)
             yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / autoDamp);
 
-        if (state == eCameraState.Resetting) {
+        if (state == eCameraState.Resetting ) {
             if (((autoAdjustYaw && Mathf.Abs(Mathf.DeltaAngle(yaw, targetYaw)) < 1f) || !autoAdjustYaw)
                 && ((autoAdjustPitch && Mathf.Abs(Mathf.DeltaAngle(pitch, targetPitch)) < 1f) || !autoAdjustPitch)) {
                 StopCurrentReset();
@@ -240,10 +240,12 @@ public class PoS_Camera : MonoBehaviour {
 	/// <param name="allow"> Whether or not to allow the automatic reset. </param>
 	/// <param name="immediate"> If true, a reset takes place immediately, else, wait for resetTime. </param>
 	void AllowAutoReset(bool allow, bool immediate = false) {
-        // TODO: immediate / not immediate / no opinion
-		canAutoReset = allow;
-        
-		lastInput = immediate ? 0 : Time.time;
+
+		canAutoReset = allow; 
+
+        if (resetType != eResetType.POI) // si je suis dja en train de reset je change pas les options de reset
+            lastInput = immediate ? 0 : Time.time;
+
         if (immediate)
             StopCurrentReset();
 	}
@@ -557,30 +559,33 @@ public class PoS_Camera : MonoBehaviour {
 
                 else {
                     RaycastHit groundFurther;
-                    // on check entre le sol actuel et le sol devant pour voir la taille d'une pente
-                    if (Physics.Raycast(targetPos + player.transform.forward * (distanceToCheckGroundForward + minSlopeLength),
-                                -targetUp, out groundFurther, cliffMinDepth, controller.collisionMask)) {
+                    
+                    // si la pente devant n'est pas quasi verticale (ie un mur) et a plus de x defrés
+                    if (groundInFront.normal.y > limitVertical) {
 
-                        Debug.DrawRay(targetPos + player.transform.forward * (distanceToCheckGroundForward + minSlopeLength),
-                                    -targetUp * cliffMinDepth, Color.red);
+                        // on check entre le sol actuel et le sol devant pour voir la taille d'une pente
+                        if (Physics.Raycast(targetPos + player.transform.forward * (distanceToCheckGroundForward + minSlopeLength) + targetUp * (1 - groundInFront.normal.y) * 10,
+                                    -targetUp, out groundFurther, cliffMinDepth, controller.collisionMask)) {
 
-                        if (Vector3.Angle(groundFurther.normal, groundInFront.normal) < slopeSameAngleBuffer // Si la pente devant et la pente plus loin sont environ la même
-                            && Vector3.Angle(groundNormal, groundInFront.normal) > slopeSameAngleBuffer // et la pente devant a plus de X degrés de différence avec celle actuelle
-                            && groundInFront.normal.y > limitVertical) // et qu'elle n'est pas quasi verticale (un mur)
-                            groundNormal = groundInFront.normal; // On prend sa slopeValue
-                        else
-                            groundNormal = targetUp; // Sinon on dit que c'est plat ?
-                                                     // on devrait plutôt faire une moyenne
+                            Debug.DrawRay(targetPos + player.transform.forward * (distanceToCheckGroundForward + minSlopeLength) + targetUp * (1 - groundInFront.normal.y) * 10,
+                                        -targetUp * cliffMinDepth, Color.red);
 
-                    } // Sinon : ne rien faire, on garde le sol actuel
+                            if (Vector3.Angle(groundFurther.normal, groundInFront.normal) < slopeSameAngleBuffer) // Si la pente devant et la pente plus loin sont environ la même
+                                groundNormal = groundInFront.normal; // On prend sa slopeValue
+                            else
+                                groundNormal = targetUp; // Sinon on dit que c'est plat ?
+                                                         // TODO: on devrait plutôt faire une moyenne
+                        } 
+                    }
+                    // Sinon : ne rien faire, on garde le sol actuel
                 }
 
             } else {// on est au sol, y a pas de mur devant, et y a pas de sol devant non plus, donc on est au bord d'une falaise
                 onEdgeOfCliff = true;
                 AllowAutoReset(false);
 
-                groundNormal.y -= 0.1f;
-                groundNormal.Normalize();
+                //groundNormal.y -= 0.1f;
+                //groundNormal.Normalize();
                 // TODO: pencher la caméra automatiquement lorsque l'on arrive près d'un bord
                 // mais : seulement si le sol actuel est plat ?
             }
@@ -664,7 +669,6 @@ public class PoS_Camera : MonoBehaviour {
     bool nearPOI, alwaysLookAt = true;
     Vector3 targetPOI;
     public void SetPointOfInterest(Vector3 point) {
-        print("Setting POI");
         nearPOI = true;
         targetPOI = point;
 		AllowAutoReset(true, true);
@@ -676,6 +680,7 @@ public class PoS_Camera : MonoBehaviour {
             return; // Attempting to clear a point that is not currently set
         nearPOI = false;
         state = eCameraState.Default;
+        resetType = eResetType.None;
     }
 
     bool IcanSee(Vector3 point) {
@@ -686,8 +691,10 @@ public class PoS_Camera : MonoBehaviour {
     void LookAtTargetPOI() {
         if (alwaysLookAt || IcanSee(targetPOI) && FacingDirection((targetPOI - target.position).normalized)) {
             state = eCameraState.LookAt;
+            resetType = eResetType.POI;
             SetTargetRotation(GetRotationTowardsPoint(targetPOI), autoResetDamp);
-        }
+        } else
+            resetType = eResetType.None;
     }
     #endregion
     
