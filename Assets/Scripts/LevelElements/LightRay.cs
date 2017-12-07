@@ -7,6 +7,8 @@ public class LightRay : MonoBehaviour {
     [SerializeField]
     Transform lookAtTarget;
 
+    [SerializeField] bool inverseState;
+
     LightReceptor receptor;
     new LineRenderer renderer;
     Transform my;
@@ -28,9 +30,9 @@ public class LightRay : MonoBehaviour {
 
             if (newReceptor) {
                 receptor = newReceptor;
-                receptor.TriggerState = false;
+                receptor.TriggerState = inverseState;
             } else if (receptor) {
-                receptor.TriggerState = true;
+                receptor.TriggerState = !inverseState;
             }
         }
         

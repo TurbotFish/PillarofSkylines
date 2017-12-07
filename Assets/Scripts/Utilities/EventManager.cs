@@ -114,6 +114,31 @@ namespace Game.Utilities
 
         //***********************************************************
 
+        //#region ability menu events
+
+        //public static class AbilityMenuEvents
+        //{
+
+        //    #region on pointer enter slot event
+
+        //    public class PointerEnterSlotEventArgs : EventArgs
+        //    {
+
+        //    }
+
+        //    public static void SendPointerEnterSlotEvent()
+        //    {
+
+        //    }
+
+        //    #endregion on pointer enter slot event
+
+        //}
+
+        //#endregion ability menu events
+
+        //***********************************************************
+
         #endregion ui events
 
         //###########################################################
@@ -226,7 +251,8 @@ namespace Game.Utilities
             /// </summary>
             public bool IsNewScene { get; private set; }
 
-            public TeleportPlayerEventArgs(Vector3 position, Quaternion rotation, bool isNewScene) {
+            public TeleportPlayerEventArgs(Vector3 position, Quaternion rotation, bool isNewScene)
+            {
                 Position = position;
                 Rotation = rotation;
                 IsNewScene = isNewScene;
