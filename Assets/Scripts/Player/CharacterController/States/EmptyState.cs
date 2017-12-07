@@ -1,4 +1,5 @@
-﻿using Game.Player.CharacterController.EnterArgs;
+﻿using Game.Player.CharacterController.Containers;
+using Game.Player.CharacterController.EnterArgs;
 using UnityEngine;
 
 namespace Game.Player.CharacterController.States
@@ -15,6 +16,6 @@ namespace Game.Player.CharacterController.States
 
         public void HandleInput(PlayerInputInfo inputInfo) { }
 
-        public StateReturnValues Update(float dt) { return new StateReturnValues(Vector3.zero); }
+        public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo) { return new StateReturnContainer(); }
     }
 } //end of namespace

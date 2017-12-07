@@ -28,7 +28,7 @@ namespace Game
 
         public void InitializeEclipseManager(GameControl.IGameControllerBase gameController)
         {
-            this.player = gameController.PlayerController.Player;
+            this.player = gameController.PlayerController.OldPlayer;
             this.eclipsePostEffect = gameController.CameraController.EclipseEffect;
 
             Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;

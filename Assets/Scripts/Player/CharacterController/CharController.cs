@@ -1,4 +1,5 @@
-﻿using Game.Player.CharacterController.EnterArgs;
+﻿using Game.Player.CharacterController.Containers;
+using Game.Player.CharacterController.EnterArgs;
 using Game.Player.CharacterController.States;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,15 +17,19 @@ namespace Game.Player.CharacterController
         [SerializeField]
         Transform rotator;
 
-        //#############################################################################
+        //#############################################################################       
 
         PlayerModel playerModel;
         CharData charData;
 
+        Transform myTransform;
         StateMachine stateMachine;
 
         bool isInitialized;
         bool isHandlingInput;
+        bool canTurnPlayer;
+
+        Vector3 velocity;
 
         //#############################################################################
 
@@ -35,6 +40,7 @@ namespace Game.Player.CharacterController
             playerModel = gameController.PlayerModel;
             charData = Resources.Load<CharData>("ScriptableObjects/CharData");
 
+            myTransform = transform;
             stateMachine = new StateMachine(this, playerModel);
 
             //*******************************************
@@ -106,13 +112,54 @@ namespace Game.Player.CharacterController
                 inputInfo.sprintButtonDown = Input.GetButtonDown("Sprint");
                 inputInfo.sprintButtonUp = Input.GetButtonUp("Sprint");
 
-                //------------
+                //
                 stateMachine.HandleInput(inputInfo);
             }
 
             //*******************************************
             //state update
-            var stateReturnValues = stateMachine.Update(Time.deltaTime);
+
+            var movementInfo = new PlayerMovementInfo();
+
+            movementInfo.position = myTransform.position;
+            movementInfo.forward = myTransform.forward;
+            movementInfo.up = myTransform.up;
+            movementInfo.side = myTransform.right;
+            movementInfo.velocity = velocity;
+
+            //
+            var stateReturn = stateMachine.Update(Time.deltaTime, inputInfo, movementInfo);
+
+            //handling return
+            if (stateReturn.CanTurnPlayerSet)
+            {
+                canTurnPlayer = stateReturn.CanTurnPlayer;
+            }
+
+            if (stateReturn.PlayerForwardSet)
+            {
+                myTransform.forward = stateReturn.PlayerForward;
+            }
+
+            if (stateReturn.PlayerUpSet)
+            {
+                myTransform.up = stateReturn.PlayerUp;
+            }
+
+            //computing new velocity
+            float transitionSpeed = stateReturn.TransitionSpeedSet ? stateReturn.TransitionSpeed : charData.General.DefaultTransitionSpeed;
+
+            movementInfo.velocity = velocity * (1 - Time.deltaTime * transitionSpeed) + stateReturn.DesiredVelocity * (Time.deltaTime * transitionSpeed);
+
+            //adding gravity
+            movementInfo.velocity += -myTransform.up * (charData.General.GravityStrength * Time.deltaTime);
+
+            //clamping speed
+            if (movementInfo.velocity.magnitude > charData.General.DefaultMaxSpeed)
+            {
+                movementInfo.velocity.Normalize();
+                movementInfo.velocity *= charData.General.DefaultMaxSpeed;
+            }
 
             //*******************************************
             //physics update

@@ -1,4 +1,5 @@
-﻿using Game.Player.CharacterController.EnterArgs;
+﻿using Game.Player.CharacterController.Containers;
+using Game.Player.CharacterController.EnterArgs;
 using Game.Player.CharacterController.States;
 using System.Collections.Generic;
 
@@ -118,7 +119,7 @@ namespace Game.Player.CharacterController
 
         //#############################################################################
 
-        public StateReturnValues Update(float dt)
+        public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo)
         {
             //updating the state cooldowns
             List<StateCooldown> cooldownList = new List<StateCooldown>(cooldownDict.Values);
@@ -134,7 +135,7 @@ namespace Game.Player.CharacterController
             }
 
             //updating the current state
-            return currentState.Update(dt);
+            return currentState.Update(dt, inputInfo, movementInfo);
         }
 
         public void HandleInput(PlayerInputInfo inputInfo)

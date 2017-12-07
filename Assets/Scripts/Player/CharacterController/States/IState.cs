@@ -1,11 +1,13 @@
 ﻿
+using Game.Player.CharacterController.Containers;
+
 namespace Game.Player.CharacterController.States
 {
     public interface IState
     {
         ePlayerState StateId { get; }
 
-        StateReturnValues Update(float dt);
+        StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo);
         void HandleInput(PlayerInputInfo inputInfo);
 
         void Enter(EnterArgs.BaseEnterArgs enterArgs);

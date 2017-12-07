@@ -43,9 +43,24 @@ namespace Game.Player.CharacterController
             float leftStickDeadMaxValue;
             public float LeftStickDeadMaxValue { get { return leftStickDeadMaxValue; } }
 
+            [SerializeField]
+            float defaultTransitionSpeed;
+            public float DefaultTransitionSpeed { get { return defaultTransitionSpeed; } }
+
+            [SerializeField]
+            float defaultMaxSpeed;
+            public float DefaultMaxSpeed { get { return defaultMaxSpeed; } }
+
+            [SerializeField]
+            float gravityStrength;
+            public float GravityStrength { get { return gravityStrength; } }
+
             public void OnValidate()
             {
                 leftStickDeadMaxValue = Mathf.Clamp01(leftStickDeadMaxValue);
+                defaultTransitionSpeed = Mathf.Clamp(defaultTransitionSpeed, 0, float.MaxValue);
+                defaultMaxSpeed = Mathf.Clamp(defaultMaxSpeed, 0, float.MaxValue);
+                gravityStrength = Mathf.Clamp(gravityStrength, 0, float.MaxValue);
             }
         }
 

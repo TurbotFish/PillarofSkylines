@@ -24,7 +24,7 @@ namespace Game.Player.AbilitySystem
         {
             this.model = gameController.PlayerModel;
             this.worldController = gameController.WorldController;
-            this.player = gameController.PlayerController.Player;
+            this.player = gameController.PlayerController.OldPlayer;
 
             if(this.model == null || this.worldController == null)
             {

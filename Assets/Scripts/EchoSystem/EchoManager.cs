@@ -37,7 +37,7 @@ namespace Game.EchoSystem
         public void InitializeEchoManager(GameControl.IGameControllerBase gameController)
         {
             echoCamera = gameController.CameraController.EchoCameraEffect;
-            playerTransform = gameController.PlayerController.Player.transform;
+            playerTransform = gameController.PlayerController.OldPlayer.transform;
             echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();
 
             MyTransform = transform;
