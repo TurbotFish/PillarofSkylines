@@ -17,7 +17,7 @@ namespace Game
         [SerializeField]
         Vector3 eclipseGravity = new Vector3(1, 0, 0);
 
-        Game.Player.CharacterController.Character player;
+        Game.Player.CharacterController.CharController player;
         Eclipse eclipsePostEffect;
 
         bool isEclipseActive;
@@ -28,7 +28,7 @@ namespace Game
 
         public void InitializeEclipseManager(GameControl.IGameControllerBase gameController)
         {
-            this.player = gameController.PlayerController.OldPlayer;
+            this.player = gameController.PlayerController.CharController;
             this.eclipsePostEffect = gameController.CameraController.EclipseEffect;
 
             Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
@@ -89,7 +89,9 @@ namespace Game
         IEnumerator ChangeGravityRoutine(bool eclipseOn)
         {
             float gravityTimer = 0;
-            player.SetVelocity(new Vector3(0f, 10f, 0f), false, false);
+            //player.SetVelocity(new Vector3(0f, 10f, 0f), false, false);
+            player.AddExternalVelocity(new Vector3(0f, 10f, 0f), false, false);
+
             if (eclipseOn)
                 eclipsePostEffect.enabled = true;
 

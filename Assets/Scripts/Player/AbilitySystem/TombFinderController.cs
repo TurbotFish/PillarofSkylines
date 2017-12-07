@@ -6,7 +6,7 @@ namespace Game.Player.AbilitySystem
 {
     public class TombFinderController : MonoBehaviour
     {
-        CharacterController.Character player;
+        CharacterController.CharController player;
         PlayerModel model;
         World.ChunkSystem.WorldController worldController;
 
@@ -24,7 +24,7 @@ namespace Game.Player.AbilitySystem
         {
             this.model = gameController.PlayerModel;
             this.worldController = gameController.WorldController;
-            this.player = gameController.PlayerController.OldPlayer;
+            this.player = gameController.PlayerController.CharController;
 
             if(this.model == null || this.worldController == null)
             {
@@ -60,14 +60,14 @@ namespace Game.Player.AbilitySystem
             bool abilityActive = this.model.CheckAbilityActive(eAbilityType.TombFinder);
             //Debug.LogErrorFormat("TombFinderController: abilityActive={0}, isInOpenWorld={1}, isFavourInWorld={2}", abilityActive, isInOpenWorld, isFavourInWorld);
             
-            if(!this.isParticleSystemActive && (this.isInOpenWorld && this.isFavourInWorld && abilityActive && player.velocity.sqrMagnitude < 0.01f))
+            if(!this.isParticleSystemActive && (this.isInOpenWorld && this.isFavourInWorld && abilityActive && player.Velocity.sqrMagnitude < 0.01f))
             {
 				foreach (ParticleSystem ps in this.myParticleSystems) {
 					ps.Play ();
 				}
                 this.isParticleSystemActive = true;
             }
-            else if(this.isParticleSystemActive && (!this.isInOpenWorld || !this.isFavourInWorld || !abilityActive || player.velocity.sqrMagnitude > 0.01f))
+            else if(this.isParticleSystemActive && (!this.isInOpenWorld || !this.isFavourInWorld || !abilityActive || player.Velocity.sqrMagnitude > 0.01f))
             {
 				foreach (ParticleSystem ps in this.myParticleSystems) {
 					ps.Stop ();

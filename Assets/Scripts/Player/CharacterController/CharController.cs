@@ -17,19 +17,39 @@ namespace Game.Player.CharacterController
         [SerializeField]
         Transform rotator;
 
+        //#############################################################################
+
+        /// <summary>
+        /// The controller checking if there's collisions on the way.
+        /// </summary>
+        CharacControllerRecu tempPhysicsHandler;
+        CharacControllerRecu.CollisionInfo tempCollisionInfo;
+
         //#############################################################################       
 
         PlayerModel playerModel;
-        CharData charData;
+        public CharData CharData { get; private set; }
 
         Transform myTransform;
         StateMachine stateMachine;
+        public ePlayerState CurrentState { get { return stateMachine.CurrentState; } }
 
         bool isInitialized;
         bool isHandlingInput;
         bool canTurnPlayer;
 
+        [System.Obsolete]
+        public bool CanTurnPlayer { get { return canTurnPlayer; } }
+
         Vector3 velocity;
+
+        [System.Obsolete]
+        public Vector3 Velocity { get { return velocity; } }
+
+        Vector3 externalVelocity;
+
+        Vector3 gravityDirection = -Vector3.up;
+        public Vector3 GravityDirection { get { return gravityDirection; } }
 
         //#############################################################################
 
@@ -37,8 +57,10 @@ namespace Game.Player.CharacterController
 
         public void Initialize(GameControl.IGameControllerBase gameController)
         {
+            tempPhysicsHandler = GetComponent<CharacControllerRecu>();
+
             playerModel = gameController.PlayerModel;
-            charData = Resources.Load<CharData>("ScriptableObjects/CharData");
+            CharData = Resources.Load<CharData>("ScriptableObjects/CharData");
 
             myTransform = transform;
             stateMachine = new StateMachine(this, playerModel);
@@ -50,6 +72,7 @@ namespace Game.Player.CharacterController
             //*******************************************
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
+            Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
 
             isInitialized = true;
             isHandlingInput = true;
@@ -67,6 +90,12 @@ namespace Game.Player.CharacterController
 
         }
 
+        void OnDestroy()
+        {
+            Utilities.EventManager.OnMenuSwitchedEvent -= OnMenuSwitchedEventHandler;
+            Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayerEventHandler;
+        }
+
         #endregion monobehaviour methods
 
         //#############################################################################
@@ -82,15 +111,25 @@ namespace Game.Player.CharacterController
             }
 
             //*******************************************
-            //handling input
-
             var inputInfo = new PlayerInputInfo();
+
+            var movementInfo = new PlayerMovementInfo
+            {
+                position = myTransform.position,
+                forward = myTransform.forward,
+                up = myTransform.up,
+                side = myTransform.right,
+                velocity = velocity
+            };
+
+            //*******************************************
+            //handling input
 
             if (isHandlingInput)
             {
                 inputInfo.leftStickRaw = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
 
-                if (inputInfo.leftStickRaw.magnitude < charData.General.LeftStickDeadMaxValue)
+                if (inputInfo.leftStickRaw.magnitude < CharData.General.LeftStickDeadMaxValue)
                 {
                     inputInfo.leftStickAtZero = true;
                 }
@@ -113,22 +152,14 @@ namespace Game.Player.CharacterController
                 inputInfo.sprintButtonUp = Input.GetButtonUp("Sprint");
 
                 //
-                stateMachine.HandleInput(inputInfo);
+                stateMachine.HandleInput(inputInfo, movementInfo, tempCollisionInfo);
             }
 
             //*******************************************
-            //state update
+            //state update           
 
-            var movementInfo = new PlayerMovementInfo();
-
-            movementInfo.position = myTransform.position;
-            movementInfo.forward = myTransform.forward;
-            movementInfo.up = myTransform.up;
-            movementInfo.side = myTransform.right;
-            movementInfo.velocity = velocity;
-
-            //
-            var stateReturn = stateMachine.Update(Time.deltaTime, inputInfo, movementInfo);
+            //call state update
+            var stateReturn = stateMachine.Update(Time.deltaTime, inputInfo, movementInfo, tempCollisionInfo);
 
             //handling return
             if (stateReturn.CanTurnPlayerSet)
@@ -147,28 +178,67 @@ namespace Game.Player.CharacterController
             }
 
             //computing new velocity
-            float transitionSpeed = stateReturn.TransitionSpeedSet ? stateReturn.TransitionSpeed : charData.General.DefaultTransitionSpeed;
+            float transitionSpeed = stateReturn.TransitionSpeedSet ? stateReturn.TransitionSpeed : CharData.General.DefaultTransitionSpeed;
 
-            movementInfo.velocity = velocity * (1 - Time.deltaTime * transitionSpeed) + stateReturn.DesiredVelocity * (Time.deltaTime * transitionSpeed);
+            var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + stateReturn.DesiredVelocity * (Time.deltaTime * transitionSpeed);
 
             //adding gravity
-            movementInfo.velocity += -myTransform.up * (charData.General.GravityStrength * Time.deltaTime);
+            newVelocity += gravityDirection * (CharData.General.GravityStrength * Time.deltaTime);
 
             //clamping speed
-            if (movementInfo.velocity.magnitude > charData.General.DefaultMaxSpeed)
+            if (newVelocity.magnitude > CharData.General.DefaultMaxSpeed)
             {
-                movementInfo.velocity.Normalize();
-                movementInfo.velocity *= charData.General.DefaultMaxSpeed;
+                newVelocity.Normalize();
+                newVelocity *= CharData.General.DefaultMaxSpeed;
             }
 
             //*******************************************
             //physics update
 
+            var turnedVelocity = TurnLocalToSpace(newVelocity);
+
+            if (stateMachine.CurrentState == ePlayerState.glide)
+            {
+                newVelocity = tempPhysicsHandler.Move(newVelocity + externalVelocity);
+            }
+            else
+            {
+                newVelocity = tempPhysicsHandler.Move(turnedVelocity + externalVelocity);
+            }
+
+            externalVelocity = Vector3.zero;
+            tempCollisionInfo = tempPhysicsHandler.collisions;
+
             //*******************************************
             //moving player
 
+            /*
+             *  moving the player is currently handled by the (temp!) physics handler
+             */
+
+            velocity = newVelocity;
+
             //*******************************************
             //turning player
+
+            if (canTurnPlayer && !inputInfo.leftStickAtZero)
+            {
+                if (CurrentState != ePlayerState.glide)
+                {
+                    myTransform.Rotate(
+                        myTransform.up,
+                        Mathf.Lerp(
+                            0f,
+                            Vector3.SignedAngle(myTransform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), myTransform.up), myTransform.up),
+                            CharData.General.TurnSpeed * Time.deltaTime
+                        ),
+                        Space.World);
+                }
+                else
+                {
+                    myTransform.Rotate(myTransform.up, CharData.Glide.HorizontalAngle, Space.World);
+                }
+            }
 
             //*******************************************
         }
@@ -191,7 +261,66 @@ namespace Game.Player.CharacterController
             }
         }
 
+        void OnTeleportPlayerEventHandler(object sender, Utilities.EventManager.TeleportPlayerEventArgs args)
+        {
+            myTransform.position = args.Position;
+
+            if (args.IsNewScene)
+            {
+                myTransform.rotation = args.Rotation;
+                velocity = Vector3.zero;
+                stateMachine.ChangeState(new FallEnterArgs(ePlayerState.empty));
+                ChangeGravityDirection(Vector3.down);
+            }
+        }
+
         #endregion event handlers
+
+        //#############################################################################
+
+        #region utility methods
+
+        Vector3 TurnLocalToSpace(Vector3 vector)
+        {
+            return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, myTransform.up), Vector3.Cross(Vector3.up, myTransform.up))) * vector;
+        }
+
+        Vector3 TurnSpaceToLocal(Vector3 vector)
+        {
+            return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, myTransform.up), Vector3.Cross(myTransform.up, Vector3.up))) * vector;
+        }
+
+        #endregion utility methods
+
+        //#############################################################################
+
+        #region cancer
+
+        public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool framerateDependant)
+        {
+            if (framerateDependant)
+            {
+                velocity += (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
+            }
+            else
+            {
+                externalVelocity += (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
+            }
+        }
+
+        public void ChangeGravityDirection(Vector3 newGravity)
+        {
+            gravityDirection = newGravity.normalized;
+            myTransform.Rotate(Vector3.Cross(myTransform.up, -gravityDirection), Vector3.SignedAngle(myTransform.up, -gravityDirection, Vector3.Cross(myTransform.up, -gravityDirection)), Space.World);
+        }
+
+        public void ChangeGravityDirection(Vector3 newGravity, Vector3 point)
+        {
+            gravityDirection = newGravity.normalized;
+            myTransform.RotateAround(point, Vector3.Cross(myTransform.up, -gravityDirection), Vector3.SignedAngle(myTransform.up, -gravityDirection, Vector3.Cross(myTransform.up, -gravityDirection)));
+        }
+
+        #endregion cancer
 
         //#############################################################################
     }

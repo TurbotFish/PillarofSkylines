@@ -1808,6 +1808,7 @@ namespace Game.Player.CharacterController
         {
             return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up))) * vector;
         }
+
         public Vector3 TurnSpaceToLocal(Vector3 vector)
         {
             return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(transform.up, Vector3.up))) * vector;

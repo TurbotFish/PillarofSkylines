@@ -119,7 +119,7 @@ namespace Game.Player.CharacterController
 
         //#############################################################################
 
-        public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo)
+        public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
         {
             //updating the state cooldowns
             List<StateCooldown> cooldownList = new List<StateCooldown>(cooldownDict.Values);
@@ -135,12 +135,12 @@ namespace Game.Player.CharacterController
             }
 
             //updating the current state
-            return currentState.Update(dt, inputInfo, movementInfo);
+            return currentState.Update(dt, inputInfo, movementInfo, collisionInfo);
         }
 
-        public void HandleInput(PlayerInputInfo inputInfo)
+        public void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
         {
-            currentState.HandleInput(inputInfo);
+            currentState.HandleInput(inputInfo, movementInfo, collisionInfo);
         }
 
         //#############################################################################

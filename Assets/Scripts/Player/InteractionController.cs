@@ -13,7 +13,7 @@ namespace Game.Player
     {
         //
         PlayerModel playerModel;
-        Game.Player.CharacterController.Character myPlayer;
+        Game.Player.CharacterController.CharController myPlayer;
 
         //
         bool favourPickUpInRange = false;
@@ -43,7 +43,7 @@ namespace Game.Player
         /// <summary>
         /// 
         /// </summary>
-		public void InitializeFavourController(PlayerModel playerModel, CharacterController.Character player, EchoSystem.EchoManager echoManager)
+		public void Initialize(PlayerModel playerModel, CharacterController.CharController player, EchoSystem.EchoManager echoManager)
         {
             this.playerModel = playerModel;
 			myPlayer = player;
@@ -254,7 +254,8 @@ namespace Game.Player
                         break;
                     //wind
                     case "Wind":
-						other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer);
+                        Debug.LogWarning("commented code!");
+						//other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer);
 						break;
                     //other
                     default:
