@@ -53,12 +53,12 @@ namespace Game.Player.CharacterController
         /// The maximum height of step the player can climb.
         /// </summary>
         [Tooltip("The maximum height of step the player can climb.")]
-		public float maxStepHeight = 1f;
-		/// <summary>
-		/// The distance at which the player stops when encountering a cliff with no input.
-		/// </summary>
-		[Tooltip("The distance at which the player stops when encountering a cliff with no input.")]
-		public float distanceStoppingCliff = .1f;
+        public float maxStepHeight = 1f;
+        /// <summary>
+        /// The distance at which the player stops when encountering a cliff with no input.
+        /// </summary>
+        [Tooltip("The distance at which the player stops when encountering a cliff with no input.")]
+        public float distanceStoppingCliff = .1f;
         #endregion general
 
         #region speed and controls variables
@@ -349,11 +349,6 @@ namespace Game.Player.CharacterController
         float ignoreGravityTimer = 0f;
 
         /// <summary>
-        /// Timer for the horizontal wall run.
-        /// </summary>
-        float wallRunHorizontalTimer = 0f;
-
-        /// <summary>
         /// Timer for the vertical wall run.
         /// </summary>
         float wallRunVerticalTimer = 0f;
@@ -421,7 +416,8 @@ namespace Game.Player.CharacterController
         {
             transform.position = args.Position;
 
-            if (args.IsNewScene) {
+            if (args.IsNewScene)
+            {
                 transform.rotation = args.Rotation;
                 velocity = Vector3.zero;
                 currentPlayerState = ePlayerState.inAir;
@@ -454,11 +450,6 @@ namespace Game.Player.CharacterController
             if (ignoreGravityTimer >= 0)
             {
                 ignoreGravityTimer -= Time.deltaTime;
-            }
-
-            if (wallRunHorizontalTimer >= 0)
-            {
-                wallRunHorizontalTimer -= Time.deltaTime;
             }
 
             if (wallRunVerticalTimer >= 0)
@@ -680,17 +671,21 @@ namespace Game.Player.CharacterController
                         lastJumpAerial = false;
 
                         EnterStateInAir();
-					} else if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash))
+                    }
+                    else if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash))
                     {
                         QuitStateOnGround();
 
                         EnterStateDash();
-						//If the player is going off a cliff when the left stick is at zero, stop the player
-					} else if (leftStickAtZero) {
-						if (!Physics.Raycast(transform.position + transform.up * controller.skinWidth + (Vector3.ProjectOnPlane(transform.forward, controller.collisions.currentGroundNormal).normalized * distanceStoppingCliff), -controller.collisions.currentGroundNormal, maxStepHeight, controller.collisionMask)){
-							flatVelocity = Vector3.zero;
-						}
-					}
+                        //If the player is going off a cliff when the left stick is at zero, stop the player
+                    }
+                    else if (leftStickAtZero)
+                    {
+                        if (!Physics.Raycast(transform.position + transform.up * controller.skinWidth + (Vector3.ProjectOnPlane(transform.forward, controller.collisions.currentGroundNormal).normalized * distanceStoppingCliff), -controller.collisions.currentGroundNormal, maxStepHeight, controller.collisionMask))
+                        {
+                            flatVelocity = Vector3.zero;
+                        }
+                    }
                     break;
 
 
@@ -700,7 +695,7 @@ namespace Game.Player.CharacterController
 
                 case ePlayerState.dashing:
 
-					flatVelocity = transform.forward * dashSpeed;
+                    flatVelocity = transform.forward * dashSpeed;
                     flatVelocity = TurnSpaceToLocal(flatVelocity);
                     flatVelocity.y = 0f;
                     velocity.y = 0f;
@@ -815,8 +810,11 @@ namespace Game.Player.CharacterController
                     windVelocity = Vector3.zero;
                     if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash))
                     {
+                        QuitStateInWindTunnel();
+
                         EnterStateDash();
 
+                        break;
                     }
 
                     break;
@@ -858,7 +856,7 @@ namespace Game.Player.CharacterController
                         break;
                     }
                     //default
-					float wallDriftSpeed = Mathf.Lerp(velocity.magnitude, playerMod.AbilityData.WallRun.WallDrift.TargetSpeed, playerMod.AbilityData.WallRun.WallDrift.SlowdownFactor * Time.deltaTime);
+                    float wallDriftSpeed = Mathf.Lerp(velocity.magnitude, playerMod.AbilityData.WallRun.WallDrift.TargetSpeed, playerMod.AbilityData.WallRun.WallDrift.LerpFactor * Time.deltaTime);
 
                     flatVelocity = -transform.up * wallDriftSpeed;
                     velocity.y = 0f;
@@ -902,7 +900,7 @@ namespace Game.Player.CharacterController
                         break;
                     }
                     //time over
-                    if (wallRunHorizontalTimer <= 0)
+                    if (flatVelocity.magnitude < playerMod.AbilityData.WallRun.WallRunHorizontal.MinSpeed)
                     {
                         QuitStateWallRunHorizontal();
 
@@ -912,8 +910,16 @@ namespace Game.Player.CharacterController
                         break;
                     }
                     //default
-                    velocity.y = -gravityStrength * playerMod.AbilityData.WallRun.WallRunHorizontal.GravityMultiplier * Time.deltaTime;
-                    flatVelocity = transform.forward * Mathf.Lerp(flatVelocity.magnitude, playerMod.AbilityData.WallRun.WallRunHorizontal.TargetSpeed, 0.6f * Time.deltaTime);
+                    var forward = transform.forward * playerMod.AbilityData.WallRun.WallRunHorizontal.ForwardSpeed;
+                    var gravity = -Vector3.up * playerMod.AbilityData.WallRun.WallRunHorizontal.Gravity;
+                    var momentum = velocity * playerMod.AbilityData.WallRun.WallRunHorizontal.Momentum;
+                    var acceleration = momentum + gravity + forward;
+
+                    flatVelocity = acceleration;
+                    velocity = Vector3.zero;
+
+                    //velocity.y = -gravityStrength * playerMod.AbilityData.WallRun.WallRunHorizontal.GravityMultiplier * Time.deltaTime;
+                    //flatVelocity = transform.forward * Mathf.Lerp(flatVelocity.magnitude, playerMod.AbilityData.WallRun.WallRunHorizontal.TargetSpeed, 0.6f * Time.deltaTime);
 
                     break;
 
@@ -1355,7 +1361,7 @@ namespace Game.Player.CharacterController
 
             animator.SetBool("OnGround", controller.collisions.below);
             animator.SetFloat("Forward", velocity.magnitude / characSpeed);
-			animator.SetFloat("Turn", (leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime) / 7f));
+            animator.SetFloat("Turn", (leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime) / 7f));
             animator.SetFloat("Jump", turnedVelocity.y / 5);
             float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
             float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputRaw.magnitude;
@@ -1548,7 +1554,7 @@ namespace Game.Player.CharacterController
             playerMod.FlagAbility(eAbilityType.WallRun);
 
             canTurnPlayer = false;
-			transform.forward = Vector3.ProjectOnPlane(-controller.collisions.currentWallNormal, transform.up);
+            transform.forward = Vector3.ProjectOnPlane(-controller.collisions.currentWallNormal, transform.up);
         }
 
         /// <summary>
@@ -1574,7 +1580,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void EnterStateWallRunHorizontal()
         {
-            //Debug.Log("EnterWallRunHorizontal");
+            Debug.Log("EnterWallRunHorizontal");
 
             currentPlayerState = ePlayerState.WallRunningHorizontal;
             playerMod.FlagAbility(eAbilityType.WallRun);
@@ -1589,8 +1595,6 @@ namespace Game.Player.CharacterController
             var simpleCross = Vector3.Cross(simpleWallNormal, simplePlayerForward);
 
             transform.forward = -Vector3.Cross(wallNormal, simpleCross);
-
-            wallRunHorizontalTimer = playerMod.AbilityData.WallRun.WallRunHorizontal.Duration;
         }
 
         /// <summary>
@@ -1598,7 +1602,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         void QuitStateWallRunHorizontal()
         {
-            //Debug.Log("QuitStateWallRunHorizontal");
+            Debug.Log("QuitStateWallRunHorizontal");
 
             playerMod.UnflagAbility(eAbilityType.WallRun);
 
@@ -1644,6 +1648,13 @@ namespace Game.Player.CharacterController
 
         //*******************************************
 
+        void StartJump()
+        {
+
+        }
+
+        //*******************************************
+
         #endregion state change methods
 
         //#############################################################################
@@ -1675,7 +1686,7 @@ namespace Game.Player.CharacterController
             bool stickOK = CheckWallRunStick();
 
             //
-//			print ("isAbilityActive " + isAbilityActive + " isTouchingWall " + isTouchingWall +" isFalling " + isFalling + " directionOK " + directionOK + " stickOK " + stickOK);
+            //			print ("isAbilityActive " + isAbilityActive + " isTouchingWall " + isTouchingWall +" isFalling " + isFalling + " directionOK " + directionOK + " stickOK " + stickOK);
             return (isAbilityActive && isTouchingWall && isFalling && directionOK && stickOK);
         }
 
@@ -1692,7 +1703,7 @@ namespace Game.Player.CharacterController
             bool isTouchingWall = controller.collisions.side;
 
             //
-            bool hasDashed = (dashTimer >= 0 || dashDuration >= 0);
+            bool hasDashed = (dashTimer > 0 || dashDuration > 0);
 
             //
             bool directionOK = CheckWallRunPlayerForward(-0.95f);
@@ -1738,7 +1749,7 @@ namespace Game.Player.CharacterController
         bool CheckWallRunPlayerForward(float minDotProduct = -1)
         {
             float dotProduct = Vector3.Dot(transform.forward, controller.collisions.currentWallNormal);
-            return (minDotProduct <= dotProduct && dotProduct <= playerMod.AbilityData.WallRun.General.TriggerDotProduct);
+            return (minDotProduct <= dotProduct && dotProduct <= playerMod.AbilityData.WallRun.General.DirectionTrigger);
         }
 
         /// <summary>
@@ -1747,8 +1758,8 @@ namespace Game.Player.CharacterController
         bool CheckWallRunStick()
         {
             var stick = inputToCamera;
-			float dotproduct = Vector3.Dot(inputToCamera, transform.forward);
-			return (dotproduct >= playerMod.AbilityData.WallRun.General.StickMinTrigger && !leftStickAtZero);
+            float dotproduct = Vector3.Dot(inputToCamera, transform.forward);
+            return (dotproduct >= playerMod.AbilityData.WallRun.General.StickTrigger && !leftStickAtZero);
         }
 
         #endregion ability checks

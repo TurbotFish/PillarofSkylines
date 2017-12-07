@@ -46,20 +46,17 @@ namespace Game.World.ChunkSystem
 
             gameObject.SetActive(true);
 
-            //fill renderer list
-            FillRendererList();
+            //find stuff
+            RebuildIndexes();
 
             //initialize world objects
-            var worldObjects = GetComponentsInChildren<Interaction.IWorldObjectInitialization>(true);
+            var worldObjects = GetComponentsInChildren<Interaction.IWorldObjectInitialization>();
             for (int i = 0; i < worldObjects.Length; i++)
             {
                 var worldObject = worldObjects[i];
 
                 worldObject.Initialize(worldController, IsCopy);
-            }
-
-            worldObjectActivationList.Clear();
-            worldObjectActivationList.AddRange(GetComponentsInChildren<Interaction.IWorldObjectActivation>(true));
+            }            
 
             //
             IsActive = true;
@@ -84,9 +81,9 @@ namespace Game.World.ChunkSystem
                 return;
             }
 
-            Debug.LogFormat("SubChunk \"{0}\": OnTransformChildrenChanged called!", name);
+            Debug.LogErrorFormat("SubChunk \"{0}\": OnTransformChildrenChanged called!", name);
 
-            FillRendererList();
+            RebuildIndexes();
         }
 
         //##################################################################
@@ -176,34 +173,38 @@ namespace Game.World.ChunkSystem
 
         //##################################################################
 
-        void FillRendererList()
+        void RebuildIndexes()
         {
             rendererList.Clear();
+            rendererList.AddRange(GetComponentsInChildren<Renderer>());
 
-            var candidateStack = new Stack<Transform>();
-            for (int i = 0; i < myTransform.childCount; i++)
-            {
-                candidateStack.Push(myTransform.GetChild(i));
-            }
+            worldObjectActivationList.Clear();
+            worldObjectActivationList.AddRange(GetComponentsInChildren<Interaction.IWorldObjectActivation>());
 
-            while (candidateStack.Count > 0)
-            {
-                var candidate = candidateStack.Pop();
+            //var candidateStack = new Stack<Transform>();
+            //for (int i = 0; i < myTransform.childCount; i++)
+            //{
+            //    candidateStack.Push(myTransform.GetChild(i));
+            //}
 
-                var renderers = candidate.GetComponents<Renderer>();
-                if (renderers.Length > 0)
-                {
-                    rendererList.AddRange(renderers);
-                }
+            //while (candidateStack.Count > 0)
+            //{
+            //    var candidate = candidateStack.Pop();
 
-                if (candidate.childCount > 0)
-                {
-                    for (int i = 0; i < candidate.childCount; i++)
-                    {
-                        candidateStack.Push(candidate.GetChild(i));
-                    }
-                }
-            }
+            //    var renderers = candidate.GetComponents<Renderer>();
+            //    if (renderers.Length > 0)
+            //    {
+            //        rendererList.AddRange(renderers);
+            //    }
+
+            //    if (candidate.childCount > 0)
+            //    {
+            //        for (int i = 0; i < candidate.childCount; i++)
+            //        {
+            //            candidateStack.Push(candidate.GetChild(i));
+            //        }
+            //    }
+            //}
         }
 
         //##################################################################
