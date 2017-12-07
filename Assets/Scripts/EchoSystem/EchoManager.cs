@@ -10,11 +10,14 @@ namespace Game.EchoSystem
         [SerializeField]
         Echo echoPrefab;
 
-        [SerializeField]
-        BreakEchoParticles breakEchoParticles;
+        public BreakEchoParticles breakEchoParticles;
 
         [SerializeField]
         int maxEchoes = 3;
+        /// <summary>
+        /// Number of echoes placed by the player.
+        /// </summary>
+        int placedEchoes;
 
         Transform playerTransform;
         EchoCameraEffect echoCamera;
@@ -52,20 +55,15 @@ namespace Game.EchoSystem
             if (!isEclipseActive)
             {
                 float driftInput = Input.GetAxis("Right Trigger");
-                if (driftInput > 0.9f && !driftInputDown)
-                {
+                if (driftInput > 0.7f && !driftInputDown) {
                     driftInputDown = true;
                     Drift();
                 }
-                else if (driftInput < 0.8f)
-                {
+                else if (driftInput < 0.6f)
                     driftInputDown = false;
-                }
 
                 if (Input.GetButtonDown("Echo"))
-                {
-                    CreateEcho();
-                }
+                    CreateEcho(true);
             }
         }
 
@@ -73,60 +71,73 @@ namespace Game.EchoSystem
 
         #region private methods
 
-        void Drift()
-        {
-            if (echoList.Count > 0)
-            {
+        void Drift() {
+            if (echoList.Count > 0) {
                 echoCamera.SetFov(70, 0.15f, true);
 
                 int lastIndex = echoList.Count - 1;
                 var targetEcho = echoList[lastIndex];
-                echoList.RemoveAt(lastIndex);
 
                 var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, targetEcho.MyTransform.rotation, false);
                 Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
 
-                Instantiate(breakEchoParticles, targetEcho.MyTransform.position, targetEcho.MyTransform.rotation);
-
-                Destroy(targetEcho.gameObject);
-
-                echoParticles.SetEchoNumber(maxEchoes - echoList.Count);
+                Break(targetEcho);
             }
         }
+        
+        public void Break(Echo target) {
+            if (echoList.Contains(target)) {
+                echoList.Remove(target);
+            }
+            if (target.playerEcho) {
+                placedEchoes--;
+                echoParticles.SetEchoNumber(maxEchoes - placedEchoes);
+            }
+            Instantiate(breakEchoParticles, target.MyTransform.position, target.MyTransform.rotation);
+            Destroy(target.gameObject);
+        }
 
-        void CreateEcho()
-        {
+        public void BreakAll() {
+            Echo[] killList = echoList.ToArray();
+            for (int i = 0; i < killList.Length; i++)
+                Break(killList[i]);
+        }
+
+        public void CreateEcho(bool isPlayerEcho) {
             if (isEclipseActive)
-            {
                 return;
+
+            if (placedEchoes == maxEchoes) {
+                int i = 0;
+                var oldestEcho = echoList[i];
+
+                while(!oldestEcho.playerEcho) {
+                    i++;
+                    oldestEcho = echoList[i];
+                }
+
+                Break(oldestEcho);
             }
 
-            if (echoList.Count == maxEchoes)
-            {
-                var oldestEcho = echoList[0];
-                echoList.RemoveAt(0);
-                Destroy(oldestEcho.gameObject);
+            Echo newEcho = Instantiate(echoPrefab, playerTransform.position, playerTransform.rotation);
+            newEcho.playerEcho = isPlayerEcho;
+            newEcho.echoManager = this;
+            echoList.Add(newEcho);
+
+            if (isPlayerEcho) {
+                placedEchoes++;
+                echoParticles.SetEchoNumber(maxEchoes - placedEchoes);
             }
-
-            echoList.Add(Instantiate(echoPrefab, playerTransform.position, playerTransform.rotation));
-
-            echoParticles.SetEchoNumber(maxEchoes - echoList.Count);
         }
 
-        void FreezeAll()
-        {
+        void FreezeAll() {
             for (int i = 0; i < echoList.Count; i++)
-            {
                 echoList[i].Freeze();
-            }
         }
 
-        void UnfreezeAll()
-        {
+        void UnfreezeAll() {
             for (int i = 0; i < echoList.Count; i++)
-            {
                 echoList[i].Unfreeze();
-            }
         }
 
         #endregion private methods

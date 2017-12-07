@@ -6,7 +6,7 @@ namespace Game.EchoSystem
     public class Echo : MonoBehaviour
     {
         new BoxCollider collider;
-        public bool isActive, isFrozen;
+        public bool isActive, isFrozen, playerEcho;
 
         public float colliderSizeWhenSolid = 2;
         Vector3 defaultColliderSize;
@@ -18,15 +18,14 @@ namespace Game.EchoSystem
         ParticleSystem myParticleSystem;
         Renderer myRenderer;
 
-        //EchoManager echoManager;
+        [HideInInspector] public EchoManager echoManager;
         int pickUpLayer;
 
         public Transform MyTransform { get; private set; }
 
         //##################################################################
 
-        void Start()
-        {
+        void Start() {
             MyTransform = transform;
 
             myParticleSystem = GetComponentInChildren<ParticleSystem>();
@@ -38,8 +37,6 @@ namespace Game.EchoSystem
             defaultColliderSize = collider.size;
 
             pickUpLayer = gameObject.layer;
-
-            //echoManager = FindObjectOfType<EchoManager>();
         }
 
         //##################################################################
@@ -69,24 +66,17 @@ namespace Game.EchoSystem
 
         //##################################################################
 
-        //void Break()
-        //{
-        //    isActive = false;
-        //    echoManager.BreakParticles(transform.position);
-        //    gameObject.SetActive(false);
-        //    if (playerEcho)
-        //    {
-        //        transform.parent = pool;
-        //        echoManager.echoes.Remove(this);
-        //    }
-        //}
+        public void Break() {
+            if (isActive)
+                echoManager.Break(this);
+            else
+                isActive = true;
+        }
 
         public void Freeze()
         {
             if (!myParticleSystem)
-            {
                 Start();
-            }
 
             myParticleSystem.Pause();
 
@@ -104,9 +94,7 @@ namespace Game.EchoSystem
         public void Unfreeze()
         {
             if (!myParticleSystem)
-            {
                 Start();
-            }
 
             myParticleSystem.Play();
 

@@ -11,8 +11,6 @@ namespace Game.Player
     [RequireComponent(typeof(Collider))]
     public class InteractionController : MonoBehaviour
     {
-        //########################################################################
-
         //
         PlayerModel playerModel;
         Game.Player.CharacterController.Character myPlayer;
@@ -31,6 +29,8 @@ namespace Game.Player
 
         bool eyeInRange = false;
 
+        EchoSystem.EchoManager echoManager;
+
         //
         bool isActive = false;
         bool isInteractButtonDown = false;
@@ -43,17 +43,18 @@ namespace Game.Player
         /// <summary>
         /// 
         /// </summary>
-		public void InitializeFavourController(PlayerModel playerModel, Game.Player.CharacterController.Character player)
+		public void InitializeFavourController(PlayerModel playerModel, CharacterController.Character player, EchoSystem.EchoManager echoManager)
         {
             this.playerModel = playerModel;
-            myPlayer = player;
+			myPlayer = player;
+            this.echoManager = echoManager;
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
         }
 
         #endregion initialization
-
+        
         //########################################################################
 
         #region input handling
@@ -64,9 +65,7 @@ namespace Game.Player
         void Update()
         {
             if (!isActive)
-            {
                 return;
-            }
 
             if (Input.GetButton("Interact") && !isInteractButtonDown)
             {
@@ -122,9 +121,8 @@ namespace Game.Player
                     HideUiMessage();
                 }
                 //needle
-                else if (needleSlotInRange)
-                {
-                    this.needleSlotInRange = false;
+                else if (needleSlotInRange) {
+                    needleSlotInRange = false;
 
                     playerModel.hasNeedle ^= true;
 
@@ -140,7 +138,6 @@ namespace Game.Player
                     playerModel.hasNeedle = false;
 
                     Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(true));
-                    Debug.Log("oeil mort");
 
                     HideUiMessage();
                 }
@@ -165,6 +162,7 @@ namespace Game.Player
 
         #endregion input handling
 
+        //########################################################################
         //########################################################################
 
         #region collision handling
@@ -194,7 +192,7 @@ namespace Game.Player
                             {
                                 favour = null;
                             }
-                        }
+                        }                     
                         break;
                     //pillar entrance
                     case "Pillar":
@@ -212,7 +210,7 @@ namespace Game.Player
                         }
 
                         var pillarExit = other.GetComponent<World.Interaction.PillarExit>();
-                        if (pillarExit != null)
+                        if(pillarExit != null)
                         {
                             pillarExitInRange = true;
 
@@ -236,22 +234,28 @@ namespace Game.Player
                         break;
                     //eye
                     case "Eye":
-                        if (playerModel.hasNeedle)
-                        {
+                        if (playerModel.hasNeedle) {
                             eyeInRange = true;
-
                             ShowUiMessage("Press [X] to plant the needle");
                         }
-                        break;
+						break;
                     //echo
                     case "Echo":
-                        Debug.LogWarning("Echo destruction on collision not coded yet");
-                        ///Destroy(other.gameObject);
+                        other.GetComponent<EchoSystem.Echo>().Break();
+                        break;
+                    //echo breaker
+                    case "EchoBreaker":
+                        echoManager.BreakAll();
+                        break;
+                    //echo breaker
+                    case "EchoSeed":
+                        echoManager.CreateEcho(false);
+                        Destroy(other.gameObject);
                         break;
                     //wind
                     case "Wind":
-                        other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer);
-                        break;
+						other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer);
+						break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
@@ -303,11 +307,11 @@ namespace Game.Player
                         eyeInRange = false;
 
                         HideUiMessage();
-                        break;
-                    //wind
-                    case "Wind":
-                        other.GetComponent<WindTunnelPart>().RemovePlayer();
-                        break;
+						break;
+					//wind
+					case "Wind":
+						other.GetComponent<WindTunnelPart>().RemovePlayer();
+						break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
@@ -318,6 +322,7 @@ namespace Game.Player
 
         #endregion collision handling
 
+        //########################################################################
         //########################################################################
 
         #region helper methods
@@ -335,6 +340,7 @@ namespace Game.Player
         #endregion helper methods
 
         //########################################################################
+        //########################################################################
 
         #region event handlers
 
@@ -343,15 +349,15 @@ namespace Game.Player
         /// </summary>
         void OnMenuSwitchedEventHandler(object sender, Utilities.EventManager.OnMenuSwitchedEventArgs args)
         {
-            if (!isActive && args.NewUiState == UI.eUiState.HUD)
+            if (!this.isActive && args.NewUiState == UI.eUiState.HUD)
             {
-                isActive = true;
-                //Debug.Log("InteractionController activated!");
+                this.isActive = true;
+                Debug.Log("InteractionController activated!");
             }
-            else if (isActive && args.PreviousUiState == UI.eUiState.HUD)
+            else if (this.isActive && args.PreviousUiState == UI.eUiState.HUD)
             {
-                isActive = false;
-                //Debug.Log("InteractionController deactivated!");
+                this.isActive = false;
+                Debug.Log("InteractionController deactivated!");
             }
         }
 
@@ -360,24 +366,25 @@ namespace Game.Player
         /// </summary>
         void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
-            favourPickUpInRange = false;
-            favour = null;
+            this.favourPickUpInRange = false;
+            this.favour = null;
 
-            needleInRange = false;
-            needlePickedUpCollider = null;
+            this.needleInRange = false;
+            this.needlePickedUpCollider = null;
 
-            eyeInRange = false;
+            this.eyeInRange = false;
 
-            pillarEntranceInfo.IsPillarEntranceInRange = false;
-            pillarEntranceInfo.CurrentPillarEntrance = null;
+            this.pillarEntranceInfo.IsPillarEntranceInRange = false;
+            this.pillarEntranceInfo.CurrentPillarEntrance = null;
 
-            pillarExitInRange = false;
+            this.pillarExitInRange = false;
 
             HideUiMessage();
         }
 
         #endregion event handlers
 
+        //########################################################################
         //########################################################################
 
         class PillarEntranceInfo

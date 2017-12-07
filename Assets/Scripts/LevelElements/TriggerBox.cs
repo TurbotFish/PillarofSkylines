@@ -13,8 +13,6 @@ public class TriggerBox : Trigger {
     [SerializeField]
     bool definitiveActivation;
     [SerializeField]
-    bool toggle;
-    [SerializeField]
     float delayBeforeDeactivation;
 
     private void OnTriggerEnter(Collider other) {
