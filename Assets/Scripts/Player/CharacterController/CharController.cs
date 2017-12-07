@@ -25,6 +25,11 @@ namespace Game.Player.CharacterController
         CharacControllerRecu tempPhysicsHandler;
         CharacControllerRecu.CollisionInfo tempCollisionInfo;
 
+        /// <summary>
+        /// The animator of the character.
+        /// </summary>
+        Animator animator;
+
         //#############################################################################       
 
         PlayerModel playerModel;
@@ -32,7 +37,7 @@ namespace Game.Player.CharacterController
 
         Transform myTransform;
         StateMachine stateMachine;
-        public ePlayerState CurrentState { get { return stateMachine.CurrentState; } }
+        public ePlayerState CurrentState { get { if (stateMachine != null) return stateMachine.CurrentState; return ePlayerState.empty; } }
 
         bool isInitialized;
         bool isHandlingInput;
@@ -58,6 +63,7 @@ namespace Game.Player.CharacterController
         public void Initialize(GameControl.IGameControllerBase gameController)
         {
             tempPhysicsHandler = GetComponent<CharacControllerRecu>();
+            animator = GetComponentInChildren<Animator>();
 
             playerModel = gameController.PlayerModel;
             CharData = Resources.Load<CharData>("ScriptableObjects/CharData");
@@ -67,7 +73,10 @@ namespace Game.Player.CharacterController
 
             //*******************************************
 
-            //stateMachine.Add(ePlayerState.dash, n)
+            stateMachine.Add(ePlayerState.move, new MoveState(this, stateMachine));
+            stateMachine.Add(ePlayerState.stand, new StandState(this, stateMachine));
+
+            stateMachine.ChangeState(new StandEnterArgs(ePlayerState.empty));
 
             //*******************************************
 
@@ -129,7 +138,7 @@ namespace Game.Player.CharacterController
             {
                 inputInfo.leftStickRaw = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
 
-                if (inputInfo.leftStickRaw.magnitude < CharData.General.LeftStickDeadMaxValue)
+                if (inputInfo.leftStickRaw.magnitude < CharData.General.StickDeadMaxVal)
                 {
                     inputInfo.leftStickAtZero = true;
                 }
@@ -137,7 +146,7 @@ namespace Game.Player.CharacterController
                 var stickToCamera = rotator.forward * Input.GetAxisRaw("Vertical") + rotator.right * Input.GetAxisRaw("Horizontal");
                 inputInfo.leftStickToCamera = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * stickToCamera;
 
-                //inputInfo.leftStickToSlope = (Quaternion.AngleAxis(Vector3.Angle(transform.up, controller.collisions.currentGroundNormal), Vector3.Cross(transform.up, controller.collisions.currentGroundNormal))) * inputToCamera;
+                inputInfo.leftStickToSlope = (Quaternion.AngleAxis(Vector3.Angle(transform.up, tempCollisionInfo.currentGroundNormal), Vector3.Cross(transform.up, tempCollisionInfo.currentGroundNormal))) * inputInfo.leftStickToCamera;
 
                 inputInfo.dashButton = Input.GetButton("Dash");
                 inputInfo.dashButtonDown = Input.GetButtonDown("Dash");
@@ -177,19 +186,28 @@ namespace Game.Player.CharacterController
                 myTransform.up = stateReturn.PlayerUp;
             }
 
+            Debug.Log("================");
+            Debug.LogFormat("initial velocity: {0}", velocity);
+
             //computing new velocity
-            float transitionSpeed = stateReturn.TransitionSpeedSet ? stateReturn.TransitionSpeed : CharData.General.DefaultTransitionSpeed;
+            float transitionSpeed = stateReturn.TransitionSpeedSet ? stateReturn.TransitionSpeed : CharData.General.TransitionSpeed;
 
             var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + stateReturn.DesiredVelocity * (Time.deltaTime * transitionSpeed);
+
+            Debug.LogFormat("new velocity: {0}", newVelocity);
 
             //adding gravity
             newVelocity += gravityDirection * (CharData.General.GravityStrength * Time.deltaTime);
 
+            Debug.LogFormat("after gravity: {0}", newVelocity);
+
             //clamping speed
-            if (newVelocity.magnitude > CharData.General.DefaultMaxSpeed)
+            if (newVelocity.magnitude > CharData.General.MaxSpeed)
             {
                 newVelocity.Normalize();
-                newVelocity *= CharData.General.DefaultMaxSpeed;
+                newVelocity *= CharData.General.MaxSpeed;
+
+                Debug.LogFormat("clamped velocity: {0}", newVelocity);
             }
 
             //*******************************************
@@ -205,6 +223,7 @@ namespace Game.Player.CharacterController
             {
                 newVelocity = tempPhysicsHandler.Move(turnedVelocity + externalVelocity);
             }
+            Debug.LogFormat("after physics: {0}", newVelocity);
 
             externalVelocity = Vector3.zero;
             tempCollisionInfo = tempPhysicsHandler.collisions;
@@ -241,6 +260,27 @@ namespace Game.Player.CharacterController
             }
 
             //*******************************************
+
+            #region update animator
+            float keyHalf = 0.5f;
+            float m_RunCycleLegOffset = 0.2f;
+
+            animator.SetBool("OnGround", tempCollisionInfo.below);
+            animator.SetFloat("Forward", velocity.magnitude / CharData.Move.Speed);
+            animator.SetFloat("Turn", (inputInfo.leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), transform.up), transform.up), CharData.General.TurnSpeed * Time.deltaTime) / 7f));
+            animator.SetFloat("Jump", turnedVelocity.y / 5);
+            float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
+            float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputInfo.leftStickRaw.magnitude;
+            if (tempCollisionInfo.below)
+            {
+                animator.SetFloat("JumpLeg", jumpLeg);
+            }
+
+            //windParticles.SetVelocity(velocity);
+            //glideParticles.SetVelocity(velocity);
+            #endregion update animator
+
+            //*******************************************
         }
 
         #endregion update
@@ -269,7 +309,7 @@ namespace Game.Player.CharacterController
             {
                 myTransform.rotation = args.Rotation;
                 velocity = Vector3.zero;
-                stateMachine.ChangeState(new FallEnterArgs(ePlayerState.empty));
+                stateMachine.ChangeState(new StandEnterArgs(ePlayerState.empty));
                 ChangeGravityDirection(Vector3.down);
             }
         }

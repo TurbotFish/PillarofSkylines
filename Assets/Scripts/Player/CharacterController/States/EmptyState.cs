@@ -18,14 +18,17 @@ namespace Game.Player.CharacterController.States
 
         public void Enter(BaseEnterArgs enterArgs)
         {
+            Debug.Log("Enter State: Empty");
         }
 
         public void Exit()
         {
+            Debug.Log("Exit State: Empty");
         }
 
         public void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
         {
+            //Debug.Log("EmptyState: HandleInput");
         }
 
         public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)

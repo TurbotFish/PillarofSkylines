@@ -2,6 +2,7 @@
 using Game.Player.CharacterController.EnterArgs;
 using Game.Player.CharacterController.States;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Game.Player.CharacterController
 {
@@ -82,7 +83,7 @@ namespace Game.Player.CharacterController
         {
             if (
                 (stateToAbilityLinkDict.ContainsKey(stateId) && !model.CheckAbilityActive(stateToAbilityLinkDict[stateId]))
-                || !cooldownDict.ContainsKey(stateId)
+                || cooldownDict.ContainsKey(stateId)
                )
             {
                 return true; //locked
@@ -95,9 +96,11 @@ namespace Game.Player.CharacterController
         {
             if (CheckStateLocked(enterArgs.NewState))
             {
+                Debug.Log("AAA");
                 return false;
             }
 
+            Debug.Log("BBB");
             currentState.Exit();
 
             if (stateToAbilityLinkDict.ContainsKey(enterArgs.PreviousState))

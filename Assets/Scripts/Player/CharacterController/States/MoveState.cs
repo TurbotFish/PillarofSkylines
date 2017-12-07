@@ -29,10 +29,12 @@ namespace Game.Player.CharacterController.States
 
         public void Enter(BaseEnterArgs enterArgs)
         {
+            Debug.Log("Enter State: Move");
         }
 
         public void Exit()
         {
+            Debug.Log("Exit State: Move");
         }
 
         //#############################################################################
@@ -49,19 +51,19 @@ namespace Game.Player.CharacterController.States
         {
             var result = new StateReturnContainer();
 
-            if (!collisionInfo.below)
-            {
-                stateMachine.ChangeState(new FallEnterArgs(StateId));
-            }
-            else
-            {
+            //if (!collisionInfo.below)
+            //{
+            //    stateMachine.ChangeState(new FallEnterArgs(StateId));
+            //}
+            //else
+            //{
                 if (!charController.CanTurnPlayer)
                 {
                     result.CanTurnPlayer = true;
                 }
 
                 result.DesiredVelocity = inputInfo.leftStickToSlope * moveData.Speed * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1);
-            }
+            //}
 
             return result;
         }

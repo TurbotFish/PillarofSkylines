@@ -60,16 +60,16 @@ namespace Game.Player.CharacterController
         public class GeneralData
         {
             [SerializeField]
-            float leftStickDeadMaxValue;
-            public float LeftStickDeadMaxValue { get { return leftStickDeadMaxValue; } }
+            float stickDeadMaxVal;
+            public float StickDeadMaxVal { get { return stickDeadMaxVal; } }
 
             [SerializeField]
-            float defaultTransitionSpeed;
-            public float DefaultTransitionSpeed { get { return defaultTransitionSpeed; } }
+            float transitionSpeed;
+            public float TransitionSpeed { get { return transitionSpeed; } }
 
             [SerializeField]
-            float defaultMaxSpeed;
-            public float DefaultMaxSpeed { get { return defaultMaxSpeed; } }
+            float maxSpeed;
+            public float MaxSpeed { get { return maxSpeed; } }
 
             [SerializeField]
             float gravityStrength;
@@ -81,9 +81,9 @@ namespace Game.Player.CharacterController
 
             public void OnValidate()
             {
-                leftStickDeadMaxValue = Mathf.Clamp01(leftStickDeadMaxValue);
-                defaultTransitionSpeed = Mathf.Clamp(defaultTransitionSpeed, 0, float.MaxValue);
-                defaultMaxSpeed = Mathf.Clamp(defaultMaxSpeed, 0, float.MaxValue);
+                stickDeadMaxVal = Mathf.Clamp01(stickDeadMaxVal);
+                transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
+                maxSpeed = Mathf.Clamp(maxSpeed, 0, float.MaxValue);
                 gravityStrength = Mathf.Clamp(gravityStrength, 0, float.MaxValue);
                 turnSpeed = Mathf.Clamp(turnSpeed, 0, float.MaxValue);
             }
