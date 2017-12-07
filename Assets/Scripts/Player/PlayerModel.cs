@@ -49,7 +49,7 @@ namespace Game.Player
         {
             if (Input.GetKeyUp(KeyCode.F2))
             {
-                this.Favours++;
+                ChangeFavourAmount(1);
             }
         }
 
@@ -197,7 +197,7 @@ namespace Game.Player
             }
             else if (CheckAbilityGroupUnlocked(ability.Group) && Favours >= ability.ActivationPrice)
             {
-                Favours -= ability.ActivationPrice;
+                ChangeFavourAmount(-ability.ActivationPrice);
                 activatedAbilities.Add(abilityType);
 
                 Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(abilityType, eAbilityState.active));
@@ -224,7 +224,7 @@ namespace Game.Player
             }
             else if (!flaggedAbilities.Contains(abilityType))
             {
-                Favours += ability.ActivationPrice;
+                ChangeFavourAmount(ability.ActivationPrice);
                 activatedAbilities.Remove(abilityType);
 
                 Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(abilityType, eAbilityState.available));
