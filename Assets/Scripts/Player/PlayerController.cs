@@ -10,9 +10,9 @@ namespace Game.Player
     /// </summary>
     public class PlayerController : MonoBehaviour
     {
-        public CharacterController.Character OldPlayer { get; private set; }
-        public CharacterController.CharController CharController { get; private set; }
+        public Transform PlayerTransform { get; private set; }
 
+        public CharacterController.Character Player { get; private set; }
         public InteractionController InteractionController { get; private set; }
 
         WrappableObject wrappableObject;
@@ -26,14 +26,15 @@ namespace Game.Player
         public void InitializePlayerController(GameControl.IGameControllerBase gameController)
         {
             //getting all references
-            OldPlayer = GetComponent<CharacterController.Character>();
-            InteractionController = GetComponentInChildren<InteractionController>();
+            PlayerTransform = transform;
+			Player = GetComponent<CharacterController.Character> ();
+			InteractionController = GetComponentInChildren<InteractionController> ();
             wrappableObject = GetComponent<WrappableObject>();
             TombFinderController = GetComponentInChildren<AbilitySystem.TombFinderController>();
 
             //initializing all the things
-            OldPlayer.InitializePlayer(gameController.PlayerModel);
-            InteractionController.InitializeFavourController(gameController.PlayerModel, OldPlayer, gameController.EchoManager);
+            Player.InitializePlayer(gameController.PlayerModel);
+            InteractionController.InitializeFavourController(gameController.PlayerModel, Player, gameController.EchoManager);
 
             if (gameController.WorldController != null)
             {
@@ -43,4 +44,4 @@ namespace Game.Player
             TombFinderController.InitializeTombFinderController(gameController);
         }
     }
-} //end of namespace
+}
