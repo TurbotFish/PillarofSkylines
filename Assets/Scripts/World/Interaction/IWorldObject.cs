@@ -4,8 +4,14 @@ using UnityEngine;
 
 namespace Game.World.Interaction
 {
-    public interface IWorldObject
+    public interface IWorldObjectInitialization
     {
-        void InitializeWorldObject(ChunkSystem.WorldController worldController, bool isCopy);
+        void Initialize(ChunkSystem.WorldController worldController, bool isCopy);
+    }
+
+    public interface IWorldObjectActivation
+    {
+        void OnSubChunkActivated();
+        void OnSubChunkDeactivated();
     }
 } //end of namespace
