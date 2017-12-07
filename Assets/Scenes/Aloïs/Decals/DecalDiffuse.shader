@@ -3,6 +3,12 @@
 	Properties
 	{
 		_MainTex ("Texture", 2D) = "white" {}
+
+		_AtlasSizeX ("Atlas Size X",Int) = 4
+		_AtlasSizeY ("Atlas Size Y",Int) = 4
+
+		_AtlasCoordX ("Texture Coord X", Int) = 1
+		_AtlasCoordY ("Texture Coord Y", Int) = 1
 	}
 	SubShader
 	{
@@ -34,6 +40,11 @@
 			sampler2D _MainTex;
 			sampler2D_float _CameraDepthTexture;
 			sampler2D _NormalsCopy;
+			float _AtlasSizeX;
+			float _AtlasSizeY;
+
+			float _AtlasCoordX;
+			float _AtlasCoordY;
 			
 			v2f vert (float3 v : POSITION)
 			{
@@ -64,8 +75,16 @@
 				half3 normal = tex2D(_NormalsCopy, uv).rgb;
 				fixed3 wnormal = normal.rgb * 2.0 - 1.0;
 				clip(dot(wnormal, i.orientation) - 0.3);
-				
-				fixed4 col = tex2D(_MainTex, i.uv);
+
+				fixed2 _atlasWalk;
+				_atlasWalk.x = 1/_AtlasSizeX;
+				_atlasWalk.y = 1/_AtlasSizeY;
+
+				float2 _atlasUV;
+				_atlasUV.x = i.uv.x * _atlasWalk.x + _atlasWalk.x * (_AtlasCoordX - 1);
+				_atlasUV.y = i.uv.y * _atlasWalk.y + (_AtlasSizeY - _AtlasCoordY)/_AtlasSizeY;
+
+				fixed4 col = tex2D(_MainTex, _atlasUV);
 				return col;
 			}
 			ENDCG

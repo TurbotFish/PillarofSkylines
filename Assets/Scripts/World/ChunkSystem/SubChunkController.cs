@@ -24,6 +24,7 @@ namespace Game.World.ChunkSystem
         public bool IsCopy { get; private set; }
 
         List<Renderer> rendererList = new List<Renderer>();
+        List<Interaction.IWorldObjectActivation> worldObjectActivationList = new List<Interaction.IWorldObjectActivation>();
 
         //##################################################################
 
@@ -49,14 +50,18 @@ namespace Game.World.ChunkSystem
             FillRendererList();
 
             //initialize world objects
-            var worldObjects = GetComponentsInChildren<Interaction.IWorldObject>();
+            var worldObjects = GetComponentsInChildren<Interaction.IWorldObjectInitialization>(true);
             for (int i = 0; i < worldObjects.Length; i++)
             {
                 var worldObject = worldObjects[i];
 
-                worldObject.InitializeWorldObject(worldController, IsCopy);
+                worldObject.Initialize(worldController, IsCopy);
             }
 
+            worldObjectActivationList.Clear();
+            worldObjectActivationList.AddRange(GetComponentsInChildren<Interaction.IWorldObjectActivation>(true));
+
+            //
             IsActive = true;
         }
 
@@ -133,7 +138,9 @@ namespace Game.World.ChunkSystem
             {
                 return result;
             }
-            else if (immediate)
+
+            //handle renderers
+            if (immediate)
             {
                 for (int i = 0; i < rendererList.Count; i++)
                 {
@@ -146,6 +153,23 @@ namespace Game.World.ChunkSystem
                 //Debug.LogFormat("SubChunk: SetActive: name={0} ; value={1}", name, active);
             }
 
+            //handle world objects
+            if (active)
+            {
+                for (int i = 0; i < worldObjectActivationList.Count; i++)
+                {
+                    worldObjectActivationList[i].OnSubChunkActivated();
+                }
+            }
+            else
+            {
+                for (int i = 0; i < worldObjectActivationList.Count; i++)
+                {
+                    worldObjectActivationList[i].OnSubChunkDeactivated();
+                }
+            }
+
+            //
             IsActive = active;
             return result;
         }
