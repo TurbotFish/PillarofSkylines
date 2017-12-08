@@ -96,6 +96,8 @@ namespace Game.Player.CharacterController
 
         public Vector3 Move(Vector3 velocity)
         {
+            var pos1 = myTransform.position;
+
             //			print("---------------------------------new movement----------------------------------");
             playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
             collisions.initialVelocityOnThisFrame = velocity;
@@ -126,8 +128,16 @@ namespace Game.Player.CharacterController
                 finalVelocity = AdjustPlayerPosition(velocity);
             }
 
+            //Debug.LogFormat("ttt:{0}", finalVelocity.ToString());
+
             //Update collision informations
             CollisionUpdate(velocity);
+
+            var pos2 = myTransform.position;
+            if((pos2-pos1).magnitude > 0.01f)
+            {
+                Debug.LogFormat("move={0}; {1}", (pos2 - pos1).ToString(), (pos2 - pos1).magnitude.ToString());
+            }
 
             return finalVelocity;
         }
@@ -136,8 +146,27 @@ namespace Game.Player.CharacterController
 
         Vector3 ConfirmMovement(Vector3 velocity)
         {
+            
+
+            var pos1 = myTransform.position;
             myTransform.Translate(velocity, Space.World);
-            return (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * velocity / Time.deltaTime;
+            var pos2 = myTransform.position;
+
+            if (myPlayer.CurrentState == ePlayerState.move)
+            {
+                Debug.LogFormat("input={0}", velocity.ToString());
+                Debug.LogFormat("translation={0}; magnitude={1}", (pos2 - pos1).ToString(), (pos2 - pos1).magnitude.ToString());
+                //Debug.LogFormat("angle:{0}", Vector3.Angle(transform.up, Vector3.up));
+                //Debug.LogFormat("axis:{0}", Vector3.Cross(transform.up, Vector3.up));
+                //Debug.LogFormat("velocity / deltaTime = {0}", velocity / Time.deltaTime);
+            }
+
+
+
+            //var result = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * velocity / Time.deltaTime;
+
+            //return result;
+            return velocity;
         }
 
         Vector3 AdjustPlayerPosition(Vector3 velocity)
@@ -194,7 +223,7 @@ namespace Game.Player.CharacterController
                 currentPF = null;
             }
             // EN TEST POUR BIEN RESTER AU SOL, à voir ce que ça vaut
-            if (myPlayer.CurrentState == ePlayerState.onGround)
+            if (myPlayer.CurrentState == ePlayerState.stand || myPlayer.CurrentState == ePlayerState.move)
             {
                 if (Physics.SphereCast(myTransform.position + myTransform.up * (radius + skinWidth), radius, -myTransform.up, out hit2, myPlayer.CharData.Physics.MaxStepHeight, collisionMask))
                 {
@@ -330,16 +359,16 @@ namespace Game.Player.CharacterController
                 //Detect the obstacle met from above to check if it's a step
                 //				Debug.DrawRay(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up * (height + radius * 2), Color.red);
                 //				Debug.DrawRay(myTransform.position + movementVector + myTransform.up * (height + radius * 2), Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), Color.red);
-                if ((myPlayer.CurrentState == ePlayerState.onGround || climbingStep)
+                if ((myPlayer.CurrentState == ePlayerState.move || climbingStep)
                                 && Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up, out hit2, height + radius * 2, collisionMask)
                                 && !Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2), Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up), (radius + skinWidth), collisionMask))
                 {
                     collisions.stepHeight = (height + radius * 2) - hit2.distance;
                     // Once checked if it's a step, check if it's not too high, and if it's not a slope
                     //					print("detected collision at " + hit2.point + ", new ground angle : " + Vector3.Angle(hit2.normal, myTransform.up) + ", step height : " + collisions.stepHeight + ", dot product : " + Vector3.Dot(hit.normal, hit2.normal));
-                    if (Vector3.Angle(hit2.normal, myTransform.up) < myPlayer.CharData.Physics.MaxSlopeAngle 
-                        && collisions.stepHeight < myPlayer.CharData.Physics.MaxStepHeight 
-                        && Vector3.Dot(hit.normal, hit2.normal) < .95f 
+                    if (Vector3.Angle(hit2.normal, myTransform.up) < myPlayer.CharData.Physics.MaxSlopeAngle
+                        && collisions.stepHeight < myPlayer.CharData.Physics.MaxStepHeight
+                        && Vector3.Dot(hit.normal, hit2.normal) < .95f
                         && Vector3.Dot(hit.normal, hit2.normal) >= -.01f
                        )
                     {

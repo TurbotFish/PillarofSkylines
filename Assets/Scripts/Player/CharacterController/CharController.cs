@@ -186,20 +186,20 @@ namespace Game.Player.CharacterController
                 myTransform.up = stateReturn.PlayerUp;
             }
 
-            Debug.Log("================");
-            Debug.LogFormat("initial velocity: {0}", velocity);
+            //Debug.Log("================");
+            //Debug.LogFormat("initial velocity: {0}", velocity);
 
             //computing new velocity
             float transitionSpeed = stateReturn.TransitionSpeedSet ? stateReturn.TransitionSpeed : CharData.General.TransitionSpeed;
 
             var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + stateReturn.DesiredVelocity * (Time.deltaTime * transitionSpeed);
 
-            Debug.LogFormat("new velocity: {0}", newVelocity);
+            //Debug.LogFormat("new velocity: {0}", newVelocity);
 
             //adding gravity
             newVelocity += gravityDirection * (CharData.General.GravityStrength * Time.deltaTime);
 
-            Debug.LogFormat("after gravity: {0}", newVelocity);
+            //Debug.LogFormat("after gravity: {0}", newVelocity);
 
             //clamping speed
             if (newVelocity.magnitude > CharData.General.MaxSpeed)
@@ -207,7 +207,7 @@ namespace Game.Player.CharacterController
                 newVelocity.Normalize();
                 newVelocity *= CharData.General.MaxSpeed;
 
-                Debug.LogFormat("clamped velocity: {0}", newVelocity);
+                //Debug.LogFormat("clamped velocity: {0}", newVelocity);
             }
 
             //*******************************************
@@ -217,13 +217,13 @@ namespace Game.Player.CharacterController
 
             if (stateMachine.CurrentState == ePlayerState.glide)
             {
-                newVelocity = tempPhysicsHandler.Move(newVelocity + externalVelocity);
+                newVelocity = tempPhysicsHandler.Move(newVelocity /*+ externalVelocity*/);
             }
             else
             {
-                newVelocity = tempPhysicsHandler.Move(turnedVelocity + externalVelocity);
+                newVelocity = tempPhysicsHandler.Move(turnedVelocity /*+ externalVelocity*/);
             }
-            Debug.LogFormat("after physics: {0}", newVelocity);
+            //Debug.LogFormat("after physics: {0}", newVelocity);
 
             externalVelocity = Vector3.zero;
             tempCollisionInfo = tempPhysicsHandler.collisions;
