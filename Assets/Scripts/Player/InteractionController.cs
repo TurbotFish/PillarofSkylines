@@ -79,8 +79,8 @@ namespace Game.Player
                         //pick up favour
                         playerModel.ChangeFavourAmount(1);
 
-                        //play favour pick up animation
-                        PlayMakerFSM[] temp = favour.MyTransform.parent.GetComponents<PlayMakerFSM>(); // MyTransform n'est pas set sur toutes les Faveurs
+                        //play favour pick up animation // TODO: delet this
+                        PlayMakerFSM[] temp = favour.MyTransform.parent.GetComponents<PlayMakerFSM>();
                         foreach (var fsm in temp)
                         {
                             if (fsm.FsmName == "Faveur_activation")
@@ -148,9 +148,11 @@ namespace Game.Player
                 playerModel.hasNeedle = false;
                 if (needleSlotCollider) {
 
+                    foreach (Transform child in needleSlotCollider.transform)
+                        child.gameObject.SetActive(true);
+
                     var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(needleSlotCollider.transform.position, needleSlotCollider.transform.rotation, false);
                     Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
-                    needleSlotCollider.enabled = true;
                 }
                 Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(false));
             }

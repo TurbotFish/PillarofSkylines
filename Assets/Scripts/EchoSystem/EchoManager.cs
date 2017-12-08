@@ -52,19 +52,18 @@ namespace Game.EchoSystem
 
         void Update()
         {
-            if (!isEclipseActive)
-            {
+            if (!isEclipseActive) {
                 float driftInput = Input.GetAxis("Right Trigger");
                 if (driftInput > 0.7f && !driftInputDown) {
                     driftInputDown = true;
                     Drift();
-                }
-                else if (driftInput < 0.6f)
+                } else if (driftInput < 0.6f)
                     driftInputDown = false;
 
                 if (Input.GetButtonDown("Echo"))
                     CreateEcho(true);
-            }
+            } else
+                driftInputDown = true;
         }
 
         //##################################################################
