@@ -23,7 +23,7 @@ namespace Game.Player
         bool pillarExitInRange = false;
 
         bool needleInRange = false;
-        Collider needlePickedUpCollider;
+        Collider needleSlotCollider;
 
         bool needleSlotInRange = false;
 
@@ -109,20 +109,13 @@ namespace Game.Player
                     Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(false));
                 }
                 //needle
-                else if (needleInRange)
+                else if (needleInRange || needleSlotInRange)
                 {
                     needleInRange = false;
-                    needlePickedUpCollider.enabled = false;
-
-                    playerModel.hasNeedle = true;
-
-                    Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(true));
-
-                    HideUiMessage();
-                }
-                //needle
-                else if (needleSlotInRange) {
                     needleSlotInRange = false;
+
+                    foreach(Transform child in needleSlotCollider.transform)
+                        child.gameObject.SetActive(playerModel.hasNeedle);
 
                     playerModel.hasNeedle ^= true;
 
@@ -147,14 +140,21 @@ namespace Game.Player
                 isInteractButtonDown = false;
             }
 
-            if (Input.GetButton("Drift") && !isDriftButtonDown && playerModel.hasNeedle)
+            // stop eclipse with drift
+            float driftInput = Input.GetAxis("Right Trigger");
+            if (driftInput > 0.7f && !isDriftButtonDown && playerModel.hasNeedle)
             {
                 isDriftButtonDown = true;
                 playerModel.hasNeedle = false;
-                needlePickedUpCollider.enabled = true;
+                if (needleSlotCollider) {
+
+                    var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(needleSlotCollider.transform.position, needleSlotCollider.transform.rotation, false);
+                    Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                    needleSlotCollider.enabled = true;
+                }
                 Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(false));
             }
-            else if (!Input.GetButton("Drift") && isDriftButtonDown)
+            else if (driftInput < 0.6f && isDriftButtonDown)
             {
                 isDriftButtonDown = false;
             }
@@ -222,15 +222,24 @@ namespace Game.Player
                     //needle
                     case "Needle":
                         needleInRange = true;
-                        needlePickedUpCollider = other;
+                        needleSlotCollider = other;
 
-                        ShowUiMessage("Press [X] to take the needle");
+                        ShowUiMessage(playerModel.hasNeedle ? "Press [X] to plant the needle" : "Press [X] to take the needle");
                         break;
                     //needle slot
                     case "NeedleSlot":
-                        needleSlotInRange = true;
 
-                        ShowUiMessage(playerModel.hasNeedle ? "Press [X] to plant the needle" : "Press [X] to take the needle");
+
+                        // si on est dans l'éclipse on peut poser peut importe lequel c'est
+                        // sinon on ne peut retirer que s'il a l'aiguille
+
+                        if (playerModel.hasNeedle || needleSlotCollider && needleSlotCollider == other) {
+                            needleSlotInRange = true;
+                            needleSlotCollider = other;
+
+                            ShowUiMessage(playerModel.hasNeedle ? "Press [X] to plant the needle" : "Press [X] to take the needle");
+                        }
+
                         break;
                     //eye
                     case "Eye":
@@ -292,7 +301,6 @@ namespace Game.Player
                     //needle
                     case "Needle":
                         needleInRange = false;
-                        needlePickedUpCollider = null;
 
                         HideUiMessage();
                         break;
@@ -374,7 +382,7 @@ namespace Game.Player
             this.favour = null;
 
             this.needleInRange = false;
-            this.needlePickedUpCollider = null;
+            this.needleSlotCollider = null;
 
             this.eyeInRange = false;
 
