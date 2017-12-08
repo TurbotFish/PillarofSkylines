@@ -1,0 +1,142 @@
+fileFormatVersion: 2
+guid: e6388dbfd0022a14ea80b815de012d6d
+timeCreated: 1512672797
+licenseType: Pro
+ModelImporter:
+  serializedVersion: 21
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: SM_RockM_C_MeshPart0
+    100004: SM_RockM_C_MeshPart1
+    100006: SM_RockM_C_MeshPart10
+    100008: SM_RockM_C_MeshPart2
+    100010: SM_RockM_C_MeshPart3
+    100012: SM_RockM_C_MeshPart4
+    100014: SM_RockM_C_MeshPart5
+    100016: SM_RockM_C_MeshPart6
+    100018: SM_RockM_C_MeshPart7
+    100020: SM_RockM_C_MeshPart8
+    100022: SM_RockM_C_MeshPart9
+    400000: //RootNode
+    400002: SM_RockM_C_MeshPart0
+    400004: SM_RockM_C_MeshPart1
+    400006: SM_RockM_C_MeshPart10
+    400008: SM_RockM_C_MeshPart2
+    400010: SM_RockM_C_MeshPart3
+    400012: SM_RockM_C_MeshPart4
+    400014: SM_RockM_C_MeshPart5
+    400016: SM_RockM_C_MeshPart6
+    400018: SM_RockM_C_MeshPart7
+    400020: SM_RockM_C_MeshPart8
+    400022: SM_RockM_C_MeshPart9
+    2300000: SM_RockM_C_MeshPart0
+    2300002: SM_RockM_C_MeshPart1
+    2300004: SM_RockM_C_MeshPart10
+    2300006: SM_RockM_C_MeshPart2
+    2300008: SM_RockM_C_MeshPart3
+    2300010: SM_RockM_C_MeshPart4
+    2300012: SM_RockM_C_MeshPart5
+    2300014: SM_RockM_C_MeshPart6
+    2300016: SM_RockM_C_MeshPart7
+    2300018: SM_RockM_C_MeshPart8
+    2300020: SM_RockM_C_MeshPart9
+    2300022: //RootNode
+    3300000: SM_RockM_C_MeshPart0
+    3300002: SM_RockM_C_MeshPart1
+    3300004: SM_RockM_C_MeshPart10
+    3300006: SM_RockM_C_MeshPart2
+    3300008: SM_RockM_C_MeshPart3
+    3300010: SM_RockM_C_MeshPart4
+    3300012: SM_RockM_C_MeshPart5
+    3300014: SM_RockM_C_MeshPart6
+    3300016: SM_RockM_C_MeshPart7
+    3300018: SM_RockM_C_MeshPart8
+    3300020: SM_RockM_C_MeshPart9
+    3300022: //RootNode
+    4300000: SM_RockM_C_MeshPart0
+    4300002: SM_RockM_C_MeshPart1
+    4300004: SM_RockM_C_MeshPart2
+    4300006: SM_RockM_C_MeshPart3
+    4300008: SM_RockM_C_MeshPart4
+    4300010: SM_RockM_C_MeshPart5
+    4300012: SM_RockM_C_MeshPart6
+    4300014: SM_RockM_C_MeshPart7
+    4300016: SM_RockM_C_MeshPart8
+    4300018: SM_RockM_C_MeshPart9
+    4300020: SM_RockM_C_MeshPart10
+    4300022: SM_rockM_C
+  materials:
+    importMaterials: 0
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 1
+    normalCalculationMode: 4
+  importAnimation: 0
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: DIO_applied
+  assetBundleName: 
+  assetBundleVariant: 

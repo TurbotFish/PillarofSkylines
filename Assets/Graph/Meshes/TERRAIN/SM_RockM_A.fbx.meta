@@ -1,0 +1,227 @@
+fileFormatVersion: 2
+guid: baf5c7a9beb1d7a46bf8519630717e35
+timeCreated: 1512672727
+licenseType: Pro
+ModelImporter:
+  serializedVersion: 21
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: SM_RockM_A_MeshPart0
+    100004: SM_RockM_A_MeshPart1
+    100006: SM_RockM_A_MeshPart10
+    100008: SM_RockM_A_MeshPart11
+    100010: SM_RockM_A_MeshPart12
+    100012: SM_RockM_A_MeshPart13
+    100014: SM_RockM_A_MeshPart14
+    100016: SM_RockM_A_MeshPart15
+    100018: SM_RockM_A_MeshPart16
+    100020: SM_RockM_A_MeshPart17
+    100022: SM_RockM_A_MeshPart18
+    100024: SM_RockM_A_MeshPart19
+    100026: SM_RockM_A_MeshPart2
+    100028: SM_RockM_A_MeshPart20
+    100030: SM_RockM_A_MeshPart21
+    100032: SM_RockM_A_MeshPart22
+    100034: SM_RockM_A_MeshPart23
+    100036: SM_RockM_A_MeshPart24
+    100038: SM_RockM_A_MeshPart25
+    100040: SM_RockM_A_MeshPart26
+    100042: SM_RockM_A_MeshPart27
+    100044: SM_RockM_A_MeshPart3
+    100046: SM_RockM_A_MeshPart4
+    100048: SM_RockM_A_MeshPart5
+    100050: SM_RockM_A_MeshPart6
+    100052: SM_RockM_A_MeshPart7
+    100054: SM_RockM_A_MeshPart8
+    100056: SM_RockM_A_MeshPart9
+    400000: //RootNode
+    400002: SM_RockM_A_MeshPart0
+    400004: SM_RockM_A_MeshPart1
+    400006: SM_RockM_A_MeshPart10
+    400008: SM_RockM_A_MeshPart11
+    400010: SM_RockM_A_MeshPart12
+    400012: SM_RockM_A_MeshPart13
+    400014: SM_RockM_A_MeshPart14
+    400016: SM_RockM_A_MeshPart15
+    400018: SM_RockM_A_MeshPart16
+    400020: SM_RockM_A_MeshPart17
+    400022: SM_RockM_A_MeshPart18
+    400024: SM_RockM_A_MeshPart19
+    400026: SM_RockM_A_MeshPart2
+    400028: SM_RockM_A_MeshPart20
+    400030: SM_RockM_A_MeshPart21
+    400032: SM_RockM_A_MeshPart22
+    400034: SM_RockM_A_MeshPart23
+    400036: SM_RockM_A_MeshPart24
+    400038: SM_RockM_A_MeshPart25
+    400040: SM_RockM_A_MeshPart26
+    400042: SM_RockM_A_MeshPart27
+    400044: SM_RockM_A_MeshPart3
+    400046: SM_RockM_A_MeshPart4
+    400048: SM_RockM_A_MeshPart5
+    400050: SM_RockM_A_MeshPart6
+    400052: SM_RockM_A_MeshPart7
+    400054: SM_RockM_A_MeshPart8
+    400056: SM_RockM_A_MeshPart9
+    2300000: SM_RockM_A_MeshPart0
+    2300002: SM_RockM_A_MeshPart1
+    2300004: SM_RockM_A_MeshPart10
+    2300006: SM_RockM_A_MeshPart11
+    2300008: SM_RockM_A_MeshPart12
+    2300010: SM_RockM_A_MeshPart13
+    2300012: SM_RockM_A_MeshPart14
+    2300014: SM_RockM_A_MeshPart15
+    2300016: SM_RockM_A_MeshPart16
+    2300018: SM_RockM_A_MeshPart17
+    2300020: SM_RockM_A_MeshPart18
+    2300022: SM_RockM_A_MeshPart19
+    2300024: SM_RockM_A_MeshPart2
+    2300026: SM_RockM_A_MeshPart20
+    2300028: SM_RockM_A_MeshPart21
+    2300030: SM_RockM_A_MeshPart22
+    2300032: SM_RockM_A_MeshPart23
+    2300034: SM_RockM_A_MeshPart24
+    2300036: SM_RockM_A_MeshPart25
+    2300038: SM_RockM_A_MeshPart26
+    2300040: SM_RockM_A_MeshPart27
+    2300042: SM_RockM_A_MeshPart3
+    2300044: SM_RockM_A_MeshPart4
+    2300046: SM_RockM_A_MeshPart5
+    2300048: SM_RockM_A_MeshPart6
+    2300050: SM_RockM_A_MeshPart7
+    2300052: SM_RockM_A_MeshPart8
+    2300054: SM_RockM_A_MeshPart9
+    2300056: //RootNode
+    3300000: SM_RockM_A_MeshPart0
+    3300002: SM_RockM_A_MeshPart1
+    3300004: SM_RockM_A_MeshPart10
+    3300006: SM_RockM_A_MeshPart11
+    3300008: SM_RockM_A_MeshPart12
+    3300010: SM_RockM_A_MeshPart13
+    3300012: SM_RockM_A_MeshPart14
+    3300014: SM_RockM_A_MeshPart15
+    3300016: SM_RockM_A_MeshPart16
+    3300018: SM_RockM_A_MeshPart17
+    3300020: SM_RockM_A_MeshPart18
+    3300022: SM_RockM_A_MeshPart19
+    3300024: SM_RockM_A_MeshPart2
+    3300026: SM_RockM_A_MeshPart20
+    3300028: SM_RockM_A_MeshPart21
+    3300030: SM_RockM_A_MeshPart22
+    3300032: SM_RockM_A_MeshPart23
+    3300034: SM_RockM_A_MeshPart24
+    3300036: SM_RockM_A_MeshPart25
+    3300038: SM_RockM_A_MeshPart26
+    3300040: SM_RockM_A_MeshPart27
+    3300042: SM_RockM_A_MeshPart3
+    3300044: SM_RockM_A_MeshPart4
+    3300046: SM_RockM_A_MeshPart5
+    3300048: SM_RockM_A_MeshPart6
+    3300050: SM_RockM_A_MeshPart7
+    3300052: SM_RockM_A_MeshPart8
+    3300054: SM_RockM_A_MeshPart9
+    3300056: //RootNode
+    4300000: SM_RockM_A_MeshPart0
+    4300002: SM_RockM_A_MeshPart1
+    4300004: SM_RockM_A_MeshPart2
+    4300006: SM_RockM_A_MeshPart3
+    4300008: SM_RockM_A_MeshPart4
+    4300010: SM_RockM_A_MeshPart5
+    4300012: SM_RockM_A_MeshPart6
+    4300014: SM_RockM_A_MeshPart7
+    4300016: SM_RockM_A_MeshPart8
+    4300018: SM_RockM_A_MeshPart9
+    4300020: SM_RockM_A_MeshPart10
+    4300022: SM_RockM_A_MeshPart11
+    4300024: SM_RockM_A_MeshPart12
+    4300026: SM_RockM_A_MeshPart13
+    4300028: SM_RockM_A_MeshPart14
+    4300030: SM_RockM_A_MeshPart15
+    4300032: SM_RockM_A_MeshPart16
+    4300034: SM_RockM_A_MeshPart17
+    4300036: SM_RockM_A_MeshPart18
+    4300038: SM_RockM_A_MeshPart19
+    4300040: SM_RockM_A_MeshPart20
+    4300042: SM_RockM_A_MeshPart21
+    4300044: SM_RockM_A_MeshPart22
+    4300046: SM_RockM_A_MeshPart23
+    4300048: SM_RockM_A_MeshPart24
+    4300050: SM_RockM_A_MeshPart25
+    4300052: SM_RockM_A_MeshPart26
+    4300054: SM_RockM_A_MeshPart27
+    4300056: SM_rockM_A
+  materials:
+    importMaterials: 0
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 1
+    normalCalculationMode: 4
+  importAnimation: 0
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: DIO_applied
+  assetBundleName: 
+  assetBundleVariant: 
