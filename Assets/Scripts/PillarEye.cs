@@ -20,6 +20,8 @@ public class PillarEye : MonoBehaviour {
 
     private void Update() {
         //smooth look at
+        if (!target)
+            return;
         var rotation = Quaternion.LookRotation(target.position - transform.position);
         transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * lookAtDamp);
     }
