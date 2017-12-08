@@ -10,6 +10,7 @@ public class CustomPBR_GUI : ShaderGUI {
 	static ColorPickerHDRConfig emissionConfig = new ColorPickerHDRConfig (0f, 99f, 1f / 99f, 3f);
 
 	bool shouldShowAlphaCutoff;
+	MaterialProperty _culling;
 
 	public override void OnGUI (MaterialEditor editor, MaterialProperty[] properties){
 		this.target = editor.target as Material;
@@ -425,6 +426,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		editor.ShaderProperty (queue, MakeLabel (queue));
 	}
 
+	/*
 	void DoCulling(){
 		CullMode mode = CullMode.Back;
 		if (IsKeywordEnabled("_CULL_BACK")) {
@@ -462,6 +464,22 @@ public class CustomPBR_GUI : ShaderGUI {
 			}
 		}
 	}
+	*/
+
+	void DoCulling(){
+		_culling = FindProperty ("_Cull");
+		EditorGUI.BeginChangeCheck ();
+
+		CullMode mode = (CullMode)Mathf.RoundToInt (_culling.floatValue);
+		mode = (CullMode)EditorGUILayout.EnumPopup (MakeLabel ("Culling Mode"), mode);
+		if (EditorGUI.EndChangeCheck ()) {
+			RecordAction ("Culling Mode");
+			foreach (Material m in editor.targets) {
+				m.SetInt ("_Cull", (int)mode);
+			}
+		}
+	}
+
 
 	void DoRefraction(){
 		GUILayout.Label ("Refraction", EditorStyles.boldLabel);
@@ -630,10 +648,6 @@ public class CustomPBR_GUI : ShaderGUI {
 
 	enum TranslucencyModes {
 		OpaqueSSS, CutoutSSS, FadeSSS, TransparentSSS
-	}
-
-	enum CullingMode {
-		Back, Front, Off
 	}
 
 	enum VertexMask {
