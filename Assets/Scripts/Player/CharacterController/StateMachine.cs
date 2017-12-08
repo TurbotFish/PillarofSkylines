@@ -96,11 +96,10 @@ namespace Game.Player.CharacterController
         {
             if (CheckStateLocked(enterArgs.NewState))
             {
-                Debug.Log("AAA");
+                Debug.LogWarningFormat("Change State failed: current: {0}; new: {1}", enterArgs.PreviousState.ToString(), enterArgs.NewState.ToString());
                 return false;
             }
 
-            Debug.Log("BBB");
             currentState.Exit();
 
             if (stateToAbilityLinkDict.ContainsKey(enterArgs.PreviousState))

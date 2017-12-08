@@ -135,7 +135,7 @@ namespace Game.Player.CharacterController
             var pos2 = myTransform.position;
             if((pos2-pos1).magnitude > 0.01f)
             {
-                Debug.LogFormat("move={0}", (pos2 - pos1).magnitude.ToString());
+                //Debug.LogFormat("move={0}", (pos2 - pos1).magnitude.ToString());
             }
             //**
 
@@ -154,8 +154,8 @@ namespace Game.Player.CharacterController
 
             if (myPlayer.CurrentState == ePlayerState.move)
             {
-                Debug.LogFormat("input={0}", velocity.ToString());
-                Debug.LogFormat("translation={0}; magnitude={1}", (pos2 - pos1).ToString(), (pos2 - pos1).magnitude.ToString());
+                //Debug.LogFormat("input={0}", velocity.ToString());
+                //Debug.LogFormat("translation={0}; magnitude={1}", (pos2 - pos1).ToString(), (pos2 - pos1).magnitude.ToString());
                 //Debug.LogFormat("angle:{0}", Vector3.Angle(transform.up, Vector3.up));
                 //Debug.LogFormat("axis:{0}", Vector3.Cross(transform.up, Vector3.up));
                 //Debug.LogFormat("velocity / deltaTime = {0}", velocity / Time.deltaTime);

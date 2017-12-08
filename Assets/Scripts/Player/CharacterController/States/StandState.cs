@@ -14,6 +14,7 @@ namespace Game.Player.CharacterController.States
 
         CharController charController;
         StateMachine stateMachine;
+        CharData.StandData standData;
 
         //#############################################################################
 
@@ -21,6 +22,7 @@ namespace Game.Player.CharacterController.States
         {
             this.charController = charController;
             this.stateMachine = stateMachine;
+            standData = charController.CharData.Stand;
         }
 
         //#############################################################################
@@ -39,7 +41,11 @@ namespace Game.Player.CharacterController.States
 
         public void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
         {
-            if (!inputInfo.leftStickAtZero)
+            if (inputInfo.jumpButtonDown)
+            {
+                stateMachine.ChangeState(new JumpEnterArgs(StateId));
+            }
+            else if (!inputInfo.leftStickAtZero)
             {
                 stateMachine.ChangeState(new MoveEnterArgs(StateId));
             }
@@ -47,15 +53,13 @@ namespace Game.Player.CharacterController.States
 
         public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
         {
-            var result = new StateReturnContainer();
-
-            if (!charController.CanTurnPlayer)
+            var result = new StateReturnContainer
             {
-                result.CanTurnPlayer = true;
-            }
+                CanTurnPlayer = true,
 
-            result.DesiredVelocity = Vector3.zero;
-            result.TransitionSpeed = 8;
+                DesiredVelocity = movementInfo.velocity * standData.SlowdownFactor,
+                TransitionSpeed = standData.TransitionSpeed
+            };
 
             return result;
         }

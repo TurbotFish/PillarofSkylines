@@ -24,6 +24,18 @@ namespace Game.Player.CharacterController
         public MoveData Move { get { return move; } }
 
         [SerializeField]
+        StandData stand = new StandData();
+        public StandData Stand { get { return stand; } }
+
+        [SerializeField]
+        FallData fall = new FallData();
+        public FallData Fall { get { return fall; } }
+
+        [SerializeField]
+        JumpData jump = new JumpData();
+        public JumpData Jump { get { return jump; } }
+
+        [SerializeField]
         GlideData glide = new GlideData();
         public GlideData Glide { get { return glide; } }
 
@@ -42,6 +54,9 @@ namespace Game.Player.CharacterController
             general.OnValidate();
             physics.OnValidate();
             move.OnValidate();
+            stand.OnValidate();
+            fall.OnValidate();
+            jump.OnValidate();
             glide.OnValidate();
             wallRun.OnValidate();
         }
@@ -129,14 +144,95 @@ namespace Game.Player.CharacterController
             float sprintCoefficient;
             public float SprintCoefficient { get { return sprintCoefficient; } }
 
+            [SerializeField]
+            float maxSpeed;
+            public float MaxSpeed { get { return maxSpeed; } }
+
+            [SerializeField]
+            float transitionSpeed;
+            public float TransitionSpeed { get { return transitionSpeed; } }
+
             public void OnValidate()
             {
                 speed = Mathf.Clamp(speed, 0, float.MaxValue);
                 sprintCoefficient = Mathf.Clamp(sprintCoefficient, 0, float.MaxValue);
+                maxSpeed = Mathf.Clamp(maxSpeed, 0, float.MaxValue);
             }
         }
 
         #endregion move
+
+        //*******************************************
+
+        #region stand
+
+        [System.Serializable]
+        public class StandData
+        {
+            [SerializeField]
+            float slowFactor;
+            public float SlowdownFactor { get { return slowFactor; } }
+
+            [SerializeField]
+            float transitionSpeed;
+            public float TransitionSpeed { get { return transitionSpeed; } }
+
+            public void OnValidate()
+            {
+                slowFactor = Mathf.Clamp01(slowFactor);
+                transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
+            }
+        }
+
+        #endregion stand
+
+        //*******************************************
+
+        #region fall
+
+        [System.Serializable]
+        public class FallData
+        {
+            [SerializeField]
+            float speed;
+            public float Speed { get { return speed; } }
+
+            [SerializeField]
+            float maxSpeed;
+            public float MaxSpeed { get { return maxSpeed; } }
+
+            [SerializeField]
+            float transitionSpeed;
+            public float TransitionSpeed { get { return transitionSpeed; } }
+
+            public void OnValidate()
+            {
+                speed = Mathf.Clamp(speed, 0, float.MaxValue);
+                maxSpeed = Mathf.Clamp(maxSpeed, 0, float.MaxValue);
+                transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
+            }
+        }
+
+        #endregion fall
+
+        //*******************************************
+
+        #region jump
+
+        [System.Serializable]
+        public class JumpData
+        {
+            [SerializeField]
+            float transitionSpeed;
+            public float TransitionSpeed { get { return transitionSpeed; } }
+
+            public void OnValidate()
+            {
+                transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
+            }
+        }
+
+        #endregion jump
 
         //*******************************************
 

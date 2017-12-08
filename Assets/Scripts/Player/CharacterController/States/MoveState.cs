@@ -41,7 +41,11 @@ namespace Game.Player.CharacterController.States
 
         public void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
         {
-            if (inputInfo.leftStickAtZero)
+            if (inputInfo.jumpButtonDown)
+            {
+                stateMachine.ChangeState(new JumpEnterArgs(StateId));
+            }
+            else if (inputInfo.leftStickAtZero)
             {
                 stateMachine.ChangeState(new StandEnterArgs(StateId));
             }
@@ -49,21 +53,20 @@ namespace Game.Player.CharacterController.States
 
         public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
         {
-            var result = new StateReturnContainer();
+            var result = new StateReturnContainer
+            {
+                CanTurnPlayer = true,
 
-            //if (!collisionInfo.below)
-            //{
-            //    stateMachine.ChangeState(new FallEnterArgs(StateId));
-            //}
-            //else
-            //{
-                if (!charController.CanTurnPlayer)
-                {
-                    result.CanTurnPlayer = true;
-                }
+                DesiredVelocity = inputInfo.leftStickToSlope * moveData.Speed * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1) * dt,
 
-                result.DesiredVelocity = inputInfo.leftStickToSlope * moveData.Speed * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1);
-            //}
+                MaxSpeed = moveData.MaxSpeed,
+                TransitionSpeed = moveData.TransitionSpeed
+            };
+
+            if (!collisionInfo.below)
+            {
+                stateMachine.ChangeState(new FallEnterArgs(StateId));
+            }
 
             return result;
         }
