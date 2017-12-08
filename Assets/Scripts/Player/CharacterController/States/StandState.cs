@@ -55,6 +55,7 @@ namespace Game.Player.CharacterController.States
             }
 
             result.DesiredVelocity = Vector3.zero;
+            result.TransitionSpeed = 8;
 
             return result;
         }
