@@ -92,7 +92,7 @@ namespace Game.World.ChunkSystem
 
             for (int i = 0; i < ChunkSystemData.RegionUpdatesPerFrame; i++)
             {
-                var renderersToSwitch = regionList[regionUpdateIndex++].UpdateChunkSystem(playerTransform.position, cameraTransform.position);
+                var renderersToSwitch = regionList[regionUpdateIndex++].UpdateChunkSystem(playerTransform.position, cameraTransform.position, cameraTransform.forward);
                 for (int j = 0; j < renderersToSwitch.Count; j++)
                 {
                     rendererQueue.Enqueue(renderersToSwitch[i]);
