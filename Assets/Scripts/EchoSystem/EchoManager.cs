@@ -119,7 +119,7 @@ namespace Game.EchoSystem
                 Break(oldestEcho);
             }
 
-            Echo newEcho = Instantiate(echoPrefab, playerTransform.position, playerTransform.rotation);
+            Echo newEcho = Instantiate(echoPrefab, playerTransform.position, Quaternion.identity);
             newEcho.playerEcho = isPlayerEcho;
             newEcho.echoManager = this;
             echoList.Add(newEcho);

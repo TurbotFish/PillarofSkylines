@@ -20,9 +20,9 @@ public class LightReceptor : Trigger {
         rend = GetComponent<Renderer>();
     }
 
-    public void Toggle(bool newState) {
+    public void Toggle(bool newState, bool inverse) {
         TriggerState = newState;
-        if (TriggerState)
+        if (TriggerState == inverse)
             rend.sharedMaterial = on;
 
         else
