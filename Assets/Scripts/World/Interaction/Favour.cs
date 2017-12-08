@@ -34,7 +34,7 @@ namespace Game.World.Interaction
 
             MyTransform = transform;
             myCollider = GetComponent<BoxCollider>();
-
+            
             Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
 
             worldController.RegisterFavour(this);

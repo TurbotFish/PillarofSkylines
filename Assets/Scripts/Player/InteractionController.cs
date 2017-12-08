@@ -80,7 +80,7 @@ namespace Game.Player
                         playerModel.ChangeFavourAmount(1);
 
                         //play favour pick up animation
-                        PlayMakerFSM[] temp = favour.MyTransform.parent.GetComponents<PlayMakerFSM>();
+                        PlayMakerFSM[] temp = favour.MyTransform.parent.GetComponents<PlayMakerFSM>(); // MyTransform n'est pas set sur toutes les Faveurs
                         foreach (var fsm in temp)
                         {
                             if (fsm.FsmName == "Faveur_activation")

@@ -112,7 +112,7 @@ namespace Game.UI.AbilityMenu
             }
 
             //exit ability menu
-            if (Input.GetButtonDown("MenuButton"))
+            if (Input.GetButtonDown("MenuButton") || Input.GetButtonDown("Cancel"))
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HUD));
                 return;
