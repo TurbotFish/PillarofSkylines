@@ -137,6 +137,7 @@ namespace Game.Player.CharacterController
             if (isHandlingInput)
             {
                 inputInfo.leftStickRaw = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
+                inputInfo.leftStickRaw.Normalize();
 
                 if (inputInfo.leftStickRaw.magnitude < CharData.General.StickDeadMaxVal)
                 {
@@ -144,9 +145,12 @@ namespace Game.Player.CharacterController
                 }
 
                 var stickToCamera = rotator.forward * Input.GetAxisRaw("Vertical") + rotator.right * Input.GetAxisRaw("Horizontal");
+                stickToCamera.Normalize();
                 inputInfo.leftStickToCamera = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * stickToCamera;
+                inputInfo.leftStickToCamera.Normalize();
 
                 inputInfo.leftStickToSlope = (Quaternion.AngleAxis(Vector3.Angle(transform.up, tempCollisionInfo.currentGroundNormal), Vector3.Cross(transform.up, tempCollisionInfo.currentGroundNormal))) * inputInfo.leftStickToCamera;
+                inputInfo.leftStickToSlope.Normalize();
 
                 inputInfo.dashButton = Input.GetButton("Dash");
                 inputInfo.dashButtonDown = Input.GetButtonDown("Dash");

@@ -116,7 +116,7 @@ namespace Game.Player.CharacterController
             }
 
             Vector3 finalVelocity = Vector3.zero;
-            /// Check if calculated movement will end up in a wall, if so try to adjust movement
+            //Check if calculated movement will end up in a wall, if so try to adjust movement
             wallsOverPlayer = Physics.OverlapCapsule(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + velocity, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + velocity, radius, collisionMaskNoCloud);
             if (wallsOverPlayer.Length == 0)
             {
@@ -128,16 +128,16 @@ namespace Game.Player.CharacterController
                 finalVelocity = AdjustPlayerPosition(velocity);
             }
 
-            //Debug.LogFormat("ttt:{0}", finalVelocity.ToString());
-
             //Update collision informations
             CollisionUpdate(velocity);
 
+            //**
             var pos2 = myTransform.position;
             if((pos2-pos1).magnitude > 0.01f)
             {
                 Debug.LogFormat("move={0}; {1}", (pos2 - pos1).ToString(), (pos2 - pos1).magnitude.ToString());
             }
+            //**
 
             return finalVelocity;
         }
@@ -163,10 +163,10 @@ namespace Game.Player.CharacterController
 
 
 
-            //var result = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * velocity / Time.deltaTime;
+            var result = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * velocity /*/ Time.deltaTime*/;
 
-            //return result;
-            return velocity;
+            return result;
+            //return velocity;
         }
 
         Vector3 AdjustPlayerPosition(Vector3 velocity)
