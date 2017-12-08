@@ -69,8 +69,6 @@ namespace Game.EchoSystem
         public void Break() {
             if (isActive)
                 echoManager.Break(this);
-            else
-                isActive = true;
         }
 
         public void Freeze()

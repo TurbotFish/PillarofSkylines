@@ -308,8 +308,12 @@ namespace Game.Player
 
                         HideUiMessage();
 						break;
-					//wind
-					case "Wind":
+                    //eye
+                    case "Echo":
+                        other.GetComponent<EchoSystem.Echo>().isActive = true;
+                        break;
+                    //wind
+                    case "Wind":
 						other.GetComponent<WindTunnelPart>().RemovePlayer();
 						break;
                     //other
