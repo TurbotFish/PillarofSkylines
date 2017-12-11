@@ -173,38 +173,48 @@ public class PoS_Camera : MonoBehaviour {
     /// </summary>
     /// <param name="sender"> </param>
     /// <param name="args"> Contient la position vers laquelle tp, et un bool pour savoir si on a changé de scène. </param>
-    void OnTeleportPlayer(object sender, Game.Utilities.EventManager.TeleportPlayerEventArgs args) {
+    void OnTeleportPlayer(object sender, Game.Utilities.EventManager.TeleportPlayerEventArgs args) { // TODO: cleanup
 
         if (args.IsNewScene) {
             // on reset les paramètres par défaut de la caméra
             currentDistance = distance;
             ResetZoom();
+            state = eCameraState.Default;
+            resetType = eResetType.None;
+
             nearPOI = false;
             axisAligned = Vector3.zero;
             enablePanoramaMode = true;
+            yaw = SignedAngle(targetSpace * worldForward, args.Rotation * worldForward, target.up);
+            pitch = defaultPitch;
+            camRotation = my.rotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
+
+        } else {
+            my.position = args.Position - lastFrameOffset;
         }
-        my.position = args.Position - lastFrameOffset;
+
         negDistance.z = -currentDistance;
         Vector3 targetWithOffset = args.Position + my.right * offset.x + my.up * offset.y;
         camPosition = my.rotation * negDistance + targetWithOffset;
+
+        if (args.IsNewScene) {
+            my.position = camPosition;
+        }
     }
 	
     void RealignPlayer() {
         // TODO: During a camera realignment, wait before realigning player
         
         Vector3 characterUp = target.parent.up; // TODO: only change this value when there's a change of gravity?
-        //if (state == eCameraState.LookAt && inverseFacingDirection)
-        //    target.LookAt(target.position + Vector3.ProjectOnPlane(  startFacingDirection != inverseFacingDirection  ? -axisAligned : axisAligned, characterUp), characterUp); // Reoriente the character's rotator
-        //else
-            target.LookAt(target.position + Vector3.ProjectOnPlane(my.forward, characterUp), characterUp); // Reoriente the character's rotator
+        target.LookAt(target.position + Vector3.ProjectOnPlane(my.forward, characterUp), characterUp); // Reoriente the character's rotator
     }
 
     /// <summary>
     /// Hard reset de la caméra, la place immédiatement à sa position par défaut (utilisé quand le player spawn).
     /// </summary>
-    void PlaceBehindPlayerNoLerp() {
+    void PlaceBehindPlayerNoLerp(float? argYaw = null) {
         currentDistance = distance;
-        yaw = GetYawBehindPlayer();
+        yaw = argYaw ?? GetYawBehindPlayer();
         pitch = defaultPitch;
         camRotation = my.rotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
         negDistance.z = -currentDistance;

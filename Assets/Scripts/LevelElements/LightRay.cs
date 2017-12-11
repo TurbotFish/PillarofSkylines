@@ -30,9 +30,9 @@ public class LightRay : MonoBehaviour {
 
             if (newReceptor) {
                 receptor = newReceptor;
-                receptor.TriggerState = inverseState;
+                receptor.Toggle(inverseState, inverseState);
             } else if (receptor) {
-                receptor.TriggerState = !inverseState;
+                receptor.Toggle(!inverseState, inverseState);
             }
         }
         

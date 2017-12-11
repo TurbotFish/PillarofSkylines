@@ -79,21 +79,21 @@ namespace Game.UI.AbilityMenu
 
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
         {
-            Debug.LogFormat("OnPointerEnter: slot \"{0}\"", AbilityType.ToString());
+            //Debug.LogFormat("OnPointerEnter: slot \"{0}\"", AbilityType.ToString());
 
             menuController.OnPointerEnterSlot(this);
         }
 
         void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
         {
-            Debug.LogFormat("OnPointerExit: slot \"{0}\"", AbilityType.ToString());
+            //Debug.LogFormat("OnPointerExit: slot \"{0}\"", AbilityType.ToString());
 
             menuController.OnPointerExitSlot(this);
         }
 
         void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
         {
-            Debug.LogFormat("OnPointerClick: slot \"{0}\"", AbilityType.ToString());
+            //Debug.LogFormat("OnPointerClick: slot \"{0}\"", AbilityType.ToString());
 
             menuController.OnPointerClickSlot(this);
         }

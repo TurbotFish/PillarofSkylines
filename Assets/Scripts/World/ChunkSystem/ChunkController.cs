@@ -65,7 +65,7 @@ namespace Game.World.ChunkSystem
         /// <summary>
         /// Update all the things!
         /// </summary>
-        public virtual List<Renderer> UpdateChunkSystem(Vector3 playerPos, Vector3 cameraPos)
+        public virtual List<Renderer> UpdateChunkSystem(Vector3 playerPos, Vector3 cameraPos, Vector3 cameraForward)
         {
             var result = new List<Renderer>();
             float distance;
@@ -76,20 +76,21 @@ namespace Game.World.ChunkSystem
             }
             else
             {
-                distance = Vector3.Distance(playerPos, chunkBounds.ClosestPoint(playerPos));
+                var closestPoint = chunkBounds.ClosestPoint(playerPos);
+                distance = Vector3.Distance(playerPos, closestPoint);
 
                 //check if chunk is behind player
                 var corners = Utilities.PillarMath.GetBoxColliderCorners(chunkBounds);
-                var cameraDir = (playerPos - cameraPos).normalized;
+                corners.Add(closestPoint); //in case the corners are outside the screen but the collider is in front of the player
 
                 for (int i = 0; i < corners.Count; i++)
                 {
                     var cornerDir = (corners[i] - cameraPos).normalized;
-                    float dotProduct = Vector3.Dot(cameraDir, cornerDir);
+                    float dotProduct = Vector3.Dot(cameraForward, cornerDir);
 
-                    if (dotProduct > 0)
+                    if (dotProduct < 0)
                     {
-                        distance *= 10f;
+                        distance *= 15f;
                         break;
                     }
                 }
