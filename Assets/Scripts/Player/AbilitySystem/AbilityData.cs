@@ -19,27 +19,62 @@ namespace Game.Player.AbilitySystem
         //double jump
         [SerializeField]
         DoubleJump doubleJump = new DoubleJump();
-        public DoubleJump DoubleJump { get { return this.doubleJump; } }
+        public DoubleJump DoubleJump { get { return doubleJump; } }
 
         //glide
         [SerializeField]
         Glide glide = new Glide();
-        public Glide Glide { get { return this.glide; } }
+        public Glide Glide { get { return glide; } }
 
         //dash
         [SerializeField]
         Dash dash = new Dash();
-        public Dash Dash { get { return this.dash; } }
+        public Dash Dash { get { return dash; } }
 
         //tomb finder
         [SerializeField]
         TombFinder tombFinder = new TombFinder();
-        public TombFinder TombFinder { get { return this.tombFinder; } }
+        public TombFinder TombFinder { get { return tombFinder; } }
 
         //wall run
         [SerializeField]
         WallRun wallRun = new WallRun();
-        public WallRun WallRun { get { return this.wallRun; } }
+        public WallRun WallRun { get { return wallRun; } }
+
+        //echo trampolin
+        [SerializeField]
+        Ability echoTrampolin = new Ability(eAbilityType.EchoTrampolin);
+        public Ability EchoTrampolin { get { return echoTrampolin; } }
+
+        //distant echo
+        [SerializeField]
+        Ability distantEcho = new Ability(eAbilityType.DistantEcho);
+        public Ability DistantEcho { get { return distantEcho; } }
+
+        //aim drift
+        [SerializeField]
+        Ability aimDrift = new Ability(eAbilityType.AimDrift);
+        public Ability AimDrift { get { return aimDrift; } }
+
+        //super jump
+        [SerializeField]
+        Ability superJump = new Ability(eAbilityType.SuperJump);
+        public Ability SuperJump { get { return superJump; } }
+
+        //phantom
+        [SerializeField]
+        Ability phantom = new Ability(eAbilityType.Phantom);
+        public Ability Phantom { get { return phantom; } }
+
+        //kinematic inversion
+        [SerializeField]
+        Ability kinematicInversion = new Ability(eAbilityType.KinematicInversion);
+        public Ability KinematicInversion { get { return kinematicInversion; } }
+
+        //echo jump
+        [SerializeField]
+        Ability echoJump = new Ability(eAbilityType.EchoJump);
+        public Ability EchoJump { get { return echoJump; } }
 
         //###########################################################
 
@@ -50,15 +85,30 @@ namespace Game.Player.AbilitySystem
             switch (ability)
             {
                 case eAbilityType.DoubleJump:
-                    return this.DoubleJump;
-                case eAbilityType.Glide:
-                    return this.Glide;
+                    return DoubleJump;
                 case eAbilityType.Dash:
-                    return this.Dash;
-                case eAbilityType.TombFinder:
-                    return this.tombFinder;
+                    return Dash;
+                case eAbilityType.Glide:
+                    return Glide;
                 case eAbilityType.WallRun:
-                    return this.wallRun;
+                    return wallRun;
+                case eAbilityType.TombFinder:
+                    return tombFinder;
+                case eAbilityType.EchoTrampolin:
+                    return echoTrampolin;
+                case eAbilityType.DistantEcho:
+                    return distantEcho;
+                case eAbilityType.AimDrift:
+                    return aimDrift;
+                case eAbilityType.SuperJump:
+                    return superJump;
+                case eAbilityType.Phantom:
+                    return phantom;
+                case eAbilityType.KinematicInversion:
+                    return kinematicInversion;
+                case eAbilityType.EchoJump:
+                    return echoJump;
+
                 default:
                     return null;
             }
@@ -68,11 +118,18 @@ namespace Game.Player.AbilitySystem
         {
             return new List<Ability>()
             {
-                this.doubleJump,
-                this.glide,
-                this.dash,
-                this.tombFinder,
-                this.wallRun
+                doubleJump,
+                dash,
+                glide,
+                wallRun,
+                tombFinder,
+                echoTrampolin,
+                distantEcho,
+                aimDrift,
+                superJump,
+                phantom,
+                kinematicInversion,
+                echoJump
             };
         }
 
@@ -94,11 +151,18 @@ namespace Game.Player.AbilitySystem
                 }
             }
 
-            this.doubleJump.OnValidate();
-            this.glide.OnValidate();
-            this.dash.OnValidate();
-            this.tombFinder.OnValidate();
-            this.wallRun.OnValidate();
+            doubleJump.OnValidate();
+            dash.OnValidate();
+            glide.OnValidate();
+            wallRun.OnValidate();
+            tombFinder.OnValidate();
+            echoTrampolin.OnValidate();
+            distantEcho.OnValidate();
+            aimDrift.OnValidate();
+            superJump.OnValidate();
+            phantom.OnValidate();
+            kinematicInversion.OnValidate();
+            echoJump.OnValidate();
         }
     }
 } //end of namespace
