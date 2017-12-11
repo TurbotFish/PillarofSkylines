@@ -9,10 +9,17 @@ namespace Game.Player
     /// </summary>
     public enum eAbilityType
     {
-        DoubleJump,
-        Glide,
+        DoubleJump,        
         Dash,
+        Glide,
+        WallRun,
         TombFinder,
-        WallRun
+        EchoTrampolin,
+        DistantEcho,
+        AimDrift,
+        SuperJump,
+        Phantom,
+        KinematicInversion,
+        EchoJump
     }
 } //end of namespace
