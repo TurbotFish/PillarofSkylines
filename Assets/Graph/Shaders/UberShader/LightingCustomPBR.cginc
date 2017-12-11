@@ -297,7 +297,7 @@
 			#endif
 
 			#if defined(_VERTEX_WIND)
-				float3 windDir = float3(3,0,0);//global in the future
+				float3 windDir = float3(1,0,0);//global in the future
 
 				windDir = mul(unity_WorldToObject, windDir);
 				windDir = normalize(windDir);
@@ -306,10 +306,10 @@
 				windIntensity = saturate(windIntensity + 0.2);//not necessary with a good wind map
 
 				float windSpeed = 3;
-				float _offset = (pivotWS.x * (0.9) * -sign(windDir.x) + pivotWS.z * (2.9) * -sign(windDir.y) + pivotWS.y * 0.8) * 0.5;
+				float _offset = (pivotWS.x * (0.9) * -sign(windDir.x) + pivotWS.z * (2.9) * -sign(windDir.z) + pivotWS.y * 0.8) * 0.5;
 				float angle = windIntensity * (sin(_Time.y * windSpeed + _offset) * 0.65+0.35) * _MaxBendAngle * rotationMask;
 
-				float3 _windRotation = float3( windDir.z, 0, windDir.x) * angle;
+				float3 _windRotation = float3( windDir.z, 0, -windDir.x) * angle;
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _windRotation);
 				v.normal = ApplyWind(v.normal.xyz, _windRotation);
 			#endif
