@@ -12,8 +12,9 @@ namespace Game.World.ChunkSystem
         ePillarId pillarId;
         public ePillarId PillarId { get { return pillarId; } }
 
-        List<PillarChunkController> intactPillarChunks = new List<PillarChunkController>();
-        List<PillarChunkController> destroyedPillarChunks = new List<PillarChunkController>();
+        List<PillarChunkController> intactPillarChunkList = new List<PillarChunkController>();
+        List<PillarChunkController> destroyedPillarChunkList = new List<PillarChunkController>();
+        List<ChunkController> otherChunkList = new List<ChunkController>();
 
         ePillarState currentPillarState = ePillarState.Intact;
 
@@ -25,6 +26,7 @@ namespace Game.World.ChunkSystem
         public override void InitializeRegion(WorldController worldController)
         {
             base.InitializeRegion(worldController);
+
 
             for (int i = 0; i < chunkList.Count; i++)
             {
@@ -38,14 +40,22 @@ namespace Game.World.ChunkSystem
                     {
                         pillarChunk.ActivatePillarChunk();
 
-                        intactPillarChunks.Add(pillarChunk);
+                        intactPillarChunkList.Add(pillarChunk);
                     }
                     else if (pillarChunk.PillarState == ePillarState.Destroyed)
                     {
                         pillarChunk.DeactivatePillarChunk();
 
-                        destroyedPillarChunks.Add(pillarChunk);
+                        destroyedPillarChunkList.Add(pillarChunk);
                     }
+                    else
+                    {
+                        Debug.LogError("ERROR!");
+                    }
+                }
+                else
+                {
+                    otherChunkList.Add(chunk);
                 }
             }
 
@@ -60,7 +70,6 @@ namespace Game.World.ChunkSystem
             base.InitializeRegionCopy(originalRegion);
 
             var pillarOriginal = originalRegion as PillarRegionController;
-
             pillarId = pillarOriginal.PillarId;
         }
 
@@ -75,17 +84,22 @@ namespace Game.World.ChunkSystem
 
             if (currentPillarState == ePillarState.Intact)
             {
-                for (int i = 0; i < intactPillarChunks.Count; i++)
+                for (int i = 0; i < intactPillarChunkList.Count; i++)
                 {
-                    result.AddRange(intactPillarChunks[i].UpdateChunkSystem(playerPos, cameraPos, cameraForward));
+                    result.AddRange(intactPillarChunkList[i].UpdateChunkSystem(playerPos, cameraPos, cameraForward));
                 }
             }
             else if (currentPillarState == ePillarState.Destroyed)
             {
-                for (int i = 0; i < destroyedPillarChunks.Count; i++)
+                for (int i = 0; i < destroyedPillarChunkList.Count; i++)
                 {
-                    result.AddRange(destroyedPillarChunks[i].UpdateChunkSystem(playerPos, cameraPos, cameraForward));
+                    result.AddRange(destroyedPillarChunkList[i].UpdateChunkSystem(playerPos, cameraPos, cameraForward));
                 }
+            }
+
+            for (int i = 0; i < otherChunkList.Count; i++)
+            {
+                result.AddRange(otherChunkList[i].UpdateChunkSystem(playerPos, cameraPos, cameraForward));
             }
 
             return result;
@@ -105,16 +119,16 @@ namespace Game.World.ChunkSystem
 
             currentPillarState = ePillarState.Destroyed;
 
-            for (int i = 0; i < intactPillarChunks.Count; i++)
+            for (int i = 0; i < intactPillarChunkList.Count; i++)
             {
-                var chunk = intactPillarChunks[i];
+                var chunk = intactPillarChunkList[i];
 
                 chunk.DeactivatePillarChunk();
             }
 
-            for (int i = 0; i < destroyedPillarChunks.Count; i++)
+            for (int i = 0; i < destroyedPillarChunkList.Count; i++)
             {
-                var chunk = destroyedPillarChunks[i];
+                var chunk = destroyedPillarChunkList[i];
 
                 chunk.ActivatePillarChunk();
             }
