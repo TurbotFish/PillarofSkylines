@@ -21,20 +21,21 @@ namespace Game.World.Interaction
         public bool FavourPickedUp { get; private set; }
         public Transform MyTransform { get; private set; }
         BoxCollider myCollider;
-        
+        bool isCopy;
+
         //##################################################################
 
-        void IWorldObjectInitialization.Initialize(WorldController worldController, bool isCopy)
-        {
-            if (!instanceIdSet)
-            {
+        void IWorldObjectInitialization.Initialize(WorldController worldController, bool isCopy) {
+            if (!instanceIdSet) {
                 instanceId = GetInstanceID();
                 instanceIdSet = true;
             }
 
             MyTransform = transform;
             myCollider = GetComponent<BoxCollider>();
-            
+
+            this.isCopy = isCopy;
+
             Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
 
             worldController.RegisterFavour(this);
@@ -50,11 +51,13 @@ namespace Game.World.Interaction
                     if (myCollider != null || !myCollider.Equals(null)) //check because all colliders are removed in the duplicated worlds
                         myCollider.enabled = false;
 
-                    // here do playmaker stuff
-                    animator.SetBool("Fav_activated", true);
-                    StartCoroutine(FaveurActivation());
-                    StartCoroutine(ParticleManager());
-                    StartCoroutine(FavSparkUp());
+                    if (!isCopy) {
+                        // here do playmaker stuff
+                        animator.SetBool("Fav_activated", true);
+                        StartCoroutine(FaveurActivation());
+                        StartCoroutine(ParticleManager());
+                        StartCoroutine(FavourManager());
+                    }
 
                 }
             }
@@ -62,7 +65,7 @@ namespace Game.World.Interaction
 
         // FSM: Faveur_activation
         float animSpeed = 0.0005f;
-        float startDelay = 6;
+        float startDelay = 4;
         float disparitionEnd = 10;
         float disparitionSpeed = .03f;
 
@@ -74,18 +77,39 @@ namespace Game.World.Interaction
             float disparition = 0;
             yield return new WaitForSeconds(startDelay);
 
+            favSparkUp.SetActive(true);
             while (disparition < disparitionEnd) {
                 disparition += disparitionSpeed;
                 recept.material.SetFloat("_Emissive_intensity", disparition);
                 animator.speed += animSpeed;
-                favSparkUp.SetActive(true);
                 yield return new WaitForSeconds(0.01f);
             }
         }
 
+        // FSM: FaveurManager
+        [SerializeField] Transform faveur;
+        float duration = 1.9f;
+
+        IEnumerator FavourManager() {
+
+            Transform player = FindObjectOfType<Player.CharacterController.Character>().transform;
+            yield return new WaitForSeconds(startDelay);
+            faveur.parent = null;
+
+            float elapsed = 0;
+            while( (faveur.position - (player.position + player.up)).sqrMagnitude > 0.1f ) {
+                elapsed += Time.deltaTime;
+                faveur.position = Vector3.Lerp(faveur.position, player.position + player.up, elapsed / duration);
+                yield return null;
+            }
+            
+            Destroy(faveur.gameObject);
+            Instantiate(favSparksBurst, faveur.position, Quaternion.identity);
+        }
+
         // FSM: ParticleManager
-        float delay2 = 2.6f;
-        float delay3 = 2.8f;
+        float delay2 = 0.2f;
+        float delay3 = 0.2f;
 
         [SerializeField] ParticleSystem favSparks;
         [SerializeField] GameObject favSparksOpen;
@@ -105,29 +129,7 @@ namespace Game.World.Interaction
                 yield return new WaitForSeconds(0.01f);
             }
             favSparks.gameObject.SetActive(false);
-
         }
-
-        // FSM: FaveurManager
-
-        [SerializeField] Transform faveur;
-        float duration = 1.9f;
-
-        IEnumerator FavSparkUp() {
-
-            Transform player = FindObjectOfType<Player.CharacterController.Character>().transform;
-            yield return new WaitForSeconds(6.5f);
-            faveur.parent = null;
-            
-            for(float elapsed = 0; elapsed < duration; elapsed += Time.deltaTime) {
-                faveur.position = Vector3.Lerp(faveur.position, player.position, elapsed / duration);
-                yield return null;
-            }
-            Destroy(faveur.gameObject);
-            Instantiate(favSparksBurst, faveur.position, Quaternion.identity);
-        }
-
-
         //##################################################################
     }
 } //end of namespace
