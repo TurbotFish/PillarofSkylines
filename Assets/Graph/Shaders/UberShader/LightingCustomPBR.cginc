@@ -86,8 +86,8 @@
 		float4 tangent : TANGENT;
 		float2 uv : TEXCOORD0;
 
-		#if defined(_VERTEX_MASK_COLOUR)
-			float4 vertColour : COLOR;
+		#if defined(_VERTEX_MASK_COLOUR) || defined(_ALBEDO_VERTEX_MASK)
+			float4 color : COLOR;
 		#endif
 	};
 
@@ -123,6 +123,10 @@
 			float4 grabPos : TEXCOORD8;
 			float4 refraction : TEXCOORD9;
 		#endif
+
+		#if defined(_ALBEDO_VERTEX_MASK)
+			float4 color : COLOR;
+		#endif
 	};
 
 	void ComputeVertexLightColor(inout Interpolators i){
@@ -157,7 +161,12 @@
 	}
 
 	float3 GetAlbedo(Interpolators i){
-		float3 albedo = tex2D(_MainTex, i.uv.xy).rgb * _Color.rgb;
+		float3 albedoTex = tex2D(_MainTex, i.uv.xy).rgb;
+		float3 albedo = albedoTex * _Color.rgb;
+		#if defined(_ALBEDO_VERTEX_MASK)
+			albedo = lerp(albedoTex, albedo, i.color.g);
+		#endif
+
 		#if defined(_DETAIL_ALBEDO_MAP)
 			float3 details = tex2D(_DetailTex, i.uv.zw) * unity_ColorSpaceDouble;
 			albedo = lerp(albedo, albedo * details, GetDetailMask(i));
@@ -277,7 +286,7 @@
 		#if defined(_VERTEX_BEND) || defined(_VERTEX_WIND)
 
 			#if defined(_VERTEX_MASK_COLOUR)
-				float rotationMask = v.vertColour.r;
+				float rotationMask = v.color.r;
 			#elif defined(_VERTEX_MASK_CUSTOM)
 				float rotationMask = saturate(v.vertex.y * _VertMaskMultiplier + _VertMaskFlat);
 			#endif
@@ -339,6 +348,10 @@
 			i.normal = v.normal;
 		#else
 			i.normal = UnityObjectToWorldNormal(v.normal);
+		#endif
+
+		#if defined(_ALBEDO_VERTEX_MASK)
+			i.color = v.color;
 		#endif
 
 
