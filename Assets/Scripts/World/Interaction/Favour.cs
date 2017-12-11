@@ -51,10 +51,10 @@ namespace Game.World.Interaction
                         myCollider.enabled = false;
 
                     // here do playmaker stuff
-                    //animator.SetBool("Fav_activated", true);
-                    //StartCoroutine(FaveurActivation());
-                    //StartCoroutine(ParticleManager());
-                    //StartCoroutine(FavSparkUp());
+                    animator.SetBool("Fav_activated", true);
+                    StartCoroutine(FaveurActivation());
+                    StartCoroutine(ParticleManager());
+                    StartCoroutine(FavSparkUp());
 
                 }
             }
@@ -115,7 +115,7 @@ namespace Game.World.Interaction
 
         IEnumerator FavSparkUp() {
 
-            Transform player = FindObjectOfType<Game.Player.CharacterController.Character>().transform;
+            Transform player = FindObjectOfType<Player.CharacterController.Character>().transform;
             yield return new WaitForSeconds(6.5f);
             faveur.parent = null;
             
@@ -125,7 +125,6 @@ namespace Game.World.Interaction
             }
             Destroy(faveur.gameObject);
             Instantiate(favSparksBurst, faveur.position, Quaternion.identity);
-
         }
 
 

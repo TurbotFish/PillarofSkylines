@@ -172,6 +172,8 @@ namespace Game.EchoSystem
                 Destroy(echoList[i].gameObject);
             }
 
+            placedEchoes = 0;
+            echoParticles.SetEchoNumber(maxEchoes);
             echoList.Clear();
         }
 
