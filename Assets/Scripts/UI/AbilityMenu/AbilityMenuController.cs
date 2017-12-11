@@ -50,7 +50,7 @@ namespace Game.UI.AbilityMenu
         public bool IsActive { get; private set; }
 
         List<SlotView> slotList = new List<SlotView>();
-        int selectedSlotIndex = 0;
+        int selectedSlotIndex = -1;
         SlotView SelectedSlot
         {
             get
@@ -62,6 +62,7 @@ namespace Game.UI.AbilityMenu
         }
 
         bool activationButtonDown = false;
+        Vector2 previousStickPos = Vector2.zero;
 
         //##################################################################
 
@@ -111,7 +112,7 @@ namespace Game.UI.AbilityMenu
             }
 
             //exit ability menu
-            if (Input.GetButtonDown("MenuButton"))
+            if (Input.GetButtonDown("MenuButton") || Input.GetButtonDown("Cancel"))
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HUD));
                 return;
@@ -122,16 +123,7 @@ namespace Game.UI.AbilityMenu
 
             if (Input.GetButton("Jump") && !activationButtonDown && SelectedSlot != null)
             {
-                if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
-                {
-                    Debug.LogFormat("Ability Menu: deactivating ability {0}", SelectedSlot.AbilityType);
-                    playerModel.DeactivateAbility(SelectedSlot.AbilityType);
-                }
-                else
-                {
-                    Debug.LogFormat("Ability Menu: activating ability {0}", SelectedSlot.AbilityType);
-                    playerModel.ActivateAbility(SelectedSlot.AbilityType);
-                }
+                ActivateSelectedAbility();
 
                 activationButtonDown = true;
             }
@@ -146,42 +138,93 @@ namespace Game.UI.AbilityMenu
             //var leftStick = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
             var leftStick = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
-            float weight = Mathf.Abs(leftStick.x) + Mathf.Abs(leftStick.y);
-
-            if (weight < stickDeadWeight)
+            if ((previousStickPos - leftStick).magnitude > 0.05f) //ignore stick if it is not moving
             {
-                selectedSlotIndex = -1;
+                float weight = Mathf.Abs(leftStick.x) + Mathf.Abs(leftStick.y);
 
-                centerView.SetContent(null);
-            }
-            else
-            {
-                float angle = Vector2.SignedAngle(Vector2.up, leftStick.normalized);
-
-                if (angle < 0f)
+                if (weight < stickDeadWeight)
                 {
-                    angle *= -1;
+                    SetSelectedSlot(-1);
                 }
                 else
                 {
-                    angle = 360f - angle;
+                    float angle = Vector2.SignedAngle(Vector2.up, leftStick.normalized);
+
+                    if (angle < 0f)
+                    {
+                        angle *= -1;
+                    }
+                    else
+                    {
+                        angle = 360f - angle;
+                    }
+
+                    angle += CIRCLE_INTERVAL * 0.5f;
+
+                    if (angle >= 360f)
+                    {
+                        angle -= 360f;
+                    }
+
+                    SetSelectedSlot((int)(angle / CIRCLE_INTERVAL));
+
+                    //Debug.LogFormat("AbilityMenuController: Update: stick={0} ; angle={1} ; slot = {2}", leftStick, angle, selectedSlotIndex);
                 }
 
-                angle += CIRCLE_INTERVAL * 0.5f;
-
-                if (angle >= 360f)
-                {
-                    angle -= 360f;
-                }
-
-                selectedSlotIndex = (int)(angle / CIRCLE_INTERVAL);
-
-                centerView.SetContent(playerModel.AbilityData.GetAbility(SelectedSlot.AbilityType));
-
-                Debug.LogFormat("AbilityMenuController: Update: stick={0} ; angle={1} ; slot = {2}", leftStick, angle, selectedSlotIndex);
+                previousStickPos = leftStick;
             }
 
-            //setting the selection state of all the slots
+            //**********************************************
+        }
+
+        #endregion update
+
+        //##################################################################
+
+        public void OnPointerEnterSlot(SlotView slot)
+        {
+            //Debug.Log("aaa");
+            int slotIndex = slotList.IndexOf(slot);
+
+            if (slotIndex != selectedSlotIndex)
+            {
+                //Debug.Log("aaa ok");
+                SetSelectedSlot(slotIndex);
+            }
+        }
+
+        public void OnPointerExitSlot(SlotView slot)
+        {
+            //Debug.Log("bbb");
+            int slotIndex = slotList.IndexOf(slot);
+
+            if (slotIndex == selectedSlotIndex)
+            {
+                //Debug.Log("bbb ok");
+                SetSelectedSlot(-1);
+            }
+        }
+
+        public void OnPointerClickSlot(SlotView slot)
+        {
+            //Debug.Log("ccc");
+            int slotIndex = slotList.IndexOf(slot);
+
+            if (slotIndex == selectedSlotIndex)
+            {
+                //Debug.Log("ccc ok");
+                ActivateSelectedAbility();
+            }
+        }
+
+        //##################################################################
+
+        void SetSelectedSlot(int slotIndex)
+        {
+            //Debug.LogFormat("AbilityMenuController: SetSelectedSlot: index={0}", slotIndex);
+
+            selectedSlotIndex = slotIndex;
+
             for (int i = 0; i < slotList.Count; i++)
             {
                 if (i == selectedSlotIndex)
@@ -194,13 +237,33 @@ namespace Game.UI.AbilityMenu
                 }
             }
 
-            //**********************************************
+            if (SelectedSlot == null)
+            {
+                centerView.SetContent(null);
+            }
+            else
+            {
+                centerView.SetContent(playerModel.AbilityData.GetAbility(SelectedSlot.AbilityType));
+            }
         }
 
-        #endregion update
+        void ActivateSelectedAbility()
+        {
+            if (SelectedSlot == null)
+            {
+                return;
+            }
 
-
-
-        //##################################################################
+            if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
+            {
+                //Debug.LogFormat("Ability Menu: deactivating ability {0}", SelectedSlot.AbilityType);
+                playerModel.DeactivateAbility(SelectedSlot.AbilityType);
+            }
+            else
+            {
+                //Debug.LogFormat("Ability Menu: activating ability {0}", SelectedSlot.AbilityType);
+                playerModel.ActivateAbility(SelectedSlot.AbilityType);
+            }
+        }
     }
 } //end of namespace

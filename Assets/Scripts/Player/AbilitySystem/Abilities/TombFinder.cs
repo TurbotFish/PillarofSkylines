@@ -8,7 +8,10 @@ namespace Game.Player.AbilitySystem
     [Serializable]
     public class TombFinder : Ability
     {
-        public override eAbilityType Type { get { return eAbilityType.TombFinder; } }
+        public TombFinder() : base(eAbilityType.TombFinder)
+        {
+
+        }
 
         //###########################################################
 

@@ -13,8 +13,9 @@ public class RetractingDoor : TriggerableObject {
     public void Awake() {
         my = transform;
         startScale = my.localScale;
+        triggered = false;
         if (startOpen) {
-            UpdateState(true);
+            Toggle(false);
         }
     }
 

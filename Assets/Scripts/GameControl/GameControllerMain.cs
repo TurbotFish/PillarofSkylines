@@ -61,13 +61,13 @@ namespace Game.GameControl
             Utilities.EventManager.EnterPillarEvent += OnEnterPillarEventHandler;
         }
 
-        //void Update() //for testing only!
-        //{
-        //    if (Input.GetKeyDown(KeyCode.T))
-        //    {
-        //        Utilities.EventManager.SendOnEyeKilledEvent(this);
-        //    }
-        //}
+        void Update() //for testing only!
+        {
+            if (Input.GetKeyDown(KeyCode.T))
+            {
+                Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(true));
+            }
+        }
 
         //###############################################################
         //###############################################################

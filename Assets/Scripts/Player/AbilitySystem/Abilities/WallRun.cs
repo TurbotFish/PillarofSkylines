@@ -8,7 +8,7 @@ namespace Game.Player.AbilitySystem
     [Serializable]
     public class WallRun : Ability
     {
-        public override eAbilityType Type { get { return eAbilityType.WallRun; } }
+        //###########################################################
 
         [SerializeField]
         GeneralData general = new GeneralData();
@@ -32,6 +32,13 @@ namespace Game.Player.AbilitySystem
 
         //###########################################################
 
+        public WallRun() : base(eAbilityType.WallRun)
+        {
+
+        }
+
+        //###########################################################
+
         public override void OnValidate()
         {
             base.OnValidate();
@@ -43,7 +50,7 @@ namespace Game.Player.AbilitySystem
             wallRunVertical.OnValidate();
         }
 
-        //########################################################### 
+        //###########################################################
 
         [Serializable]
         public class GeneralData
@@ -54,45 +61,20 @@ namespace Game.Player.AbilitySystem
             "\n'0': the player forward and the wall are perpendicular." +
             "\n'1' the player faces away from the wall.")]
             [SerializeField]
-            float triggerDotProduct;
-            public float TriggerDotProduct { get { return triggerDotProduct; } }
+            float dirTrigger;
+            public float DirectionTrigger { get { return dirTrigger; } }
 
             [Tooltip("The minimal value of the dot product between the direction of the wall and the left stick required to activate or stay in wall run mode.")]
             [SerializeField]
-            float stickMinTrigger;
-            public float StickMinTrigger { get { return stickMinTrigger; } }
+            float stickTrigger;
+            public float StickTrigger { get { return stickTrigger; } }
 
             //******************************
 
             public void OnValidate()
             {
-                triggerDotProduct = Mathf.Clamp(triggerDotProduct, -1, 1);
-                stickMinTrigger = Mathf.Clamp01(stickMinTrigger);
-            }
-        }
-
-        [Serializable]
-        public class WallDriftData
-        {
-            //wall drift target speed
-            [Tooltip("The speed the player tends towards during a wall drift.")]
-            [SerializeField]
-            float targetSpeed;
-            public float TargetSpeed { get { return targetSpeed; } }
-
-            //wall drift slowdown factor
-            [Tooltip(
-                "'1': instant slowdown" +
-                "\n'0': no slowdown")]
-            [SerializeField]
-            float slowdownFactor;
-            public float SlowdownFactor { get { return slowdownFactor; } }
-
-            //******************************
-
-            public void OnValidate()
-            {
-                slowdownFactor = Mathf.Clamp01(slowdownFactor);
+                dirTrigger = Mathf.Clamp(dirTrigger, -1, 1);
+                stickTrigger = Mathf.Clamp(stickTrigger, -1, 1);
             }
         }
 
@@ -126,31 +108,66 @@ namespace Game.Player.AbilitySystem
         }
 
         [Serializable]
-        public class WallRunHorizontalData
+        public class WallDriftData
         {
-            //wall run horizontal time
-            [Tooltip("The duration of a horizontal wall run.")]
-            [SerializeField]
-            float duration;
-            public float Duration { get { return duration; } }
-
-            //wall run horizontal target speed
-            [Tooltip("The speed the player tends towards during a horizontal wall run.")]
+            //wall drift target speed
+            [Tooltip("The speed the player tends towards during a wall drift.")]
             [SerializeField]
             float targetSpeed;
             public float TargetSpeed { get { return targetSpeed; } }
 
-            //wall run horizontal gravity multiplier
-            [Tooltip("The rate by which gravity is reduced during a horizontal wall run.")]
+            //wall drift slowdown factor
+            [Tooltip("The factor by which the player accelerates or deccelerates." +
+                "\n'1': instantly switches to target speed" +
+                "\n'0': never changes speed")]
             [SerializeField]
-            float gravityMultiplier;
-            public float GravityMultiplier { get { return gravityMultiplier; } }
+            float lerpFactor;
+            public float LerpFactor { get { return lerpFactor; } }
 
             //******************************
 
             public void OnValidate()
             {
-                gravityMultiplier = Mathf.Clamp01(gravityMultiplier);
+                targetSpeed = Mathf.Clamp(targetSpeed, 0, float.MaxValue);
+                lerpFactor = Mathf.Clamp01(lerpFactor);
+            }
+        }
+
+        [Serializable]
+        public class WallRunHorizontalData
+        {
+            //minimal speed
+            [Tooltip("The minimal horizontal speed the player needs to have to continue the horizontal wall run.")]
+            [SerializeField]
+            float minSpeed;
+            public float MinSpeed { get { return minSpeed; } }
+
+            //momentum
+            [Tooltip("The factor of the previous velocity that is carried over")]
+            [SerializeField]
+            float momentum;
+            public float Momentum { get { return momentum; } }
+
+            //forward speed
+            [Tooltip("")]
+            [SerializeField]
+            float forwardSpeed;
+            public float ForwardSpeed { get { return forwardSpeed; } }
+
+            //wall run horizontal gravity multiplier
+            [Tooltip("The gravity strength.")]
+            [SerializeField]
+            float gravity;
+            public float Gravity { get { return gravity; } }
+
+            //******************************
+
+            public void OnValidate()
+            {
+                minSpeed = Mathf.Clamp(minSpeed, 0, float.MaxValue);
+                momentum = Mathf.Clamp01(momentum);
+                forwardSpeed = Mathf.Clamp(forwardSpeed, 0, float.MaxValue);
+                gravity = Mathf.Clamp(gravity, 0, float.MaxValue);
             }
         }
 

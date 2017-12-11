@@ -24,6 +24,7 @@ namespace Game.World.ChunkSystem
         public bool IsCopy { get; private set; }
 
         List<Renderer> rendererList = new List<Renderer>();
+        List<Interaction.IWorldObjectActivation> worldObjectActivationList = new List<Interaction.IWorldObjectActivation>();
 
         //##################################################################
 
@@ -45,18 +46,19 @@ namespace Game.World.ChunkSystem
 
             gameObject.SetActive(true);
 
-            //fill renderer list
-            FillRendererList();
+            //find stuff
+            RebuildIndexes();
 
             //initialize world objects
-            var worldObjects = GetComponentsInChildren<Interaction.IWorldObject>();
+            var worldObjects = GetComponentsInChildren<Interaction.IWorldObjectInitialization>();
             for (int i = 0; i < worldObjects.Length; i++)
             {
                 var worldObject = worldObjects[i];
 
-                worldObject.InitializeWorldObject(worldController, IsCopy);
-            }
+                worldObject.Initialize(worldController, IsCopy);
+            }            
 
+            //
             IsActive = true;
         }
 
@@ -79,9 +81,9 @@ namespace Game.World.ChunkSystem
                 return;
             }
 
-            Debug.LogFormat("SubChunk \"{0}\": OnTransformChildrenChanged called!", name);
+            Debug.LogErrorFormat("SubChunk \"{0}\": OnTransformChildrenChanged called!", name);
 
-            FillRendererList();
+            RebuildIndexes();
         }
 
         //##################################################################
@@ -133,7 +135,9 @@ namespace Game.World.ChunkSystem
             {
                 return result;
             }
-            else if (immediate)
+
+            //handle renderers
+            if (immediate)
             {
                 for (int i = 0; i < rendererList.Count; i++)
                 {
@@ -146,40 +150,61 @@ namespace Game.World.ChunkSystem
                 //Debug.LogFormat("SubChunk: SetActive: name={0} ; value={1}", name, active);
             }
 
+            //handle world objects
+            if (active)
+            {
+                for (int i = 0; i < worldObjectActivationList.Count; i++)
+                {
+                    worldObjectActivationList[i].OnSubChunkActivated();
+                }
+            }
+            else
+            {
+                for (int i = 0; i < worldObjectActivationList.Count; i++)
+                {
+                    worldObjectActivationList[i].OnSubChunkDeactivated();
+                }
+            }
+
+            //
             IsActive = active;
             return result;
         }
 
         //##################################################################
 
-        void FillRendererList()
+        void RebuildIndexes()
         {
             rendererList.Clear();
+            rendererList.AddRange(GetComponentsInChildren<Renderer>());
 
-            var candidateStack = new Stack<Transform>();
-            for (int i = 0; i < myTransform.childCount; i++)
-            {
-                candidateStack.Push(myTransform.GetChild(i));
-            }
+            worldObjectActivationList.Clear();
+            worldObjectActivationList.AddRange(GetComponentsInChildren<Interaction.IWorldObjectActivation>());
 
-            while (candidateStack.Count > 0)
-            {
-                var candidate = candidateStack.Pop();
+            //var candidateStack = new Stack<Transform>();
+            //for (int i = 0; i < myTransform.childCount; i++)
+            //{
+            //    candidateStack.Push(myTransform.GetChild(i));
+            //}
 
-                var renderers = candidate.GetComponents<Renderer>();
-                if (renderers.Length > 0)
-                {
-                    rendererList.AddRange(renderers);
-                }
+            //while (candidateStack.Count > 0)
+            //{
+            //    var candidate = candidateStack.Pop();
 
-                if (candidate.childCount > 0)
-                {
-                    for (int i = 0; i < candidate.childCount; i++)
-                    {
-                        candidateStack.Push(candidate.GetChild(i));
-                    }
-                }
-            }
+            //    var renderers = candidate.GetComponents<Renderer>();
+            //    if (renderers.Length > 0)
+            //    {
+            //        rendererList.AddRange(renderers);
+            //    }
+
+            //    if (candidate.childCount > 0)
+            //    {
+            //        for (int i = 0; i < candidate.childCount; i++)
+            //        {
+            //            candidateStack.Push(candidate.GetChild(i));
+            //        }
+            //    }
+            //}
         }
 
         //##################################################################

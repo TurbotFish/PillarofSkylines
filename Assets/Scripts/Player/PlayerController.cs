@@ -10,11 +10,10 @@ namespace Game.Player
     /// </summary>
     public class PlayerController : MonoBehaviour
     {
-        Game.Player.CharacterController.Character player;
-        public Game.Player.CharacterController.Character Player { get { return this.player; } }
+        public Transform PlayerTransform { get; private set; }
 
-        InteractionController interactionController;
-        public InteractionController InteractionController { get { return this.interactionController; } }
+        public CharacterController.Character Player { get; private set; }
+        public InteractionController InteractionController { get; private set; }
 
         WrappableObject wrappableObject;
 
@@ -27,21 +26,22 @@ namespace Game.Player
         public void InitializePlayerController(GameControl.IGameControllerBase gameController)
         {
             //getting all references
-			this.player = GetComponent<Game.Player.CharacterController.Character> ();
-			this.interactionController = GetComponentInChildren<InteractionController> ();
-            this.wrappableObject = GetComponent<WrappableObject>();
-            this.TombFinderController = GetComponentInChildren<AbilitySystem.TombFinderController>();
+            PlayerTransform = transform;
+			Player = GetComponent<CharacterController.Character> ();
+			InteractionController = GetComponentInChildren<InteractionController> ();
+            wrappableObject = GetComponent<WrappableObject>();
+            TombFinderController = GetComponentInChildren<AbilitySystem.TombFinderController>();
 
             //initializing all the things
-            this.player.InitializePlayer(gameController.PlayerModel);
-            this.interactionController.InitializeFavourController(gameController.PlayerModel, player, gameController.EchoManager);
+            Player.InitializePlayer(gameController.PlayerModel);
+            InteractionController.InitializeFavourController(gameController.PlayerModel, Player, gameController.EchoManager);
 
             if (gameController.WorldController != null)
             {
-                this.wrappableObject.InitializeWrappableObject(gameController.WorldController);
+                wrappableObject.InitializeWrappableObject(gameController.WorldController);
             }
 
-            this.TombFinderController.InitializeTombFinderController(gameController);
+            TombFinderController.InitializeTombFinderController(gameController);
         }
     }
 }
