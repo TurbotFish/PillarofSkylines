@@ -10,8 +10,6 @@ namespace Game.Player.AbilitySystem
     {
         //###########################################################
 
-        public override eAbilityType Type { get { return eAbilityType.WallRun; } }
-
         [SerializeField]
         GeneralData general = new GeneralData();
         public GeneralData General { get { return general; } }
@@ -31,6 +29,13 @@ namespace Game.Player.AbilitySystem
         [SerializeField]
         WallRunVerticalData wallRunVertical = new WallRunVerticalData();
         public WallRunVerticalData WallRunVertical { get { return wallRunVertical; } }
+
+        //###########################################################
+
+        public WallRun() : base(eAbilityType.WallRun)
+        {
+
+        }
 
         //###########################################################
 

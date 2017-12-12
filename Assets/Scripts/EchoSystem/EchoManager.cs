@@ -52,19 +52,18 @@ namespace Game.EchoSystem
 
         void Update()
         {
-            if (!isEclipseActive)
-            {
+            if (!isEclipseActive) {
                 float driftInput = Input.GetAxis("Right Trigger");
                 if (driftInput > 0.7f && !driftInputDown) {
                     driftInputDown = true;
                     Drift();
-                }
-                else if (driftInput < 0.6f)
+                } else if (driftInput < 0.6f)
                     driftInputDown = false;
 
                 if (Input.GetButtonDown("Echo"))
                     CreateEcho(true);
-            }
+            } else
+                driftInputDown = true;
         }
 
         //##################################################################
@@ -119,7 +118,7 @@ namespace Game.EchoSystem
                 Break(oldestEcho);
             }
 
-            Echo newEcho = Instantiate(echoPrefab, playerTransform.position, playerTransform.rotation);
+            Echo newEcho = Instantiate(echoPrefab, playerTransform.position, Quaternion.identity);
             newEcho.playerEcho = isPlayerEcho;
             newEcho.echoManager = this;
             echoList.Add(newEcho);
@@ -173,6 +172,8 @@ namespace Game.EchoSystem
                 Destroy(echoList[i].gameObject);
             }
 
+            placedEchoes = 0;
+            echoParticles.SetEchoNumber(maxEchoes);
             echoList.Clear();
         }
 

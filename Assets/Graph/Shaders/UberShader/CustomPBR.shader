@@ -43,6 +43,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 		[HideInspector] _SrcBlend ("_SrcBlend", Float) = 1
 		[HideInspector] _DstBlend ("_DstBlend", Float) = 0
 		[HideInspector] _ZWrite ("_ZWrite", Float) = 1
+		[HideInspector] _Cull ("_Cull", Float) = 0
 
 		_NormalDistFull ("Normal Distance Full", Float) = 1.2
 		_NormalDistCulled ("Normal Distance Culled", Float) = 1.4
@@ -227,6 +228,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 
 			#pragma shader_feature _ _CELSHADED
 			#pragma shader_feature _ _REFRACTION
+			#pragma shader_feature _ALBEDO_VERTEX_MASK
 
 			#pragma multi_compile _ _VERTEX_WIND
 			#pragma multi_compile _ _VERTEX_BEND

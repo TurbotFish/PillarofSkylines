@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Game.Player.AbilitySystem;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,6 +24,7 @@ namespace Game.UI.AbilityMenu
 
         Player.PlayerModel playerModel;
         AbilityMenuController menuController;
+        Ability currentAbility;
 
         //##################################################################
 
@@ -38,10 +40,13 @@ namespace Game.UI.AbilityMenu
             backgroundImage.color = menuController.AvailableAbilityColour;
 
             Utilities.EventManager.FavourAmountChangedEvent += OnFavourAmountChangedEventHandler;
+            Utilities.EventManager.AbilityStateChangedEvent += OnAbilityStateChangedEventHandler;
         }
 
         public void SetContent(Player.AbilitySystem.Ability ability)
         {
+            currentAbility = ability;
+
             if (ability == null)
             {
                 abilityNameText.text = string.Empty;
@@ -53,21 +58,7 @@ namespace Game.UI.AbilityMenu
                 abilityNameText.text = ability.Name;
                 abilityDescriptionText.text = ability.Description;
 
-                switch (playerModel.GetAbilityState(ability.Type))
-                {
-                    case Player.eAbilityState.active:
-                        backgroundImage.color = menuController.ActiveAbilityColour;
-                        break;
-                    case Player.eAbilityState.locked:
-                        backgroundImage.color = menuController.LockedAbilityColour;
-                        break;
-                    case Player.eAbilityState.available:
-                        backgroundImage.color = menuController.AvailableAbilityColour;
-                        break;
-                    default:
-                        Debug.LogError("ERROR!");
-                        break;
-                }
+                SetBackgroundColour(playerModel.GetAbilityState(ability.Type));
             }
         }
 
@@ -76,6 +67,37 @@ namespace Game.UI.AbilityMenu
         void OnFavourAmountChangedEventHandler(object sender, Utilities.EventManager.FavourAmountChangedEventArgs args)
         {
             favourText.text = args.FavourAmount.ToString();
+        }
+
+        void OnAbilityStateChangedEventHandler(object sender, Utilities.EventManager.AbilityStateChangedEventArgs args)
+        {
+            if (args.AbilityType != currentAbility.Type)
+            {
+                return;
+            }
+
+            SetBackgroundColour(args.AbilityState);
+        }
+
+        //##################################################################
+
+        void SetBackgroundColour(Player.eAbilityState abilityState)
+        {
+            switch (abilityState)
+            {
+                case Player.eAbilityState.active:
+                    backgroundImage.color = menuController.ActiveAbilityColour;
+                    break;
+                case Player.eAbilityState.locked:
+                    backgroundImage.color = menuController.LockedAbilityColour;
+                    break;
+                case Player.eAbilityState.available:
+                    backgroundImage.color = menuController.AvailableAbilityColour;
+                    break;
+                default:
+                    Debug.LogError("ERROR!");
+                    break;
+            }
         }
 
         //##################################################################

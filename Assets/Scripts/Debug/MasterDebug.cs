@@ -6,8 +6,7 @@ public class MasterDebug : MonoBehaviour {
     [SerializeField] Game.Player.CharacterController.Character player;
     
 	void Start () {
-        if (player)
-            player.numberOfAerialJumps = 1000;
+        player = FindObjectOfType<Game.Player.CharacterController.Character>(); // TODO: fix that
 	}
     
     private void Update() {
@@ -25,6 +24,9 @@ public class MasterDebug : MonoBehaviour {
                 shaderScript.enabled = true;
             } else
                 shaderScript.enabled = false;
+
+        } else if (Input.GetKeyDown(KeyCode.F3)) {
+            player.numberOfAerialJumps = player.numberOfAerialJumps == 1000 ? 1 : 1000;
         }
     }
 }

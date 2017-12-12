@@ -35,6 +35,11 @@ namespace Game.UI
         [SerializeField]
         PillarEntranceMenu.PillarEntranceMenuController pillarEntranceMenuController;
 
+        //help menu controller
+        [SerializeField]
+        HelpMenuController helpMenu;
+
+
 
 
 
@@ -52,14 +57,15 @@ namespace Game.UI
             this.gameController = gameController;
 
             //
-            this.uiStates.Clear();
+            uiStates.Clear();
 
-            this.uiStates.Add(eUiState.HUD, this.hudController);
-            this.uiStates.Add(eUiState.AbilityMenu, this.abilityMenuController);
-            this.uiStates.Add(eUiState.Intro, this.introMenuController);
-            this.uiStates.Add(eUiState.End, this.endMenuController);
-            this.uiStates.Add(eUiState.LoadingScreen, this.loadingScreenController);
-            this.uiStates.Add(eUiState.PillarEntrance, this.pillarEntranceMenuController);
+            uiStates.Add(eUiState.HUD, this.hudController);
+            uiStates.Add(eUiState.AbilityMenu, this.abilityMenuController);
+            uiStates.Add(eUiState.Intro, this.introMenuController);
+            uiStates.Add(eUiState.End, this.endMenuController);
+            uiStates.Add(eUiState.LoadingScreen, this.loadingScreenController);
+            uiStates.Add(eUiState.PillarEntrance, this.pillarEntranceMenuController);
+            uiStates.Add(eUiState.HelpMenu, helpMenu);
 
             foreach (var uiState in uiStates.Values)
             {
