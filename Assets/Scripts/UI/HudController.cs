@@ -37,6 +37,12 @@ namespace Game.UI
             if (Input.GetButtonDown("MenuButton"))
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.AbilityMenu));
+                return;
+            }
+            else if (Input.GetButtonDown("Back"))
+            {
+                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HelpMenu));
+                return;
             }
         }
 

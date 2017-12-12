@@ -8,6 +8,7 @@
         End,
         LoadingScreen,
         PillarEntrance,
+        HelpMenu,
         NONE
     }
 } //end of namespace
