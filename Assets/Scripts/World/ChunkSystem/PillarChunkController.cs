@@ -61,9 +61,11 @@ namespace Game.World.ChunkSystem
 
             for (int i = 0; i < subChunkList.Count; i++)
             {
-                var subChunk = subChunkList[i];
+                subChunkList[i].gameObject.SetActive(true);
 
-                subChunk.SetSubChunkActive(true, true);
+                //**
+                //var subChunk = subChunkList[i];
+                //subChunk.SetSubChunkActive(true, true);
             }
         }
 
@@ -76,9 +78,11 @@ namespace Game.World.ChunkSystem
 
             for (int i = 0; i < subChunkList.Count; i++)
             {
-                var subChunk = subChunkList[i];
+                subChunkList[i].gameObject.SetActive(false);
 
-                subChunk.SetSubChunkActive(false, true);
+                //**
+                //var subChunk = subChunkList[i];
+                //subChunk.SetSubChunkActive(false, true);
             }
         }
 

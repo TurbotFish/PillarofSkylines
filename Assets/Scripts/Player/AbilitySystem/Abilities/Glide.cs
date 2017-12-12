@@ -8,7 +8,10 @@ namespace Game.Player.AbilitySystem
     [Serializable]
     public class Glide : Ability
     {
-        public override eAbilityType Type { get { return eAbilityType.Glide; } }
+        public Glide() : base(eAbilityType.Glide)
+        {
+
+        }
 
         //###########################################################
 
