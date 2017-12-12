@@ -17,21 +17,43 @@ public class CameraControllerJPP : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (Input.GetKeyDown (KeyCode.A))
-			TestTeleportCamera (0);
-		if (Input.GetKeyDown (KeyCode.B))
-			TestTeleportCamera (1);
-		if (Input.GetKeyDown (KeyCode.C))
-			TestTeleportCamera (2);
+		if (lockLookAt && target != null) {
+			cam.transform.LookAt (target);
+		}
 	
 
 	}
 
-	public void TestTeleportCamera(int i)
+	public void TeleportCameraCloudsSide(int i)
 	{
-		DOTween.Restart ("Fade_White");
-		cloudController.CloudsDisappear();
+		cloudController.CloudsAppearFromSide (3);
+		StartCoroutine (FadeWhite (1.2f));
+		StartCoroutine (TeleportCamera (i, 2f));
+	}
+
+	public void TeleportCameraCloudsDisappear(int i)
+	{
+		cloudController.CloudsDisappear (1);
+		StartCoroutine (FadeWhite (0f));
 		StartCoroutine (TeleportCamera (i, 0.75f));
+	}
+
+	public void TeleportCamera(int i)
+	{
+		
+		StartCoroutine (FadeWhite (0));
+		StartCoroutine (TeleportCamera (i, 0.75f));
+	}
+
+	public void SetTarget(Transform t)
+	{
+		target = t;
+		lockLookAt = true;
+	}
+	public void RemoveTarget()
+	{
+		target = null;
+		lockLookAt = false;
 	}
 
 	IEnumerator TeleportCamera(int pos, float t)
@@ -40,4 +62,10 @@ public class CameraControllerJPP : MonoBehaviour {
 		cam.transform.position = positions [pos].position;
 		cam.transform.rotation = positions [pos].rotation;
 	}
+	IEnumerator FadeWhite( float t)
+	{
+		yield return new WaitForSecondsRealtime (t);
+		DOTween.Restart ("Fade_White");
+	}
+
 }
