@@ -86,8 +86,8 @@
 		float4 tangent : TANGENT;
 		float2 uv : TEXCOORD0;
 
-		#if defined(_VERTEX_MASK_COLOUR)
-			float4 vertColour : COLOR;
+		#if defined(_VERTEX_MASK_COLOUR) || defined(_ALBEDO_VERTEX_MASK)
+			float4 color : COLOR;
 		#endif
 	};
 
@@ -123,6 +123,10 @@
 			float4 grabPos : TEXCOORD8;
 			float4 refraction : TEXCOORD9;
 		#endif
+
+		#if defined(_ALBEDO_VERTEX_MASK)
+			float4 color : COLOR;
+		#endif
 	};
 
 	void ComputeVertexLightColor(inout Interpolators i){
@@ -157,7 +161,12 @@
 	}
 
 	float3 GetAlbedo(Interpolators i){
-		float3 albedo = tex2D(_MainTex, i.uv.xy).rgb * _Color.rgb;
+		float3 albedoTex = tex2D(_MainTex, i.uv.xy).rgb;
+		float3 albedo = albedoTex * _Color.rgb;
+		#if defined(_ALBEDO_VERTEX_MASK)
+			albedo = lerp(albedoTex, albedo, i.color.g);
+		#endif
+
 		#if defined(_DETAIL_ALBEDO_MAP)
 			float3 details = tex2D(_DetailTex, i.uv.zw) * unity_ColorSpaceDouble;
 			albedo = lerp(albedo, albedo * details, GetDetailMask(i));
@@ -277,7 +286,7 @@
 		#if defined(_VERTEX_BEND) || defined(_VERTEX_WIND)
 
 			#if defined(_VERTEX_MASK_COLOUR)
-				float rotationMask = v.vertColour.r;
+				float rotationMask = v.color.r;
 			#elif defined(_VERTEX_MASK_CUSTOM)
 				float rotationMask = saturate(v.vertex.y * _VertMaskMultiplier + _VertMaskFlat);
 			#endif
@@ -297,7 +306,10 @@
 			#endif
 
 			#if defined(_VERTEX_WIND)
-				float3 windDir = float3(3,0,0);//global in the future
+				float3 windDir = float3(1,0,0);//global in the future
+
+				float windSpeed = 3;
+				float _offset = (pivotWS.x * (2.9) * -sign(windDir.x) + pivotWS.z * (2.9) * -sign(windDir.z) + pivotWS.y * 0.8) * 0.5;
 
 				windDir = mul(unity_WorldToObject, windDir);
 				windDir = normalize(windDir);
@@ -305,11 +317,9 @@
 				float windIntensity = tex2Dlod(_WindTex, float4(_Time.x, _Time.x, 0,0)).r;
 				windIntensity = saturate(windIntensity + 0.2);//not necessary with a good wind map
 
-				float windSpeed = 3;
-				float _offset = (pivotWS.x * (0.9) * -sign(windDir.x) + pivotWS.z * (2.9) * -sign(windDir.y) + pivotWS.y * 0.8) * 0.5;
 				float angle = windIntensity * (sin(_Time.y * windSpeed + _offset) * 0.65+0.35) * _MaxBendAngle * rotationMask;
 
-				float3 _windRotation = float3( windDir.z, 0, windDir.x) * angle;
+				float3 _windRotation = float3( windDir.z, 0, -windDir.x) * angle;
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _windRotation);
 				v.normal = ApplyWind(v.normal.xyz, _windRotation);
 			#endif
@@ -339,6 +349,10 @@
 			i.normal = v.normal;
 		#else
 			i.normal = UnityObjectToWorldNormal(v.normal);
+		#endif
+
+		#if defined(_ALBEDO_VERTEX_MASK)
+			i.color = v.color;
 		#endif
 
 

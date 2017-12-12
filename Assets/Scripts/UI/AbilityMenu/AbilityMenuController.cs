@@ -117,6 +117,11 @@ namespace Game.UI.AbilityMenu
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HUD));
                 return;
             }
+            else if (Input.GetButtonDown("Back"))
+            {
+                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HelpMenu));
+                return;
+            }
 
             //**********************************************
             //handle ability activation

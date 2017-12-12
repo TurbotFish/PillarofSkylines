@@ -6,53 +6,57 @@ using System;
 namespace Game.Player.AbilitySystem
 {
     [Serializable]
-    public abstract class Ability
+    public class Ability
     {
+        //###########################################################
+
         //type
-        public abstract eAbilityType Type { get; }
+        public eAbilityType Type { get; private set; }
 
         //group
         [SerializeField]
         eAbilityGroup group;
-
-        public eAbilityGroup Group { get { return this.group; } }
+        public eAbilityGroup Group { get { return group; } }
 
         //activation price
         [SerializeField]
         int activationPrice;
-
-        public int ActivationPrice { get { return this.activationPrice; } }
+        public int ActivationPrice { get { return activationPrice; } }
 
         [Header("UI")]
 
         //icon
         [SerializeField]
         Sprite icon;
-
-        public Sprite Icon { get { return this.icon; } }
+        public Sprite Icon { get { return icon; } }
 
         //name
         [SerializeField]
         string name;
-
-        public string Name { get { return this.name; } }
+        public string Name { get { return name; } }
 
         //description
         [SerializeField]
         string description;
+        public string Description { get { return description; } }
 
-        public string Description { get { return this.description; } }
+        //###########################################################
 
-        
+        public Ability(eAbilityType abilityType)
+        {
+            Type = abilityType;
+        }
 
         //###########################################################
 
         public virtual void OnValidate()
         {
-            if(this.activationPrice < 1)
+            if (activationPrice < 1)
             {
-                this.activationPrice = 1;
+                activationPrice = 1;
             }
         }
+
+        //###########################################################
     }
 } //end of namespace

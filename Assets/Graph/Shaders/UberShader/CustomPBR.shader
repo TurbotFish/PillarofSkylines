@@ -123,6 +123,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma shader_feature _VERTEX_OFFSET_XZ _VERTEX_OFFSET_YZ _VERTEX_OFFSET_XY
 			#pragma shader_feature _ _PLAYER_SHADER
 			#pragma shader_feature _ _SSS_DIFFUSE_MAP
+			#pragma shader_feature _ALBEDO_VERTEX_MASK
 
 			#pragma multi_compile _ _VERTEX_WIND
 			#pragma multi_compile _ _VERTEX_BEND
@@ -177,6 +178,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma shader_feature _VERTEX_OFFSET_XZ _VERTEX_OFFSET_YZ _VERTEX_OFFSET_XY
 			#pragma shader_feature _ _PLAYER_SHADER
 			#pragma shader_feature _ _SSS_DIFFUSE_MAP
+			#pragma shader_feature _ALBEDO_VERTEX_MASK
 
 			#pragma multi_compile _ _VERTEX_WIND
 			#pragma multi_compile _ _VERTEX_BEND
@@ -228,6 +230,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 
 			#pragma shader_feature _ _CELSHADED
 			#pragma shader_feature _ _REFRACTION
+			#pragma shader_feature _ALBEDO_VERTEX_MASK
 
 			#pragma multi_compile _ _VERTEX_WIND
 			#pragma multi_compile _ _VERTEX_BEND

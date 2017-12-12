@@ -45,7 +45,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		GUILayout.Label ("Main Maps", EditorStyles.boldLabel);
 
 		MaterialProperty mainTex = FindProperty ("_MainTex", properties);
-
+		DoAlbedoVertexMask ();
 		editor.TexturePropertySingleLine (MakeLabel(mainTex, "Albedo (RGB)"), mainTex, FindProperty("_Color"));
 		if (shouldShowAlphaCutoff) {
 			DoAlphaCutoff ();
@@ -58,6 +58,14 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoEmission ();
 		DoDetailMask ();
 		editor.TextureScaleOffsetProperty (mainTex);
+	}
+
+	void DoAlbedoVertexMask(){
+		EditorGUI.BeginChangeCheck ();
+		bool vertexMask = EditorGUILayout.Toggle (MakeLabel ("Vertex Colour Mask"), IsKeywordEnabled ("_ALBEDO_VERTEX_MASK"));
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_ALBEDO_VERTEX_MASK", vertexMask);
+		}
 	}
 
 	void DoDebug(){
@@ -652,10 +660,6 @@ public class CustomPBR_GUI : ShaderGUI {
 
 	enum VertexMask {
 		Custom, VertexColour
-	}
-
-	enum OffsetPlane {
-		XZ, YZ, XY
 	}
 
 	enum DiffuseSSS {
