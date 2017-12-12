@@ -71,7 +71,7 @@ namespace Game.UI.AbilityMenu
 
         void OnAbilityStateChangedEventHandler(object sender, Utilities.EventManager.AbilityStateChangedEventArgs args)
         {
-            if (args.AbilityType != currentAbility.Type)
+            if (currentAbility == null || args.AbilityType != currentAbility.Type)
             {
                 return;
             }
