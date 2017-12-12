@@ -289,7 +289,7 @@ public class PoS_Camera : MonoBehaviour {
 
 	Vector3 lastFrameOffset;
     void SmoothMovement() {
-        float t = smoothMovement ? deltaTime / smoothDamp : 1;
+        float t = smoothMovement ? deltaTime / smoothDamp : 1; //TODO: fix that and all other iterations of it causing stuttering
         my.position = Vector3.Lerp(my.position, camPosition, t);
         lastFrameOffset = target.position - my.position;
         my.rotation = Quaternion.Lerp(my.rotation, camRotation, t);
