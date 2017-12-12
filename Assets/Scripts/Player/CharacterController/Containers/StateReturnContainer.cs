@@ -6,10 +6,10 @@ namespace Game.Player.CharacterController.Containers
 {
     public struct StateReturnContainer
     {
-        //desired velocity
-        Vector3 desiredVelocity;
-        public bool DesiredVelocitySet { get; private set; }
-        public Vector3 DesiredVelocity { get { return desiredVelocity; } set { desiredVelocity = value; DesiredVelocitySet = true; } }
+        //acceleration
+        Vector3 acceleration;
+        public bool AccelerationSet { get; private set; }
+        public Vector3 Acceleration { get { return acceleration; } set { acceleration = value; AccelerationSet = true; } }
 
         //transition speed
         float transitionSpeed;
@@ -35,5 +35,8 @@ namespace Game.Player.CharacterController.Containers
         Vector3 playerUp;
         public bool PlayerUpSet { get; private set; }
         public Vector3 PlayerUp { get { return playerUp; } set { playerUp = value; PlayerUpSet = true; } }
+
+        //gravity
+        public bool IgnoreGravity { get; set; }
     }
 } //end of namespace

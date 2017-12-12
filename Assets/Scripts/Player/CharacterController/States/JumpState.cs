@@ -36,7 +36,6 @@ namespace Game.Player.CharacterController.States
             Debug.Log("Enter State: Jump");
 
             firstUpdate = true;
-            strength = 18;
         }
 
         public void Exit()
@@ -48,10 +47,10 @@ namespace Game.Player.CharacterController.States
 
         public void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
         {
-            if (inputInfo.jumpButtonUp)
-            {
-                stateMachine.ChangeState(new FallEnterArgs(StateId));
-            }
+            //if (inputInfo.jumpButtonUp)
+            //{
+            //    stateMachine.ChangeState(new FallEnterArgs(StateId));
+            //}
         }
 
         public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
@@ -59,29 +58,26 @@ namespace Game.Player.CharacterController.States
             var result = new StateReturnContainer();
 
             result.CanTurnPlayer = false;
+            result.MaxSpeed = 32;
 
             if (firstUpdate)
             {
                 velocity = movementInfo.velocity;
 
-                result.DesiredVelocity = (velocity*0.25f) + (Vector3.up * strength*dt);
-                result.TransitionSpeed = 8;
+                result.Acceleration = (velocity * 0.25f) + (Vector3.up * 18);
+                result.TransitionSpeed = 1 / dt;
+
+                firstUpdate = false;
             }
             else
             {
-                result.DesiredVelocity = velocity + (-charController.GravityDirection * charController.CharData.General.GravityStrength);
-                result.TransitionSpeed = 2;
-            }
+                result.Acceleration = velocity;
+                result.TransitionSpeed = 1;
 
-
-            //if (!firstUpdate && movementInfo.velocity.y < 0)
-            //{
-            //    stateMachine.ChangeState(new FallEnterArgs(StateId));
-            //}
-
-            if (firstUpdate)
-            {
-                firstUpdate = false;
+                if (movementInfo.velocity.y < 0)
+                {
+                    stateMachine.ChangeState(new FallEnterArgs(StateId));
+                }
             }
 
             return result;

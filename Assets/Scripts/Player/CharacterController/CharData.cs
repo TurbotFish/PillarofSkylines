@@ -36,6 +36,10 @@ namespace Game.Player.CharacterController
         public JumpData Jump { get { return jump; } }
 
         [SerializeField]
+        DashData dash = new DashData();
+        public DashData Dash { get { return dash; } }
+
+        [SerializeField]
         GlideData glide = new GlideData();
         public GlideData Glide { get { return glide; } }
 
@@ -57,6 +61,7 @@ namespace Game.Player.CharacterController
             stand.OnValidate();
             fall.OnValidate();
             jump.OnValidate();
+            dash.OnValidate();
             glide.OnValidate();
             wallRun.OnValidate();
         }
@@ -233,6 +238,39 @@ namespace Game.Player.CharacterController
         }
 
         #endregion jump
+
+        //*******************************************
+
+        #region dash
+
+        [System.Serializable]
+        public class DashData
+        {
+            [SerializeField]
+            float speed;
+            public float Speed { get { return speed; } }
+
+            [SerializeField]
+            float time;
+            public float Time { get { return time; } }
+
+            [SerializeField]
+            float cooldown;
+            public float Cooldown { get { return cooldown; } }
+
+            [SerializeField]
+            float transitionSpeed;
+            public float TransitionSpeed { get { return transitionSpeed; } }
+
+            public void OnValidate()
+            {
+                speed = Mathf.Clamp(speed, 0, float.MaxValue);
+                time = Mathf.Clamp(time, 0, float.MaxValue);
+                cooldown = Mathf.Clamp(cooldown, 0, float.MaxValue);
+            }
+        }
+
+        #endregion dash
 
         //*******************************************
 

@@ -45,6 +45,10 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new JumpEnterArgs(StateId));
             }
+            else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
+            {
+                stateMachine.ChangeState(new DashEnterArgs(StateId, movementInfo.forward));
+            }
             else if (inputInfo.leftStickAtZero)
             {
                 stateMachine.ChangeState(new StandEnterArgs(StateId));
@@ -57,7 +61,7 @@ namespace Game.Player.CharacterController.States
             {
                 CanTurnPlayer = true,
 
-                DesiredVelocity = inputInfo.leftStickToSlope * moveData.Speed * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1) * dt,
+                Acceleration = inputInfo.leftStickToSlope * moveData.Speed * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1),
 
                 MaxSpeed = moveData.MaxSpeed,
                 TransitionSpeed = moveData.TransitionSpeed

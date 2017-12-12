@@ -57,7 +57,7 @@ namespace Game.Player.CharacterController.States
             {
                 CanTurnPlayer = true,
 
-                DesiredVelocity = movementInfo.velocity * standData.SlowdownFactor,
+                Acceleration = Vector3.zero, //movementInfo.velocity * standData.SlowdownFactor,
                 TransitionSpeed = standData.TransitionSpeed
             };
 

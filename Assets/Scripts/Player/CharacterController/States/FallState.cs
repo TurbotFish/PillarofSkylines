@@ -49,12 +49,11 @@ namespace Game.Player.CharacterController.States
             var result = new StateReturnContainer
             {
                 CanTurnPlayer = true,
-
-                DesiredVelocity = inputInfo.leftStickRaw * fallData.Speed * dt,
-
                 MaxSpeed = fallData.MaxSpeed,
                 TransitionSpeed = fallData.TransitionSpeed
             };
+
+            result.Acceleration = inputInfo.leftStickRaw * fallData.Speed;
 
             if (collisionInfo.below)
             {
