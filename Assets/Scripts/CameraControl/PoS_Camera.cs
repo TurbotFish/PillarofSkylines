@@ -196,6 +196,7 @@ public class PoS_Camera : MonoBehaviour {
         negDistance.z = -currentDistance;
         Vector3 targetWithOffset = args.Position + my.right * offset.x + my.up * offset.y;
         camPosition = my.rotation * negDistance + targetWithOffset;
+        lastFrameCamPos = camPosition;
 
         if (args.IsNewScene) {
             my.position = camPosition;
@@ -288,17 +289,31 @@ public class PoS_Camera : MonoBehaviour {
 	}
 
 	Vector3 lastFrameOffset;
+    Vector3 velocity = Vector3.zero;
+    Vector3 lastFrameCamPos;
     void SmoothMovement() {
-        float t = smoothMovement ? deltaTime / smoothDamp : 1; //TODO: fix that and all other iterations of it causing stuttering
-        my.position = Vector3.Lerp(my.position, camPosition, t);
+        float t = smoothMovement ? deltaTime / smoothDamp : 1;
+        // damping value is the inverse of speed, we simply give the camera a speed of 1/smoothDamp
+        // so deltaTime * speed = deltaTime * 1/smoothDamp = deltaTime/smoothDamp
+        
+        my.position = SmoothApproach(my.position, lastFrameCamPos, camPosition, 1 / smoothDamp);
+        my.rotation = Quaternion.Lerp(my.rotation, camRotation, t); // TODO: only local space calculation?
+        
         lastFrameOffset = target.position - my.position;
-        my.rotation = Quaternion.Lerp(my.rotation, camRotation, t);
+        lastFrameCamPos = camPosition;
     }
-	#endregion
-	
-	#region Inputs and States
+    
+    Vector3 SmoothApproach(Vector3 pastPosition, Vector3 pastTargetPosition, Vector3 targetPosition, float speed) {
+        float t = deltaTime * speed;
+        Vector3 v = (targetPosition - pastTargetPosition) / t;
+        Vector3 f = pastPosition - pastTargetPosition + v;
+        return targetPosition - v + f * Mathf.Exp(-t);
+    }
+    #endregion
 
-	void GetInputsAndStates() {
+    #region Inputs and States
+
+    void GetInputsAndStates() {
 		input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
 		input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
 
