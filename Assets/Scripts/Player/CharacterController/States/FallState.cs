@@ -16,6 +16,8 @@ namespace Game.Player.CharacterController.States
         StateMachine stateMachine;
         CharData.FallData fallData;
 
+        float jumpTimer;
+
         //#############################################################################
 
         public FallState(CharController charController, StateMachine stateMachine)
@@ -30,22 +32,45 @@ namespace Game.Player.CharacterController.States
         public void Enter(BaseEnterArgs enterArgs)
         {
             Debug.Log("Enter State: Fall");
+
+            if (enterArgs.NewState != ePlayerState.dash)
+            {
+                Debug.LogError("Dash state entered with wrong arguments!");
+                return;
+            }
+
+            var args = enterArgs as FallEnterArgs;
+
+            if (args.CanJump)
+            {
+                jumpTimer = args.JumpTimer;
+            }
         }
 
         public void Exit()
         {
             Debug.Log("Exit State: Fall");
+
+            jumpTimer = 0;
         }
 
         //#############################################################################
 
         public void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
         {
-
+            if (inputInfo.jumpButtonDown && jumpTimer > 0)
+            {
+                stateMachine.ChangeState(new JumpEnterArgs(StateId));
+            }
         }
 
         public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
         {
+            if (jumpTimer > 0)
+            {
+                jumpTimer -= dt;
+            }
+
             var result = new StateReturnContainer
             {
                 CanTurnPlayer = true,
@@ -53,7 +78,7 @@ namespace Game.Player.CharacterController.States
                 TransitionSpeed = fallData.TransitionSpeed
             };
 
-            result.Acceleration = inputInfo.leftStickRaw * fallData.Speed;
+            result.Acceleration = inputInfo.leftStickToCamera * fallData.Speed;
 
             if (collisionInfo.below)
             {

@@ -58,23 +58,24 @@ namespace Game.Player.CharacterController.States
             var result = new StateReturnContainer();
 
             result.CanTurnPlayer = false;
-            result.MaxSpeed = 32;
 
             if (firstUpdate)
             {
                 velocity = movementInfo.velocity;
 
-                result.Acceleration = (velocity * 0.25f) + (Vector3.up * 18);
+                result.Acceleration = (velocity * 0.035f + Vector3.up) * jumpData.Strength;
                 result.TransitionSpeed = 1 / dt;
 
                 firstUpdate = false;
             }
             else
             {
-                result.Acceleration = velocity;
-                result.TransitionSpeed = 1;
+                //result.Acceleration = velocity;
+                result.Acceleration = movementInfo.forward * inputInfo.leftStickToCamera.y * 4;
 
-                if (movementInfo.velocity.y < 0)
+                result.TransitionSpeed = 1.5f;
+
+                if (movementInfo.velocity.y < 0 || collisionInfo.above)
                 {
                     stateMachine.ChangeState(new FallEnterArgs(StateId));
                 }

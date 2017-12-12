@@ -32,7 +32,9 @@ namespace Game.Player.CharacterController.States
 
         public void Enter(BaseEnterArgs enterArgs)
         {
-            if(enterArgs.NewState != ePlayerState.dash)
+            Debug.Log("Enter State: Dash");
+
+            if (enterArgs.NewState != ePlayerState.dash)
             {
                 Debug.LogError("Dash state entered with wrong arguments!");
                 stateMachine.ChangeState(new StandEnterArgs(StateId));
@@ -42,13 +44,12 @@ namespace Game.Player.CharacterController.States
             var args = enterArgs as DashEnterArgs;
             forward = args.Forward.normalized;
 
-            charController.PlayerModel.FlagAbility(eAbilityType.Dash);
             timer = dashData.Time;
         }
 
         public void Exit()
         {
-            charController.PlayerModel.UnflagAbility(eAbilityType.Dash);
+            Debug.Log("Exit State: Dash");
 
             stateMachine.SetStateCooldown(new StateCooldown(StateId, dashData.Cooldown));
         }

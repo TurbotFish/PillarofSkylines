@@ -157,11 +157,16 @@ namespace Game.Player.CharacterController
             float transitionSpeed;
             public float TransitionSpeed { get { return transitionSpeed; } }
 
+            [SerializeField]
+            float canStillJumpTimer;
+            public float CanStillJumpTimer { get { return canStillJumpTimer; } }
+
             public void OnValidate()
             {
                 speed = Mathf.Clamp(speed, 0, float.MaxValue);
                 sprintCoefficient = Mathf.Clamp(sprintCoefficient, 0, float.MaxValue);
                 maxSpeed = Mathf.Clamp(maxSpeed, 0, float.MaxValue);
+                canStillJumpTimer = Mathf.Clamp(canStillJumpTimer, 0, float.MaxValue);
             }
         }
 
@@ -228,12 +233,17 @@ namespace Game.Player.CharacterController
         public class JumpData
         {
             [SerializeField]
-            float transitionSpeed;
-            public float TransitionSpeed { get { return transitionSpeed; } }
+            float strength;
+            public float Strength { get { return strength; } }
+
+            //[SerializeField]
+            //float transitionSpeed;
+            //public float TransitionSpeed { get { return transitionSpeed; } }
 
             public void OnValidate()
             {
-                transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
+                strength = Mathf.Clamp(strength, 0, float.MaxValue);
+                //transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
             }
         }
 

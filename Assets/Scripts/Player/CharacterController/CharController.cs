@@ -176,7 +176,7 @@ namespace Game.Player.CharacterController
             //handling return
             bool canTurnPlayer = stateReturn.CanTurnPlayerSet ? stateReturn.CanTurnPlayer : true;
             float transitionSpeed = stateReturn.TransitionSpeedSet ? stateReturn.TransitionSpeed : CharData.General.TransitionSpeed;
-            float maxSpeed = stateReturn.MaxSpeedSet ? stateReturn.MaxSpeed : CharData.General.MaxSpeed;
+            float maxSpeed = (stateReturn.MaxSpeedSet ? stateReturn.MaxSpeed : CharData.General.MaxSpeed);
 
             if (stateReturn.PlayerForwardSet)
             {
@@ -211,7 +211,7 @@ namespace Game.Player.CharacterController
                 newVelocity = newVelocity.normalized * maxSpeed;
 
                 //Debug.LogFormat("clamped velocity: {0}", newVelocity);
-            }            
+            }
 
             //
             Velocity = newVelocity;
@@ -268,7 +268,7 @@ namespace Game.Player.CharacterController
             #region update animator
             float keyHalf = 0.5f;
             float m_RunCycleLegOffset = 0.2f;
-            float forward = LastPositionDelta.magnitude / (maxSpeed * Time.deltaTime);
+            float forward = LastPositionDelta.magnitude / (10 * Time.deltaTime);
             if (forward <= 0.2f)
             {
                 forward = 0;

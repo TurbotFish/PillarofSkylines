@@ -69,7 +69,7 @@ namespace Game.Player.CharacterController.States
 
             if (!collisionInfo.below)
             {
-                stateMachine.ChangeState(new FallEnterArgs(StateId));
+                stateMachine.ChangeState(new FallEnterArgs(StateId, moveData.CanStillJumpTimer));
             }
 
             return result;
