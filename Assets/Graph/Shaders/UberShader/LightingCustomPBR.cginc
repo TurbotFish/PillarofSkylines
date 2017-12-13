@@ -68,6 +68,16 @@
 		float _BendingDistMax;
 	#endif
 
+	#if defined(_WALL_TINT)
+		float _WallTintPow;
+		float4 _WallTintCol;
+	#endif
+
+	#if defined(_GROUND_TINT)
+		float _GroundTintPow;
+		float4 _GroundTintCol;
+	#endif
+
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
 	#include "WindSystem.cginc"
@@ -170,6 +180,17 @@
 		#if defined(_DETAIL_ALBEDO_MAP)
 			float3 details = tex2D(_DetailTex, i.uv.zw) * unity_ColorSpaceDouble;
 			albedo = lerp(albedo, albedo * details, GetDetailMask(i));
+		#endif
+
+
+		#if defined(_WALL_TINT)
+			float _coeff = pow(abs(i.normal.z), _WallTintPow);
+			albedo = lerp(albedo, albedo * _WallTintCol, _coeff);
+		#endif
+
+		#if defined(_GROUND_TINT)
+			float _groundCoeff = pow(saturate(i.normal.y), _GroundTintPow);
+			albedo = lerp(albedo, albedo * _GroundTintCol, _groundCoeff);
 		#endif
 		return albedo; 
 	}
@@ -621,11 +642,6 @@
 
 		FragmentOutput output;
 		#if defined(DEFERRED_PASS)
-
-//			#if defined(_CULL_BACK)
-//				color.rgb = float3(1,1,0);
-//			#endif
-
 
 			#if !defined(UNITY_HDR_ON)
 				color.rgb = exp2(-color.rgb);
