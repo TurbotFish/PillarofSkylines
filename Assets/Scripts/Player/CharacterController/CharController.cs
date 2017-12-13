@@ -176,7 +176,8 @@ namespace Game.Player.CharacterController
             //handling return
             bool canTurnPlayer = stateReturn.CanTurnPlayerSet ? stateReturn.CanTurnPlayer : true;
             float transitionSpeed = stateReturn.TransitionSpeedSet ? stateReturn.TransitionSpeed : CharData.General.TransitionSpeed;
-            float maxSpeed = (stateReturn.MaxSpeedSet ? stateReturn.MaxSpeed : CharData.General.MaxSpeed);
+            float maxSpeed = stateReturn.MaxSpeedSet ? stateReturn.MaxSpeed : CharData.General.MaxSpeed;
+            var acceleration = stateReturn.AccelerationSet ? stateReturn.Acceleration : Velocity;
 
             if (stateReturn.PlayerForwardSet)
             {
@@ -193,7 +194,7 @@ namespace Game.Player.CharacterController
             //Debug.LogFormat("desiredVelocity={0}", stateReturn.DesiredVelocity.magnitude.ToString());
 
             //computing new velocity
-            var newVelocity = Velocity * (1 - Time.deltaTime * transitionSpeed) + (stateReturn.Acceleration + ExternalVelocity) * (Time.deltaTime * transitionSpeed);
+            var newVelocity = Velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + ExternalVelocity) * (Time.deltaTime * transitionSpeed);
 
             //Debug.LogFormat("new velocity: {0}", newVelocity);
 
@@ -268,7 +269,7 @@ namespace Game.Player.CharacterController
             #region update animator
             float keyHalf = 0.5f;
             float m_RunCycleLegOffset = 0.2f;
-            float forward = LastPositionDelta.magnitude / (10 * Time.deltaTime);
+            float forward = LastPositionDelta.magnitude / (8 * Time.deltaTime);
             if (forward <= 0.2f)
             {
                 forward = 0;

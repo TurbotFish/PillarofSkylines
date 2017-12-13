@@ -71,7 +71,8 @@ namespace Game.Player.CharacterController.States
             else
             {
                 //result.Acceleration = velocity;
-                result.Acceleration = movementInfo.forward * inputInfo.leftStickToCamera.y * 4;
+                //result.Acceleration = movementInfo.forward * inputInfo.leftStickToCamera.y * 4;
+                result.Acceleration = Vector3.Project(inputInfo.leftStickToCamera, movementInfo.forward).normalized * 4;
 
                 result.TransitionSpeed = 1.5f;
 

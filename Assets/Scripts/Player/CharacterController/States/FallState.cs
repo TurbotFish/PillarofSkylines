@@ -33,9 +33,9 @@ namespace Game.Player.CharacterController.States
         {
             Debug.Log("Enter State: Fall");
 
-            if (enterArgs.NewState != ePlayerState.dash)
+            if (enterArgs.NewState != ePlayerState.fall)
             {
-                Debug.LogError("Dash state entered with wrong arguments!");
+                Debug.LogError("Fall state entered with wrong arguments!");
                 return;
             }
 
