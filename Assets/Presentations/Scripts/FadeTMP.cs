@@ -6,7 +6,8 @@ using DG.Tweening;
 
 public class FadeTMP : MonoBehaviour {
 
-	private float _delay;
+	float _delay;
+	float speed = 0.5f;
 	private TextMeshPro _tmp;
 	public List<TextMeshPro> _tmps = new List<TextMeshPro>();
 
@@ -14,6 +15,7 @@ public class FadeTMP : MonoBehaviour {
 	{
 		_tmp = GetComponent<TextMeshPro>();
 		_tmp.enabled = false;
+		//if(GetComponent<DOTweenAnimation>() != null)
 		_delay = GetComponent<DOTweenAnimation>().delay;
 	}
 
@@ -31,13 +33,13 @@ public class FadeTMP : MonoBehaviour {
 	public void FadeFromZero (float _t)
 	{
 		_tmp.enabled = true;
-		_tmp.DOFade(0,_t).SetEase(Ease.OutQuad).SetDelay(_delay).From();
+		_tmp.DOFade(0,speed).SetEase(Ease.OutQuad).SetDelay(_delay+_t).From();
 	}
 		
 	public void FadeToZero (float _t)
 	{
 		_tmp.enabled = true;
-		_tmp.DOFade(0,_t).SetEase(Ease.OutQuad).SetDelay(_delay);
+		_tmp.DOFade(0,speed).SetEase(Ease.OutQuad).SetDelay(_delay+_t);
 	}
 
 	public void DisableTMP()

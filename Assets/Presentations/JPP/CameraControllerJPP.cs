@@ -20,6 +20,9 @@ public class CameraControllerJPP : MonoBehaviour {
 		if (lockLookAt && target != null) {
 			cam.transform.LookAt (target);
 		}
+		if (Input.GetKeyDown (KeyCode.A)) {
+			TeleporteCameraLayerLeftToRight (1);
+		}
 	
 
 	}
@@ -42,8 +45,24 @@ public class CameraControllerJPP : MonoBehaviour {
 	{
 		
 		StartCoroutine (FadeWhite (0));
+		StartCoroutine (TeleportCamera (i, 0.5f));
+	}
+
+	public void TeleporteCameraLayerLeftToRight(int i)
+	{
+
+		StartCoroutine (LayersLeftToRight (0));
+		StartCoroutine (TeleportCamera (i, 1f));
+	}
+
+	public void TeleporteCameraLayerLeft(int i)
+	{
+
+		StartCoroutine (LayersLeft (0));
 		StartCoroutine (TeleportCamera (i, 0.75f));
 	}
+
+
 
 	public void SetTarget(Transform t)
 	{
@@ -66,6 +85,17 @@ public class CameraControllerJPP : MonoBehaviour {
 	{
 		yield return new WaitForSecondsRealtime (t);
 		DOTween.Restart ("Fade_White");
+	}
+	IEnumerator LayersLeftToRight( float t)
+	{
+		yield return new WaitForSecondsRealtime (t);
+		DOTween.Restart ("layers_lefttoright");
+	}
+	IEnumerator LayersLeft( float t)
+	{
+		yield return new WaitForSecondsRealtime (t);
+		DOTween.Restart ("layers_left");
+		Debug.Log ("helo");
 	}
 
 }
