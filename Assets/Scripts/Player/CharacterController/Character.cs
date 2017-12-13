@@ -362,7 +362,10 @@ namespace Game.Player.CharacterController
         void Start()
         {
             controller = GetComponent<CharacControllerRecu>();
-            animator = GetComponentInChildren<Animator>();
+
+            //animator = GetComponentInChildren<Animator>();
+            animator = transform.Find("m_pilou_with skeleton").GetComponent<Animator>();
+
             camera = FindObjectOfType<PoS_Camera>();
 
             EnterStateInAir();
@@ -547,6 +550,8 @@ namespace Game.Player.CharacterController
             //Here we react to player input and timers
             #region direction calculations
 
+            ResetAnimatorBools();
+
             flatVelocity = velocity;
             flatVelocity.y = 0;
 
@@ -593,6 +598,16 @@ namespace Game.Player.CharacterController
                         }
                     }
 
+                    //
+                    var stuff = flatVelocity;
+                    stuff.y += velocity.y;
+
+                    if(stuff.y < 0)
+                    {
+                        animator.SetBool("IsFalling", true);
+                    }
+
+                    //
                     if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash))
                     {
                         EnterStateDash();
@@ -646,8 +661,25 @@ namespace Game.Player.CharacterController
                         //					print("New velocity : " + flatVelocity + " modified by : " + (slopeCoeff * Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (maxSlopeAngle)));
                     }
 
+                    //animator
+                    if (pressingSprint)
+                    {
+                        animator.SetBool("IsRunning", true);
+                    }
+                    else if (leftStickAtZero)
+                    {
+                        animator.SetBool("IsIdle", true);
+                    }
+                    else
+                    {
+                        animator.SetBool("IsWalking", true);
+                    }
+
+                    //
                     if (pressedJump)
                     {
+                        animator.SetTrigger("OnJump");
+
                         pressedJump = false;
                         velocity.y = 0f;
                         flatVelocity += maxJumpVelocity * Vector3.up + flatVelocity / 10f;
@@ -765,8 +797,14 @@ namespace Game.Player.CharacterController
                     targetVelocity += inputToSlope;
                     flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, slopeControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f));
 
+                    //animator
+                    animator.SetBool("IsSliding", true);
+
+                    //
                     if (pressedJump)
                     {
+                        animator.SetTrigger("OnJump");
+
                         pressedJump = false;
                         velocity.y = 0f;
                         flatVelocity += maxJumpVelocity / 2 * TurnSpaceToLocal(controller.collisions.currentGroundNormal) + maxJumpVelocity / 2 * Vector3.up;
@@ -1213,23 +1251,29 @@ namespace Game.Player.CharacterController
             //*******************************************
 
             #region update animator
-            float keyHalf = 0.5f;
-            float m_RunCycleLegOffset = 0.2f;
 
-            animator.SetBool("OnGround", controller.collisions.below);
-            animator.SetFloat("Forward", velocity.magnitude / characSpeed);
-            animator.SetFloat("Turn", (leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime) / 7f));
-            animator.SetFloat("Jump", turnedVelocity.y / 5);
-            float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
-            float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputRaw.magnitude;
-            if (controller.collisions.below)
-            {
-                animator.SetFloat("JumpLeg", jumpLeg);
-            }
 
-            windParticles.SetVelocity(velocity);
-            glideParticles.SetVelocity(velocity);
+
             #endregion update animator
+
+            //#region update animator
+            //float keyHalf = 0.5f;
+            //float m_RunCycleLegOffset = 0.2f;
+
+            //animator.SetBool("OnGround", controller.collisions.below);
+            //animator.SetFloat("Forward", velocity.magnitude / characSpeed);
+            //animator.SetFloat("Turn", (leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime) / 7f));
+            //animator.SetFloat("Jump", turnedVelocity.y / 5);
+            //float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
+            //float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputRaw.magnitude;
+            //if (controller.collisions.below)
+            //{
+            //    animator.SetFloat("JumpLeg", jumpLeg);
+            //}
+
+            //windParticles.SetVelocity(velocity);
+            //glideParticles.SetVelocity(velocity);
+            //#endregion update animator
 
         }
 
@@ -1725,6 +1769,17 @@ namespace Game.Player.CharacterController
         }
 
         #endregion public utilty functions
+
+        //#############################################################################
+
+        void ResetAnimatorBools()
+        {
+            animator.SetBool("IsIdle", false);
+            animator.SetBool("IsWalking", false);
+            animator.SetBool("IsRunning", false);
+            animator.SetBool("IsSliding", false);
+            animator.SetBool("IsFalling", false);
+        }
 
         //#############################################################################
     } //end of class
