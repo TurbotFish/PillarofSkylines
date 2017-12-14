@@ -28,6 +28,9 @@ public class PillarEye : MonoBehaviour {
 
     void OnEclipseEventHandler(object sender, Game.Utilities.EventManager.EclipseEventArgs args) {
 
+        if (!rend)
+            return;
+
         if (args.EclipseOn) {
             //eclipse on
             rend.sharedMaterial = eclipseMaterial;

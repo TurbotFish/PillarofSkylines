@@ -15,12 +15,28 @@ public class TriggerBox : Trigger {
     [SerializeField]
     float delayBeforeDeactivation;
 
+    [SerializeField]
+    bool changeMaterial;
+
+    [ConditionalHide("changeMaterial"), SerializeField]
+    Material on, off;
+
+    new Renderer renderer;
+
+    private void Awake() {
+        renderer = GetComponent<Renderer>();
+    }
+
     private void OnTriggerEnter(Collider other) {
         if (other.tag == tagToActivate) {
             if (toggle)
                 TriggerState ^= true;
             else
                 TriggerState = true;
+
+            if (changeMaterial) {
+                renderer.sharedMaterial = TriggerState ? on : off;
+            }
         }
     }
 
