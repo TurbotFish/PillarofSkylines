@@ -1,10 +1,11 @@
 ﻿Shader "Custom/AppearNearPlayer" {
     Properties {
-        _MainTex ("Base (RGB)", 2D) = "white" {} // Regular object texture 
-        _PlayerPosition ("Player Position", vector) = (0,0,0,0) // The location of the player - will be set by script
-        _VisibleDistance ("Visibility Distance", float) = 10.0 // How close does the player have to be to make object visible
-        _OutlineWidth ("Outline Width", float) = 3.0 // Used to add an outline around visible area a la Mario Galaxy
-        _OutlineColour ("Outline Colour", color) = (1.0,1.0,0.0,1.0) // Colour of the outline
+        _MainTex ("Main Texture", 2D) = "white" {} 
+        _VisibleDistance ("Visibility Distance", float) = 10.0 
+        _OutlineWidth ("Outline Width", float) = 3.0 
+        _NoiseTex ("Noise Texture", 2D) = "white" {}
+        _NoiseInfluence ("Noise Influence", float) = 1.0 
+        _OutlineColour ("Outline Colour", color) = (1.0,1.0,0.0,1.0) 
     }
     SubShader {
         Tags { "RenderType"="Transparent" "Queue"="Transparent" }
@@ -17,9 +18,11 @@
  
         // Access the shaderlab properties
         uniform sampler2D _MainTex;
+        uniform sampler2D _NoiseTex;
         uniform float4 _PlayerPosition;
         uniform float _VisibleDistance;
         uniform float _OutlineWidth;
+        uniform float _NoiseInfluence;
         uniform float4 _OutlineColour;
          
         // Input to vertex shader
@@ -45,20 +48,22 @@
         }
   
         // FRAGMENT SHADER
-        float4 frag(vertexOutput input) : COLOR 
-        {
-            // Calculate distance to player position
+        float4 frag(vertexOutput input) : COLOR {
             float dist = distance(input.position_in_world_space, _PlayerPosition);
-  
+
+			float4 noise = tex2D(_NoiseTex, input.tex);
+			float targetDistance = (_VisibleDistance + noise.r * _NoiseInfluence);
+
             // Return appropriate colour
-            if (dist < _VisibleDistance) {
+            if (dist < targetDistance) {
                 return tex2D(_MainTex, input.tex); // Visible
             }
-            else if (dist < (_VisibleDistance + _OutlineWidth)) {
+            else if (dist < (targetDistance + _OutlineWidth)) {
                 return _OutlineColour; // Edge of visible range
             }
             else {
                 float4 tex = tex2D(_MainTex, input.tex); // Outside visible range
+				clip(-1);
                 tex.a = 0;
                 return tex;
             }
