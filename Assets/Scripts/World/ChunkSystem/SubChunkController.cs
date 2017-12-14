@@ -11,8 +11,9 @@ namespace Game.World.ChunkSystem
 
         //layer
         [SerializeField]
+        [HideInInspector]
         eSubChunkLayer layer = 0;
-        public eSubChunkLayer Layer { get { return this.layer; } }
+        public eSubChunkLayer Layer { get { return layer; } }
 
         //wrapping
         [SerializeField]

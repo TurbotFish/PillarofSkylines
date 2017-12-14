@@ -100,7 +100,7 @@ namespace Game.World.ChunkSystem
             for (int i = 0; i < subChunkList.Count; i++)
             {
                 var subChunk = subChunkList[i];
-                var renderDistance = data.GetRenderDistance(subChunk.Layer);
+                var renderDistance = data.GetRenderDistanceInterval(subChunk.Layer);
                 bool newState = false;
 
                 if (distance >= renderDistance.x && distance < renderDistance.y)
