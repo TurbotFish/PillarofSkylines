@@ -598,11 +598,11 @@ namespace Game.Player.CharacterController
                         }
                     }
 
-                    //
+                    //animator
                     var stuff = flatVelocity;
                     stuff.y += velocity.y;
 
-                    if(stuff.y < 0)
+                    if (stuff.y < 0)
                     {
                         animator.SetBool("IsFalling", true);
                     }
@@ -776,6 +776,29 @@ namespace Game.Player.CharacterController
                     velocity.y = 0f;
                     flatVelocity = targetVelocity;
 
+                    //animator
+                    if (flatVelocity.x <= -0.2f && Mathf.Abs(flatVelocity.x) >= Mathf.Abs(flatVelocity.y))
+                    {
+                        animator.SetBool("IsGlidingLeft", true);
+                    }
+                    else if (flatVelocity.x >= 0.2f && Mathf.Abs(flatVelocity.x) >= Mathf.Abs(flatVelocity.y))
+                    {
+                        animator.SetBool("IsGlidingRight", true);
+                    }
+                    else if (flatVelocity.y > 0.2f)
+                    {
+                        animator.SetBool("IsGlidingUp", true);
+                    }
+                    else if(flatVelocity.y < -0.2f)
+                    {
+                        animator.SetBool("IsGlidingDown", true);
+                    }
+                    else
+                    {
+                        animator.SetBool("IsGlidingIdle", true);
+                    }
+
+                    //
                     if (pressedSprint)
                     {
                         EnterStateInAir();
@@ -1355,6 +1378,8 @@ namespace Game.Player.CharacterController
 
             currentPlayerState = ePlayerState.gliding;
             playerMod.FlagAbility(eAbilityType.Glide);
+
+            animator.SetTrigger("OnGlide");
         }
 
         void QuitStateGliding()
@@ -1384,6 +1409,8 @@ namespace Game.Player.CharacterController
 
             dashDuration = dashTime;
             dashParticles.Play();
+
+            animator.SetTrigger("OnDash");
         }
 
         void QuitStateDash()
@@ -1413,6 +1440,8 @@ namespace Game.Player.CharacterController
             QuitCurrentState();
 
             currentPlayerState = ePlayerState.sliding;
+
+            animator.SetTrigger("OnSlide");
         }
 
         void QuitStateSliding()
@@ -1779,6 +1808,12 @@ namespace Game.Player.CharacterController
             animator.SetBool("IsRunning", false);
             animator.SetBool("IsSliding", false);
             animator.SetBool("IsFalling", false);
+
+            animator.SetBool("IsGlidingUp", false);
+            animator.SetBool("IsGlidingDown", false);
+            animator.SetBool("IsGlidingLeft", false);
+            animator.SetBool("IsGlidingRight", false);
+            animator.SetBool("IsGlidingIdle", false);
         }
 
         //#############################################################################
