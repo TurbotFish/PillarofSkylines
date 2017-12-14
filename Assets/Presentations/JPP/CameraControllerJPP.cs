@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.Video;
+using UnityEngine.UI;
 
 public class CameraControllerJPP : MonoBehaviour {
 	public Camera cam;
 	public bool lockLookAt;
 	public Transform target;
 	public List<Transform> positions = new List<Transform>();
-
+	public Transform layer1, layer2;
+	public RawImage videoCanvas;
 	CloudsController cloudController; 
 	// Use this for initialization
 	void Awake () {
@@ -19,9 +22,6 @@ public class CameraControllerJPP : MonoBehaviour {
 	void Update () {
 		if (lockLookAt && target != null) {
 			cam.transform.LookAt (target);
-		}
-		if (Input.GetKeyDown (KeyCode.A)) {
-			TeleporteCameraLayerLeftToRight (1);
 		}
 	
 
@@ -45,7 +45,7 @@ public class CameraControllerJPP : MonoBehaviour {
 	{
 		
 		StartCoroutine (FadeWhite (0));
-		StartCoroutine (TeleportCamera (i, 0.5f));
+		StartCoroutine (TeleportCamera (i, 0.25f));
 	}
 
 	public void TeleporteCameraLayerLeftToRight(int i)
@@ -62,7 +62,36 @@ public class CameraControllerJPP : MonoBehaviour {
 		StartCoroutine (TeleportCamera (i, 0.75f));
 	}
 
+	public void LayersLeftHop()
+	{
+		layer2.DOLocalMove (Vector3.zero, 1.3f).SetEase (Ease.OutQuad);
+		layer1.DOLocalMove (Vector3.zero, 1.3f).SetEase (Ease.OutQuad).SetDelay(0.2f);
+	}
+	public void VideoLayerLeftToRight(VideoPlayer v)
+	{
 
+		StartCoroutine (LayersLeftToRight (0));
+		StartCoroutine (LaunchVideo (v, 1f));
+	}
+
+	public void DisableVideoLAyer ()
+	{
+		videoCanvas.color = new Color (1, 1, 1, 0);
+	}
+
+	public void VideoLayerLeft(VideoPlayer v)
+	{
+
+		StartCoroutine (LayersLeft (0));
+		StartCoroutine (LaunchVideo (v, 0.75f));
+	}
+
+	public void StopVideoLayerLeft(VideoPlayer v)
+	{
+
+		StartCoroutine (LayersLeft (0));
+		StartCoroutine (StopVideo (v, 0.75f));
+	}
 
 	public void SetTarget(Transform t)
 	{
@@ -81,6 +110,20 @@ public class CameraControllerJPP : MonoBehaviour {
 		cam.transform.position = positions [pos].position;
 		cam.transform.rotation = positions [pos].rotation;
 	}
+
+	IEnumerator LaunchVideo(VideoPlayer video, float t)
+	{
+		yield return new WaitForSecondsRealtime (t);
+		videoCanvas.color = new Color (1, 1, 1, 1);
+		video.Play ();
+	}
+	IEnumerator StopVideo(VideoPlayer video, float t)
+	{
+		yield return new WaitForSecondsRealtime (t);
+		videoCanvas.color = new Color (1, 1, 1, 0);
+		video.Stop ();
+	}
+
 	IEnumerator FadeWhite( float t)
 	{
 		yield return new WaitForSecondsRealtime (t);
@@ -95,7 +138,11 @@ public class CameraControllerJPP : MonoBehaviour {
 	{
 		yield return new WaitForSecondsRealtime (t);
 		DOTween.Restart ("layers_left");
-		Debug.Log ("helo");
 	}
 
+	IEnumerator Pan (Vector3 target, float t)
+	{
+		yield return new WaitForSecondsRealtime (t);
+		cam.transform.DOLocalMove (target, 10).SetRelative (true).SetEase (Ease.OutSine);
+	}
 }

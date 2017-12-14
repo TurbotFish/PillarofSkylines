@@ -19,20 +19,16 @@ public class FadeTMP : MonoBehaviour {
 		_delay = GetComponent<DOTweenAnimation>().delay;
 	}
 
+
 	void Update()
 	{
-		/*if(Input.GetKeyDown(KeyCode.A))
-		{
-			Debug.Log ("hello");
-			TextMeshPro _tmp = GetComponent<TextMeshPro>();
-			Debug.Log (_tmp.name);
-			_tmp.DOFade(0,3).SetDelay(0);
-		}*/
+
 	}
 
 	public void FadeFromZero (float _t)
 	{
 		_tmp.enabled = true;
+		_tmp.alpha = 1;
 		_tmp.DOFade(0,speed).SetEase(Ease.OutQuad).SetDelay(_delay+_t).From();
 	}
 		

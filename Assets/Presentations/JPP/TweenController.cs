@@ -18,9 +18,8 @@ public class TweenController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (Input.GetKeyDown (KeyCode.A))
-			DOTween.Restart ("plan_disappear");
 
+		/*
 		if (Input.GetKeyDown (KeyCode.P) ) {
 			if (!vPlayer.isPlaying) {
 				vPlayer.targetCameraAlpha = 1;
@@ -34,7 +33,7 @@ public class TweenController : MonoBehaviour {
 			vPlayer.targetCameraAlpha = 0;
 			vPlayer.Stop ();
 
-		} 
+		} */
 			
 		if (Input.GetButtonDown (nextButton)  && index < anims.Count) {
 			DOTween.Complete (anims [index]);
