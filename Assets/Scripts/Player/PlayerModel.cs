@@ -51,6 +51,12 @@ namespace Game.Player
             {
                 ChangeFavourAmount(1);
             }
+            else if (Input.GetKeyUp(KeyCode.F5))
+            {
+                UnlockAbilityGroup(eAbilityGroup.GroupYellow_Pillar1);
+                UnlockAbilityGroup(eAbilityGroup.GroupOrange_Pillar2);
+                UnlockAbilityGroup(eAbilityGroup.GroupGreen_Pillar3);
+            }
         }
 
         #endregion monobehaviour methods

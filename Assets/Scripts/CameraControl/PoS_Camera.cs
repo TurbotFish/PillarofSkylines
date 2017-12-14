@@ -98,6 +98,7 @@ public class PoS_Camera : MonoBehaviour {
 	Game.Player.CharacterController.Character player;
     Game.Player.CharacterController.CharacControllerRecu controller;
 	Transform my;
+    Eclipse eclipseFX;
 
     Game.Player.CharacterController.ePlayerState playerState;
 
@@ -133,6 +134,8 @@ public class PoS_Camera : MonoBehaviour {
         
 		currentDistance = zoomValue = idealDistance = distance;
 		maxDistance = canZoom ? zoomDistance.max : distance;
+
+        eclipseFX = GetComponent<Eclipse>();
 
 		manualPitch = defaultPitch;
 		state = eCameraState.Default;
@@ -296,15 +299,14 @@ public class PoS_Camera : MonoBehaviour {
         // damping value is the inverse of speed, we simply give the camera a speed of 1/smoothDamp
         // so deltaTime * speed = deltaTime * 1/smoothDamp = deltaTime/smoothDamp
         
-        my.position = SmoothApproach(my.position, lastFrameCamPos, camPosition, 1 / smoothDamp);
+        my.position = SmoothApproach(my.position, lastFrameCamPos, camPosition, t);
         my.rotation = Quaternion.Lerp(my.rotation, camRotation, t); // TODO: only local space calculation?
         
         lastFrameOffset = target.position - my.position;
         lastFrameCamPos = camPosition;
     }
     
-    Vector3 SmoothApproach(Vector3 pastPosition, Vector3 pastTargetPosition, Vector3 targetPosition, float speed) {
-        float t = deltaTime * speed;
+    Vector3 SmoothApproach(Vector3 pastPosition, Vector3 pastTargetPosition, Vector3 targetPosition, float t) {
         Vector3 v = (targetPosition - pastTargetPosition) / t;
         Vector3 f = pastPosition - pastTargetPosition + v;
         return targetPosition - v + f * Mathf.Exp(-t);
@@ -316,6 +318,9 @@ public class PoS_Camera : MonoBehaviour {
     void GetInputsAndStates() {
 		input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
 		input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
+
+        if (eclipseFX)
+            eclipseFX.camSpeed = input;
 
 		playerState = player.currentPlayerState;
 		playerVelocity = player.velocity;
