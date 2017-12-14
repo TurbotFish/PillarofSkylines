@@ -66,6 +66,10 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 
 		_RenderQueue ("Render Queue", int) = 2000
 
+		_WallTintPow ("Power", Float) = 1
+		_WallTintCol ("Tint", Color) = (1,1,1,1)
+		_GroundTintPow ("Power", Float) = 1
+		_GroundTintCol ("Tint", Color) = (1,1,1,1)
 	}
 
 	CGINCLUDE
@@ -125,6 +129,9 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 			#pragma shader_feature _ _SSS_DIFFUSE_MAP
 			#pragma shader_feature _ALBEDO_VERTEX_MASK
 
+			#pragma shader_feature _WALL_TINT
+			#pragma shader_feature _GROUND_TINT
+
 			#pragma multi_compile _ _VERTEX_WIND
 			#pragma multi_compile _ _VERTEX_BEND
 			#pragma multi_compile _ SHADOWS_SCREEN
@@ -180,6 +187,9 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 			#pragma shader_feature _ _SSS_DIFFUSE_MAP
 			#pragma shader_feature _ALBEDO_VERTEX_MASK
 
+			#pragma shader_feature _WALL_TINT
+			#pragma shader_feature _GROUND_TINT
+
 			#pragma multi_compile _ _VERTEX_WIND
 			#pragma multi_compile _ _VERTEX_BEND
 			#pragma multi_compile_fwdadd_fullshadows
@@ -227,6 +237,9 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 			#pragma shader_feature _VERTEX_OFFSET_XZ _VERTEX_OFFSET_YZ _VERTEX_OFFSET_XY
 			#pragma shader_feature _ _PLAYER_SHADER
 			#pragma shader_feature _ _SSS_DIFFUSE_MAP
+
+			#pragma shader_feature _WALL_TINT
+			#pragma shader_feature _GROUND_TINT
 
 			#pragma shader_feature _ _CELSHADED
 			#pragma shader_feature _ _REFRACTION
