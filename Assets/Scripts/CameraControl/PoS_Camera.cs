@@ -319,7 +319,8 @@ public class PoS_Camera : MonoBehaviour {
 		input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
 		input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
 
-        eclipseFX.camSpeed = input;
+        if (eclipseFX)
+            eclipseFX.camSpeed = input;
 
 		playerState = player.currentPlayerState;
 		playerVelocity = player.velocity;
