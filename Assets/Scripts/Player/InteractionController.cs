@@ -137,13 +137,14 @@ namespace Game.Player
                 isDriftButtonDown = true;
                 playerModel.hasNeedle = false;
 
-                if (needleSlotCollider) {
-                    foreach (Transform child in needleSlotCollider.transform)
+                if (needleSlotForDrift) {
+                    foreach (Transform child in needleSlotForDrift.transform)
                         child.gameObject.SetActive(true);
 
                     var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(needleSlotForDrift.transform.position, Quaternion.identity, false);
                     Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
                 }
+                needleSlotCollider = needleSlotForDrift;
 
                 Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(false));
             }
