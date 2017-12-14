@@ -21,12 +21,9 @@ public class TriggerBox : Trigger {
     [ConditionalHide("changeMaterial"), SerializeField]
     Material on, off;
 
+    [ConditionalHide("changeMaterial"), SerializeField]
     new Renderer renderer;
-
-    private void Awake() {
-        renderer = GetComponent<Renderer>();
-    }
-
+    
     private void OnTriggerEnter(Collider other) {
         if (other.tag == tagToActivate) {
             if (toggle)
