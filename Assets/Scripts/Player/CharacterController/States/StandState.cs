@@ -56,8 +56,9 @@ namespace Game.Player.CharacterController.States
             var result = new StateReturnContainer
             {
                 CanTurnPlayer = true,
+                IgnoreGravity = true,
 
-                Acceleration = Vector3.zero, //movementInfo.velocity * standData.SlowdownFactor,
+                Acceleration = Vector3.zero,
                 TransitionSpeed = standData.TransitionSpeed
             };
 
