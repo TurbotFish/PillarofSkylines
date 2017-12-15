@@ -13,6 +13,8 @@ public class CameraControllerJPP : MonoBehaviour {
 	public Transform layer1, layer2;
 	public RawImage videoCanvas;
 	public RawImage textureCanvas;
+	public List<VideoPlayer> players = new List<VideoPlayer> ();
+	public float lowVideoSpeed;
 	CloudsController cloudController; 
 	// Use this for initialization
 	void Awake () {
@@ -24,7 +26,15 @@ public class CameraControllerJPP : MonoBehaviour {
 		if (lockLookAt && target != null) {
 			cam.transform.LookAt (target);
 		}
-	
+		if (Input.GetKeyDown(KeyCode.Space)) {
+			foreach (VideoPlayer vp in players) {
+				if (vp.playbackSpeed != 1) {
+					vp.playbackSpeed = 1;
+				} else {
+					vp.playbackSpeed = lowVideoSpeed;
+				}
+			}
+		}
 
 	}
 
