@@ -5,9 +5,12 @@ using UnityEngine.SceneManagement;
 
 public class LoadJPP : MonoBehaviour {
 
+	public bool loadScene;
+
 	// Use this for initialization
 	void Awake () {
-		SceneManager.LoadScene ("JPP", LoadSceneMode.Additive);
+		if (loadScene)
+			SceneManager.LoadScene ("JPP", LoadSceneMode.Additive);
 	}
 	
 	// Update is called once per frame
