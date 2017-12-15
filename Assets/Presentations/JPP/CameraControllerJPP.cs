@@ -12,6 +12,7 @@ public class CameraControllerJPP : MonoBehaviour {
 	public List<Transform> positions = new List<Transform>();
 	public Transform layer1, layer2;
 	public RawImage videoCanvas;
+	public RawImage textureCanvas;
 	CloudsController cloudController; 
 	// Use this for initialization
 	void Awake () {
@@ -77,6 +78,7 @@ public class CameraControllerJPP : MonoBehaviour {
 	public void DisableVideoLAyer ()
 	{
 		videoCanvas.color = new Color (1, 1, 1, 0);
+		textureCanvas.color = new Color (1, 1, 1, 0);
 	}
 
 	public void VideoLayerLeft(VideoPlayer v)
@@ -93,6 +95,18 @@ public class CameraControllerJPP : MonoBehaviour {
 		StartCoroutine (StopVideo (v, 0.75f));
 	}
 
+	public void VideoTexturePlay()
+	{
+
+		StartCoroutine (FadeWhite (0));
+		StartCoroutine (PlayTexture (0.25f));
+	}
+	public void VideoTextureStopLeft()
+	{
+
+		StartCoroutine (LayersLeft (0));
+		StartCoroutine (StopTexture (0.5f));
+	}
 	public void SetTarget(Transform t)
 	{
 		target = t;
@@ -144,5 +158,16 @@ public class CameraControllerJPP : MonoBehaviour {
 	{
 		yield return new WaitForSecondsRealtime (t);
 		cam.transform.DOLocalMove (target, 10).SetRelative (true).SetEase (Ease.OutSine);
+	}
+
+	IEnumerator PlayTexture( float t)
+	{
+		yield return new WaitForSecondsRealtime (t);
+		textureCanvas.color = new Color (1, 1, 1, 1);
+	}
+	IEnumerator StopTexture( float t)
+	{
+		yield return new WaitForSecondsRealtime (t);
+		textureCanvas.color = new Color (1, 1, 1, 0);
 	}
 }
