@@ -23,7 +23,7 @@ namespace Game.Player
         bool pillarExitInRange = false;
 
         bool needleInRange = false;
-        Collider needleSlotCollider;
+        Collider needleSlotCollider, needleSlotForDrift;
 
         bool needleSlotInRange = false;
 
@@ -78,17 +78,7 @@ namespace Game.Player
                     {
                         //pick up favour
                         playerModel.ChangeFavourAmount(1);
-
-                        //play favour pick up animation // TODO: delet this
-                        PlayMakerFSM[] temp = favour.MyTransform.parent.GetComponents<PlayMakerFSM>();
-                        foreach (var fsm in temp)
-                        {
-                            if (fsm.FsmName == "Faveur_activation")
-                            {
-                                fsm.FsmVariables.GetFsmBool("Fav_activated").Value = true;
-                            }
-                        }
-
+                        
                         //send event
                         Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(favour.InstanceId));
                     }
@@ -109,19 +99,19 @@ namespace Game.Player
                     Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(false));
                 }
                 //needle
-                else if (needleInRange || needleSlotInRange)
-                {
-                    needleInRange = false;
-                    needleSlotInRange = false;
+                else if (needleInRange || needleSlotInRange) {
 
                     foreach(Transform child in needleSlotCollider.transform)
                         child.gameObject.SetActive(playerModel.hasNeedle);
 
+                    if (playerModel.hasNeedle)
+                        needleSlotForDrift = needleSlotCollider;
+                    
                     playerModel.hasNeedle ^= true;
 
                     Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(playerModel.hasNeedle));
 
-                    HideUiMessage();
+                    ShowUiMessage(playerModel.hasNeedle ? "Press [X] to plant the needle" : "Press [X] to take the needle");
                 }
                 //eye
                 else if (eyeInRange)
@@ -146,14 +136,16 @@ namespace Game.Player
             {
                 isDriftButtonDown = true;
                 playerModel.hasNeedle = false;
-                if (needleSlotCollider) {
 
-                    foreach (Transform child in needleSlotCollider.transform)
+                if (needleSlotForDrift) {
+                    foreach (Transform child in needleSlotForDrift.transform)
                         child.gameObject.SetActive(true);
 
-                    var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(needleSlotCollider.transform.position, needleSlotCollider.transform.rotation, false);
+                    var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(needleSlotForDrift.transform.position, Quaternion.identity, false);
                     Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
                 }
+                needleSlotCollider = needleSlotForDrift;
+
                 Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(false));
             }
             else if (driftInput < 0.6f && isDriftButtonDown)

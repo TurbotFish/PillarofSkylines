@@ -10,28 +10,33 @@ namespace Game.World.ChunkSystem
     [CustomEditor(typeof(ChunkSystemData))]
     public class ChunkSystemDataEditor : Editor
     {
+        ChunkSystemData self;
+        SerializedProperty renderDistancesProperty;
+
+        internal void OnEnable()
+        {
+            self = target as ChunkSystemData;
+            renderDistancesProperty = serializedObject.FindProperty("renderDistances");
+        }
+
         public override void OnInspectorGUI()
         {
             //
             base.OnInspectorGUI();
 
             //
-            var chunkSystemData = target as ChunkSystemData;
-
-            //
             EditorGUILayout.LabelField("Render Distances");
 
-            var subChunkLayerValues = Enum.GetValues(typeof(eSubChunkLayer)).Cast<eSubChunkLayer>();
-
-            foreach (var layer in subChunkLayerValues)
-            {
-                chunkSystemData.SetRenderDistance(layer, EditorGUILayout.Vector2Field(layer.ToString(), chunkSystemData.GetRenderDistance(layer)));
-            }
+            renderDistancesProperty.GetArrayElementAtIndex(0).floatValue = EditorGUILayout.FloatField("1", renderDistancesProperty.GetArrayElementAtIndex(0).floatValue);
+            renderDistancesProperty.GetArrayElementAtIndex(1).floatValue = EditorGUILayout.FloatField("2", renderDistancesProperty.GetArrayElementAtIndex(1).floatValue);
+            renderDistancesProperty.GetArrayElementAtIndex(2).floatValue = EditorGUILayout.FloatField("3", renderDistancesProperty.GetArrayElementAtIndex(2).floatValue);
+            renderDistancesProperty.GetArrayElementAtIndex(3).floatValue = EditorGUILayout.FloatField("4", renderDistancesProperty.GetArrayElementAtIndex(3).floatValue);
 
             EditorGUILayout.LabelField("");
 
             //
-            EditorUtility.SetDirty(chunkSystemData);
+            serializedObject.ApplyModifiedProperties();
+            EditorUtility.SetDirty(self);
         }
     }
 }
