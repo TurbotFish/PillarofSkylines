@@ -364,7 +364,7 @@ namespace Game.Player.CharacterController
             controller = GetComponent<CharacControllerRecu>();
 
             //animator = GetComponentInChildren<Animator>();
-            animator = transform.Find("m_pilou_with skeleton").GetComponent<Animator>();
+            animator = transform.Find("P_CharacterController").GetComponent<Animator>();
 
             camera = FindObjectOfType<PoS_Camera>();
 
@@ -1279,24 +1279,24 @@ namespace Game.Player.CharacterController
 
             #endregion update animator
 
-            //#region update animator
-            //float keyHalf = 0.5f;
-            //float m_RunCycleLegOffset = 0.2f;
+            #region update animator
+            float keyHalf = 0.5f;
+            float m_RunCycleLegOffset = 0.2f;
 
-            //animator.SetBool("OnGround", controller.collisions.below);
-            //animator.SetFloat("Forward", velocity.magnitude / characSpeed);
-            //animator.SetFloat("Turn", (leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime) / 7f));
-            //animator.SetFloat("Jump", turnedVelocity.y / 5);
-            //float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
-            //float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputRaw.magnitude;
-            //if (controller.collisions.below)
-            //{
-            //    animator.SetFloat("JumpLeg", jumpLeg);
-            //}
+            animator.SetBool("OnGround", controller.collisions.below);
+            animator.SetFloat("Forward", velocity.magnitude / characSpeed);
+            animator.SetFloat("Turn", (leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime) / 7f));
+            animator.SetFloat("Jump", turnedVelocity.y / 5);
+            float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
+            float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputRaw.magnitude;
+            if (controller.collisions.below)
+            {
+                animator.SetFloat("JumpLeg", jumpLeg);
+            }
 
-            //windParticles.SetVelocity(velocity);
-            //glideParticles.SetVelocity(velocity);
-            //#endregion update animator
+            windParticles.SetVelocity(velocity);
+            glideParticles.SetVelocity(velocity);
+            #endregion update animator
 
         }
 

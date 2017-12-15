@@ -365,6 +365,7 @@ public class PoS_Camera : MonoBehaviour {
                     LookAtTargetPOI(); // TODO: manual priority just in case?
                 else if (axisAligned.sqrMagnitude != 0)
                     AlignWithAxis();
+
             }
             
             if (isGrounded)
@@ -419,6 +420,9 @@ public class PoS_Camera : MonoBehaviour {
     }
 
 	void AirStateCamera() {
+        if (state >= eCameraState.Overriden)
+            return;
+
         state = eCameraState.Air;
         AllowAutoReset(true);
 
@@ -597,9 +601,17 @@ public class PoS_Camera : MonoBehaviour {
 
                             if (Vector3.Angle(groundFurther.normal, groundInFront.normal) < slopeSameAngleBuffer) // Si la pente devant et la pente plus loin sont environ la même
                                 groundNormal = groundInFront.normal; // On prend sa slopeValue
-                            else
-                                groundNormal = targetUp; // Sinon on dit que c'est plat ?
-                                                         // TODO: on devrait plutôt faire une moyenne
+                            else {
+                                //groundNormal = targetUp; // Sinon on dit que c'est plat ?
+
+                                groundNormal += groundInFront.normal + groundFurther.normal;
+                                groundNormal.x /= 3;
+                                groundNormal.y /= 3;
+                                groundNormal.z /= 3;
+
+                                // TODO: on devrait plutôt faire une moyenne
+                                print("c'est ça que tu fais ?");
+                            }
                         } 
                     }
                     // Sinon : ne rien faire, on garde le sol actuel
