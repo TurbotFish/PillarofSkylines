@@ -550,7 +550,7 @@ namespace Game.Player.CharacterController
             //Here we react to player input and timers
             #region direction calculations
 
-            ResetAnimatorBools();
+            //ResetAnimatorBools();
 
             flatVelocity = velocity;
             flatVelocity.y = 0;
@@ -604,7 +604,7 @@ namespace Game.Player.CharacterController
 
                     if (stuff.y < 0)
                     {
-                        animator.SetBool("IsFalling", true);
+                        //animator.SetBool("IsFalling", true);
                     }
 
                     //
@@ -664,21 +664,21 @@ namespace Game.Player.CharacterController
                     //animator
                     if (pressingSprint)
                     {
-                        animator.SetBool("IsRunning", true);
+                        //animator.SetBool("IsRunning", true);
                     }
                     else if (leftStickAtZero)
                     {
-                        animator.SetBool("IsIdle", true);
+                        //animator.SetBool("IsIdle", true);
                     }
                     else
                     {
-                        animator.SetBool("IsWalking", true);
+                        //animator.SetBool("IsWalking", true);
                     }
 
                     //
                     if (pressedJump)
                     {
-                        animator.SetTrigger("OnJump");
+                        //animator.SetTrigger("OnJump");
 
                         pressedJump = false;
                         velocity.y = 0f;
@@ -821,12 +821,12 @@ namespace Game.Player.CharacterController
                     flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, slopeControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f));
 
                     //animator
-                    animator.SetBool("IsSliding", true);
+                    //animator.SetBool("IsSliding", true);
 
                     //
                     if (pressedJump)
                     {
-                        animator.SetTrigger("OnJump");
+                        //animator.SetTrigger("OnJump");
 
                         pressedJump = false;
                         velocity.y = 0f;
@@ -1441,7 +1441,7 @@ namespace Game.Player.CharacterController
 
             currentPlayerState = ePlayerState.sliding;
 
-            animator.SetTrigger("OnSlide");
+            //animator.SetTrigger("OnSlide");
         }
 
         void QuitStateSliding()
