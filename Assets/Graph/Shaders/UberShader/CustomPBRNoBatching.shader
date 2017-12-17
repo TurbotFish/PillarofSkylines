@@ -70,6 +70,10 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 		_WallTintCol ("Tint", Color) = (1,1,1,1)
 		_GroundTintPow ("Power", Float) = 1
 		_GroundTintCol ("Tint", Color) = (1,1,1,1)
+
+		_RimPow ("Rim Power", Float) = 1
+		_RimScale ("Rim Scale", Float) = 1
+		_RimColor ("Rim Colour", Color) = (1,1,1,1)
 	}
 
 	CGINCLUDE
@@ -131,6 +135,7 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 
 			#pragma shader_feature _WALL_TINT
 			#pragma shader_feature _GROUND_TINT
+			#pragma shader_feature _RIMLIT
 
 			#pragma multi_compile _ _VERTEX_WIND
 			#pragma multi_compile _ _VERTEX_BEND
@@ -240,6 +245,7 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 
 			#pragma shader_feature _WALL_TINT
 			#pragma shader_feature _GROUND_TINT
+			#pragma shader_feature _RIMLIT
 
 			#pragma shader_feature _ _CELSHADED
 			#pragma shader_feature _ _REFRACTION

@@ -78,6 +78,12 @@
 		float4 _GroundTintCol;
 	#endif
 
+	#if defined(_RIMLIT)
+		float _RimScale;
+		float _RimPow;
+		float4 _RimColor;
+	#endif 
+
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
 	#include "WindSystem.cginc"
@@ -192,6 +198,7 @@
 			float _groundCoeff = pow(saturate(i.normal.y), _GroundTintPow);
 			albedo = lerp(albedo, albedo * _GroundTintCol, _groundCoeff);
 		#endif
+
 		return albedo; 
 	}
 
@@ -602,6 +609,14 @@
 			float3 albedo = DiffuseAndSpecularFromMetallic( 
 				GetAlbedo(i), GetMetallic(i), specularTint, oneMinusReflectivity
 			);
+
+
+			#if defined(_RIMLIT)
+				float fresnel = 1 - saturate(dot(viewDir, i.normal));
+				fresnel = pow(fresnel, _RimPow) * _RimScale;
+				albedo = lerp(albedo, _RimColor, fresnel);
+			#endif
+
 		#endif
 
 		#if defined(_RENDERING_TRANSPARENT)
