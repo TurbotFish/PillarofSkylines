@@ -247,6 +247,9 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 			#pragma shader_feature _GROUND_TINT
 			#pragma shader_feature _RIMLIT
 
+			//JPP
+			#pragma shader_feature _WIND_ROT_Y
+
 			#pragma shader_feature _ _CELSHADED
 			#pragma shader_feature _ _REFRACTION
 			#pragma shader_feature _ALBEDO_VERTEX_MASK
