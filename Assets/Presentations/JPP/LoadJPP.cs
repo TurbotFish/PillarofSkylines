@@ -28,6 +28,7 @@ public class LoadJPP : MonoBehaviour {
 	void Update () {
 		if (Input.GetKeyDown (KeyCode.Escape)) {
 			SceneManager.UnloadSceneAsync ("JPP");
+			//SceneManager.UnloadSceneAsync("
 			SceneManager.LoadScene("JPP", LoadSceneMode.Additive);
 			StartCoroutine (InitializeWC (0.5f));
 		}
