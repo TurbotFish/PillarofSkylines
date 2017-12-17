@@ -44,8 +44,8 @@
 			float3 deformedUV = lerp(float3((i.uv), 0.0), _Noise_var.rgb, j * _Deformation/float(_Iterations));
 			float4 newIteration = tex2D(_MainTex, deformedUV);
 
-			float a = (newIteration.r +newIteration.g + newIteration.b)/3;
-			float t = saturate((a+_Threshold) * (1 - j/float(_Iterations)));
+			float a = (newIteration.r + newIteration.g + newIteration.b)/3;
+			float t = saturate((a+_Threshold) * (1.0 - float(j)/float(_Iterations)));
 			final = lerp(final, saturate(1-(1-final)*(1-newIteration)), t);
 		}
 		
