@@ -50,6 +50,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		if (shouldShowAlphaCutoff) {
 			DoAlphaCutoff ();
 		}
+
 		DoMetallic ();
 		DoSmoothness ();
 		DoNormals ();
@@ -57,6 +58,10 @@ public class CustomPBR_GUI : ShaderGUI {
 		//DoOcclusion ();
 		DoEmission ();
 		DoDetailMask ();
+
+		DoRimLight ();
+		DoWallTint ();
+		DoGroundTint ();
 		editor.TextureScaleOffsetProperty (mainTex);
 	}
 
@@ -66,6 +71,63 @@ public class CustomPBR_GUI : ShaderGUI {
 		if (EditorGUI.EndChangeCheck ()) {
 			SetKeyword ("_ALBEDO_VERTEX_MASK", vertexMask);
 		}
+	}
+
+	void DoWallTint(){
+
+		MaterialProperty tintPow = FindProperty ("_WallTintPow");
+		MaterialProperty tintCol = FindProperty ("_WallTintCol");
+
+		EditorGUI.BeginChangeCheck ();
+		bool wallTint = EditorGUILayout.Toggle (MakeLabel ("Wall Tint"), IsKeywordEnabled ("_WALL_TINT"));
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_WALL_TINT", wallTint);
+		}
+		EditorGUI.indentLevel += 1;
+		if (wallTint) {
+			editor.ShaderProperty (tintPow, MakeLabel ("Power"));
+			editor.ShaderProperty (tintCol, MakeLabel ("Colour"));
+		}
+		EditorGUI.indentLevel -= 1;
+	}
+
+	void DoGroundTint(){
+
+		MaterialProperty tintPow = FindProperty ("_GroundTintPow");
+		MaterialProperty tintCol = FindProperty ("_GroundTintCol");
+
+		EditorGUI.BeginChangeCheck ();
+		bool groundTint = EditorGUILayout.Toggle (MakeLabel ("Ground Tint"), IsKeywordEnabled ("_GROUND_TINT"));
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_GROUND_TINT", groundTint);
+		}
+		EditorGUI.indentLevel += 1;
+		if (groundTint) {
+			editor.ShaderProperty (tintPow, MakeLabel ("Power"));
+			editor.ShaderProperty (tintCol, MakeLabel ("Colour"));
+		}
+		EditorGUI.indentLevel -= 1;
+	}
+
+	void DoRimLight(){
+		MaterialProperty pow = FindProperty ("_RimPow");
+		MaterialProperty scale = FindProperty ("_RimScale");
+		MaterialProperty rimCol = FindProperty ("_RimColor");
+
+		EditorGUI.BeginChangeCheck ();
+		bool rimLit = EditorGUILayout.Toggle (MakeLabel ("Rim Light"), IsKeywordEnabled ("_RIMLIT"));
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_RIMLIT", rimLit);
+		}
+
+		EditorGUI.indentLevel += 1;
+		if (rimLit) {
+			editor.ShaderProperty (rimCol, MakeLabel (rimCol));
+			editor.ShaderProperty (pow, MakeLabel (pow));
+			editor.ShaderProperty (scale, MakeLabel (scale));
+
+		}
+		EditorGUI.indentLevel -= 1;
 	}
 
 	void DoDebug(){

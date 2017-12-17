@@ -8,11 +8,13 @@ namespace Game.World.ChunkSystem
     [CreateAssetMenu(menuName = "ScriptableObjects/ChunkSystemData", fileName = "ChunkSystemData")]
     public class ChunkSystemData : ScriptableObject
     {
+        const int RENDER_DISTANCE_COUNT = 4;
+
         //##################################################################
 
         [SerializeField]
         [HideInInspector]
-        List<Vector2> renderDistances = new List<Vector2>();
+        List<float> renderDistances = new List<float>(RENDER_DISTANCE_COUNT);
 
         [SerializeField]
         float minUpdateDistance = 1f;
@@ -30,43 +32,81 @@ namespace Game.World.ChunkSystem
 
         //##################################################################
 
-        public Vector2 GetRenderDistance(eSubChunkLayer layer)
+        public Vector2 GetRenderDistanceInterval(eSubChunkLayer layer)
         {
-            if (renderDistances.Count > (int)layer)
+            var result = Vector2.zero;
+            var parts = layer.ToString().Split('_');
+
+            result.x = GetRenderDistance(parts[0]);
+            result.y = GetRenderDistance(parts[1]);
+
+            return result;
+        }
+
+        float GetRenderDistance(string name)
+        {
+            switch (name)
             {
-                return renderDistances[(int)layer];
-            }
-            else
-            {
-                return Vector2.zero;
+                case "Inside":
+                    return 0;
+                case "Infinity":
+                    return float.MaxValue;
+                case "One":
+                    return renderDistances[0];
+                case "Two":
+                    return renderDistances[1];
+                case "Three":
+                    return renderDistances[2];
+                case "Four":
+                    return renderDistances[3];
+                default:
+                    Debug.LogErrorFormat("abc:{0}", name);
+                    return float.MaxValue;
             }
         }
 
-        public void SetRenderDistance(eSubChunkLayer layer, Vector2 value)
+        //public void SetRenderDistance(eSubChunkLayer layer, Vector2 value)
+        //{
+        //    if (!Application.isPlaying)
+        //    {
+        //        if (value.x <= 0)
+        //        {
+        //            value.x = 0;
+        //        }
+        //        if (value.y <= 0)
+        //        {
+        //            value.y = 0;
+        //        }
+
+        //        if (renderDistances.Count > (int)layer)
+        //        {
+        //            renderDistances[(int)layer] = value;
+        //        }
+        //        else
+        //        {
+        //            while(renderDistances.Count <= (int)layer)
+        //            {
+        //                renderDistances.Add(Vector2.zero);
+        //            }
+
+        //            renderDistances[(int)layer] = value;
+        //        }
+        //    }
+        //}
+
+        //######################################################
+
+        void OnValidate()
         {
-            if (!Application.isPlaying)
+            while(renderDistances.Count != RENDER_DISTANCE_COUNT)
             {
-                if (value.x <= 0)
+                if(renderDistances.Count < RENDER_DISTANCE_COUNT)
                 {
-                    value.x = 0;
+                    renderDistances.Add(0);
                 }
-                if (value.y <= 0)
+                else if(renderDistances.Count > RENDER_DISTANCE_COUNT)
                 {
-                    value.y = 0;
-                }
-
-                if (renderDistances.Count > (int)layer)
-                {
-                    renderDistances[(int)layer] = value;
-                }
-                else
-                {
-                    while(renderDistances.Count <= (int)layer)
-                    {
-                        renderDistances.Add(Vector2.zero);
-                    }
-
-                    renderDistances[(int)layer] = value;
+                    renderDistances.RemoveAt(renderDistances.Count - 1);
                 }
             }
         }

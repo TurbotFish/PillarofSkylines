@@ -57,6 +57,7 @@ namespace Game.World.Interaction
                         StartCoroutine(FaveurActivation());
                         StartCoroutine(ParticleManager());
                         StartCoroutine(FavourManager());
+                        StartCoroutine(DissolveTomb());
                     }
 
                 }
@@ -108,7 +109,7 @@ namespace Game.World.Interaction
         }
 
         // FSM: ParticleManager
-        float delay2 = 0.2f;
+        float delay2 = 3f;
         float delay3 = 0.2f;
 
         [SerializeField] ParticleSystem favSparks;
@@ -130,6 +131,31 @@ namespace Game.World.Interaction
             }
             favSparks.gameObject.SetActive(false);
         }
+
+        // Dissolve Tomb
+
+        [Header("Tomb Dissolve"), SerializeField] Renderer tombShell;
+        [SerializeField] string dissolveVariableName = "_Dissolve";
+        [SerializeField] Material fullyDissolvedMaterial;
+        [SerializeField] float timeBeforeDissolve = 2;
+        [SerializeField] float dissolveDuration = 2;
+        [SerializeField] AnimationCurve dissolveCurve;
+        [SerializeField] GameObject[] disableRays;
+
+        IEnumerator DissolveTomb() {
+
+            yield return new WaitForSeconds(timeBeforeDissolve);
+
+            foreach (GameObject go in disableRays)
+                go.SetActive(false);
+
+            for(float elapsed = 0; elapsed < dissolveDuration; elapsed+=Time.deltaTime) {
+                tombShell.material.SetFloat(dissolveVariableName, dissolveCurve.Evaluate(elapsed / dissolveDuration));
+                yield return null;
+            }
+            tombShell.sharedMaterial = fullyDissolvedMaterial;
+        }
+
         //##################################################################
     }
 } //end of namespace

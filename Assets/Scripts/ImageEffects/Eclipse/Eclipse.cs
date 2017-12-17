@@ -73,22 +73,34 @@ public class Eclipse : MonoBehaviour {
 		}
 	}
 
+    [HideInInspector]
+    public Vector2 camSpeed;
+    Vector2 lastCamSpeed;
+
 	void OnRenderImage(RenderTexture source, RenderTexture destination) {
 		if (_material == null) {
 			_material = new Material(_shader);
 			_material.hideFlags = HideFlags.DontSave;
 		}
+        
+        camSpeed.x = Mathf.Clamp(camSpeed.x, -1, 1);
+        camSpeed.y = Mathf.Clamp(camSpeed.y, -1, 1);
+
+        camSpeed = Vector2.Lerp(lastCamSpeed, camSpeed, Time.deltaTime * 10);
 
 		_material.SetFloat("_Threshold", _threshold);
 		_material.SetFloat("_Intensity", _intensity);
 		_material.SetFloat("_Deformation", _deformation);
 		_material.SetVector("_Direction", _direction);
-		_material.SetFloat("_Speed", _speed);
+        _material.SetVector("_CameraSpeed", camSpeed);
+        _material.SetFloat("_Speed", _speed);
 		_material.SetInt("_Iterations", _iterations);
 		_material.SetTexture("_Noise", _noise);
 
 		Graphics.Blit(source, destination, _material, 0);
-	}
+
+        lastCamSpeed = camSpeed;
+    }
 
 	#endregion
 }

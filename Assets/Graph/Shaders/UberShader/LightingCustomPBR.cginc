@@ -68,6 +68,22 @@
 		float _BendingDistMax;
 	#endif
 
+	#if defined(_WALL_TINT)
+		float _WallTintPow;
+		float4 _WallTintCol;
+	#endif
+
+	#if defined(_GROUND_TINT)
+		float _GroundTintPow;
+		float4 _GroundTintCol;
+	#endif
+
+	#if defined(_RIMLIT)
+		float _RimScale;
+		float _RimPow;
+		float4 _RimColor;
+	#endif 
+
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
 	#include "WindSystem.cginc"
@@ -171,6 +187,18 @@
 			float3 details = tex2D(_DetailTex, i.uv.zw) * unity_ColorSpaceDouble;
 			albedo = lerp(albedo, albedo * details, GetDetailMask(i));
 		#endif
+
+
+		#if defined(_WALL_TINT)
+			float _coeff = pow(abs(i.normal.z), _WallTintPow);
+			albedo = lerp(albedo, albedo * _WallTintCol, _coeff);
+		#endif
+
+		#if defined(_GROUND_TINT)
+			float _groundCoeff = pow(saturate(i.normal.y), _GroundTintPow);
+			albedo = lerp(albedo, albedo * _GroundTintCol, _groundCoeff);
+		#endif
+
 		return albedo; 
 	}
 
@@ -581,6 +609,14 @@
 			float3 albedo = DiffuseAndSpecularFromMetallic( 
 				GetAlbedo(i), GetMetallic(i), specularTint, oneMinusReflectivity
 			);
+
+
+			#if defined(_RIMLIT)
+				float fresnel = 1 - saturate(dot(viewDir, i.normal));
+				fresnel = pow(fresnel, _RimPow) * _RimScale;
+				albedo = lerp(albedo, _RimColor, fresnel);
+			#endif
+
 		#endif
 
 		#if defined(_RENDERING_TRANSPARENT)
@@ -621,11 +657,6 @@
 
 		FragmentOutput output;
 		#if defined(DEFERRED_PASS)
-
-//			#if defined(_CULL_BACK)
-//				color.rgb = float3(1,1,0);
-//			#endif
-
 
 			#if !defined(UNITY_HDR_ON)
 				color.rgb = exp2(-color.rgb);

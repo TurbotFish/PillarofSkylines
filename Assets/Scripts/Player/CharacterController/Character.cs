@@ -362,7 +362,10 @@ namespace Game.Player.CharacterController
         void Start()
         {
             controller = GetComponent<CharacControllerRecu>();
-            animator = GetComponentInChildren<Animator>();
+
+            //animator = GetComponentInChildren<Animator>();
+            animator = transform.Find("P_CharacterController").GetComponent<Animator>();
+
             camera = FindObjectOfType<PoS_Camera>();
 
             EnterStateInAir();
@@ -547,6 +550,8 @@ namespace Game.Player.CharacterController
             //Here we react to player input and timers
             #region direction calculations
 
+            //ResetAnimatorBools();
+
             flatVelocity = velocity;
             flatVelocity.y = 0;
 
@@ -593,6 +598,16 @@ namespace Game.Player.CharacterController
                         }
                     }
 
+                    //animator
+                    var stuff = flatVelocity;
+                    stuff.y += velocity.y;
+
+                    if (stuff.y < 0)
+                    {
+                        //animator.SetBool("IsFalling", true);
+                    }
+
+                    //
                     if (pressedDash && dashTimer <= 0f && playerMod.CheckAbilityActive(eAbilityType.Dash))
                     {
                         EnterStateDash();
@@ -646,8 +661,25 @@ namespace Game.Player.CharacterController
                         //					print("New velocity : " + flatVelocity + " modified by : " + (slopeCoeff * Vector3.Angle (transform.forward, Vector3.ProjectOnPlane (transform.forward, controller.collisions.currentGroundNormal)) * (Vector3.Dot (transform.forward, controller.collisions.currentGroundNormal) > 0 ? 1 : -1) / (maxSlopeAngle)));
                     }
 
+                    //animator
+                    if (pressingSprint)
+                    {
+                        //animator.SetBool("IsRunning", true);
+                    }
+                    else if (leftStickAtZero)
+                    {
+                        //animator.SetBool("IsIdle", true);
+                    }
+                    else
+                    {
+                        //animator.SetBool("IsWalking", true);
+                    }
+
+                    //
                     if (pressedJump)
                     {
+                        //animator.SetTrigger("OnJump");
+
                         pressedJump = false;
                         velocity.y = 0f;
                         flatVelocity += maxJumpVelocity * Vector3.up + flatVelocity / 10f;
@@ -744,6 +776,29 @@ namespace Game.Player.CharacterController
                     velocity.y = 0f;
                     flatVelocity = targetVelocity;
 
+                    //animator
+                    if (flatVelocity.x <= -0.2f && Mathf.Abs(flatVelocity.x) >= Mathf.Abs(flatVelocity.y))
+                    {
+                        animator.SetBool("IsGlidingLeft", true);
+                    }
+                    else if (flatVelocity.x >= 0.2f && Mathf.Abs(flatVelocity.x) >= Mathf.Abs(flatVelocity.y))
+                    {
+                        animator.SetBool("IsGlidingRight", true);
+                    }
+                    else if (flatVelocity.y > 0.2f)
+                    {
+                        animator.SetBool("IsGlidingUp", true);
+                    }
+                    else if(flatVelocity.y < -0.2f)
+                    {
+                        animator.SetBool("IsGlidingDown", true);
+                    }
+                    else
+                    {
+                        animator.SetBool("IsGlidingIdle", true);
+                    }
+
+                    //
                     if (pressedSprint)
                     {
                         EnterStateInAir();
@@ -765,8 +820,14 @@ namespace Game.Player.CharacterController
                     targetVelocity += inputToSlope;
                     flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, slopeControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f));
 
+                    //animator
+                    //animator.SetBool("IsSliding", true);
+
+                    //
                     if (pressedJump)
                     {
+                        //animator.SetTrigger("OnJump");
+
                         pressedJump = false;
                         velocity.y = 0f;
                         flatVelocity += maxJumpVelocity / 2 * TurnSpaceToLocal(controller.collisions.currentGroundNormal) + maxJumpVelocity / 2 * Vector3.up;
@@ -1213,6 +1274,12 @@ namespace Game.Player.CharacterController
             //*******************************************
 
             #region update animator
+
+
+
+            #endregion update animator
+
+            #region update animator
             float keyHalf = 0.5f;
             float m_RunCycleLegOffset = 0.2f;
 
@@ -1311,6 +1378,8 @@ namespace Game.Player.CharacterController
 
             currentPlayerState = ePlayerState.gliding;
             playerMod.FlagAbility(eAbilityType.Glide);
+
+            animator.SetTrigger("OnGlide");
         }
 
         void QuitStateGliding()
@@ -1340,6 +1409,8 @@ namespace Game.Player.CharacterController
 
             dashDuration = dashTime;
             dashParticles.Play();
+
+            animator.SetTrigger("OnDash");
         }
 
         void QuitStateDash()
@@ -1369,6 +1440,8 @@ namespace Game.Player.CharacterController
             QuitCurrentState();
 
             currentPlayerState = ePlayerState.sliding;
+
+            //animator.SetTrigger("OnSlide");
         }
 
         void QuitStateSliding()
@@ -1725,6 +1798,23 @@ namespace Game.Player.CharacterController
         }
 
         #endregion public utilty functions
+
+        //#############################################################################
+
+        void ResetAnimatorBools()
+        {
+            animator.SetBool("IsIdle", false);
+            animator.SetBool("IsWalking", false);
+            animator.SetBool("IsRunning", false);
+            animator.SetBool("IsSliding", false);
+            animator.SetBool("IsFalling", false);
+
+            animator.SetBool("IsGlidingUp", false);
+            animator.SetBool("IsGlidingDown", false);
+            animator.SetBool("IsGlidingLeft", false);
+            animator.SetBool("IsGlidingRight", false);
+            animator.SetBool("IsGlidingIdle", false);
+        }
 
         //#############################################################################
     } //end of class
