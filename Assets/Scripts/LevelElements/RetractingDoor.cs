@@ -15,7 +15,10 @@ public class RetractingDoor : TriggerableObject {
         startScale = my.localScale;
         triggered = false;
         if (startOpen) {
-            Toggle(false);
+            Vector3 targetScale = new Vector3(retractingAxis.x ? 0 : 1,
+                                              retractingAxis.y ? 0 : 1,
+                                              retractingAxis.z ? 0 : 1);
+            my.localScale = targetScale;
         }
     }
 
