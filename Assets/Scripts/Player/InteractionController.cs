@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using PlayMaker;
+﻿using UnityEngine;
 
 namespace Game.Player
 {
@@ -35,6 +32,8 @@ namespace Game.Player
         bool isActive = false;
         bool isInteractButtonDown = false;
         bool isDriftButtonDown = false;
+
+        bool hasAirParticle = false;
 
         //########################################################################
 
@@ -152,6 +151,12 @@ namespace Game.Player
             {
                 isDriftButtonDown = false;
             }
+
+            // stop air particle if grounded
+            if (hasAirParticle && myPlayer.currentPlayerState == CharacterController.ePlayerState.onGround || myPlayer.currentPlayerState == CharacterController.ePlayerState.sliding) {
+                hasAirParticle = false;
+            }
+
         }
 
         #endregion input handling
@@ -259,6 +264,17 @@ namespace Game.Player
                     case "Wind":
 						other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer);
 						break;
+                    // air particle
+                    case "AirParticle":
+                        hasAirParticle = true;
+                        break;
+                    // air particle
+                    case "AirReceptor":
+                        if (hasAirParticle) {
+                            other.GetComponent<AirReceptor>().Activate();
+                            hasAirParticle = false;
+                        }
+                        break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
