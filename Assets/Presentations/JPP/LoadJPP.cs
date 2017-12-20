@@ -27,9 +27,10 @@ public class LoadJPP : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if (Input.GetKeyDown (KeyCode.Escape)) {
-			SceneManager.UnloadSceneAsync ("JPP");
-			SceneManager.LoadScene("JPP", LoadSceneMode.Additive);
-			StartCoroutine (InitializeWC (0.5f));
+		//	SceneManager.UnloadSceneAsync ("JPP");
+			//SceneManager.UnloadSceneAsync("
+		//	SceneManager.LoadScene("JPP", LoadSceneMode.Additive);
+		//	StartCoroutine (InitializeWC (0.5f));
 		}
 	}
 
