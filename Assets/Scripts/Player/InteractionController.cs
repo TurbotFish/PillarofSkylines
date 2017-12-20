@@ -28,12 +28,12 @@ namespace Game.Player
 
         EchoSystem.EchoManager echoManager;
 
+        Transform airParticle, airOrigin;
+
         //
         bool isActive = false;
         bool isInteractButtonDown = false;
         bool isDriftButtonDown = false;
-
-        bool hasAirParticle = false;
 
         //########################################################################
 
@@ -153,8 +153,10 @@ namespace Game.Player
             }
 
             // stop air particle if grounded
-            if (hasAirParticle && myPlayer.currentPlayerState == CharacterController.ePlayerState.onGround || myPlayer.currentPlayerState == CharacterController.ePlayerState.sliding) {
-                hasAirParticle = false;
+            if (airParticle && myPlayer.currentPlayerState == CharacterController.ePlayerState.onGround || myPlayer.currentPlayerState == CharacterController.ePlayerState.sliding) {
+                airParticle.parent = airOrigin;
+                airParticle.transform.localPosition = Vector3.zero;
+                airParticle = null;
             }
 
         }
@@ -266,13 +268,20 @@ namespace Game.Player
 						break;
                     // air particle
                     case "AirParticle":
-                        hasAirParticle = true;
+                        if (!airParticle) {
+                            airOrigin = other.transform;
+                            airParticle = airOrigin.GetChild(0);
+                            airParticle.parent = myPlayer.transform;
+                            airParticle.localPosition = new Vector3(0,1,0);
+                        }
                         break;
                     // air particle
                     case "AirReceptor":
-                        if (hasAirParticle) {
+                        if (airParticle) {
                             other.GetComponent<AirReceptor>().Activate();
-                            hasAirParticle = false;
+                            Destroy(airParticle.gameObject);
+                            Destroy(airOrigin.gameObject);
+                            airParticle = null;
                         }
                         break;
                     //other
