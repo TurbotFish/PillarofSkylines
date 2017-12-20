@@ -236,14 +236,29 @@ namespace Game.Player.CharacterController
             float strength;
             public float Strength { get { return strength; } }
 
-            //[SerializeField]
-            //float transitionSpeed;
-            //public float TransitionSpeed { get { return transitionSpeed; } }
+            [SerializeField]
+            float minJumpTime;
+            public float MinJumpTime { get { return minJumpTime; } }
+
+            [SerializeField]
+            float maxJumpTime;
+            public float MaxJumpTime { get { return maxJumpTime; } }
+
+            [SerializeField]
+            float speed;
+            public float Speed { get { return speed; } }
+
+            [SerializeField]
+            float transitionSpeed;
+            public float TransitionSpeed { get { return transitionSpeed; } }
 
             public void OnValidate()
             {
                 strength = Mathf.Clamp(strength, 0, float.MaxValue);
-                //transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
+                minJumpTime = Mathf.Clamp(minJumpTime, 0, float.MaxValue);
+                maxJumpTime = Mathf.Clamp(maxJumpTime, 0, float.MaxValue);
+                speed = Mathf.Clamp(speed, 0, float.MaxValue);
+                transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
             }
         }
 

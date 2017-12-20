@@ -75,7 +75,7 @@ namespace Game.Player.CharacterController
             stateMachine.Add(ePlayerState.jump, new JumpState(this, stateMachine));
             stateMachine.Add(ePlayerState.dash, new DashState(this, stateMachine), eAbilityType.Dash);
 
-            stateMachine.ChangeState(new StandEnterArgs(ePlayerState.empty));
+            stateMachine.ChangeState(new FallEnterArgs(ePlayerState.empty));
 
             //*******************************************
 
@@ -209,7 +209,7 @@ namespace Game.Player.CharacterController
             //clamping speed
             if (newVelocity.magnitude >= maxSpeed)
             {
-                newVelocity = newVelocity.normalized * maxSpeed;
+                //newVelocity = newVelocity.normalized * maxSpeed;
 
                 //Debug.LogFormat("clamped velocity: {0}", newVelocity);
             }
@@ -324,7 +324,7 @@ namespace Game.Player.CharacterController
             {
                 myTransform.rotation = args.Rotation;
                 Velocity = Vector3.zero;
-                stateMachine.ChangeState(new StandEnterArgs(ePlayerState.empty));
+                stateMachine.ChangeState(new FallEnterArgs(ePlayerState.empty));
                 ChangeGravityDirection(Vector3.down);
             }
         }

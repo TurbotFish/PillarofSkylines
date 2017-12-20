@@ -62,6 +62,10 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new JumpEnterArgs(StateId));
             }
+            else if (collisionInfo.below)
+            {
+                stateMachine.ChangeState(new StandEnterArgs(StateId));
+            }
         }
 
         public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
@@ -75,15 +79,9 @@ namespace Game.Player.CharacterController.States
             {
                 CanTurnPlayer = true,
                 MaxSpeed = fallData.MaxSpeed,
-                TransitionSpeed = fallData.TransitionSpeed
+                TransitionSpeed = fallData.TransitionSpeed,
+                Acceleration = inputInfo.leftStickToCamera * fallData.Speed
             };
-
-            result.Acceleration = inputInfo.leftStickToCamera * fallData.Speed;
-
-            if (collisionInfo.below)
-            {
-                stateMachine.ChangeState(new StandEnterArgs(StateId));
-            }
 
             return result;
         }

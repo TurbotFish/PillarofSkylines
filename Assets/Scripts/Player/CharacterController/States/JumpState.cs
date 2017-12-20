@@ -20,6 +20,9 @@ namespace Game.Player.CharacterController.States
         float strength;
         Vector3 velocity;
 
+        float minJumpTimer;
+        float maxJumpTimer;
+
         //#############################################################################
 
         public JumpState(CharController charController, StateMachine stateMachine)
@@ -36,6 +39,9 @@ namespace Game.Player.CharacterController.States
             Debug.Log("Enter State: Jump");
 
             firstUpdate = true;
+
+            minJumpTimer = jumpData.MinJumpTime;
+            maxJumpTimer = jumpData.MaxJumpTime;
         }
 
         public void Exit()
@@ -47,14 +53,17 @@ namespace Game.Player.CharacterController.States
 
         public void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
         {
-            //if (inputInfo.jumpButtonUp)
-            //{
-            //    stateMachine.ChangeState(new FallEnterArgs(StateId));
-            //}
+            if (movementInfo.velocity.y <= 0 || collisionInfo.above)
+            {
+                stateMachine.ChangeState(new FallEnterArgs(StateId));
+            }
         }
 
         public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
         {
+            minJumpTimer -= dt;
+            maxJumpTimer -= dt;
+
             var result = new StateReturnContainer();
 
             result.CanTurnPlayer = false;
@@ -63,23 +72,24 @@ namespace Game.Player.CharacterController.States
             {
                 velocity = movementInfo.velocity;
 
-                result.Acceleration = (velocity * 0.035f + Vector3.up) * jumpData.Strength;
+                result.Acceleration = (velocity * 0.1f) + Vector3.up * jumpData.Strength;
                 result.TransitionSpeed = 1 / dt;
 
                 firstUpdate = false;
             }
             else
             {
-                //result.Acceleration = velocity;
-                //result.Acceleration = movementInfo.forward * inputInfo.leftStickToCamera.y * 4;
-                result.Acceleration = Vector3.Project(inputInfo.leftStickToCamera, movementInfo.forward).normalized * 4;
+                result.Acceleration = Vector3.Project(inputInfo.leftStickToCamera, movementInfo.forward) * inputInfo.leftStickToCamera.magnitude * jumpData.Speed;
 
-                result.TransitionSpeed = 1.5f;
-
-                if (movementInfo.velocity.y < 0 || collisionInfo.above)
+                if ((minJumpTimer <= 0 && !inputInfo.jumpButton) /*|| maxJumpTimer <= 0*/)
                 {
-                    stateMachine.ChangeState(new FallEnterArgs(StateId));
+                    if (movementInfo.velocity.y > 0)
+                    {
+                        result.Acceleration += charController.GravityDirection * movementInfo.velocity.y * (0.1f / dt);
+                    }
                 }
+
+                result.TransitionSpeed = jumpData.TransitionSpeed;
             }
 
             return result;
