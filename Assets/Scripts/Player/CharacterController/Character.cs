@@ -365,7 +365,7 @@ namespace Game.Player.CharacterController
             controller = GetComponent<CharacControllerRecu>();
 
             //animator = GetComponentInChildren<Animator>();
-            animator = transform.Find("m_pilou_with skeleton").GetComponent<Animator>();
+            animator = transform.Find("P_CharacterController").GetComponent<Animator>();
 
             camera = FindObjectOfType<PoS_Camera>();
 
@@ -551,7 +551,7 @@ namespace Game.Player.CharacterController
             //Here we react to player input and timers
             #region direction calculations
 
-            ResetAnimatorBools();
+            //ResetAnimatorBools();
 
             flatVelocity = velocity;
             flatVelocity.y = 0;
@@ -605,7 +605,7 @@ namespace Game.Player.CharacterController
 
                     if (stuff.y < 0)
                     {
-                        animator.SetBool("IsFalling", true);
+                        //animator.SetBool("IsFalling", true);
                     }
 
                     //
@@ -665,21 +665,21 @@ namespace Game.Player.CharacterController
                     //animator
                     if (pressingSprint)
                     {
-                        animator.SetBool("IsRunning", true);
+                        //animator.SetBool("IsRunning", true);
                     }
                     else if (leftStickAtZero)
                     {
-                        animator.SetBool("IsIdle", true);
+                        //animator.SetBool("IsIdle", true);
                     }
                     else
                     {
-                        animator.SetBool("IsWalking", true);
+                        //animator.SetBool("IsWalking", true);
                     }
 
                     //
                     if (pressedJump)
                     {
-                        animator.SetTrigger("OnJump");
+                        //animator.SetTrigger("OnJump");
 
                         pressedJump = false;
                         velocity.y = 0f;
@@ -822,12 +822,12 @@ namespace Game.Player.CharacterController
                     flatVelocity = Vector3.Lerp(flatVelocity, targetVelocity, slopeControl * Time.deltaTime * (keepMomentum ? momentumCoeff : 1f));
 
                     //animator
-                    animator.SetBool("IsSliding", true);
+                    //animator.SetBool("IsSliding", true);
 
                     //
                     if (pressedJump)
                     {
-                        animator.SetTrigger("OnJump");
+                        //animator.SetTrigger("OnJump");
 
                         pressedJump = false;
                         velocity.y = 0f;
@@ -1280,24 +1280,24 @@ namespace Game.Player.CharacterController
 
             #endregion update animator
 
-            //#region update animator
-            //float keyHalf = 0.5f;
-            //float m_RunCycleLegOffset = 0.2f;
+            #region update animator
+            float keyHalf = 0.5f;
+            float m_RunCycleLegOffset = 0.2f;
 
-            //animator.SetBool("OnGround", controller.collisions.below);
-            //animator.SetFloat("Forward", velocity.magnitude / characSpeed);
-            //animator.SetFloat("Turn", (leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime) / 7f));
-            //animator.SetFloat("Jump", turnedVelocity.y / 5);
-            //float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
-            //float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputRaw.magnitude;
-            //if (controller.collisions.below)
-            //{
-            //    animator.SetFloat("JumpLeg", jumpLeg);
-            //}
+            animator.SetBool("OnGround", controller.collisions.below);
+            animator.SetFloat("Forward", velocity.magnitude / characSpeed);
+            animator.SetFloat("Turn", (leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputToCamera), transform.up), transform.up), playerModelTurnSpeed * Time.deltaTime) / 7f));
+            animator.SetFloat("Jump", turnedVelocity.y / 5);
+            float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
+            float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputRaw.magnitude;
+            if (controller.collisions.below)
+            {
+                animator.SetFloat("JumpLeg", jumpLeg);
+            }
 
-            //windParticles.SetVelocity(velocity);
-            //glideParticles.SetVelocity(velocity);
-            //#endregion update animator
+            windParticles.SetVelocity(velocity);
+            glideParticles.SetVelocity(velocity);
+            #endregion update animator
 
         }
 
@@ -1442,7 +1442,7 @@ namespace Game.Player.CharacterController
 
             currentPlayerState = ePlayerState.sliding;
 
-            animator.SetTrigger("OnSlide");
+            //animator.SetTrigger("OnSlide");
         }
 
         void QuitStateSliding()

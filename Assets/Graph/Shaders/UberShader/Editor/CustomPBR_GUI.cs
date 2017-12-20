@@ -59,6 +59,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoEmission ();
 		DoDetailMask ();
 
+		DoRimLight ();
 		DoWallTint ();
 		DoGroundTint ();
 		editor.TextureScaleOffsetProperty (mainTex);
@@ -104,6 +105,27 @@ public class CustomPBR_GUI : ShaderGUI {
 		if (groundTint) {
 			editor.ShaderProperty (tintPow, MakeLabel ("Power"));
 			editor.ShaderProperty (tintCol, MakeLabel ("Colour"));
+		}
+		EditorGUI.indentLevel -= 1;
+	}
+
+	void DoRimLight(){
+		MaterialProperty pow = FindProperty ("_RimPow");
+		MaterialProperty scale = FindProperty ("_RimScale");
+		MaterialProperty rimCol = FindProperty ("_RimColor");
+
+		EditorGUI.BeginChangeCheck ();
+		bool rimLit = EditorGUILayout.Toggle (MakeLabel ("Rim Light"), IsKeywordEnabled ("_RIMLIT"));
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_RIMLIT", rimLit);
+		}
+
+		EditorGUI.indentLevel += 1;
+		if (rimLit) {
+			editor.ShaderProperty (rimCol, MakeLabel (rimCol));
+			editor.ShaderProperty (pow, MakeLabel (pow));
+			editor.ShaderProperty (scale, MakeLabel (scale));
+
 		}
 		EditorGUI.indentLevel -= 1;
 	}

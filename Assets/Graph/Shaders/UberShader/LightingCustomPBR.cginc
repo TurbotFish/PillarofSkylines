@@ -78,6 +78,12 @@
 		float4 _GroundTintCol;
 	#endif
 
+	#if defined(_RIMLIT)
+		float _RimScale;
+		float _RimPow;
+		float4 _RimColor;
+	#endif 
+
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
 	#include "WindSystem.cginc"
@@ -192,6 +198,7 @@
 			float _groundCoeff = pow(saturate(i.normal.y), _GroundTintPow);
 			albedo = lerp(albedo, albedo * _GroundTintCol, _groundCoeff);
 		#endif
+
 		return albedo; 
 	}
 
@@ -303,7 +310,6 @@
 		Interpolators i;
 
 
-
 		#if defined(_VERTEX_BEND) || defined(_VERTEX_WIND)
 
 			#if defined(_VERTEX_MASK_COLOUR)
@@ -327,7 +333,7 @@
 			#endif
 
 			#if defined(_VERTEX_WIND)
-				float3 windDir = float3(1,0,0);//global in the future
+				float3 windDir = float3(0.0,0,1.0);//global in the future
 
 				float windSpeed = 3;
 				float _offset = (pivotWS.x * (2.9) * -sign(windDir.x) + pivotWS.z * (2.9) * -sign(windDir.z) + pivotWS.y * 0.8) * 0.5;
@@ -336,11 +342,17 @@
 				windDir = normalize(windDir);
 
 				float windIntensity = tex2Dlod(_WindTex, float4(_Time.x, _Time.x, 0,0)).r;
-				windIntensity = saturate(windIntensity + 0.2);//not necessary with a good wind map
+				windIntensity = saturate(windIntensity + 0.0);//not necessary with a good wind map
 
-				float angle = windIntensity * (sin(_Time.y * windSpeed + _offset) * 0.65+0.35) * _MaxBendAngle * rotationMask;
+				float angle = windIntensity * (sin(_Time.y * windSpeed + _offset) * 0.65+0.35) * (_MaxBendAngle) * rotationMask;
 
-				float3 _windRotation = float3( windDir.z, 0, -windDir.x) * angle;
+
+				#if defined(_WIND_ROT_Y)
+					float3 _windRotation = float3( windDir.y, 0, -windDir.x) * angle;//windDir.z instead of y
+				#else
+					float3 _windRotation = float3( windDir.z, 0, -windDir.x) * angle;
+				#endif
+
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _windRotation);
 				v.normal = ApplyWind(v.normal.xyz, _windRotation);
 			#endif
@@ -602,6 +614,14 @@
 			float3 albedo = DiffuseAndSpecularFromMetallic( 
 				GetAlbedo(i), GetMetallic(i), specularTint, oneMinusReflectivity
 			);
+
+
+			#if defined(_RIMLIT)
+				float fresnel = 1 - saturate(dot(viewDir, i.normal));
+				fresnel = pow(fresnel, _RimPow) * _RimScale;
+				albedo = lerp(albedo, _RimColor, fresnel);
+			#endif
+
 		#endif
 
 		#if defined(_RENDERING_TRANSPARENT)
