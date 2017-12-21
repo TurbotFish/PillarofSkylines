@@ -152,8 +152,10 @@ namespace Game.Player
                 isDriftButtonDown = false;
             }
 
+
             // stop air particle if grounded
-            if (airParticle && myPlayer.currentPlayerState == CharacterController.ePlayerState.onGround || myPlayer.currentPlayerState == CharacterController.ePlayerState.sliding) {
+            if (airParticle && (myPlayer.currentPlayerState == CharacterController.ePlayerState.onGround || myPlayer.currentPlayerState == CharacterController.ePlayerState.sliding)) {
+                print(airParticle);
                 airParticle.parent = airOrigin;
                 airParticle.transform.localPosition = Vector3.zero;
                 airParticle = null;
@@ -282,6 +284,7 @@ namespace Game.Player
                             Destroy(airParticle.gameObject);
                             Destroy(airOrigin.gameObject);
                             airParticle = null;
+                            airOrigin = null;
                         }
                         break;
                     //other
