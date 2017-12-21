@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using PlayMaker;
+﻿using UnityEngine;
 
 namespace Game.Player
 {
@@ -30,6 +27,8 @@ namespace Game.Player
         bool eyeInRange = false;
 
         EchoSystem.EchoManager echoManager;
+
+        Transform airParticle, airOrigin;
 
         //
         bool isActive = false;
@@ -152,6 +151,16 @@ namespace Game.Player
             {
                 isDriftButtonDown = false;
             }
+
+
+            // stop air particle if grounded
+            if (airParticle && (myPlayer.currentPlayerState == CharacterController.ePlayerState.onGround || myPlayer.currentPlayerState == CharacterController.ePlayerState.sliding)) {
+                print(airParticle);
+                airParticle.parent = airOrigin;
+                airParticle.transform.localPosition = Vector3.zero;
+                airParticle = null;
+            }
+
         }
 
         #endregion input handling
@@ -259,6 +268,25 @@ namespace Game.Player
                     case "Wind":
 						other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer);
 						break;
+                    // air particle
+                    case "AirParticle":
+                        if (!airParticle) {
+                            airOrigin = other.transform;
+                            airParticle = airOrigin.GetChild(0);
+                            airParticle.parent = myPlayer.transform;
+                            airParticle.localPosition = new Vector3(0,1,0);
+                        }
+                        break;
+                    // air particle
+                    case "AirReceptor":
+                        if (airParticle) {
+                            other.GetComponent<AirReceptor>().Activate();
+                            Destroy(airParticle.gameObject);
+                            Destroy(airOrigin.gameObject);
+                            airParticle = null;
+                            airOrigin = null;
+                        }
+                        break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
