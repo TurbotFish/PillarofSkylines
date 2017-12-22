@@ -1,13 +1,14 @@
 ﻿
 namespace Game.Player.CharacterController.EnterArgs
 {
-    public class GlideEnterArgs : BaseEnterArgs
+    public class GlideEnterArgs : IEnterArgs
     {
-        public override ePlayerState NewState { get { return ePlayerState.glide; } }
+        public ePlayerState NewState { get { return ePlayerState.glide; } }
+        public ePlayerState PreviousState { get; private set; }
 
-        public GlideEnterArgs(ePlayerState previousState) : base(previousState)
+        public GlideEnterArgs(ePlayerState previousState)
         {
-
+            PreviousState = previousState;
         }
     }
 } //end of namespace

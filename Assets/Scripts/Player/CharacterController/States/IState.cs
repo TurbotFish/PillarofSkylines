@@ -10,7 +10,7 @@ namespace Game.Player.CharacterController.States
         StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo);
         void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo);
 
-        void Enter(EnterArgs.BaseEnterArgs enterArgs);
+        void Enter(EnterArgs.IEnterArgs enterArgs);
         void Exit();
     }
 } //end of namespace

@@ -4,12 +4,12 @@ using UnityEngine;
 
 namespace Game.Player.CharacterController.EnterArgs
 {
-    public class MoveEnterArgs : IEnterArgs
+    public class WindTunnelEnterArgs : IEnterArgs
     {
-        public ePlayerState NewState { get { return ePlayerState.move; } }
+        public ePlayerState NewState { get { return ePlayerState.windTunnel; } }
         public ePlayerState PreviousState { get; private set; }
 
-        public MoveEnterArgs(ePlayerState previousState)
+        public WindTunnelEnterArgs(ePlayerState previousState)
         {
             PreviousState = previousState;
         }

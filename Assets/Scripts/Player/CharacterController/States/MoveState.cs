@@ -27,7 +27,7 @@ namespace Game.Player.CharacterController.States
 
         //#############################################################################
 
-        public void Enter(BaseEnterArgs enterArgs)
+        public void Enter(IEnterArgs enterArgs)
         {
             Debug.Log("Enter State: Move");
         }
@@ -53,6 +53,15 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new StandEnterArgs(StateId));
             }
+
+            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle)
+            {
+                stateMachine.ChangeState(new SlideEnterArgs(StateId));
+            }
+            else if (!collisionInfo.below)
+            {
+                stateMachine.ChangeState(new FallEnterArgs(StateId, moveData.CanStillJumpTimer));
+            }
         }
 
         public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
@@ -66,11 +75,6 @@ namespace Game.Player.CharacterController.States
                 MaxSpeed = moveData.MaxSpeed,
                 TransitionSpeed = moveData.TransitionSpeed
             };
-
-            if (!collisionInfo.below)
-            {
-                stateMachine.ChangeState(new FallEnterArgs(StateId, moveData.CanStillJumpTimer));
-            }
 
             return result;
         }

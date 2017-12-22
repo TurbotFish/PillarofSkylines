@@ -29,7 +29,7 @@ namespace Game.Player.CharacterController.States
 
         //#############################################################################
 
-        public void Enter(BaseEnterArgs enterArgs)
+        public void Enter(IEnterArgs enterArgs)
         {
             Debug.Log("Enter State: Fall");
 
@@ -45,6 +45,8 @@ namespace Game.Player.CharacterController.States
             {
                 jumpTimer = args.JumpTimer;
             }
+
+            Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
         }
 
         public void Exit()
@@ -52,6 +54,8 @@ namespace Game.Player.CharacterController.States
             Debug.Log("Exit State: Fall");
 
             jumpTimer = 0;
+
+            Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
         }
 
         //#############################################################################
@@ -84,6 +88,13 @@ namespace Game.Player.CharacterController.States
             };
 
             return result;
+        }
+
+        //#############################################################################
+
+        void OnWindTunnelPartEnteredEventHandler(object sender, Utilities.EventManager.WindTunnelPartEnteredEventArgs args)
+        {
+            stateMachine.ChangeState(new WindTunnelEnterArgs(StateId));
         }
 
         //#############################################################################

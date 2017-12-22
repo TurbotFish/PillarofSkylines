@@ -92,7 +92,7 @@ namespace Game.Player.CharacterController
             return false; //not locked
         }
 
-        public bool ChangeState(BaseEnterArgs enterArgs)
+        public bool ChangeState(IEnterArgs enterArgs)
         {
             if (CheckStateLocked(enterArgs.NewState))
             {

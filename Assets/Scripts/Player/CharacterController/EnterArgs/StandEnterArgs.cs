@@ -4,13 +4,14 @@ using UnityEngine;
 
 namespace Game.Player.CharacterController.EnterArgs
 {
-    public class StandEnterArgs : BaseEnterArgs
+    public class StandEnterArgs : IEnterArgs
     {
-        public override ePlayerState NewState { get { return ePlayerState.stand; } }
+        public ePlayerState NewState { get { return ePlayerState.stand; } }
+        public ePlayerState PreviousState { get; private set; }
 
-        public StandEnterArgs(ePlayerState previousState) : base(previousState)
+        public StandEnterArgs(ePlayerState previousState)
         {
-
+            PreviousState = previousState;
         }
     }
 } //end of namespace

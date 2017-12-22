@@ -34,6 +34,7 @@ namespace Game.Player.CharacterController
 
         public PlayerModel PlayerModel { get; private set; }
         public CharData CharData { get; private set; }
+        public PlayerController PlayerController { get; private set; }
 
         Transform myTransform;
         StateMachine stateMachine;
@@ -63,6 +64,7 @@ namespace Game.Player.CharacterController
 
             PlayerModel = gameController.PlayerModel;
             CharData = Resources.Load<CharData>("ScriptableObjects/CharData");
+            PlayerController = gameController.PlayerController;
 
             myTransform = transform;
             stateMachine = new StateMachine(this, PlayerModel);
@@ -74,6 +76,9 @@ namespace Game.Player.CharacterController
             stateMachine.Add(ePlayerState.fall, new FallState(this, stateMachine));
             stateMachine.Add(ePlayerState.jump, new JumpState(this, stateMachine));
             stateMachine.Add(ePlayerState.dash, new DashState(this, stateMachine), eAbilityType.Dash);
+            stateMachine.Add(ePlayerState.slide, new SlideState(this, stateMachine));
+            stateMachine.Add(ePlayerState.windTunnel, new WindTunnelState(this, stateMachine));
+            stateMachine.Add(ePlayerState.glide, new GlideState(this, stateMachine));
 
             stateMachine.ChangeState(new FallEnterArgs(ePlayerState.empty));
 

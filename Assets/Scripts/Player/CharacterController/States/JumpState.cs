@@ -19,9 +19,8 @@ namespace Game.Player.CharacterController.States
         bool firstUpdate;
         float strength;
         Vector3 velocity;
-
-        float minJumpTimer;
-        float maxJumpTimer;
+        int remainingAerialJumps;
+        bool isAerialJump;
 
         //#############################################################################
 
@@ -34,26 +33,41 @@ namespace Game.Player.CharacterController.States
 
         //#############################################################################
 
-        public void Enter(BaseEnterArgs enterArgs)
+        public void Enter(IEnterArgs enterArgs)
         {
             Debug.Log("Enter State: Jump");
 
-            firstUpdate = true;
+            var args = enterArgs as JumpEnterArgs;
 
-            minJumpTimer = jumpData.MinJumpTime;
-            maxJumpTimer = jumpData.MaxJumpTime;
+            firstUpdate = true;
+            remainingAerialJumps = 1;
+
+            if (args.RemainingAerialJumpsSet)
+            {
+                remainingAerialJumps = args.RemainingAerialJumps;
+                isAerialJump = true;
+            }
+
+            Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
         }
 
         public void Exit()
         {
             Debug.Log("Exit State: Jump");
+
+            Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
         }
 
         //#############################################################################
 
         public void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
         {
-            if (movementInfo.velocity.y <= 0 || collisionInfo.above)
+            if (inputInfo.jumpButtonDown && remainingAerialJumps > 0)
+            {
+                stateMachine.ChangeState(new JumpEnterArgs(StateId, remainingAerialJumps - 1));
+            }
+
+            else if (movementInfo.velocity.y <= 0 || collisionInfo.above)
             {
                 stateMachine.ChangeState(new FallEnterArgs(StateId));
             }
@@ -61,18 +75,23 @@ namespace Game.Player.CharacterController.States
 
         public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
         {
-            minJumpTimer -= dt;
-            maxJumpTimer -= dt;
-
             var result = new StateReturnContainer();
 
             result.CanTurnPlayer = false;
+
+            float jumpStrength = jumpData.Strength;
+            float minJumpStrength = jumpData.MinStrength;
+            if (isAerialJump)
+            {
+                jumpStrength *= jumpData.AerialJumpCoeff;
+                minJumpStrength *= jumpData.AerialJumpCoeff;
+            }
 
             if (firstUpdate)
             {
                 velocity = movementInfo.velocity;
 
-                result.Acceleration = (velocity * 0.1f) + Vector3.up * jumpData.Strength;
+                result.Acceleration = (velocity * 0.05f + Vector3.up) * jumpStrength;
                 result.TransitionSpeed = 1 / dt;
 
                 firstUpdate = false;
@@ -81,18 +100,26 @@ namespace Game.Player.CharacterController.States
             {
                 result.Acceleration = Vector3.Project(inputInfo.leftStickToCamera, movementInfo.forward) * inputInfo.leftStickToCamera.magnitude * jumpData.Speed;
 
-                if ((minJumpTimer <= 0 && !inputInfo.jumpButton) /*|| maxJumpTimer <= 0*/)
+                if (!inputInfo.jumpButton && movementInfo.velocity.y > minJumpStrength)
                 {
-                    if (movementInfo.velocity.y > 0)
-                    {
-                        result.Acceleration += charController.GravityDirection * movementInfo.velocity.y * (0.1f / dt);
-                    }
+                    result.Acceleration += charController.GravityDirection * (movementInfo.velocity.y - minJumpStrength) * (0.1f / dt);
                 }
+                //else if(movementInfo.velocity.y > jumpStrength)
+                //{
+                //    result.Acceleration += charController.GravityDirection * (movementInfo.velocity.y - jumpStrength) * (0.1f / dt);
+                //}
 
                 result.TransitionSpeed = jumpData.TransitionSpeed;
             }
 
             return result;
+        }
+
+        //#############################################################################
+
+        void OnWindTunnelPartEnteredEventHandler(object sender, Utilities.EventManager.WindTunnelPartEnteredEventArgs args)
+        {
+            stateMachine.ChangeState(new WindTunnelEnterArgs(StateId));
         }
 
         //#############################################################################

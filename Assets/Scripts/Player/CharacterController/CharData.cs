@@ -40,6 +40,10 @@ namespace Game.Player.CharacterController
         public DashData Dash { get { return dash; } }
 
         [SerializeField]
+        SlideData slide = new SlideData();
+        public SlideData Slide { get { return slide; } }
+
+        [SerializeField]
         GlideData glide = new GlideData();
         public GlideData Glide { get { return glide; } }
 
@@ -62,6 +66,7 @@ namespace Game.Player.CharacterController
             fall.OnValidate();
             jump.OnValidate();
             dash.OnValidate();
+            slide.OnValidate();
             glide.OnValidate();
             wallRun.OnValidate();
         }
@@ -99,6 +104,18 @@ namespace Game.Player.CharacterController
             float turnSpeed;
             public float TurnSpeed { get { return turnSpeed; } }
 
+            [SerializeField]
+            float minSlopeAngle;
+            public float MinSlopeAngle { get { return minSlopeAngle; } }
+
+            [SerializeField]
+            float maxSlopeAngle;
+            public float MaxSlopeAngle { get { return maxSlopeAngle; } }
+
+            [SerializeField]
+            float minWallAngle;
+            public float MinWallAngle { get { return minWallAngle; } }
+
             public void OnValidate()
             {
                 stickDeadMaxVal = Mathf.Clamp01(stickDeadMaxVal);
@@ -106,6 +123,9 @@ namespace Game.Player.CharacterController
                 maxSpeed = Mathf.Clamp(maxSpeed, 0, float.MaxValue);
                 gravityStrength = Mathf.Clamp(gravityStrength, 0, float.MaxValue);
                 turnSpeed = Mathf.Clamp(turnSpeed, 0, float.MaxValue);
+                minSlopeAngle = Mathf.Clamp(minSlopeAngle, 0, 360);
+                maxSlopeAngle = Mathf.Clamp(maxSlopeAngle, 0, 360);
+                minWallAngle = Mathf.Clamp(minWallAngle, 0, 360);
             }
         }
 
@@ -166,6 +186,7 @@ namespace Game.Player.CharacterController
                 speed = Mathf.Clamp(speed, 0, float.MaxValue);
                 sprintCoefficient = Mathf.Clamp(sprintCoefficient, 0, float.MaxValue);
                 maxSpeed = Mathf.Clamp(maxSpeed, 0, float.MaxValue);
+                transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
                 canStillJumpTimer = Mathf.Clamp(canStillJumpTimer, 0, float.MaxValue);
             }
         }
@@ -237,12 +258,12 @@ namespace Game.Player.CharacterController
             public float Strength { get { return strength; } }
 
             [SerializeField]
-            float minJumpTime;
-            public float MinJumpTime { get { return minJumpTime; } }
+            float minStrength;
+            public float MinStrength { get { return minStrength; } }
 
             [SerializeField]
-            float maxJumpTime;
-            public float MaxJumpTime { get { return maxJumpTime; } }
+            float aerialJumpCoeff;
+            public float AerialJumpCoeff { get { return aerialJumpCoeff; } }
 
             [SerializeField]
             float speed;
@@ -255,8 +276,8 @@ namespace Game.Player.CharacterController
             public void OnValidate()
             {
                 strength = Mathf.Clamp(strength, 0, float.MaxValue);
-                minJumpTime = Mathf.Clamp(minJumpTime, 0, float.MaxValue);
-                maxJumpTime = Mathf.Clamp(maxJumpTime, 0, float.MaxValue);
+                minStrength = Mathf.Clamp(minStrength, 0, float.MaxValue);
+                aerialJumpCoeff = Mathf.Clamp(aerialJumpCoeff, 0, float.MaxValue);
                 speed = Mathf.Clamp(speed, 0, float.MaxValue);
                 transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
             }
@@ -296,6 +317,25 @@ namespace Game.Player.CharacterController
         }
 
         #endregion dash
+
+        //*******************************************
+
+        #region slide
+
+        [System.Serializable]
+        public class SlideData
+        {
+            [SerializeField]
+            float transitionSpeed;
+            public float TransitionSpeed { get { return transitionSpeed; } }
+
+            public void OnValidate()
+            {
+                transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
+            }
+        }
+
+        #endregion slide
 
         //*******************************************
 

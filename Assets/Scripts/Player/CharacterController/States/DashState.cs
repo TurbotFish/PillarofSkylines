@@ -30,7 +30,7 @@ namespace Game.Player.CharacterController.States
 
         //#############################################################################
 
-        public void Enter(BaseEnterArgs enterArgs)
+        public void Enter(IEnterArgs enterArgs)
         {
             Debug.Log("Enter State: Dash");
 

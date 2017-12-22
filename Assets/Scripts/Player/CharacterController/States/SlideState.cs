@@ -6,35 +6,33 @@ using UnityEngine;
 
 namespace Game.Player.CharacterController.States
 {
-    public class StandState : IState
+    public class SlideState : IState
     {
         //#############################################################################
 
-        public ePlayerState StateId { get { return ePlayerState.stand; } }
+        public ePlayerState StateId { get { return ePlayerState.slide; } }
 
         CharController charController;
         StateMachine stateMachine;
-        CharData.StandData standData;
+        CharData.SlideData slideData;
 
-        //#############################################################################
-
-        public StandState(CharController charController, StateMachine stateMachine)
+        public SlideState(CharController charController, StateMachine stateMachine)
         {
             this.charController = charController;
             this.stateMachine = stateMachine;
-            standData = charController.CharData.Stand;
+            slideData = charController.CharData.Slide;
         }
 
         //#############################################################################
 
         public void Enter(IEnterArgs enterArgs)
         {
-            Debug.Log("Enter State: Stand");
+            Debug.Log("Enter State: Slide");
         }
 
         public void Exit()
         {
-            Debug.Log("Exit State: Stand");
+            Debug.Log("Exit State: Slide");
         }
 
         //#############################################################################
@@ -45,18 +43,14 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new JumpEnterArgs(StateId));
             }
-            else if (!inputInfo.leftStickAtZero)
-            {
-                stateMachine.ChangeState(new MoveEnterArgs(StateId));
-            }
 
-            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle)
-            {
-                stateMachine.ChangeState(new SlideEnterArgs(StateId));
-            }
             else if (!collisionInfo.below)
             {
                 stateMachine.ChangeState(new FallEnterArgs(StateId));
+            }
+            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle)
+            {
+                stateMachine.ChangeState(new StandEnterArgs(StateId));
             }
         }
 
@@ -64,16 +58,13 @@ namespace Game.Player.CharacterController.States
         {
             var result = new StateReturnContainer
             {
-                CanTurnPlayer = true,
-                IgnoreGravity = true,
+                CanTurnPlayer = false,
 
                 Acceleration = Vector3.zero,
-                TransitionSpeed = standData.TransitionSpeed
+                TransitionSpeed = slideData.TransitionSpeed
             };
 
             return result;
         }
-
-        //#############################################################################
     }
 } //end of namespace

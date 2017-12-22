@@ -7,6 +7,7 @@ namespace Game.Player.CharacterController
         fall,
         jump,
         move,
+        slide,
         stand,
         glide,
         dash,

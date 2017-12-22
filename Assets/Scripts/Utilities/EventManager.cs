@@ -395,7 +395,7 @@ namespace Game.Utilities
 
             public FavourPickedUpEventArgs(int favourId)
             {
-                this.FavourId = favourId;
+                FavourId = favourId;
             }
         }
 
@@ -409,6 +409,54 @@ namespace Game.Utilities
         }
 
         #endregion favour picked up event
+
+        //***********************************************************
+
+        #region wind tunnel events
+
+        public class WindTunnelPartEnteredEventArgs: EventArgs
+        {
+            public WindTunnelPart WindTunnelPart { get; private set; }
+
+            public WindTunnelPartEnteredEventArgs(WindTunnelPart windTunnelPart)
+            {
+                WindTunnelPart = windTunnelPart;
+            }
+        }
+
+        public delegate void WindTunnelPartEnteredEventHandler(object sender, WindTunnelPartEnteredEventArgs args);
+
+        public static event WindTunnelPartEnteredEventHandler WindTunnelPartEnteredEvent;
+
+        public static void SendWindTunnelEnteredEvent(object sender, WindTunnelPartEnteredEventArgs args)
+        {
+            WindTunnelPartEnteredEvent?.Invoke(sender, args);
+        }
+
+        //***
+
+        public class WindTunnelPartExitedEventArgs: EventArgs
+        {
+            public WindTunnelPart WindTunnelPart { get; private set; }
+            public bool StillInWindTunnel { get; private set; }
+
+            public WindTunnelPartExitedEventArgs(WindTunnelPart windTunnelPart, bool stillInWindTunnel)
+            {
+                WindTunnelPart = windTunnelPart;
+                StillInWindTunnel = stillInWindTunnel;
+            }
+        }
+
+        public delegate void WindTunnelExitedEventHandler(object sender, WindTunnelPartExitedEventArgs args);
+
+        public static event WindTunnelExitedEventHandler WindTunnelExitedEvent;
+
+        public static void SendWindTunnelExitedEvent(object sender, WindTunnelPartExitedEventArgs args)
+        {
+            WindTunnelExitedEvent?.Invoke(sender, args);
+        }
+
+        #endregion wind tunnel events
 
         //***********************************************************
 

@@ -16,7 +16,7 @@ namespace Game.Player.CharacterController.States
             return true;
         }
 
-        public void Enter(BaseEnterArgs enterArgs)
+        public void Enter(IEnterArgs enterArgs)
         {
             Debug.Log("Enter State: Empty");
         }
