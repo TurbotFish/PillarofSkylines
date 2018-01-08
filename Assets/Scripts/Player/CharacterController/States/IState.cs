@@ -7,8 +7,8 @@ namespace Game.Player.CharacterController.States
     {
         ePlayerState StateId { get; }
 
-        StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo);
-        void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo);
+        StateReturnContainer Update(float dt);
+        void HandleInput();
 
         void Enter();
         void Exit();

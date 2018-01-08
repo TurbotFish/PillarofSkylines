@@ -9,7 +9,7 @@ namespace Game.Player.CharacterController
     {
         //#############################################################################
 
-        CharController character;
+        //CharController character;
         PlayerModel model;
 
         Dictionary<ePlayerState, StateCooldown> cooldownDict = new Dictionary<ePlayerState, StateCooldown>();
@@ -21,12 +21,12 @@ namespace Game.Player.CharacterController
 
         //#############################################################################
 
-        public StateMachine(CharController character, PlayerModel model, IState initialState)
+        public StateMachine(CharController character)
         {
-            this.character = character;
-            this.model = model;
+            //this.character = character;
+            model = character.PlayerModel;
 
-            currentState = initialState;
+            currentState = new FallState(character, this);
         }
 
         //#############################################################################
@@ -100,7 +100,7 @@ namespace Game.Player.CharacterController
 
         //#############################################################################
 
-        public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
+        public StateReturnContainer Update(float dt)
         {
             //updating the state cooldowns
             List<StateCooldown> cooldownList = new List<StateCooldown>(cooldownDict.Values);
@@ -116,12 +116,12 @@ namespace Game.Player.CharacterController
             }
 
             //updating the current state
-            return currentState.Update(dt, inputInfo, movementInfo, collisionInfo);
+            return currentState.Update(dt);
         }
 
-        public void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
+        public void HandleInput()
         {
-            currentState.HandleInput(inputInfo, movementInfo, collisionInfo);
+            currentState.HandleInput();
         }
 
         //#############################################################################

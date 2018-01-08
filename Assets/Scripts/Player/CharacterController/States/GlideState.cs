@@ -36,15 +36,17 @@ namespace Game.Player.CharacterController.States
 
         //#############################################################################
 
-        public void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
+        public void HandleInput()
         {
+            PlayerInputInfo inputInfo = charController.InputInfo;
+
             if (inputInfo.sprintButtonDown)
             {
                 stateMachine.ChangeState(new FallState(charController, stateMachine));
             }
         }
 
-        public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
+        public StateReturnContainer Update(float dt)
         {
             var result = new StateReturnContainer
             {

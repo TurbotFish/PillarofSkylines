@@ -323,7 +323,7 @@ public class PoS_Camera : MonoBehaviour {
             eclipseFX.camSpeed = input;
 
 		playerState = player.CurrentState;
-		playerVelocity = player.Velocity;
+		playerVelocity = player.MovementInfo.velocity;
 
 		targetSpace = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, target.up), Vector3.Cross(Vector3.up, target.up));
 

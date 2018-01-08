@@ -63,8 +63,12 @@ namespace Game.Player.CharacterController.States
 
         //#############################################################################
 
-        public void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
+        public void HandleInput()
         {
+            PlayerInputInfo inputInfo = charController.InputInfo;
+            PlayerMovementInfo movementInfo = charController.MovementInfo;
+            CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
+
             if (inputInfo.jumpButtonDown && remainingAerialJumps > 0)
             {
                 stateMachine.ChangeState(new JumpState(charController, stateMachine, remainingAerialJumps - 1, true));
@@ -80,8 +84,11 @@ namespace Game.Player.CharacterController.States
             }
         }
 
-        public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
+        public StateReturnContainer Update(float dt)
         {
+            PlayerInputInfo inputInfo = charController.InputInfo;
+            PlayerMovementInfo movementInfo = charController.MovementInfo;
+
             var result = new StateReturnContainer();
 
             result.CanTurnPlayer = false;

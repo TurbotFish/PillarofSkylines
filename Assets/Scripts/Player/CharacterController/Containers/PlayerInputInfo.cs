@@ -22,5 +22,25 @@ namespace Game.Player.CharacterController.Containers
         public bool sprintButton;
         public bool sprintButtonDown;
         public bool sprintButtonUp;
+
+        public void Reset()
+        {
+            leftStickRaw = Vector3.zero;
+            leftStickToCamera = Vector3.zero;
+            leftStickToSlope = Vector3.zero;
+            leftStickAtZero = false;
+
+            jumpButton = false;
+            jumpButtonDown = false;
+            jumpButtonUp = false;
+
+            dashButton = false;
+            dashButtonDown = false;
+            dashButtonUp = false;
+
+            sprintButton = false;
+            sprintButtonDown = false;
+            sprintButtonUp = false;
+        }
     }
 }

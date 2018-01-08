@@ -46,8 +46,11 @@ namespace Game.Player.CharacterController.States
 
         //#############################################################################
 
-        public void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
+        public void HandleInput()
         {
+            PlayerInputInfo inputInfo = charController.InputInfo;
+            CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
+
             if (inputInfo.jumpButtonDown && jumpTimer > 0)
             {
                 stateMachine.ChangeState(new JumpState(charController, stateMachine));
@@ -58,8 +61,10 @@ namespace Game.Player.CharacterController.States
             }
         }
 
-        public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
+        public StateReturnContainer Update(float dt)
         {
+            PlayerInputInfo inputInfo = charController.InputInfo;
+
             if (jumpTimer > 0)
             {
                 jumpTimer -= dt;

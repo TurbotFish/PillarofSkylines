@@ -23,6 +23,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         CharacControllerRecu tempPhysicsHandler;
         CharacControllerRecu.CollisionInfo tempCollisionInfo;
+        public CharacControllerRecu.CollisionInfo CollisionInfo { get { return tempCollisionInfo; } }
 
         /// <summary>
         /// The animator of the character.
@@ -42,9 +43,9 @@ namespace Game.Player.CharacterController
         bool isInitialized;
         bool isHandlingInput;
 
-        public Vector3 Velocity { get; private set; }
-        public Vector3 ExternalVelocity { get; private set; }
-        public Vector3 LastPositionDelta { get; private set; }
+        Vector3 velocity;
+        Vector3 externalVelocity;
+        Vector3 lastPositionDelta;
 
 
 
@@ -54,6 +55,12 @@ namespace Game.Player.CharacterController
 
         List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
         public List<WindTunnelPart> WindTunnelPartList { get { return new List<WindTunnelPart>(windTunnelPartList); } }
+
+        PlayerInputInfo inputInfo = new PlayerInputInfo();
+        public PlayerInputInfo InputInfo { get { return inputInfo; } }
+
+        PlayerMovementInfo movementInfo = new PlayerMovementInfo();
+        public PlayerMovementInfo MovementInfo { get { return movementInfo; } }
 
         //#############################################################################
 
@@ -69,7 +76,7 @@ namespace Game.Player.CharacterController
             PlayerController = gameController.PlayerController;
 
             myTransform = transform;
-            stateMachine = new StateMachine(this, PlayerModel, new FallState(this, stateMachine));
+            stateMachine = new StateMachine(this);
 
             //*******************************************
 
@@ -121,19 +128,17 @@ namespace Game.Player.CharacterController
             }
 
             //*******************************************
-            var inputInfo = new PlayerInputInfo();
 
-            var movementInfo = new PlayerMovementInfo
-            {
-                position = myTransform.position,
-                forward = myTransform.forward,
-                up = myTransform.up,
-                side = myTransform.right,
-                velocity = Velocity
-            };
+            movementInfo.position = myTransform.position;
+            movementInfo.forward = myTransform.forward;
+            movementInfo.up = myTransform.up;
+            movementInfo.side = myTransform.right;
+            movementInfo.velocity = velocity;
 
             //*******************************************
             //handling input
+
+            inputInfo.Reset();
 
             if (isHandlingInput)
             {
@@ -166,20 +171,20 @@ namespace Game.Player.CharacterController
                 inputInfo.sprintButtonUp = Input.GetButtonUp("Sprint");
 
                 //
-                stateMachine.HandleInput(inputInfo, movementInfo, tempCollisionInfo);
+                stateMachine.HandleInput();
             }
 
             //*******************************************
             //state update           
 
             //call state update
-            var stateReturn = stateMachine.Update(Time.deltaTime, inputInfo, movementInfo, tempCollisionInfo);
+            var stateReturn = stateMachine.Update(Time.deltaTime);
 
             //handling return
             bool canTurnPlayer = stateReturn.CanTurnPlayerSet ? stateReturn.CanTurnPlayer : true;
             float transitionSpeed = stateReturn.TransitionSpeedSet ? stateReturn.TransitionSpeed : CharData.General.TransitionSpeed;
             float maxSpeed = stateReturn.MaxSpeedSet ? stateReturn.MaxSpeed : CharData.General.MaxSpeed;
-            var acceleration = stateReturn.AccelerationSet ? stateReturn.Acceleration : Velocity;
+            var acceleration = stateReturn.AccelerationSet ? stateReturn.Acceleration : velocity;
 
             if (stateReturn.PlayerForwardSet)
             {
@@ -196,7 +201,7 @@ namespace Game.Player.CharacterController
             //Debug.LogFormat("desiredVelocity={0}", stateReturn.DesiredVelocity.magnitude.ToString());
 
             //computing new velocity
-            var newVelocity = Velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + ExternalVelocity) * (Time.deltaTime * transitionSpeed);
+            var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
 
             //Debug.LogFormat("new velocity: {0}", newVelocity);
 
@@ -217,7 +222,7 @@ namespace Game.Player.CharacterController
             }
 
             //
-            Velocity = newVelocity;
+            velocity = newVelocity;
 
             //*******************************************
             //physics update
@@ -226,15 +231,15 @@ namespace Game.Player.CharacterController
 
             if (stateMachine.CurrentState == ePlayerState.glide)
             {
-                LastPositionDelta = tempPhysicsHandler.Move(newVelocity * Time.deltaTime);
+                lastPositionDelta = tempPhysicsHandler.Move(newVelocity * Time.deltaTime);
             }
             else
             {
-                LastPositionDelta = tempPhysicsHandler.Move(turnedVelocity * Time.deltaTime);
+                lastPositionDelta = tempPhysicsHandler.Move(turnedVelocity * Time.deltaTime);
             }
             //Debug.LogFormat("after physics: {0}", newVelocity);
 
-            ExternalVelocity = Vector3.zero;
+            externalVelocity = Vector3.zero;
             tempCollisionInfo = tempPhysicsHandler.collisions;
 
             //*******************************************
@@ -271,7 +276,7 @@ namespace Game.Player.CharacterController
             #region update animator
             float keyHalf = 0.5f;
             float m_RunCycleLegOffset = 0.2f;
-            float forward = LastPositionDelta.magnitude / (8 * Time.deltaTime);
+            float forward = lastPositionDelta.magnitude / (8 * Time.deltaTime);
             if (forward <= 0.2f)
             {
                 forward = 0;
@@ -325,7 +330,7 @@ namespace Game.Player.CharacterController
             if (args.IsNewScene)
             {
                 myTransform.rotation = args.Rotation;
-                Velocity = Vector3.zero;
+                velocity = Vector3.zero;
                 stateMachine.ChangeState(new FallState(this, stateMachine));
                 ChangeGravityDirection(Vector3.down);
             }
@@ -375,11 +380,11 @@ namespace Game.Player.CharacterController
         {
             if (framerateDependant)
             {
-                Velocity += (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
+                velocity += (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
             }
             else
             {
-                ExternalVelocity += (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
+                externalVelocity += (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
             }
         }
 

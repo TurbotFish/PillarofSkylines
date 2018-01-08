@@ -38,7 +38,7 @@ namespace Game.Player.CharacterController.States
 
         //#############################################################################
 
-        public void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
+        public void HandleInput()
         {
             if (charController.WindTunnelPartList.Count == 0)
             {
@@ -46,8 +46,10 @@ namespace Game.Player.CharacterController.States
             }
         }
 
-        public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
+        public StateReturnContainer Update(float dt)
         {
+            PlayerMovementInfo movementInfo = charController.MovementInfo;
+
             var wind = Vector3.zero;
 
             if (windTunnelPartList.Count > 0)
