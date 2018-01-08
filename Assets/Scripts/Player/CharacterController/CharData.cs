@@ -273,6 +273,10 @@ namespace Game.Player.CharacterController
             float transitionSpeed;
             public float TransitionSpeed { get { return transitionSpeed; } }
 
+            [SerializeField]
+            int maxAerialJumps;
+            public int MaxAerialJumps { get { return maxAerialJumps; } set { maxAerialJumps = Mathf.Max(0, value); } }
+
             public void OnValidate()
             {
                 strength = Mathf.Clamp(strength, 0, float.MaxValue);
@@ -280,6 +284,7 @@ namespace Game.Player.CharacterController
                 aerialJumpCoeff = Mathf.Clamp(aerialJumpCoeff, 0, float.MaxValue);
                 speed = Mathf.Clamp(speed, 0, float.MaxValue);
                 transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
+                maxAerialJumps = Mathf.Max(0, maxAerialJumps);
             }
         }
 

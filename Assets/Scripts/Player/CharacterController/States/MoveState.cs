@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Game.Player.CharacterController.Containers;
-using Game.Player.CharacterController.EnterArgs;
 using UnityEngine;
 
 namespace Game.Player.CharacterController.States
@@ -27,7 +26,7 @@ namespace Game.Player.CharacterController.States
 
         //#############################################################################
 
-        public void Enter(IEnterArgs enterArgs)
+        public void Enter()
         {
             Debug.Log("Enter State: Move");
         }
@@ -43,24 +42,24 @@ namespace Game.Player.CharacterController.States
         {
             if (inputInfo.jumpButtonDown)
             {
-                stateMachine.ChangeState(new JumpEnterArgs(StateId));
+                stateMachine.ChangeState(new JumpState(charController, stateMachine));
             }
             else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
             {
-                stateMachine.ChangeState(new DashEnterArgs(StateId, movementInfo.forward));
+                stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             }
             else if (inputInfo.leftStickAtZero)
             {
-                stateMachine.ChangeState(new StandEnterArgs(StateId));
+                stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
 
             else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle)
             {
-                stateMachine.ChangeState(new SlideEnterArgs(StateId));
+                stateMachine.ChangeState(new SlideState(charController, stateMachine));
             }
             else if (!collisionInfo.below)
             {
-                stateMachine.ChangeState(new FallEnterArgs(StateId, moveData.CanStillJumpTimer));
+                stateMachine.ChangeState(new FallState(charController, stateMachine, moveData.CanStillJumpTimer));
             }
         }
 

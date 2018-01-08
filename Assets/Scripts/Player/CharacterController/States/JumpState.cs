@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Game.Player.CharacterController.Containers;
-using Game.Player.CharacterController.EnterArgs;
 using UnityEngine;
 
 namespace Game.Player.CharacterController.States
@@ -29,24 +28,28 @@ namespace Game.Player.CharacterController.States
             this.charController = charController;
             this.stateMachine = stateMachine;
             jumpData = charController.CharData.Jump;
+
+            this.remainingAerialJumps = jumpData.MaxAerialJumps;
+            this.isAerialJump = false;
+        }
+
+        public JumpState(CharController charController, StateMachine stateMachine, int remainingAerialJumps, bool isAerialJump)
+        {
+            this.charController = charController;
+            this.stateMachine = stateMachine;
+            jumpData = charController.CharData.Jump;
+
+            this.remainingAerialJumps = remainingAerialJumps;
+            this.isAerialJump = isAerialJump;
         }
 
         //#############################################################################
 
-        public void Enter(IEnterArgs enterArgs)
+        public void Enter()
         {
             Debug.Log("Enter State: Jump");
 
-            var args = enterArgs as JumpEnterArgs;
-
             firstUpdate = true;
-            remainingAerialJumps = 1;
-
-            if (args.RemainingAerialJumpsSet)
-            {
-                remainingAerialJumps = args.RemainingAerialJumps;
-                isAerialJump = true;
-            }
 
             Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
         }
@@ -64,12 +67,16 @@ namespace Game.Player.CharacterController.States
         {
             if (inputInfo.jumpButtonDown && remainingAerialJumps > 0)
             {
-                stateMachine.ChangeState(new JumpEnterArgs(StateId, remainingAerialJumps - 1));
+                stateMachine.ChangeState(new JumpState(charController, stateMachine, remainingAerialJumps - 1, true));
+            }
+            else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
+            {
+                stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             }
 
             else if (movementInfo.velocity.y <= 0 || collisionInfo.above)
             {
-                stateMachine.ChangeState(new FallEnterArgs(StateId));
+                stateMachine.ChangeState(new FallState(charController, stateMachine));
             }
         }
 
@@ -119,7 +126,7 @@ namespace Game.Player.CharacterController.States
 
         void OnWindTunnelPartEnteredEventHandler(object sender, Utilities.EventManager.WindTunnelPartEnteredEventArgs args)
         {
-            stateMachine.ChangeState(new WindTunnelEnterArgs(StateId));
+            stateMachine.ChangeState(new WindTunnelState(charController, stateMachine));
         }
 
         //#############################################################################

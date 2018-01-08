@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Game.Player.CharacterController.Containers;
-using Game.Player.CharacterController.EnterArgs;
 using UnityEngine;
 
 namespace Game.Player.CharacterController.States
@@ -25,7 +24,7 @@ namespace Game.Player.CharacterController.States
 
         //#############################################################################
 
-        public void Enter(IEnterArgs enterArgs)
+        public void Enter()
         {
             Debug.Log("Enter State: Fall");
         }
@@ -41,7 +40,7 @@ namespace Game.Player.CharacterController.States
         {
             if (inputInfo.sprintButtonDown)
             {
-                stateMachine.ChangeState(new FallEnterArgs(StateId));
+                stateMachine.ChangeState(new FallState(charController, stateMachine));
             }
         }
 

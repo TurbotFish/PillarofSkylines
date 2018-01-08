@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Game.Player.CharacterController.Containers;
-using Game.Player.CharacterController.EnterArgs;
 using UnityEngine;
 
 namespace Game.Player.CharacterController.States
@@ -20,31 +19,20 @@ namespace Game.Player.CharacterController.States
 
         //#############################################################################
 
-        public FallState(CharController charController, StateMachine stateMachine)
+        public FallState(CharController charController, StateMachine stateMachine, float jumpTimer = 0)
         {
             this.charController = charController;
             this.stateMachine = stateMachine;
             fallData = charController.CharData.Fall;
+
+            this.jumpTimer = jumpTimer;
         }
 
         //#############################################################################
 
-        public void Enter(IEnterArgs enterArgs)
+        public void Enter()
         {
             Debug.Log("Enter State: Fall");
-
-            if (enterArgs.NewState != ePlayerState.fall)
-            {
-                Debug.LogError("Fall state entered with wrong arguments!");
-                return;
-            }
-
-            var args = enterArgs as FallEnterArgs;
-
-            if (args.CanJump)
-            {
-                jumpTimer = args.JumpTimer;
-            }
 
             Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
         }
@@ -52,8 +40,6 @@ namespace Game.Player.CharacterController.States
         public void Exit()
         {
             Debug.Log("Exit State: Fall");
-
-            jumpTimer = 0;
 
             Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
         }
@@ -64,11 +50,11 @@ namespace Game.Player.CharacterController.States
         {
             if (inputInfo.jumpButtonDown && jumpTimer > 0)
             {
-                stateMachine.ChangeState(new JumpEnterArgs(StateId));
+                stateMachine.ChangeState(new JumpState(charController, stateMachine));
             }
             else if (collisionInfo.below)
             {
-                stateMachine.ChangeState(new StandEnterArgs(StateId));
+                stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
         }
 
@@ -94,7 +80,7 @@ namespace Game.Player.CharacterController.States
 
         void OnWindTunnelPartEnteredEventHandler(object sender, Utilities.EventManager.WindTunnelPartEnteredEventArgs args)
         {
-            stateMachine.ChangeState(new WindTunnelEnterArgs(StateId));
+            stateMachine.ChangeState(new WindTunnelState(charController, stateMachine));
         }
 
         //#############################################################################

@@ -10,7 +10,7 @@ namespace Game.Player
     {
         //
         PlayerModel playerModel;
-        Game.Player.CharacterController.Character myPlayer;
+        CharacterController.CharController myPlayer;
 
         //
         bool favourPickUpInRange = false;
@@ -42,7 +42,7 @@ namespace Game.Player
         /// <summary>
         /// 
         /// </summary>
-		public void InitializeFavourController(PlayerModel playerModel, CharacterController.Character player, EchoSystem.EchoManager echoManager)
+		public void Initialize(PlayerModel playerModel, CharacterController.CharController player, EchoSystem.EchoManager echoManager)
         {
             this.playerModel = playerModel;
 			myPlayer = player;
@@ -160,7 +160,7 @@ namespace Game.Player
                 isDriftButtonDown = false;
 			
             // stop air particle if grounded
-            if (airParticle && (myPlayer.currentPlayerState == CharacterController.ePlayerState.onGround || myPlayer.currentPlayerState == CharacterController.ePlayerState.sliding)) {
+            if (airParticle && (myPlayer.CurrentState == CharacterController.ePlayerState.onGround || myPlayer.CurrentState == CharacterController.ePlayerState.sliding)) {
                 airParticle.parent = airOrigin;
                 airParticle.transform.localPosition = Vector3.zero;
                 airParticle = null;
@@ -271,7 +271,7 @@ namespace Game.Player
                         break;
                     //wind
                     case "Wind":
-						other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer);
+						//other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer); //this is not used anymore! Patrick
 						break;
                     // air particle
                     case "AirParticle":

@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Game.Player.CharacterController.Containers;
-using Game.Player.CharacterController.EnterArgs;
 using UnityEngine;
 
 namespace Game.Player.CharacterController.States
@@ -23,14 +22,11 @@ namespace Game.Player.CharacterController.States
         {
             this.charController = charController;
             this.stateMachine = stateMachine;
-
-            Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
-            Utilities.EventManager.WindTunnelExitedEvent += OnWindTunnelPartExitedEventHandler;
         }
 
         //#############################################################################
 
-        public void Enter(IEnterArgs enterArgs)
+        public void Enter()
         {
             Debug.Log("Enter State: Wind Tunnel");
         }
@@ -44,7 +40,10 @@ namespace Game.Player.CharacterController.States
 
         public void HandleInput(PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
         {
-
+            if (charController.WindTunnelPartList.Count == 0)
+            {
+                stateMachine.ChangeState(new FallState(charController, stateMachine));
+            }
         }
 
         public StateReturnContainer Update(float dt, PlayerInputInfo inputInfo, PlayerMovementInfo movementInfo, CharacControllerRecu.CollisionInfo collisionInfo)
@@ -73,26 +72,6 @@ namespace Game.Player.CharacterController.States
             };
 
             return result;
-        }
-
-        //#############################################################################
-
-        void OnWindTunnelPartEnteredEventHandler(object sender, Utilities.EventManager.WindTunnelPartEnteredEventArgs args)
-        {
-            if (!windTunnelPartList.Contains(args.WindTunnelPart))
-            {
-                windTunnelPartList.Add(args.WindTunnelPart);
-            }
-        }
-
-        void OnWindTunnelPartExitedEventHandler(object sender, Utilities.EventManager.WindTunnelPartExitedEventArgs args)
-        {
-            windTunnelPartList.Remove(args.WindTunnelPart);
-
-            if (windTunnelPartList.Count == 0)
-            {
-                stateMachine.ChangeState(new FallEnterArgs(StateId));
-            }
         }
 
         //#############################################################################

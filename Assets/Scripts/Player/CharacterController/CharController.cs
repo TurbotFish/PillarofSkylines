@@ -1,5 +1,4 @@
 ﻿using Game.Player.CharacterController.Containers;
-using Game.Player.CharacterController.EnterArgs;
 using Game.Player.CharacterController.States;
 using System.Collections;
 using System.Collections.Generic;
@@ -53,6 +52,9 @@ namespace Game.Player.CharacterController
         Vector3 gravityDirection = -Vector3.up;
         public Vector3 GravityDirection { get { return gravityDirection; } }
 
+        List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
+        public List<WindTunnelPart> WindTunnelPartList { get { return new List<WindTunnelPart>(windTunnelPartList); } }
+
         //#############################################################################
 
         #region initialization
@@ -67,25 +69,18 @@ namespace Game.Player.CharacterController
             PlayerController = gameController.PlayerController;
 
             myTransform = transform;
-            stateMachine = new StateMachine(this, PlayerModel);
+            stateMachine = new StateMachine(this, PlayerModel, new FallState(this, stateMachine));
 
             //*******************************************
 
-            stateMachine.Add(ePlayerState.move, new MoveState(this, stateMachine));
-            stateMachine.Add(ePlayerState.stand, new StandState(this, stateMachine));
-            stateMachine.Add(ePlayerState.fall, new FallState(this, stateMachine));
-            stateMachine.Add(ePlayerState.jump, new JumpState(this, stateMachine));
-            stateMachine.Add(ePlayerState.dash, new DashState(this, stateMachine), eAbilityType.Dash);
-            stateMachine.Add(ePlayerState.slide, new SlideState(this, stateMachine));
-            stateMachine.Add(ePlayerState.windTunnel, new WindTunnelState(this, stateMachine));
-            stateMachine.Add(ePlayerState.glide, new GlideState(this, stateMachine));
-
-            stateMachine.ChangeState(new FallEnterArgs(ePlayerState.empty));
+            stateMachine.RegisterAbility(ePlayerState.dash, eAbilityType.Dash);
 
             //*******************************************
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
+            Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
+            Utilities.EventManager.WindTunnelExitedEvent += OnWindTunnelPartExitedEventHandler;
 
             isInitialized = true;
             isHandlingInput = true;
@@ -107,6 +102,8 @@ namespace Game.Player.CharacterController
         {
             Utilities.EventManager.OnMenuSwitchedEvent -= OnMenuSwitchedEventHandler;
             Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayerEventHandler;
+            Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
+            Utilities.EventManager.WindTunnelExitedEvent -= OnWindTunnelPartExitedEventHandler;
         }
 
         #endregion monobehaviour methods
@@ -329,9 +326,27 @@ namespace Game.Player.CharacterController
             {
                 myTransform.rotation = args.Rotation;
                 Velocity = Vector3.zero;
-                stateMachine.ChangeState(new FallEnterArgs(ePlayerState.empty));
+                stateMachine.ChangeState(new FallState(this, stateMachine));
                 ChangeGravityDirection(Vector3.down);
             }
+        }
+
+        void OnWindTunnelPartEnteredEventHandler(object sender, Utilities.EventManager.WindTunnelPartEnteredEventArgs args)
+        {
+            if (!windTunnelPartList.Contains(args.WindTunnelPart))
+            {
+                windTunnelPartList.Add(args.WindTunnelPart);
+            }
+
+            //if (stateMachine.CurrentState != ePlayerState.windTunnel)
+            //{
+            //    stateMachine.ChangeState(new WindTunnelState(this, stateMachine));
+            //}
+        }
+
+        void OnWindTunnelPartExitedEventHandler(object sender, Utilities.EventManager.WindTunnelPartExitedEventArgs args)
+        {
+            windTunnelPartList.Remove(args.WindTunnelPart);
         }
 
         #endregion event handlers

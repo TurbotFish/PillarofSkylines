@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Game.Player.CharacterController.Containers;
-using Game.Player.CharacterController.EnterArgs;
 using UnityEngine;
 
 namespace Game.Player.CharacterController.States
@@ -21,28 +20,20 @@ namespace Game.Player.CharacterController.States
 
         //#############################################################################
 
-        public DashState(CharController charController, StateMachine stateMachine)
+        public DashState(CharController charController, StateMachine stateMachine, Vector3 forward)
         {
             this.charController = charController;
             this.stateMachine = stateMachine;
             dashData = charController.CharData.Dash;
+
+            this.forward = forward;
         }
 
         //#############################################################################
 
-        public void Enter(IEnterArgs enterArgs)
+        public void Enter()
         {
             Debug.Log("Enter State: Dash");
-
-            if (enterArgs.NewState != ePlayerState.dash)
-            {
-                Debug.LogError("Dash state entered with wrong arguments!");
-                stateMachine.ChangeState(new StandEnterArgs(StateId));
-                return;
-            }
-
-            var args = enterArgs as DashEnterArgs;
-            forward = args.Forward.normalized;
 
             timer = dashData.Time;
         }
@@ -75,7 +66,7 @@ namespace Game.Player.CharacterController.States
 
             if(timer <= 0)
             {
-                stateMachine.ChangeState(new StandEnterArgs(StateId));
+                stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
 
             return result;
