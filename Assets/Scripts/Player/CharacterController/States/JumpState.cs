@@ -1,141 +1,146 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Game.Player.CharacterController.Containers;
-using UnityEngine;
+﻿//using System.Collections;
+//using System.Collections.Generic;
+//using Game.Player.CharacterController.Containers;
+//using UnityEngine;
 
-namespace Game.Player.CharacterController.States
-{
-    public class JumpState : IState
-    {
-        //#############################################################################
+//namespace Game.Player.CharacterController.States
+//{
+//    public class JumpState : IState
+//    {
+//        //#############################################################################
 
-        public ePlayerState StateId { get { return ePlayerState.jump; } }
+//        public ePlayerState StateId { get { return ePlayerState.jump; } }
 
-        CharController charController;
-        StateMachine stateMachine;
-        CharData.JumpData jumpData;
+//        CharController charController;
+//        StateMachine stateMachine;
+//        CharData.JumpData jumpData;
 
-        bool firstUpdate;
-        float strength;
-        Vector3 velocity;
-        int remainingAerialJumps;
-        bool isAerialJump;
+//        bool firstUpdate;
+//        float strength;
+//        Vector3 velocity;
+//        int remainingAerialJumps;
+//        bool isAerialJump;
 
-        //#############################################################################
+//        //#############################################################################
 
-        public JumpState(CharController charController, StateMachine stateMachine)
-        {
-            this.charController = charController;
-            this.stateMachine = stateMachine;
-            jumpData = charController.CharData.Jump;
+//        public JumpState(CharController charController, StateMachine stateMachine)
+//        {
+//            this.charController = charController;
+//            this.stateMachine = stateMachine;
+//            jumpData = charController.CharData.Jump;
 
-            this.remainingAerialJumps = jumpData.MaxAerialJumps;
-            this.isAerialJump = false;
-        }
+//            remainingAerialJumps = jumpData.MaxAerialJumps;
+//            isAerialJump = false;
+//        }
 
-        public JumpState(CharController charController, StateMachine stateMachine, int remainingAerialJumps, bool isAerialJump)
-        {
-            this.charController = charController;
-            this.stateMachine = stateMachine;
-            jumpData = charController.CharData.Jump;
+//        public JumpState(CharController charController, StateMachine stateMachine, int remainingAerialJumps, bool isAerialJump)
+//        {
+//            this.charController = charController;
+//            this.stateMachine = stateMachine;
+//            jumpData = charController.CharData.Jump;
 
-            this.remainingAerialJumps = remainingAerialJumps;
-            this.isAerialJump = isAerialJump;
-        }
+//            this.remainingAerialJumps = remainingAerialJumps;
+//            this.isAerialJump = isAerialJump;
+//        }
 
-        //#############################################################################
+//        //#############################################################################
 
-        public void Enter()
-        {
-            Debug.Log("Enter State: Jump");
+//        public void Enter()
+//        {
+//            Debug.Log("Enter State: Jump");
 
-            firstUpdate = true;
+//            //if(isAerialJump && !charController.PlayerModel.CheckAbilityActive(eAbilityType.DoubleJump))
+//            //{
+//            //    stateMachine.ChangeState()
+//            //}
 
-            Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
-        }
+//            firstUpdate = true;
 
-        public void Exit()
-        {
-            Debug.Log("Exit State: Jump");
+//            Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
+//        }
 
-            Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
-        }
+//        public void Exit()
+//        {
+//            Debug.Log("Exit State: Jump");
 
-        //#############################################################################
+//            Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
+//        }
 
-        public void HandleInput()
-        {
-            PlayerInputInfo inputInfo = charController.InputInfo;
-            PlayerMovementInfo movementInfo = charController.MovementInfo;
-            CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
+//        //#############################################################################
 
-            if (inputInfo.jumpButtonDown && remainingAerialJumps > 0)
-            {
-                stateMachine.ChangeState(new JumpState(charController, stateMachine, remainingAerialJumps - 1, true));
-            }
-            else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
-            {
-                stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
-            }
+//        public void HandleInput()
+//        {
+//            PlayerInputInfo inputInfo = charController.InputInfo;
+//            PlayerMovementInfo movementInfo = charController.MovementInfo;
+//            CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
-            else if (movementInfo.velocity.y <= 0 || collisionInfo.above)
-            {
-                stateMachine.ChangeState(new FallState(charController, stateMachine));
-            }
-        }
+//            if (inputInfo.jumpButtonDown && remainingAerialJumps > 0)
+//            {
+//                stateMachine.ChangeState(new JumpState(charController, stateMachine, remainingAerialJumps - 1, true));
+//            }
+//            else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
+//            {
+//                stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
+//            }
 
-        public StateReturnContainer Update(float dt)
-        {
-            PlayerInputInfo inputInfo = charController.InputInfo;
-            PlayerMovementInfo movementInfo = charController.MovementInfo;
+//            else if (movementInfo.velocity.y <= 0 || collisionInfo.above)
+//            {
+//                stateMachine.ChangeState(new FallState(charController, stateMachine));
+//            }
+//        }
 
-            var result = new StateReturnContainer();
+//        public StateReturnContainer Update(float dt)
+//        {
+//            PlayerInputInfo inputInfo = charController.InputInfo;
+//            PlayerMovementInfo movementInfo = charController.MovementInfo;
 
-            result.CanTurnPlayer = false;
+//            var result = new StateReturnContainer();
 
-            float jumpStrength = jumpData.Strength;
-            float minJumpStrength = jumpData.MinStrength;
-            if (isAerialJump)
-            {
-                jumpStrength *= jumpData.AerialJumpCoeff;
-                minJumpStrength *= jumpData.AerialJumpCoeff;
-            }
+//            result.CanTurnPlayer = false;
 
-            if (firstUpdate)
-            {
-                velocity = movementInfo.velocity;
+//            float jumpStrength = jumpData.Strength;
+//            float minJumpStrength = jumpData.MinStrength;
+//            if (isAerialJump)
+//            {
+//                jumpStrength *= jumpData.AerialJumpCoeff;
+//                minJumpStrength *= jumpData.AerialJumpCoeff;
+//            }
 
-                result.Acceleration = (velocity * 0.05f + Vector3.up) * jumpStrength;
-                result.TransitionSpeed = 1 / dt;
+//            if (firstUpdate)
+//            {
+//                velocity = movementInfo.velocity;
 
-                firstUpdate = false;
-            }
-            else
-            {
-                result.Acceleration = Vector3.Project(inputInfo.leftStickToCamera, movementInfo.forward) * inputInfo.leftStickToCamera.magnitude * jumpData.Speed;
+//                result.Acceleration = (velocity * 0.05f + Vector3.up) * jumpStrength;
+//                result.TransitionSpeed = 1 / dt;
 
-                if (!inputInfo.jumpButton && movementInfo.velocity.y > minJumpStrength)
-                {
-                    result.Acceleration += charController.GravityDirection * (movementInfo.velocity.y - minJumpStrength) * (0.1f / dt);
-                }
-                //else if(movementInfo.velocity.y > jumpStrength)
-                //{
-                //    result.Acceleration += charController.GravityDirection * (movementInfo.velocity.y - jumpStrength) * (0.1f / dt);
-                //}
+//                firstUpdate = false;
+//            }
+//            else
+//            {
+//                result.Acceleration = Vector3.Project(inputInfo.leftStickToCamera, movementInfo.forward) * inputInfo.leftStickToCamera.magnitude * jumpData.Speed;
 
-                result.TransitionSpeed = jumpData.TransitionSpeed;
-            }
+//                if (!inputInfo.jumpButton && movementInfo.velocity.y > minJumpStrength)
+//                {
+//                    result.Acceleration += charController.GravityDirection * (movementInfo.velocity.y - minJumpStrength) * (0.1f / dt);
+//                }
+//                //else if(movementInfo.velocity.y > jumpStrength)
+//                //{
+//                //    result.Acceleration += charController.GravityDirection * (movementInfo.velocity.y - jumpStrength) * (0.1f / dt);
+//                //}
 
-            return result;
-        }
+//                result.TransitionSpeed = jumpData.TransitionSpeed;
+//            }
 
-        //#############################################################################
+//            return result;
+//        }
 
-        void OnWindTunnelPartEnteredEventHandler(object sender, Utilities.EventManager.WindTunnelPartEnteredEventArgs args)
-        {
-            stateMachine.ChangeState(new WindTunnelState(charController, stateMachine));
-        }
+//        //#############################################################################
 
-        //#############################################################################
-    }
-}
+//        void OnWindTunnelPartEnteredEventHandler(object sender, Utilities.EventManager.WindTunnelPartEnteredEventArgs args)
+//        {
+//            stateMachine.ChangeState(new WindTunnelState(charController, stateMachine));
+//        }
+
+//        //#############################################################################
+//    }
+//}

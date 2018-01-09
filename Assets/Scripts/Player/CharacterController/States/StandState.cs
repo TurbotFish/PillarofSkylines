@@ -46,7 +46,7 @@ namespace Game.Player.CharacterController.States
 
             if (inputInfo.jumpButtonDown)
             {
-                stateMachine.ChangeState(new JumpState(charController, stateMachine));
+                stateMachine.ChangeState(new AirState(charController, stateMachine, true));
             }
             else if (!inputInfo.leftStickAtZero)
             {
@@ -59,7 +59,7 @@ namespace Game.Player.CharacterController.States
             }
             else if (!collisionInfo.below)
             {
-                stateMachine.ChangeState(new FallState(charController, stateMachine));
+                stateMachine.ChangeState(new AirState(charController, stateMachine, false));
             }
         }
 

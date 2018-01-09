@@ -38,7 +38,7 @@ namespace Game.Player.CharacterController
 
         Transform myTransform;
         StateMachine stateMachine;
-        public ePlayerState CurrentState { get { if (stateMachine != null) return stateMachine.CurrentState; return ePlayerState.empty; } }
+        public ePlayerState CurrentState { get { return stateMachine.CurrentState; } }
 
         bool isInitialized;
         bool isHandlingInput;
@@ -331,7 +331,7 @@ namespace Game.Player.CharacterController
             {
                 myTransform.rotation = args.Rotation;
                 velocity = Vector3.zero;
-                stateMachine.ChangeState(new FallState(this, stateMachine));
+                stateMachine.ChangeState(new AirState(this, stateMachine, false));
                 ChangeGravityDirection(Vector3.down);
             }
         }

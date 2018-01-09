@@ -26,7 +26,7 @@ namespace Game.Player.CharacterController
             //this.character = character;
             model = character.PlayerModel;
 
-            currentState = new FallState(character, this);
+            currentState = new AirState(character, this, false);
         }
 
         //#############################################################################

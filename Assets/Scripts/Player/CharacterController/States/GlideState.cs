@@ -42,7 +42,7 @@ namespace Game.Player.CharacterController.States
 
             if (inputInfo.sprintButtonDown)
             {
-                stateMachine.ChangeState(new FallState(charController, stateMachine));
+                stateMachine.ChangeState(new AirState(charController, stateMachine, false));
             }
         }
 

@@ -46,7 +46,7 @@ namespace Game.Player.CharacterController.States
 
             if (inputInfo.jumpButtonDown)
             {
-                stateMachine.ChangeState(new JumpState(charController, stateMachine));
+                stateMachine.ChangeState(new AirState(charController, stateMachine, true));
             }
             else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
             {
@@ -63,7 +63,7 @@ namespace Game.Player.CharacterController.States
             }
             else if (!collisionInfo.below)
             {
-                stateMachine.ChangeState(new FallState(charController, stateMachine, moveData.CanStillJumpTimer));
+                stateMachine.ChangeState(new AirState(charController, stateMachine, moveData.CanStillJumpTimer));
             }
         }
 
