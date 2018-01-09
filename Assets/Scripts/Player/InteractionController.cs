@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Game.Player
-{
+namespace Game.Player {
     /// <summary>
     /// This class handles picking up of objects in the world.
     /// </summary>
@@ -27,7 +26,7 @@ namespace Game.Player
         bool eyeInRange = false;
 
         EchoSystem.EchoManager echoManager;
-
+        World.SpawnPointSystem.SpawnPointManager spawnPointManager;
         Transform airParticle, airOrigin;
 
         //
@@ -38,15 +37,14 @@ namespace Game.Player
         //########################################################################
 
         #region initialization
-
-        /// <summary>
-        /// 
-        /// </summary>
+        
 		public void InitializeFavourController(PlayerModel playerModel, CharacterController.Character player, EchoSystem.EchoManager echoManager)
         {
             this.playerModel = playerModel;
 			myPlayer = player;
             this.echoManager = echoManager;
+
+            spawnPointManager = FindObjectOfType<World.SpawnPointSystem.SpawnPointManager>(); //TODO: Fix that
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
@@ -236,18 +234,14 @@ namespace Game.Player
                         break;
                     //needle slot
                     case "NeedleSlot":
-
-
                         // si on est dans l'éclipse on peut poser peut importe lequel c'est
                         // sinon on ne peut retirer que s'il a l'aiguille
-
                         if (playerModel.hasNeedle || needleSlotCollider && needleSlotCollider == other) {
                             needleSlotInRange = true;
                             needleSlotCollider = other;
 
                             ShowUiMessage(playerModel.hasNeedle ? "Press [X] to plant the needle" : "Press [X] to take the needle");
                         }
-
                         break;
                     //eye
                     case "Eye":
@@ -292,6 +286,15 @@ namespace Game.Player
                             airOrigin = null;
                         }
                         break;
+                    // doorHome
+                    case "DoorHome":
+                        var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(spawnPointManager.GetHomeSpawnPoint(), spawnPointManager.GetHomeSpawnOrientation(), false); //TODO: make it take rotation as well
+                        Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                        break;
+                    // HomeBeacon
+                    case "HomeBeacon":
+                        ShowUiMessage("Press [X] to teleport");
+                        break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
@@ -299,10 +302,7 @@ namespace Game.Player
                 }
             }
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
+        
         void OnTriggerExit(Collider other)
         {
             if (other.gameObject.layer == LayerMask.NameToLayer("PickUps"))
@@ -426,8 +426,7 @@ namespace Game.Player
         //########################################################################
         //########################################################################
 
-        class PillarEntranceInfo
-        {
+        class PillarEntranceInfo {
             public bool IsPillarEntranceInRange = false;
             public World.Interaction.PillarEntrance CurrentPillarEntrance = null;
         }

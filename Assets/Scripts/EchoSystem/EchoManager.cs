@@ -53,7 +53,7 @@ namespace Game.EchoSystem
         void Update()
         {
             if (!isEclipseActive) {
-                float driftInput = Input.GetAxis("Right Trigger");
+                float driftInput = Input.GetAxis("Drift") + (Input.GetButtonUp("Drift") ? 1 : 0);
                 if (driftInput > 0.7f && !driftInputDown) {
                     driftInputDown = true;
                     Drift();
