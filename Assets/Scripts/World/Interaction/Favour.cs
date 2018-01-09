@@ -93,7 +93,7 @@ namespace Game.World.Interaction
 
         IEnumerator FavourManager() {
 
-            Transform player = FindObjectOfType<Player.CharacterController.Character>().transform;
+            Transform player = FindObjectOfType<Player.CharacterController.CharController>().transform;
             yield return new WaitForSeconds(startDelay);
             faveur.parent = null;
 
