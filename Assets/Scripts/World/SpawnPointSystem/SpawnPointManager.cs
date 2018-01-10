@@ -84,6 +84,23 @@ namespace Game.World.SpawnPointSystem
         /// Returns the home spawn point.
         /// Only works in the Open World.
         /// </summary>
+        public Transform GetHomeSpawnTransform() {
+            if (!isInitialized) {
+                Initialize();
+            }
+
+            if (home != null) {
+                return home.transform;
+            } else {
+                Debug.LogError("SpawnPointManager: no home spawn point found!");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Returns the home spawn point.
+        /// Only works in the Open World.
+        /// </summary>
         public Vector3 GetHomeSpawnPoint() {
             if (!isInitialized) {
                 Initialize();

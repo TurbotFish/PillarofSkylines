@@ -43,13 +43,13 @@ namespace Game.EchoSystem
 
         #region collision stuff
 
-        //void OnTriggerEnter(Collider col)
-        //{
-        //    if (isActive)
-        //    { // Si un truc rentre dans un écho, il est détruit
-        //        Break();
-        //    }
-        //}
+        void OnTriggerEnter(Collider col)
+        {
+            if (isActive)
+            { // Si un truc rentre dans un écho, il est détruit
+                Break();
+            }
+        }
 
         //void OnTriggerExit(Collider col)
         //{

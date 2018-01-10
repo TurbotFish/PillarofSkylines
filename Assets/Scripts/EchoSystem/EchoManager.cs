@@ -13,6 +13,7 @@ namespace Game.EchoSystem
 
         [Header("Home")]
         [SerializeField] GameObject homeDoor;
+        [SerializeField, Tooltip("Only for GameControllerLite")] Transform homePoint;
         [SerializeField] float timeToHoldForDoor = 1.5f;
 
         /// <summary>
@@ -27,6 +28,7 @@ namespace Game.EchoSystem
         List<Echo> echoList = new List<Echo>();
 
         bool isEclipseActive;
+        bool isDoorActive;
         float driftInputDown;
 
         Transform MyTransform { get; set; }
@@ -44,6 +46,11 @@ namespace Game.EchoSystem
             MyTransform = transform;
             
             this.spawnPointManager = spawnPointManager;
+            if (spawnPointManager)
+                homePoint = spawnPointManager.GetHomeSpawnTransform();
+            homeDoor = Instantiate(homeDoor);
+            homeDoor.GetComponentInChildren<HomePortalCamera>().anchorPoint = homePoint;
+            homeDoor.SetActive(false);
 
             Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
@@ -59,19 +66,27 @@ namespace Game.EchoSystem
 
                 if (driftInput > 0.7f) {
                     driftInputDown += Time.deltaTime;
-                    print("drift input held: " + driftInputDown);
-                    if (driftInputDown >= timeToHoldForDoor) {
+                    if (driftInputDown >= timeToHoldForDoor && !isDoorActive) {
                         // do the door thing!
-                        if (spawnPointManager) {
-                            var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(spawnPointManager.GetHomeSpawnPoint(), spawnPointManager.GetHomeSpawnOrientation(), false);
-                            Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                        isDoorActive = true;
+
+                        if (homePoint) {
+
+                            homeDoor.transform.position = playerTransform.position + playerTransform.forward * 2;
+                            homeDoor.SetActive(true);
+
+                            //var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(homePoint.position, Quaternion.identity, false);
+                            //Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+
                         } else {
-                            print("Can't go Home with GameControllerLite, sorry!");
+                            print("Assign HomePoint to the EchoManager if you want it to work with the GameControllerLite");
                         }
                     }
 
                 } else if (driftInput < 0.6f) {
-                    if (driftInputDown > 0)
+                    if (isDoorActive)
+                        isDoorActive = false;
+                    else if (driftInputDown > 0)
                         Drift();
                     driftInputDown = 0;
                 }
