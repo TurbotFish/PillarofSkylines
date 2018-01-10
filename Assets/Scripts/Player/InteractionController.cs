@@ -351,6 +351,10 @@ namespace Game.Player {
                     case "Wind":
 						other.GetComponent<WindTunnelPart>().RemovePlayer();
 						break;
+                    // HomeBeacon
+                    case "HomeBeacon":
+                        HideUiMessage();
+                        break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);

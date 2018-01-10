@@ -12,7 +12,7 @@ public class HomePortalCamera : MonoBehaviour {
     
     Transform my, worldCamera;
     Material mat;
-    Camera cam;
+    Camera cam, trueCam;
 
     private void Start() {
         my = transform;
@@ -32,7 +32,9 @@ public class HomePortalCamera : MonoBehaviour {
         if (!worldCamera)
             FindWorldCamera();
 
-        my.localRotation = worldCamera.localRotation;
+        cam.fieldOfView = trueCam.fieldOfView;
+
+        my.localRotation = worldCamera.localRotation; // TODO: faire qu'on puisse la tourner
 
         Vector3 camPos = worldAnchorPoint.position - worldCamera.localPosition;
         my.position = anchorPoint.position - camPos;
@@ -44,5 +46,6 @@ public class HomePortalCamera : MonoBehaviour {
 
     void FindWorldCamera() {
         worldCamera = FindObjectOfType<PoS_Camera>().transform;
+        trueCam = worldCamera.GetComponent<Camera>();
     }
 }

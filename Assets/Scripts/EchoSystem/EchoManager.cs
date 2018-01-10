@@ -22,6 +22,7 @@ namespace Game.EchoSystem
         int placedEchoes;
 
         Transform playerTransform;
+        new PoS_Camera camera;
         EchoCameraEffect echoCamera;
         EchoParticleSystem echoParticles;
 
@@ -39,6 +40,8 @@ namespace Game.EchoSystem
         #region initialization
 
         public void InitializeEchoManager(GameControl.IGameControllerBase gameController, World.SpawnPointSystem.SpawnPointManager spawnPointManager = null) {
+
+            camera = gameController.CameraController.PoS_Camera;
             echoCamera = gameController.CameraController.EchoCameraEffect;
             playerTransform = gameController.PlayerController.PlayerTransform;
             echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();
@@ -71,12 +74,9 @@ namespace Game.EchoSystem
                         isDoorActive = true;
 
                         if (homePoint) {
-
                             homeDoor.transform.position = playerTransform.position + playerTransform.forward * 2;
                             homeDoor.SetActive(true);
-
-                            //var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(homePoint.position, Quaternion.identity, false);
-                            //Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                            camera.LookAtHomeDoor(homeDoor.transform.position, homeDoor.transform.forward, homePoint.position);
 
                         } else {
                             print("Assign HomePoint to the EchoManager if you want it to work with the GameControllerLite");
@@ -84,8 +84,11 @@ namespace Game.EchoSystem
                     }
 
                 } else if (driftInput < 0.6f) {
-                    if (isDoorActive)
+                    if (isDoorActive) {
                         isDoorActive = false;
+                        homeDoor.SetActive(false);
+                        camera.StopLookingAtHomeDoor();
+                    }
                     else if (driftInputDown > 0)
                         Drift();
                     driftInputDown = 0;
