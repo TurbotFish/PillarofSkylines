@@ -5,6 +5,9 @@ Shader "Hidden/S_TextureToScreenSpace" {
 	}
 	SubShader {
         Tags { "RenderType"="Opaque"}
+		Cull Back
+		ZWrite On
+
 		Pass {
 			CGPROGRAM
 			#pragma vertex vert
@@ -14,7 +17,6 @@ Shader "Hidden/S_TextureToScreenSpace" {
 
 			struct appdata {
 				float4 vertex : POSITION;
-				float2 uv : TEXCOORD0;
 			};
 
 			struct v2f {
@@ -31,7 +33,7 @@ Shader "Hidden/S_TextureToScreenSpace" {
 			
 			sampler2D _MainTex;
 
-			fixed4 frag (v2f i) : SV_Target {
+			fixed4 frag (v2f i) : SV_TARGET {
 				i.uv /= i.uv.w;
 				fixed4 col = tex2D(_MainTex, i.uv);
 				return col;
