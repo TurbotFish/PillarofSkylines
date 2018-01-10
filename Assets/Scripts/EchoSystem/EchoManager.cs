@@ -7,13 +7,14 @@ namespace Game.EchoSystem
     {
         //##################################################################
 
-        [SerializeField]
-        Echo echoPrefab;
-
+        [SerializeField] Echo echoPrefab;
         public BreakEchoParticles breakEchoParticles;
+        [SerializeField] int maxEchoes = 3;
 
-        [SerializeField]
-        int maxEchoes = 3;
+        [Header("Home")]
+        [SerializeField] GameObject homeDoor;
+        [SerializeField] float timeToHoldForDoor = 1.5f;
+
         /// <summary>
         /// Number of echoes placed by the player.
         /// </summary>
@@ -26,21 +27,23 @@ namespace Game.EchoSystem
         List<Echo> echoList = new List<Echo>();
 
         bool isEclipseActive;
-        bool driftInputDown;
+        float driftInputDown;
 
         Transform MyTransform { get; set; }
+        World.SpawnPointSystem.SpawnPointManager spawnPointManager;
 
         //##################################################################
 
         #region initialization
 
-        public void InitializeEchoManager(GameControl.IGameControllerBase gameController)
-        {
+        public void InitializeEchoManager(GameControl.IGameControllerBase gameController, World.SpawnPointSystem.SpawnPointManager spawnPointManager = null) {
             echoCamera = gameController.CameraController.EchoCameraEffect;
             playerTransform = gameController.PlayerController.PlayerTransform;
             echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();
 
             MyTransform = transform;
+            
+            this.spawnPointManager = spawnPointManager;
 
             Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
@@ -50,20 +53,32 @@ namespace Game.EchoSystem
 
         //##################################################################
 
-        void Update()
-        {
+        void Update() {
             if (!isEclipseActive) {
-                float driftInput = Input.GetAxis("Right Trigger");
-                if (driftInput > 0.7f && !driftInputDown) {
-                    driftInputDown = true;
-                    Drift();
-                } else if (driftInput < 0.6f)
-                    driftInputDown = false;
+                float driftInput = Input.GetAxis("Drift") + (Input.GetButtonUp("Drift") ? 1 : 0);
+
+                if (driftInput > 0.7f) {
+                    driftInputDown += Time.deltaTime;
+                    print("drift input held: " + driftInputDown);
+                    if (driftInputDown >= timeToHoldForDoor) {
+                        // do the door thing!
+                        if (spawnPointManager) {
+                            var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(spawnPointManager.GetHomeSpawnPoint(), spawnPointManager.GetHomeSpawnOrientation(), false);
+                            Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                        } else {
+                            print("Can't go Home with GameControllerLite, sorry!");
+                        }
+                    }
+
+                } else if (driftInput < 0.6f) {
+                    if (driftInputDown > 0)
+                        Drift();
+                    driftInputDown = 0;
+                }
 
                 if (Input.GetButtonDown("Echo"))
                     CreateEcho(true);
-            } else
-                driftInputDown = true;
+            }
         }
 
         //##################################################################
@@ -114,7 +129,6 @@ namespace Game.EchoSystem
                     i++;
                     oldestEcho = echoList[i];
                 }
-
                 Break(oldestEcho);
             }
 

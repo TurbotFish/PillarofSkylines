@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Game.Player
-{
+namespace Game.Player {
     /// <summary>
     /// This class handles picking up of objects in the world.
     /// </summary>
@@ -27,7 +26,7 @@ namespace Game.Player
         bool eyeInRange = false;
 
         EchoSystem.EchoManager echoManager;
-
+        World.SpawnPointSystem.SpawnPointManager spawnPointManager;
         Transform airParticle, airOrigin;
 
         //
@@ -38,22 +37,21 @@ namespace Game.Player
         //########################################################################
 
         #region initialization
-
-        /// <summary>
-        /// 
-        /// </summary>
-		public void Initialize(PlayerModel playerModel, CharacterController.CharController player, EchoSystem.EchoManager echoManager)
+        
+		public void InitializeFavourController(PlayerModel playerModel, CharacterController.CharController player, EchoSystem.EchoManager echoManager)
         {
             this.playerModel = playerModel;
-            myPlayer = player;
+			myPlayer = player;
             this.echoManager = echoManager;
+
+            spawnPointManager = FindObjectOfType<World.SpawnPointSystem.SpawnPointManager>(); //TODO: Fix that
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
         }
 
         #endregion initialization
-
+        
         //########################################################################
 
         #region input handling
@@ -77,7 +75,7 @@ namespace Game.Player
                     {
                         //pick up favour
                         playerModel.ChangeFavourAmount(1);
-
+                        
                         //send event
                         Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(favour.InstanceId));
                     }
@@ -98,15 +96,14 @@ namespace Game.Player
                     Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(false));
                 }
                 //needle
-                else if (needleInRange || needleSlotInRange)
-                {
+                else if (needleInRange || needleSlotInRange) {
 
-                    foreach (Transform child in needleSlotCollider.transform)
+                    foreach(Transform child in needleSlotCollider.transform)
                         child.gameObject.SetActive(playerModel.hasNeedle);
 
                     if (playerModel.hasNeedle)
                         needleSlotForDrift = needleSlotCollider;
-
+                    
                     playerModel.hasNeedle ^= true;
 
                     Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(playerModel.hasNeedle));
@@ -130,44 +127,38 @@ namespace Game.Player
                 isInteractButtonDown = false;
             }
 
-            // drift input handling
+			// drift input handling
             float driftInput = Input.GetAxis("Right Trigger");
-            if (driftInput > 0.7f && !isDriftButtonDown)
-            {
+            if (driftInput > 0.7f && !isDriftButtonDown)  {
                 isDriftButtonDown = true;
+				
+				// stop eclipse
+				if (playerModel.hasNeedle) {
+					playerModel.hasNeedle = false;
 
-                // stop eclipse
-                if (playerModel.hasNeedle)
-                {
-                    playerModel.hasNeedle = false;
+					if (needleSlotForDrift) {
+						foreach (Transform child in needleSlotForDrift.transform)
+							child.gameObject.SetActive(true);
 
-                    if (needleSlotForDrift)
-                    {
-                        foreach (Transform child in needleSlotForDrift.transform)
-                            child.gameObject.SetActive(true);
+						var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(needleSlotForDrift.transform.position, Quaternion.identity, false);
+						Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+					}
+					needleSlotCollider = needleSlotForDrift;
 
-                        var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(needleSlotForDrift.transform.position, Quaternion.identity, false);
-                        Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
-                    }
-                    needleSlotCollider = needleSlotForDrift;
+					Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(false));
 
-                    Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(false));
-
-                    // stop air particles
-                }
-                else if (airParticle)
-                {
-                    airParticle.parent = airOrigin;
-                    airParticle.transform.localPosition = Vector3.zero;
-                    airParticle = null;
-                }
+				// stop air particles
+				} else if (airParticle) {
+					airParticle.parent = airOrigin;
+					airParticle.transform.localPosition = Vector3.zero;
+					airParticle = null;
+				}
             }
             else if (driftInput < 0.6f && isDriftButtonDown)
                 isDriftButtonDown = false;
-
+			
             // stop air particle if grounded
-            if (airParticle && (myPlayer.CurrentState & (CharacterController.ePlayerState.move | CharacterController.ePlayerState.slide | CharacterController.ePlayerState.stand)) != 0)
-            {
+            if (airParticle && (myPlayer.CurrentState & (CharacterController.ePlayerState.move | CharacterController.ePlayerState.slide | CharacterController.ePlayerState.stand)) != 0) {
                 airParticle.parent = airOrigin;
                 airParticle.transform.localPosition = Vector3.zero;
                 airParticle = null;
@@ -207,7 +198,7 @@ namespace Game.Player
                             {
                                 favour = null;
                             }
-                        }
+                        }                     
                         break;
                     //pillar entrance
                     case "Pillar":
@@ -225,7 +216,7 @@ namespace Game.Player
                         }
 
                         var pillarExit = other.GetComponent<World.Interaction.PillarExit>();
-                        if (pillarExit != null)
+                        if(pillarExit != null)
                         {
                             pillarExitInRange = true;
 
@@ -243,28 +234,22 @@ namespace Game.Player
                         break;
                     //needle slot
                     case "NeedleSlot":
-
-
                         // si on est dans l'éclipse on peut poser peut importe lequel c'est
                         // sinon on ne peut retirer que s'il a l'aiguille
-
-                        if (playerModel.hasNeedle || needleSlotCollider && needleSlotCollider == other)
-                        {
+                        if (playerModel.hasNeedle || needleSlotCollider && needleSlotCollider == other) {
                             needleSlotInRange = true;
                             needleSlotCollider = other;
 
                             ShowUiMessage(playerModel.hasNeedle ? "Press [X] to plant the needle" : "Press [X] to take the needle");
                         }
-
                         break;
                     //eye
                     case "Eye":
-                        if (playerModel.hasNeedle)
-                        {
+                        if (playerModel.hasNeedle) {
                             eyeInRange = true;
                             ShowUiMessage("Press [X] to plant the needle");
                         }
-                        break;
+						break;
                     //echo
                     case "Echo":
                         other.GetComponent<EchoSystem.Echo>().Break();
@@ -280,28 +265,35 @@ namespace Game.Player
                         break;
                     //wind
                     case "Wind":
-                        //other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer); //this is not used anymore! Patrick
-                        break;
+						other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer);
+						break;
                     // air particle
                     case "AirParticle":
-                        if (!airParticle)
-                        {
+                        if (!airParticle) {
                             airOrigin = other.transform;
                             airParticle = airOrigin.GetChild(0);
                             airParticle.parent = myPlayer.transform;
-                            airParticle.localPosition = new Vector3(0, 1, 0);
+                            airParticle.localPosition = new Vector3(0,1,0);
                         }
                         break;
                     // air particle
                     case "AirReceptor":
-                        if (airParticle)
-                        {
+                        if (airParticle) {
                             other.GetComponent<AirReceptor>().Activate();
                             Destroy(airParticle.gameObject);
                             Destroy(airOrigin.gameObject);
                             airParticle = null;
                             airOrigin = null;
                         }
+                        break;
+                    // doorHome
+                    case "DoorHome":
+                        var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(spawnPointManager.GetHomeSpawnPoint(), spawnPointManager.GetHomeSpawnOrientation(), false); //TODO: make it take rotation as well
+                        Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                        break;
+                    // HomeBeacon
+                    case "HomeBeacon":
+                        ShowUiMessage("Press [X] to teleport");
                         break;
                     //other
                     default:
@@ -310,10 +302,7 @@ namespace Game.Player
                 }
             }
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
+        
         void OnTriggerExit(Collider other)
         {
             if (other.gameObject.layer == LayerMask.NameToLayer("PickUps"))
@@ -353,15 +342,15 @@ namespace Game.Player
                         eyeInRange = false;
 
                         HideUiMessage();
-                        break;
+						break;
                     //eye
                     case "Echo":
                         other.GetComponent<EchoSystem.Echo>().isActive = true;
                         break;
                     //wind
                     case "Wind":
-                        other.GetComponent<WindTunnelPart>().RemovePlayer();
-                        break;
+						other.GetComponent<WindTunnelPart>().RemovePlayer();
+						break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
@@ -437,8 +426,7 @@ namespace Game.Player
         //########################################################################
         //########################################################################
 
-        class PillarEntranceInfo
-        {
+        class PillarEntranceInfo {
             public bool IsPillarEntranceInRange = false;
             public World.Interaction.PillarEntrance CurrentPillarEntrance = null;
         }
