@@ -13,16 +13,19 @@ public class HomePortalCamera : MonoBehaviour {
     Vector3 anchorPoint, worldAnchorPoint;
     Transform my, worldCamera;
     Material mat;
+    Camera cam;
 
     private void Start() {
         my = transform;
         anchorPoint = AnchorPoint.position;
         worldAnchorPoint = WorldAnchorPoint.position;
 
-        texture = new RenderTexture(1920, 1080, 0);
+        cam = GetComponent<Camera>();
+
+        texture = new RenderTexture(Screen.width, Screen.height, 16);
         texture.Create();
-        GetComponent<Camera>().forceIntoRenderTexture = true;
-        GetComponent<Camera>().targetTexture = texture;
+        cam.forceIntoRenderTexture = true;
+        cam.targetTexture = texture;
 
         mat = new Material(shader);
         portalRenderer.sharedMaterial = mat;

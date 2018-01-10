@@ -18,7 +18,7 @@ Shader "Hidden/S_TextureToScreenSpace" {
 			};
 
 			struct v2f {
-				float2 uv : TEXCOORD0;
+				float4 uv : TEXCOORD0;
 				float4 vertex : SV_POSITION;
 			};
 
@@ -32,6 +32,7 @@ Shader "Hidden/S_TextureToScreenSpace" {
 			sampler2D _MainTex;
 
 			fixed4 frag (v2f i) : SV_Target {
+				i.uv /= i.uv.w;
 				fixed4 col = tex2D(_MainTex, i.uv);
 				return col;
 			}
