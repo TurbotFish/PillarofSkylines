@@ -50,8 +50,6 @@ namespace Game.Player.CharacterController
 
 
 
-        Vector3 gravityDirection = -Vector3.up;
-        public Vector3 GravityDirection { get { return gravityDirection; } }
 
         List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
         public List<WindTunnelPart> WindTunnelPartList { get { return new List<WindTunnelPart>(windTunnelPartList); } }
@@ -129,6 +127,11 @@ namespace Game.Player.CharacterController
             if (!isInitialized)
             {
                 return;
+            }
+
+            if (Input.GetKeyDown(KeyCode.F6))
+            {
+                this.ChangeGravityDirection(Vector3.left);
             }
 
             //*******************************************
@@ -396,14 +399,12 @@ namespace Game.Player.CharacterController
 
         public void ChangeGravityDirection(Vector3 newGravity)
         {
-            gravityDirection = newGravity.normalized;
-            MyTransform.Rotate(Vector3.Cross(MyTransform.up, -gravityDirection), Vector3.SignedAngle(MyTransform.up, -gravityDirection, Vector3.Cross(MyTransform.up, -gravityDirection)), Space.World);
+            MyTransform.Rotate(Vector3.Cross(MyTransform.up, -newGravity), Vector3.SignedAngle(MyTransform.up, -newGravity, Vector3.Cross(MyTransform.up, -newGravity)), Space.World);
         }
 
         public void ChangeGravityDirection(Vector3 newGravity, Vector3 point)
         {
-            gravityDirection = newGravity.normalized;
-            MyTransform.RotateAround(point, Vector3.Cross(MyTransform.up, -gravityDirection), Vector3.SignedAngle(MyTransform.up, -gravityDirection, Vector3.Cross(MyTransform.up, -gravityDirection)));
+            MyTransform.RotateAround(point, Vector3.Cross(MyTransform.up, -newGravity), Vector3.SignedAngle(MyTransform.up, -newGravity, Vector3.Cross(MyTransform.up, -newGravity)));
         }
 
         #endregion cancer

@@ -178,7 +178,7 @@ namespace Game.Player.CharacterController.States
 
                     if (!inputInfo.jumpButton && movementInfo.velocity.y > minJumpStrength)
                     {
-                        result.Acceleration += charController.GravityDirection * (movementInfo.velocity.y - minJumpStrength) * (0.1f / dt);
+                        result.Acceleration += Vector3.down * (movementInfo.velocity.y - minJumpStrength) * (0.1f / dt);
                     }
 
                     result.TransitionSpeed = jumpData.TransitionSpeed;
