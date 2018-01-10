@@ -124,6 +124,8 @@ namespace Game.World.ChunkSystem
             var ChunkCopyTransform = chunkCopyGameObject.transform;
             ChunkCopyTransform.parent = parent;
             ChunkCopyTransform.localPosition = transform.localPosition;
+            ChunkCopyTransform.localRotation = transform.localRotation;
+            ChunkCopyTransform.localScale = transform.localScale;
 
             var newBounds = chunkCopyGameObject.GetComponent<BoxCollider>();
             chunkCopyGameObject.layer = gameObject.layer;

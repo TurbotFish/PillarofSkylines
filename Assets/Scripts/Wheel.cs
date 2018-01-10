@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Game.Player.CharacterController;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,9 +28,9 @@ public class Wheel : MovingPlatform {
 		}
 	}
 
-	override public void AddPlayer(Game.Player.CharacterController.Character player, Vector3 playerImpactPoint) {
+	override public void AddPlayer(CharController player, Vector3 playerImpactPoint) {
 		currPlayer = player;
-		initialGravity = player.gravity;
+		initialGravity = player.GravityDirection;
 		impactPoint = playerImpactPoint;
 	}
 

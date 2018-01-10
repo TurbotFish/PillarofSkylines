@@ -329,7 +329,7 @@ public class Z_Grappling : MonoBehaviour
 		_rb.isKinematic = false;
 		_rb.velocity = _controller.velocity;
 		_controller.enabled = false;
-		gameObject.GetComponent<ThirdPersonController>().enabled = false;
+		//gameObject.GetComponent<ThirdPersonController>().enabled = false;
 		gameObject.GetComponent<CapsuleCollider>().enabled = true;
 		_inAirCounter = 0;
 		_rb.constraints = RigidbodyConstraints.None;
@@ -357,7 +357,7 @@ public class Z_Grappling : MonoBehaviour
 		_controller.enabled = true;
 		_controller.SimpleMove(Vector3.zero);
 
-		gameObject.GetComponent<ThirdPersonController>().enabled = true;
+		//gameObject.GetComponent<ThirdPersonController>().enabled = true;
 		transform.rotation = Quaternion.Euler(0,transform.rotation.eulerAngles.y, 0);
 	}
 
@@ -381,8 +381,8 @@ public class Z_Grappling : MonoBehaviour
 	void InAirControl ()
 	{
 		Vector2 _dir = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-		Transform _rot = GetComponent<ThirdPersonController>().rotator;
-		_rb.AddForce((_rot.right*_dir.x + _rot.forward*_dir.y)*airControlStrength);
+		//Transform _rot = GetComponent<ThirdPersonController>().rotator;
+		//_rb.AddForce((_rot.right*_dir.x + _rot.forward*_dir.y)*airControlStrength);
 		if (!_grapOut)
 		{
 			if (_rb.velocity.x > 0)

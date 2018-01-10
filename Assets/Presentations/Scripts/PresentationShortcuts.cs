@@ -11,7 +11,7 @@ public class PresentationShortcuts : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		_character = GameObject.FindObjectOfType<ThirdPersonController> ().transform;
+		//_character = GameObject.FindObjectOfType<ThirdPersonController> ().transform;
 		_charBasePosition = _character.position;
 		_cameraBaseRotation = Camera.main.transform.rotation.eulerAngles;
 	}
