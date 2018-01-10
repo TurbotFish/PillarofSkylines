@@ -8,7 +8,7 @@ namespace Game.World.SpawnPointSystem
     {
         //##################################################################
 
-        SpawnPoint initialSpawnPoint;
+        SpawnPoint initialSpawnPoint, home;
         Dictionary<ePillarId, SpawnPoint> pillarExitPointDictionary = new Dictionary<ePillarId, SpawnPoint>();
 
         bool isInitialized = false;
@@ -21,19 +21,17 @@ namespace Game.World.SpawnPointSystem
 
             foreach (var child in children)
             {
-                if (child.Type == eSpawnPointType.Initial)
-                {
+                if (child.Type == eSpawnPointType.Initial) {
                     if (initialSpawnPoint == null)
-                    {
                         initialSpawnPoint = child;
-                    }
                 }
-                else if (child.Type == eSpawnPointType.PillarExit)
-                {
+                else if (child.Type == eSpawnPointType.PillarExit) {
                     if (!pillarExitPointDictionary.ContainsKey(child.Pillar))
-                    {
                         pillarExitPointDictionary.Add(child.Pillar, child);
-                    }
+                }
+                else if (child.Type == eSpawnPointType.Home) {
+                    if (home == null)
+                        home = child;
                 }
             }
 
@@ -77,6 +75,58 @@ namespace Game.World.SpawnPointSystem
                 return initialSpawnPoint.transform.rotation;
             } else {
                 Debug.LogError("SpawnPointManager: no initial spawn point found!");
+                return Quaternion.identity;
+            }
+        }
+
+
+        /// <summary>
+        /// Returns the home spawn point.
+        /// Only works in the Open World.
+        /// </summary>
+        public Transform GetHomeSpawnTransform() {
+            if (!isInitialized) {
+                Initialize();
+            }
+
+            if (home != null) {
+                return home.transform;
+            } else {
+                Debug.LogError("SpawnPointManager: no home spawn point found!");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Returns the home spawn point.
+        /// Only works in the Open World.
+        /// </summary>
+        public Vector3 GetHomeSpawnPoint() {
+            if (!isInitialized) {
+                Initialize();
+            }
+
+            if (home != null) {
+                return home.transform.position;
+            } else {
+                Debug.LogError("SpawnPointManager: no home spawn point found!");
+                return Vector3.zero;
+            }
+        }
+
+        /// <summary>
+        /// Returns the home spawn rotation.
+        /// Only works in the Open World.
+        /// </summary>
+        public Quaternion GetHomeSpawnOrientation() {
+            if (!isInitialized) {
+                Initialize();
+            }
+
+            if (home != null) {
+                return home.transform.rotation;
+            } else {
+                Debug.LogError("SpawnPointManager: no home spawn point found!");
                 return Quaternion.identity;
             }
         }

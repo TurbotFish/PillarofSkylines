@@ -171,7 +171,7 @@ namespace Game.GameControl
 
             this.openWorldSceneInfo.WorldController.InitializeWorldController(this.playerController.transform, CameraController.transform);
 
-            this.EchoManager.InitializeEchoManager(this);
+            this.EchoManager.InitializeEchoManager(this, openWorldSceneInfo.SpawnPointManager);
             this.EclipseManager.InitializeEclipseManager(this);
 
             yield return null;

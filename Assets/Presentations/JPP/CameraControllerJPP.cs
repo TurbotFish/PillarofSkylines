@@ -12,6 +12,8 @@ public class CameraControllerJPP : MonoBehaviour {
 	public List<Transform> positions = new List<Transform>();
 	public Transform layer1, layer2;
 	public RawImage videoCanvas;
+	public RawImage videoCanvas2;
+
 	public RawImage textureCanvas;
 	public List<VideoPlayer> players = new List<VideoPlayer> ();
 	public float lowVideoSpeed;
@@ -35,7 +37,6 @@ public class CameraControllerJPP : MonoBehaviour {
 				}
 			}
 		}
-
 	}
 
 	public void TeleportCameraCloudsSide(int i)
@@ -63,7 +64,7 @@ public class CameraControllerJPP : MonoBehaviour {
 	{
 
 		StartCoroutine (LayersLeftToRight (0));
-		StartCoroutine (TeleportCamera (i, 1f));
+		StartCoroutine (TeleportCamera (i, 0.75f));
 	}
 
 	public void TeleporteCameraLayerLeft(int i)
@@ -88,6 +89,7 @@ public class CameraControllerJPP : MonoBehaviour {
 	public void DisableVideoLAyer ()
 	{
 		videoCanvas.color = new Color (1, 1, 1, 0);
+		videoCanvas2.color = new Color (1, 1, 1, 0);
 		textureCanvas.color = new Color (1, 1, 1, 0);
 	}
 
@@ -104,6 +106,18 @@ public class CameraControllerJPP : MonoBehaviour {
 		StartCoroutine (LayersLeft (0));
 		StartCoroutine (StopVideo (v, 0.75f));
 	}
+	public void StopVideoLayerLeft2(VideoPlayer v)
+	{
+
+		StartCoroutine (LayersLeft (0));
+		StartCoroutine (StopVideo2 (v, 0.75f));
+	}
+	public void VideoChange(VideoPlayer v)
+	{
+		StartCoroutine (LaunchVideo2 (v, 0));
+		videoCanvas.color = new Color (1, 1, 1, 0);
+		videoCanvas2.color = new Color (1, 1, 1, 1);
+	}
 
 	public void VideoTexturePlay()
 	{
@@ -111,12 +125,13 @@ public class CameraControllerJPP : MonoBehaviour {
 		StartCoroutine (FadeWhite (0));
 		StartCoroutine (PlayTexture (0.25f));
 	}
-	public void VideoTextureStopLeft()
+	public void VideoTextureStopLeft(RawImage texture)
 	{
 
 		StartCoroutine (LayersLeft (0));
-		StartCoroutine (StopTexture (0.5f));
+		StartCoroutine (StopTexture (texture,0.5f));
 	}
+
 	public void SetTarget(Transform t)
 	{
 		target = t;
@@ -141,13 +156,25 @@ public class CameraControllerJPP : MonoBehaviour {
 		videoCanvas.color = new Color (1, 1, 1, 1);
 		video.Play ();
 	}
+
+	IEnumerator LaunchVideo2(VideoPlayer video, float t)
+	{
+		yield return new WaitForSecondsRealtime (t);
+		videoCanvas2.color = new Color (1, 1, 1, 1);
+		video.Play ();
+	}
 	IEnumerator StopVideo(VideoPlayer video, float t)
 	{
 		yield return new WaitForSecondsRealtime (t);
 		videoCanvas.color = new Color (1, 1, 1, 0);
 		video.Stop ();
 	}
-
+	IEnumerator StopVideo2(VideoPlayer video, float t)
+	{
+		yield return new WaitForSecondsRealtime (t);
+		videoCanvas2.color = new Color (1, 1, 1, 0);
+		video.Stop ();
+	}
 	IEnumerator FadeWhite( float t)
 	{
 		yield return new WaitForSecondsRealtime (t);
@@ -175,9 +202,9 @@ public class CameraControllerJPP : MonoBehaviour {
 		yield return new WaitForSecondsRealtime (t);
 		textureCanvas.color = new Color (1, 1, 1, 1);
 	}
-	IEnumerator StopTexture( float t)
+	IEnumerator StopTexture(RawImage texture, float t)
 	{
 		yield return new WaitForSecondsRealtime (t);
-		textureCanvas.color = new Color (1, 1, 1, 0);
+		texture.color = new Color (1, 1, 1, 0);
 	}
 }
