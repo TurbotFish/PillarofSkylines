@@ -207,8 +207,9 @@ namespace Game.Player.CharacterController
             //Debug.LogFormat("initial velocity: {0}", velocity);
             //Debug.LogFormat("desiredVelocity={0}", stateReturn.DesiredVelocity.magnitude.ToString());
 
-            //computing new velocity
-            var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
+			//computing new velocity
+			//var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
+			var newVelocity = Vector3.Lerp(velocity, acceleration + externalVelocity, Time.deltaTime * transitionSpeed);
 
             //Debug.LogFormat("new velocity: {0}", newVelocity);
 
@@ -235,6 +236,8 @@ namespace Game.Player.CharacterController
             //physics update
 
             var turnedVelocity = TurnLocalToSpace(newVelocity);
+
+			print("velocity : " + turnedVelocity);
 
             if (stateMachine.CurrentState == ePlayerState.glide)
             {
