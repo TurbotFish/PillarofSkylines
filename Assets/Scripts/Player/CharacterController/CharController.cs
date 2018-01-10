@@ -211,7 +211,7 @@ namespace Game.Player.CharacterController
             //adding gravity
             if (!stateReturn.IgnoreGravity)
             {
-                newVelocity += gravityDirection * (CharData.General.GravityStrength * Time.deltaTime);
+                newVelocity += Vector3.down * (CharData.General.GravityStrength * Time.deltaTime);
             }
 
             //Debug.LogFormat("after gravity: {0}", newVelocity);
