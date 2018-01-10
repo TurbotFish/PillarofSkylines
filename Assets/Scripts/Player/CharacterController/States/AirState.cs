@@ -154,7 +154,7 @@ namespace Game.Player.CharacterController.States
             }
             else
             {
-                result.CanTurnPlayer = false;
+				result.CanTurnPlayer = true;
 
                 float jumpStrength = jumpData.Strength;
                 float minJumpStrength = jumpData.MinStrength;
