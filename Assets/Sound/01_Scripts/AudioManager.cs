@@ -12,7 +12,7 @@ public class AudioManager : MonoBehaviour {
 
 	[Header("Player")]
 	public Animator anim;
-	public Game.Player.CharacterController.Character player;
+	public Game.Player.CharacterController.CharController player;
 
 	[Header("Footsteps")]
 	public SurfaceType surface;
@@ -59,7 +59,7 @@ public class AudioManager : MonoBehaviour {
 
 	void HandleWind()
 	{
-		playerSpeed = player.velocity.magnitude;
+		playerSpeed = player.MovementInfo.velocity.magnitude;
 		float t = playerSpeed / playerVelocityMax;
 		wind.volume = Mathf.Lerp (windVolume.min, windVolume.max, t);
 

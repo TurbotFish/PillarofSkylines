@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Game.Player.CharacterController;
 
 [AddComponentMenu("Camera/Third Person Camera")]
 [RequireComponent(typeof(Camera))]
@@ -95,7 +96,7 @@ public class PoS_Camera : MonoBehaviour {
 	Vector2 input;
 	Vector2 rotationSpeed;
 	Vector2 offset;
-	Game.Player.CharacterController.Character player;
+	Game.Player.CharacterController.CharController player;
     Game.Player.CharacterController.CharacControllerRecu controller;
 	Transform my;
     Eclipse eclipseFX;
@@ -129,7 +130,7 @@ public class PoS_Camera : MonoBehaviour {
 		Cursor.lockState = CursorLockMode.Locked;
 
         my = transform;
-		player = target.GetComponentInParent<Game.Player.CharacterController.Character>();
+		player = target.GetComponentInParent<Game.Player.CharacterController.CharController>();
 		controller = player.GetComponent<Game.Player.CharacterController.CharacControllerRecu>();
         
 		currentDistance = zoomValue = idealDistance = distance;
@@ -322,12 +323,12 @@ public class PoS_Camera : MonoBehaviour {
         if (eclipseFX)
             eclipseFX.camSpeed = input;
 
-		playerState = player.currentPlayerState;
-		playerVelocity = player.velocity;
+		playerState = player.CurrentState;
+		playerVelocity = player.MovementInfo.velocity;
 
 		targetSpace = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, target.up), Vector3.Cross(Vector3.up, target.up));
 
-        bool isGrounded = playerState == Game.Player.CharacterController.ePlayerState.onGround || playerState == Game.Player.CharacterController.ePlayerState.sliding;
+        bool isGrounded = (playerState & (ePlayerState.move | ePlayerState.stand | ePlayerState.slide)) != 0;
         float slopeValue = CheckGroundAndReturnSlopeValue();
 
         // TODO: Il nous faut une fonction SetState() pour pouvoir faire des trucs uniquement lors d'un changement de State
@@ -335,7 +336,7 @@ public class PoS_Camera : MonoBehaviour {
         if (isGrounded && additionalDistance != 0)
             additionalDistance = 0;
 
-        if (resetType == eResetType.ManualAir && playerState == Game.Player.CharacterController.ePlayerState.onGround)
+        if (resetType == eResetType.ManualAir && (playerState & (ePlayerState.move | ePlayerState.stand))!=0)
             StopCurrentReset();
 
         if (inverseFacingDirection && Input.GetAxis("Vertical") >= 0) {
@@ -373,7 +374,7 @@ public class PoS_Camera : MonoBehaviour {
 			else 
 				AirStateCamera();
             
-            if (playerState == Game.Player.CharacterController.ePlayerState.gliding || playerState == Game.Player.CharacterController.ePlayerState.inWindTunnel) {
+            if (playerState == ePlayerState.glide || playerState == ePlayerState.windTunnel) {
                 SetTargetRotation(-2 * playerVelocity.y + defaultPitch, GetYawBehindPlayer(), resetDamp);
                 state = eCameraState.FollowBehind;
             }
@@ -387,7 +388,7 @@ public class PoS_Camera : MonoBehaviour {
             state = eCameraState.Resetting;
 
             // dans les airs, la caméra pointe vers le bas
-            if (playerState == Game.Player.CharacterController.ePlayerState.inAir) { // on n'utilise pas isGrounded ici car cet état est spécifique au fait de tomber
+            if (playerState == ePlayerState.air) { // on n'utilise pas isGrounded ici car cet état est spécifique au fait de tomber
                 resetType = eResetType.ManualAir;
                 SetTargetRotation(pitchRotationLimit.max, GetYawBehindPlayer(), resetDamp);
             } else { // sinon, elle se met derrière le joueur
@@ -574,7 +575,7 @@ public class PoS_Camera : MonoBehaviour {
             groundNormal = targetUp; // Si on est quasi à la verticale, on considère qu'on est contre un mur, on repasse en caméra normale
 
         // Si on est au sol et qu'il n'y a pas de mur devant
-        if (playerState == Game.Player.CharacterController.ePlayerState.onGround && !Physics.Raycast(targetPos, player.transform.forward, 1, controller.collisionMask)) {
+        if ((playerState & (ePlayerState.move | ePlayerState.stand))!=0 && !Physics.Raycast(targetPos, player.transform.forward, 1, controller.collisionMask)) {
 
             RaycastHit groundInFront;
 

@@ -140,7 +140,6 @@ namespace Game.UI.AbilityMenu
             //**********************************************
             //handle ability selection
 
-            //var leftStick = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
             var leftStick = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
             if ((previousStickPos - leftStick).magnitude > 0.05f) //ignore stick if it is not moving

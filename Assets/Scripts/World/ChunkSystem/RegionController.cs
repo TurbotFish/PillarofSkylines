@@ -71,6 +71,8 @@ namespace Game.World.ChunkSystem
             var regionCopyTransform = go.transform;
             regionCopyTransform.parent = parent;
             regionCopyTransform.localPosition = transform.localPosition;
+            regionCopyTransform.localRotation = transform.localRotation;
+            regionCopyTransform.localScale = transform.localScale;
 
             for (int i = 0; i < chunkList.Count; i++)
             {

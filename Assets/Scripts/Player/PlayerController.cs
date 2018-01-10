@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Game.Player.CharacterController;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,7 +13,10 @@ namespace Game.Player
     {
         public Transform PlayerTransform { get; private set; }
 
-        public CharacterController.Character Player { get; private set; }
+        //[System.Obsolete]
+        //public Character OldPlayer { get; private set; }
+        public CharController CharController { get; private set; }
+
         public InteractionController InteractionController { get; private set; }
 
         WrappableObject wrappableObject;
@@ -27,14 +31,19 @@ namespace Game.Player
         {
             //getting all references
             PlayerTransform = transform;
-			Player = GetComponent<CharacterController.Character> ();
-			InteractionController = GetComponentInChildren<InteractionController> ();
+
+            //OldPlayer = GetComponent<Character>();
+            CharController = GetComponent<CharController>();
+
+            InteractionController = GetComponentInChildren<InteractionController>();
             wrappableObject = GetComponent<WrappableObject>();
             TombFinderController = GetComponentInChildren<AbilitySystem.TombFinderController>();
 
             //initializing all the things
-            Player.InitializePlayer(gameController.PlayerModel);
-            InteractionController.InitializeFavourController(gameController.PlayerModel, Player, gameController.EchoManager);
+            //OldPlayer.InitializePlayer(gameController.PlayerModel);
+            CharController.Initialize(gameController);
+
+            InteractionController.Initialize(gameController.PlayerModel, CharController, gameController.EchoManager);
 
             if (gameController.WorldController != null)
             {

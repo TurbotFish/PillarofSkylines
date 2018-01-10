@@ -3,10 +3,10 @@
 [ExecuteInEditMode]
 public class MasterDebug : MonoBehaviour {
 
-    [SerializeField] Game.Player.CharacterController.Character player;
+    [SerializeField] Game.Player.CharacterController.CharController player;
     
 	void Start () {
-        player = FindObjectOfType<Game.Player.CharacterController.Character>(); // TODO: fix that
+        player = FindObjectOfType<Game.Player.CharacterController.CharController>(); // TODO: fix that
 	}
     
     private void Update() {
@@ -26,7 +26,7 @@ public class MasterDebug : MonoBehaviour {
                 shaderScript.enabled = false;
 
         } else if (Input.GetKeyDown(KeyCode.F3)) {
-            player.numberOfAerialJumps = player.numberOfAerialJumps == 1000 ? 1 : 1000;
+            player.CharData.Jump.MaxAerialJumps = player.CharData.Jump.MaxAerialJumps == 1000 ? 1 : 1000;
         }
     }
 }
