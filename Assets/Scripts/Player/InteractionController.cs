@@ -38,7 +38,7 @@ namespace Game.Player {
 
         #region initialization
         
-		public void InitializeFavourController(PlayerModel playerModel, CharacterController.CharController player, EchoSystem.EchoManager echoManager)
+		public void Initialize(PlayerModel playerModel, CharacterController.CharController player, EchoSystem.EchoManager echoManager)
         {
             this.playerModel = playerModel;
 			myPlayer = player;

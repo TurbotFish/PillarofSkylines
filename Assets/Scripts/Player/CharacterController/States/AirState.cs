@@ -79,7 +79,7 @@ namespace Game.Player.CharacterController.States
 
         public void Enter()
         {
-            Debug.Log("Enter State: Jump");
+            Debug.Log("Enter State: Air");
 
             firstUpdate = true;
 
@@ -88,7 +88,7 @@ namespace Game.Player.CharacterController.States
 
         public void Exit()
         {
-            Debug.Log("Exit State: Jump");
+            Debug.Log("Exit State: Air");
 
             Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
         }
@@ -120,6 +120,11 @@ namespace Game.Player.CharacterController.States
             else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
             {
                 stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
+            }
+            //landing
+            else if (collisionInfo.below)
+            {
+                stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
         }
 

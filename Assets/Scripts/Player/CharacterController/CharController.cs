@@ -76,11 +76,14 @@ namespace Game.Player.CharacterController
             PlayerController = gameController.PlayerController;
 
             myTransform = transform;
-            stateMachine = new StateMachine(this);
 
             //*******************************************
 
+            stateMachine = new StateMachine(this);
+
             stateMachine.RegisterAbility(ePlayerState.dash, eAbilityType.Dash);
+
+            stateMachine.ChangeState(new AirState(this, stateMachine, false));
 
             //*******************************************
 

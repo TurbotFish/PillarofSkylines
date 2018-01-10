@@ -25,8 +25,6 @@ namespace Game.Player.CharacterController
         {
             //this.character = character;
             model = character.PlayerModel;
-
-            currentState = new AirState(character, this, false);
         }
 
         //#############################################################################
@@ -79,11 +77,14 @@ namespace Game.Player.CharacterController
                 return false;
             }
 
-            currentState.Exit();
-
-            if (stateToAbilityLinkDict.ContainsKey(currentState.StateId))
+            if (currentState != null)
             {
-                model.UnflagAbility(stateToAbilityLinkDict[currentState.StateId]);
+                currentState.Exit();
+
+                if (stateToAbilityLinkDict.ContainsKey(currentState.StateId))
+                {
+                    model.UnflagAbility(stateToAbilityLinkDict[currentState.StateId]);
+                }
             }
 
             currentState = state;
