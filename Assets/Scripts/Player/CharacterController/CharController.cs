@@ -38,7 +38,7 @@ namespace Game.Player.CharacterController
 
         Transform myTransform;
         StateMachine stateMachine;
-        public ePlayerState CurrentState { get { return stateMachine.CurrentState; } }
+        public ePlayerState CurrentState { get { if (stateMachine == null) { return ePlayerState.stand; } return stateMachine.CurrentState; } }
 
         bool isInitialized;
         bool isHandlingInput;
@@ -76,11 +76,14 @@ namespace Game.Player.CharacterController
             PlayerController = gameController.PlayerController;
 
             myTransform = transform;
-            stateMachine = new StateMachine(this);
 
             //*******************************************
 
+            stateMachine = new StateMachine(this);
+
             stateMachine.RegisterAbility(ePlayerState.dash, eAbilityType.Dash);
+
+            stateMachine.ChangeState(new AirState(this, stateMachine, false));
 
             //*******************************************
 
