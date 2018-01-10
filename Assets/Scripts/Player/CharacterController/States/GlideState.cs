@@ -45,10 +45,17 @@ namespace Game.Player.CharacterController.States
         public void HandleInput()
         {
             PlayerInputInfo inputInfo = charController.InputInfo;
+            CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
+            //stop gliding
             if (inputInfo.sprintButtonDown)
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, false));
+            }
+            //landing
+            else if (collisionInfo.below)
+            {
+                stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
         }
 
