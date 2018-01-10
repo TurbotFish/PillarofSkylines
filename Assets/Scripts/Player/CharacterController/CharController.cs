@@ -211,7 +211,7 @@ namespace Game.Player.CharacterController
 			//var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
 			var newVelocity = Vector3.Lerp(velocity, acceleration + externalVelocity, Time.deltaTime * transitionSpeed);
 
-            //Debug.LogFormat("new velocity: {0}", newVelocity);
+            Debug.LogFormat("new velocity: {0}", newVelocity);
 
             //adding gravity
             if (!stateReturn.IgnoreGravity)
@@ -219,12 +219,12 @@ namespace Game.Player.CharacterController
                 newVelocity += Vector3.down * (CharData.General.GravityStrength * Time.deltaTime);
             }
 
-            //Debug.LogFormat("after gravity: {0}", newVelocity);
+            Debug.LogFormat("after gravity: {0}", newVelocity);
 
             //clamping speed
             if (newVelocity.magnitude >= maxSpeed)
             {
-                //newVelocity = newVelocity.normalized * maxSpeed;
+                newVelocity = newVelocity.normalized * maxSpeed;
 
                 //Debug.LogFormat("clamped velocity: {0}", newVelocity);
             }

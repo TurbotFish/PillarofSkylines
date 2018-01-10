@@ -150,7 +150,7 @@ namespace Game.Player.CharacterController.States
                 result.CanTurnPlayer = true;
                 result.MaxSpeed = fallData.MaxSpeed;
                 result.TransitionSpeed = fallData.TransitionSpeed;
-                result.Acceleration = inputInfo.leftStickToCamera * fallData.Speed;
+                result.Acceleration = movementInfo.velocity + inputInfo.leftStickToCamera * fallData.Speed;
             }
             else
             {
