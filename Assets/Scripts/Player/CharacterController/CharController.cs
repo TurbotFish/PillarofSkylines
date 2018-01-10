@@ -240,6 +240,8 @@ namespace Game.Player.CharacterController
             {
                 lastPositionDelta = tempPhysicsHandler.Move(turnedVelocity * Time.deltaTime);
             }
+
+			velocity = lastPositionDelta / Time.deltaTime;
             //Debug.LogFormat("after physics: {0}", newVelocity);
 
             externalVelocity = Vector3.zero;
