@@ -350,12 +350,67 @@ namespace Game.Player.CharacterController
         public class GlideData
         {
             [SerializeField]
-            float horizontalAngle;
-            public float HorizontalAngle { get { return horizontalAngle; } }
+            float minAngle;
+            public float MinAngle { get { return minAngle; } }
+
+            [SerializeField]
+            float maxAngle;
+            public float MaxAngle { get { return maxAngle; } }
+
+            [SerializeField]
+            float baseAngle;
+            public float BaseAngle { get { return baseAngle; } }
+
+            [SerializeField]
+            float baseSpeed;
+            public float BaseSpeed { get { return baseSpeed; } }
+
+            [SerializeField]
+            float vertUpAngleCtrl;
+            public float VertUpAngleCtrl { get { return vertUpAngleCtrl; } }
+
+            [SerializeField]
+            float vertDownAngleCtrl;
+            public float VertDownAngleCtrl { get { return vertDownAngleCtrl; } }
+
+            [SerializeField]
+            float noInputImpactCoeff;
+            public float NoInputImpactCoeff { get { return noInputImpactCoeff; } }
+
+            [SerializeField]
+            AnimationCurve upwardDecceleration;
+            public AnimationCurve UpwardDecceleration { get { return upwardDecceleration; } }
+
+            [SerializeField]
+            AnimationCurve downwardAcceleration;
+            public AnimationCurve DownwardAcceleration { get { return downwardAcceleration; } }
+
+            [SerializeField]
+            float speedSmooth;
+            public float SpeedSmooth { get { return speedSmooth; } }
+
+            [SerializeField]
+            float stallSpeed;
+            public float StallSpeed { get { return stallSpeed; } }
+
+            [SerializeField]
+            float minHorizAngle;
+            public float MinHorizAngle { get { return minHorizAngle; } }
+
+            [SerializeField]
+            float maxHorizAngle;
+            public float MaxHorizAngle { get { return maxHorizAngle; } }
+
+            [SerializeField]
+            float horizComingBack;
+            public float HorizComingBack { get { return horizComingBack; } }
+
+            [SerializeField]
+            float horizAngleCtrl;
+            public float HorizAngleCtrl { get { return horizAngleCtrl; } }
 
             public void OnValidate()
             {
-                horizontalAngle = Mathf.Clamp(horizontalAngle, 0, float.MaxValue);
             }
         }
 

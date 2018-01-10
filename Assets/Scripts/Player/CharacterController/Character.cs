@@ -790,7 +790,7 @@
 //                    {
 //                        animator.SetBool("IsGlidingUp", true);
 //                    }
-//                    else if(flatVelocity.y < -0.2f)
+//                    else if (flatVelocity.y < -0.2f)
 //                    {
 //                        animator.SetBool("IsGlidingDown", true);
 //                    }

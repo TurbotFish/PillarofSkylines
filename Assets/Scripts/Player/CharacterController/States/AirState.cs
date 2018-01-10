@@ -121,6 +121,11 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             }
+            //glide
+            else if (inputInfo.sprintButtonDown && !stateMachine.CheckStateLocked(ePlayerState.glide))
+            {
+                stateMachine.ChangeState(new GlideState(charController, stateMachine));
+            }
             //landing
             else if (collisionInfo.below)
             {
