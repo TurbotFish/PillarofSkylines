@@ -713,13 +713,14 @@ public class PoS_Camera : MonoBehaviour {
     #region Home Door
 
     Vector3 homeDoorPosition, homeDoorForward, homePosition;
-    float homeDoorMaxZoom = 7, homeDoorFov = 50;
+    float homeDoorMaxZoom = 7, homeDoorFov = 50, lastFrameZoomSign;
 
     public void LookAtHomeDoor(Vector3 doorPosition, Vector3 doorForward, Vector3 homePosition) {
         state = eCameraState.HomeDoor;
         homeDoorPosition = doorPosition;
         homeDoorForward = doorForward;
         this.homePosition = homePosition;
+        lastFrameZoomSign = 1;
     }
 
     public void StopLookingAtHomeDoor() {
@@ -732,21 +733,61 @@ public class PoS_Camera : MonoBehaviour {
         
         float playerPosValue = -1;
 
-        if ((playerPos - homeDoorPosition).sqrMagnitude < homeDoorMaxZoom * homeDoorMaxZoom) {
-            // entrée (-1 à 0)
+        if ((playerPos - homeDoorPosition).sqrMagnitude < (playerPos - homePosition).sqrMagnitude) {
+            // entrée (0 à 0.5f)
+            Vector3 projectedPos = Vector3.Project(playerPos, -homeDoorForward);
 
+            playerPosValue = 1-Mathf.Clamp01((homeDoorPosition - projectedPos).sqrMagnitude / (homeDoorMaxZoom * homeDoorMaxZoom));
+            playerPosValue = playerPosValue * 2 - 1; // remap to [-1, 0]
 
-        } else if ((playerPos - homePosition).sqrMagnitude < homeDoorMaxZoom * homeDoorMaxZoom ) {
-            // sortie (0 à 1)
+        } else {
+            // sortie (0.5f à 1)
+            Vector3 projectedPos = Vector3.Project(playerPos, homeDoorForward);
 
+            playerPosValue = Mathf.Clamp01((homePosition - projectedPos).sqrMagnitude / (homeDoorMaxZoom * homeDoorMaxZoom));
+            playerPosValue = playerPosValue * 2 - 1; // remap to [0, 1]
+        }
+        
+        float trueZoom = (homeDoorMaxZoom/2) * (-playerPosValue) + homeDoorMaxZoom /2  - 0.5f;
+
+        float signDiff = Mathf.Sign(trueZoom) - lastFrameZoomSign;
+
+        bool unicorn = false;
+
+        if (Mathf.Sign(trueZoom) > lastFrameZoomSign) { // avant négatif, maintneant positif
+                                                        // avant homePos, maintenant doorPos
+            unicorn = true;
+            print("From HomePos to DoorPos");
+
+            Vector3 offset = homePosition - my.position;
+            my.position = homeDoorPosition - my.position;
+
+            offset = homePosition - lastFrameCamPos;
+            lastFrameCamPos = homeDoorPosition - lastFrameCamPos;
+
+        } else if (Mathf.Sign(trueZoom) < lastFrameZoomSign) { // avant positif, maintenant négatif
+                                                               // avant doorPos, maintenant homePos
+            unicorn = true;
+
+            print("From DoorPos to HomePos");
+
+            Vector3 offset = homeDoorPosition - my.position;
+            my.position = homePosition - my.position;
+
+            offset = homeDoorPosition - lastFrameCamPos;
+            lastFrameCamPos = homePosition - lastFrameCamPos;
 
         }
+        lastFrameZoomSign = Mathf.Sign(trueZoom);
 
-        Vector3 targetPos = homeDoorPosition;
+
+        Vector3 targetPos = trueZoom > 0 ? homeDoorPosition : homePosition;
         targetPos.y += 2;
 
+        camPosition = targetPos - homeDoorForward * trueZoom;
 
-        camPosition = targetPos - homeDoorForward * homeDoorMaxZoom;
+        if (unicorn)
+            print("Camposition from " + lastFrameCamPos + " to " + camPosition + "(current pos: " + my.position + ")");
 
         camRotation = Quaternion.LookRotation(homeDoorForward, Vector3.up);
 
