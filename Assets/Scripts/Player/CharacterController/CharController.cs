@@ -211,7 +211,6 @@ namespace Game.Player.CharacterController
 			//var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
 			var newVelocity = Vector3.Lerp(velocity, acceleration + externalVelocity, Time.deltaTime * transitionSpeed);
 
-            Debug.LogFormat("new velocity: {0}", newVelocity);
 
             //adding gravity
             if (!stateReturn.IgnoreGravity)
@@ -219,7 +218,6 @@ namespace Game.Player.CharacterController
                 newVelocity += Vector3.down * (CharData.General.GravityStrength * Time.deltaTime);
             }
 
-            Debug.LogFormat("after gravity: {0}", newVelocity);
 
             //clamping speed
             if (newVelocity.magnitude >= maxSpeed)
@@ -237,7 +235,6 @@ namespace Game.Player.CharacterController
 
             var turnedVelocity = TurnLocalToSpace(newVelocity);
 
-			print("velocity : " + turnedVelocity);
 
             if (stateMachine.CurrentState == ePlayerState.glide)
             {
@@ -249,7 +246,7 @@ namespace Game.Player.CharacterController
             }
 
 			velocity = lastPositionDelta / Time.deltaTime;
-            //Debug.LogFormat("after physics: {0}", newVelocity);
+            Debug.LogFormat("after physics: {0}", newVelocity);
 
             externalVelocity = Vector3.zero;
             tempCollisionInfo = tempPhysicsHandler.collisions;

@@ -159,6 +159,10 @@ namespace Game.Player.CharacterController.States
                 float jumpStrength = jumpData.Strength;
                 float minJumpStrength = jumpData.MinStrength;
 
+				if (movementInfo.velocity.y < 0f) {
+					state = eAirState.fall;
+				}
+
                 if (state == eAirState.aerialJump)
                 {
                     jumpStrength *= jumpData.AerialJumpCoeff;
@@ -166,7 +170,7 @@ namespace Game.Player.CharacterController.States
                 }
 
                 if (firstUpdate)
-                {
+				{
                     result.Acceleration = (movementInfo.velocity * 0.05f + Vector3.up) * jumpStrength;
                     result.TransitionSpeed = 1 / dt;
 
@@ -174,7 +178,7 @@ namespace Game.Player.CharacterController.States
                 }
                 else
                 {
-                    result.Acceleration = Vector3.Project(inputInfo.leftStickToCamera, movementInfo.forward) * inputInfo.leftStickToCamera.magnitude * jumpData.Speed;
+					result.Acceleration = Vector3.Project(inputInfo.leftStickToCamera, movementInfo.forward) * inputInfo.leftStickToCamera.magnitude * jumpData.Speed;
 
                     if (!inputInfo.jumpButton && movementInfo.velocity.y > minJumpStrength)
                     {
