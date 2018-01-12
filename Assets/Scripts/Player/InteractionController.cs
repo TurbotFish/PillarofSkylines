@@ -294,11 +294,11 @@ namespace Game.Player {
                         // check if on the right side of door
 
                         Vector3 doorToPlayer = myPlayer.transform.position - other.transform.position;
-                        float dot = Vector3.Dot(Vector3.up, doorToPlayer);
+                        float dot = Vector3.Dot(Vector3.up, doorToPlayer.normalized);
 
                         print("dot: " + dot + " playerPos: " + myPlayer.transform.position + " portalPos: " + other.transform.position);
 
-                        if (dot < 0) {
+                        if (dot > 0) {
                             // then take offset from exact door position
 
                             // then teleport
