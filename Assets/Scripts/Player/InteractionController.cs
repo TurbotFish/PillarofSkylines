@@ -290,20 +290,15 @@ namespace Game.Player {
                         break;
                     // doorHome
                     case "DoorHome":
-
                         // check if on the right side of door
+                        float dot = Vector3.Dot(myPlayer.transform.forward, other.transform.forward);
 
-                        Vector3 doorToPlayer = myPlayer.transform.position - other.transform.position;
-                        float dot = Vector3.Dot(Vector3.up, doorToPlayer.normalized);
-
-                        print("dot: " + dot + " playerPos: " + myPlayer.transform.position + " portalPos: " + other.transform.position);
-
-                        if (dot > 0) {
+                        if (dot > 0.5f) {
                             // then take offset from exact door position
-
+                            Vector3 offset = myPlayer.transform.position - other.transform.position;
+                            Vector3 targetPoint = spawnPointManager.GetHomeSpawnPoint() + offset;
                             // then teleport
-
-                            var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(spawnPointManager.GetHomeSpawnPoint(), spawnPointManager.GetHomeSpawnOrientation(), false); //TODO: make it take rotation as well
+                            var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, spawnPointManager.GetHomeSpawnOrientation(), false); //TODO: make it take rotation as well
                             Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
                         }
                         break;

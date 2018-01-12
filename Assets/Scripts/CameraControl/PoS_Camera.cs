@@ -728,45 +728,26 @@ public class PoS_Camera : MonoBehaviour {
     }
 
     void HomeDoorState() {
-
         Vector3 playerPos = target.position;
         float playerPosValue = -1;
 
-        if ((playerPos - homeDoorPosition).sqrMagnitude < (playerPos - homePosition).sqrMagnitude) {
-            // entrée (0 à 0.5f)
-            Vector3 projectedPos = Vector3.Project(playerPos, -homeDoorForward);
+        bool playerPassedPortal = (playerPos - homeDoorPosition).sqrMagnitude > (playerPos - homePosition).sqrMagnitude;
+        playerPosValue = 2 * Vector3.Project( (playerPassedPortal ? homePosition : homeDoorPosition) - playerPos, homeDoorForward).z / homeDoorMaxZoom;
+        float trueZoom = (homeDoorMaxZoom/2) * playerPosValue + homeDoorMaxZoom /2 - 0.01f;
 
-            playerPosValue = 1-Mathf.Clamp01((homeDoorPosition - projectedPos).sqrMagnitude / (homeDoorMaxZoom * homeDoorMaxZoom));
-            playerPosValue = playerPosValue * 2 - 1; // remap to [-1, 0]
+        Vector3 targetPos = trueZoom > 0 ? homeDoorPosition : homePosition;
+        Vector3 otherSide = trueZoom > 0 ? homePosition : homeDoorPosition;
 
-        } else {
-            // sortie (0.5f à 1)
-            Vector3 projectedPos = Vector3.Project(playerPos, homeDoorForward);
+        if (Mathf.Sign(trueZoom) != lastFrameZoomSign) { // on passe de homePos à doorPos
+            Vector3 offset = my.position - otherSide;
+            my.position = targetPos + offset;
 
-            playerPosValue = Mathf.Clamp01((homePosition - projectedPos).sqrMagnitude / (homeDoorMaxZoom * homeDoorMaxZoom));
-            playerPosValue = playerPosValue * 2 - 1; // remap to [0, 1]
-        }
-        
-        float trueZoom = (homeDoorMaxZoom/2) * (-playerPosValue) + homeDoorMaxZoom /2 - 0.01f;
-        float signDiff = Mathf.Sign(trueZoom) - lastFrameZoomSign;
+            offset = lastFrameCamPos - otherSide;
+            lastFrameCamPos = targetPos + offset;
 
-        if (Mathf.Sign(trueZoom) > lastFrameZoomSign) { // on passe de homePos à doorPos
-            Vector3 offset = my.position - homePosition;
-            my.position = homeDoorPosition + offset;
-
-            offset = lastFrameCamPos - homePosition;
-            lastFrameCamPos = homeDoorPosition + offset;
-
-        } else if (Mathf.Sign(trueZoom) < lastFrameZoomSign) { // on passe de doorPod à homePos
-            Vector3 offset = my.position - homeDoorPosition;
-            my.position = homePosition + offset;
-
-            offset = lastFrameCamPos - homeDoorPosition;
-            lastFrameCamPos = homePosition + offset;
         }
         lastFrameZoomSign = Mathf.Sign(trueZoom);
 
-        Vector3 targetPos = trueZoom > 0 ? homeDoorPosition : homePosition;
         targetPos.y += 2;
 
         camPosition = targetPos - homeDoorForward * trueZoom;
