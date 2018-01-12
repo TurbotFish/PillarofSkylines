@@ -29,6 +29,8 @@ namespace Game.Player {
         World.SpawnPointSystem.SpawnPointManager spawnPointManager;
         Transform airParticle, airOrigin;
 
+        HomeBeacon homeBeacon;
+
         //
         bool isActive = false;
         bool isInteractButtonDown = false;
@@ -55,10 +57,7 @@ namespace Game.Player {
         //########################################################################
 
         #region input handling
-
-        /// <summary>
-        /// 
-        /// </summary>
+            
         void Update()
         {
             if (!isActive)
@@ -121,6 +120,12 @@ namespace Game.Player {
 
                     HideUiMessage();
                 }
+                //home beacon
+                else if (homeBeacon && homeBeacon.activated) {
+                    var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(homeBeacon.destination.position, Quaternion.identity, false);
+                    Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                }
+
             }
             else if (!Input.GetButton("Interact") && isInteractButtonDown)
             {
@@ -285,12 +290,28 @@ namespace Game.Player {
                         break;
                     // doorHome
                     case "DoorHome":
-                        var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(spawnPointManager.GetHomeSpawnPoint(), spawnPointManager.GetHomeSpawnOrientation(), false); //TODO: make it take rotation as well
-                        Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+
+                        // check if on the right side of door
+
+                        Vector3 doorToPlayer = myPlayer.transform.position - other.transform.position;
+                        float dot = Vector3.Dot(Vector3.up, doorToPlayer);
+
+                        print("dot: " + dot + " playerPos: " + myPlayer.transform.position + " portalPos: " + other.transform.position);
+
+                        if (dot < 0) {
+                            // then take offset from exact door position
+
+                            // then teleport
+
+                            var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(spawnPointManager.GetHomeSpawnPoint(), spawnPointManager.GetHomeSpawnOrientation(), false); //TODO: make it take rotation as well
+                            Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                        }
                         break;
                     // HomeBeacon
                     case "HomeBeacon":
-                        ShowUiMessage("Press [X] to teleport");
+                        homeBeacon = other.GetComponent<HomeBeacon>();
+                        if (homeBeacon.activated)
+                            ShowUiMessage("Press [X] to teleport");
                         break;
                     //other
                     default:
@@ -350,6 +371,8 @@ namespace Game.Player {
 						break;
                     // HomeBeacon
                     case "HomeBeacon":
+                        homeBeacon = null;
+
                         HideUiMessage();
                         break;
                     //other
