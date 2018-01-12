@@ -172,10 +172,7 @@ namespace Game.Player {
         //########################################################################
 
         #region collision handling
-
-        /// <summary>
-        /// 
-        /// </summary>
+            
         void OnTriggerEnter(Collider other)
         {
             if (other.gameObject.layer == LayerMask.NameToLayer("PickUps"))

@@ -730,7 +730,6 @@ public class PoS_Camera : MonoBehaviour {
     void HomeDoorState() {
 
         Vector3 playerPos = target.position;
-        
         float playerPosValue = -1;
 
         if ((playerPos - homeDoorPosition).sqrMagnitude < (playerPos - homePosition).sqrMagnitude) {
@@ -748,51 +747,32 @@ public class PoS_Camera : MonoBehaviour {
             playerPosValue = playerPosValue * 2 - 1; // remap to [0, 1]
         }
         
-        float trueZoom = (homeDoorMaxZoom/2) * (-playerPosValue) + homeDoorMaxZoom /2  - 0.5f;
-
+        float trueZoom = (homeDoorMaxZoom/2) * (-playerPosValue) + homeDoorMaxZoom /2 - 0.01f;
         float signDiff = Mathf.Sign(trueZoom) - lastFrameZoomSign;
 
-        bool unicorn = false;
+        if (Mathf.Sign(trueZoom) > lastFrameZoomSign) { // on passe de homePos à doorPos
+            Vector3 offset = my.position - homePosition;
+            my.position = homeDoorPosition + offset;
 
-        if (Mathf.Sign(trueZoom) > lastFrameZoomSign) { // avant négatif, maintneant positif
-                                                        // avant homePos, maintenant doorPos
-            unicorn = true;
-            print("From HomePos to DoorPos");
+            offset = lastFrameCamPos - homePosition;
+            lastFrameCamPos = homeDoorPosition + offset;
 
-            Vector3 offset = homePosition - my.position;
-            my.position = homeDoorPosition - my.position;
+        } else if (Mathf.Sign(trueZoom) < lastFrameZoomSign) { // on passe de doorPod à homePos
+            Vector3 offset = my.position - homeDoorPosition;
+            my.position = homePosition + offset;
 
-            offset = homePosition - lastFrameCamPos;
-            lastFrameCamPos = homeDoorPosition - lastFrameCamPos;
-
-        } else if (Mathf.Sign(trueZoom) < lastFrameZoomSign) { // avant positif, maintenant négatif
-                                                               // avant doorPos, maintenant homePos
-            unicorn = true;
-
-            print("From DoorPos to HomePos");
-
-            Vector3 offset = homeDoorPosition - my.position;
-            my.position = homePosition - my.position;
-
-            offset = homeDoorPosition - lastFrameCamPos;
-            lastFrameCamPos = homePosition - lastFrameCamPos;
-
+            offset = lastFrameCamPos - homeDoorPosition;
+            lastFrameCamPos = homePosition + offset;
         }
         lastFrameZoomSign = Mathf.Sign(trueZoom);
-
 
         Vector3 targetPos = trueZoom > 0 ? homeDoorPosition : homePosition;
         targetPos.y += 2;
 
         camPosition = targetPos - homeDoorForward * trueZoom;
-
-        if (unicorn)
-            print("Camposition from " + lastFrameCamPos + " to " + camPosition + "(current pos: " + my.position + ")");
-
         camRotation = Quaternion.LookRotation(homeDoorForward, Vector3.up);
 
         camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, homeDoorFov, 4*deltaTime);
-
     }
 
     #endregion

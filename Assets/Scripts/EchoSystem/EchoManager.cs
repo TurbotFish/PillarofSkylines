@@ -10,6 +10,7 @@ namespace Game.EchoSystem
         [SerializeField] Echo echoPrefab;
         public BreakEchoParticles breakEchoParticles;
         [SerializeField] int maxEchoes = 3;
+        [SerializeField] float driftInputIntensity = 0.5f;
 
         [Header("Home")]
         [SerializeField] GameObject homeDoor;
@@ -67,7 +68,7 @@ namespace Game.EchoSystem
             if (!isEclipseActive) {
                 float driftInput = Input.GetAxis("Drift") + (Input.GetButtonUp("Drift") ? 1 : 0);
 
-                if (driftInput > 0.7f) {
+                if (driftInput > driftInputIntensity) {
                     driftInputDown += Time.deltaTime;
                     if (driftInputDown >= timeToHoldForDoor && !isDoorActive) {
                         // do the door thing!
@@ -83,7 +84,7 @@ namespace Game.EchoSystem
                         }
                     }
 
-                } else if (driftInput < 0.6f) {
+                } else if (driftInput < 0.4f) {
                     if (isDoorActive) {
                         isDoorActive = false;
                         homeDoor.SetActive(false);
