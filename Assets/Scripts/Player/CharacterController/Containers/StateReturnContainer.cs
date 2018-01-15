@@ -36,8 +36,11 @@ namespace Game.Player.CharacterController.Containers
         public bool PlayerUpSet { get; private set; }
         public Vector3 PlayerUp { get { return playerUp; } set { playerUp = value; PlayerUpSet = true; } }
 
-        //gravity
-        public bool IgnoreGravity { get; set; }
+		//gravity
+		public bool IgnoreGravity { get; set; }
+
+		//reset vertical velocity
+		public bool resetVerticalVelocity { get; set; }
 
         //rotation
         float rotation;

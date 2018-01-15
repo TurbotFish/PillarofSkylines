@@ -150,7 +150,7 @@ namespace Game.Player.CharacterController.States
                 result.CanTurnPlayer = true;
                 result.MaxSpeed = fallData.MaxSpeed;
                 result.TransitionSpeed = fallData.TransitionSpeed;
-                result.Acceleration = movementInfo.velocity + inputInfo.leftStickToCamera * fallData.Speed;
+                result.Acceleration = inputInfo.leftStickToCamera * fallData.Speed;
             }
             else
             {
@@ -171,17 +171,20 @@ namespace Game.Player.CharacterController.States
 
                 if (firstUpdate)
 				{
-                    result.Acceleration = (movementInfo.velocity * 0.05f + Vector3.up) * jumpStrength;
-                    result.TransitionSpeed = 1 / dt;
+					charController.AddExternalVelocity((Vector3.up) * jumpStrength, false, false);
+					result.resetVerticalVelocity = true;
+                    //result.Acceleration = (movementInfo.velocity * 0.05f + Vector3.up) * jumpStrength;
+                    //result.TransitionSpeed = 1 / dt;
 
                     firstUpdate = false;
                 }
                 else
                 {
-					result.Acceleration = Vector3.Project(inputInfo.leftStickToCamera, movementInfo.forward) * inputInfo.leftStickToCamera.magnitude * jumpData.Speed;
+					result.Acceleration = inputInfo.leftStickToCamera * jumpData.Speed;
 
                     if (!inputInfo.jumpButton && movementInfo.velocity.y > minJumpStrength)
                     {
+						charController.SetVelocity(new Vector3(movementInfo.velocity.x, minJumpStrength, movementInfo.velocity.z), false);
                         result.Acceleration += Vector3.down * (movementInfo.velocity.y - minJumpStrength) * (0.1f / dt);
                     }
 

@@ -209,7 +209,11 @@ namespace Game.Player.CharacterController
 
 			//computing new velocity
 			//var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
-			var newVelocity = Vector3.Lerp(velocity, acceleration + externalVelocity, Time.deltaTime * transitionSpeed);
+			if (stateReturn.resetVerticalVelocity)
+				velocity.y = 0;
+			Vector3 tempVertical = new Vector3(0, velocity.y, 0);
+			var newVelocity = Vector3.Lerp(Vector3.ProjectOnPlane(velocity, Vector3.up), acceleration, Time.deltaTime * transitionSpeed);
+			newVelocity += tempVertical;
 
 
             //adding gravity
@@ -228,7 +232,10 @@ namespace Game.Player.CharacterController
             }
 
             //
-            velocity = newVelocity;
+			newVelocity += externalVelocity;
+			velocity = newVelocity;
+			if (velocity.y > 0)
+				print("externalVelocity : " + externalVelocity + "velocity : " + velocity);
 
             //*******************************************
             //physics update
@@ -246,7 +253,7 @@ namespace Game.Player.CharacterController
             }
 
 			velocity = lastPositionDelta / Time.deltaTime;
-            Debug.LogFormat("after physics: {0}", newVelocity);
+            //Debug.LogFormat("after physics: {0}", newVelocity);
 
             externalVelocity = Vector3.zero;
             tempCollisionInfo = tempPhysicsHandler.collisions;
@@ -396,6 +403,11 @@ namespace Game.Player.CharacterController
                 externalVelocity += (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
             }
         }
+
+		public void SetVelocity(Vector3 newVelocity, bool worldSpace)
+		{
+			velocity = (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
+		}
 
         public void ChangeGravityDirection(Vector3 newGravity)
         {
