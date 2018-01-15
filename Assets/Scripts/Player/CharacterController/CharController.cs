@@ -335,7 +335,6 @@ namespace Game.Player.CharacterController
             }
 			
 
-			print("on ground ? " + tempCollisionInfo.below);
 			animator.SetBool("OnGround", tempCollisionInfo.below);
 			animator.SetFloat("Speed", Vector3.ProjectOnPlane(velocity, Vector3.up).magnitude / animationRunSpeed);
             //animator.SetFloat("Turn", turn);

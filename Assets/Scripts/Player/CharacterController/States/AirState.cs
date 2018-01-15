@@ -124,6 +124,7 @@ namespace Game.Player.CharacterController.States
             //glide
             else if (inputInfo.sprintButtonDown && !stateMachine.CheckStateLocked(ePlayerState.glide))
             {
+				Debug.Log("slt go le glide");
                 stateMachine.ChangeState(new GlideState(charController, stateMachine));
             }
             //landing
