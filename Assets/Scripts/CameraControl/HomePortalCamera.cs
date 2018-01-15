@@ -7,7 +7,7 @@ public class HomePortalCamera : MonoBehaviour {
     public Transform anchorPoint, worldAnchorPoint;
     [Space]
     [SerializeField] Renderer portalRenderer;
-    [SerializeField] GameObject otherPortal;
+    [SerializeField] Transform otherPortal;
 
     [HideInInspector, SerializeField] RenderTexture texture;
     
@@ -15,6 +15,7 @@ public class HomePortalCamera : MonoBehaviour {
     Material mat;
     Camera cam, trueCam;
     Vector3 negDistance;
+    Vector3 offset = new Vector3(0, 2, 0);
 
     private void Start() {
         my = transform;
@@ -27,6 +28,10 @@ public class HomePortalCamera : MonoBehaviour {
 
         mat = new Material(shader);
         portalRenderer.sharedMaterial = mat;
+
+        otherPortal.parent = null;
+        otherPortal.position = anchorPoint.transform.position;
+
     }
     
     private void Update() {
@@ -35,28 +40,23 @@ public class HomePortalCamera : MonoBehaviour {
 
         cam.fieldOfView = trueCam.fieldOfView;
         
-        float angularDifferenceBetweenPortalRotations = Quaternion.Angle(worldAnchorPoint.rotation, anchorPoint.rotation);
+        float angularDifferenceBetweenPortalRotations = Quaternion.Angle(anchorPoint.rotation, worldAnchorPoint.rotation);
 
-        Quaternion portalRotationalDifference = Quaternion.AngleAxis(angularDifferenceBetweenPortalRotations, Vector3.up);
-        Vector3 newCameraDirection = portalRotationalDifference * worldCamera.forward;
-        my.rotation = Quaternion.LookRotation(newCameraDirection, Vector3.up);
+        //Quaternion portalRotationalDifference = Quaternion.AngleAxis(angularDifferenceBetweenPortalRotations, Vector3.up);
+        //Vector3 newCameraDirection = portalRotationalDifference * worldCamera.forward;
+        //my.rotation = Quaternion.LookRotation(newCameraDirection, Vector3.up);
 
-        // distance = distance(worldcamera, worldAnchor)
-        // negdistance = (0, 0, -distance)
-        // position = rotation * negdistance + targetPoint
+        my.rotation = Quaternion.identity;
 
-        float distance = Vector3.Distance(worldCamera.position, worldAnchorPoint.position);
+        float distance = Vector3.Distance(worldCamera.position, worldAnchorPoint.position + offset);
         negDistance.z = -distance;
-        my.position = my.rotation * negDistance + anchorPoint.position + 2 * Vector3.up; // rajoute 2 en y
-
-        //Vector3 camPos = worldAnchorPoint.position - worldCamera.localPosition;
-        //my.position = anchorPoint.position - camPos;
+        my.position = my.rotation * negDistance + anchorPoint.position + offset;
         
         mat.mainTexture = texture;
     }
 
     private void OnEnable() {
-        otherPortal.transform.position = anchorPoint.transform.position;
+        otherPortal.rotation = Quaternion.identity;
     }
 
     //
