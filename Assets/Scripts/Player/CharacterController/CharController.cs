@@ -207,10 +207,10 @@ namespace Game.Player.CharacterController
             //Debug.LogFormat("initial velocity: {0}", velocity);
             //Debug.LogFormat("desiredVelocity={0}", stateReturn.DesiredVelocity.magnitude.ToString());
 
-            //computing new velocity
-            var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
+			//computing new velocity
+			//var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
+			var newVelocity = Vector3.Lerp(velocity, acceleration + externalVelocity, Time.deltaTime * transitionSpeed);
 
-            //Debug.LogFormat("new velocity: {0}", newVelocity);
 
             //adding gravity
             if (!stateReturn.IgnoreGravity)
@@ -218,12 +218,11 @@ namespace Game.Player.CharacterController
                 newVelocity += Vector3.down * (CharData.General.GravityStrength * Time.deltaTime);
             }
 
-            //Debug.LogFormat("after gravity: {0}", newVelocity);
 
             //clamping speed
             if (newVelocity.magnitude >= maxSpeed)
             {
-                //newVelocity = newVelocity.normalized * maxSpeed;
+                newVelocity = newVelocity.normalized * maxSpeed;
 
                 //Debug.LogFormat("clamped velocity: {0}", newVelocity);
             }
@@ -236,6 +235,7 @@ namespace Game.Player.CharacterController
 
             var turnedVelocity = TurnLocalToSpace(newVelocity);
 
+
             if (stateMachine.CurrentState == ePlayerState.glide)
             {
                 lastPositionDelta = tempPhysicsHandler.Move(newVelocity * Time.deltaTime);
@@ -246,7 +246,7 @@ namespace Game.Player.CharacterController
             }
 
 			velocity = lastPositionDelta / Time.deltaTime;
-            //Debug.LogFormat("after physics: {0}", newVelocity);
+            Debug.LogFormat("after physics: {0}", newVelocity);
 
             externalVelocity = Vector3.zero;
             tempCollisionInfo = tempPhysicsHandler.collisions;

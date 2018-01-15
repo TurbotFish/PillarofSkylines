@@ -51,17 +51,6 @@ namespace Game.EchoSystem
             }
         }
 
-        //void OnTriggerExit(Collider col)
-        //{
-        //    if (col.tag == "Player")
-        //    {
-        //        if (isActive)
-        //            Break();
-        //        else
-        //            isActive = true;
-        //    }
-        //}
-
         #endregion collision stuff
 
         //##################################################################

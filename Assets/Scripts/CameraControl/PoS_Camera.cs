@@ -21,6 +21,7 @@ public class PoS_Camera : MonoBehaviour {
         Resetting = 80,
         LookAt = 90,
         PlayerControl = 100,
+        HomeDoor = 120
 	}
 
     public eResetType resetType;
@@ -96,12 +97,12 @@ public class PoS_Camera : MonoBehaviour {
 	Vector2 input;
 	Vector2 rotationSpeed;
 	Vector2 offset;
-	Game.Player.CharacterController.CharController player;
-    Game.Player.CharacterController.CharacControllerRecu controller;
+	CharController player;
+    CharacControllerRecu controller;
 	Transform my;
     Eclipse eclipseFX;
 
-    Game.Player.CharacterController.ePlayerState playerState;
+    ePlayerState playerState;
 
     float deltaTime;
 
@@ -161,7 +162,7 @@ public class PoS_Camera : MonoBehaviour {
         
 		GetInputsAndStates();
 		DoRotation();
-		EvaluatePositionFromRotation();
+		EvaluatePosition();
 		SmoothMovement();
         RealignPlayer();
 
@@ -178,6 +179,9 @@ public class PoS_Camera : MonoBehaviour {
     /// <param name="sender"> </param>
     /// <param name="args"> Contient la position vers laquelle tp, et un bool pour savoir si on a changé de scène. </param>
     void OnTeleportPlayer(object sender, Game.Utilities.EventManager.TeleportPlayerEventArgs args) { // TODO: cleanup
+
+        if (state == eCameraState.HomeDoor)
+            return;
 
         if (args.IsNewScene) {
             // on reset les paramètres par défaut de la caméra
@@ -265,8 +269,11 @@ public class PoS_Camera : MonoBehaviour {
             StopCurrentReset();
 	}
 
-	void EvaluatePositionFromRotation() {
-        if (state == eCameraState.Overriden) {
+	void EvaluatePosition() {
+
+        if (state == eCameraState.HomeDoor) {
+            return;
+        } else if (state == eCameraState.Overriden) {
             camPosition = overridePos;
             return;
         }
@@ -320,6 +327,11 @@ public class PoS_Camera : MonoBehaviour {
 		input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
 		input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
 
+        if (state == eCameraState.HomeDoor) {
+            HomeDoorState();
+            return; // Dans ce cas, osef de tout le reste
+        }
+
         if (eclipseFX)
             eclipseFX.camSpeed = input;
 
@@ -331,8 +343,8 @@ public class PoS_Camera : MonoBehaviour {
         bool isGrounded = (playerState & (ePlayerState.move | ePlayerState.stand | ePlayerState.slide)) != 0;
         float slopeValue = CheckGroundAndReturnSlopeValue();
 
-        // TODO: Il nous faut une fonction SetState() pour pouvoir faire des trucs uniquement lors d'un changement de State
-
+        // TODO: Il nous faut ptet une fonction SetState() pour pouvoir faire des trucs uniquement lors d'un changement de State
+        
         if (isGrounded && additionalDistance != 0)
             additionalDistance = 0;
 
@@ -448,7 +460,11 @@ public class PoS_Camera : MonoBehaviour {
 	#region Rotation
 
 	void DoRotation() {
-		rotationSpeed.x = Mathf.Lerp(minRotationSpeed.x, maxRotationSpeed.x, currentDistance / idealDistance);
+
+        if (state == eCameraState.HomeDoor)
+            return; // Dans ce cas, osef de tout le reste
+
+        rotationSpeed.x = Mathf.Lerp(minRotationSpeed.x, maxRotationSpeed.x, currentDistance / idealDistance);
 		rotationSpeed.y = Mathf.Lerp(minRotationSpeed.y, maxRotationSpeed.y, currentDistance / idealDistance);
 
 		float clampedX = Mathf.Clamp(input.x * (idealDistance / currentDistance), -mouseSpeedLimit.x, mouseSpeedLimit.x); // Avoid going too fast (makes weird lerp)
@@ -691,7 +707,55 @@ public class PoS_Camera : MonoBehaviour {
             inPanorama = true;
 		}
 	}
-    
+
+    #endregion
+
+    #region Home Door
+
+    Vector3 homeDoorPosition, homeDoorForward, homePosition;
+    float homeDoorMaxZoom = 7, homeDoorFov = 50, lastFrameZoomSign;
+
+    public void LookAtHomeDoor(Vector3 doorPosition, Vector3 doorForward, Vector3 homePosition) {
+        state = eCameraState.HomeDoor;
+        homeDoorPosition = doorPosition;
+        homeDoorForward = doorForward;
+        this.homePosition = homePosition;
+        lastFrameZoomSign = 1;
+    }
+
+    public void StopLookingAtHomeDoor() {
+        state = eCameraState.Default;
+    }
+
+    void HomeDoorState() {
+        Vector3 playerPos = target.position;
+        float playerPosValue = -1;
+
+        bool playerPassedPortal = (playerPos - homeDoorPosition).sqrMagnitude > (playerPos - homePosition).sqrMagnitude;
+        playerPosValue = 2 * Vector3.Project( (playerPassedPortal ? homePosition : homeDoorPosition) - playerPos, homeDoorForward).z / homeDoorMaxZoom;
+        float trueZoom = (homeDoorMaxZoom/2) * playerPosValue + homeDoorMaxZoom /2 - 0.01f;
+
+        Vector3 targetPos = trueZoom > 0 ? homeDoorPosition : homePosition;
+        Vector3 otherSide = trueZoom > 0 ? homePosition : homeDoorPosition;
+
+        if (Mathf.Sign(trueZoom) != lastFrameZoomSign) { // on passe de homePos à doorPos
+            Vector3 offset = my.position - otherSide;
+            my.position = targetPos + offset;
+
+            offset = lastFrameCamPos - otherSide;
+            lastFrameCamPos = targetPos + offset;
+
+        }
+        lastFrameZoomSign = Mathf.Sign(trueZoom);
+
+        targetPos.y += 2;
+
+        camPosition = targetPos - homeDoorForward * trueZoom;
+        camRotation = Quaternion.LookRotation(homeDoorForward, Vector3.up);
+
+        camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, homeDoorFov, 4*deltaTime);
+    }
+
     #endregion
 
     #region Point of Interest
@@ -783,7 +847,7 @@ public class PoS_Camera : MonoBehaviour {
         axisAligned = Vector3.zero;
     }
     #endregion
-
+    
     #region Override Position and Rotation
 
     Vector3 overridePos, overrideRot;

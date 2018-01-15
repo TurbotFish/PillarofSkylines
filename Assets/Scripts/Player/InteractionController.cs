@@ -29,6 +29,8 @@ namespace Game.Player {
         World.SpawnPointSystem.SpawnPointManager spawnPointManager;
         Transform airParticle, airOrigin;
 
+        HomeBeacon homeBeacon;
+
         //
         bool isActive = false;
         bool isInteractButtonDown = false;
@@ -55,10 +57,7 @@ namespace Game.Player {
         //########################################################################
 
         #region input handling
-
-        /// <summary>
-        /// 
-        /// </summary>
+            
         void Update()
         {
             if (!isActive)
@@ -121,6 +120,12 @@ namespace Game.Player {
 
                     HideUiMessage();
                 }
+                //home beacon
+                else if (homeBeacon && homeBeacon.activated) {
+                    var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(homeBeacon.destination.position, Quaternion.identity, false);
+                    Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                }
+
             }
             else if (!Input.GetButton("Interact") && isInteractButtonDown)
             {
@@ -128,34 +133,35 @@ namespace Game.Player {
             }
 
 			// drift input handling
-            float driftInput = Input.GetAxis("Right Trigger");
-            if (driftInput > 0.7f && !isDriftButtonDown)  {
+            float driftInput = Input.GetAxis("Drift") + (Input.GetButtonUp("Drift") ? 1 : 0);
+            if (driftInput > 0.5f && !isDriftButtonDown)  {
                 isDriftButtonDown = true;
-				
-				// stop eclipse
-				if (playerModel.hasNeedle) {
-					playerModel.hasNeedle = false;
-
-					if (needleSlotForDrift) {
-						foreach (Transform child in needleSlotForDrift.transform)
-							child.gameObject.SetActive(true);
-
-						var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(needleSlotForDrift.transform.position, Quaternion.identity, false);
-						Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
-					}
-					needleSlotCollider = needleSlotForDrift;
-
-					Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(false));
-
-				// stop air particles
-				} else if (airParticle) {
-					airParticle.parent = airOrigin;
-					airParticle.transform.localPosition = Vector3.zero;
-					airParticle = null;
-				}
             }
-            else if (driftInput < 0.6f && isDriftButtonDown)
+            else if (driftInput < 0.4f && isDriftButtonDown) {
                 isDriftButtonDown = false;
+
+                // stop eclipse
+                if (playerModel.hasNeedle) {
+                    playerModel.hasNeedle = false;
+
+                    if (needleSlotForDrift) {
+                        foreach (Transform child in needleSlotForDrift.transform)
+                            child.gameObject.SetActive(true);
+
+                        var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(needleSlotForDrift.transform.position, Quaternion.identity, false);
+                        Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                    }
+                    needleSlotCollider = needleSlotForDrift;
+
+                    Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(false));
+
+                    // stop air particles
+                } else if (airParticle) {
+                    airParticle.parent = airOrigin;
+                    airParticle.transform.localPosition = Vector3.zero;
+                    airParticle = null;
+                }
+            }
 			
             // stop air particle if grounded
             if (airParticle && (myPlayer.CurrentState & (CharacterController.ePlayerState.move | CharacterController.ePlayerState.slide | CharacterController.ePlayerState.stand)) != 0) {
@@ -172,10 +178,7 @@ namespace Game.Player {
         //########################################################################
 
         #region collision handling
-
-        /// <summary>
-        /// 
-        /// </summary>
+            
         void OnTriggerEnter(Collider other)
         {
             if (other.gameObject.layer == LayerMask.NameToLayer("PickUps"))
@@ -288,12 +291,23 @@ namespace Game.Player {
                         break;
                     // doorHome
                     case "DoorHome":
-                        var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(spawnPointManager.GetHomeSpawnPoint(), spawnPointManager.GetHomeSpawnOrientation(), false); //TODO: make it take rotation as well
-                        Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                        // check if on the right side of door
+                        float dot = Vector3.Dot(myPlayer.transform.forward, other.transform.forward);
+
+                        if (dot > 0.5f) {
+                            // then take offset from exact door position
+                            Vector3 offset = myPlayer.transform.position - other.transform.position;
+                            Vector3 targetPoint = spawnPointManager.GetHomeSpawnPoint() + offset;
+                            // then teleport
+                            var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, spawnPointManager.GetHomeSpawnOrientation(), false); //TODO: make it take rotation as well
+                            Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                        }
                         break;
                     // HomeBeacon
                     case "HomeBeacon":
-                        ShowUiMessage("Press [X] to teleport");
+                        homeBeacon = other.GetComponent<HomeBeacon>();
+                        if (homeBeacon.activated)
+                            ShowUiMessage("Press [X] to teleport");
                         break;
                     //other
                     default:
@@ -351,6 +365,12 @@ namespace Game.Player {
                     case "Wind":
 						other.GetComponent<WindTunnelPart>().RemovePlayer();
 						break;
+                    // HomeBeacon
+                    case "HomeBeacon":
+                        homeBeacon = null;
+
+                        HideUiMessage();
+                        break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
