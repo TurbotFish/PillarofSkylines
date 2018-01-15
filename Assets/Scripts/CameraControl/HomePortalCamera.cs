@@ -7,6 +7,7 @@ public class HomePortalCamera : MonoBehaviour {
     public Transform anchorPoint, worldAnchorPoint;
     [Space]
     [SerializeField] Renderer portalRenderer;
+    [SerializeField] GameObject otherPortal;
 
     [HideInInspector, SerializeField] RenderTexture texture;
     
@@ -16,7 +17,6 @@ public class HomePortalCamera : MonoBehaviour {
 
     private void Start() {
         my = transform;
-
         cam = GetComponent<Camera>();
 
         texture = new RenderTexture(Screen.width, Screen.height, 16);
@@ -40,6 +40,10 @@ public class HomePortalCamera : MonoBehaviour {
         my.position = anchorPoint.position - camPos;
 
         mat.mainTexture = texture;
+    }
+
+    private void OnEnable() {
+        otherPortal.transform.position = worldAnchorPoint.transform.position;
     }
 
     //

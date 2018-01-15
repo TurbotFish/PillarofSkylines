@@ -133,34 +133,35 @@ namespace Game.Player {
             }
 
 			// drift input handling
-            float driftInput = Input.GetAxis("Right Trigger");
-            if (driftInput > 0.7f && !isDriftButtonDown)  {
+            float driftInput = Input.GetAxis("Drift") + (Input.GetButtonUp("Drift") ? 1 : 0);
+            if (driftInput > 0.5f && !isDriftButtonDown)  {
                 isDriftButtonDown = true;
-				
-				// stop eclipse
-				if (playerModel.hasNeedle) {
-					playerModel.hasNeedle = false;
-
-					if (needleSlotForDrift) {
-						foreach (Transform child in needleSlotForDrift.transform)
-							child.gameObject.SetActive(true);
-
-						var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(needleSlotForDrift.transform.position, Quaternion.identity, false);
-						Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
-					}
-					needleSlotCollider = needleSlotForDrift;
-
-					Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(false));
-
-				// stop air particles
-				} else if (airParticle) {
-					airParticle.parent = airOrigin;
-					airParticle.transform.localPosition = Vector3.zero;
-					airParticle = null;
-				}
             }
-            else if (driftInput < 0.6f && isDriftButtonDown)
+            else if (driftInput < 0.4f && isDriftButtonDown) {
                 isDriftButtonDown = false;
+
+                // stop eclipse
+                if (playerModel.hasNeedle) {
+                    playerModel.hasNeedle = false;
+
+                    if (needleSlotForDrift) {
+                        foreach (Transform child in needleSlotForDrift.transform)
+                            child.gameObject.SetActive(true);
+
+                        var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(needleSlotForDrift.transform.position, Quaternion.identity, false);
+                        Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                    }
+                    needleSlotCollider = needleSlotForDrift;
+
+                    Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(false));
+
+                    // stop air particles
+                } else if (airParticle) {
+                    airParticle.parent = airOrigin;
+                    airParticle.transform.localPosition = Vector3.zero;
+                    airParticle = null;
+                }
+            }
 			
             // stop air particle if grounded
             if (airParticle && (myPlayer.CurrentState & (CharacterController.ePlayerState.move | CharacterController.ePlayerState.slide | CharacterController.ePlayerState.stand)) != 0) {
