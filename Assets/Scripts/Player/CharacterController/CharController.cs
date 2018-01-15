@@ -211,9 +211,15 @@ namespace Game.Player.CharacterController
 			//var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
 			if (stateReturn.resetVerticalVelocity)
 				velocity.y = 0;
-			Vector3 tempVertical = new Vector3(0, velocity.y, 0);
-			var newVelocity = Vector3.Lerp(Vector3.ProjectOnPlane(velocity, Vector3.up), acceleration, Time.deltaTime * transitionSpeed);
-			newVelocity += tempVertical;
+			Vector3 tempVertical = new Vector3();
+			Vector3 newVelocity = new Vector3();
+			if (stateReturn.keepVerticalMovement) {
+				tempVertical = new Vector3(0, velocity.y, 0);
+				newVelocity = Vector3.Lerp(Vector3.ProjectOnPlane(velocity, Vector3.up), acceleration, Time.deltaTime * transitionSpeed);
+				newVelocity += tempVertical;
+			} else {
+				newVelocity = Vector3.Lerp(velocity, acceleration, Time.deltaTime * transitionSpeed);
+			}
 
 
             //adding gravity
@@ -234,8 +240,6 @@ namespace Game.Player.CharacterController
             //
 			newVelocity += externalVelocity;
 			velocity = newVelocity;
-			if (velocity.y > 0)
-				print("externalVelocity : " + externalVelocity + "velocity : " + velocity);
 
             //*******************************************
             //physics update

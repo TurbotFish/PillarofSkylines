@@ -42,6 +42,9 @@ namespace Game.Player.CharacterController.Containers
 		//reset vertical velocity
 		public bool resetVerticalVelocity { get; set; }
 
+		//keep vertical movement
+		public bool keepVerticalMovement { get; set; }
+
         //rotation
         float rotation;
         public bool RotationSet { get; private set; }

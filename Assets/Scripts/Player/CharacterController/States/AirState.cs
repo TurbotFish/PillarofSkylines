@@ -147,7 +147,8 @@ namespace Game.Player.CharacterController.States
 
             if (state == eAirState.fall)
             {
-                result.CanTurnPlayer = true;
+				result.CanTurnPlayer = true;
+				result.keepVerticalMovement = true;
                 result.MaxSpeed = fallData.MaxSpeed;
                 result.TransitionSpeed = fallData.TransitionSpeed;
                 result.Acceleration = inputInfo.leftStickToCamera * fallData.Speed;
@@ -155,6 +156,7 @@ namespace Game.Player.CharacterController.States
             else
             {
 				result.CanTurnPlayer = true;
+				result.keepVerticalMovement = true;
 
                 float jumpStrength = jumpData.Strength;
                 float minJumpStrength = jumpData.MinStrength;
