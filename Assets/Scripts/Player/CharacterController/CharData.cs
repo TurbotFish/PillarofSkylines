@@ -48,6 +48,10 @@ namespace Game.Player.CharacterController
         public GlideData Glide { get { return glide; } }
 
         [SerializeField]
+        WallDriftData wallDrift = new WallDriftData();
+        public WallDriftData WallDrift { get { return wallDrift; } }
+
+        [SerializeField]
         WallRunData wallRun = new WallRunData();
         public WallRunData WallRun { get { return wallRun; } }
 
@@ -68,6 +72,7 @@ namespace Game.Player.CharacterController
             dash.OnValidate();
             slide.OnValidate();
             glide.OnValidate();
+            wallDrift.OnValidate();
             wallRun.OnValidate();
         }
 
@@ -415,6 +420,22 @@ namespace Game.Player.CharacterController
         }
 
         #endregion glide
+
+        //*******************************************
+
+        #region wall drift
+
+        [System.Serializable]
+        public class WallDriftData
+        {
+
+            public void OnValidate()
+            {
+
+            }
+        }
+
+        #endregion wall drift
 
         //*******************************************
 

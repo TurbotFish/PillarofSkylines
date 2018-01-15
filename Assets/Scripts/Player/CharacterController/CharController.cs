@@ -81,6 +81,9 @@ namespace Game.Player.CharacterController
 
             stateMachine.RegisterAbility(ePlayerState.dash, eAbilityType.Dash);
             stateMachine.RegisterAbility(ePlayerState.glide, eAbilityType.Glide);
+            stateMachine.RegisterAbility(ePlayerState.wallDrift, eAbilityType.WallRun);
+            stateMachine.RegisterAbility(ePlayerState.wallClimb, eAbilityType.WallRun);
+            stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
 
             stateMachine.ChangeState(new AirState(this, stateMachine, false));
 
@@ -195,12 +198,13 @@ namespace Game.Player.CharacterController
 
             if (stateReturn.PlayerForwardSet)
             {
-                MyTransform.forward = stateReturn.PlayerForward;
+                MyTransform.forward = Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up);
             }
 
             if (stateReturn.PlayerUpSet)
             {
-                MyTransform.up = stateReturn.PlayerUp;
+                Debug.LogError("Should not be used for now!");
+                //MyTransform.up = stateReturn.PlayerUp;
             }
 
             //Debug.Log("================");
