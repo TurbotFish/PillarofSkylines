@@ -28,7 +28,12 @@ namespace Game.Player.CharacterController
         /// <summary>
         /// The animator of the character.
         /// </summary>
-        Animator animator;
+		[HideInInspector]
+		public Animator animator;
+		[Space(10)]
+		[Header("Animation stuff")]
+		public float animationRunSpeed;
+		public float animationJumpSpeed;
 
         //#############################################################################       
 
@@ -294,32 +299,48 @@ namespace Game.Player.CharacterController
             //*******************************************
 
             #region update animator
-            float keyHalf = 0.5f;
-            float m_RunCycleLegOffset = 0.2f;
-            float forward = lastPositionDelta.magnitude / (8 * Time.deltaTime);
-            if (forward <= 0.2f)
-            {
-                forward = 0;
-            }
+			//----------OLD--------------
+//            float keyHalf = 0.5f;
+//            float m_RunCycleLegOffset = 0.2f;
+//            float forward = lastPositionDelta.magnitude / (8 * Time.deltaTime);
+//            if (forward <= 0.2f)
+//            {
+//                forward = 0;
+//            }
+//            float turn = (inputInfo.leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), transform.up), transform.up), CharData.General.TurnSpeed * Time.deltaTime) / 7f);
+//            if (!canTurnPlayer)
+//            {
+//                turn = 0;
+//            }
+//
+//            animator.SetBool("OnGround", tempCollisionInfo.below);
+//            animator.SetFloat("Forward", forward);
+//            animator.SetFloat("Turn", turn);
+//            animator.SetFloat("Jump", turnedVelocity.y / 5);
+//            float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
+//            float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputInfo.leftStickRaw.magnitude;
+//            if (tempCollisionInfo.below)
+//            {
+//                animator.SetFloat("JumpLeg", jumpLeg);
+//            }
+//
+//            //windParticles.SetVelocity(velocity);
+//            //glideParticles.SetVelocity(velocity);
+			//-------FIN OLD-----------
+
             float turn = (inputInfo.leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), transform.up), transform.up), CharData.General.TurnSpeed * Time.deltaTime) / 7f);
             if (!canTurnPlayer)
             {
                 turn = 0;
             }
+			
 
-            animator.SetBool("OnGround", tempCollisionInfo.below);
-            animator.SetFloat("Forward", forward);
-            animator.SetFloat("Turn", turn);
-            animator.SetFloat("Jump", turnedVelocity.y / 5);
-            float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
-            float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputInfo.leftStickRaw.magnitude;
-            if (tempCollisionInfo.below)
-            {
-                animator.SetFloat("JumpLeg", jumpLeg);
-            }
+			print("on ground ? " + tempCollisionInfo.below);
+			animator.SetBool("OnGround", tempCollisionInfo.below);
+			animator.SetFloat("Speed", Vector3.ProjectOnPlane(velocity, Vector3.up).magnitude / animationRunSpeed);
+            //animator.SetFloat("Turn", turn);
+			animator.SetFloat("VerticalSpeed", velocity.y / animationJumpSpeed);
 
-            //windParticles.SetVelocity(velocity);
-            //glideParticles.SetVelocity(velocity);
             #endregion update animator
 
             //*******************************************
