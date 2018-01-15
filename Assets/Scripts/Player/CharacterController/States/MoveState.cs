@@ -46,7 +46,11 @@ namespace Game.Player.CharacterController.States
 
             if (inputInfo.jumpButtonDown)
             {
-                stateMachine.ChangeState(new AirState(charController, stateMachine, true));
+                var state = new AirState(charController, stateMachine);
+                state.SetMode(AirState.eAirStateMode.jump);
+                state.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
+
+                stateMachine.ChangeState(state);
             }
             else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
             {
@@ -63,7 +67,11 @@ namespace Game.Player.CharacterController.States
             }
             else if (!collisionInfo.below)
             {
-                stateMachine.ChangeState(new AirState(charController, stateMachine, moveData.CanStillJumpTimer));
+                var state = new AirState(charController, stateMachine);
+                state.SetMode(AirState.eAirStateMode.fall);
+                state.SetJumpTimer(moveData.CanStillJumpTimer);
+
+                stateMachine.ChangeState(state);
             }
         }
 

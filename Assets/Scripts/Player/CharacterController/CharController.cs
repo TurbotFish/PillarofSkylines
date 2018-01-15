@@ -45,7 +45,7 @@ namespace Game.Player.CharacterController
 
         Vector3 velocity;
         Vector3 externalVelocity;
-        Vector3 lastPositionDelta;
+        
 
 
 
@@ -85,7 +85,7 @@ namespace Game.Player.CharacterController
             stateMachine.RegisterAbility(ePlayerState.wallClimb, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
 
-            stateMachine.ChangeState(new AirState(this, stateMachine, false));
+            stateMachine.ChangeState(new AirState(this, stateMachine));
 
             //*******************************************
 
@@ -243,13 +243,12 @@ namespace Game.Player.CharacterController
 
             //
 			newVelocity += externalVelocity;
-			velocity = newVelocity;
 
             //*******************************************
             //physics update
 
             var turnedVelocity = TurnLocalToSpace(newVelocity);
-
+            Vector3 lastPositionDelta;
 
             if (stateMachine.CurrentState == ePlayerState.glide)
             {
@@ -355,7 +354,7 @@ namespace Game.Player.CharacterController
             {
                 MyTransform.rotation = args.Rotation;
                 velocity = Vector3.zero;
-                stateMachine.ChangeState(new AirState(this, stateMachine, false));
+                stateMachine.ChangeState(new AirState(this, stateMachine));
                 ChangeGravityDirection(Vector3.down);
             }
         }

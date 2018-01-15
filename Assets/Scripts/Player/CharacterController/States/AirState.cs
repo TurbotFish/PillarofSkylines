@@ -7,7 +7,7 @@ namespace Game.Player.CharacterController.States
 {
     public class AirState : IState
     {
-        enum eAirState { fall, jump, aerialJump };
+        public enum eAirStateMode { fall, jump, aerialJump };
 
         //#############################################################################
 
@@ -19,60 +19,71 @@ namespace Game.Player.CharacterController.States
         CharData.JumpData jumpData;
         CharData.FallData fallData;
 
-        eAirState state = eAirState.fall;
+        eAirStateMode mode = eAirStateMode.fall;
         int remainingAerialJumps = 0;
         float jumpTimer = 0;
+        Vector3 jumpDirection = Vector3.zero;
 
+        bool initializing;
         bool firstUpdate;
 
         //#############################################################################
 
         /// <summary>
-        /// Constructor for a normal fall or jump.
+        /// Constructor for AirState. Default mode is "fall".
         /// </summary>
-        public AirState(CharController charController, StateMachine stateMachine, bool jump)
-        {
-            Init(charController, stateMachine);
-
-            if (jump)
-            {
-                state = eAirState.jump;
-                remainingAerialJumps = jumpData.MaxAerialJumps;
-            }
-            else
-            {
-                state = eAirState.fall;
-            }
-        }
-
-        /// <summary>
-        /// Constructor for a fall with a possibility to jump.
-        /// </summary>
-        public AirState(CharController charController, StateMachine stateMachine, float jumpTimer)
-        {
-            Init(charController, stateMachine);
-
-            state = eAirState.fall;
-            this.jumpTimer = jumpTimer;
-        }
-
-        /// <summary>
-        /// Constructor for an aerial jump.
-        /// </summary>
-        private AirState(CharController charController, StateMachine stateMachine, int remainingAerialJumps)
-        {
-            Init(charController, stateMachine);
-
-            state = eAirState.aerialJump;
-            this.remainingAerialJumps = remainingAerialJumps;
-        }
-
-        private void Init(CharController charController, StateMachine stateMachine)
+        public AirState(CharController charController, StateMachine stateMachine)
         {
             this.charController = charController;
             this.stateMachine = stateMachine;
             jumpData = charController.CharData.Jump;
             fallData = charController.CharData.Fall;
+
+            mode = eAirStateMode.fall;
+
+            initializing = true;
+        }
+
+        //#############################################################################
+
+        public void SetMode(eAirStateMode mode)
+        {
+            if (!initializing)
+            {
+                return;
+            }
+
+            this.mode = mode;
+        }
+
+        public void SetRemainingAerialJumps(int jumps)
+        {
+            if (!initializing)
+            {
+                return;
+            }
+
+            remainingAerialJumps = jumps;
+        }
+
+        public void SetJumpTimer(float jumpTimer)
+        {
+            if (!initializing)
+            {
+                return;
+            }
+
+            this.jumpTimer = jumpTimer;
+        }
+
+        public void SetJumpDirection(Vector3 direction)
+        {
+            if (!initializing)
+            {
+                return;
+            }
+
+            jumpDirection = direction;
         }
 
         //#############################################################################
@@ -81,6 +92,7 @@ namespace Game.Player.CharacterController.States
         {
             Debug.Log("Enter State: Air");
 
+            initializing = false;
             firstUpdate = true;
 
             Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
@@ -104,16 +116,24 @@ namespace Game.Player.CharacterController.States
             //jump
             if (inputInfo.jumpButtonDown)
             {
-                if ((state == eAirState.aerialJump || state == eAirState.jump)
+                if ((mode == eAirStateMode.aerialJump || mode == eAirStateMode.jump)
                     && remainingAerialJumps > 0
                     && charController.PlayerModel.CheckAbilityActive(eAbilityType.DoubleJump)
                    )
                 {
-                    stateMachine.ChangeState(new AirState(charController, stateMachine, remainingAerialJumps - 1));
+                    var state = new AirState(charController, stateMachine);
+                    state.SetMode(eAirStateMode.aerialJump);
+                    state.SetRemainingAerialJumps(remainingAerialJumps - 1);
+
+                    stateMachine.ChangeState(state);
                 }
-                else if (state == eAirState.fall && jumpTimer > 0)
+                else if (mode == eAirStateMode.fall && jumpTimer > 0)
                 {
-                    stateMachine.ChangeState(new AirState(charController, stateMachine, jumpData.MaxAerialJumps));
+                    var state = new AirState(charController, stateMachine);
+                    state.SetMode(eAirStateMode.jump);
+                    state.SetRemainingAerialJumps(jumpData.MaxAerialJumps);
+
+                    stateMachine.ChangeState(state);
                 }
             }
             //dash
@@ -131,6 +151,11 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
+            //wall drift
+            else if (collisionInfo.side && WallDriftState.CanEnterWallDrift(charController, true))
+            {
+                stateMachine.ChangeState(new WallDriftState(charController, stateMachine));
+            }
         }
 
         public StateReturnContainer Update(float dt)
@@ -145,36 +170,39 @@ namespace Game.Player.CharacterController.States
 
             var result = new StateReturnContainer();
 
-            if (state == eAirState.fall)
+            if (mode == eAirStateMode.fall)
             {
-				result.CanTurnPlayer = true;
-				result.keepVerticalMovement = true;
+                result.CanTurnPlayer = true;
+                result.keepVerticalMovement = true;
                 result.MaxSpeed = fallData.MaxSpeed;
                 result.TransitionSpeed = fallData.TransitionSpeed;
                 result.Acceleration = inputInfo.leftStickToCamera * fallData.Speed;
             }
             else
             {
-				result.CanTurnPlayer = true;
-				result.keepVerticalMovement = true;
+                result.CanTurnPlayer = true;
+                result.keepVerticalMovement = true;
 
                 float jumpStrength = jumpData.Strength;
                 float minJumpStrength = jumpData.MinStrength;
 
-				if (movementInfo.velocity.y < 0f && !firstUpdate) {
-					state = eAirState.fall;
-				}
+                if (movementInfo.velocity.y < 0f && !firstUpdate)
+                {
+                    mode = eAirStateMode.fall;
+                }
 
-                if (state == eAirState.aerialJump)
+                if (mode == eAirStateMode.aerialJump)
                 {
                     jumpStrength *= jumpData.AerialJumpCoeff;
                     minJumpStrength *= jumpData.AerialJumpCoeff;
                 }
 
                 if (firstUpdate)
-				{
-					charController.AddExternalVelocity((Vector3.up) * jumpStrength, false, false);
-					result.resetVerticalVelocity = true;
+                {
+                    Vector3 direction = jumpDirection == Vector3.zero ? Vector3.up : jumpDirection;
+
+                    charController.AddExternalVelocity((direction) * jumpStrength, false, false);
+                    result.resetVerticalVelocity = true;
                     //result.Acceleration = (movementInfo.velocity * 0.05f + Vector3.up) * jumpStrength;
                     //result.TransitionSpeed = 1 / dt;
 
@@ -182,11 +210,11 @@ namespace Game.Player.CharacterController.States
                 }
                 else
                 {
-					result.Acceleration = inputInfo.leftStickToCamera * jumpData.Speed;
+                    result.Acceleration = inputInfo.leftStickToCamera * jumpData.Speed;
 
                     if (!inputInfo.jumpButton && movementInfo.velocity.y > minJumpStrength)
                     {
-						charController.SetVelocity(new Vector3(movementInfo.velocity.x, minJumpStrength, movementInfo.velocity.z), false);
+                        charController.SetVelocity(new Vector3(movementInfo.velocity.x, minJumpStrength, movementInfo.velocity.z), false);
                         result.Acceleration += Vector3.down * (movementInfo.velocity.y - minJumpStrength) * (0.1f / dt);
                     }
 

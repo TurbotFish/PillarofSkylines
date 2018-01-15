@@ -33,7 +33,7 @@ namespace Game.Player.CharacterController.States
             //if the player should not be able to walldrift he starts falling again
             if (!CanEnterWallDrift(charController, true))
             {
-                stateMachine.ChangeState(new AirState(charController, stateMachine, false));
+                stateMachine.ChangeState(new AirState(charController, stateMachine));
             }
         }
 
@@ -49,24 +49,28 @@ namespace Game.Player.CharacterController.States
             PlayerInputInfo inputInfo = charController.InputInfo;
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
-
             //land on ground
             if (collisionInfo.below)
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
             //no wall or stick released => fall
-            else if (!collisionInfo.side || !WallRunState.CheckWallRunStick(charController))
+            else if (!collisionInfo.side /*|| !WallRunState.CheckWallRunStick(charController)*/)
             {
-                stateMachine.ChangeState(new AirState(charController, stateMachine, false));
+                stateMachine.ChangeState(new AirState(charController, stateMachine));
             }
             //jump
             else if (inputInfo.jumpButtonDown)
             {
                 charController.MyTransform.forward = Vector3.ProjectOnPlane(collisionInfo.currentWallNormal, charController.MyTransform.up);
-                Vector3 jumpDirection = (charController.MyTransform.up + collisionInfo.currentWallNormal * 2).normalized;
+                Vector3 jumpDirection = (Vector3.up + collisionInfo.currentWallNormal * 2).normalized;
 
-                stateMachine.ChangeState(new AirState(charController, stateMachine, true));
+                var state = new AirState(charController, stateMachine);
+                state.SetMode(AirState.eAirStateMode.jump);
+                state.SetJumpTimer(charController.CharData.Move.CanStillJumpTimer);
+                state.SetJumpDirection(jumpDirection);
+
+                stateMachine.ChangeState(state);
             }
         }
 
@@ -75,17 +79,26 @@ namespace Game.Player.CharacterController.States
             PlayerMovementInfo movementInfo = charController.MovementInfo;
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
-            float wallDriftSpeed = Mathf.Lerp(
-                movementInfo.velocity.magnitude,
-                charController.PlayerModel.AbilityData.WallRun.WallDrift.TargetSpeed,
-                charController.PlayerModel.AbilityData.WallRun.WallDrift.LerpFactor * Time.deltaTime
-            );
+            Vector3 driftDir = Vector3.ProjectOnPlane(-Vector3.up, collisionInfo.currentWallNormal);
+            Vector3 driftAcceleration = Vector3.zero;
+            if (movementInfo.velocity.y <= 0)
+            {
+                Vector3 driftMovement = Vector3.Project(movementInfo.velocity, driftDir);
+                driftAcceleration = driftMovement.normalized * driftData.Acceleration;
+                if (driftMovement.magnitude > driftData.TargetSpeed)
+                {
+                    driftAcceleration *= -1;
+                }
+            }
+
+            Vector3 wallHugging = collisionInfo.currentWallNormal * -1f;
 
             var result = new StateReturnContainer()
             {
                 CanTurnPlayer = false,
                 PlayerForward = Vector3.ProjectOnPlane(-collisionInfo.currentWallNormal, charController.MyTransform.up),
-                Acceleration = -charController.MyTransform.up * wallDriftSpeed
+                Acceleration = wallHugging + driftAcceleration,
+                TransitionSpeed = driftData.TransitionSpeed
             };
 
 
@@ -101,7 +114,7 @@ namespace Game.Player.CharacterController.States
 
             bool isTouchingWall = charController.CollisionInfo.side;
 
-            bool isFalling = charController.MovementInfo.velocity.y <= 0;
+            bool isFalling = true;// charController.MovementInfo.velocity.y <= 0;
 
             bool directionOK = true;
             if (checkPlayerForward)
@@ -111,7 +124,8 @@ namespace Game.Player.CharacterController.States
 
             bool stickOK = WallRunState.CheckWallRunStick(charController);
 
-            return false;
+            Debug.Log("isAbilityActive " + isAbilityActive + " isTouchingWall " + isTouchingWall + " isFalling " + isFalling + " directionOK " + directionOK + " stickOK " + stickOK);
+            return (isAbilityActive && isTouchingWall && isFalling && directionOK && stickOK);
         }
 
 
