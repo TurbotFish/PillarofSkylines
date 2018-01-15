@@ -131,8 +131,8 @@ public class PoS_Camera : MonoBehaviour {
 		Cursor.lockState = CursorLockMode.Locked;
 
         my = transform;
-		player = target.GetComponentInParent<Game.Player.CharacterController.CharController>();
-		controller = player.GetComponent<Game.Player.CharacterController.CharacControllerRecu>();
+		player = target.GetComponentInParent<CharController>();
+		controller = player.GetComponent<CharacControllerRecu>();
         
 		currentDistance = zoomValue = idealDistance = distance;
 		maxDistance = canZoom ? zoomDistance.max : distance;
@@ -713,7 +713,7 @@ public class PoS_Camera : MonoBehaviour {
     #region Home Door
 
     Vector3 homeDoorPosition, homeDoorForward, homePosition;
-    float homeDoorMaxZoom = 7, homeDoorFov = 50, lastFrameZoomSign;
+    float homeDoorMaxZoom = 10, homeDoorFov = 70, lastFrameZoomSign;
 
     public void LookAtHomeDoor(Vector3 doorPosition, Vector3 doorForward, Vector3 homePosition) {
         state = eCameraState.HomeDoor;
@@ -744,7 +744,6 @@ public class PoS_Camera : MonoBehaviour {
 
             offset = lastFrameCamPos - otherSide;
             lastFrameCamPos = targetPos + offset;
-
         }
         lastFrameZoomSign = Mathf.Sign(trueZoom);
 

@@ -246,7 +246,6 @@ namespace Game.Player.CharacterController
             }
 
 			velocity = lastPositionDelta / Time.deltaTime;
-            Debug.LogFormat("after physics: {0}", newVelocity);
 
             externalVelocity = Vector3.zero;
             tempCollisionInfo = tempPhysicsHandler.collisions;

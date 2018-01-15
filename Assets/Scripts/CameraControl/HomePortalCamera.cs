@@ -14,6 +14,7 @@ public class HomePortalCamera : MonoBehaviour {
     Transform my, worldCamera;
     Material mat;
     Camera cam, trueCam;
+    Vector3 negDistance;
 
     private void Start() {
         my = transform;
@@ -33,17 +34,29 @@ public class HomePortalCamera : MonoBehaviour {
             FindWorldCamera();
 
         cam.fieldOfView = trueCam.fieldOfView;
+        
+        float angularDifferenceBetweenPortalRotations = Quaternion.Angle(worldAnchorPoint.rotation, anchorPoint.rotation);
 
-        my.localRotation = worldCamera.localRotation; // TODO: faire qu'on puisse la tourner
+        Quaternion portalRotationalDifference = Quaternion.AngleAxis(angularDifferenceBetweenPortalRotations, Vector3.up);
+        Vector3 newCameraDirection = portalRotationalDifference * worldCamera.forward;
+        my.rotation = Quaternion.LookRotation(newCameraDirection, Vector3.up);
 
-        Vector3 camPos = worldAnchorPoint.position - worldCamera.localPosition;
-        my.position = anchorPoint.position - camPos;
+        // distance = distance(worldcamera, worldAnchor)
+        // negdistance = (0, 0, -distance)
+        // position = rotation * negdistance + targetPoint
 
+        float distance = Vector3.Distance(worldCamera.position, worldAnchorPoint.position);
+        negDistance.z = -distance;
+        my.position = my.rotation * negDistance + anchorPoint.position + 2 * Vector3.up; // rajoute 2 en y
+
+        //Vector3 camPos = worldAnchorPoint.position - worldCamera.localPosition;
+        //my.position = anchorPoint.position - camPos;
+        
         mat.mainTexture = texture;
     }
 
     private void OnEnable() {
-        otherPortal.transform.position = worldAnchorPoint.transform.position;
+        otherPortal.transform.position = anchorPoint.transform.position;
     }
 
     //
