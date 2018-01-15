@@ -124,9 +124,13 @@ namespace Game.Player.CharacterController.States
             //glide
             else if (inputInfo.sprintButtonDown && !stateMachine.CheckStateLocked(ePlayerState.glide))
             {
-				Debug.Log("slt go le glide");
                 stateMachine.ChangeState(new GlideState(charController, stateMachine));
             }
+			//landing on slope
+			else if (collisionInfo.below && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope))
+			{
+				stateMachine.ChangeState(new SlideState(charController, stateMachine));
+			}
             //landing
             else if (collisionInfo.below)
             {

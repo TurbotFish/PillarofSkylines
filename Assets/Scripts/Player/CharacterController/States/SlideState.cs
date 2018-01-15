@@ -27,11 +27,13 @@ namespace Game.Player.CharacterController.States
         public void Enter()
         {
             Debug.Log("Enter State: Slide");
-        }
+			charController.animator.SetBool("Sliding", true);
+		}
 
         public void Exit()
         {
-            Debug.Log("Exit State: Slide");
+			Debug.Log("Exit State: Slide");
+			charController.animator.SetBool("Sliding", false);
         }
 
         //#############################################################################
@@ -51,7 +53,7 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, false));
             }
-            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle)
+            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle && !collisionInfo.SlippySlope)
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
@@ -59,13 +61,20 @@ namespace Game.Player.CharacterController.States
 
         public StateReturnContainer Update(float dt)
         {
-            var result = new StateReturnContainer
-            {
-                CanTurnPlayer = false,
+			var result = new StateReturnContainer
+				{
+					CanTurnPlayer = false,
 
-                Acceleration = Vector3.zero,
-                TransitionSpeed = slideData.TransitionSpeed
-            };
+					TransitionSpeed = slideData.TransitionSpeed,
+					IgnoreGravity = true
+				};
+
+			if (Vector3.Angle(charController.CollisionInfo.currentGroundNormal, charController.MovementInfo.up) < charController.CharData.General.MaxSlopeAngle) {
+				result.Acceleration = Vector3.ProjectOnPlane(-charController.MyTransform.up, charController.CollisionInfo.currentGroundNormal).normalized * slideData.MinimalSpeed;
+			}
+			result.Acceleration += charController.InputInfo.leftStickToSlope * slideData.Control;
+
+            
 
             return result;
         }

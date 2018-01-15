@@ -98,6 +98,8 @@ namespace Game.Player.CharacterController
         {
             var pos1 = myTransform.position;
 
+			collisions.Reset();
+
             //			print("---------------------------------new movement----------------------------------");
             playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
             collisions.initialVelocityOnThisFrame = velocity;
@@ -249,7 +251,12 @@ namespace Game.Player.CharacterController
                     currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
                     currentPF.AddPlayer(myPlayer, hit.point);
                 }
-            }
+				if (hit.collider.CompareTag("SlipperySlope")) {
+					collisions.SlippySlope = true;
+				} else {
+					collisions.SlippySlope = false;
+				}
+			}
             collisions.above = Physics.SphereCast(myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) - myTransform.up * skinWidth * 2, radius, myTransform.up, out hit, skinWidth * 4, collisionMask);
             if (collisions.above)
             {
@@ -337,6 +344,7 @@ namespace Game.Player.CharacterController
             Vector3 veloNorm = velocity.normalized;
             float rayLength = velocity.magnitude;
             Vector3 newOrigin = position;
+
 
             //print("velocity : " + velocity*100 + "initial velocity : " + collisions.initialVelocityOnThisFrame*100);
 
@@ -468,7 +476,7 @@ namespace Game.Player.CharacterController
         public struct CollisionInfo
         {
             public bool above, below;
-            public bool side, onSteepSlope;
+            public bool side, SlippySlope;
 
             public float stepHeight;
 
@@ -480,7 +488,7 @@ namespace Game.Player.CharacterController
             public void Reset()
             {
                 above = below = false;
-                side = onSteepSlope = false;
+                side = SlippySlope = false;
                 currentGroundNormal = Vector3.zero;
                 currentWallNormal = Vector3.zero;
             }
