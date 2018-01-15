@@ -111,19 +111,6 @@ namespace Game.Player.CharacterController.States
             //Stall when the player is too slow
             if (currentSpeed < glideData.StallSpeed)
             {
-                currentSpeed = Mathf.Lerp(
-                    movementInfo.velocity.magnitude,
-                    glideData.BaseSpeed + glideData.DownwardAcceleration.Evaluate((verticalAngle - glideData.BaseAngle) / (glideData.MaxAngle - glideData.BaseAngle)),
-                    glideData.SpeedSmooth /** dt*/
-                );
-            }
-
-            //Calculate the velocity of the player with his speed and vertical angle
-            Vector3 targetVelocity = Quaternion.AngleAxis(verticalAngle, charController.MyTransform.right) * charController.MyTransform.forward * currentSpeed;
-
-            //Stall when the player is too slow
-            if (currentSpeed < glideData.StallSpeed)
-            {
                 verticalAngle = glideData.MaxAngle;
             }
 
