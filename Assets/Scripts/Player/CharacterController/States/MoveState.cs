@@ -55,15 +55,14 @@ namespace Game.Player.CharacterController.States
             else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
             {
                 stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
-            }
+			}
+			else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle)
+			{
+				stateMachine.ChangeState(new SlideState(charController, stateMachine));
+			}
             else if (inputInfo.leftStickAtZero)
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
-            }
-
-            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle)
-            {
-                stateMachine.ChangeState(new SlideState(charController, stateMachine));
             }
             else if (!collisionInfo.below)
             {

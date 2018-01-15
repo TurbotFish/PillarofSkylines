@@ -51,15 +51,14 @@ namespace Game.Player.CharacterController.States
                 state.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 
                 stateMachine.ChangeState(state);
-            }
+			}
+			else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle)
+			{
+				stateMachine.ChangeState(new SlideState(charController, stateMachine));
+			}
             else if (!inputInfo.leftStickAtZero)
             {
                 stateMachine.ChangeState(new MoveState(charController, stateMachine));
-            }
-
-            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle)
-            {
-                stateMachine.ChangeState(new SlideState(charController, stateMachine));
             }
             else if (!collisionInfo.below)
             {

@@ -144,6 +144,7 @@ namespace Game.Player.CharacterController.States
             //glide
             else if (inputInfo.sprintButtonDown && !stateMachine.CheckStateLocked(ePlayerState.glide))
             {
+				Debug.Log("slt go le glide");
                 stateMachine.ChangeState(new GlideState(charController, stateMachine));
             }
             //landing
@@ -172,8 +173,8 @@ namespace Game.Player.CharacterController.States
 
             if (mode == eAirStateMode.fall)
             {
-                result.CanTurnPlayer = true;
-                result.keepVerticalMovement = true;
+				result.CanTurnPlayer = true;
+				result.keepVerticalMovement = true;
                 result.MaxSpeed = fallData.MaxSpeed;
                 result.TransitionSpeed = fallData.TransitionSpeed;
                 result.Acceleration = inputInfo.leftStickToCamera * fallData.Speed;
@@ -198,7 +199,7 @@ namespace Game.Player.CharacterController.States
                 }
 
                 if (firstUpdate)
-                {
+				{
                     Vector3 direction = jumpDirection == Vector3.zero ? Vector3.up : jumpDirection;
 
                     charController.AddExternalVelocity((direction) * jumpStrength, false, false);
