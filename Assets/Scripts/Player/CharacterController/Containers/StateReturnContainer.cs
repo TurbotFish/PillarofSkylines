@@ -38,5 +38,10 @@ namespace Game.Player.CharacterController.Containers
 
         //gravity
         public bool IgnoreGravity { get; set; }
+
+        //rotation
+        float rotation;
+        public bool RotationSet { get; private set; }
+        public float Rotation { get { return rotation; } set { rotation = value; RotationSet = true; } }
     }
 } //end of namespace

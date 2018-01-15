@@ -121,6 +121,11 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             }
+            //glide
+            else if (inputInfo.sprintButtonDown && !stateMachine.CheckStateLocked(ePlayerState.glide))
+            {
+                stateMachine.ChangeState(new GlideState(charController, stateMachine));
+            }
             //landing
             else if (collisionInfo.below)
             {
@@ -145,14 +150,18 @@ namespace Game.Player.CharacterController.States
                 result.CanTurnPlayer = true;
                 result.MaxSpeed = fallData.MaxSpeed;
                 result.TransitionSpeed = fallData.TransitionSpeed;
-                result.Acceleration = inputInfo.leftStickToCamera * fallData.Speed;
+                result.Acceleration = movementInfo.velocity + inputInfo.leftStickToCamera * fallData.Speed;
             }
             else
             {
-                result.CanTurnPlayer = false;
+				result.CanTurnPlayer = true;
 
                 float jumpStrength = jumpData.Strength;
                 float minJumpStrength = jumpData.MinStrength;
+
+				if (movementInfo.velocity.y < 0f) {
+					state = eAirState.fall;
+				}
 
                 if (state == eAirState.aerialJump)
                 {
@@ -161,7 +170,7 @@ namespace Game.Player.CharacterController.States
                 }
 
                 if (firstUpdate)
-                {
+				{
                     result.Acceleration = (movementInfo.velocity * 0.05f + Vector3.up) * jumpStrength;
                     result.TransitionSpeed = 1 / dt;
 
@@ -169,11 +178,11 @@ namespace Game.Player.CharacterController.States
                 }
                 else
                 {
-                    result.Acceleration = Vector3.Project(inputInfo.leftStickToCamera, movementInfo.forward) * inputInfo.leftStickToCamera.magnitude * jumpData.Speed;
+					result.Acceleration = Vector3.Project(inputInfo.leftStickToCamera, movementInfo.forward) * inputInfo.leftStickToCamera.magnitude * jumpData.Speed;
 
                     if (!inputInfo.jumpButton && movementInfo.velocity.y > minJumpStrength)
                     {
-                        result.Acceleration += charController.GravityDirection * (movementInfo.velocity.y - minJumpStrength) * (0.1f / dt);
+                        result.Acceleration += Vector3.down * (movementInfo.velocity.y - minJumpStrength) * (0.1f / dt);
                     }
 
                     result.TransitionSpeed = jumpData.TransitionSpeed;
