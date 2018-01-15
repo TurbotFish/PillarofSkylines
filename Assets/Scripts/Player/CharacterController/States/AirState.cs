@@ -161,7 +161,7 @@ namespace Game.Player.CharacterController.States
                 float jumpStrength = jumpData.Strength;
                 float minJumpStrength = jumpData.MinStrength;
 
-				if (movementInfo.velocity.y < 0f) {
+				if (movementInfo.velocity.y < 0f && !firstUpdate) {
 					state = eAirState.fall;
 				}
 
