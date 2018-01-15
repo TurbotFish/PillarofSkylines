@@ -36,7 +36,7 @@ namespace Game.Player.CharacterController
         public CharData CharData { get; private set; }
         public PlayerController PlayerController { get; private set; }
 
-        Transform myTransform;
+        public Transform MyTransform { get; private set; }
         StateMachine stateMachine;
         public ePlayerState CurrentState { get { if (stateMachine == null) { return ePlayerState.stand; } return stateMachine.CurrentState; } }
 
@@ -50,8 +50,6 @@ namespace Game.Player.CharacterController
 
 
 
-        Vector3 gravityDirection = -Vector3.up;
-        public Vector3 GravityDirection { get { return gravityDirection; } }
 
         List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
         public List<WindTunnelPart> WindTunnelPartList { get { return new List<WindTunnelPart>(windTunnelPartList); } }
@@ -75,13 +73,14 @@ namespace Game.Player.CharacterController
             CharData = Resources.Load<CharData>("ScriptableObjects/CharData");
             PlayerController = gameController.PlayerController;
 
-            myTransform = transform;
+            MyTransform = transform;
 
             //*******************************************
 
             stateMachine = new StateMachine(this);
 
             stateMachine.RegisterAbility(ePlayerState.dash, eAbilityType.Dash);
+            stateMachine.RegisterAbility(ePlayerState.glide, eAbilityType.Glide);
 
             stateMachine.ChangeState(new AirState(this, stateMachine, false));
 
@@ -130,12 +129,17 @@ namespace Game.Player.CharacterController
                 return;
             }
 
+            if (Input.GetKeyDown(KeyCode.F6))
+            {
+                this.ChangeGravityDirection(Vector3.left);
+            }
+
             //*******************************************
 
-            movementInfo.position = myTransform.position;
-            movementInfo.forward = myTransform.forward;
-            movementInfo.up = myTransform.up;
-            movementInfo.side = myTransform.right;
+            movementInfo.position = MyTransform.position;
+            movementInfo.forward = MyTransform.forward;
+            movementInfo.up = MyTransform.up;
+            movementInfo.side = MyTransform.right;
             movementInfo.velocity = velocity;
 
             //*******************************************
@@ -191,12 +195,12 @@ namespace Game.Player.CharacterController
 
             if (stateReturn.PlayerForwardSet)
             {
-                myTransform.forward = stateReturn.PlayerForward;
+                MyTransform.forward = stateReturn.PlayerForward;
             }
 
             if (stateReturn.PlayerUpSet)
             {
-                myTransform.up = stateReturn.PlayerUp;
+                MyTransform.up = stateReturn.PlayerUp;
             }
 
             //Debug.Log("================");
@@ -259,20 +263,20 @@ namespace Game.Player.CharacterController
 
             if (canTurnPlayer && !inputInfo.leftStickAtZero)
             {
-                if (CurrentState != ePlayerState.glide)
+                if (stateReturn.RotationSet)
                 {
-                    myTransform.Rotate(
-                        myTransform.up,
-                        Mathf.Lerp(
-                            0f,
-                            Vector3.SignedAngle(myTransform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), myTransform.up), myTransform.up),
-                            CharData.General.TurnSpeed * Time.deltaTime
-                        ),
-                        Space.World);
+                    MyTransform.Rotate(MyTransform.up, stateReturn.Rotation, Space.World);
                 }
                 else
                 {
-                    myTransform.Rotate(myTransform.up, CharData.Glide.HorizontalAngle, Space.World);
+                    MyTransform.Rotate(
+                        MyTransform.up,
+                        Mathf.Lerp(
+                            0f,
+                            Vector3.SignedAngle(MyTransform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), MyTransform.up), MyTransform.up),
+                            CharData.General.TurnSpeed * Time.deltaTime
+                        ),
+                        Space.World);
                 }
             }
 
@@ -330,11 +334,11 @@ namespace Game.Player.CharacterController
 
         void OnTeleportPlayerEventHandler(object sender, Utilities.EventManager.TeleportPlayerEventArgs args)
         {
-            myTransform.position = args.Position;
+            MyTransform.position = args.Position;
 
             if (args.IsNewScene)
             {
-                myTransform.rotation = args.Rotation;
+                MyTransform.rotation = args.Rotation;
                 velocity = Vector3.zero;
                 stateMachine.ChangeState(new AirState(this, stateMachine, false));
                 ChangeGravityDirection(Vector3.down);
@@ -367,12 +371,12 @@ namespace Game.Player.CharacterController
 
         Vector3 TurnLocalToSpace(Vector3 vector)
         {
-            return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, myTransform.up), Vector3.Cross(Vector3.up, myTransform.up))) * vector;
+            return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, MyTransform.up), Vector3.Cross(Vector3.up, MyTransform.up))) * vector;
         }
 
         Vector3 TurnSpaceToLocal(Vector3 vector)
         {
-            return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, myTransform.up), Vector3.Cross(myTransform.up, Vector3.up))) * vector;
+            return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, MyTransform.up), Vector3.Cross(MyTransform.up, Vector3.up))) * vector;
         }
 
         #endregion utility methods
@@ -395,14 +399,12 @@ namespace Game.Player.CharacterController
 
         public void ChangeGravityDirection(Vector3 newGravity)
         {
-            gravityDirection = newGravity.normalized;
-            myTransform.Rotate(Vector3.Cross(myTransform.up, -gravityDirection), Vector3.SignedAngle(myTransform.up, -gravityDirection, Vector3.Cross(myTransform.up, -gravityDirection)), Space.World);
+            MyTransform.Rotate(Vector3.Cross(MyTransform.up, -newGravity), Vector3.SignedAngle(MyTransform.up, -newGravity, Vector3.Cross(MyTransform.up, -newGravity)), Space.World);
         }
 
         public void ChangeGravityDirection(Vector3 newGravity, Vector3 point)
         {
-            gravityDirection = newGravity.normalized;
-            myTransform.RotateAround(point, Vector3.Cross(myTransform.up, -gravityDirection), Vector3.SignedAngle(myTransform.up, -gravityDirection, Vector3.Cross(myTransform.up, -gravityDirection)));
+            MyTransform.RotateAround(point, Vector3.Cross(MyTransform.up, -newGravity), Vector3.SignedAngle(MyTransform.up, -newGravity, Vector3.Cross(MyTransform.up, -newGravity)));
         }
 
         #endregion cancer

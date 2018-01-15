@@ -30,7 +30,7 @@ public class Wheel : MovingPlatform {
 
 	override public void AddPlayer(CharController player, Vector3 playerImpactPoint) {
 		currPlayer = player;
-		initialGravity = player.GravityDirection;
+		initialGravity = -player.MyTransform.up;
 		impactPoint = playerImpactPoint;
 	}
 
