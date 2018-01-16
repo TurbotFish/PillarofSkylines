@@ -733,9 +733,9 @@ public class PoS_Camera : MonoBehaviour {
     void HomeDoorState() {
         Vector3 playerPos = target.position;
 
-        if ((playerPos - homeDoorPosition).sqrMagnitude > homeDoorMaxZoom * homeDoorMaxZoom && (playerPos - homePosition).sqrMagnitude > homeDoorMaxZoom * homeDoorMaxZoom) {
-            StopLookingAtHomeDoor();
-        }
+        if ((playerPos - homeDoorPosition).sqrMagnitude > homeDoorMaxZoom * homeDoorMaxZoom 
+            && (playerPos - homePosition).sqrMagnitude > homeDoorMaxZoom * homeDoorMaxZoom)
+            StopLookingAtHomeDoor(); // Si le joueur sort de la zone autour des portes, on reprend le comportement normal
 
         bool playerPassedPortal = (playerPos - homeDoorPosition).sqrMagnitude > (playerPos - homePosition).sqrMagnitude;
         Vector3 forward = playerPassedPortal ? Vector3.forward : homeDoorForward;
@@ -743,14 +743,13 @@ public class PoS_Camera : MonoBehaviour {
         Vector3 projected = Vector3.Project((playerPassedPortal ? homePosition : homeDoorPosition) - playerPos, forward);
         print("Projected: " + projected);
 
-        float playerPosValue = 2 * projected.z / homeDoorMaxZoom;
+        float playerPosValue = 2 * projected.sqrMagnitude / (homeDoorMaxZoom * homeDoorMaxZoom);
         float trueZoom = (homeDoorMaxZoom/2) * playerPosValue + homeDoorMaxZoom /2 - 0.01f;
 
         bool camPassedPortal = trueZoom < 0;
 
         Vector3 targetPos = camPassedPortal ? homePosition : homeDoorPosition;
         Vector3 otherSide = camPassedPortal ? homeDoorPosition : homePosition;
-        
         targetPos.y += 2;
         forward = camPassedPortal ? Vector3.forward : homeDoorForward;
 
@@ -761,11 +760,8 @@ public class PoS_Camera : MonoBehaviour {
 
             Vector3 offset = my.position - otherSide;
             my.position = targetPos + offset;
-
-            float angularDifferenceBetweenPortalRotations = Quaternion.Angle(camPassedPortal ? Quaternion.identity : my.rotation, camPassedPortal ? my.rotation : Quaternion.identity);
-            Quaternion portalRotationalDifference = Quaternion.AngleAxis(angularDifferenceBetweenPortalRotations, Vector3.up);
-            Vector3 newCameraDirection = portalRotationalDifference * my.forward;
-            my.rotation = camRotation;
+            
+            my.rotation = Quaternion.LookRotation(forward);
 
             offset = lastFrameCamPos - otherSide;
             lastFrameCamPos = targetPos + offset;
