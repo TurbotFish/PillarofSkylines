@@ -76,6 +76,7 @@ namespace Game.EchoSystem
 
                         if (homePoint) {
                             homeDoor.transform.position = playerTransform.position + playerTransform.forward * 2;
+                            homeDoor.transform.rotation = playerTransform.rotation;
                             homeDoor.SetActive(true);
                             camera.LookAtHomeDoor(homeDoor.transform.position, homeDoor.transform.forward, homePoint.position);
 

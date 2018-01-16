@@ -100,22 +100,19 @@ namespace Game.Player {
                     foreach(Transform child in needleSlotCollider.transform)
                         child.gameObject.SetActive(playerModel.hasNeedle);
 
+                    playerModel.hasNeedle ^= true;
+
                     if (playerModel.hasNeedle)
                         needleSlotForDrift = needleSlotCollider;
                     
-                    playerModel.hasNeedle ^= true;
-
                     Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(playerModel.hasNeedle));
 
                     ShowUiMessage(playerModel.hasNeedle ? "Press [X] to plant the needle" : "Press [X] to take the needle");
                 }
                 //eye
-                else if (eyeInRange)
-                {
+                else if (eyeInRange) {
                     eyeInRange = false;
-
                     playerModel.hasNeedle = false;
-
                     Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(true));
 
                     HideUiMessage();
@@ -142,13 +139,16 @@ namespace Game.Player {
 
                 // stop eclipse
                 if (playerModel.hasNeedle) {
+
+                    print("Needle Slot for Drift: " + needleSlotForDrift + " Collider: " + needleSlotCollider);
+
                     playerModel.hasNeedle = false;
 
                     if (needleSlotForDrift) {
                         foreach (Transform child in needleSlotForDrift.transform)
                             child.gameObject.SetActive(true);
 
-                        var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(needleSlotForDrift.transform.position, Quaternion.identity, false);
+                        var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(needleSlotForDrift.transform.position, false);
                         Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
                     }
                     needleSlotCollider = needleSlotForDrift;
@@ -169,7 +169,6 @@ namespace Game.Player {
                 airParticle.transform.localPosition = Vector3.zero;
                 airParticle = null;
             }
-
         }
 
         #endregion input handling
@@ -237,7 +236,7 @@ namespace Game.Player {
                         break;
                     //needle slot
                     case "NeedleSlot":
-                        // si on est dans l'éclipse on peut poser peut importe lequel c'est
+                        // si on est dans l'éclipse on peut poser peu importe lequel c'est
                         // sinon on ne peut retirer que s'il a l'aiguille
                         if (playerModel.hasNeedle || needleSlotCollider && needleSlotCollider == other) {
                             needleSlotInRange = true;
@@ -290,19 +289,36 @@ namespace Game.Player {
                         }
                         break;
                     // doorHome
-                    case "DoorHome":
-                        // check if on the right side of door
-                        float dot = Vector3.Dot(myPlayer.transform.forward, other.transform.forward);
-
-                        if (dot > 0.5f) {
-                            // then take offset from exact door position
-                            Vector3 offset = myPlayer.transform.position - other.transform.position;
-                            Vector3 targetPoint = spawnPointManager.GetHomeSpawnPoint() + offset;
-                            // then teleport
-                            var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, spawnPointManager.GetHomeSpawnOrientation(), false); //TODO: make it take rotation as well
-                            Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                    case "DoorHome": {
+                            // check if on the right side of door
+                            float dot = Vector3.Dot(other.transform.forward, myPlayer.transform.forward);
+                            
+                            if (dot > 0.4f) {
+                                // then take offset from exact door position
+                                Vector3 offset = myPlayer.transform.position - other.transform.position;
+                                Vector3 targetPoint = spawnPointManager.GetHomeSpawnPoint() + other.transform.parent.TransformDirection(offset);
+                                // then teleport to Home
+                                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, spawnPointManager.GetHomeSpawnOrientation(), false); //TODO: make it take rotation as well
+                                Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                            }
+                            break;
                         }
-                        break;
+                    // doorHome
+                    case "DoorBackHome": {
+                            // check if on the right side of door
+                            float dot = Vector3.Dot(other.transform.forward, myPlayer.transform.forward);
+                            
+                            if (dot < -0.4f) {
+                                // then take offset from exact door position
+                                Vector3 offset = myPlayer.transform.position - other.transform.position;
+                                Transform destination = other.GetComponent<HomeBeacon>().destination;
+                                Vector3 targetPoint = destination.position + destination.parent.InverseTransformDirection(offset);
+                                // then teleport to temporary Door
+                                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, spawnPointManager.GetHomeSpawnOrientation(), false); //TODO: make it take rotation as well
+                                Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                            }
+                            break;
+                        }
                     // HomeBeacon
                     case "HomeBeacon":
                         homeBeacon = other.GetComponent<HomeBeacon>();

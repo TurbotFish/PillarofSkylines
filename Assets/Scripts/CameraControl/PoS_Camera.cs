@@ -131,8 +131,8 @@ public class PoS_Camera : MonoBehaviour {
 		Cursor.lockState = CursorLockMode.Locked;
 
         my = transform;
-		player = target.GetComponentInParent<Game.Player.CharacterController.CharController>();
-		controller = player.GetComponent<Game.Player.CharacterController.CharacControllerRecu>();
+		player = target.GetComponentInParent<CharController>();
+		controller = player.GetComponent<CharacControllerRecu>();
         
 		currentDistance = zoomValue = idealDistance = distance;
 		maxDistance = canZoom ? zoomDistance.max : distance;
@@ -212,8 +212,11 @@ public class PoS_Camera : MonoBehaviour {
     }
 	
     void RealignPlayer() {
-        // TODO: During a camera realignment, wait before realigning player
-        
+        if (state == eCameraState.HomeDoor)
+            return; // Dans ce cas, osef de tout le reste
+
+                    // TODO: During a camera realignment, wait before realigning player
+
         Vector3 characterUp = target.parent.up; // TODO: only change this value when there's a change of gravity?
         target.LookAt(target.position + Vector3.ProjectOnPlane(my.forward, characterUp), characterUp); // Reoriente the character's rotator
     }
@@ -713,7 +716,7 @@ public class PoS_Camera : MonoBehaviour {
     #region Home Door
 
     Vector3 homeDoorPosition, homeDoorForward, homePosition;
-    float homeDoorMaxZoom = 7, homeDoorFov = 50, lastFrameZoomSign;
+    float homeDoorMaxZoom = 10, homeDoorFov = 70, lastFrameZoomSign;
 
     public void LookAtHomeDoor(Vector3 doorPosition, Vector3 doorForward, Vector3 homePosition) {
         state = eCameraState.HomeDoor;
@@ -729,31 +732,50 @@ public class PoS_Camera : MonoBehaviour {
 
     void HomeDoorState() {
         Vector3 playerPos = target.position;
-        float playerPosValue = -1;
+
+        if ((playerPos - homeDoorPosition).sqrMagnitude > homeDoorMaxZoom * homeDoorMaxZoom 
+            && (playerPos - homePosition).sqrMagnitude > homeDoorMaxZoom * homeDoorMaxZoom)
+            StopLookingAtHomeDoor(); // Si le joueur sort de la zone autour des portes, on reprend le comportement normal
 
         bool playerPassedPortal = (playerPos - homeDoorPosition).sqrMagnitude > (playerPos - homePosition).sqrMagnitude;
-        playerPosValue = 2 * Vector3.Project( (playerPassedPortal ? homePosition : homeDoorPosition) - playerPos, homeDoorForward).z / homeDoorMaxZoom;
+        Vector3 forward = playerPassedPortal ? Vector3.forward : homeDoorForward;
+
+        Vector3 projected = Vector3.Project((playerPassedPortal ? homePosition : homeDoorPosition) - playerPos, forward);
+
+        float playerPosValue = 2 * projected.magnitude / homeDoorMaxZoom;
+        if (playerPassedPortal)
+            playerPosValue *= -1;
         float trueZoom = (homeDoorMaxZoom/2) * playerPosValue + homeDoorMaxZoom /2 - 0.01f;
 
-        Vector3 targetPos = trueZoom > 0 ? homeDoorPosition : homePosition;
-        Vector3 otherSide = trueZoom > 0 ? homePosition : homeDoorPosition;
+        bool camPassedPortal = trueZoom < 0;
 
-        if (Mathf.Sign(trueZoom) != lastFrameZoomSign) { // on passe de homePos à doorPos
+        Vector3 targetPos = camPassedPortal ? homePosition : homeDoorPosition;
+        Vector3 otherSide = camPassedPortal ? homeDoorPosition : homePosition;
+        targetPos.y += 2;
+        forward = camPassedPortal ? Vector3.forward : homeDoorForward;
+
+        camPosition = targetPos - forward * trueZoom;
+        camRotation = Quaternion.LookRotation(forward, Vector3.up);
+
+        if (Mathf.Sign(trueZoom) != lastFrameZoomSign) { // La caméra passe le portail, on switch de position
+
             Vector3 offset = my.position - otherSide;
             my.position = targetPos + offset;
+            my.rotation = Quaternion.LookRotation(forward);
 
             offset = lastFrameCamPos - otherSide;
             lastFrameCamPos = targetPos + offset;
-
+            // on change la position de la caméra lors de la frame précédente également pour éviter un lerp
         }
         lastFrameZoomSign = Mathf.Sign(trueZoom);
 
-        targetPos.y += 2;
-
-        camPosition = targetPos - homeDoorForward * trueZoom;
-        camRotation = Quaternion.LookRotation(homeDoorForward, Vector3.up);
-
         camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, homeDoorFov, 4*deltaTime);
+
+        bool alterPlayerForward = playerPassedPortal && !camPassedPortal;
+
+        Vector3 characterUp = target.parent.up;
+        forward = alterPlayerForward ? Vector3.forward : Vector3.ProjectOnPlane(my.forward, characterUp);
+        target.LookAt(target.position + forward, characterUp); // Reoriente the character's rotator
     }
 
     #endregion

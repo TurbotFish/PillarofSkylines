@@ -27,12 +27,14 @@ namespace Game.Player.CharacterController.States
         public void Enter()
         {
             Debug.Log("Enter State: Slide");
+			charController.animator.SetBool("Sliding", true); 
         }
 
         public void Exit()
         {
             Debug.Log("Exit State: Slide");
-        }
+			charController.animator.SetBool("Sliding", false); 
+		}
 
         //#############################################################################
 
@@ -42,16 +44,25 @@ namespace Game.Player.CharacterController.States
             PlayerMovementInfo movementInfo = charController.MovementInfo;
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
+            //jump
             if (inputInfo.jumpButtonDown)
             {
-                stateMachine.ChangeState(new AirState(charController, stateMachine, true));
-            }
+                var state = new AirState(charController, stateMachine);
+                state.SetMode(AirState.eAirStateMode.jump);
+                state.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 
+                stateMachine.ChangeState(state);
+            }
+            //fall
             else if (!collisionInfo.below)
             {
-                stateMachine.ChangeState(new AirState(charController, stateMachine, false));
+                var state = new AirState(charController, stateMachine);
+                state.SetMode(AirState.eAirStateMode.fall);
+
+                stateMachine.ChangeState(state);
             }
-            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle)
+            //stop
+			else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle && !collisionInfo.SlippySlope) 
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
@@ -59,13 +70,18 @@ namespace Game.Player.CharacterController.States
 
         public StateReturnContainer Update(float dt)
         {
-            var result = new StateReturnContainer
-            {
-                CanTurnPlayer = false,
+			var result = new StateReturnContainer 
+				{ 
+					CanTurnPlayer = false, 
 
-                Acceleration = Vector3.zero,
-                TransitionSpeed = slideData.TransitionSpeed
-            };
+					TransitionSpeed = slideData.TransitionSpeed, 
+					IgnoreGravity = true 
+				}; 
+
+			if (Vector3.Angle(charController.CollisionInfo.currentGroundNormal, charController.MovementInfo.up) < charController.CharData.General.MaxSlopeAngle) { 
+				result.Acceleration = Vector3.ProjectOnPlane(-charController.MyTransform.up, charController.CollisionInfo.currentGroundNormal).normalized * slideData.MinimalSpeed; 
+			} 
+			result.Acceleration += charController.InputInfo.leftStickToSlope * slideData.Control; 
 
             return result;
         }
