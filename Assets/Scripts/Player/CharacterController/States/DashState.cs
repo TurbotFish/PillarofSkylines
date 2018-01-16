@@ -33,8 +33,9 @@ namespace Game.Player.CharacterController.States
 
         public void Enter()
         {
-            Debug.Log("Enter State: Dash");
+			Debug.Log("Enter State: Dash");
 			charController.animator.SetTrigger("DashTrigger");
+			charController.dashParticles.Play();
             timer = dashData.Time;
         }
 
