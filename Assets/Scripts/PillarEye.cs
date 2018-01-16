@@ -10,7 +10,7 @@ public class PillarEye : MonoBehaviour {
 
     private void OnEnable() {
         rend = GetComponent<Renderer>();
-        target = FindObjectOfType<Game.Player.CharacterController.Character>().transform; // TODO: fix that
+        target = FindObjectOfType<Game.Player.CharacterController.CharController>().transform; // TODO: fix that
         Game.Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
     }
 

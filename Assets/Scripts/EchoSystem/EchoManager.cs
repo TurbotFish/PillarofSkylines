@@ -7,40 +7,54 @@ namespace Game.EchoSystem
     {
         //##################################################################
 
-        [SerializeField]
-        Echo echoPrefab;
-
+        [SerializeField] Echo echoPrefab;
         public BreakEchoParticles breakEchoParticles;
+        [SerializeField] int maxEchoes = 3;
+        [SerializeField] float driftInputIntensity = 0.5f;
 
-        [SerializeField]
-        int maxEchoes = 3;
+        [Header("Home")]
+        [SerializeField] GameObject homeDoor;
+        [SerializeField, Tooltip("Only for GameControllerLite")] Transform homePoint;
+        [SerializeField] float timeToHoldForDoor = 1.5f;
+
         /// <summary>
         /// Number of echoes placed by the player.
         /// </summary>
         int placedEchoes;
 
         Transform playerTransform;
+        new PoS_Camera camera;
         EchoCameraEffect echoCamera;
         EchoParticleSystem echoParticles;
 
         List<Echo> echoList = new List<Echo>();
 
         bool isEclipseActive;
-        bool driftInputDown;
+        bool isDoorActive;
+        float driftInputDown;
 
         Transform MyTransform { get; set; }
+        World.SpawnPointSystem.SpawnPointManager spawnPointManager;
 
         //##################################################################
 
         #region initialization
 
-        public void InitializeEchoManager(GameControl.IGameControllerBase gameController)
-        {
+        public void InitializeEchoManager(GameControl.IGameControllerBase gameController, World.SpawnPointSystem.SpawnPointManager spawnPointManager = null) {
+
+            camera = gameController.CameraController.PoS_Camera;
             echoCamera = gameController.CameraController.EchoCameraEffect;
             playerTransform = gameController.PlayerController.PlayerTransform;
             echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();
 
             MyTransform = transform;
+            
+            this.spawnPointManager = spawnPointManager;
+            if (spawnPointManager)
+                homePoint = spawnPointManager.GetHomeSpawnTransform();
+            homeDoor = Instantiate(homeDoor);
+            homeDoor.GetComponentInChildren<HomePortalCamera>().anchorPoint = homePoint;
+            homeDoor.SetActive(false);
 
             Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
@@ -50,20 +64,41 @@ namespace Game.EchoSystem
 
         //##################################################################
 
-        void Update()
-        {
+        void Update() {
             if (!isEclipseActive) {
-                float driftInput = Input.GetAxis("Right Trigger");
-                if (driftInput > 0.7f && !driftInputDown) {
-                    driftInputDown = true;
-                    Drift();
-                } else if (driftInput < 0.6f)
-                    driftInputDown = false;
+                float driftInput = Input.GetAxis("Drift") + (Input.GetButtonUp("Drift") ? 1 : 0);
+
+                if (driftInput > driftInputIntensity) {
+                    driftInputDown += Time.deltaTime;
+                    if (driftInputDown >= timeToHoldForDoor && !isDoorActive) {
+                        // do the door thing!
+                        isDoorActive = true;
+
+                        if (homePoint) {
+                            homeDoor.transform.position = playerTransform.position + playerTransform.forward * 2;
+                            homeDoor.transform.rotation = playerTransform.rotation;
+                            homeDoor.SetActive(true);
+                            camera.LookAtHomeDoor(homeDoor.transform.position, homeDoor.transform.forward, homePoint.position);
+
+                        } else {
+                            print("Assign HomePoint to the EchoManager if you want it to work with the GameControllerLite");
+                        }
+                    }
+
+                } else if (driftInput < 0.4f) {
+                    if (isDoorActive) {
+                        isDoorActive = false;
+                        homeDoor.SetActive(false);
+                        camera.StopLookingAtHomeDoor();
+                    }
+                    else if (driftInputDown > 0)
+                        Drift();
+                    driftInputDown = 0;
+                }
 
                 if (Input.GetButtonDown("Echo"))
                     CreateEcho(true);
-            } else
-                driftInputDown = true;
+            }
         }
 
         //##################################################################
@@ -114,7 +149,6 @@ namespace Game.EchoSystem
                     i++;
                     oldestEcho = echoList[i];
                 }
-
                 Break(oldestEcho);
             }
 

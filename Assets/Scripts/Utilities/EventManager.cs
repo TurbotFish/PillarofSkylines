@@ -251,11 +251,23 @@ namespace Game.Utilities
             /// </summary>
             public bool IsNewScene { get; private set; }
 
-            public TeleportPlayerEventArgs(Vector3 position, Quaternion rotation, bool isNewScene)
-            {
+            /// <summary>
+            /// Whether or not the player should change its rotation on teleport.
+            /// </summary>
+            public bool TakeRotation { get; private set; }
+
+            public TeleportPlayerEventArgs(Vector3 position, bool isNewScene) {
+                Position = position;
+                Rotation = Quaternion.identity;
+                IsNewScene = isNewScene;
+                TakeRotation = false;
+            }
+
+            public TeleportPlayerEventArgs(Vector3 position, Quaternion rotation, bool isNewScene) {
                 Position = position;
                 Rotation = rotation;
                 IsNewScene = isNewScene;
+                TakeRotation = true;
             }
         }
 
@@ -395,7 +407,7 @@ namespace Game.Utilities
 
             public FavourPickedUpEventArgs(int favourId)
             {
-                this.FavourId = favourId;
+                FavourId = favourId;
             }
         }
 
@@ -409,6 +421,54 @@ namespace Game.Utilities
         }
 
         #endregion favour picked up event
+
+        //***********************************************************
+
+        #region wind tunnel events
+
+        public class WindTunnelPartEnteredEventArgs: EventArgs
+        {
+            public WindTunnelPart WindTunnelPart { get; private set; }
+
+            public WindTunnelPartEnteredEventArgs(WindTunnelPart windTunnelPart)
+            {
+                WindTunnelPart = windTunnelPart;
+            }
+        }
+
+        public delegate void WindTunnelPartEnteredEventHandler(object sender, WindTunnelPartEnteredEventArgs args);
+
+        public static event WindTunnelPartEnteredEventHandler WindTunnelPartEnteredEvent;
+
+        public static void SendWindTunnelEnteredEvent(object sender, WindTunnelPartEnteredEventArgs args)
+        {
+            WindTunnelPartEnteredEvent?.Invoke(sender, args);
+        }
+
+        //***
+
+        public class WindTunnelPartExitedEventArgs: EventArgs
+        {
+            public WindTunnelPart WindTunnelPart { get; private set; }
+            public bool StillInWindTunnel { get; private set; }
+
+            public WindTunnelPartExitedEventArgs(WindTunnelPart windTunnelPart, bool stillInWindTunnel)
+            {
+                WindTunnelPart = windTunnelPart;
+                StillInWindTunnel = stillInWindTunnel;
+            }
+        }
+
+        public delegate void WindTunnelExitedEventHandler(object sender, WindTunnelPartExitedEventArgs args);
+
+        public static event WindTunnelExitedEventHandler WindTunnelExitedEvent;
+
+        public static void SendWindTunnelExitedEvent(object sender, WindTunnelPartExitedEventArgs args)
+        {
+            WindTunnelExitedEvent?.Invoke(sender, args);
+        }
+
+        #endregion wind tunnel events
 
         //***********************************************************
 

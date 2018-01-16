@@ -88,29 +88,29 @@ namespace Game.World.ChunkSystem
             //******************************************
             //updating world
 
-            stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            //stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
             for (int i = 0; i < ChunkSystemData.RegionUpdatesPerFrame; i++)
             {
-                var renderersToSwitch = regionList[regionUpdateIndex++].UpdateChunkSystem(playerTransform.position, cameraTransform.position, cameraTransform.forward);
-                for (int j = 0; j < renderersToSwitch.Count; j++)
-                {
-                    rendererQueue.Enqueue(renderersToSwitch[i]);
-                }
+                //var renderersToSwitch = regionList[regionUpdateIndex++].UpdateChunkSystem(playerTransform.position, cameraTransform.position, cameraTransform.forward);
+                //for (int j = 0; j < renderersToSwitch.Count; j++)
+                //{
+                //    rendererQueue.Enqueue(renderersToSwitch[i]);
+                //}
 
-                if (regionUpdateIndex == regionList.Count)
-                {
-                    regionUpdateIndex = 0;
-                }
+                //if (regionUpdateIndex == regionList.Count)
+                //{
+                //    regionUpdateIndex = 0;
+                //}
             }
 
-            stopwatch.Stop();
-            var worldUpdateTime = stopwatch.Elapsed;
+            //stopwatch.Stop();
+            //var worldUpdateTime = stopwatch.Elapsed;
 
             //******************************************
             //object activation
 
-            stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            //stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
             int quota = Mathf.Min(ChunkSystemData.ObjectActivationsPerFrame, rendererQueue.Count);
             Renderer currentRenderer;
@@ -122,9 +122,9 @@ namespace Game.World.ChunkSystem
                 currentRenderer.enabled = !currentRenderer.enabled;
             }
 
-            stopwatch.Stop();
+            //stopwatch.Stop();
 
-            var objectActivationTime = stopwatch.Elapsed;
+            //var objectActivationTime = stopwatch.Elapsed;
 
             //Debug.LogFormat("WorldController: Update: A={0}; B={1}", worldUpdateTime.Milliseconds /*/ 1000f*/, objectActivationTime.Milliseconds /*/ 1000f*/);
         }
