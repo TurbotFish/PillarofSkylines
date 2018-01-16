@@ -372,6 +372,7 @@ namespace Game.Player.CharacterController
             MyTransform.position = args.Position;
 
             if (args.TakeRotation) {
+                velocity = Quaternion.Inverse(MyTransform.rotation) * velocity;
                 MyTransform.rotation = args.Rotation;
             }
 
