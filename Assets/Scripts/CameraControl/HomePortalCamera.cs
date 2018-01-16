@@ -7,16 +7,18 @@ public class HomePortalCamera : MonoBehaviour {
     public Transform anchorPoint, worldAnchorPoint;
     [Space]
     [SerializeField] Renderer portalRenderer;
+    [SerializeField] Transform otherPortal;
 
     [HideInInspector, SerializeField] RenderTexture texture;
     
     Transform my, worldCamera;
     Material mat;
     Camera cam, trueCam;
+    Vector3 negDistance;
+    Vector3 offset = new Vector3(0, 2, 0);
 
     private void Start() {
         my = transform;
-
         cam = GetComponent<Camera>();
 
         texture = new RenderTexture(Screen.width, Screen.height, 16);
@@ -26,6 +28,10 @@ public class HomePortalCamera : MonoBehaviour {
 
         mat = new Material(shader);
         portalRenderer.sharedMaterial = mat;
+
+        otherPortal.parent = null;
+        otherPortal.position = anchorPoint.transform.position;
+
     }
     
     private void Update() {
@@ -33,13 +39,24 @@ public class HomePortalCamera : MonoBehaviour {
             FindWorldCamera();
 
         cam.fieldOfView = trueCam.fieldOfView;
+        
+        float angularDifferenceBetweenPortalRotations = Quaternion.Angle(anchorPoint.rotation, worldAnchorPoint.rotation);
 
-        my.localRotation = worldCamera.localRotation; // TODO: faire qu'on puisse la tourner
+        //Quaternion portalRotationalDifference = Quaternion.AngleAxis(angularDifferenceBetweenPortalRotations, Vector3.up);
+        //Vector3 newCameraDirection = portalRotationalDifference * worldCamera.forward;
+        //my.rotation = Quaternion.LookRotation(newCameraDirection, Vector3.up);
 
-        Vector3 camPos = worldAnchorPoint.position - worldCamera.localPosition;
-        my.position = anchorPoint.position - camPos;
+        my.rotation = Quaternion.identity;
 
+        float distance = Vector3.Distance(worldCamera.position, worldAnchorPoint.position + offset);
+        negDistance.z = -distance;
+        my.position = my.rotation * negDistance + anchorPoint.position + offset;
+        
         mat.mainTexture = texture;
+    }
+
+    private void OnEnable() {
+        otherPortal.rotation = Quaternion.identity;
     }
 
     //

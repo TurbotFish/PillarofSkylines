@@ -43,32 +43,19 @@ namespace Game.EchoSystem
 
         #region collision stuff
 
-        void OnTriggerEnter(Collider col)
-        {
-            if (isActive)
-            { // Si un truc rentre dans un écho, il est détruit
-                Break();
-            }
+        void OnTriggerEnter(Collider col) {
+            Break();// Si un truc rentre dans un écho, il est détruit
         }
-
-        //void OnTriggerExit(Collider col)
-        //{
-        //    if (col.tag == "Player")
-        //    {
-        //        if (isActive)
-        //            Break();
-        //        else
-        //            isActive = true;
-        //    }
-        //}
 
         #endregion collision stuff
 
         //##################################################################
 
         public void Break() {
-            if (isActive)
+            if (isActive) {
+                isActive = false;
                 echoManager.Break(this);
+            }
         }
 
         public void Freeze()
