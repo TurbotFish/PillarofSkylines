@@ -13,8 +13,9 @@ namespace Game.Player.CharacterController
         PlayerModel model;
 
         Dictionary<ePlayerState, StateCooldown> cooldownDict = new Dictionary<ePlayerState, StateCooldown>();
+
         Dictionary<ePlayerState, eAbilityType> stateToAbilityLinkDict = new Dictionary<ePlayerState, eAbilityType>();
-        Dictionary<eAbilityType, ePlayerState> abilityToStateLinkDict = new Dictionary<eAbilityType, ePlayerState>();
+        //Dictionary<eAbilityType, ePlayerState> abilityToStateLinkDict = new Dictionary<eAbilityType, ePlayerState>();
 
         IState currentState;
         public ePlayerState CurrentState { get { return currentState.StateId; } }
@@ -32,12 +33,12 @@ namespace Game.Player.CharacterController
         public void RegisterAbility(ePlayerState stateId, eAbilityType abilityType)
         {
             stateToAbilityLinkDict.Add(stateId, abilityType);
-            abilityToStateLinkDict.Add(abilityType, stateId);
+            //abilityToStateLinkDict.Add(abilityType, stateId);
         }
 
         public void Clear()
         {
-            abilityToStateLinkDict.Clear();
+            //abilityToStateLinkDict.Clear();
             stateToAbilityLinkDict.Clear();
             cooldownDict.Clear();
         }

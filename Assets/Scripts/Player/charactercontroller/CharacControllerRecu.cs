@@ -292,6 +292,7 @@ namespace Game.Player.CharacterController
                 {
                     sideHit = searchHit;
                     collisions.currentWallNormal = sideHit.normal;
+                    collisions.currentWallHit = sideHit;
                 }
                 else
                 {
@@ -319,6 +320,7 @@ namespace Game.Player.CharacterController
                     //Debug.LogErrorFormat("hitName = {0}; hitNormal={1}", sideHit.collider.name, sideHit.normal);
 
                     collisions.currentWallNormal = sideHit.normal;
+                    collisions.currentWallHit = sideHit;
                 }
             }
 
@@ -485,12 +487,15 @@ namespace Game.Player.CharacterController
             public Vector3 currentGroundNormal;
             public Vector3 currentWallNormal;
 
+            public RaycastHit currentWallHit;
+
             public void Reset()
             {
                 above = below = false;
                 side = SlippySlope = false;
                 currentGroundNormal = Vector3.zero;
                 currentWallNormal = Vector3.zero;
+                currentWallHit= new RaycastHit();
             }
 
         }
