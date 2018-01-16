@@ -1,10 +1,11 @@
-﻿using System.Collections;
+﻿using Game.Player.CharacterController;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class MovingPlatform : MonoBehaviour {
 
-	public Game.Player.CharacterController.Character currPlayer;
+	public CharController currPlayer;
 
 	[HideInInspector]
 	public Vector3 impactPoint;
@@ -13,7 +14,7 @@ public class MovingPlatform : MonoBehaviour {
 		transform.tag = "MovingPlatform";
 	}
 
-	virtual public void AddPlayer(Game.Player.CharacterController.Character player, Vector3 playerImpactPoint) {
+	virtual public void AddPlayer(CharController player, Vector3 playerImpactPoint) {
 		currPlayer = player;
 		impactPoint = playerImpactPoint;
 	}
