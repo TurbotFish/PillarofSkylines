@@ -19,7 +19,7 @@ namespace Game.Player.CharacterController.States
         CharData.JumpData jumpData;
         CharData.FallData fallData;
 
-        eAirStateMode mode = eAirStateMode.fall;
+        readonly eAirStateMode mode;
         int remainingAerialJumps = 0;
         float jumpTimer = 0;
         Vector3 jumpDirection = Vector3.zero;
@@ -32,29 +32,19 @@ namespace Game.Player.CharacterController.States
         /// <summary>
         /// Constructor for AirState. Default mode is "fall".
         /// </summary>
-        public AirState(CharController charController, StateMachine stateMachine)
+        public AirState(CharController charController, StateMachine stateMachine, eAirStateMode mode)
         {
             this.charController = charController;
             this.stateMachine = stateMachine;
             jumpData = charController.CharData.Jump;
             fallData = charController.CharData.Fall;
 
-            mode = eAirStateMode.fall;
+            this.mode = mode;
 
             initializing = true;
         }
 
         //#############################################################################
-
-        public void SetMode(eAirStateMode mode)
-        {
-            if (!initializing)
-            {
-                return;
-            }
-
-            this.mode = mode;
-        }
 
         public void SetRemainingAerialJumps(int jumps)
         {
@@ -90,7 +80,7 @@ namespace Game.Player.CharacterController.States
 
         public void Enter()
         {
-            Debug.Log("Enter State: Air");
+            Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
 
             initializing = false;
             firstUpdate = true;
@@ -100,7 +90,7 @@ namespace Game.Player.CharacterController.States
 
         public void Exit()
         {
-            Debug.Log("Exit State: Air");
+            Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
 
             Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
         }
@@ -116,22 +106,17 @@ namespace Game.Player.CharacterController.States
             //jump
             if (inputInfo.jumpButtonDown)
             {
-                if ((mode == eAirStateMode.aerialJump || mode == eAirStateMode.jump)
-                    && remainingAerialJumps > 0
-                    && charController.PlayerModel.CheckAbilityActive(eAbilityType.DoubleJump)
-                   )
+                if (mode == eAirStateMode.fall && jumpTimer > 0)
                 {
-                    var state = new AirState(charController, stateMachine);
-                    state.SetMode(eAirStateMode.aerialJump);
-                    state.SetRemainingAerialJumps(remainingAerialJumps - 1);
+                    var state = new AirState(charController, stateMachine, eAirStateMode.jump);
+                    state.SetRemainingAerialJumps(jumpData.MaxAerialJumps);
 
                     stateMachine.ChangeState(state);
                 }
-                else if (mode == eAirStateMode.fall && jumpTimer > 0)
+                else if (remainingAerialJumps > 0 && charController.PlayerModel.CheckAbilityActive(eAbilityType.DoubleJump))
                 {
-                    var state = new AirState(charController, stateMachine);
-                    state.SetMode(eAirStateMode.jump);
-                    state.SetRemainingAerialJumps(jumpData.MaxAerialJumps);
+                    var state = new AirState(charController, stateMachine, eAirStateMode.aerialJump);
+                    state.SetRemainingAerialJumps(remainingAerialJumps - 1);
 
                     stateMachine.ChangeState(state);
                 }

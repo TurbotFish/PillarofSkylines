@@ -51,7 +51,7 @@ namespace Game.Player.CharacterController.States
             //stop gliding
             if (inputInfo.sprintButtonDown)
             {
-                stateMachine.ChangeState(new AirState(charController, stateMachine));
+                stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
             //landing
             else if (collisionInfo.below)

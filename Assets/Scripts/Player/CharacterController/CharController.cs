@@ -29,11 +29,11 @@ namespace Game.Player.CharacterController
         /// The animator of the character.
         /// </summary>
 		[HideInInspector]
-		public Animator animator;
-		[Space(10)]
-		[Header("Animation stuff")]
-		public float animationRunSpeed;
-		public float animationJumpSpeed;
+        public Animator animator;
+        [Space(10)]
+        [Header("Animation stuff")]
+        public float animationRunSpeed;
+        public float animationJumpSpeed;
 
         //#############################################################################       
 
@@ -50,7 +50,7 @@ namespace Game.Player.CharacterController
 
         Vector3 velocity;
         Vector3 externalVelocity;
-        
+
 
 
 
@@ -90,7 +90,7 @@ namespace Game.Player.CharacterController
             stateMachine.RegisterAbility(ePlayerState.wallClimb, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
 
-            stateMachine.ChangeState(new AirState(this, stateMachine));
+            stateMachine.ChangeState(new AirState(this, stateMachine, AirState.eAirStateMode.fall));
 
             //*******************************************
 
@@ -203,7 +203,9 @@ namespace Game.Player.CharacterController
 
             if (stateReturn.PlayerForwardSet)
             {
-                MyTransform.forward = Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up);
+                //MyTransform.forward = Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up);
+
+                MyTransform.rotation = Quaternion.LookRotation(stateReturn.PlayerForward, MyTransform.up);
             }
 
             if (stateReturn.PlayerUpSet)
@@ -216,19 +218,22 @@ namespace Game.Player.CharacterController
             //Debug.LogFormat("initial velocity: {0}", velocity);
             //Debug.LogFormat("desiredVelocity={0}", stateReturn.DesiredVelocity.magnitude.ToString());
 
-			//computing new velocity
-			//var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
-			if (stateReturn.resetVerticalVelocity)
-				velocity.y = 0;
-			Vector3 tempVertical = new Vector3();
-			Vector3 newVelocity = new Vector3();
-			if (stateReturn.keepVerticalMovement) {
-				tempVertical = new Vector3(0, velocity.y, 0);
-				newVelocity = Vector3.Lerp(Vector3.ProjectOnPlane(velocity, Vector3.up), acceleration, Time.deltaTime * transitionSpeed);
-				newVelocity += tempVertical;
-			} else {
-				newVelocity = Vector3.Lerp(velocity, acceleration, Time.deltaTime * transitionSpeed);
-			}
+            //computing new velocity
+            //var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
+            if (stateReturn.resetVerticalVelocity)
+                velocity.y = 0;
+            Vector3 tempVertical = new Vector3();
+            Vector3 newVelocity = new Vector3();
+            if (stateReturn.keepVerticalMovement)
+            {
+                tempVertical = new Vector3(0, velocity.y, 0);
+                newVelocity = Vector3.Lerp(Vector3.ProjectOnPlane(velocity, Vector3.up), acceleration, Time.deltaTime * transitionSpeed);
+                newVelocity += tempVertical;
+            }
+            else
+            {
+                newVelocity = Vector3.Lerp(velocity, acceleration, Time.deltaTime * transitionSpeed);
+            }
 
 
             //adding gravity
@@ -247,7 +252,7 @@ namespace Game.Player.CharacterController
             }
 
             //
-			newVelocity += externalVelocity;
+            newVelocity += externalVelocity;
 
             //*******************************************
             //physics update
@@ -265,7 +270,7 @@ namespace Game.Player.CharacterController
                 lastPositionDelta = tempPhysicsHandler.Move(turnedVelocity * Time.deltaTime);
             }
 
-			velocity = lastPositionDelta / Time.deltaTime;
+            velocity = lastPositionDelta / Time.deltaTime;
             //Debug.LogFormat("after physics: {0}", newVelocity);
 
             externalVelocity = Vector3.zero;
@@ -303,46 +308,46 @@ namespace Game.Player.CharacterController
             //*******************************************
 
             #region update animator
-			//----------OLD--------------
-//            float keyHalf = 0.5f;
-//            float m_RunCycleLegOffset = 0.2f;
-//            float forward = lastPositionDelta.magnitude / (8 * Time.deltaTime);
-//            if (forward <= 0.2f)
-//            {
-//                forward = 0;
-//            }
-//            float turn = (inputInfo.leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), transform.up), transform.up), CharData.General.TurnSpeed * Time.deltaTime) / 7f);
-//            if (!canTurnPlayer)
-//            {
-//                turn = 0;
-//            }
-//
-//            animator.SetBool("OnGround", tempCollisionInfo.below);
-//            animator.SetFloat("Forward", forward);
-//            animator.SetFloat("Turn", turn);
-//            animator.SetFloat("Jump", turnedVelocity.y / 5);
-//            float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
-//            float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputInfo.leftStickRaw.magnitude;
-//            if (tempCollisionInfo.below)
-//            {
-//                animator.SetFloat("JumpLeg", jumpLeg);
-//            }
-//
-//            //windParticles.SetVelocity(velocity);
-//            //glideParticles.SetVelocity(velocity);
-			//-------FIN OLD-----------
+            //----------OLD--------------
+            //            float keyHalf = 0.5f;
+            //            float m_RunCycleLegOffset = 0.2f;
+            //            float forward = lastPositionDelta.magnitude / (8 * Time.deltaTime);
+            //            if (forward <= 0.2f)
+            //            {
+            //                forward = 0;
+            //            }
+            //            float turn = (inputInfo.leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), transform.up), transform.up), CharData.General.TurnSpeed * Time.deltaTime) / 7f);
+            //            if (!canTurnPlayer)
+            //            {
+            //                turn = 0;
+            //            }
+            //
+            //            animator.SetBool("OnGround", tempCollisionInfo.below);
+            //            animator.SetFloat("Forward", forward);
+            //            animator.SetFloat("Turn", turn);
+            //            animator.SetFloat("Jump", turnedVelocity.y / 5);
+            //            float runCycle = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
+            //            float jumpLeg = (runCycle < keyHalf ? 1 : -1) * inputInfo.leftStickRaw.magnitude;
+            //            if (tempCollisionInfo.below)
+            //            {
+            //                animator.SetFloat("JumpLeg", jumpLeg);
+            //            }
+            //
+            //            //windParticles.SetVelocity(velocity);
+            //            //glideParticles.SetVelocity(velocity);
+            //-------FIN OLD-----------
 
             float turn = (inputInfo.leftStickAtZero ? 0f : Mathf.Lerp(0f, Vector3.SignedAngle(transform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), transform.up), transform.up), CharData.General.TurnSpeed * Time.deltaTime) / 7f);
             if (!canTurnPlayer)
             {
                 turn = 0;
             }
-			
 
-			animator.SetBool("OnGround", tempCollisionInfo.below);
-			animator.SetFloat("Speed", Vector3.ProjectOnPlane(velocity, Vector3.up).magnitude / animationRunSpeed);
+
+            animator.SetBool("OnGround", tempCollisionInfo.below);
+            animator.SetFloat("Speed", Vector3.ProjectOnPlane(velocity, Vector3.up).magnitude / animationRunSpeed);
             //animator.SetFloat("Turn", turn);
-			animator.SetFloat("VerticalSpeed", velocity.y / animationJumpSpeed);
+            animator.SetFloat("VerticalSpeed", velocity.y / animationJumpSpeed);
 
             #endregion update animator
 
@@ -371,13 +376,15 @@ namespace Game.Player.CharacterController
         {
             MyTransform.position = args.Position;
 
-            if (args.TakeRotation) {
+            if (args.TakeRotation)
+            {
                 MyTransform.rotation = args.Rotation;
             }
 
-            if (args.IsNewScene) {
+            if (args.IsNewScene)
+            {
                 velocity = Vector3.zero;
-                stateMachine.ChangeState(new AirState(this, stateMachine));
+                stateMachine.ChangeState(new AirState(this, stateMachine, AirState.eAirStateMode.fall));
                 ChangeGravityDirection(Vector3.down);
             }
         }
@@ -434,10 +441,10 @@ namespace Game.Player.CharacterController
             }
         }
 
-		public void SetVelocity(Vector3 newVelocity, bool worldSpace)
-		{
-			velocity = (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
-		}
+        public void SetVelocity(Vector3 newVelocity, bool worldSpace)
+        {
+            velocity = (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
+        }
 
         public void ChangeGravityDirection(Vector3 newGravity)
         {

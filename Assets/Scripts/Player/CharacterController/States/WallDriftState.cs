@@ -33,7 +33,7 @@ namespace Game.Player.CharacterController.States
             //if the player should not be able to walldrift he starts falling again
             if (!CanEnterWallDrift(charController, true))
             {
-                stateMachine.ChangeState(new AirState(charController, stateMachine));
+                stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
         }
 
@@ -55,9 +55,13 @@ namespace Game.Player.CharacterController.States
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
             //no wall or stick released => fall
-            else if (!collisionInfo.side /*|| !WallRunState.CheckWallRunStick(charController)*/)
+            else if (!collisionInfo.side)
             {
-                stateMachine.ChangeState(new AirState(charController, stateMachine));
+                stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
+            }
+            else if (!WallRunState.CheckWallRunStick(charController))
+            {
+                stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
             //jump
             else if (inputInfo.jumpButtonDown)
@@ -65,8 +69,7 @@ namespace Game.Player.CharacterController.States
                 charController.MyTransform.forward = Vector3.ProjectOnPlane(collisionInfo.currentWallNormal, charController.MyTransform.up);
                 Vector3 jumpDirection = (Vector3.up + collisionInfo.currentWallNormal * 2).normalized;
 
-                var state = new AirState(charController, stateMachine);
-                state.SetMode(AirState.eAirStateMode.jump);
+                var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 state.SetJumpTimer(charController.CharData.Move.CanStillJumpTimer);
                 state.SetJumpDirection(jumpDirection);
 
@@ -79,19 +82,12 @@ namespace Game.Player.CharacterController.States
             PlayerMovementInfo movementInfo = charController.MovementInfo;
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
-            Vector3 driftDir = Vector3.ProjectOnPlane(-Vector3.up, collisionInfo.currentWallNormal);
-            Vector3 driftAcceleration = Vector3.zero;
-            if (movementInfo.velocity.y <= 0)
-            {
-                Vector3 driftMovement = Vector3.Project(movementInfo.velocity, driftDir);
-                driftAcceleration = driftMovement.normalized * driftData.Acceleration;
-                if (driftMovement.magnitude > driftData.TargetSpeed)
-                {
-                    driftAcceleration *= -1;
-                }
-            }
+            //compute the acceleration so that the player's speed tends towards the target speed
+            float acceleration = (driftData.TargetSpeed - movementInfo.velocity.magnitude) * 2f;
+            Vector3 driftAcceleration = -Vector3.up * acceleration;
 
-            Vector3 wallHugging = collisionInfo.currentWallNormal * -1f;
+            //a bit of force so that the player stays glued to the wall
+            Vector3 wallHugging = Vector3.forward * 2f;
 
             var result = new StateReturnContainer()
             {
@@ -100,8 +96,6 @@ namespace Game.Player.CharacterController.States
                 Acceleration = wallHugging + driftAcceleration,
                 TransitionSpeed = driftData.TransitionSpeed
             };
-
-
 
             return result;
         }

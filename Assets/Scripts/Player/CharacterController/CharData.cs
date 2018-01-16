@@ -443,16 +443,11 @@ namespace Game.Player.CharacterController
             public float TargetSpeed { get { return targetSpeed; } }
 
             [SerializeField]
-            float acceleration;
-            public float Acceleration { get { return acceleration; } }
-
-            [SerializeField]
             float transitionSpeed;
             public float TransitionSpeed { get { return transitionSpeed; } }
 
             public void OnValidate()
             {
-                acceleration = Mathf.Clamp(acceleration, 0, float.MaxValue);
                 transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
             }
         }
@@ -466,10 +461,18 @@ namespace Game.Player.CharacterController
         [System.Serializable]
         public class WallRunData
         {
+            [SerializeField]
+            float transitionSpeed;
+            public float TransitionSpeed { get { return transitionSpeed; } }
+
+            [SerializeField]
+            float slowdownFactor;
+            public float SlowdownFactor { get { return slowdownFactor; } }
 
             public void OnValidate()
             {
-
+                transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
+                slowdownFactor = Mathf.Clamp01(slowdownFactor);
             }
         }
 
