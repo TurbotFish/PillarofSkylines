@@ -66,7 +66,7 @@ namespace Game.Player.CharacterController
         Collider[] wallsOverPlayer;
 
         /// <summary>
-        /// The cloud the player is currently on (null if not on a cloud).
+        /// The moving platform the player is currently on (null if not on a moving platform).
         /// </summary>
         MovingPlatform currentPF;
 
@@ -183,12 +183,14 @@ namespace Game.Player.CharacterController
                 //                print("collider : " + wall.name);
                 bool foundSmth = false;
                 Vector3 position = myTransform.position + velocity + playerAngle * center;
-                do
+				int security = 5;
+				do
                 {
+					security--;
                     foundSmth = Physics.Linecast(position, wall.transform.position, out hit, collisionMask);
                     if (foundSmth)
                         position = hit.point + (wall.transform.position - hit.point) * .01f;
-                } while (foundSmth && !wall.gameObject.Equals(hit.transform.gameObject));
+				} while (foundSmth && !wall.gameObject.Equals(hit.transform.gameObject) && security > 0);
 
                 if (foundSmth)
                 {
@@ -219,8 +221,10 @@ namespace Game.Player.CharacterController
 			if (belowLastFrame)
 			{
 				print("must be below");
-				while (!Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask)) {
+				int security = 5;
+				while (!Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask) && security > 0) {
 					print("déplacement !");
+					security--;
 					myTransform.Translate(-myTransform.up * skinWidth * 2, Space.World);
 				}
 			}
@@ -248,8 +252,8 @@ namespace Game.Player.CharacterController
 
             //Send casts to check if there's stuff around the player and set bools depending on the results
             collisions.below = Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask) || climbingStep;
-			print("below : " + collisions.below);
-            if (collisions.below && !climbingStep)
+
+			if (collisions.below && !climbingStep)
             {
                 collisions.currentGroundNormal = hit.normal;
                 if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
