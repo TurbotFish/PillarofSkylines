@@ -50,7 +50,7 @@ namespace Game.Player.CharacterController.States
                 var state = new AirState(charController, stateMachine);
                 state.SetMode(AirState.eAirStateMode.jump);
                 state.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
-
+				state.SetJumpDirection(collisionInfo.currentGroundNormal);
                 stateMachine.ChangeState(state);
             }
             //fall

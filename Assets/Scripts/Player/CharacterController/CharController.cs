@@ -69,10 +69,11 @@ namespace Game.Player.CharacterController
 
 
 		[Space(10)]
-		[Header("Particles")]
+		[Header("Particles/FX")]
         public ParticlesManager dashParticles;
 		public ParticlesManager windParticles;
 		public ParticlesManager glideParticles;
+		public ParticleSystem aerialJumpFX;
 
 		//#############################################################################
 
