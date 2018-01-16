@@ -49,7 +49,7 @@ namespace Game.Player.CharacterController.States
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 state.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
-
+				state.SetJumpDirection(collisionInfo.currentGroundNormal);
                 stateMachine.ChangeState(state);
             }
             //fall
@@ -78,7 +78,10 @@ namespace Game.Player.CharacterController.States
 
 			if (Vector3.Angle(charController.CollisionInfo.currentGroundNormal, charController.MovementInfo.up) < charController.CharData.General.MaxSlopeAngle) { 
 				result.Acceleration = Vector3.ProjectOnPlane(-charController.MyTransform.up, charController.CollisionInfo.currentGroundNormal).normalized * slideData.MinimalSpeed; 
-			} 
+			} else {
+				result.IgnoreGravity = false;
+			}
+			result.PlayerForward = result.Acceleration;
 			result.Acceleration += charController.InputInfo.leftStickToSlope * slideData.Control; 
 
             return result;

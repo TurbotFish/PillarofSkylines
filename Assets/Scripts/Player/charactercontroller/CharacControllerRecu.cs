@@ -70,6 +70,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         MovingPlatform currentPF;
 
+		bool belowLastFrame;
         bool climbingStep;
         Vector3 stepOffset;
 
@@ -98,6 +99,7 @@ namespace Game.Player.CharacterController
         {
             var pos1 = myTransform.position;
 
+			belowLastFrame = collisions.below;
 			collisions.Reset();
 
             //			print("---------------------------------new movement----------------------------------");
@@ -174,6 +176,7 @@ namespace Game.Player.CharacterController
         Vector3 AdjustPlayerPosition(Vector3 velocity)
         {
 
+			Vector3 result = Vector3.zero;
             Vector3 OutOfWallDirection = Vector3.zero;
             foreach (Collider wall in wallsOverPlayer)
             {
@@ -195,24 +198,33 @@ namespace Game.Player.CharacterController
                 {
                     OutOfWallDirection += transform.up;
                 }
-                //				print("added : " + hit.normal + " from : " + hit.transform.name);
             }
 
             Physics.Raycast(myTransform.position + velocity + playerAngle * center, -OutOfWallDirection, out hit, radius + height / 2, collisionMask);
             OutOfWallDirection = OutOfWallDirection.normalized * (radius + height / 2);
 
-            //            print("moved towards : " + OutOfWallDirection);
-            if (Physics.CapsuleCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + OutOfWallDirection, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + OutOfWallDirection, radius
-                , -OutOfWallDirection, out hit, radius + height, collisionMask))
+			if (Physics.CapsuleCast(myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier / 2) + OutOfWallDirection, myTransform.position + velocity + playerAngle * (center + capsuleHeightModifier / 2) + OutOfWallDirection
+				, radius, -OutOfWallDirection, out hit, radius + height, collisionMask))
             {
-                myTransform.Translate(OutOfWallDirection * (1 - hit.distance), Space.World);
-                return ConfirmMovement(velocity);
+				print("hit distance : " + hit.distance + "distance adj : " + (1-hit.distance)/2);
+                myTransform.Translate(OutOfWallDirection * (1 - hit.distance)/2, Space.World);
+                result = ConfirmMovement(velocity);
             }
             else
             {
                 myTransform.Translate(OutOfWallDirection, Space.World);
-                return ConfirmMovement(velocity);
+				result = ConfirmMovement(velocity);
             }
+
+			if (belowLastFrame)
+			{
+				print("must be below");
+				while (!Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask)) {
+					print("déplacement !");
+					myTransform.Translate(-myTransform.up * skinWidth * 2, Space.World);
+				}
+			}
+			return result;
         }
 
 
@@ -236,13 +248,7 @@ namespace Game.Player.CharacterController
 
             //Send casts to check if there's stuff around the player and set bools depending on the results
             collisions.below = Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask) || climbingStep;
-            // POUR BIEN SE COLLER AU SOL EN MONTANT UNE MARCHE
-            //			if (collisions.below && !Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask)) {
-            //				if (Physics.SphereCast(myTransform.position + myTransform.up * radius, radius, -myTransform.up, out hit2, collisions.stepHeight, collisionMask)) {
-            //					transform.position += -myTransform.up * hit2.distance;
-            //					print("adjusted position on step by : " + hit2.distance);
-            //				}
-            //			}
+			print("below : " + collisions.below);
             if (collisions.below && !climbingStep)
             {
                 collisions.currentGroundNormal = hit.normal;

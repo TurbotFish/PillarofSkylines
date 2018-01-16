@@ -53,9 +53,6 @@ namespace Game.Player.CharacterController
 
 
 
-
-
-
         List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
         public List<WindTunnelPart> WindTunnelPartList { get { return new List<WindTunnelPart>(windTunnelPartList); } }
 
@@ -66,6 +63,17 @@ namespace Game.Player.CharacterController
         public PlayerMovementInfo MovementInfo { get { return movementInfo; } }
 
         //#############################################################################
+
+
+		[Space(10)]
+		[Header("Particles/FX")]
+        public ParticlesManager dashParticles;
+		public ParticlesManager windParticles;
+		public ParticlesManager glideParticles;
+		public ParticleSystem aerialJumpFX;
+
+		//#############################################################################
+
 
         #region initialization
 
@@ -348,6 +356,9 @@ namespace Game.Player.CharacterController
             animator.SetFloat("Speed", Vector3.ProjectOnPlane(velocity, Vector3.up).magnitude / animationRunSpeed);
             //animator.SetFloat("Turn", turn);
             animator.SetFloat("VerticalSpeed", velocity.y / animationJumpSpeed);
+
+			windParticles.SetVelocity(velocity);
+			glideParticles.SetVelocity(velocity);
 
             #endregion update animator
 

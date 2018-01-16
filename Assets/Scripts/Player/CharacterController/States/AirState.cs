@@ -73,7 +73,7 @@ namespace Game.Player.CharacterController.States
                 return;
             }
 
-            jumpDirection = direction;
+            jumpDirection = direction.normalized;
         }
 
         //#############################################################################
@@ -179,6 +179,7 @@ namespace Game.Player.CharacterController.States
                 if (mode == eAirStateMode.aerialJump)
                 {
                     jumpStrength *= jumpData.AerialJumpCoeff;
+					charController.aerialJumpFX.Play();
                 }
 
                 Vector3 direction = jumpDirection == Vector3.zero ? Vector3.up : jumpDirection;

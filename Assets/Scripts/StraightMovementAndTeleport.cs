@@ -5,6 +5,7 @@ using UnityEngine;
 public class StraightMovementAndTeleport : MovingPlatform {
 
 	public float waitTime;
+	public float initialWaitTime;
 	public float timeMoving;
 	public Vector3 movement;
 
@@ -16,7 +17,7 @@ public class StraightMovementAndTeleport : MovingPlatform {
 
 	void Start() {
 		waiting = true;
-		currWaitTime = waitTime;
+		currWaitTime = waitTime + initialWaitTime;
 		initialPosition = transform.position;
 	}
 
