@@ -47,15 +47,14 @@ namespace Game.Player.CharacterController.States
             if (inputInfo.jumpButtonDown)
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, true));
-            }
+			}
+			else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope)
+			{
+				stateMachine.ChangeState(new SlideState(charController, stateMachine));
+			}
             else if (!inputInfo.leftStickAtZero)
             {
                 stateMachine.ChangeState(new MoveState(charController, stateMachine));
-            }
-
-            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle)
-            {
-                stateMachine.ChangeState(new SlideState(charController, stateMachine));
             }
             else if (!collisionInfo.below)
             {

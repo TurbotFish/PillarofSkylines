@@ -29,15 +29,16 @@ namespace Game.Player.CharacterController.States
 
         public void Enter()
         {
-            Debug.Log("Enter State: Fall");
-
+            Debug.Log("Enter State: Glide");
+			charController.animator.SetBool("Gliding", true);
             verticalAngle = Vector3.Angle(charController.MyTransform.up, TurnLocalToSpace(charController.MovementInfo.velocity)) - 90f;
             horizontalAngle = 0f;
         }
 
         public void Exit()
         {
-            Debug.Log("Exit State: Fall");
+			Debug.Log("Exit State: Glide");
+			charController.animator.SetBool("Gliding", false);
         }
 
         //#############################################################################
@@ -118,15 +119,15 @@ namespace Game.Player.CharacterController.States
                 (Mathf.Abs(horizontalAngle) > Mathf.Abs(targetHorizontalAngle) ? glideData.HorizComingBack : glideData.HorizAngleCtrl) * dt
             );
 
-            //Turn the velocity horizontally with the angle calculated above
-            targetVelocity = Quaternion.AngleAxis(horizontalAngle, charController.MyTransform.up) * targetVelocity;
-
+            //Turn the player horizontally with the angle calculated above
+			charController.MyTransform.Rotate(charController.MyTransform.up, horizontalAngle);
 
             var result = new StateReturnContainer
             {
                 Acceleration = targetVelocity,
                 TransitionSpeed = 8,
-                CanTurnPlayer = true
+                CanTurnPlayer = false, 
+				IgnoreGravity = true
         };
 
             return result;
