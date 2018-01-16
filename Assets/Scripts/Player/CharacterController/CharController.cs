@@ -371,9 +371,11 @@ namespace Game.Player.CharacterController
         {
             MyTransform.position = args.Position;
 
-            if (args.IsNewScene)
-            {
+            if (args.TakeRotation) {
                 MyTransform.rotation = args.Rotation;
+            }
+
+            if (args.IsNewScene) {
                 velocity = Vector3.zero;
                 stateMachine.ChangeState(new AirState(this, stateMachine));
                 ChangeGravityDirection(Vector3.down);
