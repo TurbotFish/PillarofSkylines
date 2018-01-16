@@ -294,12 +294,12 @@ namespace Game.Player {
                             float dot = Vector3.Dot(other.transform.forward, myPlayer.transform.forward);
                             
                             if (dot > 0.4f) {
-                                // then take offset from exact door position
+                                // take offset from exact door position
                                 Vector3 offset = myPlayer.transform.position - other.transform.position;
                                 Vector3 targetPoint = spawnPointManager.GetHomeSpawnPoint() + other.transform.parent.InverseTransformDirection(offset);
-
+                                // calculate new rotation
                                 Vector3 newForward = other.transform.parent.InverseTransformDirection(myPlayer.transform.forward);
-                                // then teleport to Home
+                                // teleport to Home
                                 var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, Quaternion.LookRotation(newForward), false); //TODO: make it take rotation as well
                                 Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
                             }
@@ -311,13 +311,13 @@ namespace Game.Player {
                             float dot = Vector3.Dot(other.transform.forward, myPlayer.transform.forward);
                             
                             if (dot < -0.4f) {
-                                print("tp back");
-                                // then take offset from exact door position
+                                // take offset from exact door position
                                 Vector3 offset = myPlayer.transform.position - other.transform.position;
                                 Transform destination = other.GetComponent<HomeBeacon>().destination;
                                 Vector3 targetPoint = destination.position + destination.parent.TransformDirection(offset);
-                                Vector3 newForward = destination.parent.TransformVector(myPlayer.transform.forward);
-                                // then teleport to temporary Door
+                                // calculate new rotation
+                                Vector3 newForward = destination.parent.TransformDirection( myPlayer.transform.forward);
+                                // teleport to temporary Door
                                 var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, Quaternion.LookRotation(newForward), false); //TODO: make it take rotation as well
                                 Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
                             }
