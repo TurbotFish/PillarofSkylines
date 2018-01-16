@@ -83,6 +83,7 @@ namespace Game.Player.CharacterController.States
 			} else {
 				result.IgnoreGravity = false;
 			}
+			result.PlayerForward = result.Acceleration;
 			result.Acceleration += charController.InputInfo.leftStickToSlope * slideData.Control; 
 
             return result;

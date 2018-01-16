@@ -53,9 +53,6 @@ namespace Game.Player.CharacterController
         
 
 
-
-
-
         List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
         public List<WindTunnelPart> WindTunnelPartList { get { return new List<WindTunnelPart>(windTunnelPartList); } }
 
