@@ -176,6 +176,7 @@ namespace Game.Player.CharacterController
         Vector3 AdjustPlayerPosition(Vector3 velocity)
         {
 
+			Vector3 result = Vector3.zero;
             Vector3 OutOfWallDirection = Vector3.zero;
             foreach (Collider wall in wallsOverPlayer)
             {
@@ -207,12 +208,12 @@ namespace Game.Player.CharacterController
             {
 				print("hit distance : " + hit.distance + "distance adj : " + (1-hit.distance)/2);
                 myTransform.Translate(OutOfWallDirection * (1 - hit.distance)/2, Space.World);
-                return ConfirmMovement(velocity);
+                result = ConfirmMovement(velocity);
             }
             else
             {
                 myTransform.Translate(OutOfWallDirection, Space.World);
-                return ConfirmMovement(velocity);
+				result = ConfirmMovement(velocity);
             }
 
 			if (belowLastFrame)
@@ -223,7 +224,7 @@ namespace Game.Player.CharacterController
 					myTransform.Translate(-myTransform.up * skinWidth * 2, Space.World);
 				}
 			}
-
+			return result;
         }
 
 
