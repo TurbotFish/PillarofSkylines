@@ -148,7 +148,7 @@ namespace Game.Player {
                         foreach (Transform child in needleSlotForDrift.transform)
                             child.gameObject.SetActive(true);
 
-                        var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(needleSlotForDrift.transform.position, Quaternion.identity, false);
+                        var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(needleSlotForDrift.transform.position, false);
                         Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
                     }
                     needleSlotCollider = needleSlotForDrift;
@@ -169,7 +169,6 @@ namespace Game.Player {
                 airParticle.transform.localPosition = Vector3.zero;
                 airParticle = null;
             }
-
         }
 
         #endregion input handling
@@ -298,7 +297,7 @@ namespace Game.Player {
                                 // then take offset from exact door position
                                 Vector3 offset = myPlayer.transform.position - other.transform.position;
                                 Vector3 targetPoint = spawnPointManager.GetHomeSpawnPoint() + other.transform.parent.TransformDirection(offset);
-                                // then teleport
+                                // then teleport to Home
                                 var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, spawnPointManager.GetHomeSpawnOrientation(), false); //TODO: make it take rotation as well
                                 Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
                             }
@@ -314,7 +313,7 @@ namespace Game.Player {
                                 Vector3 offset = myPlayer.transform.position - other.transform.position;
                                 Transform destination = other.GetComponent<HomeBeacon>().destination;
                                 Vector3 targetPoint = destination.position + destination.parent.InverseTransformDirection(offset);
-                                // then teleport
+                                // then teleport to temporary Door
                                 var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, spawnPointManager.GetHomeSpawnOrientation(), false); //TODO: make it take rotation as well
                                 Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
                             }

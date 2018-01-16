@@ -741,9 +741,10 @@ public class PoS_Camera : MonoBehaviour {
         Vector3 forward = playerPassedPortal ? Vector3.forward : homeDoorForward;
 
         Vector3 projected = Vector3.Project((playerPassedPortal ? homePosition : homeDoorPosition) - playerPos, forward);
-        print("Projected: " + projected);
 
-        float playerPosValue = 2 * projected.sqrMagnitude / (homeDoorMaxZoom * homeDoorMaxZoom);
+        float playerPosValue = 2 * projected.magnitude / homeDoorMaxZoom;
+        if (playerPassedPortal)
+            playerPosValue *= -1;
         float trueZoom = (homeDoorMaxZoom/2) * playerPosValue + homeDoorMaxZoom /2 - 0.01f;
 
         bool camPassedPortal = trueZoom < 0;
@@ -760,7 +761,6 @@ public class PoS_Camera : MonoBehaviour {
 
             Vector3 offset = my.position - otherSide;
             my.position = targetPos + offset;
-            
             my.rotation = Quaternion.LookRotation(forward);
 
             offset = lastFrameCamPos - otherSide;

@@ -251,11 +251,23 @@ namespace Game.Utilities
             /// </summary>
             public bool IsNewScene { get; private set; }
 
-            public TeleportPlayerEventArgs(Vector3 position, Quaternion rotation, bool isNewScene)
-            {
+            /// <summary>
+            /// Whether or not the player should change its rotation on teleport.
+            /// </summary>
+            public bool TakeRotation { get; private set; }
+
+            public TeleportPlayerEventArgs(Vector3 position, bool isNewScene) {
+                Position = position;
+                Rotation = Quaternion.identity;
+                IsNewScene = isNewScene;
+                TakeRotation = false;
+            }
+
+            public TeleportPlayerEventArgs(Vector3 position, Quaternion rotation, bool isNewScene) {
                 Position = position;
                 Rotation = rotation;
                 IsNewScene = isNewScene;
+                TakeRotation = true;
             }
         }
 
