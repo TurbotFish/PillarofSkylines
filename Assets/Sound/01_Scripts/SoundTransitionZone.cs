@@ -20,7 +20,6 @@ public class SoundTransitionZone : MonoBehaviour {
 
 
 	void Awake () {
-		audioManager = GameObject.FindObjectOfType<AudioManager> ().GetComponent<AudioManager>();
 	}
 	
 
@@ -28,6 +27,8 @@ public class SoundTransitionZone : MonoBehaviour {
 	void OnTriggerEnter(Collider col)
 	{
 		if (col.CompareTag ("Player")) {
+			if (audioManager = null)
+				audioManager = GameObject.FindObjectOfType<AudioManager> ().GetComponent<AudioManager>();
 
 			if (transition == TransitionType.Start) {
 				audioManager.StartTrack (audioManager.tracks [trackToStart]);
