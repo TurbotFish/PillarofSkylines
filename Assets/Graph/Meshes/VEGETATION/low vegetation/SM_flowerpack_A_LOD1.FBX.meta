@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: f2313fefb6056f34db97359da5e5fce0
-timeCreated: 1515511290
+guid: 7b90dd43df2bc6040b41ab97b07e6072
+timeCreated: 1516113584
 licenseType: Free
 ModelImporter:
   serializedVersion: 21
@@ -9,7 +9,7 @@ ModelImporter:
     400000: //RootNode
     2300000: //RootNode
     3300000: //RootNode
-    4300000: SM_detail_grassM_C
+    4300000: SM_flowerpack_A_LOD1
   materials:
     importMaterials: 0
     materialName: 0
