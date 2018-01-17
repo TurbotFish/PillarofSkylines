@@ -263,6 +263,7 @@ namespace Game.Player.CharacterController
                 }
 				if (hit.collider.CompareTag("SlipperySlope")) {
 					collisions.SlippySlope = true;
+                    Debug.Log("collision slope");
 				} else {
 					collisions.SlippySlope = false;
 				}

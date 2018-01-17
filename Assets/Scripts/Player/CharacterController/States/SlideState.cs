@@ -60,7 +60,7 @@ namespace Game.Player.CharacterController.States
                 stateMachine.ChangeState(state);
             }
             //stop
-			else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle && !collisionInfo.SlippySlope) 
+			else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle && !collisionInfo.SlippySlope || Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < 2f) 
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
             }

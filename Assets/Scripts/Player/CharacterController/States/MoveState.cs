@@ -40,14 +40,14 @@ namespace Game.Player.CharacterController.States
 			PlayerMovementInfo movementInfo = charController.MovementInfo;
 			CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
-			if (inputInfo.jumpButtonDown) {
+            if (inputInfo.jumpButtonDown) {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
 				state.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 
 				stateMachine.ChangeState(state);
 			} else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash)) {
 				stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
-			} else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope) {
+			} else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f) {
 				stateMachine.ChangeState(new SlideState(charController, stateMachine));
 			} else if (inputInfo.leftStickAtZero) {
 				stateMachine.ChangeState(new StandState(charController, stateMachine));
@@ -57,7 +57,7 @@ namespace Game.Player.CharacterController.States
 
 				stateMachine.ChangeState(state);
 			}
-		}
+        }
 
 		public StateReturnContainer Update(float dt) {
 			PlayerInputInfo inputInfo = charController.InputInfo;
@@ -72,7 +72,10 @@ namespace Game.Player.CharacterController.States
 				TransitionSpeed = moveData.TransitionSpeed
 			};
 
-			return result;
+            if (charController.CollisionInfo.SlippySlope)
+                result.TransitionSpeed = moveData.SlipperyGroundTransitionSpeed;
+                
+            return result;
 		}
 
 		//#############################################################################
