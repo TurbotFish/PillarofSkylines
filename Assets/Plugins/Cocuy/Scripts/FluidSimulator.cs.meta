@@ -1,0 +1,27 @@
+fileFormatVersion: 2
+guid: 87609fa248945b746bb8d7a3a760f757
+timeCreated: 1434489475
+licenseType: Store
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_addVelocitySplat: {instanceID: 0}
+  - m_initBoundaries: {instanceID: 0}
+  - m_advectVelocity: {instanceID: 0}
+  - m_divergence: {instanceID: 0}
+  - m_clearPressure: {instanceID: 0}
+  - m_poisson: {instanceID: 0}
+  - m_substractGradient: {instanceID: 0}
+  - m_calcVorticity: {instanceID: 0}
+  - m_applyVorticityForce: {instanceID: 0}
+  - m_viscosityCompute: {instanceID: 0}
+  - m_clearObstacles: {instanceID: 0}
+  - m_addObstacleCircle: {fileID: 7200000, guid: c8fe2fead610b4048b906a92760be538,
+      type: 3}
+  - m_addObstacleTriangle: {fileID: 7200000, guid: cfad032c8b456b1498cc3d3e2c8683b7,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

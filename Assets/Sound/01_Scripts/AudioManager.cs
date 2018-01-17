@@ -52,7 +52,7 @@ public class AudioManager : MonoBehaviour {
 
 	void Update()
 	{
-		HandleFootsteps ();
+		//HandleFootsteps ();
 		HandleWind ();
 	}
 
