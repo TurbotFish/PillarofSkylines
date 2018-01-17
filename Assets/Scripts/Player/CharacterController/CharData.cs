@@ -275,6 +275,10 @@ namespace Game.Player.CharacterController
             public float Speed { get { return speed; } }
 
             [SerializeField]
+            float impactOfCurrentSpeed;
+            public float ImpactOfCurrentSpeed { get { return impactOfCurrentSpeed; } }
+
+            [SerializeField]
             float transitionSpeed;
             public float TransitionSpeed { get { return transitionSpeed; } }
 

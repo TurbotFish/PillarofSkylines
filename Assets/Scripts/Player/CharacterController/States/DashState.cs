@@ -64,7 +64,7 @@ namespace Game.Player.CharacterController.States
             result.Acceleration = forward * dashData.Speed;
             result.MaxSpeed = result.Acceleration.magnitude + 1; //+1 is just for security
             result.TransitionSpeed = dashData.TransitionSpeed;
-
+            result.resetVerticalVelocity = true;
             if(timer <= 0)
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
