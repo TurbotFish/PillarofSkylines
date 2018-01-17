@@ -110,8 +110,8 @@ namespace Game.Player.CharacterController.States
 			//jump
 			if (inputInfo.jumpButtonDown) {
 				if ((mode == eAirStateMode.aerialJump || mode == eAirStateMode.jump)
-				                && remainingAerialJumps > 0
-				                && charController.PlayerModel.CheckAbilityActive(eAbilityType.DoubleJump)) {
+				    && remainingAerialJumps > 0
+				    && charController.PlayerModel.CheckAbilityActive(eAbilityType.DoubleJump)) {
 					var state = new AirState(charController, stateMachine);
 					state.SetMode(eAirStateMode.aerialJump);
 					state.SetRemainingAerialJumps(remainingAerialJumps - 1);
@@ -176,7 +176,7 @@ namespace Game.Player.CharacterController.States
 
 				Vector3 direction = jumpDirection == Vector3.zero ? Vector3.up : jumpDirection;
 
-				charController.AddExternalVelocity((direction) * jumpStrength, false, false);
+				charController.AddExternalVelocity((direction + Vector3.ProjectOnPlane(charController.MovementInfo.velocity, Vector3.up) * 0.05f) * jumpStrength, false, false);
 				result.resetVerticalVelocity = true;
 				//result.Acceleration = (movementInfo.velocity * 0.05f + Vector3.up) * jumpStrength;
 				//result.TransitionSpeed = 1 / dt;
