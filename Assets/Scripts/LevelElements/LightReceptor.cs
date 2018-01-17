@@ -16,12 +16,12 @@ public class LightReceptor : Trigger {
         }
     }
 
-    private void Awake() {
+    private void Start() {
         rend = GetComponent<Renderer>();
         TriggerState = false;
         rend.sharedMaterial = off;
     }
-
+    
     public void Toggle(bool newState, bool inverse) {
         TriggerState = newState;
         if (TriggerState == inverse)

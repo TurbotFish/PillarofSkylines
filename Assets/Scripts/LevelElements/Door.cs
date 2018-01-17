@@ -9,10 +9,16 @@ public class Door : TriggerableObject {
     public float timeToMove = 1;
     Transform my;
 
-    public void Start() {
+    public void Awake() {
         my = transform;
-        localPositionWhenClosed = my.localPosition;
-        elapsed = timeToMove;
+
+        if (triggered) {
+            localPositionWhenOpen = my.localPosition;
+            elapsed = 0;
+        } else {
+            localPositionWhenClosed = my.localPosition;
+            elapsed = timeToMove;
+        }
     }
 
     protected override void Activate() {
