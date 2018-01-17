@@ -46,16 +46,14 @@ public class EditorDebugMaster : EditorWindow
 
         player.position = viewPos.position + viewPos.forward * nearClipPlane * 100f;
         RaycastHit hit;
-        if (Physics.Raycast(player.position - viewPos.forward, viewPos.forward, out hit, SceneView.lastActiveSceneView.camera.farClipPlane, FindObjectOfType < Game.Player.CharacterController.CharacControllerRecu>().collisionMask))
+        if (Physics.Raycast(player.position - viewPos.forward, viewPos.forward, out hit, nearClipPlane * 10f, FindObjectOfType < Game.Player.CharacterController.CharacControllerRecu>().collisionMask))
         {
             player.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(viewPos.forward, hit.normal), hit.normal);
             player.position = player.position + hit.normal * 1f;
-            Debug.Log("moved to : " + hit.transform.name);
         } else
         {
             player.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(viewPos.forward, Vector3.up), Vector3.up);
             player.position = player.position + Vector3.up * 1f;
-            Debug.Log("moved to : nothing");
         }
     }
 
