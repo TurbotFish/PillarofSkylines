@@ -42,8 +42,7 @@ namespace Game.Player.CharacterController.States
         {
             if (charController.WindTunnelPartList.Count == 0)
             {
-                var state = new AirState(charController, stateMachine);
-                state.SetMode(AirState.eAirStateMode.fall);
+                var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
 
                 stateMachine.ChangeState(state);
             }

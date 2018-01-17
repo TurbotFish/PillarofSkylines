@@ -41,8 +41,7 @@ namespace Game.Player.CharacterController.States
 			CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
 			if (inputInfo.jumpButtonDown) {
-				var state = new AirState(charController, stateMachine);
-				state.SetMode(AirState.eAirStateMode.jump);
+                var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
 				state.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 
 				stateMachine.ChangeState(state);
@@ -53,8 +52,7 @@ namespace Game.Player.CharacterController.States
 			} else if (inputInfo.leftStickAtZero) {
 				stateMachine.ChangeState(new StandState(charController, stateMachine));
 			} else if (!collisionInfo.below) {
-				var state = new AirState(charController, stateMachine);
-				state.SetMode(AirState.eAirStateMode.fall);
+                var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
 				state.SetJumpTimer(moveData.CanStillJumpTimer);
 
 				stateMachine.ChangeState(state);
