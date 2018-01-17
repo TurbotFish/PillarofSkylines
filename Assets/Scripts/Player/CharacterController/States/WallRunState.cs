@@ -111,7 +111,7 @@ namespace Game.Player.CharacterController.States
             var result = new StateReturnContainer()
             {
                 CanTurnPlayer = false,
-                PlayerForward = direction.normalized,
+                //PlayerForward = direction.normalized,
                 Acceleration = wallHugging + acceleration,
                 TransitionSpeed = wallRunData.TransitionSpeed
             };
@@ -141,7 +141,7 @@ namespace Game.Player.CharacterController.States
             bool isJumping = charController.MovementInfo.velocity.y > 0;
 
             //is the player facing the wall
-            bool directionOK = CheckWallRunPlayerForward(charController, -0.95f);
+            bool directionOK = CheckPlayerForward(charController, 0f, 60f);
 
             //is the player
             bool stickOK = CheckWallRunStick(charController);
@@ -149,13 +149,30 @@ namespace Game.Player.CharacterController.States
             return (isAbilityActive && isTouchingWall && isWallSlopeValid && isJumping && directionOK && stickOK);
         }
 
+        ///// <summary>
+        ///// Checks if the player is turned towards the wall.
+        ///// </summary>
+        //public static bool CheckWallRunPlayerForward(CharController charController, float minDotProduct = -1)
+        //{
+        //    float dotProduct = Vector3.Dot(charController.MyTransform.forward, charController.CollisionInfo.currentWallNormal);
+        //    return (minDotProduct <= dotProduct && dotProduct <= charController.PlayerModel.AbilityData.WallRun.General.DirectionTrigger);
+        //}
+
         /// <summary>
-        /// Checks if the player is turned towards the wall.
+        /// Checks the unsigned angle between the inversed normal vector of the wall and the forward vector of the player.
+        /// An angle of 0 means that the player is facing the wall and an angle of 180 means that the player has his back to the wall.
         /// </summary>
-        public static bool CheckWallRunPlayerForward(CharController charController, float minDotProduct = -1)
+        /// <returns>true if the angle is within the bounds, false otherwise</returns>
+        public static bool CheckPlayerForward(CharController charController, float minAngle, float maxAngle)
         {
-            float dotProduct = Vector3.Dot(charController.MyTransform.forward, charController.CollisionInfo.currentWallNormal);
-            return (minDotProduct <= dotProduct && dotProduct <= charController.PlayerModel.AbilityData.WallRun.General.DirectionTrigger);
+            float angle = Vector3.Angle(-charController.CollisionInfo.currentWallNormal, charController.MyTransform.forward);
+
+            if (angle >= minAngle && angle < maxAngle)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

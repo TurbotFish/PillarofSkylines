@@ -31,7 +31,7 @@ namespace Game.Player.CharacterController.States
             Debug.Log("Enter State: Wall Drift");
 
             //if the player should not be able to walldrift he starts falling again
-            if (!CanEnterWallDrift(charController, true))
+            if (!CanEnterWallDrift(charController))
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
@@ -66,12 +66,14 @@ namespace Game.Player.CharacterController.States
             //jump
             else if (inputInfo.jumpButtonDown)
             {
+                Debug.LogWarning("check 1");
+
                 charController.MyTransform.forward = Vector3.ProjectOnPlane(collisionInfo.currentWallNormal, charController.MyTransform.up);
-                Vector3 jumpDirection = (Vector3.up + collisionInfo.currentWallNormal * 2).normalized;
+                Vector3 jumpDirection = (Vector3.up + (Vector3.back * 2)).normalized;
 
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
-                state.SetJumpTimer(charController.CharData.Move.CanStillJumpTimer);
                 state.SetJumpDirection(jumpDirection);
+                state.SetAirControl(false);
 
                 stateMachine.ChangeState(state);
             }
@@ -87,7 +89,7 @@ namespace Game.Player.CharacterController.States
             Vector3 driftAcceleration = -Vector3.up * acceleration;
 
             //a bit of force so that the player stays glued to the wall
-            Vector3 wallHugging = Vector3.forward * 2f;
+            Vector3 wallHugging = Vector3.zero;// Vector3.forward * 2f;
 
             var result = new StateReturnContainer()
             {
@@ -102,7 +104,7 @@ namespace Game.Player.CharacterController.States
 
         //#############################################################################
 
-        public static bool CanEnterWallDrift(CharController charController, bool checkPlayerForward)
+        public static bool CanEnterWallDrift(CharController charController)
         {
             bool isAbilityActive = charController.PlayerModel.CheckAbilityActive(eAbilityType.WallRun);
 
@@ -110,11 +112,8 @@ namespace Game.Player.CharacterController.States
 
             bool isFalling = charController.MovementInfo.velocity.y <= 0;
 
-            bool directionOK = true;
-            if (checkPlayerForward)
-            {
-                directionOK = WallRunState.CheckWallRunPlayerForward(charController);
-            }
+            //you can only wall drift if the player is facing the wall
+            bool directionOK = WallRunState.CheckPlayerForward(charController, 0f, charController.CharData.WallDrift.MaxTriggerAngle);
 
             bool stickOK = WallRunState.CheckWallRunStick(charController);
 
