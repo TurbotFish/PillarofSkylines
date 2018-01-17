@@ -48,6 +48,17 @@ namespace Game.Player.CharacterController.States
         {
             PlayerInputInfo inputInfo = charController.InputInfo;
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
+        public StateReturnContainer Update(float dt)
+        {
+            var result = new StateReturnContainer()
+            {
+
+            };
+
+            return result;
+        }
+
+        //#############################################################################
 
             //land on ground
             if (collisionInfo.below)

@@ -1,0 +1,97 @@
+﻿
+#pragma kernel Advect
+#pragma kernel AddParticles
+
+#include "Cocuy_Common.compute"
+
+RWStructuredBuffer<float> _ParticlesIn;
+RWStructuredBuffer<float> _ParticlesOut;
+
+float _Radius;
+float2 _Position; 
+float _Value;
+const uint2 _ParticleSize;
+
+////////////////////////////////////////////////////////////////////////////
+[numthreads(THREAD_COUNT, THREAD_COUNT, 1)]
+void AddParticles(uint3 id : SV_DispatchThreadID)
+{
+	if (id.x >= _ParticleSize.x || id.y >= _ParticleSize.y) { return; }
+
+	const uint pos = id.y*_ParticleSize.x + id.x;
+	const float2 splat_pos = _Position*_ParticleSize;
+
+	const float val = _ParticlesIn[pos];
+	float result = val;
+
+	float len = distance(splat_pos, (float2) id);
+	if (len <= _Radius)
+	{
+		result = clamp(val + _Value*(_Radius - len) / _Radius, 0.0f, 255.0f);
+	}
+	_ParticlesOut[pos] = result;
+}
+
+RWStructuredBuffer<float2> _Velocity;
+RWStructuredBuffer<float2> _Obstacles;
+
+const uint2 _VelocitySize;
+float _Dissipation;
+float _ElapsedTime;
+float _Speed;
+
+float2 GetVelocity(float2 fPos)
+{
+	const int2 zero = int2(0, 0);
+	const int2 SizeBounds = int2(_VelocitySize.x - 1, _VelocitySize.y - 1);
+	const int2 top_right = clamp(ceil(fPos), zero, SizeBounds);
+	const int2 bottom_left = clamp(floor(fPos), zero, SizeBounds);
+	const float2 delta = fPos - bottom_left;
+	const float2 lt = _Velocity[top_right.y*_VelocitySize.x + bottom_left.x];
+	const float2 rt = _Velocity[top_right.y*_VelocitySize.x + top_right.x];
+	const float2 lb = _Velocity[bottom_left.y*_VelocitySize.x + bottom_left.x];
+	const float2 rb = _Velocity[bottom_left.y*_VelocitySize.x + top_right.x];
+	const float2 h1 = lerp(lt, rt, delta.x);
+	const float2 h2 = lerp(lb, rb, delta.x);
+	return lerp(h2, h1, delta.y) * (_ParticleSize / (float2)_VelocitySize);
+}
+
+////////////////////////////////////////////////////////////////////////////
+[numthreads(THREAD_COUNT, THREAD_COUNT, 1)]
+void Advect(uint3 id : SV_DispatchThreadID)
+{
+	if (id.x >= _ParticleSize.x || id.y >= _ParticleSize.y) { return; }
+
+	const uint particle_pos = id.y*_ParticleSize.x + id.x;
+
+	const float2 fNormalisedPos = float2(id.x / (float)_ParticleSize.x, id.y / (float)_ParticleSize.y) * _VelocitySize;
+
+	const uint obstacle_pos = ((uint)fNormalisedPos.y)*_VelocitySize.x + ((uint)fNormalisedPos.x);
+	const float2 obstacle = _Obstacles[obstacle_pos];
+	if (obstacle.x > 0.0 || obstacle.y > 0.0)
+	{
+		_ParticlesOut[particle_pos] = 0.0;
+	}
+	else
+	{
+		const float2 vel = GetVelocity(fNormalisedPos);
+		const float2 final_pos = float2(id.x - vel.x*_ElapsedTime*_Speed, id.y - vel.y*_ElapsedTime*_Speed);
+
+		const int2 zero = int2(0, 0);
+		const int2 SizeBounds = int2(_ParticleSize.x - 1, _ParticleSize.y - 1);
+		const int2 top_right = clamp(ceil(final_pos), zero, SizeBounds);
+		const int2 bottom_left = clamp(floor(final_pos), zero, SizeBounds);
+
+		const float2 delta = final_pos - bottom_left;
+
+		const float lt = _ParticlesIn[top_right.y*_ParticleSize.x + bottom_left.x];
+		const float rt = _ParticlesIn[top_right.y*_ParticleSize.x + top_right.x];
+
+		const float lb = _ParticlesIn[bottom_left.y*_ParticleSize.x + bottom_left.x];
+		const float rb = _ParticlesIn[bottom_left.y*_ParticleSize.x + top_right.x];
+
+		const float h1 = lerp(lt, rt, delta.x);
+		const float h2 = lerp(lb, rb, delta.x);
+		_ParticlesOut[particle_pos] = lerp(h2, h1, delta.y) * _Dissipation;
+	}
+}
