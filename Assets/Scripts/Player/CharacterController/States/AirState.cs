@@ -231,10 +231,10 @@ namespace Game.Player.CharacterController.States
 
                 Vector3 direction = (jumpDirection == Vector3.zero) ? Vector3.up : jumpDirection;
 
-				charController.AddExternalVelocity((direction) * jumpStrength + Vector3.ProjectOnPlane(charController.MovementInfo.velocity, Vector3.up) * jumpData.ImpactOfCurrentSpeed, false, false);
-				result.resetVerticalVelocity = true;
-				//result.Acceleration = (movementInfo.velocity * 0.05f + Vector3.up) * jumpStrength;
-				//result.TransitionSpeed = 1 / dt;
+                charController.AddExternalVelocity((direction) * jumpStrength + Vector3.ProjectOnPlane(charController.MovementInfo.velocity, Vector3.up) * jumpData.ImpactOfCurrentSpeed, false, false);
+                result.resetVerticalVelocity = true;
+                //result.Acceleration = (movementInfo.velocity * 0.05f + Vector3.up) * jumpStrength;
+                //result.TransitionSpeed = 1 / dt;
 
                 firstUpdate = false;
             }

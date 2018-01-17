@@ -33,9 +33,9 @@ namespace Game.Player.CharacterController.States
 
         public void Enter()
         {
-			Debug.Log("Enter State: Dash");
-			charController.animator.SetTrigger("DashTrigger");
-			charController.dashParticles.Play();
+            Debug.Log("Enter State: Dash");
+            charController.animator.SetTrigger("DashTrigger");
+            charController.dashParticles.Play();
             timer = dashData.Time;
         }
 
@@ -65,7 +65,7 @@ namespace Game.Player.CharacterController.States
             result.MaxSpeed = result.Acceleration.magnitude + 1; //+1 is just for security
             result.TransitionSpeed = dashData.TransitionSpeed;
             result.resetVerticalVelocity = true;
-            if(timer <= 0)
+            if (timer <= 0)
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
             }

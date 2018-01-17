@@ -71,7 +71,7 @@ namespace Game.Player.CharacterController.States
 
                 //stateMachine.ChangeState(state);
             }
-        } 
+        }
 
         public StateReturnContainer Update(float dt)
         {
