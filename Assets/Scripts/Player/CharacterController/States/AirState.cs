@@ -5,46 +5,47 @@ using UnityEngine;
 
 namespace Game.Player.CharacterController.States
 {
-	public class AirState : IState
-	{
-		public enum eAirStateMode
-		{
-			fall,
-			jump,
-			aerialJump}
+    public class AirState : IState
+    {
+        public enum eAirStateMode
+        {
+            fall,
+            jump,
+            aerialJump
+        }
 
-		;
+        ;
 
-		//#############################################################################
+        //#############################################################################
 
         #region member variables
 
-		public ePlayerState StateId { get { return ePlayerState.air; } }
+        public ePlayerState StateId { get { return ePlayerState.air; } }
 
-		CharController charController;
-		StateMachine stateMachine;
+        CharController charController;
+        StateMachine stateMachine;
 
-		CharData.JumpData jumpData;
-		CharData.FallData fallData;
+        CharData.JumpData jumpData;
+        CharData.FallData fallData;
 
         eAirStateMode mode = eAirStateMode.fall;
-		int remainingAerialJumps = 0;
-		float jumpTimer = 0;
-		Vector3 jumpDirection = Vector3.zero;
+        int remainingAerialJumps = 0;
+        float jumpTimer = 0;
+        Vector3 jumpDirection = Vector3.zero;
         bool hasAirControl = true;
 
-		bool initializing;
-		bool firstUpdate;
+        bool initializing;
+        bool firstUpdate;
 
         #endregion member variables
 
-		//#############################################################################
+        //#############################################################################
 
         #region constructor
 
-		/// <summary>
-		/// Constructor for AirState. Default mode is "fall".
-		/// </summary>
+        /// <summary>
+        /// Constructor for AirState. Default mode is "fall".
+        /// </summary>
         public AirState(CharController charController, StateMachine stateMachine, eAirStateMode mode)
         {
             this.charController = charController;
@@ -54,12 +55,12 @@ namespace Game.Player.CharacterController.States
 
             this.mode = mode;
 
-			initializing = true;
-		}
+            initializing = true;
+        }
 
         #endregion constructor
 
-		//#############################################################################
+        //#############################################################################
 
         #region setters
 
@@ -71,23 +72,27 @@ namespace Game.Player.CharacterController.States
             }
 
             remainingAerialJumps = jumps;
-		}
+        }
 
         public void SetJumpTimer(float jumpTimer)
-			if (!initializing) {
-				return;
-			}
+        {
+            if (!initializing)
+            {
+                return;
+            }
 
             this.jumpTimer = jumpTimer;
-		}
+        }
 
         public void SetJumpDirection(Vector3 direction)
-			if (!initializing) {
-				return;
-			}
+        {
+            if (!initializing)
+            {
+                return;
+            }
 
             jumpDirection = direction.normalized;
-		}
+        }
 
         public void SetAirControl(bool hasAirControl)
         {
@@ -97,11 +102,11 @@ namespace Game.Player.CharacterController.States
             }
 
             this.hasAirControl = hasAirControl;
-		}
+        }
 
         #endregion setters
 
-		//#############################################################################
+        //#############################################################################
 
         #region
 
@@ -109,21 +114,22 @@ namespace Game.Player.CharacterController.States
         {
             Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
 
-			initializing = false;
-			firstUpdate = true;
+            initializing = false;
+            firstUpdate = true;
 
-			Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
-		}
+            Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
+        }
 
-		public void Exit() {
+        public void Exit()
+        {
             Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
 
-			Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
-		}
+            Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
+        }
 
         #endregion
 
-		//#############################################################################
+        //#############################################################################
 
         #region update
 
@@ -133,8 +139,9 @@ namespace Game.Player.CharacterController.States
             PlayerMovementInfo movementInfo = charController.MovementInfo;
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
-			//jump
-			if (inputInfo.jumpButtonDown) {
+            //jump
+            if (inputInfo.jumpButtonDown)
+            {
                 //if the player is falling but may still jump normally
                 if (mode == eAirStateMode.fall && jumpTimer > 0)
                 {
@@ -156,22 +163,25 @@ namespace Game.Player.CharacterController.States
                 }
             }
             //dash
-            else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash)) {
-				stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
-			}
+            else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
+            {
+                stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
+            }
             //glide
-            else if (inputInfo.sprintButtonDown && !stateMachine.CheckStateLocked(ePlayerState.glide)) {
-				stateMachine.ChangeState(new GlideState(charController, stateMachine));
-			}
+            else if (inputInfo.sprintButtonDown && !stateMachine.CheckStateLocked(ePlayerState.glide))
+            {
+                stateMachine.ChangeState(new GlideState(charController, stateMachine));
+            }
             //landing on slope
             else if (collisionInfo.below && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope))
             {
                 stateMachine.ChangeState(new SlideState(charController, stateMachine));
             }
             //landing
-            else if (collisionInfo.below) {
-				stateMachine.ChangeState(new StandState(charController, stateMachine));
-			}
+            else if (collisionInfo.below)
+            {
+                stateMachine.ChangeState(new StandState(charController, stateMachine));
+            }
             //wall- run/drift
             else if (collisionInfo.side)
             {
@@ -186,13 +196,15 @@ namespace Game.Player.CharacterController.States
             }
         }
 
-		public StateReturnContainer Update(float dt) {
-			PlayerInputInfo inputInfo = charController.InputInfo;
-			PlayerMovementInfo movementInfo = charController.MovementInfo;
+        public StateReturnContainer Update(float dt)
+        {
+            PlayerInputInfo inputInfo = charController.InputInfo;
+            PlayerMovementInfo movementInfo = charController.MovementInfo;
 
-			if (jumpTimer > 0) {
-				jumpTimer -= dt;
-			}
+            if (jumpTimer > 0)
+            {
+                jumpTimer -= dt;
+            }
 
             var result = new StateReturnContainer()
             {
@@ -215,13 +227,13 @@ namespace Game.Player.CharacterController.States
 
                 Vector3 direction = (jumpDirection == Vector3.zero) ? Vector3.up : jumpDirection;
 
-				charController.AddExternalVelocity((direction + Vector3.ProjectOnPlane(charController.MovementInfo.velocity, Vector3.up) * 0.05f) * jumpStrength, false, false);
-				result.resetVerticalVelocity = true;
-				//result.Acceleration = (movementInfo.velocity * 0.05f + Vector3.up) * jumpStrength;
-				//result.TransitionSpeed = 1 / dt;
+                charController.AddExternalVelocity((direction + Vector3.ProjectOnPlane(charController.MovementInfo.velocity, Vector3.up) * 0.05f) * jumpStrength, false, false);
+                result.resetVerticalVelocity = true;
+                //result.Acceleration = (movementInfo.velocity * 0.05f + Vector3.up) * jumpStrength;
+                //result.TransitionSpeed = 1 / dt;
 
-				firstUpdate = false;
-			}
+                firstUpdate = false;
+            }
             //falling
             else if (mode == eAirStateMode.fall || movementInfo.velocity.y < 0)
             {
@@ -253,14 +265,14 @@ namespace Game.Player.CharacterController.States
             else
             {
                 Debug.LogError("error!");
-			}
+            }
 
-			return result;
-		}
+            return result;
+        }
 
         #endregion update
 
-		//#############################################################################
+        //#############################################################################
 
         #region utils
 
@@ -271,6 +283,6 @@ namespace Game.Player.CharacterController.States
 
         #endregion utils
 
-		//#############################################################################
-	}
+        //#############################################################################
+    }
 }
