@@ -114,7 +114,7 @@ namespace Game.Player.CharacterController.States
 
             bool isTouchingWall = charController.CollisionInfo.side;
 
-            bool isFalling = true;// charController.MovementInfo.velocity.y <= 0;
+            bool isFalling = charController.MovementInfo.velocity.y <= 0;
 
             bool directionOK = true;
             if (checkPlayerForward)
@@ -124,7 +124,7 @@ namespace Game.Player.CharacterController.States
 
             bool stickOK = WallRunState.CheckWallRunStick(charController);
 
-            Debug.Log("isAbilityActive " + isAbilityActive + " isTouchingWall " + isTouchingWall + " isFalling " + isFalling + " directionOK " + directionOK + " stickOK " + stickOK);
+            //Debug.Log("isAbilityActive " + isAbilityActive + " isTouchingWall " + isTouchingWall + " isFalling " + isFalling + " directionOK " + directionOK + " stickOK " + stickOK);
             return (isAbilityActive && isTouchingWall && isFalling && directionOK && stickOK);
         }
 
