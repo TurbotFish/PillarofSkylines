@@ -172,6 +172,7 @@ namespace Game.Player.CharacterController
 			//*******************************************
 			//handling input
 
+			bool sprintDownLastFrame = inputInfo.sprintButton;
 			inputInfo.Reset();
 
 			if (isHandlingInput) {
@@ -198,9 +199,9 @@ namespace Game.Player.CharacterController
 				inputInfo.jumpButtonDown = Input.GetButtonDown("Jump");
 				inputInfo.jumpButtonUp = Input.GetButtonUp("Jump");
 
-				inputInfo.sprintButton = Input.GetButton("Sprint");
-				inputInfo.sprintButtonDown = Input.GetButtonDown("Sprint");
-				inputInfo.sprintButtonUp = Input.GetButtonUp("Sprint");
+				inputInfo.sprintButton = (Input.GetAxis("Left Trigger") > .9f) || Input.GetButton("Sprint");
+				inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint");
+				inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint");
 
 				//
 				stateMachine.HandleInput();
@@ -445,4 +446,4 @@ namespace Game.Player.CharacterController
 		//#############################################################################
 	}
 }
- //end of namespace
+//end of namespace
