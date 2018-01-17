@@ -230,9 +230,6 @@ namespace Game.Player.CharacterController
 
             if (stateReturn.PlayerForwardSet)
             {
-                MyTransform.forward = Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up);
-                //MyTransform.forward = Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up);
-
                 MyTransform.rotation = Quaternion.LookRotation(stateReturn.PlayerForward, MyTransform.up);
             }
 
@@ -242,16 +239,16 @@ namespace Game.Player.CharacterController
                 //MyTransform.up = stateReturn.PlayerUp;
             }
 
-            //Debug.Log("================");
-            //Debug.LogFormat("initial velocity: {0}", velocity);
-            //Debug.LogFormat("desiredVelocity={0}", stateReturn.DesiredVelocity.magnitude.ToString());
-
             //computing new velocity
             //var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
             if (stateReturn.resetVerticalVelocity)
+            {
                 velocity.y = 0;
+            }
+
             Vector3 tempVertical = new Vector3();
             Vector3 newVelocity = new Vector3();
+
             if (stateReturn.keepVerticalMovement)
             {
                 tempVertical = new Vector3(0, velocity.y, 0);
@@ -263,13 +260,11 @@ namespace Game.Player.CharacterController
                 newVelocity = Vector3.Lerp(velocity, acceleration, Time.deltaTime * transitionSpeed);
             }
 
-
             //adding gravity
             if (!stateReturn.IgnoreGravity)
             {
                 newVelocity += Vector3.down * (CharData.General.GravityStrength * Time.deltaTime);
             }
-
 
             //clamping speed
             if (newVelocity.magnitude >= maxSpeed)
@@ -288,7 +283,6 @@ namespace Game.Player.CharacterController
             var turnedVelocity = TurnLocalToSpace(newVelocity);
             Vector3 lastPositionDelta;
 
-
             if (stateMachine.CurrentState == ePlayerState.glide)
             {
                 lastPositionDelta = tempPhysicsHandler.Move(newVelocity * Time.deltaTime);
@@ -299,38 +293,23 @@ namespace Game.Player.CharacterController
             }
 
             velocity = lastPositionDelta / Time.deltaTime;
-            //Debug.LogFormat("after physics: {0}", newVelocity);
 
             externalVelocity = Vector3.zero;
             tempCollisionInfo = tempPhysicsHandler.collisions;
 
             //*******************************************
-            //moving player
-
-            /*
-             *  moving the player is currently handled by the (temp!) physics handler
-             */
-
-            //*******************************************
             //turning player
 
-            if (canTurnPlayer && !inputInfo.leftStickAtZero)
+            if (stateReturn.RotationSet)
             {
-                if (stateReturn.RotationSet)
-                {
-                    MyTransform.Rotate(MyTransform.up, stateReturn.Rotation, Space.World);
-                }
-                else
-                {
-                    MyTransform.Rotate(
-                        MyTransform.up,
-                        Mathf.Lerp(
-                            0f,
-                            Vector3.SignedAngle(MyTransform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), MyTransform.up), MyTransform.up),
-                            CharData.General.TurnSpeed * Time.deltaTime
-                        ),
-                        Space.World);
-                }
+                MyTransform.Rotate(MyTransform.up, stateReturn.Rotation, Space.World);
+            }
+            else if (canTurnPlayer && !inputInfo.leftStickAtZero)
+            {
+                Vector3 to = Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), MyTransform.up);
+                float angle = Mathf.Lerp(0f, Vector3.SignedAngle(MyTransform.forward, to, MyTransform.up), CharData.General.TurnSpeed * Time.deltaTime);
+
+                MyTransform.Rotate(MyTransform.up, angle, Space.World);
             }
 
             //*******************************************

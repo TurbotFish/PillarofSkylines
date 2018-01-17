@@ -84,6 +84,10 @@ namespace Game.Player.CharacterController.States
             this.jumpTimer = jumpTimer;
         }
 
+        /// <summary>
+        /// Sets the direction of the initial force of a jump.
+        /// THIS IS IN WORLDSPACE!
+        /// </summary>
         public void SetJumpDirection(Vector3 direction)
         {
             if (!initializing)
