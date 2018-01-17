@@ -54,8 +54,7 @@ namespace Game.Player.CharacterController.States
 			}
 			else if (!collisionInfo.below)
 			{
-				var state = new AirState(charController, stateMachine);
-				state.SetMode(AirState.eAirStateMode.fall);
+				var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
 
 				stateMachine.ChangeState(state);
 			}
