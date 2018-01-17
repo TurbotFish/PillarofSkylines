@@ -83,7 +83,7 @@ namespace Game.Player.CharacterController.States
                 return;
             }
 
-            jumpDirection = direction;
+            jumpDirection = direction.normalized;
         }
 
         //#############################################################################
@@ -146,20 +146,27 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new GlideState(charController, stateMachine));
             }
-			//landing on slope
-			else if (collisionInfo.below && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope))
-			{
-				stateMachine.ChangeState(new SlideState(charController, stateMachine));
-			}
+            //landing on slope
+            else if (collisionInfo.below && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope))
+            {
+                stateMachine.ChangeState(new SlideState(charController, stateMachine));
+            }
             //landing
             else if (collisionInfo.below)
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
-            //wall drift
-            else if (collisionInfo.side && WallDriftState.CanEnterWallDrift(charController, true))
+            //wall- run/drift
+            else if (collisionInfo.side)
             {
-                stateMachine.ChangeState(new WallDriftState(charController, stateMachine));
+                if (movementInfo.velocity.y <= 0 && WallDriftState.CanEnterWallDrift(charController, true))
+                {
+                    stateMachine.ChangeState(new WallDriftState(charController, stateMachine));
+                }
+                else if (movementInfo.velocity.y > 0 && WallRunState.CheckCanEnterWallRun(charController))
+                {
+                    stateMachine.ChangeState(new WallRunState(charController, stateMachine));
+                }
             }
         }
 
@@ -173,58 +180,63 @@ namespace Game.Player.CharacterController.States
                 jumpTimer -= dt;
             }
 
-            var result = new StateReturnContainer();
-
-            if (mode == eAirStateMode.fall)
+            var result = new StateReturnContainer()
             {
-				result.CanTurnPlayer = true;
-				result.keepVerticalMovement = true;
-                result.MaxSpeed = fallData.MaxSpeed;
-                result.TransitionSpeed = fallData.TransitionSpeed;
-                result.Acceleration = inputInfo.leftStickToCamera * fallData.Speed;
-            }
-            else
-            {
-                result.CanTurnPlayer = true;
-                result.keepVerticalMovement = true;
+                CanTurnPlayer = true,
+                keepVerticalMovement = true
+            };
 
+            //first update for jump (initial force)
+            if (firstUpdate && (mode == eAirStateMode.jump || mode == eAirStateMode.aerialJump))
+            {
                 float jumpStrength = jumpData.Strength;
-                float minJumpStrength = jumpData.MinStrength;
-
-                if (movementInfo.velocity.y < 0f && !firstUpdate)
-                {
-                    mode = eAirStateMode.fall;
-                }
 
                 if (mode == eAirStateMode.aerialJump)
                 {
                     jumpStrength *= jumpData.AerialJumpCoeff;
+					charController.aerialJumpFX.Play();
+                }
+
+                Vector3 direction = jumpDirection == Vector3.zero ? Vector3.up : jumpDirection;
+
+                charController.AddExternalVelocity((direction) * jumpStrength, false, false);
+                result.resetVerticalVelocity = true;
+                //result.Acceleration = (movementInfo.velocity * 0.05f + Vector3.up) * jumpStrength;
+                //result.TransitionSpeed = 1 / dt;
+
+                firstUpdate = false;
+            }
+            //falling
+            else if (mode == eAirStateMode.fall || movementInfo.velocity.y < 0)
+            {
+                result.MaxSpeed = fallData.MaxSpeed;
+                result.TransitionSpeed = fallData.TransitionSpeed;
+                result.Acceleration = inputInfo.leftStickToCamera * fallData.Speed;
+            }
+            //jumping
+            else if (mode == eAirStateMode.jump || mode == eAirStateMode.aerialJump)
+            {
+                float minJumpStrength = jumpData.MinStrength;
+
+                if (mode == eAirStateMode.aerialJump)
+                {
                     minJumpStrength *= jumpData.AerialJumpCoeff;
                 }
 
-                if (firstUpdate)
-				{
-                    Vector3 direction = jumpDirection == Vector3.zero ? Vector3.up : jumpDirection;
+                result.Acceleration = inputInfo.leftStickToCamera * jumpData.Speed;
 
-                    charController.AddExternalVelocity((direction) * jumpStrength, false, false);
-                    result.resetVerticalVelocity = true;
-                    //result.Acceleration = (movementInfo.velocity * 0.05f + Vector3.up) * jumpStrength;
-                    //result.TransitionSpeed = 1 / dt;
-
-                    firstUpdate = false;
-                }
-                else
+                if (!inputInfo.jumpButton && movementInfo.velocity.y > minJumpStrength)
                 {
-                    result.Acceleration = inputInfo.leftStickToCamera * jumpData.Speed;
-
-                    if (!inputInfo.jumpButton && movementInfo.velocity.y > minJumpStrength)
-                    {
-                        charController.SetVelocity(new Vector3(movementInfo.velocity.x, minJumpStrength, movementInfo.velocity.z), false);
-                        result.Acceleration += Vector3.down * (movementInfo.velocity.y - minJumpStrength) * (0.1f / dt);
-                    }
-
-                    result.TransitionSpeed = jumpData.TransitionSpeed;
+                    charController.SetVelocity(new Vector3(movementInfo.velocity.x, minJumpStrength, movementInfo.velocity.z), false);
+                    result.Acceleration += Vector3.down * (movementInfo.velocity.y - minJumpStrength) * (0.1f / dt);
                 }
+
+                result.TransitionSpeed = jumpData.TransitionSpeed;
+            }
+            //error
+            else
+            {
+                Debug.LogError("error!");
             }
 
             return result;

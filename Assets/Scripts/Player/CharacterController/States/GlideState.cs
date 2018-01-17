@@ -31,6 +31,7 @@ namespace Game.Player.CharacterController.States
         {
             Debug.Log("Enter State: Glide");
 			charController.animator.SetBool("Gliding", true);
+			charController.glideParticles.Play();
             verticalAngle = Vector3.Angle(charController.MyTransform.up, TurnLocalToSpace(charController.MovementInfo.velocity)) - 90f;
             horizontalAngle = 0f;
         }
@@ -38,6 +39,7 @@ namespace Game.Player.CharacterController.States
         public void Exit()
         {
 			Debug.Log("Exit State: Glide");
+			charController.glideParticles.Stop();
 			charController.animator.SetBool("Gliding", false);
         }
 
