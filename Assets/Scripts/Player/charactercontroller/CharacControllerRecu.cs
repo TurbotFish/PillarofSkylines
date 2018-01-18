@@ -255,6 +255,7 @@ namespace Game.Player.CharacterController
 
 			if (collisions.below && !climbingStep)
             {
+
                 collisions.currentGroundNormal = hit.normal;
                 if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
                 {
@@ -268,6 +269,7 @@ namespace Game.Player.CharacterController
 					collisions.SlippySlope = false;
 				}
 			}
+
             collisions.above = Physics.SphereCast(myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) - myTransform.up * skinWidth * 2, radius, myTransform.up, out hit, skinWidth * 4, collisionMask);
             if (collisions.above)
             {
@@ -506,9 +508,10 @@ namespace Game.Player.CharacterController
 
             public void Reset()
             {
+                if (!below)
+                    currentGroundNormal = Vector3.zero;
                 above = below = false;
                 side = SlippySlope = false;
-                currentGroundNormal = Vector3.zero;
                 currentWallNormal = Vector3.zero;
                 currentWallHit= new RaycastHit();
             }
