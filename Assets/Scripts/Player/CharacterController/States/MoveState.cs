@@ -5,91 +5,80 @@ using UnityEngine;
 
 namespace Game.Player.CharacterController.States
 {
-    public class MoveState : IState
-    {
-        //#############################################################################
+	public class MoveState : IState
+	{
+		//#############################################################################
 
-        public ePlayerState StateId { get { return ePlayerState.move; } }
+		public ePlayerState StateId { get { return ePlayerState.move; } }
 
-        CharController charController;
-        StateMachine stateMachine;
-        CharData.MoveData moveData;
+		CharController charController;
+		StateMachine stateMachine;
+		CharData.MoveData moveData;
 
-        //#############################################################################
+		//#############################################################################
 
-        public MoveState(CharController charController, StateMachine stateMachine)
-        {
-            this.charController = charController;
-            this.stateMachine = stateMachine;
-            moveData = charController.CharData.Move;
-        }
+		public MoveState(CharController charController, StateMachine stateMachine) {
+			this.charController = charController;
+			this.stateMachine = stateMachine;
+			moveData = charController.CharData.Move;
+		}
 
-        //#############################################################################
+		//#############################################################################
 
-        public void Enter()
-        {
-            Debug.Log("Enter State: Move");
-        }
+		public void Enter() {
+			Debug.Log("Enter State: Move");
+		}
 
-        public void Exit()
-        {
-            Debug.Log("Exit State: Move");
-        }
+		public void Exit() {
+			Debug.Log("Exit State: Move");
+		}
 
-        //#############################################################################
+		//#############################################################################
 
-        public void HandleInput()
-        {
-            PlayerInputInfo inputInfo = charController.InputInfo;
-            PlayerMovementInfo movementInfo = charController.MovementInfo;
-            CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
+		public void HandleInput() {
+			PlayerInputInfo inputInfo = charController.InputInfo;
+			PlayerMovementInfo movementInfo = charController.MovementInfo;
+			CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
-            if (inputInfo.jumpButtonDown)
-            {
+            if (inputInfo.jumpButtonDown) {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
-                state.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
+				state.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 
-                stateMachine.ChangeState(state);
-            }
-            else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
-            {
-                stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
-            }
-            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope)
-            {
-                stateMachine.ChangeState(new SlideState(charController, stateMachine));
-            }
-            else if (inputInfo.leftStickAtZero)
-            {
-                stateMachine.ChangeState(new StandState(charController, stateMachine));
-            }
-            else if (!collisionInfo.below)
-            {
+				stateMachine.ChangeState(state);
+			} else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash)) {
+				stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
+			} else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f) {
+				stateMachine.ChangeState(new SlideState(charController, stateMachine));
+			} else if (inputInfo.leftStickAtZero) {
+				stateMachine.ChangeState(new StandState(charController, stateMachine));
+			} else if (!collisionInfo.below) {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
-                state.SetJumpTimer(moveData.CanStillJumpTimer);
+				state.SetJumpTimer(moveData.CanStillJumpTimer);
 
-                stateMachine.ChangeState(state);
-            }
+				stateMachine.ChangeState(state);
+			}
         }
 
-        public StateReturnContainer Update(float dt)
-        {
-            PlayerInputInfo inputInfo = charController.InputInfo;
+		public StateReturnContainer Update(float dt) {
+			PlayerInputInfo inputInfo = charController.InputInfo;
 
-            var result = new StateReturnContainer
-            {
-                CanTurnPlayer = true,
+			var result = new StateReturnContainer
+			{
+				CanTurnPlayer = true,
 
-                Acceleration = inputInfo.leftStickToSlope * moveData.Speed * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1),
+				Acceleration = inputInfo.leftStickToSlope * moveData.Speed * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1),
 
-                MaxSpeed = moveData.MaxSpeed,
-                TransitionSpeed = moveData.TransitionSpeed
-            };
+				MaxSpeed = moveData.MaxSpeed,
+				TransitionSpeed = moveData.TransitionSpeed
+			};
 
+            if (charController.CollisionInfo.SlippySlope)
+                result.TransitionSpeed = moveData.SlipperyGroundTransitionSpeed;
+                
             return result;
-        }
+		}
 
-        //#############################################################################
-    }
+		//#############################################################################
+	}
 }
-//end of namespace
+ //end of namespace

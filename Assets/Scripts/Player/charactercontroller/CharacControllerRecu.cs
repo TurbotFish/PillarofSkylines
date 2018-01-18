@@ -55,7 +55,6 @@ namespace Game.Player.CharacterController
         //#############################################################################
 
         public CollisionInfo collisions;
-        CollisionInfo previousCollisions;
         public CapsuleCollider favourCollider;
         Transform myTransform;
         CharController myPlayer;
@@ -101,10 +100,9 @@ namespace Game.Player.CharacterController
             var pos1 = myTransform.position;
 
 			belowLastFrame = collisions.below;
-            previousCollisions = collisions;
 			collisions.Reset();
 
-            //print("---------------------------------new movement----------------------------------");
+            //			print("---------------------------------new movement----------------------------------");
             playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
             collisions.initialVelocityOnThisFrame = velocity;
 
@@ -123,13 +121,7 @@ namespace Game.Player.CharacterController
 
             Vector3 finalVelocity = Vector3.zero;
             //Check if calculated movement will end up in a wall, if so try to adjust movement
-            wallsOverPlayer = Physics.OverlapCapsule(
-                myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + velocity,
-                myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + velocity,
-                radius,
-                collisionMaskNoCloud
-            );
-
+            wallsOverPlayer = Physics.OverlapCapsule(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + velocity, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + velocity, radius, collisionMaskNoCloud);
             if (wallsOverPlayer.Length == 0)
             {
                 finalVelocity = ConfirmMovement(velocity);
@@ -158,22 +150,27 @@ namespace Game.Player.CharacterController
 
         Vector3 ConfirmMovement(Vector3 velocity)
         {
+            
+
             var pos1 = myTransform.position;
             myTransform.Translate(velocity, Space.World);
             var pos2 = myTransform.position;
 
-            //if (myPlayer.CurrentState == ePlayerState.move)
-            //{
+            if (myPlayer.CurrentState == ePlayerState.move)
+            {
                 //Debug.LogFormat("input={0}", velocity.ToString());
                 //Debug.LogFormat("translation={0}; magnitude={1}", (pos2 - pos1).ToString(), (pos2 - pos1).magnitude.ToString());
                 //Debug.LogFormat("angle:{0}", Vector3.Angle(transform.up, Vector3.up));
                 //Debug.LogFormat("axis:{0}", Vector3.Cross(transform.up, Vector3.up));
                 //Debug.LogFormat("velocity / deltaTime = {0}", velocity / Time.deltaTime);
-            //}
+            }
+
+
 
             var result = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * velocity /*/ Time.deltaTime*/;
 
             return result;
+            //return velocity;
         }
 
         Vector3 AdjustPlayerPosition(Vector3 velocity)
@@ -187,15 +184,13 @@ namespace Game.Player.CharacterController
                 bool foundSmth = false;
                 Vector3 position = myTransform.position + velocity + playerAngle * center;
 				int security = 5;
-
 				do
                 {
 					security--;
                     foundSmth = Physics.Linecast(position, wall.transform.position, out hit, collisionMask);
                     if (foundSmth)
                         position = hit.point + (wall.transform.position - hit.point) * .01f;
-				}
-                while (foundSmth && !wall.gameObject.Equals(hit.transform.gameObject) && security > 0);
+				} while (foundSmth && !wall.gameObject.Equals(hit.transform.gameObject) && security > 0);
 
                 if (foundSmth)
                 {
@@ -210,14 +205,8 @@ namespace Game.Player.CharacterController
             Physics.Raycast(myTransform.position + velocity + playerAngle * center, -OutOfWallDirection, out hit, radius + height / 2, collisionMask);
             OutOfWallDirection = OutOfWallDirection.normalized * (radius + height / 2);
 
-			if (Physics.CapsuleCast(
-                myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier / 2) + OutOfWallDirection,
-                myTransform.position + velocity + playerAngle * (center + capsuleHeightModifier / 2) + OutOfWallDirection,
-                radius,
-                -OutOfWallDirection,
-                out hit,
-                radius + height,
-                collisionMask))
+			if (Physics.CapsuleCast(myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier / 2) + OutOfWallDirection, myTransform.position + velocity + playerAngle * (center + capsuleHeightModifier / 2) + OutOfWallDirection
+				, radius, -OutOfWallDirection, out hit, radius + height, collisionMask))
             {
 				print("hit distance : " + hit.distance + "distance adj : " + (1-hit.distance)/2);
                 myTransform.Translate(OutOfWallDirection * (1 - hit.distance)/2, Space.World);
@@ -233,22 +222,12 @@ namespace Game.Player.CharacterController
 			{
 				print("must be below");
 				int security = 5;
-				while (!Physics.SphereCast(
-                        myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2,
-                        radius,
-                        -myTransform.up,
-                        out hit,
-                        skinWidth * 4,
-                        collisionMask) 
-                    && security > 0)
-                {
+				while (!Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask) && security > 0) {
 					print("déplacement !");
 					security--;
 					myTransform.Translate(-myTransform.up * skinWidth * 2, Space.World);
 				}
 			}
-
-
 			return result;
         }
 
@@ -284,6 +263,7 @@ namespace Game.Player.CharacterController
                 }
 				if (hit.collider.CompareTag("SlipperySlope")) {
 					collisions.SlippySlope = true;
+                    Debug.Log("collision slope");
 				} else {
 					collisions.SlippySlope = false;
 				}
@@ -380,24 +360,22 @@ namespace Game.Player.CharacterController
             //print("velocity : " + velocity*100 + "initial velocity : " + collisions.initialVelocityOnThisFrame*100);
 
             //Send a first capsule cast in the direction of the velocity
-            bool hasHit = Physics.CapsuleCast(
+            if (Physics.CapsuleCast(
                 newOrigin - (playerAngle * capsuleHeightModifier / 2),
                 newOrigin + (playerAngle * capsuleHeightModifier / 2),
                 radius,
                 velocity,
                 out hit,
                 rayLength,
-                ((veloNorm.y > 0 || myPlayer.CurrentState == ePlayerState.glide) ? collisionMaskNoCloud : collisionMask)
-            );
-                
-            if (hasHit)
+                ((veloNorm.y > 0 || myPlayer.CurrentState == ePlayerState.glide) ? collisionMaskNoCloud : collisionMask))
+                )
             {
                 collisionNumber++;
 
                 //print("met smth ! name : " + hit.collider.name + " at : " + hit.point + " distance : " + hit.distance);
 
                 //When an obstacle is met, remember the amount of movement needed to get to the obstacle
-                movementVector = veloNorm * (hit.distance - skinWidth);
+                movementVector += veloNorm * (hit.distance - skinWidth);
 
                 //Get the remaining velocity after getting to the obstacle
                 Vector3 extraVelocity = (velocity - movementVector);
@@ -456,12 +434,12 @@ namespace Game.Player.CharacterController
                         {
                             if (Vector3.Dot(hit.normal, oldHit.normal) < 0)
                             {
-                                print("recu 1");
+                                //print("recu 1");
                                 reflection = CollisionDetection(Vector3.Project(extraVelocity, Vector3.Cross(hit.normal, oldHit.normal)), position + movementVector, hit);
                             }
                             else
                             {
-                                print("recu 2");
+                                //print("recu 2");
                                 reflection = CollisionDetection(Vector3.ProjectOnPlane(extraVelocity, hit.normal), position + movementVector, hit);
                             }
                         }
@@ -469,12 +447,12 @@ namespace Game.Player.CharacterController
                         {
                             if (collisions.below && Vector3.Dot(hit.normal, collisions.currentGroundNormal) < 0)
                             {
-                                print("recu 3");
+                                //print("recu 3");
                                 reflection = CollisionDetection(Vector3.Project(extraVelocity, Vector3.Cross(hit.normal, collisions.currentGroundNormal)), position + movementVector, hit);
                             }
                             else
                             {
-                                print("recu 4");
+                                //print("recu 4");
                                 reflection = CollisionDetection(Vector3.ProjectOnPlane(extraVelocity, hit.normal), position + movementVector, hit);
                             }
                         }
@@ -492,7 +470,7 @@ namespace Game.Player.CharacterController
                 }
 
                 //if no obstacle is met, add the reamining velocity to the movement vector
-                movementVector = velocity;
+                movementVector += velocity;
             }
 
             if (collisionNumber > 4)

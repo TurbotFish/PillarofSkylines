@@ -44,8 +44,8 @@ namespace Game.EchoSystem
         #region collision stuff
 
         void OnTriggerEnter(Collider col) {
-            print("Echo détruit par: " + col);
-            Break();// Si un truc rentre dans un écho, il est détruit
+            if (!col.isTrigger)
+                Break(); // Si un truc rentre dans un écho, il est détruit
         }
 
         #endregion collision stuff

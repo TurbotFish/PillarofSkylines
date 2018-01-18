@@ -145,12 +145,10 @@ namespace Game.Player.CharacterController.States
 
             //jump
             if (inputInfo.jumpButtonDown)
-            {
-                //if the player is falling but may still jump normally
-                if (mode == eAirStateMode.fall && jumpTimer > 0)
-                {
-                    var state = new AirState(charController, stateMachine, eAirStateMode.jump);
-                    state.SetRemainingAerialJumps(jumpData.MaxAerialJumps);
+				//if the player is falling but may still jump normally
+				if (mode == eAirStateMode.fall && jumpTimer > 0) {
+					var state = new AirState(charController, stateMachine, eAirStateMode.jump);
+					state.SetRemainingAerialJumps(jumpData.MaxAerialJumps);
 
                     stateMachine.ChangeState(state);
                 }
@@ -177,7 +175,7 @@ namespace Game.Player.CharacterController.States
                 stateMachine.ChangeState(new GlideState(charController, stateMachine));
             }
             //landing on slope
-            else if (collisionInfo.below && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope))
+            else if (collisionInfo.below && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f)) {
             {
                 stateMachine.ChangeState(new SlideState(charController, stateMachine));
             }
@@ -284,6 +282,8 @@ namespace Game.Player.CharacterController.States
         {
             stateMachine.ChangeState(new WindTunnelState(charController, stateMachine));
         }
+
+		#endregion utils
 
         #endregion utils
 

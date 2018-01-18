@@ -231,6 +231,7 @@ namespace Game.Player.CharacterController
             if (stateReturn.PlayerForwardSet)
             {
                 MyTransform.rotation = Quaternion.LookRotation(stateReturn.PlayerForward, MyTransform.up);
+                MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up), MyTransform.up);
             }
 
             if (stateReturn.PlayerUpSet)
@@ -283,6 +284,7 @@ namespace Game.Player.CharacterController
             var turnedVelocity = TurnLocalToSpace(newVelocity);
             Vector3 lastPositionDelta;
 
+
             if (stateMachine.CurrentState == ePlayerState.glide)
             {
                 lastPositionDelta = tempPhysicsHandler.Move(newVelocity * Time.deltaTime);
@@ -298,12 +300,32 @@ namespace Game.Player.CharacterController
             tempCollisionInfo = tempPhysicsHandler.collisions;
 
             //*******************************************
+            //moving player
+
+            /*
+             *  moving the player is currently handled by the (temp!) physics handler
+             */
+
+            //*******************************************
             //turning player
 
-            if (stateReturn.RotationSet)
+            if (canTurnPlayer && !inputInfo.leftStickAtZero)
             {
-                MyTransform.Rotate(MyTransform.up, stateReturn.Rotation, Space.World);
-            }
+                if (stateReturn.RotationSet)
+                {
+                    MyTransform.Rotate(MyTransform.up, stateReturn.Rotation, Space.World);
+                }
+                else
+                {
+                    MyTransform.Rotate(
+                        MyTransform.up,
+                        Mathf.Lerp(
+                            0f,
+                            Vector3.SignedAngle(MyTransform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), MyTransform.up), MyTransform.up),
+                            CharData.General.TurnSpeed * Time.deltaTime
+                        ),
+                        Space.World);
+                }
             else if (canTurnPlayer && !inputInfo.leftStickAtZero)
             {
                 Vector3 to = Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), MyTransform.up);

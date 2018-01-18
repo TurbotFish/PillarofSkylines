@@ -62,7 +62,7 @@ namespace Game.Player.CharacterController.States
 
 				stateMachine.ChangeState(state);
 			}
-			else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope)
+			else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f)
 			{
 				stateMachine.ChangeState(new SlideState(charController, stateMachine));
 			}
@@ -82,6 +82,9 @@ namespace Game.Player.CharacterController.States
                 Acceleration = Vector3.zero,
                 TransitionSpeed = standData.TransitionSpeed
             };
+            
+            if (charController.CollisionInfo.SlippySlope)
+                result.TransitionSpeed = charController.CharData.Move.SlipperyGroundTransitionSpeed;
 
             return result;
         }
