@@ -71,11 +71,8 @@ namespace Game.Player.CharacterController.States
 
                 //stateMachine.ChangeState(state);
             }
-<<<<<<< HEAD
         }
-=======
-        } 
->>>>>>> github/grr
+
 
         public StateReturnContainer Update(float dt)
         {
@@ -103,11 +100,8 @@ namespace Game.Player.CharacterController.States
 
             //********************************
             //wall hugging
-<<<<<<< HEAD
             Vector3 wallHugging = Vector3.zero;// Vector3.right * 2f;
-=======
-            Vector3 wallHugging = Vector3.right * 2f;
->>>>>>> github/grr
+
 
             //if the wall is not on the right side of the player, wallHugging is inversed
             if (Vector3.Dot(-collisionInfo.currentWallNormal, charController.MyTransform.right) < 0)
@@ -149,11 +143,7 @@ namespace Game.Player.CharacterController.States
             bool isJumping = charController.MovementInfo.velocity.y > 0;
 
             //is the player facing the wall
-<<<<<<< HEAD
             bool directionOK = CheckPlayerForward(charController, 0f, 90f);
-=======
-            bool directionOK = CheckPlayerForward(charController, 0f, 60f);
->>>>>>> github/grr
 
             //is the player
             bool stickOK = CheckWallRunStick(charController);

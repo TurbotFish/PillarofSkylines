@@ -317,21 +317,12 @@ namespace Game.Player.CharacterController
                 }
                 else
                 {
-                    MyTransform.Rotate(
-                        MyTransform.up,
-                        Mathf.Lerp(
-                            0f,
-                            Vector3.SignedAngle(MyTransform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), MyTransform.up), MyTransform.up),
-                            CharData.General.TurnSpeed * Time.deltaTime
-                        ),
-                        Space.World);
-                }
-            else if (canTurnPlayer && !inputInfo.leftStickAtZero)
-            {
-                Vector3 to = Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), MyTransform.up);
-                float angle = Mathf.Lerp(0f, Vector3.SignedAngle(MyTransform.forward, to, MyTransform.up), CharData.General.TurnSpeed * Time.deltaTime);
 
-                MyTransform.Rotate(MyTransform.up, angle, Space.World);
+                    Vector3 to = Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), MyTransform.up);
+                    float angle = Mathf.Lerp(0f, Vector3.SignedAngle(MyTransform.forward, to, MyTransform.up), CharData.General.TurnSpeed * Time.deltaTime);
+
+                    MyTransform.Rotate(MyTransform.up, angle, Space.World);
+                }
             }
 
             //*******************************************
