@@ -55,7 +55,6 @@ namespace Game.Player.CharacterController.States
             windTunnelPartList = charController.WindTunnelPartList;
 
             var wind = Vector3.zero;
-            Debug.Log("num parts : " + windTunnelPartList.Count);
             if (windTunnelPartList.Count > 0)
             {
                 foreach (var windTunnelPart in windTunnelPartList)
@@ -64,7 +63,7 @@ namespace Game.Player.CharacterController.States
                     var partPos = windTunnelPart.MyTransform.position;
 
                     wind += partUp * windTunnelPart.windStrength + Vector3.ProjectOnPlane(partPos - movementInfo.position, partUp) * windTunnelPart.tunnelAttraction;
-                    Debug.Log("added wind : " + wind);
+
                 }
                 wind /= windTunnelPartList.Count;
             }
@@ -78,7 +77,6 @@ namespace Game.Player.CharacterController.States
                 TransitionSpeed = 7f
             };
 
-            Debug.Log("wind velocity : " + result.Acceleration);
 
             return result;
         }
