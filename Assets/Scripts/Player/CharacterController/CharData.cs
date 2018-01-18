@@ -342,24 +342,24 @@ namespace Game.Player.CharacterController
 
         [System.Serializable]
         public class SlideData
-		{
-			[SerializeField]
-			float transitionSpeed;
-			public float TransitionSpeed { get { return transitionSpeed; } }
+        {
+            [SerializeField]
+            float transitionSpeed;
+            public float TransitionSpeed { get { return transitionSpeed; } }
 
-			[SerializeField]
-			float minimalSpeed;
-			public float MinimalSpeed { get { return minimalSpeed; } }
+            [SerializeField]
+            float minimalSpeed;
+            public float MinimalSpeed { get { return minimalSpeed; } }
 
-			[SerializeField]
-			float control;
-			public float Control { get { return control; } }
+            [SerializeField]
+            float control;
+            public float Control { get { return control; } }
 
             public void OnValidate()
-			{
-				transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
-				minimalSpeed = Mathf.Clamp(minimalSpeed, 0, float.MaxValue);
-				control = Mathf.Clamp(control, 0, float.MaxValue);
+            {
+                transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
+                minimalSpeed = Mathf.Clamp(minimalSpeed, 0, float.MaxValue);
+                control = Mathf.Clamp(control, 0, float.MaxValue);
             }
         }
 
