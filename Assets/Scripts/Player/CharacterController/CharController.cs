@@ -218,7 +218,6 @@ namespace Game.Player.CharacterController
 
             //*******************************************
             //state update           
-
             //call state update
             var stateReturn = stateMachine.Update(Time.deltaTime);
 
@@ -227,6 +226,7 @@ namespace Game.Player.CharacterController
             float transitionSpeed = stateReturn.TransitionSpeedSet ? stateReturn.TransitionSpeed : CharData.General.TransitionSpeed;
             float maxSpeed = stateReturn.MaxSpeedSet ? stateReturn.MaxSpeed : CharData.General.MaxSpeed;
             var acceleration = stateReturn.AccelerationSet ? stateReturn.Acceleration : velocity;
+
 
             if (stateReturn.PlayerForwardSet)
             {
@@ -287,15 +287,15 @@ namespace Game.Player.CharacterController
             var turnedVelocity = TurnLocalToSpace(newVelocity);
             Vector3 lastPositionDelta;
 
-
+            /*
             if (stateMachine.CurrentState == ePlayerState.glide)
             {
                 lastPositionDelta = tempPhysicsHandler.Move(newVelocity * Time.deltaTime);
             }
             else
-            {
+            {*/
                 lastPositionDelta = tempPhysicsHandler.Move(turnedVelocity * Time.deltaTime);
-            }
+            //}
 
             velocity = lastPositionDelta / Time.deltaTime;
             //Debug.LogFormat("after physics: {0}", newVelocity);
