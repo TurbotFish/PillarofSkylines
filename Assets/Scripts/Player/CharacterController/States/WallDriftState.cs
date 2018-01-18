@@ -15,6 +15,8 @@ namespace Game.Player.CharacterController.States
         StateMachine stateMachine;
         CharData.WallDriftData driftData;
 
+        int noWallCounter = 0;
+
         //#############################################################################
 
         public WallDriftState(CharController charController, StateMachine stateMachine)
@@ -57,19 +59,26 @@ namespace Game.Player.CharacterController.States
             //no wall or stick released => fall
             else if (!collisionInfo.side)
             {
-                stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
+                noWallCounter++;
+
+                if (noWallCounter >= 6)
+                {
+                    stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
+                }
             }
             else if (!WallRunState.CheckWallRunStick(charController))
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
+            else if (collisionInfo.side)
+            {
+                noWallCounter = 0;
+            }
             //jump
             else if (inputInfo.jumpButtonDown)
             {
-                Debug.LogWarning("check 1");
-
-                charController.MyTransform.forward = Vector3.ProjectOnPlane(collisionInfo.currentWallNormal, charController.MyTransform.up);
-                Vector3 jumpDirection = (Vector3.up + (Vector3.back * 2)).normalized;
+                charController.MyTransform.rotation = Quaternion.LookRotation(collisionInfo.currentWallNormal, charController.MyTransform.up);//  Vector3.ProjectOnPlane(collisionInfo.currentWallNormal, charController.MyTransform.up);
+                Vector3 jumpDirection = (charController.MyTransform.up + charController.MyTransform.forward).normalized;
 
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 state.SetJumpDirection(jumpDirection);
@@ -89,12 +98,12 @@ namespace Game.Player.CharacterController.States
             Vector3 driftAcceleration = -Vector3.up * acceleration;
 
             //a bit of force so that the player stays glued to the wall
-            Vector3 wallHugging = Vector3.zero;// Vector3.forward * 2f;
+            Vector3 wallHugging = Vector3.forward * 0.1f;
 
             var result = new StateReturnContainer()
             {
                 CanTurnPlayer = false,
-                PlayerForward = Vector3.ProjectOnPlane(-collisionInfo.currentWallNormal, charController.MyTransform.up),
+                //PlayerForward = Vector3.ProjectOnPlane(-collisionInfo.currentWallNormal, charController.MyTransform.up),
                 Acceleration = wallHugging + driftAcceleration,
                 TransitionSpeed = driftData.TransitionSpeed
             };
