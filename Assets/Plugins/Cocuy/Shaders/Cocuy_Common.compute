@@ -1,0 +1,12 @@
+﻿#ifndef COCUY_COMMON
+#define COCUY_COMMON
+
+#if SHADER_API_GLES3
+	#define THREAD_COUNT 8
+#elif SHADER_API_METAL
+	#define THREAD_COUNT 22
+#else
+	#define THREAD_COUNT 32
+#endif
+
+#endif

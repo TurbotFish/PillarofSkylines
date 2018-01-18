@@ -312,7 +312,13 @@ public class PoS_Camera : MonoBehaviour {
         
         my.position = SmoothApproach(my.position, lastFrameCamPos, camPosition, t);
         my.rotation = Quaternion.Lerp(my.rotation, camRotation, t); // TODO: only local space calculation?
-        
+
+        if (dontSmoothNextFrame) {
+            my.position = camPosition;
+            my.rotation = camRotation;
+            dontSmoothNextFrame = false;
+        }
+
         lastFrameOffset = target.position - my.position;
         lastFrameCamPos = camPosition;
     }
@@ -717,6 +723,7 @@ public class PoS_Camera : MonoBehaviour {
 
     Vector3 homeDoorPosition, homeDoorForward, homePosition;
     float homeDoorMaxZoom = 10, homeDoorFov = 70, lastFrameZoomSign;
+    bool dontSmoothNextFrame;
 
     public void LookAtHomeDoor(Vector3 doorPosition, Vector3 doorForward, Vector3 homePosition) {
         state = eCameraState.HomeDoor;
@@ -743,7 +750,8 @@ public class PoS_Camera : MonoBehaviour {
         Vector3 projected = Vector3.Project((playerPassedPortal ? homePosition : homeDoorPosition) - playerPos, forward);
 
         float playerPosValue = 2 * projected.magnitude / homeDoorMaxZoom;
-        if (playerPassedPortal)
+        
+        if (playerPassedPortal || (!playerPassedPortal && (my.position - playerPos).sqrMagnitude > (my.position - homeDoorPosition).sqrMagnitude))
             playerPosValue *= -1;
         float trueZoom = (homeDoorMaxZoom/2) * playerPosValue + homeDoorMaxZoom /2 - 0.01f;
 
@@ -751,23 +759,25 @@ public class PoS_Camera : MonoBehaviour {
 
         Vector3 targetPos = camPassedPortal ? homePosition : homeDoorPosition;
         Vector3 otherSide = camPassedPortal ? homeDoorPosition : homePosition;
-        targetPos.y += 2;
-        forward = camPassedPortal ? Vector3.forward : homeDoorForward;
-
-        camPosition = targetPos - forward * trueZoom;
-        camRotation = Quaternion.LookRotation(forward, Vector3.up);
-
+        
         if (Mathf.Sign(trueZoom) != lastFrameZoomSign) { // La caméra passe le portail, on switch de position
-
+            dontSmoothNextFrame = true;
             Vector3 offset = my.position - otherSide;
-            my.position = targetPos + offset;
-            my.rotation = Quaternion.LookRotation(forward);
+            //my.position = targetPos + offset;
+            //my.rotation = Quaternion.LookRotation(forward);
 
             offset = lastFrameCamPos - otherSide;
             lastFrameCamPos = targetPos + offset;
             // on change la position de la caméra lors de la frame précédente également pour éviter un lerp
         }
         lastFrameZoomSign = Mathf.Sign(trueZoom);
+
+        targetPos.y += 2;
+        forward = camPassedPortal ? Vector3.forward : homeDoorForward;
+
+        camPosition = targetPos - forward * trueZoom;
+        camRotation = Quaternion.LookRotation(forward);
+
 
         camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, homeDoorFov, 4*deltaTime);
 
