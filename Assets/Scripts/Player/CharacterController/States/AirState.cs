@@ -154,7 +154,7 @@ namespace Game.Player.CharacterController.States
 				stateMachine.ChangeState(new GlideState(charController, stateMachine));
 			}
             //landing on slope
-            else if (collisionInfo.below && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope)) {
+            else if (collisionInfo.below && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f)) {
 				stateMachine.ChangeState(new SlideState(charController, stateMachine));
 			}
             //landing

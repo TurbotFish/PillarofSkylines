@@ -183,6 +183,10 @@ namespace Game.Player.CharacterController
             public float TransitionSpeed { get { return transitionSpeed; } }
 
             [SerializeField]
+            float slipperyGroundTransitionSpeed;
+            public float SlipperyGroundTransitionSpeed { get { return slipperyGroundTransitionSpeed; } }
+
+            [SerializeField]
             float canStillJumpTimer;
             public float CanStillJumpTimer { get { return canStillJumpTimer; } }
 
