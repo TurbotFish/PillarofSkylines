@@ -231,6 +231,7 @@ namespace Game.Player.CharacterController
             if (stateReturn.PlayerForwardSet)
             {
                 //MyTransform.forward = Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up);
+                Debug.Log("new rotation : forward : " + Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up) + " up : " + MyTransform.up);
                 MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up), MyTransform.up);
             }
 

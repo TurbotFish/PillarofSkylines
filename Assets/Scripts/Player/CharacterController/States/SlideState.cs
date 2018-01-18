@@ -76,14 +76,16 @@ namespace Game.Player.CharacterController.States
 					IgnoreGravity = true 
 				}; 
 
-			if (Vector3.Angle(charController.CollisionInfo.currentGroundNormal, charController.MovementInfo.up) < charController.CharData.General.MaxSlopeAngle) { 
+			if (Vector3.Angle(charController.CollisionInfo.currentGroundNormal, charController.MovementInfo.up) < charController.CharData.General.MaxSlopeAngle) {
+                Debug.Log("went here " + Vector3.ProjectOnPlane(-charController.MyTransform.up, charController.CollisionInfo.currentGroundNormal));
 				result.Acceleration = Vector3.ProjectOnPlane(-charController.MyTransform.up, charController.CollisionInfo.currentGroundNormal).normalized * slideData.MinimalSpeed;
                 result.Acceleration += charController.InputInfo.leftStickToSlope * slideData.Control;
             } else {
-				result.IgnoreGravity = false;
+                Debug.Log("went there " + Vector3.ProjectOnPlane(-charController.MyTransform.up, charController.CollisionInfo.currentGroundNormal));
+                result.IgnoreGravity = false;
                 result.Acceleration = Vector3.ProjectOnPlane(-charController.MyTransform.up, charController.CollisionInfo.currentGroundNormal).normalized;
             }
-            result.PlayerForward = result.Acceleration;
+            result.PlayerForward = result.Acceleration.normalized;
 
             return result;
         }
