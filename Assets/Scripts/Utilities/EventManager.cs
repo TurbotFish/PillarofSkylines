@@ -450,12 +450,10 @@ namespace Game.Utilities
         public class WindTunnelPartExitedEventArgs: EventArgs
         {
             public WindTunnelPart WindTunnelPart { get; private set; }
-            public bool StillInWindTunnel { get; private set; }
 
-            public WindTunnelPartExitedEventArgs(WindTunnelPart windTunnelPart, bool stillInWindTunnel)
+            public WindTunnelPartExitedEventArgs(WindTunnelPart windTunnelPart)
             {
                 WindTunnelPart = windTunnelPart;
-                StillInWindTunnel = stillInWindTunnel;
             }
         }
 

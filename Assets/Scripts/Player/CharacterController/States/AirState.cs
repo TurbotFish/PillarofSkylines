@@ -170,7 +170,7 @@ namespace Game.Player.CharacterController.States
 					stateMachine.ChangeState(new WallRunState(charController, stateMachine));
 				}
 			}
-		}
+        }
 
 		public StateReturnContainer Update(float dt) {
 			PlayerInputInfo inputInfo = charController.InputInfo;

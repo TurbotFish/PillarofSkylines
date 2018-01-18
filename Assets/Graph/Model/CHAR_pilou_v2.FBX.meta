@@ -922,7 +922,7 @@ ModelImporter:
       name: Idle
       takeName: Take 001
       firstFrame: 0
-      lastFrame: 15
+      lastFrame: 14
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -950,7 +950,7 @@ ModelImporter:
       name: Dash
       takeName: Take 001
       firstFrame: 15
-      lastFrame: 30
+      lastFrame: 29
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -978,7 +978,7 @@ ModelImporter:
       name: Start Run
       takeName: Take 001
       firstFrame: 30
-      lastFrame: 55
+      lastFrame: 54
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -1006,7 +1006,7 @@ ModelImporter:
       name: Jump Up
       takeName: Take 001
       firstFrame: 55
-      lastFrame: 65
+      lastFrame: 64
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -1034,7 +1034,7 @@ ModelImporter:
       name: Jump Down
       takeName: Take 001
       firstFrame: 65
-      lastFrame: 76
+      lastFrame: 75
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -1062,7 +1062,7 @@ ModelImporter:
       name: Jump Land
       takeName: Take 001
       firstFrame: 76
-      lastFrame: 87
+      lastFrame: 86
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -1090,7 +1090,7 @@ ModelImporter:
       name: Glide Idle
       takeName: Take 001
       firstFrame: 87
-      lastFrame: 102
+      lastFrame: 101
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -1118,7 +1118,7 @@ ModelImporter:
       name: Glide Up
       takeName: Take 001
       firstFrame: 102
-      lastFrame: 118
+      lastFrame: 117
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -1146,7 +1146,7 @@ ModelImporter:
       name: Glide Down
       takeName: Take 001
       firstFrame: 118
-      lastFrame: 134
+      lastFrame: 133
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -1174,7 +1174,7 @@ ModelImporter:
       name: Glide Right
       takeName: Take 001
       firstFrame: 134
-      lastFrame: 150
+      lastFrame: 149
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -1202,7 +1202,7 @@ ModelImporter:
       name: Glide Left
       takeName: Take 001
       firstFrame: 150
-      lastFrame: 166
+      lastFrame: 165
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -1230,7 +1230,7 @@ ModelImporter:
       name: Slide
       takeName: Take 001
       firstFrame: 166
-      lastFrame: 181
+      lastFrame: 180
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
