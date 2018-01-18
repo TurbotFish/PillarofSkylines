@@ -63,11 +63,11 @@ public abstract class TriggerableObject : MonoBehaviour {
         }
     }
 
-    private void OnValidate() {
+    /*private void OnValidate() {
         foreach(Trigger trigger in triggers) {
             if(!trigger.targets.Contains(this)) {
                 trigger.targets.Add(this);
             }
         }
-    }
+    }*/
 }

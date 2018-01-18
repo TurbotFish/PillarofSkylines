@@ -13,11 +13,11 @@ public class WindTunnel : BezierSpline {
 	public int precision = 20;
 	public int colliderPrecision = 3;
 	public AnimationCurve colliderRadius;
+	public Transform windParts;
 	private LineRenderer lr;
 	private WindTunnelPart partPrefab;
 	private WindTunnelPart currentPart;
 	private GameObject[] children = new GameObject[0];
-
 
 	public void UpdateLR()
 	{
@@ -30,6 +30,7 @@ public class WindTunnel : BezierSpline {
 
 		lr.positionCount = lrPoints.Length;
 		lr.SetPositions (lrPoints);
+
 	}
 
 	public void UpdateColliders() {
@@ -37,13 +38,13 @@ public class WindTunnel : BezierSpline {
 		Vector3 position = Vector3.zero;
 		Vector3 nextPosition = Vector3.zero;
 
-		Debug.Log("Destroying " + transform.childCount + " objects, instancing " + (colliderPrecision-1));
+		Debug.Log("Destroying " + windParts.childCount + " objects, instancing " + (colliderPrecision-1));
 
 
-		children = new GameObject[transform.childCount];
-		for (int i = 0; i < transform.childCount; i++)
+		children = new GameObject[windParts.childCount];
+		for (int i = 0; i < windParts.childCount; i++)
 		{
-			children[i] = transform.GetChild(i).gameObject;
+			children[i] = windParts.GetChild(i).gameObject;
 		}
 		foreach (GameObject go in children)
 		{
@@ -55,7 +56,7 @@ public class WindTunnel : BezierSpline {
 		{
 			position = GetPoint((float)i / (float)Mathf.Clamp((colliderPrecision - 1), 0, colliderPrecision));
 			nextPosition = GetPoint((float)(i+1) / (float)Mathf.Clamp((colliderPrecision - 1), 0, colliderPrecision));
-			currentPart = Instantiate<WindTunnelPart>(partPrefab, position + (nextPosition - position), Quaternion.LookRotation(nextPosition - position), transform);
+			currentPart = Instantiate<WindTunnelPart>(partPrefab, position + (nextPosition - position), Quaternion.LookRotation(nextPosition - position), windParts);
 			currentPart.transform.Rotate(90f, 0f, 0f);
 			currentPart.GetComponent<CapsuleCollider>().radius = colliderRadius.Evaluate((float)i/colliderPrecision);
 			currentPart.GetComponent<CapsuleCollider>().height = (nextPosition - position).magnitude/2;

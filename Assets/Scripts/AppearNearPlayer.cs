@@ -6,7 +6,7 @@ public class AppearNearPlayer : MonoBehaviour {
     new Renderer renderer;
 
     private void OnEnable() {
-        target = FindObjectOfType<Game.Player.CharacterController.Character>().transform; // TODO: fix that
+        target = FindObjectOfType<Game.Player.CharacterController.CharController>().transform; // TODO: fix that
         renderer = GetComponent<Renderer>();
     }
 

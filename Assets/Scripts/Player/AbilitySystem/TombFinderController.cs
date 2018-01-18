@@ -6,7 +6,7 @@ namespace Game.Player.AbilitySystem
 {
     public class TombFinderController : MonoBehaviour
     {
-        CharacterController.Character player;
+        CharacterController.CharController player;
         PlayerModel model;
         World.ChunkSystem.WorldController worldController;
 
@@ -24,7 +24,7 @@ namespace Game.Player.AbilitySystem
         {
             this.model = gameController.PlayerModel;
             this.worldController = gameController.WorldController;
-            this.player = gameController.PlayerController.Player;
+            this.player = gameController.PlayerController.CharController;
 
             if(this.model == null || this.worldController == null)
             {
@@ -52,30 +52,32 @@ namespace Game.Player.AbilitySystem
         // Update is called once per frame
         void Update()
         {
-            if (!this.isInitialized)
+            if (!isInitialized)
             {
                 return;
             }
 
-            bool abilityActive = this.model.CheckAbilityActive(eAbilityType.TombFinder);
+            bool abilityActive = model.CheckAbilityActive(eAbilityType.TombFinder);
             //Debug.LogErrorFormat("TombFinderController: abilityActive={0}, isInOpenWorld={1}, isFavourInWorld={2}", abilityActive, isInOpenWorld, isFavourInWorld);
+
+            float velocitySquared = player.MovementInfo.velocity.sqrMagnitude;
             
-            if(!this.isParticleSystemActive && (this.isInOpenWorld && this.isFavourInWorld && abilityActive && player.velocity.sqrMagnitude < 0.01f))
+            if(!isParticleSystemActive && (isInOpenWorld && isFavourInWorld && abilityActive && velocitySquared < 0.01f))
             {
-				foreach (ParticleSystem ps in this.myParticleSystems) {
+				foreach (ParticleSystem ps in myParticleSystems) {
 					ps.Play ();
 				}
-                this.isParticleSystemActive = true;
+                isParticleSystemActive = true;
             }
-            else if(this.isParticleSystemActive && (!this.isInOpenWorld || !this.isFavourInWorld || !abilityActive || player.velocity.sqrMagnitude > 0.01f))
+            else if(isParticleSystemActive && (!isInOpenWorld || !isFavourInWorld || !abilityActive || velocitySquared > 0.01f))
             {
-				foreach (ParticleSystem ps in this.myParticleSystems) {
+				foreach (ParticleSystem ps in myParticleSystems) {
 					ps.Stop ();
 				}
-                this.isParticleSystemActive = false;
+                isParticleSystemActive = false;
             }
 
-            if (this.isParticleSystemActive)
+            if (isParticleSystemActive)
             {
                 OrientToNearestFavour();
             }

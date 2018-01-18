@@ -99,7 +99,8 @@ namespace Game.World.ChunkSystem
                 var go = new GameObject(gameObject.name);
                 go.transform.parent = parent;
                 go.transform.localPosition = transform.localPosition;
-
+                go.transform.localRotation = transform.localRotation;
+                go.transform.localScale = transform.localScale;
             }
             else
             {

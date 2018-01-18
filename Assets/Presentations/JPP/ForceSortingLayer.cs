@@ -14,6 +14,8 @@ public class ForceSortingLayer : MonoBehaviour {
 
 	void Update()
 	{
+		if (GetComponent<MeshRenderer> ().sortingLayerName != newSortingLayer)
+			GetComponent<MeshRenderer> ().sortingLayerName = newSortingLayer;
 		if (Input.GetKeyDown(KeyCode.Space))
 			Debug.Log(GetComponent<MeshRenderer>().sortingLayerName + " : " +GetComponent<MeshRenderer>().sortingLayerID);
 	}
