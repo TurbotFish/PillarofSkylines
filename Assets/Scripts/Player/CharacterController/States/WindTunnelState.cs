@@ -52,8 +52,10 @@ namespace Game.Player.CharacterController.States
         {
             PlayerMovementInfo movementInfo = charController.MovementInfo;
 
-            var wind = Vector3.zero;
+            windTunnelPartList = charController.WindTunnelPartList;
 
+            var wind = Vector3.zero;
+            Debug.Log("num parts : " + windTunnelPartList.Count);
             if (windTunnelPartList.Count > 0)
             {
                 foreach (var windTunnelPart in windTunnelPartList)
@@ -62,18 +64,21 @@ namespace Game.Player.CharacterController.States
                     var partPos = windTunnelPart.MyTransform.position;
 
                     wind += partUp * windTunnelPart.windStrength + Vector3.ProjectOnPlane(partPos - movementInfo.position, partUp) * windTunnelPart.tunnelAttraction;
+                    Debug.Log("added wind : " + wind);
                 }
                 wind /= windTunnelPartList.Count;
             }
 
             var result = new StateReturnContainer
             {
-                CanTurnPlayer = true,
+                CanTurnPlayer = false,
                 IgnoreGravity = true,
 
-                Acceleration = wind,
-                TransitionSpeed = 0.7f
+                Acceleration = charController.TurnSpaceToLocal(wind),
+                TransitionSpeed = 7f
             };
+
+            Debug.Log("wind velocity : " + result.Acceleration);
 
             return result;
         }

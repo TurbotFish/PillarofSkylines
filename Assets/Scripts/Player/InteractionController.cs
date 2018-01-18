@@ -271,7 +271,10 @@ namespace Game.Player {
                         break;
                     //wind
                     case "Wind":
-						other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer);
+                        Debug.Log("coucou");
+                        Utilities.EventManager.SendWindTunnelEnteredEvent(this, new Utilities.EventManager.WindTunnelPartEnteredEventArgs(other.GetComponent<WindTunnelPart>()));
+                        if (myPlayer.stateMachine.CurrentState != CharacterController.ePlayerState.windTunnel)
+                                myPlayer.stateMachine.ChangeState(new CharacterController.States.WindTunnelState(myPlayer, myPlayer.stateMachine));
 						break;
                     // air particle
                     case "AirParticle":
@@ -395,8 +398,9 @@ namespace Game.Player {
                         break;
                     //wind
                     case "Wind":
-						other.GetComponent<WindTunnelPart>().RemovePlayer();
-						break;
+                        Debug.Log("coucou");
+                        Utilities.EventManager.SendWindTunnelExitedEvent(this, new Utilities.EventManager.WindTunnelPartExitedEventArgs(other.GetComponent<WindTunnelPart>()));
+                        break;
                     // HomeBeacon
                     case "HomeBeacon":
                         homeBeacon = null;

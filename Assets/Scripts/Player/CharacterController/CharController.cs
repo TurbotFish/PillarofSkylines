@@ -46,7 +46,7 @@ namespace Game.Player.CharacterController
 
         public Transform MyTransform { get; private set; }
 
-        StateMachine stateMachine;
+        public StateMachine stateMachine;
 
         public ePlayerState CurrentState
         {
@@ -71,7 +71,7 @@ namespace Game.Player.CharacterController
         List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
 
         public List<WindTunnelPart> WindTunnelPartList { get { return new List<WindTunnelPart>(windTunnelPartList); } }
-
+        
         PlayerInputInfo inputInfo = new PlayerInputInfo();
 
         public PlayerInputInfo InputInfo { get { return inputInfo; } }
@@ -162,6 +162,7 @@ namespace Game.Player.CharacterController
             {
                 return;
             }
+
 
             if (Input.GetKeyDown(KeyCode.F6))
             {
@@ -418,17 +419,14 @@ namespace Game.Player.CharacterController
         {
             if (!windTunnelPartList.Contains(args.WindTunnelPart))
             {
+                print("eventreceived");
                 windTunnelPartList.Add(args.WindTunnelPart);
             }
-
-            //if (stateMachine.CurrentState != ePlayerState.windTunnel)
-            //{
-            //    stateMachine.ChangeState(new WindTunnelState(this, stateMachine));
-            //}
         }
 
         void OnWindTunnelPartExitedEventHandler(object sender, Utilities.EventManager.WindTunnelPartExitedEventArgs args)
         {
+            print("partremoved");
             windTunnelPartList.Remove(args.WindTunnelPart);
         }
 
@@ -438,12 +436,12 @@ namespace Game.Player.CharacterController
 
         #region utility methods
 
-        Vector3 TurnLocalToSpace(Vector3 vector)
+        public Vector3 TurnLocalToSpace(Vector3 vector)
         {
             return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, MyTransform.up), Vector3.Cross(Vector3.up, MyTransform.up))) * vector;
         }
 
-        Vector3 TurnSpaceToLocal(Vector3 vector)
+        public Vector3 TurnSpaceToLocal(Vector3 vector)
         {
             return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, MyTransform.up), Vector3.Cross(MyTransform.up, Vector3.up))) * vector;
         }
