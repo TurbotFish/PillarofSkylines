@@ -329,6 +329,10 @@ namespace Game.Player {
                         if (homeBeacon.activated)
                             ShowUiMessage("Press [X] to teleport");
                         break;
+                    // Trigger Activator
+                    case "TriggerActivator":
+                        other.GetComponent<TriggerSystem.TimedActivator>().manager.Activate();
+                        break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
@@ -390,6 +394,10 @@ namespace Game.Player {
                         homeBeacon = null;
 
                         HideUiMessage();
+                        break;
+                    // Trigger Activator
+                    case "TriggerActivator":
+                        other.GetComponent<TriggerSystem.TimedActivator>().manager.StartTimer();
                         break;
                     //other
                     default:
