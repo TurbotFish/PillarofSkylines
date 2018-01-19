@@ -62,12 +62,14 @@ namespace Game.Player.CharacterController.States
 		public StateReturnContainer Update(float dt) {
 			PlayerInputInfo inputInfo = charController.InputInfo;
 
-			var result = new StateReturnContainer
-			{
-				CanTurnPlayer = true,
+
+            var result = new StateReturnContainer
+            {
+                CanTurnPlayer = true,
 
 				Acceleration = inputInfo.leftStickToSlope * moveData.Speed * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1),
 
+                
 				MaxSpeed = moveData.MaxSpeed,
 				TransitionSpeed = moveData.TransitionSpeed
 			};
