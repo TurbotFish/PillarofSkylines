@@ -44,7 +44,7 @@ namespace Game.UI.PillarEntranceMenu
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HUD));
             }
 
-            if (this.canEnterPillar && Input.GetButtonDown("Sprint"))
+            if (this.canEnterPillar && Input.GetButtonDown("Interact"))
             {
                 playerModel.ChangeFavourAmount(-playerModel.PillarData.GetPillarEntryPrice(pillarId));
                 Utilities.EventManager.SendEnterPillarEvent(this, new Utilities.EventManager.EnterPillarEventArgs(this.pillarId));

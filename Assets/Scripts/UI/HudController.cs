@@ -9,6 +9,7 @@ namespace Game.UI
     {
         [SerializeField]
         TMPro.TextMeshProUGUI messageView;
+        GameObject messagePanel;
 
         //Player.PlayerModel playerModel;
 
@@ -22,7 +23,8 @@ namespace Game.UI
         // Use this for initialization
         void Start()
         {
-            this.messageView.gameObject.SetActive(false);
+            messagePanel = this.messageView.transform.parent.gameObject;
+            messagePanel.SetActive(false);
             Utilities.EventManager.OnShowHudMessageEvent += OnShowHudMessageEventHandler;
         }
 
@@ -82,13 +84,13 @@ namespace Game.UI
 
             if (args.Show)
             {
-                this.messageView.gameObject.SetActive(true);
+                messagePanel.SetActive(true);
                 this.messageView.text = args.Message;
             }
             else
             {
                 this.messageView.text = "";
-                this.messageView.gameObject.SetActive(false);
+                messagePanel.SetActive(false);
             }
         }
 

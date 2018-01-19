@@ -78,7 +78,11 @@ namespace Game.Player.CharacterController.States
 			this.jumpTimer = jumpTimer;
 		}
 
-		public void SetJumpDirection(Vector3 direction) {
+        /// <summary>
+        /// Sets the direction of the initial force of a jump.
+        /// THIS IS IN WORLDSPACE!
+        /// </summary>
+        public void SetJumpDirection(Vector3 direction) {
 			if (!initializing) {
 				return;
 			}
@@ -154,7 +158,8 @@ namespace Game.Player.CharacterController.States
 				stateMachine.ChangeState(new GlideState(charController, stateMachine));
 			}
             //landing on slope
-            else if (collisionInfo.below && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f)) {
+            else if (collisionInfo.below && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle 
+                || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f)) {
 				stateMachine.ChangeState(new SlideState(charController, stateMachine));
 			}
             //landing
@@ -169,7 +174,7 @@ namespace Game.Player.CharacterController.States
 					stateMachine.ChangeState(new WallRunState(charController, stateMachine));
 				}
 			}
-		}
+        }
 
 		public StateReturnContainer Update(float dt) {
 			PlayerInputInfo inputInfo = charController.InputInfo;

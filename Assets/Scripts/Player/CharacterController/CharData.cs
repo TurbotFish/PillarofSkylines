@@ -342,24 +342,24 @@ namespace Game.Player.CharacterController
 
         [System.Serializable]
         public class SlideData
-		{
-			[SerializeField]
-			float transitionSpeed;
-			public float TransitionSpeed { get { return transitionSpeed; } }
+        {
+            [SerializeField]
+            float transitionSpeed;
+            public float TransitionSpeed { get { return transitionSpeed; } }
 
-			[SerializeField]
-			float minimalSpeed;
-			public float MinimalSpeed { get { return minimalSpeed; } }
+            [SerializeField]
+            float minimalSpeed;
+            public float MinimalSpeed { get { return minimalSpeed; } }
 
-			[SerializeField]
-			float control;
-			public float Control { get { return control; } }
+            [SerializeField]
+            float control;
+            public float Control { get { return control; } }
 
             public void OnValidate()
-			{
-				transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
-				minimalSpeed = Mathf.Clamp(minimalSpeed, 0, float.MaxValue);
-				control = Mathf.Clamp(control, 0, float.MaxValue);
+            {
+                transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
+                minimalSpeed = Mathf.Clamp(minimalSpeed, 0, float.MaxValue);
+                control = Mathf.Clamp(control, 0, float.MaxValue);
             }
         }
 
@@ -447,15 +447,15 @@ namespace Game.Player.CharacterController
         public class WallDriftData
         {
             [SerializeField]
-            float targetSpeed;
+            float targetSpeed = 3;
             public float TargetSpeed { get { return targetSpeed; } }
 
             [SerializeField]
-            float transitionSpeed;
+            float transitionSpeed = 3;
             public float TransitionSpeed { get { return transitionSpeed; } }
 
             [SerializeField]
-            float maxTriggerAngle;
+            float maxTriggerAngle = 60;
             public float MaxTriggerAngle { get { return maxTriggerAngle; } }
 
             public void OnValidate()
@@ -481,6 +481,10 @@ namespace Game.Player.CharacterController
             [SerializeField]
             float slowdownFactor;
             public float SlowdownFactor { get { return slowdownFactor; } }
+
+            [SerializeField]
+            float maxTriggerAngle = 80;
+            public float MaxTriggerAngle { get { return maxTriggerAngle; } }
 
             public void OnValidate()
             {
