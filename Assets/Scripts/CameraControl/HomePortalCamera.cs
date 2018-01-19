@@ -55,10 +55,17 @@ public class HomePortalCamera : MonoBehaviour {
         mat.mainTexture = texture;
     }
 
-    private void OnEnable() {
+    private void OnEnable()
+    {
+        otherPortal.gameObject.SetActive(true);
         otherPortal.rotation = Quaternion.identity;
     }
 
+    private void OnDisable()
+    {
+        otherPortal.gameObject.SetActive(false);
+    }
+    
     //
 
     void FindWorldCamera() {
