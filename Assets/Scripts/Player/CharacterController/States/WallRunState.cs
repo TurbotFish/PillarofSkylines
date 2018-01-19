@@ -15,6 +15,9 @@ namespace Game.Player.CharacterController.States
         StateMachine stateMachine;
         CharData.WallRunData wallRunData;
 
+        int noWallCounter = 0;
+        Vector3 lastWallNormal;
+
         //#############################################################################
 
         public WallRunState(CharController charController, StateMachine stateMachine)
@@ -55,21 +58,26 @@ namespace Game.Player.CharacterController.States
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
             //no wall or stick released => fall
-            else if (!collisionInfo.side /*|| !WallRunState.CheckWallRunStick(charController)*/)
+            else if (!collisionInfo.side && noWallCounter > 5)
+            {
+                stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
+            }
+            else if (!CheckWallRunStick(inputInfo, lastWallNormal, wallRunData.MaxTriggerAngle))
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
             //jump
             else if (inputInfo.jumpButtonDown)
             {
-                //charController.MyTransform.forward = Vector3.ProjectOnPlane(collisionInfo.currentWallNormal, charController.MyTransform.up);
-                //Vector3 jumpDirection = (Vector3.up + collisionInfo.currentWallNormal * 2).normalized;
+                charController.MyTransform.rotation = Quaternion.LookRotation(lastWallNormal, charController.MyTransform.up);
 
-                //var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
-                //state.SetJumpTimer(charController.CharData.Move.CanStillJumpTimer);
-                //state.SetJumpDirection(jumpDirection);
+                Vector3 jumpDirection = (charController.MyTransform.up + collisionInfo.currentWallNormal + charController.MyTransform.forward).normalized;
 
-                //stateMachine.ChangeState(state);
+                var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
+                state.SetJumpDirection(jumpDirection);
+                state.SetAirControl(false);
+
+                stateMachine.ChangeState(state);
             }
         }
 
@@ -79,32 +87,38 @@ namespace Game.Player.CharacterController.States
             PlayerMovementInfo movementInfo = charController.MovementInfo;
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
-            //********************************
-            //acceleration
-            Vector3 wallrunVel = Vector3.ProjectOnPlane(movementInfo.velocity, collisionInfo.currentWallNormal);
-
-            float restSpeed = movementInfo.velocity.magnitude - wallrunVel.magnitude;
-            Vector3 transferredVel = restSpeed * ((Vector3.forward + Vector3.up) * 0.5f);
-
-            Vector3 acceleration = wallrunVel * wallRunData.SlowdownFactor + transferredVel;
-
-            //********************************
-            //direction
-            Vector3 direction = Vector3.Cross(collisionInfo.currentWallNormal, charController.MyTransform.up);
-
-            //if the player is going in the other direction thna the cross result, direction is inversed
-            if (Vector3.Dot(direction, charController.MyTransform.forward) < 0)
+            if (collisionInfo.side)
             {
-                direction *= -1;
+                noWallCounter = 0;
+                lastWallNormal = collisionInfo.currentWallNormal;
+            }
+            else
+            {
+                noWallCounter++;
             }
 
             //********************************
+            //acceleration
+
+            float previousSpeed = movementInfo.velocity.magnitude;
+
+            //the direction along the wall (laft or right)
+            Vector3 wallRunDir = Vector3.ProjectOnPlane(movementInfo.velocity, lastWallNormal);
+
+            //flattening the direction
+            wallRunDir = Vector3.ProjectOnPlane(wallRunDir, charController.MyTransform.up);
+
+            //translate the direction to local space
+            Vector3 localWallRunDir = charController.MyTransform.worldToLocalMatrix.MultiplyVector(wallRunDir);
+
+            Vector3 acceleration = localWallRunDir.normalized * (previousSpeed * wallRunData.SlowdownFactor);
+
+            //********************************
             //wall hugging
-            Vector3 wallHugging = Vector3.zero;// Vector3.right * 2f;
+            Vector3 wallHugging = charController.MyTransform.worldToLocalMatrix.MultiplyVector(-lastWallNormal) * 4f * (noWallCounter + 1);
 
-
-            //if the wall is not on the right side of the player, wallHugging is inversed
-            if (Vector3.Dot(-collisionInfo.currentWallNormal, charController.MyTransform.right) < 0)
+            //if the wall is to the left of the player, wallHugging is inversed
+            if (Vector3.SignedAngle(wallRunDir, lastWallNormal, charController.MyTransform.up) < 0)
             {
                 wallHugging *= -1;
             }
@@ -113,7 +127,7 @@ namespace Game.Player.CharacterController.States
             var result = new StateReturnContainer()
             {
                 CanTurnPlayer = false,
-                //PlayerForward = direction.normalized,
+                PlayerForward = wallRunDir.normalized,
                 Acceleration = wallHugging + acceleration,
                 TransitionSpeed = wallRunData.TransitionSpeed
             };
@@ -143,22 +157,13 @@ namespace Game.Player.CharacterController.States
             bool isJumping = charController.MovementInfo.velocity.y > 0;
 
             //is the player facing the wall
-            bool directionOK = CheckPlayerForward(charController, 0f, 90f);
+            bool directionOK = CheckPlayerForward(charController, 0f, charController.CharData.WallRun.MaxTriggerAngle);
 
             //is the player
-            bool stickOK = CheckWallRunStick(charController);
+            bool stickOK = CheckWallRunStick(charController.InputInfo, charController.CollisionInfo.currentWallNormal, charController.CharData.WallRun.MaxTriggerAngle);
 
             return (isAbilityActive && isTouchingWall && isWallSlopeValid && isJumping && directionOK && stickOK);
         }
-
-        ///// <summary>
-        ///// Checks if the player is turned towards the wall.
-        ///// </summary>
-        //public static bool CheckWallRunPlayerForward(CharController charController, float minDotProduct = -1)
-        //{
-        //    float dotProduct = Vector3.Dot(charController.MyTransform.forward, charController.CollisionInfo.currentWallNormal);
-        //    return (minDotProduct <= dotProduct && dotProduct <= charController.PlayerModel.AbilityData.WallRun.General.DirectionTrigger);
-        //}
 
         /// <summary>
         /// Checks the unsigned angle between the inversed normal vector of the wall and the forward vector of the player.
@@ -180,11 +185,18 @@ namespace Game.Player.CharacterController.States
         /// <summary>
         /// Checks whether the player is holding the left stick in position to activate or stay in wall run mode.
         /// </summary>
-        public static bool CheckWallRunStick(CharController charController)
+        public static bool CheckWallRunStick(PlayerInputInfo inputInfo, Vector3 wallNormal, float maxAngle)
         {
-            var stick = charController.InputInfo.leftStickToCamera;
-            float dotproduct = Vector3.Dot(stick, charController.MyTransform.forward);
-            return (dotproduct >= charController.PlayerModel.AbilityData.WallRun.General.StickTrigger && !charController.InputInfo.leftStickAtZero);
+            var stick = inputInfo.leftStickToCamera;
+
+            float angle = Vector3.Angle(-wallNormal, stick);
+
+            if (!inputInfo.leftStickAtZero && angle < maxAngle)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         //#############################################################################

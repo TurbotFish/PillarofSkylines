@@ -447,15 +447,15 @@ namespace Game.Player.CharacterController
         public class WallDriftData
         {
             [SerializeField]
-            float targetSpeed;
+            float targetSpeed = 3;
             public float TargetSpeed { get { return targetSpeed; } }
 
             [SerializeField]
-            float transitionSpeed;
+            float transitionSpeed = 3;
             public float TransitionSpeed { get { return transitionSpeed; } }
 
             [SerializeField]
-            float maxTriggerAngle;
+            float maxTriggerAngle = 60;
             public float MaxTriggerAngle { get { return maxTriggerAngle; } }
 
             public void OnValidate()
@@ -481,6 +481,10 @@ namespace Game.Player.CharacterController
             [SerializeField]
             float slowdownFactor;
             public float SlowdownFactor { get { return slowdownFactor; } }
+
+            [SerializeField]
+            float maxTriggerAngle = 80;
+            public float MaxTriggerAngle { get { return maxTriggerAngle; } }
 
             public void OnValidate()
             {
