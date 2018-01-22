@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿
+using UnityEngine;
 using System.Collections;
 using Game.Player.CharacterController;
 
@@ -775,11 +776,17 @@ public class PoS_Camera : MonoBehaviour {
         targetPos.y += 2;
         forward = camPassedPortal ? Vector3.forward : homeDoorForward;
 
+        RaycastHit hit;
+        bool hitAWall = Physics.Raycast(targetPos, -forward, out hit, trueZoom,  blockingLayer);
+        if (hitAWall) // si y a un mur on évite de se mettre au travers
+            trueZoom = hit.distance;
+
         camPosition = targetPos - forward * trueZoom;
         camRotation = Quaternion.LookRotation(forward);
+        
+        //
 
-
-        camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, homeDoorFov, 4*deltaTime);
+        camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, homeDoorFov, 4*deltaTime); // Change FOV
 
         bool alterPlayerForward = playerPassedPortal && !camPassedPortal;
 

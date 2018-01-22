@@ -75,8 +75,25 @@ namespace Game.EchoSystem
                         isDoorActive = true;
 
                         if (homePoint) {
-                            homeDoor.transform.position = playerTransform.position + playerTransform.forward * 2;
+                            
+                            Vector3 homeDoorPos = new Vector3(0, 0, 0);
+
+                            float minDistance = 1.5f, maxDistance = 4f;
+
+                            RaycastHit hit;
+                            if (Physics.Raycast(playerTransform.position, playerTransform.forward * maxDistance, out hit, maxDistance))
+                            {
+                                homeDoorPos = playerTransform.position + playerTransform.forward * (hit.distance - 0.2f);
+                                homeDoor.transform.rotation = playerTransform.rotation;
+                            } else
+                            {
+                                homeDoorPos = playerTransform.position + playerTransform.forward * maxDistance;
+                                homeDoor.transform.rotation = playerTransform.rotation;
+                            }
+
+                            homeDoor.transform.position = homeDoorPos;
                             homeDoor.transform.rotation = playerTransform.rotation;
+
                             homeDoor.SetActive(true);
                             camera.LookAtHomeDoor(homeDoor.transform.position, homeDoor.transform.forward, homePoint.position);
 
