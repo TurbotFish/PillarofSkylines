@@ -43,7 +43,8 @@ namespace Game.World.Interaction
 
         //##################################################################
 
-        void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args) {
+        void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
+        {
             if (args.FavourId == instanceId) {
                 if (!FavourPickedUp) {
                     FavourPickedUp = true;
@@ -59,7 +60,6 @@ namespace Game.World.Interaction
                         StartCoroutine(FavourManager());
                         StartCoroutine(DissolveTomb());
                     }
-
                 }
             }
         }

@@ -31,7 +31,7 @@ namespace Game.Player {
         World.SpawnPointSystem.SpawnPointManager spawnPointManager;
         Transform airParticle, airOrigin;
 
-        HomeBeacon homeBeacon;
+        Beacon beacon;
 
         //
         bool isActive = false;
@@ -122,8 +122,8 @@ namespace Game.Player {
                     HideUiMessage("Eye");
                 }
                 //home beacon
-                else if (homeBeacon && homeBeacon.activated) {
-                    var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(homeBeacon.destination.position, Quaternion.identity, false);
+                else if (beacon && beacon.activated) {
+                    var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(beacon.destination.position, Quaternion.identity, false);
                     Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
                 }
 
@@ -201,9 +201,7 @@ namespace Game.Player {
                                 ShowUiMessage("[X]: Accept Favour", other.tag);
                             }
                             else
-                            {
                                 favour = null;
-                            }
                         }                     
                         break;
                     //pillar entrance
@@ -320,7 +318,7 @@ namespace Game.Player {
                             if (dot < -0.4f) {
                                 // take offset from exact door position
                                 Vector3 offset = myPlayer.transform.position - other.transform.position;
-                                Transform destination = other.GetComponent<HomeBeacon>().destination;
+                                Transform destination = other.GetComponent<Beacon>().destination;
                                 Vector3 targetPoint = destination.position + destination.parent.TransformDirection(offset);
                                 // calculate new rotation
                                 Vector3 newForward = destination.parent.TransformDirection( myPlayer.transform.forward);
@@ -331,9 +329,14 @@ namespace Game.Player {
                             break;
                         }
                     // HomeBeacon
-                    case "HomeBeacon":
-                        homeBeacon = other.GetComponent<HomeBeacon>();
-                        if (homeBeacon.activated)
+                    case "Beacon":
+                        beacon = other.GetComponent<Beacon>();
+                        if (!beacon.isHomeBeacon)
+                        {
+                            beacon.Activate();
+                        }
+
+                        if (beacon.activated)
                             ShowUiMessage("[X]: Teleport", other.tag);
                         break;
                     // Trigger Activator
@@ -402,9 +405,8 @@ namespace Game.Player {
                         Utilities.EventManager.SendWindTunnelExitedEvent(this, new Utilities.EventManager.WindTunnelPartExitedEventArgs(other.GetComponent<WindTunnelPart>()));
                         break;
                     // HomeBeacon
-                    case "HomeBeacon":
-                        homeBeacon = null;
-
+                    case "Beacon":
+                        beacon = null;
                         HideUiMessage(other.tag);
                         break;
                     // Trigger Activator
