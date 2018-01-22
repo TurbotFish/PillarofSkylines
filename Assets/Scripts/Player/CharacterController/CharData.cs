@@ -54,6 +54,10 @@ namespace Game.Player.CharacterController
         [SerializeField]
         WallRunData wallRun = new WallRunData();
         public WallRunData WallRun { get { return wallRun; } }
+        
+        [SerializeField]
+        EchoBoostData echoBoost = new EchoBoostData();
+        public EchoBoostData EchoBoost { get { return echoBoost; } }
 
         #endregion inspector variables
 
@@ -121,10 +125,6 @@ namespace Game.Player.CharacterController
             float minWallAngle;
             public float MinWallAngle { get { return minWallAngle; } }
             
-            [SerializeField]
-            float echoBoostDuration;
-            public float EchoBoostDuration { get { return echoBoostDuration; } }
-
             public void OnValidate()
             {
                 stickDeadMaxVal = Mathf.Clamp01(stickDeadMaxVal);
@@ -135,7 +135,6 @@ namespace Game.Player.CharacterController
                 minSlopeAngle = Mathf.Clamp(minSlopeAngle, 0, 360);
                 maxSlopeAngle = Mathf.Clamp(maxSlopeAngle, 0, 360);
                 minWallAngle = Mathf.Clamp(minWallAngle, 0, 360);
-                echoBoostDuration = Mathf.Clamp(echoBoostDuration, 0, float.MaxValue);
             }
         }
 
@@ -499,6 +498,36 @@ namespace Game.Player.CharacterController
         }
 
         #endregion wall run
+
+        //*******************************************
+
+        #region echo boost
+
+        [System.Serializable]
+        public class EchoBoostData
+        {
+            [SerializeField]
+            float duration;
+            public float Duration { get { return duration; } }
+
+            [SerializeField]
+            float speedMultiplier;
+            public float SpeedMultiplier { get { return speedMultiplier; } }
+
+            [SerializeField]
+            float jumpMultiplier;
+            public float JumpMultiplier { get { return jumpMultiplier; } }
+
+            public void OnValidate()
+            {
+                duration = Mathf.Clamp(duration, 0, float.MaxValue);
+                speedMultiplier = Mathf.Clamp(speedMultiplier, 0, float.MaxValue);
+                jumpMultiplier = Mathf.Clamp(jumpMultiplier, 0, float.MaxValue);
+            }
+        }
+
+        #endregion echo boost
+
 
         //*******************************************
 

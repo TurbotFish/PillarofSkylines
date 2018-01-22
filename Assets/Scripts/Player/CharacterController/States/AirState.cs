@@ -186,7 +186,7 @@ namespace Game.Player.CharacterController.States
 
 			//first update for jump (initial force)
 			if (firstUpdate && (mode == eAirStateMode.jump || mode == eAirStateMode.aerialJump)) {
-				float jumpStrength = jumpData.Strength;
+				float jumpStrength = jumpData.Strength * stateMachine.jumpMultiplier;
 
 				if (mode == eAirStateMode.aerialJump) {
 					jumpStrength *= jumpData.AerialJumpCoeff;
