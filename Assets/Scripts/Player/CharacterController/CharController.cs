@@ -199,7 +199,9 @@ namespace Game.Player.CharacterController
                 inputInfo.leftStickToCamera = toCameraAngle * (rotator.right * stickH + rotator.forward * stickV);
 
                 var toSlopeAngle = Quaternion.AngleAxis(Vector3.Angle(transform.up, tempCollisionInfo.currentGroundNormal), Vector3.Cross(transform.up, tempCollisionInfo.currentGroundNormal));
-                inputInfo.leftStickToSlope = toSlopeAngle * inputInfo.leftStickToCamera;
+                inputInfo.leftStickToSlope = toSlopeAngle * (rotator.right * stickH + rotator.forward * stickV);
+                inputInfo.leftStickToSlope = toCameraAngle * inputInfo.leftStickToSlope;
+
 
                 inputInfo.dashButton = Input.GetButton("Dash");
                 inputInfo.dashButtonDown = Input.GetButtonDown("Dash");

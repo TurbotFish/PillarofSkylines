@@ -255,7 +255,6 @@ namespace Game.Player.CharacterController
 
 			if (collisions.below && !climbingStep)
             {
-
                 collisions.currentGroundNormal = hit.normal;
                 if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
                 {
