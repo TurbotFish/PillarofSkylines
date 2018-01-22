@@ -50,28 +50,37 @@ namespace Game.Player.CharacterController.States
 
         public StateReturnContainer Update(float dt)
         {
+
+            Vector3 input = charController.InputInfo.leftStickRaw;
+
             PlayerMovementInfo movementInfo = charController.MovementInfo;
 
             windTunnelPartList = charController.WindTunnelPartList;
 
+            var partUp = Vector3.zero;
             var wind = Vector3.zero;
+            float windAttraction = 0;
             if (windTunnelPartList.Count > 0)
             {
                 foreach (var windTunnelPart in windTunnelPartList)
                 {
-                    var partUp = windTunnelPart.MyTransform.up;
+                    partUp = windTunnelPart.MyTransform.up;
                     var partPos = windTunnelPart.MyTransform.position;
-
-                    wind += partUp * windTunnelPart.windStrength + Vector3.ProjectOnPlane(partPos - movementInfo.position, partUp) * windTunnelPart.tunnelAttraction;
-
+                    var center = (partPos + (charController.MyTransform.up * input.z + charController.MyTransform.right * input.x) 
+                        * windTunnelPart.windTunnelParent.colliderRadius.Evaluate(windTunnelPart.idInTunnel/windTunnelPartList.Count) * (windTunnelPart.windTunnelParent.transform.lossyScale.x + 1));
+                    wind += partUp * windTunnelPart.windStrength + Vector3.ProjectOnPlane(center - movementInfo.position, partUp) * windTunnelPart.tunnelAttraction;
+                    windAttraction += windTunnelPart.tunnelAttraction;
                 }
                 wind /= windTunnelPartList.Count;
+                windAttraction /= windTunnelPartList.Count;
             }
 
             var result = new StateReturnContainer
             {
                 CanTurnPlayer = false,
                 IgnoreGravity = true,
+
+                PlayerForward = partUp,
 
                 Acceleration = charController.TurnSpaceToLocal(wind),
                 TransitionSpeed = 7f

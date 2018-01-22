@@ -102,7 +102,7 @@ namespace Game.Player.CharacterController
 			belowLastFrame = collisions.below;
 			collisions.Reset();
 
-            //			print("---------------------------------new movement----------------------------------");
+
             playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
             collisions.initialVelocityOnThisFrame = velocity;
 
@@ -208,7 +208,7 @@ namespace Game.Player.CharacterController
 			if (Physics.CapsuleCast(myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier / 2) + OutOfWallDirection, myTransform.position + velocity + playerAngle * (center + capsuleHeightModifier / 2) + OutOfWallDirection
 				, radius, -OutOfWallDirection, out hit, radius + height, collisionMask))
             {
-				print("hit distance : " + hit.distance + "distance adj : " + (1-hit.distance)/2);
+				print("hit distance : " + hit.distance + "distance adj : " + (1-hit.distance));
                 myTransform.Translate(OutOfWallDirection * (1 - hit.distance)/2, Space.World);
                 result = ConfirmMovement(velocity);
             }
@@ -263,7 +263,6 @@ namespace Game.Player.CharacterController
                 }
 				if (hit.collider.CompareTag("SlipperySlope")) {
 					collisions.SlippySlope = true;
-                    Debug.Log("collision slope");
 				} else {
 					collisions.SlippySlope = false;
 				}

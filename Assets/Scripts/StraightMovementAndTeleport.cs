@@ -19,6 +19,7 @@ public class StraightMovementAndTeleport : MovingPlatform {
 		waiting = true;
 		currWaitTime = waitTime + initialWaitTime;
 		initialPosition = transform.position;
+        gameObject.tag = "MovingPlatform";
 	}
 
 	// Update is called once per frame
@@ -33,9 +34,10 @@ public class StraightMovementAndTeleport : MovingPlatform {
 		}
 		if (moving) {
 			transform.position += movement * 1 / timeMoving * Time.deltaTime;
-			if (currPlayer != null) {
-				currPlayer.AddExternalVelocity(movement * 1 / timeMoving * Time.deltaTime, true, false);
-			}
+
+            if (currPlayer != null) {
+				currPlayer.ImmediateMovement(movement * 1 / timeMoving * Time.deltaTime, true);
+            }
 			movementProgression += 1 / timeMoving * Time.deltaTime;
 
 			if (movementProgression >= 1f) {

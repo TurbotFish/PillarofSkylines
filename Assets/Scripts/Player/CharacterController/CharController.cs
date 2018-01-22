@@ -454,9 +454,9 @@ namespace Game.Player.CharacterController
 
         #region cancer
 
-        public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool framerateDependant)
+        public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool lerped)
         {
-            if (framerateDependant)
+            if (lerped)
             {
                 velocity += (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
             }
@@ -466,6 +466,11 @@ namespace Game.Player.CharacterController
             }
         }
 
+        public void ImmediateMovement(Vector3 newVelocity, bool worldSpace)
+        {
+            tempPhysicsHandler.Move((worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity));
+        }
+     
         public void SetVelocity(Vector3 newVelocity, bool worldSpace)
         {
             velocity = (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
