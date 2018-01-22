@@ -45,6 +45,10 @@ namespace Game.Player.CharacterController.Containers
         //keep vertical movement
         public bool keepVerticalMovement { get; set; }
 
+
+        //reset vertical velocity
+        public bool lockCamera { get; set; }
+
         //rotation
         float rotation;
         public bool RotationSet { get; private set; }

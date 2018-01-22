@@ -11,9 +11,13 @@ public class WindTunnelPart : MonoBehaviour {
 
     public Transform MyTransform { get; private set; }
 
+    [HideInInspector]
+    public WindTunnel windTunnelParent;
+
     void Start()
     {
         MyTransform = transform;
+        windTunnelParent = transform.parent.parent.GetComponent<WindTunnel>();
     }
 
     // Update is called once per frame
