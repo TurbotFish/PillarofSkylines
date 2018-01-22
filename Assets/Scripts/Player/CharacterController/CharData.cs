@@ -120,6 +120,10 @@ namespace Game.Player.CharacterController
             [SerializeField]
             float minWallAngle;
             public float MinWallAngle { get { return minWallAngle; } }
+            
+            [SerializeField]
+            float echoBoostDuration;
+            public float EchoBoostDuration { get { return echoBoostDuration; } }
 
             public void OnValidate()
             {
@@ -131,6 +135,7 @@ namespace Game.Player.CharacterController
                 minSlopeAngle = Mathf.Clamp(minSlopeAngle, 0, 360);
                 maxSlopeAngle = Mathf.Clamp(maxSlopeAngle, 0, 360);
                 minWallAngle = Mathf.Clamp(minWallAngle, 0, 360);
+                echoBoostDuration = Mathf.Clamp(echoBoostDuration, 0, float.MaxValue);
             }
         }
 

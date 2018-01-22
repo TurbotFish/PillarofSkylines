@@ -12,6 +12,8 @@ namespace Game.Player.CharacterController
         //CharController character;
         PlayerModel model;
 
+        CharController character;
+
         Dictionary<ePlayerState, StateCooldown> cooldownDict = new Dictionary<ePlayerState, StateCooldown>();
 
         Dictionary<ePlayerState, eAbilityType> stateToAbilityLinkDict = new Dictionary<ePlayerState, eAbilityType>();
@@ -28,8 +30,13 @@ namespace Game.Player.CharacterController
 
         public StateMachine(CharController character)
         {
-            //this.character = character;
+            this.character = character;
             model = character.PlayerModel;
+        }
+
+        void Start()
+        {
+            Utilities.EventManager.EchoDestroyedEvent += EchoDestroyedEventHandler;
         }
 
         //#############################################################################
@@ -114,6 +121,18 @@ namespace Game.Player.CharacterController
         public int CheckRemainingAerialJumps()
         {
             return remainingAerialJumps;
+        }
+
+        //#############################################################################
+
+        public void EchoDestroyedEventHandler(object sender)
+        {
+
+        }
+
+        public void StartEchoBoost()
+        {
+            //character.CharData.General.EchoBoostDuration;
         }
 
         //#############################################################################
