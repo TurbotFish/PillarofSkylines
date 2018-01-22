@@ -48,7 +48,7 @@ namespace Game.Player.CharacterController.States
             if (inputInfo.jumpButtonDown)
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
-                state.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
+                stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 				state.SetJumpDirection(collisionInfo.currentGroundNormal);
                 stateMachine.ChangeState(state);
             }

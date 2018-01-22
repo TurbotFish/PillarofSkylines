@@ -17,8 +17,12 @@ namespace Game.Player.CharacterController
         Dictionary<ePlayerState, eAbilityType> stateToAbilityLinkDict = new Dictionary<ePlayerState, eAbilityType>();
         //Dictionary<eAbilityType, ePlayerState> abilityToStateLinkDict = new Dictionary<eAbilityType, ePlayerState>();
 
+        int remainingAerialJumps;
+
         IState currentState;
         public ePlayerState CurrentState { get { return currentState.StateId; } }
+
+        
 
         //#############################################################################
 
@@ -98,6 +102,18 @@ namespace Game.Player.CharacterController
             currentState.Enter();
 
             return true;
+        }
+
+        //#############################################################################
+
+        public void SetRemainingAerialJumps(int jumps)
+        {
+            remainingAerialJumps = jumps;
+        }
+
+        public int CheckRemainingAerialJumps()
+        {
+            return remainingAerialJumps;
         }
 
         //#############################################################################

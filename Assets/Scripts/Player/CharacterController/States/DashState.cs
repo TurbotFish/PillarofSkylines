@@ -67,7 +67,7 @@ namespace Game.Player.CharacterController.States
             result.resetVerticalVelocity = true;
             if(timer <= 0)
             {
-                stateMachine.ChangeState(new StandState(charController, stateMachine));
+                stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
 
             return result;

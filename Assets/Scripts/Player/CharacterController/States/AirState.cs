@@ -62,13 +62,6 @@ namespace Game.Player.CharacterController.States
 
 		#region setters
 
-		public void SetRemainingAerialJumps(int jumps) {
-			if (!initializing) {
-				return;
-			}
-
-			remainingAerialJumps = jumps;
-		}
 
 		public void SetJumpTimer(float jumpTimer) {
 			if (!initializing) {
@@ -107,6 +100,7 @@ namespace Game.Player.CharacterController.States
 		public void Enter() {
 			Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
 
+            remainingAerialJumps = stateMachine.CheckRemainingAerialJumps();
 			initializing = false;
 			firstUpdate = true;
 
@@ -135,16 +129,14 @@ namespace Game.Player.CharacterController.States
 				//if the player is falling but may still jump normally
 				if (mode == eAirStateMode.fall && jumpTimer > 0) {
 					var state = new AirState(charController, stateMachine, eAirStateMode.jump);
-					state.SetRemainingAerialJumps(jumpData.MaxAerialJumps);
+					stateMachine.SetRemainingAerialJumps(remainingAerialJumps);
 
 					stateMachine.ChangeState(state);
 				}
                 //if the player is falling or is jumping again
-                else if (
-					mode == eAirStateMode.fall ||
-					(remainingAerialJumps > 0 && charController.PlayerModel.CheckAbilityActive(eAbilityType.DoubleJump))) {
+                else if (remainingAerialJumps > 0 && charController.PlayerModel.CheckAbilityActive(eAbilityType.DoubleJump)) {
 					var state = new AirState(charController, stateMachine, eAirStateMode.aerialJump);
-					state.SetRemainingAerialJumps(remainingAerialJumps - 1);
+					stateMachine.SetRemainingAerialJumps(remainingAerialJumps - 1);
 
 					stateMachine.ChangeState(state);
 				}
