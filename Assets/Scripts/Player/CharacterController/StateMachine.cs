@@ -128,8 +128,10 @@ namespace Game.Player.CharacterController
 
         public void EchoDestroyedEventHandler(object sender)
         {
-
-            StartEchoBoost(character.CharData.EchoBoost.Duration);
+            if (character.PlayerModel.CheckAbilityActive(eAbilityType.EchoBoost))
+            {
+                StartEchoBoost(character.CharData.EchoBoost.Duration);
+            }
         }
 
         public void StartEchoBoost(float timer)
