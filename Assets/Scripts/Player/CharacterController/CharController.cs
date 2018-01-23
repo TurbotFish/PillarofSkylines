@@ -319,7 +319,6 @@ namespace Game.Player.CharacterController
                 }
                 else
                 {
-
                     Vector3 to = Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), MyTransform.up);
                     float angle = Mathf.Lerp(0f, Vector3.SignedAngle(MyTransform.forward, to, MyTransform.up), CharData.General.TurnSpeed * Time.deltaTime);
 
@@ -365,7 +364,7 @@ namespace Game.Player.CharacterController
                 turn = 0;
             }
 
-
+            animator.SetFloat("Turn", turn);
             animator.SetBool("OnGround", tempCollisionInfo.below);
             animator.SetFloat("Speed", Vector3.ProjectOnPlane(velocity, Vector3.up).magnitude / animationRunSpeed);
             //animator.SetFloat("Turn", turn);

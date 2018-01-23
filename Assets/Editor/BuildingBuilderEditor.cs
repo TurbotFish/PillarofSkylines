@@ -13,9 +13,19 @@ public class BuildingBuilderEditor : Editor {
 
 		bb = target as BuildingBuilder;
 
-		if (GUILayout.Button("Update Building")) {
-			Undo.RecordObject(bb, "Update Building");
-			bb.UpdateBuilding ();
+		if (GUILayout.Button("Create Building")) {
+			Undo.RecordObject(bb, "Create Building");
+			bb.CreateBuilding ();
+			EditorUtility.SetDirty(bb);
+		}
+		if (GUILayout.Button("Clear Building")) {
+			Undo.RecordObject(bb, "Clear Building");
+			bb.ClearBuilding ();
+			EditorUtility.SetDirty(bb);
+		}
+		if (GUILayout.Button("Random Building")) {
+			Undo.RecordObject(bb, "Random Building");
+			bb.RandomBuilding ();
 			EditorUtility.SetDirty(bb);
 		}
 	}

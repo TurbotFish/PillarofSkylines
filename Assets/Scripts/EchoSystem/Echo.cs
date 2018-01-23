@@ -56,6 +56,7 @@ namespace Game.EchoSystem
             if (isActive) {
                 isActive = false;
                 echoManager.Break(this);
+                Utilities.EventManager.SendEchoDestroyedEvent(this);
             }
         }
 
