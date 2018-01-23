@@ -39,7 +39,7 @@ namespace Game.Player
         {
             this.pillarData = Resources.Load<World.PillarData>("ScriptableObjects/PillarData");
 
-            UnlockAbilityGroup(eAbilityGroup.GroupBlue_Default);
+            UnlockAbilityGroup(eAbilityGroup.Default);
 
             Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
         }
@@ -56,9 +56,9 @@ namespace Game.Player
             }
             else if (Input.GetKeyUp(KeyCode.F5))
             {
-                UnlockAbilityGroup(eAbilityGroup.GroupYellow_Pillar1);
-                UnlockAbilityGroup(eAbilityGroup.GroupOrange_Pillar2);
-                UnlockAbilityGroup(eAbilityGroup.GroupGreen_Pillar3);
+                UnlockAbilityGroup(eAbilityGroup.Pillar1);
+                UnlockAbilityGroup(eAbilityGroup.Pillar2);
+                UnlockAbilityGroup(eAbilityGroup.Pillar3);
             }
         }
 

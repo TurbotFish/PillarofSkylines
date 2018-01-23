@@ -11,9 +11,11 @@ namespace Game.World.Interaction
 
         #region varizables
 
+        [Header("Name")]
         [SerializeField]
         string favourId = Utilities.Generator.GenerateRandomString(16);
 
+        [Header("")]
         bool favourPickedUp = false;
         WorldController worldController;
         BoxCollider myCollider;

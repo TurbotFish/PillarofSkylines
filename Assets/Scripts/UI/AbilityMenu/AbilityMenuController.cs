@@ -8,7 +8,7 @@ namespace Game.UI.AbilityMenu
     {
         //##################################################################
 
-        const float CIRCLE_INTERVAL = 360f / 12f;
+        const float CIRCLE_INTERVAL = 360f / 8f;
 
         [Tooltip("If the total value of the 2 axes of the left stick is less than this value, no slot is selected.")]
         [SerializeField]
@@ -19,16 +19,19 @@ namespace Game.UI.AbilityMenu
         CenterView centerView;
 
         [SerializeField]
-        GroupView orangeGroup;
+        List<SlotView> abilityViews = new List<SlotView>();
 
-        [SerializeField]
-        GroupView yellowGroup;
+        //[SerializeField]
+        //GroupView orangeGroup;
 
-        [SerializeField]
-        GroupView blueGroup;
+        //[SerializeField]
+        //GroupView yellowGroup;
 
-        [SerializeField]
-        GroupView greenGroup;
+        //[SerializeField]
+        //GroupView blueGroup;
+
+        //[SerializeField]
+        //GroupView greenGroup;
 
         [Header("")]
         [SerializeField]
@@ -49,7 +52,7 @@ namespace Game.UI.AbilityMenu
 
         public bool IsActive { get; private set; }
 
-        List<SlotView> slotList = new List<SlotView>();
+        //List<SlotView> slotList = new List<SlotView>();
         int selectedSlotIndex = -1;
         SlotView SelectedSlot
         {
@@ -57,7 +60,7 @@ namespace Game.UI.AbilityMenu
             {
                 if (selectedSlotIndex == -1) { return null; }
 
-                return slotList[selectedSlotIndex];
+                return abilityViews[selectedSlotIndex];
             }
         }
 
@@ -70,14 +73,14 @@ namespace Game.UI.AbilityMenu
         {
             this.playerModel = playerModel;
 
-            slotList.AddRange(orangeGroup.Slots);
-            slotList.AddRange(yellowGroup.Slots);
-            slotList.AddRange(blueGroup.Slots);
-            slotList.AddRange(greenGroup.Slots);
+            //slotList.AddRange(orangeGroup.Slots);
+            //slotList.AddRange(yellowGroup.Slots);
+            //slotList.AddRange(blueGroup.Slots);
+            //slotList.AddRange(greenGroup.Slots);
 
-            for (int i = 0; i < slotList.Count; i++)
+            for (int i = 0; i < abilityViews.Count; i++)
             {
-                slotList[i].Initialize(playerModel, this, playerModel.AbilityData.AbilitySlots[i]);
+                abilityViews[i].Initialize(playerModel, this);
             }
 
             centerView.Initialize(playerModel, this);
@@ -187,36 +190,30 @@ namespace Game.UI.AbilityMenu
 
         public void OnPointerEnterSlot(SlotView slot)
         {
-            //Debug.Log("aaa");
-            int slotIndex = slotList.IndexOf(slot);
+            int slotIndex = abilityViews.IndexOf(slot);
 
             if (slotIndex != selectedSlotIndex)
             {
-                //Debug.Log("aaa ok");
                 SetSelectedSlot(slotIndex);
             }
         }
 
         public void OnPointerExitSlot(SlotView slot)
         {
-            //Debug.Log("bbb");
-            int slotIndex = slotList.IndexOf(slot);
+            int slotIndex = abilityViews.IndexOf(slot);
 
             if (slotIndex == selectedSlotIndex)
             {
-                //Debug.Log("bbb ok");
                 SetSelectedSlot(-1);
             }
         }
 
         public void OnPointerClickSlot(SlotView slot)
         {
-            //Debug.Log("ccc");
-            int slotIndex = slotList.IndexOf(slot);
+            int slotIndex = abilityViews.IndexOf(slot);
 
             if (slotIndex == selectedSlotIndex)
             {
-                //Debug.Log("ccc ok");
                 ActivateSelectedAbility();
             }
         }
@@ -229,15 +226,15 @@ namespace Game.UI.AbilityMenu
 
             selectedSlotIndex = slotIndex;
 
-            for (int i = 0; i < slotList.Count; i++)
+            for (int i = 0; i < abilityViews.Count; i++)
             {
                 if (i == selectedSlotIndex)
                 {
-                    slotList[i].SetSelected(true);
+                    abilityViews[i].SetSelected(true);
                 }
                 else
                 {
-                    slotList[i].SetSelected(false);
+                    abilityViews[i].SetSelected(false);
                 }
             }
 
@@ -269,5 +266,7 @@ namespace Game.UI.AbilityMenu
                 playerModel.ActivateAbility(SelectedSlot.AbilityType);
             }
         }
+
+        //##################################################################
     }
 } //end of namespace

@@ -6,9 +6,9 @@ namespace Game.Player
 {
     public enum eAbilityGroup
     {
-        GroupBlue_Default,
-        GroupYellow_Pillar1,
-        GroupOrange_Pillar2,
-        GroupGreen_Pillar3
+        Default,
+        Pillar1,
+        Pillar2,
+        Pillar3
     }
 } //end of namespace
