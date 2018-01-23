@@ -106,6 +106,7 @@ public class PoS_Camera : MonoBehaviour {
     ePlayerState playerState;
 
     float deltaTime;
+    float startFov;
 
     float yaw, pitch, targetYaw, targetPitch, manualPitch;
 	float maxDistance, currentDistance, idealDistance, additionalDistance;
@@ -132,13 +133,14 @@ public class PoS_Camera : MonoBehaviour {
 		Cursor.lockState = CursorLockMode.Locked;
 
         my = transform;
-		player = target.GetComponentInParent<CharController>();
+        eclipseFX = GetComponent<Eclipse>();
+        player = target.GetComponentInParent<CharController>();
 		controller = player.GetComponent<CharacControllerRecu>();
         
 		currentDistance = zoomValue = idealDistance = distance;
 		maxDistance = canZoom ? zoomDistance.max : distance;
 
-        eclipseFX = GetComponent<Eclipse>();
+        startFov = camera.fieldOfView;
 
 		manualPitch = defaultPitch;
 		state = eCameraState.Default;
@@ -161,7 +163,10 @@ public class PoS_Camera : MonoBehaviour {
 	void LateUpdate() {
 		deltaTime = Time.deltaTime;
         
-		GetInputsAndStates();
+        if (camera.fieldOfView != startFov && state != eCameraState.HomeDoor)
+            camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, startFov, 4 * deltaTime); // Change FOV
+
+        GetInputsAndStates();
 		DoRotation();
 		EvaluatePosition();
 		SmoothMovement();
@@ -285,7 +290,7 @@ public class PoS_Camera : MonoBehaviour {
 		float distanceFromAngle = Mathf.Lerp(0, 1, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
 		idealDistance = 1 + zoomValue * distanceFromAngle + additionalDistance;
 
-		camera.fieldOfView = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
+		//camera.fieldOfView = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
 
 		if (canZoom) Zoom(Input.GetAxis("Mouse ScrollWheel"));
 
@@ -403,20 +408,27 @@ public class PoS_Camera : MonoBehaviour {
         }
         
 		if (Input.GetButton("ResetCamera")) {
-			manualPitch = defaultPitch;
-			AllowAutoReset(true);
+            ResetCamera(slopeValue);
+        }
+    }
 
-			facingTime = -1;
-            state = eCameraState.Resetting;
+    void ResetCamera(float slopeValue = 0) {
+        manualPitch = defaultPitch;
+        AllowAutoReset(true);
 
-            // dans les airs, la caméra pointe vers le bas
-            if (playerState == ePlayerState.air) { // on n'utilise pas isGrounded ici car cet état est spécifique au fait de tomber
-                resetType = eResetType.ManualAir;
-                SetTargetRotation(pitchRotationLimit.max, GetYawBehindPlayer(), resetDamp);
-            } else { // sinon, elle se met derrière le joueur
-                resetType = eResetType.ManualGround;
-                SetTargetRotation(defaultPitch + slopeValue, GetYawBehindPlayer(), resetDamp);
-            }
+        facingTime = -1;
+        state = eCameraState.Resetting;
+
+        // dans les airs, la caméra pointe vers le bas
+        if (playerState == ePlayerState.air)
+        { // on n'utilise pas isGrounded ici car cet état est spécifique au fait de tomber
+            resetType = eResetType.ManualAir;
+            SetTargetRotation(pitchRotationLimit.max, GetYawBehindPlayer(), resetDamp);
+        }
+        else
+        { // sinon, elle se met derrière le joueur
+            resetType = eResetType.ManualGround;
+            SetTargetRotation(defaultPitch + slopeValue, GetYawBehindPlayer(), resetDamp);
         }
     }
 
@@ -722,11 +734,17 @@ public class PoS_Camera : MonoBehaviour {
 
     #region Home Door
 
+    [Header("Home Door")]
+    [SerializeField] float homeDoorMaxZoom = 10;
+    [SerializeField] float homeDoorFov = 40;
+
+    float lastFrameZoomSign;
     Vector3 homeDoorPosition, homeDoorForward, homePosition;
-    float homeDoorMaxZoom = 10, homeDoorFov = 70, lastFrameZoomSign;
     bool dontSmoothNextFrame;
 
-    public void LookAtHomeDoor(Vector3 doorPosition, Vector3 doorForward, Vector3 homePosition) {
+    public void LookAtHomeDoor(Vector3 doorPosition, Vector3 doorForward, Vector3 homePosition)
+    {
+        AllowAutoReset(true, true);
         state = eCameraState.HomeDoor;
         homeDoorPosition = doorPosition;
         homeDoorForward = doorForward;
@@ -736,6 +754,10 @@ public class PoS_Camera : MonoBehaviour {
 
     public void StopLookingAtHomeDoor() {
         state = eCameraState.Default;
+
+        ResetCamera(); // Reset the camera, ignoring any previous value
+        yaw = targetYaw;
+        pitch = targetPitch;
     }
 
     void HomeDoorState() {
@@ -747,9 +769,7 @@ public class PoS_Camera : MonoBehaviour {
 
         bool playerPassedPortal = (playerPos - homeDoorPosition).sqrMagnitude > (playerPos - homePosition).sqrMagnitude;
         Vector3 forward = playerPassedPortal ? Vector3.forward : homeDoorForward;
-
         Vector3 projected = Vector3.Project((playerPassedPortal ? homePosition : homeDoorPosition) - playerPos, forward);
-
         float playerPosValue = 2 * projected.magnitude / homeDoorMaxZoom;
         
         if (playerPassedPortal || (!playerPassedPortal && (my.position - playerPos).sqrMagnitude > (my.position - homeDoorPosition).sqrMagnitude))
