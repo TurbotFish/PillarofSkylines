@@ -9,7 +9,7 @@ namespace Game.Player.CharacterController
     {
         //#############################################################################
 
-        //CharController character;
+        CharController character;
         PlayerModel model;
 
         Dictionary<ePlayerState, StateCooldown> cooldownDict = new Dictionary<ePlayerState, StateCooldown>();
@@ -22,16 +22,24 @@ namespace Game.Player.CharacterController
         IState currentState;
         public ePlayerState CurrentState { get { return currentState.StateId; } }
 
-        
+        //Multipliers
+        [HideInInspector]
+        public float speedMultiplier = 1;
+        [HideInInspector]
+        public float jumpMultiplier = 1;
+        float boostTimer;
+
 
         //#############################################################################
 
         public StateMachine(CharController character)
         {
-            //this.character = character;
+            this.character = character;
             model = character.PlayerModel;
-        }
 
+            Utilities.EventManager.EchoDestroyedEvent += EchoDestroyedEventHandler;
+        }
+        
         //#############################################################################
 
         public void RegisterAbility(ePlayerState stateId, eAbilityType abilityType)
@@ -118,6 +126,28 @@ namespace Game.Player.CharacterController
 
         //#############################################################################
 
+        public void EchoDestroyedEventHandler(object sender)
+        {
+
+            StartEchoBoost(character.CharData.EchoBoost.Duration);
+        }
+
+        public void StartEchoBoost(float timer)
+        {
+            boostTimer = timer;
+            jumpMultiplier = character.CharData.EchoBoost.JumpMultiplier;
+            speedMultiplier = character.CharData.EchoBoost.SpeedMultiplier;
+        }
+
+        public void EndEchoBoost()
+        {
+            boostTimer = 0;
+            jumpMultiplier = 1;
+            speedMultiplier = 1;
+        }
+
+        //#############################################################################
+
         public StateReturnContainer Update(float dt)
         {
             //updating the state cooldowns
@@ -131,6 +161,13 @@ namespace Game.Player.CharacterController
                 {
                     cooldownDict.Remove(cooldown.StateId);
                 }
+            }
+
+            boostTimer -= dt;
+
+            if (boostTimer < 0)
+            {
+                EndEchoBoost();
             }
 
             if (GuiFollowText.Instance != null)

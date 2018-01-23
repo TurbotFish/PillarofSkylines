@@ -424,6 +424,18 @@ namespace Game.Utilities
 
         //***********************************************************
 
+
+        public delegate void EchoDestroyedEventHandler(object sender);
+
+        public static event EchoDestroyedEventHandler EchoDestroyedEvent;
+
+        public static void SendEchoDestroyedEvent(object sender)
+        {
+            EchoDestroyedEvent?.Invoke(sender);
+        }
+
+        //***********************************************************
+
         #region wind tunnel events
 
         public class WindTunnelPartEnteredEventArgs: EventArgs
