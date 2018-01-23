@@ -39,6 +39,8 @@ public class LoadJPP : MonoBehaviour {
 	{
 		yield return new WaitForSecondsRealtime (t);
 		mainCam = Camera.main;
-		worldController.InitializeWorldController(mainCam.transform, mainCam.transform);
+
+        Debug.LogError("Not working anymore! Patrick");
+		//worldController.InitializeWorldController(mainCam.transform, mainCam.transform);
 	}
 }

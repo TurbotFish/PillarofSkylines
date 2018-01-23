@@ -31,6 +31,7 @@ namespace Game.Player
 
         //
         List<World.ePillarId> destoyedPillars = new List<World.ePillarId>();
+        List<string> pickedUpFavours = new List<string>();
 
         //###########################################################
 
@@ -39,6 +40,8 @@ namespace Game.Player
             this.pillarData = Resources.Load<World.PillarData>("ScriptableObjects/PillarData");
 
             UnlockAbilityGroup(eAbilityGroup.GroupBlue_Default);
+
+            Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
         }
 
         //###########################################################
@@ -334,6 +337,29 @@ namespace Game.Player
 
         //###########################################################
 
+        #region favours
+
+        void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
+        {
+            if (pickedUpFavours.Contains(args.FavourId))
+            {
+                Debug.LogWarning("Favour already picked up!");
+            }
+            else
+            {
+                pickedUpFavours.Add(args.FavourId);
+            }
+        }
+
+        public bool IsFavourPickedUp(string favourId)
+        {
+            return pickedUpFavours.Contains(favourId);
+        }
+
+        #endregion favours
+
+        //###########################################################
+
         public eAbilityState GetAbilityState(eAbilityType abilityType)
         {
             var ability = abilityData.GetAbility(abilityType);
@@ -377,6 +403,10 @@ namespace Game.Player
                 }
             }
         }
+
+
+
+
 
         //###########################################################
     }
