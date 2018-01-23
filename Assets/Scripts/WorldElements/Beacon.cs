@@ -17,7 +17,8 @@ public class Beacon : MonoBehaviour {
 
     private void Awake()
     {
-        destination = otherBeacon.teleportPoint;
+        if (otherBeacon != null)
+            destination = otherBeacon.teleportPoint;
     }
 
     public void Activate()
