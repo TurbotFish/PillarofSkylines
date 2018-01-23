@@ -256,7 +256,7 @@ namespace Game.Player {
 						break;
                     //echo
                     case "Echo":
-                        other.GetComponent<EchoSystem.Echo>().Break();
+                        other.GetComponent<EchoSystem.Echo>().Break(true);
                         break;
                     //echo breaker
                     case "EchoBreaker":

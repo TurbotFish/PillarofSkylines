@@ -140,6 +140,7 @@ namespace Game.EchoSystem
                 var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, targetEcho.MyTransform.rotation, false);
                 Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
 
+                Utilities.EventManager.SendEchoDestroyedEvent(this);
                 Break(targetEcho);
             }
         }
