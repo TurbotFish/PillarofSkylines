@@ -257,7 +257,6 @@ namespace Game.Player {
                     //echo
                     case "Echo":
                         other.GetComponent<EchoSystem.Echo>().Break();
-                        Utilities.EventManager.SendEchoDestroyedEvent(this);
                         break;
                     //echo breaker
                     case "EchoBreaker":

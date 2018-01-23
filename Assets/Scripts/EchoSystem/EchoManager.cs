@@ -17,6 +17,10 @@ namespace Game.EchoSystem
         [SerializeField, Tooltip("Only for GameControllerLite")] Transform homePoint;
         [SerializeField] float timeToHoldForDoor = 1.5f;
 
+		[Header("ShellFX")]
+		[SerializeField] GameObject shell;
+		Animator playerAnimator;
+
         /// <summary>
         /// Number of echoes placed by the player.
         /// </summary>
@@ -55,6 +59,8 @@ namespace Game.EchoSystem
             homeDoor = Instantiate(homeDoor);
             homeDoor.GetComponentInChildren<HomePortalCamera>().anchorPoint = homePoint;
             homeDoor.SetActive(false);
+
+			playerAnimator = gameController.PlayerController.CharController.animator;
 
             Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
@@ -124,6 +130,8 @@ namespace Game.EchoSystem
 
         void Drift() {
             if (echoList.Count > 0) {
+				CreateShell ();
+
                 echoCamera.SetFov(70, 0.15f, true);
 
                 int lastIndex = echoList.Count - 1;
@@ -189,6 +197,18 @@ namespace Game.EchoSystem
             for (int i = 0; i < echoList.Count; i++)
                 echoList[i].Unfreeze();
         }
+
+		void CreateShell()
+		{
+			GameObject _shell;
+			_shell = Instantiate (shell, playerTransform.position - new Vector3 (0,-0.2f,0), playerTransform.rotation) as GameObject;
+			//_shell.GetComponent<Animator> ().runtimeAnimatorController = playerAnimator.runtimeAnimatorController;
+			Animator _anim = _shell.GetComponent<Animator> ();
+			_anim.Play ("Start Run", 0, 0.5f);
+			_anim.SetFloat ("Speed", 1);
+			_anim.speed = 0;
+		}
+
 
         #endregion private methods
 
