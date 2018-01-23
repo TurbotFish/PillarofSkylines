@@ -9,12 +9,10 @@ namespace Game.World.ChunkSystem
         //##################################################################
 
         [SerializeField]
-        Vector3 worldSize;
-        public Vector3 WorldSize { get { return this.worldSize; } }
+        Vector3 worldSize;      
 
         [SerializeField]
-        Bool3 repeatAxes;
-        public Bool3 RepeatAxes { get { return this.repeatAxes; } }
+        Bool3 repeatAxes;      
 
         [SerializeField]
         int numberOfRepetitions;
@@ -23,6 +21,7 @@ namespace Game.World.ChunkSystem
 
         public ChunkSystemData ChunkSystemData { get; private set; }
 
+        GameControl.IGameControllerBase gameController;
         Transform playerTransform;
         Transform cameraTransform;
 
@@ -41,14 +40,22 @@ namespace Game.World.ChunkSystem
 
         //##################################################################
 
+        public Vector3 WorldSize { get { return worldSize; } }
+        public Bool3 RepeatAxes { get { return repeatAxes; } }
+
+        public GameControl.IGameControllerBase GameController { get { return gameController; } }
+
+        //##################################################################
+
         #region initialization
 
-        public void InitializeWorldController(Transform playerTransform, Transform cameraTransform)
+        public void InitializeWorldController(GameControl.IGameControllerBase gameController)
         {
             isInitialized = true;
 
-            this.playerTransform = playerTransform;
-            this.cameraTransform = cameraTransform;
+            this.gameController = gameController;
+            this.playerTransform = gameController.PlayerController.PlayerTransform;
+            this.cameraTransform = gameController.CameraController.transform;
 
             ChunkSystemData = Resources.Load<ChunkSystemData>("ScriptableObjects/ChunkSystemData");
 
@@ -209,6 +216,11 @@ namespace Game.World.ChunkSystem
             }
         }
 
+        public void UnregisterFavour(Interaction.Favour favour)
+        {
+            favourList.Remove(favour);
+        }
+
         public Interaction.Favour FindNearestFavour(Vector3 position)
         {
             if (favourList.Count == 0)
@@ -245,7 +257,7 @@ namespace Game.World.ChunkSystem
             var favoursToRemove = new List<Interaction.Favour>();
             foreach (var favour in favourList)
             {
-                if (favour.InstanceId == args.FavourId)
+                if (favour.FavourId == args.FavourId)
                 {
                     favoursToRemove.Add(favour);
                 }
@@ -279,7 +291,8 @@ namespace Game.World.ChunkSystem
             //    Gizmos.DrawCube(this.playerTransform.position, new Vector3(size, size, size));
             //}
 
-            if (drawGizmo && Application.isEditor) {
+            if (drawGizmo && Application.isEditor)
+            {
                 Gizmos.color = gizmoColor;
                 //Gizmos.DrawCube(transform.position, worldSize);
                 Gizmos.DrawWireCube(transform.position, worldSize);
