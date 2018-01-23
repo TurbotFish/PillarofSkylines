@@ -45,16 +45,20 @@ namespace Game.EchoSystem
 
         void OnTriggerEnter(Collider col) {
             if (!col.isTrigger)
-                Break(); // Si un truc rentre dans un écho, il est détruit
+                Break(col.tag == "Player"); // Si un truc rentre dans un écho, il est détruit
         }
 
         #endregion collision stuff
 
         //##################################################################
 
-        public void Break() {
+        public void Break(bool byPlayer = false) {
+            print("helo");
             if (isActive) {
                 isActive = false;
+                print("brek the echo");
+                if (byPlayer)
+                    Utilities.EventManager.SendEchoDestroyedEvent(this);
                 echoManager.Break(this);
             }
         }
