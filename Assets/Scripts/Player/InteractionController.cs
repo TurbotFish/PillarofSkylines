@@ -347,6 +347,10 @@ namespace Game.Player {
                     case "TutoBox":
                         ShowUiMessage(other.GetComponent<UI.TutoBox>().message, other.tag);
                         break;
+                    // Home
+                    case "Home":
+                        echoManager.atHome = true;
+                        break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
@@ -416,6 +420,10 @@ namespace Game.Player {
                     // Tutorial Message
                     case "TutoBox":
                         HideUiMessage(other.tag);
+                        break;
+                    // Home
+                    case "Home":
+                        echoManager.atHome = false;
                         break;
                     //other
                     default:
