@@ -59,6 +59,10 @@ namespace Game.Player.CharacterController
         EchoBoostData echoBoost = new EchoBoostData();
         public EchoBoostData EchoBoost { get { return echoBoost; } }
 
+        [SerializeField]
+        HoverData hover = new HoverData();
+        public HoverData Hover { get { return hover; } }
+
         #endregion inspector variables
 
         //#############################################################################
@@ -533,6 +537,24 @@ namespace Game.Player.CharacterController
 
         #endregion echo boost
 
+        //*******************************************
+
+        #region hover
+
+        [System.Serializable]
+        public class HoverData
+        {
+            [SerializeField]
+            float duration;
+            public float Duration { get { return duration; } }
+
+            public void OnValidate()
+            {
+                duration = Mathf.Clamp(duration, 0, float.MaxValue);
+            }
+        }
+
+        #endregion hover
 
         //*******************************************
 

@@ -253,7 +253,16 @@ namespace Game.Player.CharacterController
             //Send casts to check if there's stuff around the player and set bools depending on the results
             collisions.below = Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask) || climbingStep;
 
-			if (collisions.below && !climbingStep)
+            if (Physics.Raycast(myTransform.position, (hit.point - myTransform.position), out hit2, (hit.point - myTransform.position).magnitude * 1.2f, collisionMask))
+            {
+                Debug.Log("sphere normal : " + collisions.currentGroundNormal + " ray normal : " + hit2.normal);
+                if (collisions.currentGroundNormal != hit2.normal)
+                {
+                    collisions.cornerNormal = true;
+                }
+            }
+
+            if (collisions.below && !climbingStep)
             {
                 collisions.currentGroundNormal = hit.normal;
                 if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
@@ -495,6 +504,7 @@ namespace Game.Player.CharacterController
             public bool above, below;
             public bool side, SlippySlope;
 
+            public bool cornerNormal;
             public float stepHeight;
 
             public Vector3 initialVelocityOnThisFrame;
@@ -509,7 +519,7 @@ namespace Game.Player.CharacterController
                 if (!below)
                     currentGroundNormal = Vector3.zero;
                 above = below = false;
-                side = SlippySlope = false;
+                side = SlippySlope = cornerNormal = false;
                 currentWallNormal = Vector3.zero;
                 currentWallHit= new RaycastHit();
             }

@@ -53,10 +53,8 @@ namespace Game.EchoSystem
         //##################################################################
 
         public void Break(bool byPlayer = false) {
-            print("helo");
             if (isActive) {
                 isActive = false;
-                print("brek the echo");
                 if (byPlayer)
                     Utilities.EventManager.SendEchoDestroyedEvent(this);
                 echoManager.Break(this);
