@@ -50,11 +50,16 @@ public class LocalTrailRenderer : MonoBehaviour {
 	}
 
 	void LateUpdate () {
-		_transform.position = target.position;
-		for (int i = 0; i < vertices - 1; i++) {
-			SetPosition(i, positions[i + 1]);
-		}
-		SetPosition(vertices - 1, _transform.localPosition);
+        if (target != null)
+        {
+            _transform.position = target.position;
+
+            for (int i = 0; i < vertices - 1; i++)
+            {
+                SetPosition(i, positions[i + 1]);
+            }
+            SetPosition(vertices - 1, _transform.localPosition);
+        }
 	}
 
 	void OnDestroy() {

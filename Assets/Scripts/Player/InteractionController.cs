@@ -65,20 +65,20 @@ namespace Game.Player {
             if (!isActive)
                 return;
 
-            if (Input.GetButton("Interact") && !isInteractButtonDown)
+            if (Input.GetButtonDown("Interact") && !isInteractButtonDown)
             {
                 isInteractButtonDown = true;
 
                 //favour
                 if (favourPickUpInRange)
                 {
-                    if (!favour.FavourPickedUp)
+                    if (!playerModel.IsFavourPickedUp(favour.FavourId))
                     {
                         //pick up favour
                         playerModel.ChangeFavourAmount(1);
                         
                         //send event
-                        Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(favour.InstanceId));
+                        Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(favour.FavourId));
                     }
 
                     //clean up
@@ -194,7 +194,7 @@ namespace Game.Player {
                         {
                             favour = other.GetComponent<World.Interaction.Favour>();
 
-                            if (!favour.FavourPickedUp)
+                            if (!playerModel.IsFavourPickedUp(favour.FavourId))
                             {
                                 favourPickUpInRange = true;
 
@@ -256,7 +256,7 @@ namespace Game.Player {
 						break;
                     //echo
                     case "Echo":
-                        other.GetComponent<EchoSystem.Echo>().Break();
+                        other.GetComponent<EchoSystem.Echo>().Break(true);
                         break;
                     //echo breaker
                     case "EchoBreaker":

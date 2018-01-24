@@ -128,11 +128,13 @@ namespace Game.Player.CharacterController
 
         public void EchoDestroyedEventHandler(object sender)
         {
-
-            StartEchoBoost(character.CharData.EchoBoost.Duration);
+            if (character.PlayerModel.CheckAbilityActive(eAbilityType.EchoBoost))
+            {
+                StartEchoBoost(character.CharData.EchoBoost.Duration, character.CharData.EchoBoost.LerpSpeed);
+            }
         }
 
-        public void StartEchoBoost(float timer)
+        public void StartEchoBoost(float timer, float lerpTimer)
         {
             boostTimer = timer;
             jumpMultiplier = character.CharData.EchoBoost.JumpMultiplier;
@@ -163,11 +165,13 @@ namespace Game.Player.CharacterController
                 }
             }
 
-            boostTimer -= dt;
 
             if (boostTimer < 0)
             {
                 EndEchoBoost();
+            } else
+            {
+                boostTimer -= dt;
             }
 
             if (GuiFollowText.Instance != null)

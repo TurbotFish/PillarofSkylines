@@ -51,7 +51,7 @@ namespace Game.Player.CharacterController.States
         public StateReturnContainer Update(float dt)
         {
 
-            Vector3 input = charController.InputInfo.leftStickRaw;
+            PlayerInputInfo inputInfo = charController.InputInfo;
 
             PlayerMovementInfo movementInfo = charController.MovementInfo;
 
@@ -59,20 +59,18 @@ namespace Game.Player.CharacterController.States
 
             var partUp = Vector3.zero;
             var wind = Vector3.zero;
-            float windAttraction = 0;
             if (windTunnelPartList.Count > 0)
             {
                 foreach (var windTunnelPart in windTunnelPartList)
                 {
                     partUp = windTunnelPart.MyTransform.up;
                     var partPos = windTunnelPart.MyTransform.position;
-                    var center = (partPos + (charController.MyTransform.up * input.z + charController.MyTransform.right * input.x) 
-                        * windTunnelPart.windTunnelParent.colliderRadius.Evaluate(windTunnelPart.idInTunnel/windTunnelPartList.Count) * (windTunnelPart.windTunnelParent.transform.lossyScale.x + 1));
-                    wind += partUp * windTunnelPart.windStrength + Vector3.ProjectOnPlane(center - movementInfo.position, partUp) * windTunnelPart.tunnelAttraction;
-                    windAttraction += windTunnelPart.tunnelAttraction;
+                    wind = partUp * windTunnelPart.windStrength + (inputInfo.leftStickAtZero ? Vector3.ProjectOnPlane(partPos - movementInfo.position, partUp) * windTunnelPart.tunnelAttraction 
+                        : (charController.myCamera.right * inputInfo.leftStickRaw.x + charController.myCamera.forward
+                        * inputInfo.leftStickRaw.z)*10);
+                    Debug.Log("velocity added : " + (charController.myCamera.right * inputInfo.leftStickRaw.x + charController.myCamera.forward * inputInfo.leftStickRaw.z) * 10);
                 }
                 wind /= windTunnelPartList.Count;
-                windAttraction /= windTunnelPartList.Count;
             }
 
             var result = new StateReturnContainer

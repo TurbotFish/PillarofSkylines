@@ -15,6 +15,8 @@ namespace Game.Player.CharacterController
         /// </summary>
         [SerializeField]
         Transform rotator;
+        [SerializeField]
+        public Transform myCamera;
 
         //#############################################################################
 
@@ -99,6 +101,8 @@ namespace Game.Player.CharacterController
         {
             tempPhysicsHandler = GetComponent<CharacControllerRecu>();
             animator = GetComponentInChildren<Animator>();
+            myCamera = FindObjectOfType<PoS_Camera>().transform;
+
 
             PlayerModel = gameController.PlayerModel;
             CharData = Resources.Load<CharData>("ScriptableObjects/CharData");

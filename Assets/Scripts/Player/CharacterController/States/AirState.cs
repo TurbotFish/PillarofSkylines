@@ -210,13 +210,13 @@ namespace Game.Player.CharacterController.States
 			}
             //jumping
             else if (mode == eAirStateMode.jump || mode == eAirStateMode.aerialJump) {
-				float minJumpStrength = jumpData.MinStrength;
+				float minJumpStrength = jumpData.MinStrength * stateMachine.jumpMultiplier;
 
 				if (mode == eAirStateMode.aerialJump) {
-					minJumpStrength *= jumpData.AerialJumpCoeff;
+					minJumpStrength *= jumpData.AerialJumpCoeff * stateMachine.jumpMultiplier;
 				}
 
-				result.Acceleration = hasAirControl ? inputInfo.leftStickToCamera * jumpData.Speed : Vector3.zero;
+				result.Acceleration = hasAirControl ? inputInfo.leftStickToCamera * jumpData.Speed * stateMachine.speedMultiplier : Vector3.zero;
 
 				if (!inputInfo.jumpButton && movementInfo.velocity.y > minJumpStrength) {
 					charController.SetVelocity(new Vector3(movementInfo.velocity.x, minJumpStrength, movementInfo.velocity.z), false);

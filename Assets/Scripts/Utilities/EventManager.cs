@@ -403,9 +403,9 @@ namespace Game.Utilities
 
         public class FavourPickedUpEventArgs : EventArgs
         {
-            public int FavourId { get; private set; }
+            public string FavourId { get; private set; }
 
-            public FavourPickedUpEventArgs(int favourId)
+            public FavourPickedUpEventArgs(string favourId)
             {
                 FavourId = favourId;
             }

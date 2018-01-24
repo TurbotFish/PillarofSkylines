@@ -18,7 +18,7 @@ namespace Game.World.Interaction
 
         void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
         {
-            if (args.FavourId == favour.InstanceId)
+            if (favour && args.FavourId == favour.FavourId)
             {
                 rend.sharedMaterial = matWhenActive;
             }
