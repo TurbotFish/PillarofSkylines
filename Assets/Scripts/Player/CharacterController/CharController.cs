@@ -369,7 +369,7 @@ namespace Game.Player.CharacterController
             }
 
             animator.SetFloat("Turn", turn);
-            animator.SetBool("OnGround", tempCollisionInfo.below);
+            animator.SetBool("OnGround", tempCollisionInfo.below || stateMachine.CurrentState == ePlayerState.hover);
             animator.SetFloat("Speed", Vector3.ProjectOnPlane(velocity, Vector3.up).magnitude / animationRunSpeed);
             //animator.SetFloat("Turn", turn);
             animator.SetFloat("VerticalSpeed", velocity.y / animationJumpSpeed);
