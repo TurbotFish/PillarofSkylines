@@ -119,6 +119,7 @@ namespace Game.Player.CharacterController
             stateMachine.RegisterAbility(ePlayerState.wallDrift, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallClimb, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
+            stateMachine.RegisterAbility(ePlayerState.hover, eAbilityType.Hover);
 
             stateMachine.ChangeState(new AirState(this, stateMachine, AirState.eAirStateMode.fall));
 
