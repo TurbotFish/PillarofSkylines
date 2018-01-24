@@ -59,6 +59,10 @@ namespace Game.Player.CharacterController
         EchoBoostData echoBoost = new EchoBoostData();
         public EchoBoostData EchoBoost { get { return echoBoost; } }
 
+        [SerializeField]
+        HoverData hover = new HoverData();
+        public HoverData Hover { get { return hover; } }
+
         #endregion inspector variables
 
         //#############################################################################
@@ -511,6 +515,10 @@ namespace Game.Player.CharacterController
             public float Duration { get { return duration; } }
 
             [SerializeField]
+            float lerpSpeed;
+            public float LerpSpeed { get { return lerpSpeed; } }
+
+            [SerializeField]
             float speedMultiplier;
             public float SpeedMultiplier { get { return speedMultiplier; } }
 
@@ -521,6 +529,7 @@ namespace Game.Player.CharacterController
             public void OnValidate()
             {
                 duration = Mathf.Clamp(duration, 0, float.MaxValue);
+                lerpSpeed = Mathf.Clamp(lerpSpeed, 0, float.MaxValue);
                 speedMultiplier = Mathf.Clamp(speedMultiplier, 0, float.MaxValue);
                 jumpMultiplier = Mathf.Clamp(jumpMultiplier, 0, float.MaxValue);
             }
@@ -528,6 +537,24 @@ namespace Game.Player.CharacterController
 
         #endregion echo boost
 
+        //*******************************************
+
+        #region hover
+
+        [System.Serializable]
+        public class HoverData
+        {
+            [SerializeField]
+            float duration;
+            public float Duration { get { return duration; } }
+
+            public void OnValidate()
+            {
+                duration = Mathf.Clamp(duration, 0, float.MaxValue);
+            }
+        }
+
+        #endregion hover
 
         //*******************************************
 
