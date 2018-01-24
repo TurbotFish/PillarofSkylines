@@ -81,4 +81,10 @@ public class EditorDebugMaster : EditorWindow
         Selection.activeObject = Resources.Load("ScriptableObjects/ChunkSystemData");
     }
 
+    [MenuItem("PoS Debug/Project Data/Character", false)]
+    public static void EditCharData()
+    {
+        Selection.activeObject = Resources.Load("ScriptableObjects/CharData");
+    }
+
 }

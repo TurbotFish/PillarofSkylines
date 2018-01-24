@@ -119,6 +119,7 @@ namespace Game.Player.CharacterController
             stateMachine.RegisterAbility(ePlayerState.wallDrift, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallClimb, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
+            stateMachine.RegisterAbility(ePlayerState.hover, eAbilityType.Hover);
 
             stateMachine.ChangeState(new AirState(this, stateMachine, AirState.eAirStateMode.fall));
 
@@ -369,7 +370,7 @@ namespace Game.Player.CharacterController
             }
 
             animator.SetFloat("Turn", turn);
-            animator.SetBool("OnGround", tempCollisionInfo.below);
+            animator.SetBool("OnGround", tempCollisionInfo.below || stateMachine.CurrentState == ePlayerState.hover);
             animator.SetFloat("Speed", Vector3.ProjectOnPlane(velocity, Vector3.up).magnitude / animationRunSpeed);
             //animator.SetFloat("Turn", turn);
             animator.SetFloat("VerticalSpeed", velocity.y / animationJumpSpeed);
