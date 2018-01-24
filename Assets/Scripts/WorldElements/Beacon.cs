@@ -30,4 +30,11 @@ public class Beacon : MonoBehaviour {
             otherBeacon.Activate();
     }
 
+    private void OnValidate()
+    {
+        if (otherBeacon && !otherBeacon.otherBeacon)
+            otherBeacon.otherBeacon = this;
+
+    }
+
 }
