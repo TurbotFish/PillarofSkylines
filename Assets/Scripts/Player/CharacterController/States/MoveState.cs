@@ -42,20 +42,32 @@ namespace Game.Player.CharacterController.States
 
             if (inputInfo.jumpButtonDown) {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
-				state.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
+				stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 
 				stateMachine.ChangeState(state);
 			} else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash)) {
 				stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
-			} else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f) {
-				stateMachine.ChangeState(new SlideState(charController, stateMachine));
-			} else if (inputInfo.leftStickAtZero) {
+            } else if(inputInfo.sprintButton && collisionInfo.cornerNormal)
+            {
+                stateMachine.ChangeState(new HoverState(charController, stateMachine));
+            } else if ((Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle 
+                || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f) 
+                && !collisionInfo.cornerNormal) {
+                if (!inputInfo.sprintButton)
+                {
+                    stateMachine.ChangeState(new SlideState(charController, stateMachine));
+                }
+            } else if (inputInfo.leftStickAtZero) {
 				stateMachine.ChangeState(new StandState(charController, stateMachine));
-			} else if (!collisionInfo.below) {
+			} else if (!collisionInfo.below)
+            {
+                Debug.Log("in air " + inputInfo.sprintButton);
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
-				state.SetJumpTimer(moveData.CanStillJumpTimer);
+                stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
+                state.SetJumpTimer(moveData.CanStillJumpTimer);
 
-				stateMachine.ChangeState(state);
+                stateMachine.ChangeState(state);
+                
 			}
         }
 
@@ -67,7 +79,7 @@ namespace Game.Player.CharacterController.States
             {
                 CanTurnPlayer = true,
 
-				Acceleration = inputInfo.leftStickToSlope * moveData.Speed * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1),
+				Acceleration = inputInfo.leftStickToSlope * moveData.Speed * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1) * stateMachine.speedMultiplier,
 
                 
 				MaxSpeed = moveData.MaxSpeed,

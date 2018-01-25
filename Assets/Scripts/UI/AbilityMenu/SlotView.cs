@@ -11,6 +11,9 @@ namespace Game.UI.AbilityMenu
         //##################################################################
 
         [SerializeField]
+        Player.eAbilityType ability;
+
+        [SerializeField]
         Image backgroundImage;
 
         [SerializeField]
@@ -19,21 +22,20 @@ namespace Game.UI.AbilityMenu
         [SerializeField]
         Image abilityImage;
 
-
-
         AbilityMenuController menuController;
-
-        public Player.eAbilityType AbilityType { get; private set; }
 
         //##################################################################
 
-        public void Initialize(Player.PlayerModel playerModel, AbilityMenuController menuController, Player.eAbilityType abilityType)
+        public Player.eAbilityType AbilityType { get { return ability; } }
+
+        //##################################################################
+
+        public void Initialize(Player.PlayerModel playerModel, AbilityMenuController menuController)
         {
             this.menuController = menuController;
-            AbilityType = abilityType;
 
-            abilityImage.sprite = playerModel.AbilityData.GetAbility(abilityType).Icon;
-            SetBackgroundColour(playerModel.GetAbilityState(abilityType));
+            abilityImage.sprite = playerModel.AbilityData.GetAbility(ability).Icon;
+            SetBackgroundColour(playerModel.GetAbilityState(ability));
             backgroundOutline.enabled = false;
 
             Utilities.EventManager.AbilityStateChangedEvent += OnAbilityStateChangedEventHandler;

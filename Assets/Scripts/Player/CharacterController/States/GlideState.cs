@@ -130,7 +130,7 @@ namespace Game.Player.CharacterController.States
 
             var result = new StateReturnContainer
             {
-                Acceleration = TurnSpaceToLocal(targetVelocity),
+                Acceleration = TurnSpaceToLocal(targetVelocity * stateMachine.speedMultiplier),
                 TransitionSpeed = 8,
                 CanTurnPlayer = false,
                 IgnoreGravity = true

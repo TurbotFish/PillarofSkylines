@@ -6,8 +6,8 @@ public class HomePortalCamera : MonoBehaviour {
 
     public Transform anchorPoint, worldAnchorPoint;
     [Space]
-    [SerializeField] Renderer portalRenderer;
-    [SerializeField] Transform otherPortal;
+    public Renderer portalRenderer;
+    public Transform otherPortal;
 
     [HideInInspector, SerializeField] RenderTexture texture;
     

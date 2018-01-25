@@ -54,6 +54,14 @@ namespace Game.Player.CharacterController
         [SerializeField]
         WallRunData wallRun = new WallRunData();
         public WallRunData WallRun { get { return wallRun; } }
+        
+        [SerializeField]
+        EchoBoostData echoBoost = new EchoBoostData();
+        public EchoBoostData EchoBoost { get { return echoBoost; } }
+
+        [SerializeField]
+        HoverData hover = new HoverData();
+        public HoverData Hover { get { return hover; } }
 
         #endregion inspector variables
 
@@ -120,7 +128,7 @@ namespace Game.Player.CharacterController
             [SerializeField]
             float minWallAngle;
             public float MinWallAngle { get { return minWallAngle; } }
-
+            
             public void OnValidate()
             {
                 stickDeadMaxVal = Mathf.Clamp01(stickDeadMaxVal);
@@ -494,6 +502,59 @@ namespace Game.Player.CharacterController
         }
 
         #endregion wall run
+
+        //*******************************************
+
+        #region echo boost
+
+        [System.Serializable]
+        public class EchoBoostData
+        {
+            [SerializeField]
+            float duration;
+            public float Duration { get { return duration; } }
+
+            [SerializeField]
+            float lerpSpeed;
+            public float LerpSpeed { get { return lerpSpeed; } }
+
+            [SerializeField]
+            float speedMultiplier;
+            public float SpeedMultiplier { get { return speedMultiplier; } }
+
+            [SerializeField]
+            float jumpMultiplier;
+            public float JumpMultiplier { get { return jumpMultiplier; } }
+
+            public void OnValidate()
+            {
+                duration = Mathf.Clamp(duration, 0, float.MaxValue);
+                lerpSpeed = Mathf.Clamp(lerpSpeed, 0, float.MaxValue);
+                speedMultiplier = Mathf.Clamp(speedMultiplier, 0, float.MaxValue);
+                jumpMultiplier = Mathf.Clamp(jumpMultiplier, 0, float.MaxValue);
+            }
+        }
+
+        #endregion echo boost
+
+        //*******************************************
+
+        #region hover
+
+        [System.Serializable]
+        public class HoverData
+        {
+            [SerializeField]
+            float duration;
+            public float Duration { get { return duration; } }
+
+            public void OnValidate()
+            {
+                duration = Mathf.Clamp(duration, 0, float.MaxValue);
+            }
+        }
+
+        #endregion hover
 
         //*******************************************
 

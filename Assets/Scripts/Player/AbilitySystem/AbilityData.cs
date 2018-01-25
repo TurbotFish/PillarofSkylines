@@ -9,72 +9,46 @@ namespace Game.Player.AbilitySystem
     [CreateAssetMenu(menuName = "ScriptableObjects/AbilityData", fileName = "AbilityData")]
     public class AbilityData : ScriptableObject
     {
-        [Header("UI Ability Slots")]
-        [Tooltip("List with the abilities as they appear in the ability menu. It starts with the topmost slot and continues clockwise.")]
-        [SerializeField]
-        List<eAbilityType> abilitySlots = new List<eAbilityType>(12);
-        public List<eAbilityType> AbilitySlots { get { return abilitySlots; } }
-
         [Header("Details")]
         //double jump
         [SerializeField]
-        DoubleJump doubleJump = new DoubleJump();
-        public DoubleJump DoubleJump { get { return doubleJump; } }
-
-        //glide
-        [SerializeField]
-        Glide glide = new Glide();
-        public Glide Glide { get { return glide; } }
-
-        //dash
-        [SerializeField]
-        Dash dash = new Dash();
-        public Dash Dash { get { return dash; } }
+        Ability doubleJump = new Ability(eAbilityType.DoubleJump);
+        public Ability DoubleJump { get { return doubleJump; } }
 
         //tomb finder
         [SerializeField]
-        TombFinder tombFinder = new TombFinder();
-        public TombFinder TombFinder { get { return tombFinder; } }
+        Ability tombFinder = new Ability(eAbilityType.TombFinder);
+        public Ability TombFinder { get { return tombFinder; } }
+
+        //echo boost
+        [SerializeField]
+        Ability echoBoost = new Ability(eAbilityType.EchoBoost);
+        public Ability EchoBoost { get { return echoBoost; } }
+
+        //echo distance
+        [SerializeField]
+        Ability echoDistance = new Ability(eAbilityType.EchoDistance);
+        public Ability EchoDistance { get { return echoDistance; } }
+
+        //glide
+        [SerializeField]
+        Ability glide = new Ability(eAbilityType.Glide);
+        public Ability Glide { get { return glide; } }
 
         //wall run
         [SerializeField]
-        WallRun wallRun = new WallRun();
-        public WallRun WallRun { get { return wallRun; } }
+        Ability wallRun = new Ability(eAbilityType.WallRun);
+        public Ability WallRun { get { return wallRun; } }
 
-        //echo trampolin
+        //dash
         [SerializeField]
-        Ability echoTrampolin = new Ability(eAbilityType.EchoTrampolin);
-        public Ability EchoTrampolin { get { return echoTrampolin; } }
+        Ability dash = new Ability(eAbilityType.Dash);
+        public Ability Dash { get { return dash; } }
 
-        //distant echo
+        //hover
         [SerializeField]
-        Ability distantEcho = new Ability(eAbilityType.DistantEcho);
-        public Ability DistantEcho { get { return distantEcho; } }
-
-        //aim drift
-        [SerializeField]
-        Ability aimDrift = new Ability(eAbilityType.AimDrift);
-        public Ability AimDrift { get { return aimDrift; } }
-
-        //super jump
-        [SerializeField]
-        Ability superJump = new Ability(eAbilityType.SuperJump);
-        public Ability SuperJump { get { return superJump; } }
-
-        //phantom
-        [SerializeField]
-        Ability phantom = new Ability(eAbilityType.Phantom);
-        public Ability Phantom { get { return phantom; } }
-
-        //kinematic inversion
-        [SerializeField]
-        Ability kinematicInversion = new Ability(eAbilityType.KinematicInversion);
-        public Ability KinematicInversion { get { return kinematicInversion; } }
-
-        //echo jump
-        [SerializeField]
-        Ability echoJump = new Ability(eAbilityType.EchoJump);
-        public Ability EchoJump { get { return echoJump; } }
+        Ability hover = new Ability(eAbilityType.Hover);
+        public Ability Hover { get { return hover; } }
 
         //###########################################################
 
@@ -94,21 +68,12 @@ namespace Game.Player.AbilitySystem
                     return wallRun;
                 case eAbilityType.TombFinder:
                     return tombFinder;
-                case eAbilityType.EchoTrampolin:
-                    return echoTrampolin;
-                case eAbilityType.DistantEcho:
-                    return distantEcho;
-                case eAbilityType.AimDrift:
-                    return aimDrift;
-                case eAbilityType.SuperJump:
-                    return superJump;
-                case eAbilityType.Phantom:
-                    return phantom;
-                case eAbilityType.KinematicInversion:
-                    return kinematicInversion;
-                case eAbilityType.EchoJump:
-                    return echoJump;
-
+                case eAbilityType.EchoBoost:
+                    return echoBoost;
+                case eAbilityType.EchoDistance:
+                    return echoDistance;
+                case eAbilityType.Hover:
+                    return hover;
                 default:
                     return null;
             }
@@ -119,17 +84,13 @@ namespace Game.Player.AbilitySystem
             return new List<Ability>()
             {
                 doubleJump,
-                dash,
+                tombFinder,
+                echoBoost,
+                echoDistance,
                 glide,
                 wallRun,
-                tombFinder,
-                echoTrampolin,
-                distantEcho,
-                aimDrift,
-                superJump,
-                phantom,
-                kinematicInversion,
-                echoJump
+                dash,
+                hover
             };
         }
 
@@ -139,30 +100,10 @@ namespace Game.Player.AbilitySystem
 
         void OnValidate()
         {
-            while (abilitySlots.Count != 12)
+            foreach(var ability in GetAllAbilities())
             {
-                if (abilitySlots.Count > 12)
-                {
-                    abilitySlots.RemoveAt(abilitySlots.Count - 1);
-                }
-                else if (abilitySlots.Count < 12)
-                {
-                    abilitySlots.Add(0);
-                }
+                ability.OnValidate();
             }
-
-            doubleJump.OnValidate();
-            dash.OnValidate();
-            glide.OnValidate();
-            wallRun.OnValidate();
-            tombFinder.OnValidate();
-            echoTrampolin.OnValidate();
-            distantEcho.OnValidate();
-            aimDrift.OnValidate();
-            superJump.OnValidate();
-            phantom.OnValidate();
-            kinematicInversion.OnValidate();
-            echoJump.OnValidate();
         }
     }
 } //end of namespace

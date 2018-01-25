@@ -15,6 +15,8 @@ namespace Game.Player.CharacterController
         /// </summary>
         [SerializeField]
         Transform rotator;
+        [SerializeField]
+        public Transform myCamera;
 
         //#############################################################################
 
@@ -99,6 +101,8 @@ namespace Game.Player.CharacterController
         {
             tempPhysicsHandler = GetComponent<CharacControllerRecu>();
             animator = GetComponentInChildren<Animator>();
+            myCamera = FindObjectOfType<PoS_Camera>().transform;
+
 
             PlayerModel = gameController.PlayerModel;
             CharData = Resources.Load<CharData>("ScriptableObjects/CharData");
@@ -115,6 +119,7 @@ namespace Game.Player.CharacterController
             stateMachine.RegisterAbility(ePlayerState.wallDrift, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallClimb, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
+            stateMachine.RegisterAbility(ePlayerState.hover, eAbilityType.Hover);
 
             stateMachine.ChangeState(new AirState(this, stateMachine, AirState.eAirStateMode.fall));
 
@@ -319,7 +324,6 @@ namespace Game.Player.CharacterController
                 }
                 else
                 {
-
                     Vector3 to = Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), MyTransform.up);
                     float angle = Mathf.Lerp(0f, Vector3.SignedAngle(MyTransform.forward, to, MyTransform.up), CharData.General.TurnSpeed * Time.deltaTime);
 
@@ -365,8 +369,8 @@ namespace Game.Player.CharacterController
                 turn = 0;
             }
 
-
-            animator.SetBool("OnGround", tempCollisionInfo.below);
+            animator.SetFloat("Turn", turn);
+            animator.SetBool("OnGround", tempCollisionInfo.below || stateMachine.CurrentState == ePlayerState.hover);
             animator.SetFloat("Speed", Vector3.ProjectOnPlane(velocity, Vector3.up).magnitude / animationRunSpeed);
             //animator.SetFloat("Turn", turn);
             animator.SetFloat("VerticalSpeed", velocity.y / animationJumpSpeed);
@@ -454,9 +458,9 @@ namespace Game.Player.CharacterController
 
         #region cancer
 
-        public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool framerateDependant)
+        public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool lerped)
         {
-            if (framerateDependant)
+            if (lerped)
             {
                 velocity += (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
             }
@@ -466,6 +470,11 @@ namespace Game.Player.CharacterController
             }
         }
 
+        public void ImmediateMovement(Vector3 newVelocity, bool worldSpace)
+        {
+            tempPhysicsHandler.Move((worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity));
+        }
+     
         public void SetVelocity(Vector3 newVelocity, bool worldSpace)
         {
             velocity = (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
