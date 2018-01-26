@@ -4,7 +4,7 @@ namespace Game.World.Interaction
 {
     public class FavourStatue : MonoBehaviour
     {
-        [SerializeField] Favour favour;
+        public string favourID;
 
         [SerializeField] Material matWhenActive;
 
@@ -18,7 +18,7 @@ namespace Game.World.Interaction
 
         void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
         {
-            if (favour && args.FavourId == favour.FavourId)
+            if (args.FavourId == favourID)
             {
                 rend.sharedMaterial = matWhenActive;
             }

@@ -14,7 +14,8 @@ namespace Game.Player.CharacterController
         windTunnel = 32,
         wallDrift = 64,
         wallRun = 128,
-        wallClimb = 256
+        wallClimb = 256,
+        hover = 512
 
         //exterminate!
         //inAir,

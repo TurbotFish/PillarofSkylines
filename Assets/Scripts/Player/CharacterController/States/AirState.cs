@@ -216,7 +216,7 @@ namespace Game.Player.CharacterController.States
 					minJumpStrength *= jumpData.AerialJumpCoeff * stateMachine.jumpMultiplier;
 				}
 
-				result.Acceleration = hasAirControl ? inputInfo.leftStickToCamera * jumpData.Speed : Vector3.zero;
+				result.Acceleration = hasAirControl ? inputInfo.leftStickToCamera * jumpData.Speed * stateMachine.speedMultiplier : Vector3.zero;
 
 				if (!inputInfo.jumpButton && movementInfo.velocity.y > minJumpStrength) {
 					charController.SetVelocity(new Vector3(movementInfo.velocity.x, minJumpStrength, movementInfo.velocity.z), false);

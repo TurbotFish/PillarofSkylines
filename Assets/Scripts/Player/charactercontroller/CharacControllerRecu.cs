@@ -150,7 +150,6 @@ namespace Game.Player.CharacterController
 
         Vector3 ConfirmMovement(Vector3 velocity)
         {
-            
 
             var pos1 = myTransform.position;
             myTransform.Translate(velocity, Space.World);
@@ -164,8 +163,6 @@ namespace Game.Player.CharacterController
                 //Debug.LogFormat("axis:{0}", Vector3.Cross(transform.up, Vector3.up));
                 //Debug.LogFormat("velocity / deltaTime = {0}", velocity / Time.deltaTime);
             }
-
-
 
             var result = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * velocity /*/ Time.deltaTime*/;
 
@@ -253,7 +250,13 @@ namespace Game.Player.CharacterController
             //Send casts to check if there's stuff around the player and set bools depending on the results
             collisions.below = Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask) || climbingStep;
 
-			if (collisions.below && !climbingStep)
+
+            if (!Physics.Raycast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2), -myTransform.up, out hit2, myPlayer.CharData.Physics.MaxStepHeight, collisionMask))
+            {
+                collisions.cornerNormal = true;
+            }
+
+            if (collisions.below && !climbingStep)
             {
                 collisions.currentGroundNormal = hit.normal;
                 if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
@@ -266,7 +269,7 @@ namespace Game.Player.CharacterController
 				} else {
 					collisions.SlippySlope = false;
 				}
-			}
+            }
 
             collisions.above = Physics.SphereCast(myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) - myTransform.up * skinWidth * 2, radius, myTransform.up, out hit, skinWidth * 4, collisionMask);
             if (collisions.above)
@@ -495,6 +498,7 @@ namespace Game.Player.CharacterController
             public bool above, below;
             public bool side, SlippySlope;
 
+            public bool cornerNormal;
             public float stepHeight;
 
             public Vector3 initialVelocityOnThisFrame;
@@ -509,7 +513,7 @@ namespace Game.Player.CharacterController
                 if (!below)
                     currentGroundNormal = Vector3.zero;
                 above = below = false;
-                side = SlippySlope = false;
+                side = SlippySlope = cornerNormal = false;
                 currentWallNormal = Vector3.zero;
                 currentWallHit= new RaycastHit();
             }
