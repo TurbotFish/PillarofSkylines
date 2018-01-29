@@ -49,6 +49,7 @@ namespace Game.Player.CharacterController.States
 
         public void HandleInput()
         {
+            PlayerMovementInfo movementInfo = charController.MovementInfo;
             PlayerInputInfo inputInfo = charController.InputInfo;
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
@@ -73,7 +74,7 @@ namespace Game.Player.CharacterController.States
             {
                 charController.MyTransform.rotation = Quaternion.LookRotation(lastWallNormal, charController.MyTransform.up);
 
-                Vector3 jumpDirection = (charController.MyTransform.up + collisionInfo.currentWallNormal + charController.MyTransform.forward).normalized;
+                Vector3 jumpDirection = (charController.MyTransform.up + collisionInfo.currentWallNormal + movementInfo.velocity).normalized;
 
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 state.SetJumpDirection(jumpDirection);
@@ -100,10 +101,6 @@ namespace Game.Player.CharacterController.States
             }
 
             //********************************
-            //acceleration
-
-            float previousSpeed = movementInfo.velocity.magnitude;
-
             //the direction along the wall (laft or right)
             Vector3 wallRunDir = Vector3.ProjectOnPlane(movementInfo.velocity, lastWallNormal);
 
@@ -113,9 +110,10 @@ namespace Game.Player.CharacterController.States
             //translate the direction to local space
             Vector3 localWallRunDir = charController.MyTransform.worldToLocalMatrix.MultiplyVector(wallRunDir);
 
-            Vector3 acceleration = localWallRunDir.normalized * (previousSpeed * wallRunData.SlowdownFactor);
+            Vector3 acceleration = localWallRunDir;
 
             //********************************
+            /*
             //wall hugging
             Vector3 wallHugging = charController.MyTransform.worldToLocalMatrix.MultiplyVector(-lastWallNormal) * 4f * (noWallCounter + 1);
 
@@ -123,14 +121,15 @@ namespace Game.Player.CharacterController.States
             if (Vector3.SignedAngle(wallRunDir, lastWallNormal, charController.MyTransform.up) < 0)
             {
                 wallHugging *= -1;
-            }
+            }*/
+            
 
-            //
             var result = new StateReturnContainer()
             {
                 CanTurnPlayer = false,
                 PlayerForward = wallRunDir.normalized,
-                Acceleration = wallHugging + acceleration,
+                Acceleration = /*wallHugging +*/ acceleration,
+                GravityMultiplier = wallRunData.GravityModifier,
                 TransitionSpeed = wallRunData.TransitionSpeed
             };
 
@@ -153,7 +152,7 @@ namespace Game.Player.CharacterController.States
             bool isTouchingWall = charController.CollisionInfo.side;
 
             //is the wall slope valid? If the wall is bend to the outside it is not
-            bool isWallSlopeValid = Vector3.SignedAngle(charController.CollisionInfo.currentWallNormal, charController.MyTransform.up, charController.MyTransform.forward) >= 0f;
+            bool isWallSlopeValid = Vector3.Dot(charController.CollisionInfo.currentWallNormal, charController.MyTransform.up) >= -0.1f;
             
             //is the player facing the wall
             bool directionOK = CheckPlayerForward(charController, 0f, charController.CharData.WallRun.MaxTriggerAngle);

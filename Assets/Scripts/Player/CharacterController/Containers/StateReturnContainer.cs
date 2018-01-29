@@ -38,6 +38,11 @@ namespace Game.Player.CharacterController.Containers
 
         //gravity
         public bool IgnoreGravity { get; set; }
+        
+        //gravity multiplier
+        float gravityMultiplier;
+        public bool GravityMultiplierSet { get; private set; }
+        public float GravityMultiplier { get { return gravityMultiplier; } set { gravityMultiplier = value; GravityMultiplierSet = true; } }
 
         //reset vertical velocity
         public bool resetVerticalVelocity { get; set; }
