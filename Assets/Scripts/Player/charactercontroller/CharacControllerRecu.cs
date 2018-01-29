@@ -97,9 +97,17 @@ namespace Game.Player.CharacterController
 
         public Vector3 Move(Vector3 velocity)
         {
+
             var pos1 = myTransform.position;
 
 			belowLastFrame = collisions.below;
+            if (collisions.side)
+            {
+                collisions.lastWallNormal = collisions.currentWallNormal;
+            } else
+            {
+                collisions.lastWallNormal = Vector3.zero;
+            }
 			collisions.Reset();
 
 
@@ -288,7 +296,7 @@ namespace Game.Player.CharacterController
             //***********************************************************
             //side collision
 
-            if (collisions.side)
+            if (collisions.lastWallNormal != Vector3.zero)
             { //here we check if the player is still "touching" the wall he previously collided with
                 RaycastHit searchHit;
 
@@ -296,25 +304,24 @@ namespace Game.Player.CharacterController
                                                  myTransform.position + playerAngle * (center - capsuleHeightModifier / 2),
                                                  myTransform.position + playerAngle * (center + capsuleHeightModifier / 2),
                                                  radius,
-                                                 -sideHit.normal,
+                                                 -collisions.lastWallNormal,
                                                  out searchHit,
                                                  skinWidth * 2,
                                                  collisionMask
                                              );
 
-                if (colliding && searchHit.transform.Equals(sideHit.transform))
+                Debug.Log("colliding : " + colliding);
+                if (colliding)
                 {
-                    sideHit = searchHit;
-                    collisions.currentWallNormal = sideHit.normal;
-                    collisions.currentWallHit = sideHit;
+                    collisions.currentWallNormal = searchHit.normal;
+                    collisions.currentWallHit = searchHit;
+                    collisions.side = true;
                 }
                 else
                 {
                     collisions.side = false;
                 }
-            }
-
-            if (!collisions.side)
+            } else 
             { //if the player is not touching the previous wall anymore, check for a new collision
                 collisions.side = Physics.CapsuleCast(
                     myTransform.position + playerAngle * (center - capsuleHeightModifier / 2),
@@ -504,6 +511,7 @@ namespace Game.Player.CharacterController
 
             public Vector3 currentGroundNormal;
             public Vector3 currentWallNormal;
+            public Vector3 lastWallNormal;
 
             public RaycastHit currentWallHit;
 
