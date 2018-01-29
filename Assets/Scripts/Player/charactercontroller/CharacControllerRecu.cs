@@ -332,7 +332,6 @@ namespace Game.Player.CharacterController
                 if (collisions.side)
                 {
                     //Debug.LogErrorFormat("hitName = {0}; hitNormal={1}", sideHit.collider.name, sideHit.normal);
-
                     collisions.currentWallNormal = sideHit.normal;
                     collisions.currentWallHit = sideHit;
                 }

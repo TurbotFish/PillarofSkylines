@@ -60,10 +60,12 @@ namespace Game.Player.CharacterController.States
             //no wall or stick released => fall
             else if (!collisionInfo.side && noWallCounter > 5)
             {
+                Debug.Log("no col");
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
             else if (!CheckWallRunStick(inputInfo, lastWallNormal, wallRunData.MaxTriggerAngle))
             {
+                Debug.Log("no stick");
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
             //jump
@@ -152,17 +154,16 @@ namespace Game.Player.CharacterController.States
 
             //is the wall slope valid? If the wall is bend to the outside it is not
             bool isWallSlopeValid = Vector3.SignedAngle(charController.CollisionInfo.currentWallNormal, charController.MyTransform.up, charController.MyTransform.forward) >= 0f;
-
-            //is the player jumping
-            bool isJumping = charController.MovementInfo.velocity.y > 0;
-
+            
             //is the player facing the wall
             bool directionOK = CheckPlayerForward(charController, 0f, charController.CharData.WallRun.MaxTriggerAngle);
 
             //is the player
             bool stickOK = CheckWallRunStick(charController.InputInfo, charController.CollisionInfo.currentWallNormal, charController.CharData.WallRun.MaxTriggerAngle);
 
-            return (isAbilityActive && isTouchingWall && isWallSlopeValid && isJumping && directionOK && stickOK);
+            Debug.Log("act : " + isAbilityActive + " touch : " + isTouchingWall + " slope : " + isWallSlopeValid + " dir : " + directionOK + " stick : " + stickOK);
+
+            return (isAbilityActive && isTouchingWall && isWallSlopeValid && directionOK && stickOK);
         }
 
         /// <summary>

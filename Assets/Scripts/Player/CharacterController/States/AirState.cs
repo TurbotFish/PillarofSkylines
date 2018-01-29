@@ -159,12 +159,8 @@ namespace Game.Player.CharacterController.States
 				stateMachine.ChangeState(new StandState(charController, stateMachine));
 			}
             //wall- run/drift
-            else if (collisionInfo.side) {
-				if (/*movementInfo.velocity.y <= 0 &&*/ WallDriftState.CanEnterWallDrift(charController)) {
-					stateMachine.ChangeState(new WallDriftState(charController, stateMachine));
-				} else if (/*movementInfo.velocity.y > 0 &&*/ WallRunState.CheckCanEnterWallRun(charController)) {
-					stateMachine.ChangeState(new WallRunState(charController, stateMachine));
-				}
+            else if (collisionInfo.side && WallRunState.CheckCanEnterWallRun(charController)) {
+				stateMachine.ChangeState(new WallRunState(charController, stateMachine));
 			}
         }
 
