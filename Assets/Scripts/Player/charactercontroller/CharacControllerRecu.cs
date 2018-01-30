@@ -97,9 +97,17 @@ namespace Game.Player.CharacterController
 
         public Vector3 Move(Vector3 velocity)
         {
+
             var pos1 = myTransform.position;
 
 			belowLastFrame = collisions.below;
+            if (collisions.side)
+            {
+                collisions.lastWallNormal = collisions.currentWallNormal;
+            } else
+            {
+                collisions.lastWallNormal = Vector3.zero;
+            }
 			collisions.Reset();
 
 
@@ -225,7 +233,26 @@ namespace Game.Player.CharacterController
 					myTransform.Translate(-myTransform.up * skinWidth * 2, Space.World);
 				}
 			}
-			return result;
+
+            if (collisions.lastWallNormal != Vector3.zero)
+            {
+                print("must be on a wall");
+                int security = 5;
+                while (!Physics.CapsuleCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2),
+                                            myTransform.position + playerAngle * (center + capsuleHeightModifier / 2),
+                                            radius,
+                                            -collisions.lastWallNormal,
+                                            out hit,
+                                            skinWidth * 2,
+                                            collisionMask) && security > 0)
+                {
+                    print("déplacement !");
+                    security--;
+                    myTransform.Translate(-collisions.lastWallNormal * skinWidth * 2, Space.World);
+                }
+            }
+
+            return result;
         }
 
 
@@ -288,7 +315,7 @@ namespace Game.Player.CharacterController
             //***********************************************************
             //side collision
 
-            if (collisions.side)
+            if (collisions.lastWallNormal != Vector3.zero)
             { //here we check if the player is still "touching" the wall he previously collided with
                 RaycastHit searchHit;
 
@@ -296,25 +323,41 @@ namespace Game.Player.CharacterController
                                                  myTransform.position + playerAngle * (center - capsuleHeightModifier / 2),
                                                  myTransform.position + playerAngle * (center + capsuleHeightModifier / 2),
                                                  radius,
-                                                 -sideHit.normal,
+                                                 -collisions.lastWallNormal,
                                                  out searchHit,
                                                  skinWidth * 2,
                                                  collisionMask
                                              );
 
-                if (colliding && searchHit.transform.Equals(sideHit.transform))
+                //Debug.Log("colliding : " + colliding);
+                int security = 2;
+                while (!colliding && security > 0 && !collisions.below)
                 {
-                    sideHit = searchHit;
-                    collisions.currentWallNormal = sideHit.normal;
-                    collisions.currentWallHit = sideHit;
+                    Debug.Log("moving towards wall");
+                    myTransform.position += -collisions.lastWallNormal * skinWidth * 2;
+
+                    colliding = Physics.CapsuleCast(
+                                                myTransform.position + playerAngle * (center - capsuleHeightModifier / 2),
+                                                myTransform.position + playerAngle * (center + capsuleHeightModifier / 2),
+                                                radius,
+                                                -collisions.lastWallNormal,
+                                                out searchHit,
+                                                skinWidth * 2,
+                                                collisionMask
+                                            );
+                    security--;
                 }
-                else
+                //Debug.Log("colliding after movement : " + colliding);
+                if (!colliding)
                 {
                     collisions.side = false;
+                } else
+                {
+                    collisions.currentWallNormal = searchHit.normal;
+                    collisions.currentWallHit = searchHit;
+                    collisions.side = true;
                 }
-            }
-
-            if (!collisions.side)
+            } else 
             { //if the player is not touching the previous wall anymore, check for a new collision
                 collisions.side = Physics.CapsuleCast(
                     myTransform.position + playerAngle * (center - capsuleHeightModifier / 2),
@@ -332,7 +375,6 @@ namespace Game.Player.CharacterController
                 if (collisions.side)
                 {
                     //Debug.LogErrorFormat("hitName = {0}; hitNormal={1}", sideHit.collider.name, sideHit.normal);
-
                     collisions.currentWallNormal = sideHit.normal;
                     collisions.currentWallHit = sideHit;
                 }
@@ -505,6 +547,7 @@ namespace Game.Player.CharacterController
 
             public Vector3 currentGroundNormal;
             public Vector3 currentWallNormal;
+            public Vector3 lastWallNormal;
 
             public RaycastHit currentWallHit;
 

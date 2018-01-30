@@ -487,17 +487,29 @@ namespace Game.Player.CharacterController
             public float TransitionSpeed { get { return transitionSpeed; } }
 
             [SerializeField]
-            float slowdownFactor;
-            public float SlowdownFactor { get { return slowdownFactor; } }
+            float gravityModifier;
+            public float GravityModifier { get { return gravityModifier; } }
 
             [SerializeField]
             float maxTriggerAngle = 80;
             public float MaxTriggerAngle { get { return maxTriggerAngle; } }
 
+            [SerializeField]
+            float timerBeforeAirControl;
+            public float TimerBeforeAirControl { get { return timerBeforeAirControl; } }
+
+            [SerializeField]
+            float speedMultiplier;
+            public float SpeedMultiplier { get { return speedMultiplier; } }
+
+            [SerializeField]
+            float speed;
+            public float Speed { get { return speed; } }
+
             public void OnValidate()
             {
                 transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
-                slowdownFactor = Mathf.Clamp01(slowdownFactor);
+                gravityModifier = Mathf.Clamp01(gravityModifier);
             }
         }
 

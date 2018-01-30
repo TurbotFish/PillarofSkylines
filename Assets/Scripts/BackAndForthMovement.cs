@@ -30,16 +30,16 @@ public class BackAndForthMovement : MovingPlatform {
         switch (currState)
         {
             case eMovingState.forth:
-                movementProgression += speed * Time.deltaTime * Mathf.Clamp01(movementProgression/slowingRatio);
-                if (movementProgression >= 1f)
+                movementProgression += speed * Time.deltaTime * Mathf.Clamp01(movementProgression/slowingRatio) * Mathf.Clamp01((1 - movementProgression) / slowingRatio);
+                if (movementProgression >= 0.99f)
                 {
                     movementProgression = 0.99f;
                     currState = eMovingState.waitingAfterForth;
                 }
                 break;
             case eMovingState.back:
-                movementProgression -= speed * Time.deltaTime * Mathf.Clamp01((1-movementProgression)/slowingRatio);
-                if (movementProgression <= 0f)
+                movementProgression -= speed * Time.deltaTime * Mathf.Clamp01(movementProgression / slowingRatio) * Mathf.Clamp01((1-movementProgression)/slowingRatio);
+                if (movementProgression <= 0.01f)
                 {
                     movementProgression = 0.01f;
                     currState = eMovingState.waitingAfterBack;
@@ -65,7 +65,6 @@ public class BackAndForthMovement : MovingPlatform {
                 break;
         }
 
-        Debug.Log("progression : " + movementProgression);
         startOfFramePosition = transform.position;
         transform.position = initialPosition + movement * movementProgression;
 

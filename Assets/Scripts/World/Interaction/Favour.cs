@@ -75,7 +75,7 @@ namespace Game.World.Interaction
             myCollider = GetComponent<BoxCollider>();
             this.isCopy = isCopy;
 
-            if (worldController.GameController.PlayerModel.IsFavourPickedUp(favourId) || isCopy)
+            if (worldController.GameController.PlayerModel.IsFavourPickedUp(favourId))
             {
                 PickUp();
 
@@ -111,6 +111,10 @@ namespace Game.World.Interaction
                 if (!isCopy)
                 {
                     Animate();
+                }
+                else
+                {
+                    StartCoroutine(DissolveTomb());
                 }
             }
         }
