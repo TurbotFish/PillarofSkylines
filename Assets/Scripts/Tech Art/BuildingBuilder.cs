@@ -66,7 +66,18 @@ public class BuildingBuilder : MonoBehaviour {
 		foreach (Transform child in transform) {
 			if (child.CompareTag("Building"))
 			{
-				// producer producer producer producer producer 
+				DestroyImmediate (child.gameObject);
+			}
+		}
+		foreach (Transform child in transform) {
+			if (child.CompareTag("Building"))
+			{
+				DestroyImmediate (child.gameObject);
+			}
+		}		
+		foreach (Transform child in transform) {
+			if (child.CompareTag("Building"))
+			{
 				DestroyImmediate (child.gameObject);
 			}
 		}

@@ -48,43 +48,27 @@ public class RepeatObjectQuiDepasse : EditorWindow
                 if (minDepasse % (int)Depassage.zPositive == 0) // on est complètement en dehors en z positive
                 {
                     // on le déplace
-                    Undo.RegisterCompleteObjectUndo(target, "Repeated " + target.name);
-                    t.position -= new Vector3(0, 0, world.WorldSize.z);
+                    BuildCopy(target, copyParent, new Vector3(0, 0, -world.WorldSize.z), " (COPY Z-)");
                     fullOutsideZ = true;
-                    target.name += " (MOVED Z—)";
-                    Undo.SetTransformParent(t, copyParent, "Changed Parent of " + target.name);
-
                 }
                 else if (maxDepasse % (int)Depassage.zNegative == 0) // on est complètement en dehors en z negative
                 {
                     // on le déplace
-                    Undo.RegisterCompleteObjectUndo(target, "Repeated " + target.name);
-                    t.position += new Vector3(0, 0, world.WorldSize.z);
+                    BuildCopy(target, copyParent, new Vector3(0, 0, world.WorldSize.z), " (COPY Z+)");
                     fullOutsideZ = true;
-                    target.name += " (MOVED Z+)";
-                    Undo.SetTransformParent(t, copyParent, "Changed Parent of " + target.name);
-
                 }
 
                 if (minDepasse % (int)Depassage.yPositive == 0) // on est complètement en dehors en y positive
                 {
                     // on le déplace
-                    Undo.RegisterCompleteObjectUndo(target, "Repeated " + target.name);
-                    t.position -= new Vector3(0, world.WorldSize.y, 0);
+                    BuildCopy(target, copyParent, new Vector3(0, -world.WorldSize.y, 0), " (COPY Y-)");
                     fullOutsideY = true;
-                    target.name += " (MOVED Y—)";
-                    Undo.SetTransformParent(t, copyParent, "Changed Parent of " + target.name);
-
                 }
-                else if (maxDepasse % (int)Depassage.yNegative == 0) // on est complètement en dehors en x negative
+                else if (maxDepasse % (int)Depassage.yNegative == 0) // on est complètement en dehors en y negative
                 {
                     // on le déplace
-                    Undo.RegisterCompleteObjectUndo(target, "Repeated " + target.name);
-                    t.position += new Vector3(0, world.WorldSize.y, 0);
+                    BuildCopy(target, copyParent, new Vector3(0, world.WorldSize.y, 0), " (COPY Y+)");
                     fullOutsideY = true;
-                    target.name += " (MOVED Y+)";
-                    Undo.SetTransformParent(t, copyParent, "Changed Parent of " + target.name);
-
                 }
 
                 // CROSSING
@@ -124,6 +108,16 @@ public class RepeatObjectQuiDepasse : EditorWindow
                     } // fin doublecross
 
                 } // fin outsideY
+
+                // MOVING
+
+                if (fullOutsideY || fullOutsideZ)
+                { // s'il est full outside, on désactive l'objet. On le fait à la fin pour pas que les copies soient désactivées
+                    Undo.RegisterCompleteObjectUndo(target, "Repeated " + target.name);
+                    target.SetActive(false);
+                    target.name += " (MOVED)";
+                }
+
             } // fin collider dépasse
         } // fin collider
 
@@ -140,7 +134,7 @@ public class RepeatObjectQuiDepasse : EditorWindow
         copy.transform.rotation = t.rotation;
         copy.transform.localScale = t.lossyScale;
 
-        copy.name += addName;
+        //copy.name += addName;
     }
 
 

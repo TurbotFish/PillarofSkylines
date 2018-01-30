@@ -271,7 +271,7 @@ namespace Game.Player.CharacterController
             //adding gravity
             if (!stateReturn.IgnoreGravity)
             {
-                newVelocity += Vector3.down * (CharData.General.GravityStrength * Time.deltaTime);
+                newVelocity += Vector3.down * (CharData.General.GravityStrength * (stateReturn.GravityMultiplierSet? stateReturn.GravityMultiplier : 1) * Time.deltaTime);
             }
 
             //clamping speed

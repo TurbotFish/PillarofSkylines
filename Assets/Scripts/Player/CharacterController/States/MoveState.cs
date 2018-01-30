@@ -47,7 +47,7 @@ namespace Game.Player.CharacterController.States
 				stateMachine.ChangeState(state);
 			} else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash)) {
 				stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
-            } else if(inputInfo.sprintButton && collisionInfo.cornerNormal)
+            } else if(inputInfo.sprintButton && collisionInfo.cornerNormal && !stateMachine.CheckStateLocked(ePlayerState.dash))
             {
                 stateMachine.ChangeState(new HoverState(charController, stateMachine));
             } else if ((Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle 
@@ -79,9 +79,9 @@ namespace Game.Player.CharacterController.States
             {
                 CanTurnPlayer = true,
 
-				Acceleration = inputInfo.leftStickToSlope * moveData.Speed * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1) * stateMachine.speedMultiplier,
+                Acceleration = inputInfo.leftStickToSlope * moveData.Speed * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1) * stateMachine.speedMultiplier,
 
-                
+                IgnoreGravity = true,
 				MaxSpeed = moveData.MaxSpeed,
 				TransitionSpeed = moveData.TransitionSpeed
 			};
