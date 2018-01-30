@@ -79,7 +79,7 @@ namespace Game.Player.CharacterController.States
 
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 state.SetJumpDirection(jumpDirection);
-                state.SetAirControl(false);
+                state.SetTimerAirControl(0.5f);
 
                 stateMachine.ChangeState(state);
             }

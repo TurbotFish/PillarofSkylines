@@ -233,7 +233,26 @@ namespace Game.Player.CharacterController
 					myTransform.Translate(-myTransform.up * skinWidth * 2, Space.World);
 				}
 			}
-			return result;
+
+            if (collisions.lastWallNormal != Vector3.zero)
+            {
+                print("must be on a wall");
+                int security = 5;
+                while (!Physics.CapsuleCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2),
+                                            myTransform.position + playerAngle * (center + capsuleHeightModifier / 2),
+                                            radius,
+                                            -collisions.lastWallNormal,
+                                            out hit,
+                                            skinWidth * 2,
+                                            collisionMask) && security > 0)
+                {
+                    print("déplacement !");
+                    security--;
+                    myTransform.Translate(-collisions.lastWallNormal * skinWidth * 2, Space.World);
+                }
+            }
+
+            return result;
         }
 
 

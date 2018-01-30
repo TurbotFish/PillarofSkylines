@@ -15,6 +15,8 @@ namespace Game.Player.CharacterController.States
         StateMachine stateMachine;
         CharData.WallRunData wallRunData;
 
+        bool firstFrame = true;
+
         int noWallCounter = 0;
         Vector3 lastWallNormal;
 
@@ -72,13 +74,16 @@ namespace Game.Player.CharacterController.States
             //jump
             else if (inputInfo.jumpButtonDown)
             {
-                charController.MyTransform.rotation = Quaternion.LookRotation(lastWallNormal, charController.MyTransform.up);
 
-                Vector3 jumpDirection = (charController.MyTransform.up + collisionInfo.currentWallNormal + movementInfo.velocity).normalized;
+
+                Vector3 jumpDirection = Vector3.ProjectOnPlane(lastWallNormal + movementInfo.velocity.normalized, charController.MyTransform.up).normalized;
+                Debug.Log("direction : " + jumpDirection + " from wall : " + lastWallNormal + " movement : " + movementInfo.velocity.normalized);
+                charController.MyTransform.rotation = Quaternion.LookRotation(jumpDirection, charController.MyTransform.up);
+
 
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 state.SetJumpDirection(jumpDirection);
-                state.SetAirControl(false);
+                state.SetTimerAirControl(wallRunData.TimerBeforeAirControl);
 
                 stateMachine.ChangeState(state);
             }
@@ -93,7 +98,8 @@ namespace Game.Player.CharacterController.States
             if (collisionInfo.side)
             {
                 noWallCounter = 0;
-                lastWallNormal = collisionInfo.currentWallNormal;
+                if (collisionInfo.currentWallNormal != Vector3.zero)
+                    lastWallNormal = collisionInfo.currentWallNormal;
             }
             else
             {
@@ -101,8 +107,8 @@ namespace Game.Player.CharacterController.States
             }
 
             //********************************
-            //the direction along the wall (laft or right)
-            Vector3 wallRunDir = Vector3.ProjectOnPlane(movementInfo.velocity, lastWallNormal);
+            //the direction along the wall (left or right)
+            Vector3 wallRunDir = Vector3.ProjectOnPlane(Vector3.Project(movementInfo.velocity, charController.MyTransform.up) + Vector3.ProjectOnPlane(movementInfo.velocity, charController.MyTransform.up) * (firstFrame ? wallRunData.SpeedMultiplier : 1), lastWallNormal);
 
             //flattening the direction
             wallRunDir = Vector3.ProjectOnPlane(wallRunDir, charController.MyTransform.up);
@@ -132,6 +138,8 @@ namespace Game.Player.CharacterController.States
                 GravityMultiplier = wallRunData.GravityModifier,
                 TransitionSpeed = wallRunData.TransitionSpeed
             };
+
+            if (firstFrame) firstFrame = false;
 
             return result;
         }
@@ -191,7 +199,9 @@ namespace Game.Player.CharacterController.States
 
             float angle = Vector3.Angle(-wallNormal, stick);
 
-            if (!inputInfo.leftStickAtZero && angle < maxAngle)
+            //Debug.Log("stick : " + stick + " wall : " + -wallNormal + " angle : " + angle);
+
+            if (angle < maxAngle)
             {
                 return true;
             }
