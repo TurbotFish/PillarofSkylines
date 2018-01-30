@@ -494,6 +494,14 @@ namespace Game.Player.CharacterController
             float maxTriggerAngle = 80;
             public float MaxTriggerAngle { get { return maxTriggerAngle; } }
 
+            [SerializeField]
+            float timerBeforeAirControl;
+            public float TimerBeforeAirControl { get { return timerBeforeAirControl; } }
+
+            [SerializeField]
+            float speedMultiplier;
+            public float SpeedMultiplier { get { return speedMultiplier; } }
+
             public void OnValidate()
             {
                 transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
