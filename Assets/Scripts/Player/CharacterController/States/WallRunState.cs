@@ -199,7 +199,7 @@ namespace Game.Player.CharacterController.States
 
             float angle = Vector3.Angle(-wallNormal, stick);
 
-            Debug.Log("stick : " + stick + " wall : " + -wallNormal + " angle : " + angle);
+            //Debug.Log("stick : " + stick + " wall : " + -wallNormal + " angle : " + angle);
 
             if (angle < maxAngle)
             {
