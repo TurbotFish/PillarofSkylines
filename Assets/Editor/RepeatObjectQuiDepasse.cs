@@ -47,30 +47,61 @@ public class RepeatObjectQuiDepasse : EditorWindow
 
                 if (minDepasse % (int)Depassage.zPositive == 0) // on est complètement en dehors en z positive
                 {
-                    // on le déplace
-                    BuildCopy(target, copyParent, new Vector3(0, 0, -world.WorldSize.z), " (COPY Z-)");
                     fullOutsideZ = true;
+
+                    if (minDepasse % (int)Depassage.yPositive == 0) // on est complètement en dehors en y positive
+                    {
+                        // on le déplace
+                        BuildCopy(target, copyParent, new Vector3(0, -world.WorldSize.y, -world.WorldSize.z), " (COPY Z-Y-)");
+                        fullOutsideY = true;
+                    }
+                    else if (maxDepasse % (int)Depassage.yNegative == 0) // on est complètement en dehors en y negative
+                    {
+                        // on le déplace
+                        BuildCopy(target, copyParent, new Vector3(0, world.WorldSize.y, -world.WorldSize.z), " (COPY Z-Y+)");
+                        fullOutsideY = true;
+                    } else
+                    {
+                        // on le déplace
+                        BuildCopy(target, copyParent, new Vector3(0, 0, -world.WorldSize.z), " (COPY Z-)");
+                    }
                 }
                 else if (maxDepasse % (int)Depassage.zNegative == 0) // on est complètement en dehors en z negative
                 {
-                    // on le déplace
-                    BuildCopy(target, copyParent, new Vector3(0, 0, world.WorldSize.z), " (COPY Z+)");
                     fullOutsideZ = true;
-                }
 
-                if (minDepasse % (int)Depassage.yPositive == 0) // on est complètement en dehors en y positive
+                    if (minDepasse % (int)Depassage.yPositive == 0) // on est complètement en dehors en y positive
+                    {
+                        // on le déplace
+                        BuildCopy(target, copyParent, new Vector3(0, -world.WorldSize.y, world.WorldSize.z), " (COPY Z+Y-)");
+                        fullOutsideY = true;
+                    }
+                    else if (maxDepasse % (int)Depassage.yNegative == 0) // on est complètement en dehors en y negative
+                    {
+                        // on le déplace
+                        BuildCopy(target, copyParent, new Vector3(0, world.WorldSize.y, world.WorldSize.z), " (COPY Z+Y+)");
+                        fullOutsideY = true;
+                    } else
+                    {
+                        // on le déplace
+                        BuildCopy(target, copyParent, new Vector3(0, 0, world.WorldSize.z), " (COPY Z+)");
+                    }
+                } else
                 {
-                    // on le déplace
-                    BuildCopy(target, copyParent, new Vector3(0, -world.WorldSize.y, 0), " (COPY Y-)");
-                    fullOutsideY = true;
+                    if (minDepasse % (int)Depassage.yPositive == 0) // on est complètement en dehors en y positive
+                    {
+                        // on le déplace
+                        BuildCopy(target, copyParent, new Vector3(0, -world.WorldSize.y, 0), " (COPY Y-)");
+                        fullOutsideY = true;
+                    }
+                    else if (maxDepasse % (int)Depassage.yNegative == 0) // on est complètement en dehors en y negative
+                    {
+                        // on le déplace
+                        BuildCopy(target, copyParent, new Vector3(0, world.WorldSize.y, 0), " (COPY Y+)");
+                        fullOutsideY = true;
+                    }
                 }
-                else if (maxDepasse % (int)Depassage.yNegative == 0) // on est complètement en dehors en y negative
-                {
-                    // on le déplace
-                    BuildCopy(target, copyParent, new Vector3(0, world.WorldSize.y, 0), " (COPY Y+)");
-                    fullOutsideY = true;
-                }
-
+                
                 // CROSSING
 
                 if (!fullOutsideZ) // Si on est pas full dehors, check si on cross en Z
