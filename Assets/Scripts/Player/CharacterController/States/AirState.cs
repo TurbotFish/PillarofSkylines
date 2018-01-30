@@ -196,7 +196,7 @@ namespace Game.Player.CharacterController.States
 					charController.aerialJumpFX.Play();
 				}
 
-				Vector3 direction =  Vector3.up + jumpDirection;
+				Vector3 direction = (Vector3.up + jumpDirection).normalized;
 
 				charController.AddExternalVelocity((direction) * jumpStrength + Vector3.ProjectOnPlane(charController.MovementInfo.velocity, Vector3.up) * jumpData.ImpactOfCurrentSpeed, false, false);
 				result.resetVerticalVelocity = true;
