@@ -49,7 +49,7 @@ namespace Game.Player.CharacterController.States
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
-				state.SetJumpDirection(Vector3.ProjectOnPlane(collisionInfo.currentGroundNormal + movementInfo.velocity, charController.MyTransform.up));
+				state.SetJumpDirection(Vector3.ProjectOnPlane(collisionInfo.currentGroundNormal, charController.MyTransform.up));
                 stateMachine.ChangeState(state);
             }
             //fall
@@ -58,9 +58,14 @@ namespace Game.Player.CharacterController.States
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
 
                 stateMachine.ChangeState(state);
+            } 
+            //dash
+            else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
+            {
+                stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             }
             //stop
-			else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle && !collisionInfo.SlippySlope || Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < 2f) 
+            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle && !collisionInfo.SlippySlope || Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < 2f) 
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
