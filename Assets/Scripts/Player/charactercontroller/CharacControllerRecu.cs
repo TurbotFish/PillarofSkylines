@@ -278,9 +278,10 @@ namespace Game.Player.CharacterController
             collisions.below = Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask) || climbingStep;
 
 
-            if (!Physics.Raycast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2), -myTransform.up, out hit2, myPlayer.CharData.Physics.MaxStepHeight, collisionMask))
+            if (Physics.Raycast(myTransform.position, hit.point - myTransform.position, out hit2, height*2, collisionMask))
             {
-                collisions.cornerNormal = true;
+                if (Vector3.Angle(hit.normal, hit2.normal) > 1f)
+                    collisions.cornerNormal = true;
             }
 
             if (collisions.below && !climbingStep)

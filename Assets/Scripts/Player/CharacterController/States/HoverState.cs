@@ -50,7 +50,6 @@ namespace Game.Player.CharacterController.States
             PlayerMovementInfo movementInfo = charController.MovementInfo;
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
-            Debug.Log("corner : " + collisionInfo.cornerNormal);
             if (inputInfo.jumpButtonDown)
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
@@ -62,11 +61,11 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             }
-            else if (inputInfo.leftStickAtZero)
+            else if (collisionInfo.below)
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
-            else if (inputInfo.sprintButtonUp)
+            else if (inputInfo.leftStickAtZero || inputInfo.sprintButtonUp)
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
