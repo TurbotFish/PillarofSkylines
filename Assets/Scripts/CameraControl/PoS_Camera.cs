@@ -91,6 +91,10 @@ public class PoS_Camera : MonoBehaviour {
 	[Header("Eclipse")]
 	public bool isEclipse = false;
 
+    [Header("FOV")]
+    public float fovDamp = 4;
+    public float dashFovSupplement = 15;
+
 	new Camera camera;
 	Vector3 camPosition, negDistance;
 	Vector3 playerVelocity;
@@ -106,7 +110,7 @@ public class PoS_Camera : MonoBehaviour {
     ePlayerState playerState;
 
     float deltaTime;
-    float startFov;
+    float startFov, targetFov;
 
     float yaw, pitch, targetYaw, targetPitch, manualPitch;
 	float maxDistance, currentDistance, idealDistance, additionalDistance;
@@ -163,9 +167,6 @@ public class PoS_Camera : MonoBehaviour {
 	void LateUpdate() {
 		deltaTime = Time.deltaTime;
         
-        if (camera.fieldOfView != startFov && state != eCameraState.HomeDoor)
-            camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, startFov, 4 * deltaTime); // Change FOV
-
         GetInputsAndStates();
 		DoRotation();
 		EvaluatePosition();
@@ -290,8 +291,6 @@ public class PoS_Camera : MonoBehaviour {
 		float distanceFromAngle = Mathf.Lerp(0, 1, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
 		idealDistance = 1 + zoomValue * distanceFromAngle + additionalDistance;
 
-		//camera.fieldOfView = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
-
 		if (canZoom) Zoom(Input.GetAxis("Mouse ScrollWheel"));
 
 		offset.x = Mathf.Lerp(offsetClose.x, offsetFar.x, currentDistance / maxDistance);
@@ -315,7 +314,8 @@ public class PoS_Camera : MonoBehaviour {
         float t = smoothMovement ? deltaTime / smoothDamp : 1;
         // damping value is the inverse of speed, we simply give the camera a speed of 1/smoothDamp
         // so deltaTime * speed = deltaTime * 1/smoothDamp = deltaTime/smoothDamp
-        
+
+        camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, targetFov, fovDamp * deltaTime);
         my.position = SmoothApproach(my.position, lastFrameCamPos, camPosition, t);
         my.rotation = Quaternion.Lerp(my.rotation, camRotation, t); // TODO: only local space calculation?
 
@@ -360,11 +360,20 @@ public class PoS_Camera : MonoBehaviour {
 
         // TODO: Il nous faut ptet une fonction SetState() pour pouvoir faire des trucs uniquement lors d'un changement de State
         
-        if (isGrounded && additionalDistance != 0)
+        if (isGrounded && additionalDistance != 0 && !inPanorama)
             additionalDistance = 0;
 
         if (resetType == eResetType.ManualAir && (playerState & (ePlayerState.move | ePlayerState.stand))!=0)
             StopCurrentReset();
+
+        // DO FOV ?? //TODO: place somewhere that makes more sense ??
+        targetFov = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
+        if (playerState == ePlayerState.dash)
+        { // DASH
+            targetFov += dashFovSupplement;
+            ResetCamera(slopeValue);
+            additionalDistance = 3;
+        }
 
         if (inverseFacingDirection && Input.GetAxis("Vertical") >= 0) {
             startFacingDirection ^= true;
@@ -750,6 +759,7 @@ public class PoS_Camera : MonoBehaviour {
         homeDoorForward = doorForward;
         this.homePosition = homePosition;
         lastFrameZoomSign = 1;
+        targetFov = homeDoorFov; // Change FOV
     }
 
     public void StopLookingAtHomeDoor() {
@@ -805,9 +815,7 @@ public class PoS_Camera : MonoBehaviour {
         camRotation = Quaternion.LookRotation(forward);
         
         //
-
-        camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, homeDoorFov, 4*deltaTime); // Change FOV
-
+        
         bool alterPlayerForward = playerPassedPortal && !camPassedPortal;
 
         Vector3 characterUp = target.parent.up;
