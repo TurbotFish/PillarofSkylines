@@ -487,8 +487,8 @@ namespace Game.Player.CharacterController
             public float TransitionSpeed { get { return transitionSpeed; } }
 
             [SerializeField]
-            float slowdownFactor;
-            public float SlowdownFactor { get { return slowdownFactor; } }
+            float gravityModifier;
+            public float GravityModifier { get { return gravityModifier; } }
 
             [SerializeField]
             float maxTriggerAngle = 80;
@@ -497,7 +497,7 @@ namespace Game.Player.CharacterController
             public void OnValidate()
             {
                 transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
-                slowdownFactor = Mathf.Clamp01(slowdownFactor);
+                gravityModifier = Mathf.Clamp01(gravityModifier);
             }
         }
 
