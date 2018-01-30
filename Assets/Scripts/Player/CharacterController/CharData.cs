@@ -502,6 +502,10 @@ namespace Game.Player.CharacterController
             float speedMultiplier;
             public float SpeedMultiplier { get { return speedMultiplier; } }
 
+            [SerializeField]
+            float speed;
+            public float Speed { get { return speed; } }
+
             public void OnValidate()
             {
                 transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);

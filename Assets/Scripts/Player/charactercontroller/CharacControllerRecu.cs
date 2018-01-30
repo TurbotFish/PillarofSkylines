@@ -329,16 +329,33 @@ namespace Game.Player.CharacterController
                                                  collisionMask
                                              );
 
-                Debug.Log("colliding : " + colliding);
-                if (colliding)
+                //Debug.Log("colliding : " + colliding);
+                int security = 2;
+                while (!colliding && security > 0 && !collisions.below)
+                {
+                    Debug.Log("moving towards wall");
+                    myTransform.position += -collisions.lastWallNormal * skinWidth * 2;
+
+                    colliding = Physics.CapsuleCast(
+                                                myTransform.position + playerAngle * (center - capsuleHeightModifier / 2),
+                                                myTransform.position + playerAngle * (center + capsuleHeightModifier / 2),
+                                                radius,
+                                                -collisions.lastWallNormal,
+                                                out searchHit,
+                                                skinWidth * 2,
+                                                collisionMask
+                                            );
+                    security--;
+                }
+                //Debug.Log("colliding after movement : " + colliding);
+                if (!colliding)
+                {
+                    collisions.side = false;
+                } else
                 {
                     collisions.currentWallNormal = searchHit.normal;
                     collisions.currentWallHit = searchHit;
                     collisions.side = true;
-                }
-                else
-                {
-                    collisions.side = false;
                 }
             } else 
             { //if the player is not touching the previous wall anymore, check for a new collision
