@@ -867,18 +867,51 @@ public class PoS_Camera : MonoBehaviour {
     public void EnterTrigger(CameraControlTrigger trigger)
     {
         currentTrigger = trigger;
+        print("SETTING UP TRIGGER " + trigger);
 
+        if (trigger.editZoom)
+            ZoomAt(trigger.zoomValue, trigger.damp);
+
+        switch (trigger.mode)
+        {
+            case CameraControlTrigger.CameraControl.PointOfInterest:
+                SetPointOfInterest(trigger.target.position);
+                break;
+            case CameraControlTrigger.CameraControl.AlignWithForwardAxis:
+                SetAxisAlignment(trigger.transform.forward, !trigger.lookInForwardDirection);
+                break;
+            case CameraControlTrigger.CameraControl.OverrideCameraTransform:
+                OverrideCamera(trigger.target.position, trigger.target.eulerAngles, trigger.damp);
+                break;
+            default: break;
+        }
+        enablePanoramaMode = !trigger.disablePanoramaMode;
     }
 
     public void ExitTrigger(CameraControlTrigger trigger)
     {
         if (trigger != currentTrigger) return; // si le trigger duquel on sort n'est pas celui actif, rien à faire
 
+        if (trigger.editZoom)
+            ResetZoom();
 
+        switch (trigger.mode)
+        {
+            case CameraControlTrigger.CameraControl.PointOfInterest:
+                ClearPointOfInterest(trigger.target.position);
+                break;
+            case CameraControlTrigger.CameraControl.AlignWithForwardAxis:
+                RemoveAxisAlignment(trigger.transform.forward);
+                break;
+            case CameraControlTrigger.CameraControl.OverrideCameraTransform:
+                StopOverride();
+                break;
+            default: break;
+        }
+        enablePanoramaMode = true;
         currentTrigger = null;
     }
-
-
+    
     bool startFacingDirection, currentFacingDirection, inverseFacingDirection;
     float maxInverseFacingTime = 0.5f; // TODO: softcode that
     float facingTime = -1;
