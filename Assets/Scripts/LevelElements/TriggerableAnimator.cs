@@ -63,7 +63,7 @@ public class TriggerableAnimator : TriggerableObject {
 
 }
 
-
+[System.Serializable]
 public struct AnimatorComponent
 {
     public enum AnimComponentType
