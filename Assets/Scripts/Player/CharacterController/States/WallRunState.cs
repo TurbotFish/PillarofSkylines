@@ -80,6 +80,7 @@ namespace Game.Player.CharacterController.States
 
 
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
+                stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
                 state.SetJumpDirection(jumpDirection);
                 state.SetTimerAirControl(wallRunData.TimerBeforeAirControl);
 
@@ -127,7 +128,7 @@ namespace Game.Player.CharacterController.States
             var result = new StateReturnContainer()
             {
                 CanTurnPlayer = false,
-                PlayerForward = Vector3.ProjectOnPlane(wallRunDir, charController.MyTransform.up).normalized,
+                PlayerForward = Vector3.ProjectOnPlane(localWallRunDir, charController.MyTransform.up).normalized,
                 Acceleration = acceleration,
                 GravityMultiplier = wallRunData.GravityModifier,
                 TransitionSpeed = wallRunData.TransitionSpeed

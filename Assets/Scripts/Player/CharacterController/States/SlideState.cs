@@ -86,7 +86,8 @@ namespace Game.Player.CharacterController.States
                 result.Acceleration += charController.InputInfo.leftStickToSlope * slideData.Control;
             } else {
                 result.IgnoreGravity = false;
-                result.Acceleration = Vector3.ProjectOnPlane(-charController.MyTransform.up, charController.CollisionInfo.currentGroundNormal).normalized;
+                result.Acceleration = Vector3.ProjectOnPlane(-charController.MyTransform.up, charController.CollisionInfo.currentGroundNormal).normalized * slideData.MinimalSpeed;
+                result.Acceleration += charController.InputInfo.leftStickToSlope * slideData.Control;
             }
             result.PlayerForward = result.Acceleration.normalized;
 
