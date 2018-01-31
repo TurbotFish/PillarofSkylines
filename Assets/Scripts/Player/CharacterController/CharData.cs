@@ -439,6 +439,10 @@ namespace Game.Player.CharacterController
             [SerializeField]
             float horizAngleCtrl;
             public float HorizAngleCtrl { get { return horizAngleCtrl; } }
+            
+            [SerializeField]
+            float exitInertiaTime;
+            public float ExitInertiaTime { get { return exitInertiaTime; } }
 
             public void OnValidate()
             {

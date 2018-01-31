@@ -93,13 +93,13 @@ namespace Game.Player.CharacterController.States
             this.timerAirControl = timerAirControl;
         }
 
-		#endregion setters
+        #endregion setters
 
-		//#############################################################################
+        //#############################################################################
 
-		#region
+        #region
 
-		public void Enter() {
+        public void Enter() {
 			Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
 
             remainingAerialJumps = stateMachine.CheckRemainingAerialJumps();
