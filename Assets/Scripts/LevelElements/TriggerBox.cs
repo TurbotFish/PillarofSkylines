@@ -35,7 +35,9 @@ public class TriggerBox : Trigger {
                 TriggerState = true;
 
             if (changeMaterial) {
-                renderer.sharedMaterials[materialID] = TriggerState ? on : off;
+                Material[] sharedMaterialsCopy = renderer.sharedMaterials;
+                sharedMaterialsCopy[materialID] = TriggerState ? on : off;
+                renderer.sharedMaterials = sharedMaterialsCopy;
             }
         }
     }

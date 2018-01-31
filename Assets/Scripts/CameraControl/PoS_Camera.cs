@@ -106,6 +106,7 @@ public class PoS_Camera : MonoBehaviour {
     CharacControllerRecu controller;
 	Transform my;
     Eclipse eclipseFX;
+    CameraControlTrigger currentTrigger;
 
     ePlayerState playerState;
 
@@ -740,7 +741,43 @@ public class PoS_Camera : MonoBehaviour {
 	}
 
     #endregion
+    
+    #region Contextual Offset
+    Vector3 contextualOffset;
+    bool cameraBounce;
 
+    public void SetVerticalOffset(float verticalOffset)
+    {
+        return; // TODO: fix that buggy offset thingy
+        recoilIntensity = recoilOnImpact * verticalOffset;
+        contextualOffset.y = -verticalOffset;
+        cameraBounce = true;
+    }
+
+    Vector3 GetContextualOffset()
+    {
+        Vector3 offset = new Vector3(0, 0, 0);
+
+        // multiplier l'offset contextuel par un modifier qui dépend de la distance actuelle
+        // si on est à zéro distance alors pas d'offset
+
+        if (cameraBounce)
+        {
+            offset += contextualOffset.y * target.up * recoilIntensity;
+            contextualOffset.y = Mathf.Lerp(contextualOffset.y, 0, deltaTime / smoothDamp);
+            if (Mathf.Abs(contextualOffset.y - 0) < .01f)
+                cameraBounce = false;
+            // use impactFromSpeed (animCurve) to attenuate the impact on low speed
+            // impactFromSpeed on recoilOnImpact
+        }
+        if (onEdgeOfCliff) // Appliquer l'offset contextuel sur le bord des falaises
+            contextualOffset = Vector3.Lerp(contextualOffset, player.transform.forward * (Mathf.Max(0, pitch) / cliffOffsetDivision.Lerp(currentDistance / maxDistance)), deltaTime / autoResetDamp);
+        else
+            contextualOffset = Vector3.Lerp(contextualOffset, Vector3.zero, deltaTime / autoResetDamp);
+        return offset + contextualOffset;
+    }
+    #endregion
+    
     #region Home Door
 
     [Header("Home Door")]
@@ -825,6 +862,54 @@ public class PoS_Camera : MonoBehaviour {
 
     #endregion
 
+    #region Triggers
+
+    public void EnterTrigger(CameraControlTrigger trigger)
+    {
+        currentTrigger = trigger;
+
+    }
+
+    public void ExitTrigger(CameraControlTrigger trigger)
+    {
+        if (trigger != currentTrigger) return; // si le trigger duquel on sort n'est pas celui actif, rien à faire
+
+
+        currentTrigger = null;
+    }
+
+
+    bool startFacingDirection, currentFacingDirection, inverseFacingDirection;
+    float maxInverseFacingTime = 0.5f; // TODO: softcode that
+    float facingTime = -1;
+
+    bool FacingDirection(Vector3 direction)
+    {
+        float dot = Vector3.Dot(target.parent.forward, direction);
+        bool temp = currentFacingDirection ? dot > -0.8f : dot > 0.8f;
+        if (facingTime == -1)
+        {
+            facingTime = 0;
+            if (Input.GetAxis("Vertical") <= 0)
+                temp ^= true;
+            return startFacingDirection = currentFacingDirection = temp;
+
+        }
+        else if (temp != currentFacingDirection && playerVelocity.sqrMagnitude > 0.01f)
+        {
+            facingTime += deltaTime;
+            if (facingTime >= maxInverseFacingTime)
+            {
+                facingTime = 0;
+                inverseFacingDirection ^= true;
+                return currentFacingDirection = temp;
+            }
+        }
+        else
+            facingTime = 0;
+        return currentFacingDirection;
+    }
+
     #region Point of Interest
 
     bool nearPOI, alwaysLookAt = true;
@@ -858,33 +943,6 @@ public class PoS_Camera : MonoBehaviour {
             resetType = eResetType.None;
     }
     #endregion
-    
-    // TODO: region triggers
-
-    bool startFacingDirection, currentFacingDirection, inverseFacingDirection;
-    float maxInverseFacingTime = 0.5f; // TODO: softcode that
-    float facingTime = -1;
-
-    bool FacingDirection(Vector3 direction) {
-        float dot = Vector3.Dot(target.parent.forward, direction);
-        bool temp = currentFacingDirection ? dot > -0.8f : dot > 0.8f;
-        if (facingTime == -1) {
-            facingTime = 0;
-            if (Input.GetAxis("Vertical") <= 0)
-                temp ^= true;
-            return startFacingDirection = currentFacingDirection = temp;
-
-        } else if (temp != currentFacingDirection && playerVelocity.sqrMagnitude > 0.01f) {
-            facingTime += deltaTime;
-            if (facingTime >= maxInverseFacingTime) {
-                facingTime = 0;
-                inverseFacingDirection ^= true;
-                return currentFacingDirection = temp;
-            }
-        } else
-            facingTime = 0;
-        return currentFacingDirection;
-    }
     
     #region Align with Axis
 
@@ -934,38 +992,7 @@ public class PoS_Camera : MonoBehaviour {
     }
 
     #endregion
-    
-	#region Contextual Offset
-    Vector3 contextualOffset;
-    bool cameraBounce;
 
-    public void SetVerticalOffset(float verticalOffset) {
-        return; // TODO: fix that buggy offset thingy
-        recoilIntensity = recoilOnImpact * verticalOffset;
-        contextualOffset.y = -verticalOffset;
-        cameraBounce = true;
-    }
+    #endregion
 
-    Vector3 GetContextualOffset() {
-        Vector3 offset = new Vector3(0, 0, 0);
-
-        // multiplier l'offset contextuel par un modifier qui dépend de la distance actuelle
-        // si on est à zéro distance alors pas d'offset
-
-        if (cameraBounce) {
-            offset += contextualOffset.y * target.up * recoilIntensity;
-            contextualOffset.y = Mathf.Lerp(contextualOffset.y, 0, deltaTime / smoothDamp);
-            if (Mathf.Abs(contextualOffset.y - 0) < .01f)
-                cameraBounce = false;
-            // use impactFromSpeed (animCurve) to attenuate the impact on low speed
-            // impactFromSpeed on recoilOnImpact
-        }
-        if (onEdgeOfCliff) // Appliquer l'offset contextuel sur le bord des falaises
-            contextualOffset = Vector3.Lerp(contextualOffset, player.transform.forward * (Mathf.Max(0, pitch) / cliffOffsetDivision.Lerp(currentDistance / maxDistance)), deltaTime / autoResetDamp);
-        else
-            contextualOffset = Vector3.Lerp(contextualOffset, Vector3.zero, deltaTime / autoResetDamp);
-        return offset + contextualOffset;
-    }
-	#endregion
-    
 }
