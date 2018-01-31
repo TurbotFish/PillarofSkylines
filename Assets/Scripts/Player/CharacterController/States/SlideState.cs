@@ -56,7 +56,7 @@ namespace Game.Player.CharacterController.States
             else if (!collisionInfo.below)
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
-
+                stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
                 stateMachine.ChangeState(state);
             } 
             //dash
