@@ -19,6 +19,9 @@ public class TriggerBox : Trigger {
     bool changeMaterial;
 
     [ConditionalHide("changeMaterial"), SerializeField]
+    int materialID = 0;
+
+    [ConditionalHide("changeMaterial"), SerializeField]
     Material on, off;
 
     [ConditionalHide("changeMaterial"), SerializeField]
@@ -32,7 +35,7 @@ public class TriggerBox : Trigger {
                 TriggerState = true;
 
             if (changeMaterial) {
-                renderer.sharedMaterial = TriggerState ? on : off;
+                renderer.sharedMaterials[materialID] = TriggerState ? on : off;
             }
         }
     }
