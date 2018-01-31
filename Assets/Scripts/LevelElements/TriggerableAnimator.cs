@@ -27,7 +27,7 @@ public class TriggerableAnimator : TriggerableObject {
                     break;
                 default:
                 case AnimatorComponent.AnimComponentType.Trigger:
-                    if (!anim.triggerWhenOff)
+                    if (anim.triggerType != AnimatorComponent.TriggerType.TriggerOnUnactive)
                         animator.SetTrigger(anim.name);
                     break;
                 case AnimatorComponent.AnimComponentType.Integer:
@@ -51,7 +51,7 @@ public class TriggerableAnimator : TriggerableObject {
                     break;
                 default:
                 case AnimatorComponent.AnimComponentType.Trigger:
-                    if (anim.triggerWhenOff)
+                    if (anim.triggerType != AnimatorComponent.TriggerType.TriggerOnActive)
                         animator.SetTrigger(anim.name);
                     break;
                 case AnimatorComponent.AnimComponentType.Integer:
@@ -74,6 +74,11 @@ public struct AnimatorComponent
         Integer = 3,
     }
 
+    public enum TriggerType
+    {
+        TriggerOnActive, TriggerOnUnactive, TriggerOnBoth
+    }
+
     public AnimComponentType type;
 
     public string name;
@@ -87,7 +92,7 @@ public struct AnimatorComponent
     public float floatValueOff;
     
     [ConditionalHide("type", 2)]
-    public bool triggerWhenOff;
+    public TriggerType triggerType;
 
     [ConditionalHide("type", 3)]
     public int intValueOn;
