@@ -9,9 +9,12 @@ public class LightRay : MonoBehaviour {
 
     [SerializeField] bool inverseState;
 
+    [SerializeField] Transform endOfRay;
+
     LightReceptor receptor;
     new LineRenderer renderer;
     Transform my;
+
     private void Start() {
         my = transform;
         renderer = GetComponent<LineRenderer>();
@@ -34,6 +37,9 @@ public class LightRay : MonoBehaviour {
             } else if (receptor) {
                 receptor.Toggle(!inverseState, inverseState);
             }
+
+            if (endOfRay)
+                endOfRay.position = hit.point;
         }
         
         if (lookAtTarget) {

@@ -15,6 +15,8 @@ namespace Game.Player.CharacterController.States
         StateMachine stateMachine;
         CharData.WallRunData wallRunData;
 
+        bool firstFrame = true;
+
         int noWallCounter = 0;
         Vector3 lastWallNormal;
 
@@ -72,13 +74,14 @@ namespace Game.Player.CharacterController.States
             //jump
             else if (inputInfo.jumpButtonDown)
             {
-                charController.MyTransform.rotation = Quaternion.LookRotation(lastWallNormal, charController.MyTransform.up);
+                Vector3 jumpDirection = Vector3.ProjectOnPlane(lastWallNormal + movementInfo.velocity.normalized, charController.MyTransform.up).normalized;
+                Debug.Log("direction : " + jumpDirection + " from wall : " + lastWallNormal + " movement : " + movementInfo.velocity.normalized);
+                charController.MyTransform.rotation = Quaternion.LookRotation(jumpDirection, charController.MyTransform.up);
 
-                Vector3 jumpDirection = (charController.MyTransform.up + collisionInfo.currentWallNormal + movementInfo.velocity).normalized;
 
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 state.SetJumpDirection(jumpDirection);
-                state.SetAirControl(false);
+                state.SetTimerAirControl(wallRunData.TimerBeforeAirControl);
 
                 stateMachine.ChangeState(state);
             }
@@ -89,11 +92,13 @@ namespace Game.Player.CharacterController.States
         {
             PlayerMovementInfo movementInfo = charController.MovementInfo;
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
+            PlayerInputInfo inputInfo = charController.InputInfo;
 
             if (collisionInfo.side)
             {
                 noWallCounter = 0;
-                lastWallNormal = collisionInfo.currentWallNormal;
+                if (collisionInfo.currentWallNormal != Vector3.zero)
+                    lastWallNormal = collisionInfo.currentWallNormal;
             }
             else
             {
@@ -101,37 +106,34 @@ namespace Game.Player.CharacterController.States
             }
 
             //********************************
-            //the direction along the wall (laft or right)
-            Vector3 wallRunDir = Vector3.ProjectOnPlane(movementInfo.velocity, lastWallNormal);
-
-            //flattening the direction
-            wallRunDir = Vector3.ProjectOnPlane(wallRunDir, charController.MyTransform.up);
+            //the direction along the wall
+            Vector3 wallRunDir = Vector3.zero;
+            if (firstFrame)
+                wallRunDir = Vector3.ProjectOnPlane(movementInfo.velocity * wallRunData.SpeedMultiplier, lastWallNormal);
+            
 
             //translate the direction to local space
             Vector3 localWallRunDir = charController.MyTransform.worldToLocalMatrix.MultiplyVector(wallRunDir);
 
+            localWallRunDir += Vector3.ProjectOnPlane(inputInfo.leftStickToCamera, lastWallNormal) * wallRunData.Speed;
             Vector3 acceleration = localWallRunDir;
 
             //********************************
-            /*
+            
             //wall hugging
-            Vector3 wallHugging = charController.MyTransform.worldToLocalMatrix.MultiplyVector(-lastWallNormal) * 4f * (noWallCounter + 1);
-
-            //if the wall is to the left of the player, wallHugging is inversed
-            if (Vector3.SignedAngle(wallRunDir, lastWallNormal, charController.MyTransform.up) < 0)
-            {
-                wallHugging *= -1;
-            }*/
+            //Vector3 wallHugging = charController.MyTransform.worldToLocalMatrix.MultiplyVector(-lastWallNormal) * 4f * (noWallCounter + 1);
             
 
             var result = new StateReturnContainer()
             {
                 CanTurnPlayer = false,
-                PlayerForward = wallRunDir.normalized,
-                Acceleration = /*wallHugging +*/ acceleration,
+                PlayerForward = Vector3.ProjectOnPlane(wallRunDir, charController.MyTransform.up).normalized,
+                Acceleration = acceleration,
                 GravityMultiplier = wallRunData.GravityModifier,
                 TransitionSpeed = wallRunData.TransitionSpeed
             };
+
+            if (firstFrame) firstFrame = false;
 
             return result;
         }
@@ -191,7 +193,9 @@ namespace Game.Player.CharacterController.States
 
             float angle = Vector3.Angle(-wallNormal, stick);
 
-            if (!inputInfo.leftStickAtZero && angle < maxAngle)
+            //Debug.Log("stick : " + stick + " wall : " + -wallNormal + " angle : " + angle);
+
+            if (angle < maxAngle)
             {
                 return true;
             }
