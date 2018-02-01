@@ -64,19 +64,17 @@ namespace Game.Player.CharacterController.States
             //no wall or stick released => fall
             else if (!collisionInfo.side && noWallCounter > 5)
             {
-                Debug.Log("no col");
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
             else if (timerToUnstick > wallRunData.TimeToUnstick)
             {
-                Debug.Log("no stick");
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
             //jump
             else if (inputInfo.jumpButtonDown)
             {
                 Vector3 parallelDir = movementInfo.velocity / 10;
-                Debug.Log("parallel : " + parallelDir.sqrMagnitude);
+                Debug.LogWarning("para : " + parallelDir.sqrMagnitude);
                 Vector3 jumpDirection = Vector3.ProjectOnPlane(lastWallNormal + (parallelDir.sqrMagnitude > .25f? parallelDir : Vector3.zero), charController.MyTransform.up).normalized;
                 charController.MyTransform.rotation = Quaternion.LookRotation(jumpDirection, charController.MyTransform.up);
 

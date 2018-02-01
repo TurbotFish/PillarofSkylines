@@ -12,7 +12,7 @@ namespace Game.Player
         DoubleJump,
         TombFinder,
         EchoBoost,
-        EchoDistance,        
+        EchoDistance,
         Glide,
         WallRun,
         Dash,
