@@ -334,7 +334,6 @@ namespace Game.Player.CharacterController
                 int security = 2;
                 while (!colliding && security > 0 && !collisions.below)
                 {
-                    Debug.Log("moving towards wall");
                     myTransform.position += -collisions.lastWallNormal * skinWidth * 2;
 
                     colliding = Physics.CapsuleCast(

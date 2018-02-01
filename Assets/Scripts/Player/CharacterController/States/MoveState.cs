@@ -63,7 +63,6 @@ namespace Game.Player.CharacterController.States
                 state.SetJumpTimer(moveData.CanStillJumpTimer);
 
                 stateMachine.ChangeState(state);
-                
 			}
         }
 
@@ -71,6 +70,7 @@ namespace Game.Player.CharacterController.States
 			PlayerInputInfo inputInfo = charController.InputInfo;
 
 
+            Debug.Log("ground normal : " + charController.CollisionInfo.currentGroundNormal);
             var result = new StateReturnContainer
             {
                 CanTurnPlayer = true,

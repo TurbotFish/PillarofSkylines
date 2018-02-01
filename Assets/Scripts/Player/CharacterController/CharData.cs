@@ -510,6 +510,10 @@ namespace Game.Player.CharacterController
             float speed;
             public float Speed { get { return speed; } }
 
+            [SerializeField]
+            float timeToUnstick;
+            public float TimeToUnstick { get { return timeToUnstick; } }
+
             public void OnValidate()
             {
                 transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);

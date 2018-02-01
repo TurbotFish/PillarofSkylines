@@ -73,6 +73,7 @@ namespace Game.Player.CharacterController.States
 
         public StateReturnContainer Update(float dt)
         {
+            Debug.Log("ground normal : " + charController.CollisionInfo.currentGroundNormal);
 			var result = new StateReturnContainer 
 				{ 
 					CanTurnPlayer = false, 
