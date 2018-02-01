@@ -143,7 +143,6 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 			#pragma multi_compile _ VERTEXLIGHT_ON
 			#pragma multi_compile_fog
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
-			#pragma multi_compile_instancing
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
@@ -202,7 +201,6 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 			#pragma multi_compile_fog
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
 
-
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
 
@@ -260,7 +258,6 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 			#pragma multi_compile _ _VERTEX_BEND
 			#pragma multi_compile _ UNITY_HDR_ON
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
-			#pragma multi_compile_instancing
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
@@ -290,7 +287,6 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 			#pragma shader_feature _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
 			#pragma shader_feature _SMOOTHNESS_ALBEDO
 			#pragma shader_feature _SEMITRANSPARENT_SHADOWS
-			#pragma multi_compile_instancing
 
 			#include "ShadowsCustomPBR.cginc"
 
