@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
+[RequireComponent(typeof(MovingPlatform))]
 public class Door : TriggerableObject {
     [Header("Door")]
     public Vector3 offsetWhenOpen;
@@ -9,8 +10,12 @@ public class Door : TriggerableObject {
     public float timeToMove = 1;
     Transform my;
 
+    MovingPlatform platform;
+
     public void Awake() {
         my = transform;
+
+        platform = GetComponent<MovingPlatform>();
 
         if (triggered) {
             localPositionWhenOpen = my.localPosition;
@@ -41,7 +46,10 @@ public class Door : TriggerableObject {
         
         for (elapsed = timeToMove-elapsed; elapsed < timeToMove; elapsed += Time.deltaTime) {
             float t = elapsed / timeToMove;
-            my.localPosition = Vector3.Lerp(startPos, endPos, t);
+            
+
+            Vector3 movement = Vector3.Lerp(startPos, endPos, t) - my.localPosition;
+            platform.Move(movement);
             yield return null;
         }
         my.localPosition = endPos;

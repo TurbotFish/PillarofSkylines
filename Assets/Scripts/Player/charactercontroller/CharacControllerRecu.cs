@@ -72,6 +72,7 @@ namespace Game.Player.CharacterController
 
 		bool belowLastFrame;
         bool climbingStep;
+        bool insideWallOnThisFrame;
         Vector3 stepOffset;
 
         Quaternion playerAngle;
@@ -137,6 +138,7 @@ namespace Game.Player.CharacterController
             else
             {
                 Debug.LogWarning("The player's inside " + wallsOverPlayer.Length + " wall(s) : " + wallsOverPlayer[0].name);
+                insideWallOnThisFrame = true;
                 finalVelocity = AdjustPlayerPosition(velocity);
             }
 
@@ -223,7 +225,7 @@ namespace Game.Player.CharacterController
 				result = ConfirmMovement(velocity);
             }
 
-			if (belowLastFrame)
+			if (belowLastFrame && !insideWallOnThisFrame)
 			{
 				print("must be below");
 				int security = 5;
@@ -234,7 +236,7 @@ namespace Game.Player.CharacterController
 				}
 			}
 
-            if (collisions.lastWallNormal != Vector3.zero)
+            if (collisions.lastWallNormal != Vector3.zero && myPlayer.CurrentState == ePlayerState.wallRun)
             {
                 print("must be on a wall");
                 int security = 5;
