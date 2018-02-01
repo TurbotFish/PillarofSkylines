@@ -21,7 +21,8 @@ public class MovingPlatform : MonoBehaviour {
         {
             if (children.GetComponent<Collider>() != null)
             {
-                children.tag = "MovingPlatform";
+                if (children.tag == "Untagged")
+                    children.tag = "MovingPlatform";
             }
             TestChildren(children);
         }
