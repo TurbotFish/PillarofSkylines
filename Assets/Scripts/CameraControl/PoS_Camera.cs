@@ -356,24 +356,23 @@ public class PoS_Camera : MonoBehaviour {
 
 		targetSpace = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, target.up), Vector3.Cross(Vector3.up, target.up));
 
-        bool isGrounded = (playerState & (ePlayerState.move | ePlayerState.stand | ePlayerState.slide)) != 0;
+        bool isGrounded = (playerState & (ePlayerState.move | ePlayerState.stand | ePlayerState.slide | ePlayerState.wallRun )) != 0;
         float slopeValue = CheckGroundAndReturnSlopeValue();
 
         // TODO: Il nous faut ptet une fonction SetState() pour pouvoir faire des trucs uniquement lors d'un changement de State
         
-        if (isGrounded && additionalDistance != 0 && !inPanorama)
-            additionalDistance = 0;
-
-        if (resetType == eResetType.ManualAir && (playerState & (ePlayerState.move | ePlayerState.stand))!=0)
-            StopCurrentReset();
-
         // DO FOV ?? //TODO: place somewhere that makes more sense ??
         targetFov = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
-        if (playerState == ePlayerState.dash)
-        { // DASH
+
+        if (playerState == ePlayerState.dash) { // DASH
             targetFov += dashFovSupplement;
             ResetCamera(slopeValue);
             additionalDistance = 3;
+        }
+
+        if (playerState == ePlayerState.wallRun)
+        {
+            //ResetCamera(slopeValue);
         }
 
         if (inverseFacingDirection && Input.GetAxis("Vertical") >= 0) {
@@ -403,13 +402,12 @@ public class PoS_Camera : MonoBehaviour {
                     LookAtTargetPOI(); // TODO: manual priority just in case?
                 else if (axisAligned.sqrMagnitude != 0)
                     AlignWithAxis();
-
             }
             
             if (isGrounded)
                 GroundStateCamera(slopeValue);
-			else 
-				AirStateCamera();
+			else
+                AirStateCamera();
             
             if (playerState == ePlayerState.glide || playerState == ePlayerState.windTunnel) {
                 SetTargetRotation(-2 * playerVelocity.y + defaultPitch, GetYawBehindPlayer(), resetDamp);
@@ -417,9 +415,8 @@ public class PoS_Camera : MonoBehaviour {
             }
         }
         
-		if (Input.GetButton("ResetCamera")) {
+		if (Input.GetButton("ResetCamera"))
             ResetCamera(slopeValue);
-        }
     }
 
     void ResetCamera(float slopeValue = 0) {
@@ -429,20 +426,26 @@ public class PoS_Camera : MonoBehaviour {
         facingTime = -1;
         state = eCameraState.Resetting;
 
+        bool isFalling = playerState == ePlayerState.air && playerVelocity.y < 0;
+
         // dans les airs, la caméra pointe vers le bas
-        if (playerState == ePlayerState.air)
-        { // on n'utilise pas isGrounded ici car cet état est spécifique au fait de tomber
+        if (isFalling) { // on n'utilise pas isGrounded ici car cet état est spécifique au fait de tomber
             resetType = eResetType.ManualAir;
             SetTargetRotation(pitchRotationLimit.max, GetYawBehindPlayer(), resetDamp);
         }
-        else
-        { // sinon, elle se met derrière le joueur
+        else { // sinon, elle se met derrière le joueur
             resetType = eResetType.ManualGround;
             SetTargetRotation(defaultPitch + slopeValue, GetYawBehindPlayer(), resetDamp);
         }
     }
 
     void GroundStateCamera(float slopeValue) {
+
+        if (additionalDistance != 0 && !inPanorama)
+            additionalDistance = 0;
+
+        if (resetType == eResetType.ManualAir)
+            StopCurrentReset();
 
         if (state == eCameraState.Air) { // Si on était dans les airs avant
             if (!onEdgeOfCliff)
@@ -471,8 +474,9 @@ public class PoS_Camera : MonoBehaviour {
         state = eCameraState.Air;
         AllowAutoReset(true);
 
-        if (playerVelocity.y < 0) { // je suis en train de tomber
+        bool isFalling = playerVelocity.y < 0;
 
+        if (isFalling) { // je suis en train de tomber
 			if (additionalDistance > -distanceReductionWhenFalling) // alors je zoom vers le perso
 				additionalDistance -= deltaTime / autoResetDamp;
 
@@ -867,7 +871,6 @@ public class PoS_Camera : MonoBehaviour {
     public void EnterTrigger(CameraControlTrigger trigger)
     {
         currentTrigger = trigger;
-        print("SETTING UP TRIGGER " + trigger);
 
         if (trigger.editZoom)
             ZoomAt(trigger.zoomValue, trigger.damp);
