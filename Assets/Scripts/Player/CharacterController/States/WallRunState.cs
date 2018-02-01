@@ -36,16 +36,19 @@ namespace Game.Player.CharacterController.States
         {
             Debug.Log("Enter State: Wall Run");
 
+
             //if the player should not be able to walldrift he starts falling again
             if (!CheckCanEnterWallRun(charController))
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
+            charController.animator.SetBool("WallRunning", true);
         }
 
         public void Exit()
         {
             Debug.Log("Exit State: Wall Run");
+            charController.animator.SetBool("WallRunning", false);
         }
 
         //#############################################################################
@@ -69,6 +72,11 @@ namespace Game.Player.CharacterController.States
             else if (timerToUnstick > wallRunData.TimeToUnstick)
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
+            }
+            //dash
+            else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
+            {
+                stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             }
             //jump
             else if (inputInfo.jumpButtonDown)
