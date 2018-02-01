@@ -403,9 +403,9 @@ namespace Game.Utilities
 
         public class FavourPickedUpEventArgs : EventArgs
         {
-            public int FavourId { get; private set; }
+            public string FavourId { get; private set; }
 
-            public FavourPickedUpEventArgs(int favourId)
+            public FavourPickedUpEventArgs(string favourId)
             {
                 FavourId = favourId;
             }
@@ -421,6 +421,18 @@ namespace Game.Utilities
         }
 
         #endregion favour picked up event
+
+        //***********************************************************
+
+
+        public delegate void EchoDestroyedEventHandler(object sender);
+
+        public static event EchoDestroyedEventHandler EchoDestroyedEvent;
+
+        public static void SendEchoDestroyedEvent(object sender)
+        {
+            EchoDestroyedEvent?.Invoke(sender);
+        }
 
         //***********************************************************
 
@@ -450,12 +462,10 @@ namespace Game.Utilities
         public class WindTunnelPartExitedEventArgs: EventArgs
         {
             public WindTunnelPart WindTunnelPart { get; private set; }
-            public bool StillInWindTunnel { get; private set; }
 
-            public WindTunnelPartExitedEventArgs(WindTunnelPart windTunnelPart, bool stillInWindTunnel)
+            public WindTunnelPartExitedEventArgs(WindTunnelPart windTunnelPart)
             {
                 WindTunnelPart = windTunnelPart;
-                StillInWindTunnel = stillInWindTunnel;
             }
         }
 

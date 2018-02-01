@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿
+using UnityEngine;
 using System.Collections;
 using Game.Player.CharacterController;
 
@@ -90,6 +91,10 @@ public class PoS_Camera : MonoBehaviour {
 	[Header("Eclipse")]
 	public bool isEclipse = false;
 
+    [Header("FOV")]
+    public float fovDamp = 4;
+    public float dashFovSupplement = 15;
+
 	new Camera camera;
 	Vector3 camPosition, negDistance;
 	Vector3 playerVelocity;
@@ -101,10 +106,12 @@ public class PoS_Camera : MonoBehaviour {
     CharacControllerRecu controller;
 	Transform my;
     Eclipse eclipseFX;
+    CameraControlTrigger currentTrigger;
 
     ePlayerState playerState;
 
     float deltaTime;
+    float startFov, targetFov;
 
     float yaw, pitch, targetYaw, targetPitch, manualPitch;
 	float maxDistance, currentDistance, idealDistance, additionalDistance;
@@ -131,13 +138,14 @@ public class PoS_Camera : MonoBehaviour {
 		Cursor.lockState = CursorLockMode.Locked;
 
         my = transform;
-		player = target.GetComponentInParent<CharController>();
+        eclipseFX = GetComponent<Eclipse>();
+        player = target.GetComponentInParent<CharController>();
 		controller = player.GetComponent<CharacControllerRecu>();
         
 		currentDistance = zoomValue = idealDistance = distance;
 		maxDistance = canZoom ? zoomDistance.max : distance;
 
-        eclipseFX = GetComponent<Eclipse>();
+        startFov = camera.fieldOfView;
 
 		manualPitch = defaultPitch;
 		state = eCameraState.Default;
@@ -160,7 +168,7 @@ public class PoS_Camera : MonoBehaviour {
 	void LateUpdate() {
 		deltaTime = Time.deltaTime;
         
-		GetInputsAndStates();
+        GetInputsAndStates();
 		DoRotation();
 		EvaluatePosition();
 		SmoothMovement();
@@ -284,8 +292,6 @@ public class PoS_Camera : MonoBehaviour {
 		float distanceFromAngle = Mathf.Lerp(0, 1, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
 		idealDistance = 1 + zoomValue * distanceFromAngle + additionalDistance;
 
-		camera.fieldOfView = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
-
 		if (canZoom) Zoom(Input.GetAxis("Mouse ScrollWheel"));
 
 		offset.x = Mathf.Lerp(offsetClose.x, offsetFar.x, currentDistance / maxDistance);
@@ -309,7 +315,8 @@ public class PoS_Camera : MonoBehaviour {
         float t = smoothMovement ? deltaTime / smoothDamp : 1;
         // damping value is the inverse of speed, we simply give the camera a speed of 1/smoothDamp
         // so deltaTime * speed = deltaTime * 1/smoothDamp = deltaTime/smoothDamp
-        
+
+        camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, targetFov, fovDamp * deltaTime);
         my.position = SmoothApproach(my.position, lastFrameCamPos, camPosition, t);
         my.rotation = Quaternion.Lerp(my.rotation, camRotation, t); // TODO: only local space calculation?
 
@@ -354,11 +361,20 @@ public class PoS_Camera : MonoBehaviour {
 
         // TODO: Il nous faut ptet une fonction SetState() pour pouvoir faire des trucs uniquement lors d'un changement de State
         
-        if (isGrounded && additionalDistance != 0)
+        if (isGrounded && additionalDistance != 0 && !inPanorama)
             additionalDistance = 0;
 
         if (resetType == eResetType.ManualAir && (playerState & (ePlayerState.move | ePlayerState.stand))!=0)
             StopCurrentReset();
+
+        // DO FOV ?? //TODO: place somewhere that makes more sense ??
+        targetFov = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
+        if (playerState == ePlayerState.dash)
+        { // DASH
+            targetFov += dashFovSupplement;
+            ResetCamera(slopeValue);
+            additionalDistance = 3;
+        }
 
         if (inverseFacingDirection && Input.GetAxis("Vertical") >= 0) {
             startFacingDirection ^= true;
@@ -402,20 +418,27 @@ public class PoS_Camera : MonoBehaviour {
         }
         
 		if (Input.GetButton("ResetCamera")) {
-			manualPitch = defaultPitch;
-			AllowAutoReset(true);
+            ResetCamera(slopeValue);
+        }
+    }
 
-			facingTime = -1;
-            state = eCameraState.Resetting;
+    void ResetCamera(float slopeValue = 0) {
+        manualPitch = defaultPitch;
+        AllowAutoReset(true);
 
-            // dans les airs, la caméra pointe vers le bas
-            if (playerState == ePlayerState.air) { // on n'utilise pas isGrounded ici car cet état est spécifique au fait de tomber
-                resetType = eResetType.ManualAir;
-                SetTargetRotation(pitchRotationLimit.max, GetYawBehindPlayer(), resetDamp);
-            } else { // sinon, elle se met derrière le joueur
-                resetType = eResetType.ManualGround;
-                SetTargetRotation(defaultPitch + slopeValue, GetYawBehindPlayer(), resetDamp);
-            }
+        facingTime = -1;
+        state = eCameraState.Resetting;
+
+        // dans les airs, la caméra pointe vers le bas
+        if (playerState == ePlayerState.air)
+        { // on n'utilise pas isGrounded ici car cet état est spécifique au fait de tomber
+            resetType = eResetType.ManualAir;
+            SetTargetRotation(pitchRotationLimit.max, GetYawBehindPlayer(), resetDamp);
+        }
+        else
+        { // sinon, elle se met derrière le joueur
+            resetType = eResetType.ManualGround;
+            SetTargetRotation(defaultPitch + slopeValue, GetYawBehindPlayer(), resetDamp);
         }
     }
 
@@ -718,23 +741,70 @@ public class PoS_Camera : MonoBehaviour {
 	}
 
     #endregion
+    
+    #region Contextual Offset
+    Vector3 contextualOffset;
+    bool cameraBounce;
 
+    public void SetVerticalOffset(float verticalOffset)
+    {
+        return; // TODO: fix that buggy offset thingy
+        recoilIntensity = recoilOnImpact * verticalOffset;
+        contextualOffset.y = -verticalOffset;
+        cameraBounce = true;
+    }
+
+    Vector3 GetContextualOffset()
+    {
+        Vector3 offset = new Vector3(0, 0, 0);
+
+        // multiplier l'offset contextuel par un modifier qui dépend de la distance actuelle
+        // si on est à zéro distance alors pas d'offset
+
+        if (cameraBounce)
+        {
+            offset += contextualOffset.y * target.up * recoilIntensity;
+            contextualOffset.y = Mathf.Lerp(contextualOffset.y, 0, deltaTime / smoothDamp);
+            if (Mathf.Abs(contextualOffset.y - 0) < .01f)
+                cameraBounce = false;
+            // use impactFromSpeed (animCurve) to attenuate the impact on low speed
+            // impactFromSpeed on recoilOnImpact
+        }
+        if (onEdgeOfCliff) // Appliquer l'offset contextuel sur le bord des falaises
+            contextualOffset = Vector3.Lerp(contextualOffset, player.transform.forward * (Mathf.Max(0, pitch) / cliffOffsetDivision.Lerp(currentDistance / maxDistance)), deltaTime / autoResetDamp);
+        else
+            contextualOffset = Vector3.Lerp(contextualOffset, Vector3.zero, deltaTime / autoResetDamp);
+        return offset + contextualOffset;
+    }
+    #endregion
+    
     #region Home Door
 
+    [Header("Home Door")]
+    [SerializeField] float homeDoorMaxZoom = 10;
+    [SerializeField] float homeDoorFov = 40;
+
+    float lastFrameZoomSign;
     Vector3 homeDoorPosition, homeDoorForward, homePosition;
-    float homeDoorMaxZoom = 10, homeDoorFov = 70, lastFrameZoomSign;
     bool dontSmoothNextFrame;
 
-    public void LookAtHomeDoor(Vector3 doorPosition, Vector3 doorForward, Vector3 homePosition) {
+    public void LookAtHomeDoor(Vector3 doorPosition, Vector3 doorForward, Vector3 homePosition)
+    {
+        AllowAutoReset(true, true);
         state = eCameraState.HomeDoor;
         homeDoorPosition = doorPosition;
         homeDoorForward = doorForward;
         this.homePosition = homePosition;
         lastFrameZoomSign = 1;
+        targetFov = homeDoorFov; // Change FOV
     }
 
     public void StopLookingAtHomeDoor() {
         state = eCameraState.Default;
+
+        ResetCamera(); // Reset the camera, ignoring any previous value
+        yaw = targetYaw;
+        pitch = targetPitch;
     }
 
     void HomeDoorState() {
@@ -746,9 +816,7 @@ public class PoS_Camera : MonoBehaviour {
 
         bool playerPassedPortal = (playerPos - homeDoorPosition).sqrMagnitude > (playerPos - homePosition).sqrMagnitude;
         Vector3 forward = playerPassedPortal ? Vector3.forward : homeDoorForward;
-
         Vector3 projected = Vector3.Project((playerPassedPortal ? homePosition : homeDoorPosition) - playerPos, forward);
-
         float playerPosValue = 2 * projected.magnitude / homeDoorMaxZoom;
         
         if (playerPassedPortal || (!playerPassedPortal && (my.position - playerPos).sqrMagnitude > (my.position - homeDoorPosition).sqrMagnitude))
@@ -775,12 +843,16 @@ public class PoS_Camera : MonoBehaviour {
         targetPos.y += 2;
         forward = camPassedPortal ? Vector3.forward : homeDoorForward;
 
+        RaycastHit hit;
+        bool hitAWall = Physics.Raycast(targetPos, -forward, out hit, trueZoom,  blockingLayer);
+        if (hitAWall) // si y a un mur on évite de se mettre au travers
+            trueZoom = hit.distance;
+
         camPosition = targetPos - forward * trueZoom;
         camRotation = Quaternion.LookRotation(forward);
-
-
-        camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, homeDoorFov, 4*deltaTime);
-
+        
+        //
+        
         bool alterPlayerForward = playerPassedPortal && !camPassedPortal;
 
         Vector3 characterUp = target.parent.up;
@@ -789,6 +861,87 @@ public class PoS_Camera : MonoBehaviour {
     }
 
     #endregion
+
+    #region Triggers
+
+    public void EnterTrigger(CameraControlTrigger trigger)
+    {
+        currentTrigger = trigger;
+        print("SETTING UP TRIGGER " + trigger);
+
+        if (trigger.editZoom)
+            ZoomAt(trigger.zoomValue, trigger.damp);
+
+        switch (trigger.mode)
+        {
+            case CameraControlTrigger.CameraControl.PointOfInterest:
+                SetPointOfInterest(trigger.target.position);
+                break;
+            case CameraControlTrigger.CameraControl.AlignWithForwardAxis:
+                SetAxisAlignment(trigger.transform.forward, !trigger.lookInForwardDirection);
+                break;
+            case CameraControlTrigger.CameraControl.OverrideCameraTransform:
+                OverrideCamera(trigger.target.position, trigger.target.eulerAngles, trigger.damp);
+                break;
+            default: break;
+        }
+        enablePanoramaMode = !trigger.disablePanoramaMode;
+    }
+
+    public void ExitTrigger(CameraControlTrigger trigger)
+    {
+        if (trigger != currentTrigger) return; // si le trigger duquel on sort n'est pas celui actif, rien à faire
+
+        if (trigger.editZoom)
+            ResetZoom();
+
+        switch (trigger.mode)
+        {
+            case CameraControlTrigger.CameraControl.PointOfInterest:
+                ClearPointOfInterest(trigger.target.position);
+                break;
+            case CameraControlTrigger.CameraControl.AlignWithForwardAxis:
+                RemoveAxisAlignment(trigger.transform.forward);
+                break;
+            case CameraControlTrigger.CameraControl.OverrideCameraTransform:
+                StopOverride();
+                break;
+            default: break;
+        }
+        enablePanoramaMode = true;
+        currentTrigger = null;
+    }
+    
+    bool startFacingDirection, currentFacingDirection, inverseFacingDirection;
+    float maxInverseFacingTime = 0.5f; // TODO: softcode that
+    float facingTime = -1;
+
+    bool FacingDirection(Vector3 direction)
+    {
+        float dot = Vector3.Dot(target.parent.forward, direction);
+        bool temp = currentFacingDirection ? dot > -0.8f : dot > 0.8f;
+        if (facingTime == -1)
+        {
+            facingTime = 0;
+            if (Input.GetAxis("Vertical") <= 0)
+                temp ^= true;
+            return startFacingDirection = currentFacingDirection = temp;
+
+        }
+        else if (temp != currentFacingDirection && playerVelocity.sqrMagnitude > 0.01f)
+        {
+            facingTime += deltaTime;
+            if (facingTime >= maxInverseFacingTime)
+            {
+                facingTime = 0;
+                inverseFacingDirection ^= true;
+                return currentFacingDirection = temp;
+            }
+        }
+        else
+            facingTime = 0;
+        return currentFacingDirection;
+    }
 
     #region Point of Interest
 
@@ -823,33 +976,6 @@ public class PoS_Camera : MonoBehaviour {
             resetType = eResetType.None;
     }
     #endregion
-    
-    // TODO: region triggers
-
-    bool startFacingDirection, currentFacingDirection, inverseFacingDirection;
-    float maxInverseFacingTime = 0.5f; // TODO: softcode that
-    float facingTime = -1;
-
-    bool FacingDirection(Vector3 direction) {
-        float dot = Vector3.Dot(target.parent.forward, direction);
-        bool temp = currentFacingDirection ? dot > -0.8f : dot > 0.8f;
-        if (facingTime == -1) {
-            facingTime = 0;
-            if (Input.GetAxis("Vertical") <= 0)
-                temp ^= true;
-            return startFacingDirection = currentFacingDirection = temp;
-
-        } else if (temp != currentFacingDirection && playerVelocity.sqrMagnitude > 0.01f) {
-            facingTime += deltaTime;
-            if (facingTime >= maxInverseFacingTime) {
-                facingTime = 0;
-                inverseFacingDirection ^= true;
-                return currentFacingDirection = temp;
-            }
-        } else
-            facingTime = 0;
-        return currentFacingDirection;
-    }
     
     #region Align with Axis
 
@@ -899,38 +1025,7 @@ public class PoS_Camera : MonoBehaviour {
     }
 
     #endregion
-    
-	#region Contextual Offset
-    Vector3 contextualOffset;
-    bool cameraBounce;
 
-    public void SetVerticalOffset(float verticalOffset) {
-        return; // TODO: fix that buggy offset thingy
-        recoilIntensity = recoilOnImpact * verticalOffset;
-        contextualOffset.y = -verticalOffset;
-        cameraBounce = true;
-    }
+    #endregion
 
-    Vector3 GetContextualOffset() {
-        Vector3 offset = new Vector3(0, 0, 0);
-
-        // multiplier l'offset contextuel par un modifier qui dépend de la distance actuelle
-        // si on est à zéro distance alors pas d'offset
-
-        if (cameraBounce) {
-            offset += contextualOffset.y * target.up * recoilIntensity;
-            contextualOffset.y = Mathf.Lerp(contextualOffset.y, 0, deltaTime / smoothDamp);
-            if (Mathf.Abs(contextualOffset.y - 0) < .01f)
-                cameraBounce = false;
-            // use impactFromSpeed (animCurve) to attenuate the impact on low speed
-            // impactFromSpeed on recoilOnImpact
-        }
-        if (onEdgeOfCliff) // Appliquer l'offset contextuel sur le bord des falaises
-            contextualOffset = Vector3.Lerp(contextualOffset, player.transform.forward * (Mathf.Max(0, pitch) / cliffOffsetDivision.Lerp(currentDistance / maxDistance)), deltaTime / autoResetDamp);
-        else
-            contextualOffset = Vector3.Lerp(contextualOffset, Vector3.zero, deltaTime / autoResetDamp);
-        return offset + contextualOffset;
-    }
-	#endregion
-    
 }

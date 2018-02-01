@@ -39,9 +39,14 @@ public class BeziezSplineInspector : Editor {
 	}
 
 	private void DrawSelectedPointInspector() {
-		GUILayout.Label("Selected Point");
+		GUILayout.Label("Selected Point: " + selectedIndex);
 		EditorGUI.BeginChangeCheck();
 		Vector3 point = EditorGUILayout.Vector3Field("Position", spline.GetControlPoint(selectedIndex));
+
+        EditorGUI.BeginDisabledGroup(true);
+        EditorGUILayout.Vector3Field("World Position", spline.transform.TransformPoint(spline.GetControlPoint(selectedIndex)));
+        EditorGUI.EndDisabledGroup();
+
 		if (EditorGUI.EndChangeCheck()) {
 			Undo.RecordObject(spline, "Move Point");
 			EditorUtility.SetDirty(spline);

@@ -15,6 +15,8 @@ namespace Game.Player.CharacterController
         /// </summary>
         [SerializeField]
         Transform rotator;
+        [SerializeField]
+        public Transform myCamera;
 
         //#############################################################################
 
@@ -46,7 +48,7 @@ namespace Game.Player.CharacterController
 
         public Transform MyTransform { get; private set; }
 
-        StateMachine stateMachine;
+        public StateMachine stateMachine;
 
         public ePlayerState CurrentState
         {
@@ -71,7 +73,7 @@ namespace Game.Player.CharacterController
         List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
 
         public List<WindTunnelPart> WindTunnelPartList { get { return new List<WindTunnelPart>(windTunnelPartList); } }
-
+        
         PlayerInputInfo inputInfo = new PlayerInputInfo();
 
         public PlayerInputInfo InputInfo { get { return inputInfo; } }
@@ -99,6 +101,8 @@ namespace Game.Player.CharacterController
         {
             tempPhysicsHandler = GetComponent<CharacControllerRecu>();
             animator = GetComponentInChildren<Animator>();
+            myCamera = FindObjectOfType<PoS_Camera>().transform;
+
 
             PlayerModel = gameController.PlayerModel;
             CharData = Resources.Load<CharData>("ScriptableObjects/CharData");
@@ -115,6 +119,7 @@ namespace Game.Player.CharacterController
             stateMachine.RegisterAbility(ePlayerState.wallDrift, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallClimb, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
+            stateMachine.RegisterAbility(ePlayerState.hover, eAbilityType.Hover);
 
             stateMachine.ChangeState(new AirState(this, stateMachine, AirState.eAirStateMode.fall));
 
@@ -163,6 +168,7 @@ namespace Game.Player.CharacterController
                 return;
             }
 
+
             if (Input.GetKeyDown(KeyCode.F6))
             {
                 this.ChangeGravityDirection(Vector3.left);
@@ -198,7 +204,9 @@ namespace Game.Player.CharacterController
                 inputInfo.leftStickToCamera = toCameraAngle * (rotator.right * stickH + rotator.forward * stickV);
 
                 var toSlopeAngle = Quaternion.AngleAxis(Vector3.Angle(transform.up, tempCollisionInfo.currentGroundNormal), Vector3.Cross(transform.up, tempCollisionInfo.currentGroundNormal));
-                inputInfo.leftStickToSlope = toSlopeAngle * inputInfo.leftStickToCamera;
+                inputInfo.leftStickToSlope = toSlopeAngle * (rotator.right * stickH + rotator.forward * stickV);
+                inputInfo.leftStickToSlope = toCameraAngle * inputInfo.leftStickToSlope;
+
 
                 inputInfo.dashButton = Input.GetButton("Dash");
                 inputInfo.dashButtonDown = Input.GetButtonDown("Dash");
@@ -218,7 +226,6 @@ namespace Game.Player.CharacterController
 
             //*******************************************
             //state update           
-
             //call state update
             var stateReturn = stateMachine.Update(Time.deltaTime);
 
@@ -228,9 +235,9 @@ namespace Game.Player.CharacterController
             float maxSpeed = stateReturn.MaxSpeedSet ? stateReturn.MaxSpeed : CharData.General.MaxSpeed;
             var acceleration = stateReturn.AccelerationSet ? stateReturn.Acceleration : velocity;
 
+
             if (stateReturn.PlayerForwardSet)
             {
-                //MyTransform.forward = Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up);
                 MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up), MyTransform.up);
             }
 
@@ -240,16 +247,16 @@ namespace Game.Player.CharacterController
                 //MyTransform.up = stateReturn.PlayerUp;
             }
 
-            //Debug.Log("================");
-            //Debug.LogFormat("initial velocity: {0}", velocity);
-            //Debug.LogFormat("desiredVelocity={0}", stateReturn.DesiredVelocity.magnitude.ToString());
-
             //computing new velocity
             //var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
             if (stateReturn.resetVerticalVelocity)
+            {
                 velocity.y = 0;
+            }
+
             Vector3 tempVertical = new Vector3();
             Vector3 newVelocity = new Vector3();
+
             if (stateReturn.keepVerticalMovement)
             {
                 tempVertical = new Vector3(0, velocity.y, 0);
@@ -261,13 +268,11 @@ namespace Game.Player.CharacterController
                 newVelocity = Vector3.Lerp(velocity, acceleration, Time.deltaTime * transitionSpeed);
             }
 
-
             //adding gravity
             if (!stateReturn.IgnoreGravity)
             {
-                newVelocity += Vector3.down * (CharData.General.GravityStrength * Time.deltaTime);
+                newVelocity += Vector3.down * (CharData.General.GravityStrength * (stateReturn.GravityMultiplierSet? stateReturn.GravityMultiplier : 1) * Time.deltaTime);
             }
-
 
             //clamping speed
             if (newVelocity.magnitude >= maxSpeed)
@@ -286,18 +291,17 @@ namespace Game.Player.CharacterController
             var turnedVelocity = TurnLocalToSpace(newVelocity);
             Vector3 lastPositionDelta;
 
-
+            /*
             if (stateMachine.CurrentState == ePlayerState.glide)
             {
                 lastPositionDelta = tempPhysicsHandler.Move(newVelocity * Time.deltaTime);
             }
             else
-            {
+            {*/
                 lastPositionDelta = tempPhysicsHandler.Move(turnedVelocity * Time.deltaTime);
-            }
+            //}
 
             velocity = lastPositionDelta / Time.deltaTime;
-            //Debug.LogFormat("after physics: {0}", newVelocity);
 
             externalVelocity = Vector3.zero;
             tempCollisionInfo = tempPhysicsHandler.collisions;
@@ -320,14 +324,10 @@ namespace Game.Player.CharacterController
                 }
                 else
                 {
-                    MyTransform.Rotate(
-                        MyTransform.up,
-                        Mathf.Lerp(
-                            0f,
-                            Vector3.SignedAngle(MyTransform.forward, Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), MyTransform.up), MyTransform.up),
-                            CharData.General.TurnSpeed * Time.deltaTime
-                        ),
-                        Space.World);
+                    Vector3 to = Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), MyTransform.up);
+                    float angle = Mathf.Lerp(0f, Vector3.SignedAngle(MyTransform.forward, to, MyTransform.up), CharData.General.TurnSpeed * Time.deltaTime);
+
+                    MyTransform.Rotate(MyTransform.up, angle, Space.World);
                 }
             }
 
@@ -369,8 +369,8 @@ namespace Game.Player.CharacterController
                 turn = 0;
             }
 
-
-            animator.SetBool("OnGround", tempCollisionInfo.below);
+            animator.SetFloat("Turn", turn);
+            animator.SetBool("OnGround", tempCollisionInfo.below || stateMachine.CurrentState == ePlayerState.hover);
             animator.SetFloat("Speed", Vector3.ProjectOnPlane(velocity, Vector3.up).magnitude / animationRunSpeed);
             //animator.SetFloat("Turn", turn);
             animator.SetFloat("VerticalSpeed", velocity.y / animationJumpSpeed);
@@ -425,17 +425,14 @@ namespace Game.Player.CharacterController
         {
             if (!windTunnelPartList.Contains(args.WindTunnelPart))
             {
+                print("eventreceived");
                 windTunnelPartList.Add(args.WindTunnelPart);
             }
-
-            //if (stateMachine.CurrentState != ePlayerState.windTunnel)
-            //{
-            //    stateMachine.ChangeState(new WindTunnelState(this, stateMachine));
-            //}
         }
 
         void OnWindTunnelPartExitedEventHandler(object sender, Utilities.EventManager.WindTunnelPartExitedEventArgs args)
         {
+            print("partremoved");
             windTunnelPartList.Remove(args.WindTunnelPart);
         }
 
@@ -445,12 +442,12 @@ namespace Game.Player.CharacterController
 
         #region utility methods
 
-        Vector3 TurnLocalToSpace(Vector3 vector)
+        public Vector3 TurnLocalToSpace(Vector3 vector)
         {
             return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, MyTransform.up), Vector3.Cross(Vector3.up, MyTransform.up))) * vector;
         }
 
-        Vector3 TurnSpaceToLocal(Vector3 vector)
+        public Vector3 TurnSpaceToLocal(Vector3 vector)
         {
             return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, MyTransform.up), Vector3.Cross(MyTransform.up, Vector3.up))) * vector;
         }
@@ -461,9 +458,9 @@ namespace Game.Player.CharacterController
 
         #region cancer
 
-        public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool framerateDependant)
+        public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool lerped)
         {
-            if (framerateDependant)
+            if (lerped)
             {
                 velocity += (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
             }
@@ -473,6 +470,11 @@ namespace Game.Player.CharacterController
             }
         }
 
+        public void ImmediateMovement(Vector3 newVelocity, bool worldSpace)
+        {
+            tempPhysicsHandler.Move((worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity));
+        }
+     
         public void SetVelocity(Vector3 newVelocity, bool worldSpace)
         {
             velocity = (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);

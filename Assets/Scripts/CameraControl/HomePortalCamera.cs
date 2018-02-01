@@ -6,8 +6,8 @@ public class HomePortalCamera : MonoBehaviour {
 
     public Transform anchorPoint, worldAnchorPoint;
     [Space]
-    [SerializeField] Renderer portalRenderer;
-    [SerializeField] Transform otherPortal;
+    public Renderer portalRenderer;
+    public Transform otherPortal;
 
     [HideInInspector, SerializeField] RenderTexture texture;
     
@@ -55,10 +55,17 @@ public class HomePortalCamera : MonoBehaviour {
         mat.mainTexture = texture;
     }
 
-    private void OnEnable() {
+    private void OnEnable()
+    {
+        otherPortal.gameObject.SetActive(true);
         otherPortal.rotation = Quaternion.identity;
     }
 
+    private void OnDisable()
+    {
+        otherPortal.gameObject.SetActive(false);
+    }
+    
     //
 
     void FindWorldCamera() {

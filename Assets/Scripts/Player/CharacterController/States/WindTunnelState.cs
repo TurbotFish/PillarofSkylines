@@ -50,30 +50,40 @@ namespace Game.Player.CharacterController.States
 
         public StateReturnContainer Update(float dt)
         {
+
+            PlayerInputInfo inputInfo = charController.InputInfo;
+
             PlayerMovementInfo movementInfo = charController.MovementInfo;
 
-            var wind = Vector3.zero;
+            windTunnelPartList = charController.WindTunnelPartList;
 
+            var partUp = Vector3.zero;
+            var wind = Vector3.zero;
             if (windTunnelPartList.Count > 0)
             {
                 foreach (var windTunnelPart in windTunnelPartList)
                 {
-                    var partUp = windTunnelPart.MyTransform.up;
+                    partUp = windTunnelPart.MyTransform.up;
                     var partPos = windTunnelPart.MyTransform.position;
-
-                    wind += partUp * windTunnelPart.windStrength + Vector3.ProjectOnPlane(partPos - movementInfo.position, partUp) * windTunnelPart.tunnelAttraction;
+                    wind = partUp * windTunnelPart.windStrength + (inputInfo.leftStickAtZero ? Vector3.ProjectOnPlane(partPos - movementInfo.position, partUp) * windTunnelPart.tunnelAttraction 
+                        : (charController.myCamera.right * inputInfo.leftStickRaw.x + charController.myCamera.forward
+                        * inputInfo.leftStickRaw.z)*10);
+                    Debug.Log("velocity added : " + (charController.myCamera.right * inputInfo.leftStickRaw.x + charController.myCamera.forward * inputInfo.leftStickRaw.z) * 10);
                 }
                 wind /= windTunnelPartList.Count;
             }
 
             var result = new StateReturnContainer
             {
-                CanTurnPlayer = true,
+                CanTurnPlayer = false,
                 IgnoreGravity = true,
 
-                Acceleration = wind,
-                TransitionSpeed = 0.7f
+                PlayerForward = partUp,
+
+                Acceleration = charController.TurnSpaceToLocal(wind),
+                TransitionSpeed = 7f
             };
+
 
             return result;
         }

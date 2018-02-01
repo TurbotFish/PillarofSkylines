@@ -7,6 +7,8 @@ namespace Game.Player {
     [RequireComponent(typeof(Collider))]
     public class InteractionController : MonoBehaviour
     {
+        [SerializeField] GameObject playerNeedle;
+
         //
         PlayerModel playerModel;
         CharacterController.CharController myPlayer;
@@ -29,7 +31,9 @@ namespace Game.Player {
         World.SpawnPointSystem.SpawnPointManager spawnPointManager;
         Transform airParticle, airOrigin;
 
-        HomeBeacon homeBeacon;
+        Beacon beacon;
+
+        new PoS_Camera camera;
 
         //
         bool isActive = false;
@@ -48,6 +52,8 @@ namespace Game.Player {
 
             spawnPointManager = FindObjectOfType<World.SpawnPointSystem.SpawnPointManager>(); //TODO: Fix that
 
+            camera = player.myCamera.GetComponent<PoS_Camera>();
+
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
         }
@@ -63,26 +69,26 @@ namespace Game.Player {
             if (!isActive)
                 return;
 
-            if (Input.GetButton("Interact") && !isInteractButtonDown)
+            if (Input.GetButtonDown("Interact") && !isInteractButtonDown)
             {
                 isInteractButtonDown = true;
 
                 //favour
                 if (favourPickUpInRange)
                 {
-                    if (!favour.FavourPickedUp)
+                    if (!playerModel.IsFavourPickedUp(favour.FavourId))
                     {
                         //pick up favour
                         playerModel.ChangeFavourAmount(1);
                         
                         //send event
-                        Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(favour.InstanceId));
+                        Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(favour.FavourId));
                     }
 
                     //clean up
                     favourPickUpInRange = false;
                     favour = null;
-                    HideUiMessage();
+                    HideUiMessage("Favour");
                 }
                 //pillar entrance
                 else if (pillarEntranceInfo.IsPillarEntranceInRange)
@@ -102,12 +108,14 @@ namespace Game.Player {
 
                     playerModel.hasNeedle ^= true;
 
+                    playerNeedle.SetActive(playerModel.hasNeedle);
+
                     if (playerModel.hasNeedle)
                         needleSlotForDrift = needleSlotCollider;
                     
                     Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(playerModel.hasNeedle));
 
-                    ShowUiMessage(playerModel.hasNeedle ? "Press [X] to plant the needle" : "Press [X] to take the needle");
+                    ShowUiMessage(playerModel.hasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle", needleInRange ? "Needle" : "NeedleSlot");
                 }
                 //eye
                 else if (eyeInRange) {
@@ -115,11 +123,11 @@ namespace Game.Player {
                     playerModel.hasNeedle = false;
                     Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(true));
 
-                    HideUiMessage();
+                    HideUiMessage("Eye");
                 }
                 //home beacon
-                else if (homeBeacon && homeBeacon.activated) {
-                    var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(homeBeacon.destination.position, Quaternion.identity, false);
+                else if (beacon && beacon.activated) {
+                    var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(beacon.destination.position, Quaternion.identity, false);
                     Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
                 }
 
@@ -190,16 +198,14 @@ namespace Game.Player {
                         {
                             favour = other.GetComponent<World.Interaction.Favour>();
 
-                            if (!favour.FavourPickedUp)
+                            if (!playerModel.IsFavourPickedUp(favour.FavourId))
                             {
                                 favourPickUpInRange = true;
 
-                                ShowUiMessage("Press [X] to pick up a Favour!");
+                                ShowUiMessage("[X]: Accept Favour", other.tag);
                             }
                             else
-                            {
                                 favour = null;
-                            }
                         }                     
                         break;
                     //pillar entrance
@@ -212,7 +218,7 @@ namespace Game.Player {
                                 pillarEntranceInfo.IsPillarEntranceInRange = true;
                                 pillarEntranceInfo.CurrentPillarEntrance = pillarEntrance;
 
-                                ShowUiMessage("Press [X] to enter the Pillar!");
+                                ShowUiMessage("[X]: Enter Pillar", other.tag);
                             }
                             break;
                         }
@@ -222,7 +228,7 @@ namespace Game.Player {
                         {
                             pillarExitInRange = true;
 
-                            ShowUiMessage("Press [X] to leave the Pillar!");
+                            ShowUiMessage("[X]: Exit Pillar", other.tag);
                             break;
                         }
 
@@ -232,7 +238,7 @@ namespace Game.Player {
                         needleInRange = true;
                         needleSlotCollider = other;
 
-                        ShowUiMessage(playerModel.hasNeedle ? "Press [X] to plant the needle" : "Press [X] to take the needle");
+                        ShowUiMessage(playerModel.hasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle", other.tag);
                         break;
                     //needle slot
                     case "NeedleSlot":
@@ -242,19 +248,19 @@ namespace Game.Player {
                             needleSlotInRange = true;
                             needleSlotCollider = other;
 
-                            ShowUiMessage(playerModel.hasNeedle ? "Press [X] to plant the needle" : "Press [X] to take the needle");
+                            ShowUiMessage(playerModel.hasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle", other.tag);
                         }
                         break;
                     //eye
                     case "Eye":
                         if (playerModel.hasNeedle) {
                             eyeInRange = true;
-                            ShowUiMessage("Press [X] to plant the needle");
+                            ShowUiMessage("[X]: Plant Needle", other.tag);
                         }
 						break;
                     //echo
                     case "Echo":
-                        other.GetComponent<EchoSystem.Echo>().Break();
+                        other.GetComponent<EchoSystem.Echo>().Break(true);
                         break;
                     //echo breaker
                     case "EchoBreaker":
@@ -267,7 +273,10 @@ namespace Game.Player {
                         break;
                     //wind
                     case "Wind":
-						other.GetComponent<WindTunnelPart>().AddPlayer(myPlayer);
+                        Debug.Log("coucou");
+                        Utilities.EventManager.SendWindTunnelEnteredEvent(this, new Utilities.EventManager.WindTunnelPartEnteredEventArgs(other.GetComponent<WindTunnelPart>()));
+                        if (myPlayer.stateMachine.CurrentState != CharacterController.ePlayerState.windTunnel)
+                                myPlayer.stateMachine.ChangeState(new CharacterController.States.WindTunnelState(myPlayer, myPlayer.stateMachine));
 						break;
                     // air particle
                     case "AirParticle":
@@ -300,7 +309,7 @@ namespace Game.Player {
                                 // calculate new rotation
                                 Vector3 newForward = other.transform.parent.InverseTransformDirection(myPlayer.transform.forward);
                                 // teleport to Home
-                                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, Quaternion.LookRotation(newForward), false); //TODO: make it take rotation as well
+                                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, Quaternion.LookRotation(newForward), false);
                                 Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
                             }
                             break;
@@ -313,25 +322,42 @@ namespace Game.Player {
                             if (dot < -0.4f) {
                                 // take offset from exact door position
                                 Vector3 offset = myPlayer.transform.position - other.transform.position;
-                                Transform destination = other.GetComponent<HomeBeacon>().destination;
+                                Transform destination = other.GetComponent<Beacon>().destination;
                                 Vector3 targetPoint = destination.position + destination.parent.TransformDirection(offset);
                                 // calculate new rotation
                                 Vector3 newForward = destination.parent.TransformDirection( myPlayer.transform.forward);
                                 // teleport to temporary Door
-                                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, Quaternion.LookRotation(newForward), false); //TODO: make it take rotation as well
+                                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, Quaternion.LookRotation(newForward), false);
                                 Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
                             }
                             break;
                         }
                     // HomeBeacon
-                    case "HomeBeacon":
-                        homeBeacon = other.GetComponent<HomeBeacon>();
-                        if (homeBeacon.activated)
-                            ShowUiMessage("Press [X] to teleport");
+                    case "Beacon":
+                        beacon = other.GetComponent<Beacon>();
+                        if (!beacon.isHomeBeacon)
+                        {
+                            beacon.Activate();
+                        }
+
+                        if (beacon.activated)
+                            ShowUiMessage("[X]: Teleport", other.tag);
                         break;
                     // Trigger Activator
                     case "TriggerActivator":
                         other.GetComponent<TriggerSystem.TimedActivator>().manager.Activate();
+                        break;
+                    // Tutorial Message
+                    case "TutoBox":
+                        ShowUiMessage(other.GetComponent<UI.TutoBox>().message, other.tag);
+                        break;
+                    // Home
+                    case "Home":
+                        echoManager.atHome = true;
+                        break;
+                    // CameraControlTrigger
+                    case "CameraControlTrigger":
+                        camera.EnterTrigger(other.GetComponent<CameraControlTrigger>());
                         break;
                     //other
                     default:
@@ -352,7 +378,7 @@ namespace Game.Player {
                         favourPickUpInRange = false;
                         favour = null;
 
-                        HideUiMessage();
+                        HideUiMessage(other.tag);
                         break;
                     //pillar entrance
                     case "Pillar":
@@ -361,25 +387,25 @@ namespace Game.Player {
 
                         pillarExitInRange = false;
 
-                        HideUiMessage();
+                        HideUiMessage(other.tag);
                         break;
                     //needle
                     case "Needle":
                         needleInRange = false;
 
-                        HideUiMessage();
+                        HideUiMessage(other.tag);
                         break;
                     //needle slot
                     case "NeedleSlot":
                         needleSlotInRange = false;
 
-                        HideUiMessage();
+                        HideUiMessage(other.tag);
                         break;
                     //eye
                     case "Eye":
                         eyeInRange = false;
 
-                        HideUiMessage();
+                        HideUiMessage(other.tag);
 						break;
                     //eye
                     case "Echo":
@@ -387,17 +413,29 @@ namespace Game.Player {
                         break;
                     //wind
                     case "Wind":
-						other.GetComponent<WindTunnelPart>().RemovePlayer();
-						break;
+                        Debug.Log("coucou");
+                        Utilities.EventManager.SendWindTunnelExitedEvent(this, new Utilities.EventManager.WindTunnelPartExitedEventArgs(other.GetComponent<WindTunnelPart>()));
+                        break;
                     // HomeBeacon
-                    case "HomeBeacon":
-                        homeBeacon = null;
-
-                        HideUiMessage();
+                    case "Beacon":
+                        beacon = null;
+                        HideUiMessage(other.tag);
                         break;
                     // Trigger Activator
                     case "TriggerActivator":
                         other.GetComponent<TriggerSystem.TimedActivator>().manager.StartTimer();
+                        break;
+                    // Tutorial Message
+                    case "TutoBox":
+                        HideUiMessage(other.tag);
+                        break;
+                    // Home
+                    case "Home":
+                        echoManager.atHome = false;
+                        break;
+                    // CameraControlTrigger
+                    case "CameraControlTrigger":
+                        camera.ExitTrigger(other.GetComponent<CameraControlTrigger>());
                         break;
                     //other
                     default:
@@ -413,15 +451,27 @@ namespace Game.Player {
         //########################################################################
 
         #region helper methods
-
-        void ShowUiMessage(string message)
+        
+        /// <summary>
+        /// Helps making sure the element turning off the UI is the same as the one turning it on.
+        /// </summary>
+        string lastTag;
+        
+        void ShowUiMessage(string message, string tag)
         {
+            lastTag = tag;
             Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message));
         }
 
         void HideUiMessage()
         {
             Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
+        }
+
+        void HideUiMessage(string tag)
+        {
+            if (tag == lastTag)
+                Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
         }
 
         #endregion helper methods

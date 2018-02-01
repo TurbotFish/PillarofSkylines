@@ -9,7 +9,7 @@ namespace Game.Player.CharacterController
     {
         //#############################################################################
 
-        //CharController character;
+        CharController character;
         PlayerModel model;
 
         Dictionary<ePlayerState, StateCooldown> cooldownDict = new Dictionary<ePlayerState, StateCooldown>();
@@ -17,17 +17,29 @@ namespace Game.Player.CharacterController
         Dictionary<ePlayerState, eAbilityType> stateToAbilityLinkDict = new Dictionary<ePlayerState, eAbilityType>();
         //Dictionary<eAbilityType, ePlayerState> abilityToStateLinkDict = new Dictionary<eAbilityType, ePlayerState>();
 
+        int remainingAerialJumps;
+
         IState currentState;
         public ePlayerState CurrentState { get { return currentState.StateId; } }
+
+        //Multipliers
+        [HideInInspector]
+        public float speedMultiplier = 1;
+        [HideInInspector]
+        public float jumpMultiplier = 1;
+        float boostTimer;
+
 
         //#############################################################################
 
         public StateMachine(CharController character)
         {
-            //this.character = character;
+            this.character = character;
             model = character.PlayerModel;
-        }
 
+            Utilities.EventManager.EchoDestroyedEvent += EchoDestroyedEventHandler;
+        }
+        
         //#############################################################################
 
         public void RegisterAbility(ePlayerState stateId, eAbilityType abilityType)
@@ -102,6 +114,42 @@ namespace Game.Player.CharacterController
 
         //#############################################################################
 
+        public void SetRemainingAerialJumps(int jumps)
+        {
+            remainingAerialJumps = jumps;
+        }
+
+        public int CheckRemainingAerialJumps()
+        {
+            return remainingAerialJumps;
+        }
+
+        //#############################################################################
+
+        public void EchoDestroyedEventHandler(object sender)
+        {
+            if (character.PlayerModel.CheckAbilityActive(eAbilityType.EchoBoost))
+            {
+                StartEchoBoost(character.CharData.EchoBoost.Duration, character.CharData.EchoBoost.LerpSpeed);
+            }
+        }
+
+        public void StartEchoBoost(float timer, float lerpTimer)
+        {
+            boostTimer = timer;
+            jumpMultiplier = character.CharData.EchoBoost.JumpMultiplier;
+            speedMultiplier = character.CharData.EchoBoost.SpeedMultiplier;
+        }
+
+        public void EndEchoBoost()
+        {
+            boostTimer = 0;
+            jumpMultiplier = 1;
+            speedMultiplier = 1;
+        }
+
+        //#############################################################################
+
         public StateReturnContainer Update(float dt)
         {
             //updating the state cooldowns
@@ -115,6 +163,20 @@ namespace Game.Player.CharacterController
                 {
                     cooldownDict.Remove(cooldown.StateId);
                 }
+            }
+
+
+            if (boostTimer < 0)
+            {
+                EndEchoBoost();
+            } else
+            {
+                boostTimer -= dt;
+            }
+
+            if (GuiFollowText.Instance != null)
+            {
+                GuiFollowText.Instance.SetText(currentState.StateId.ToString());
             }
 
             //updating the current state
