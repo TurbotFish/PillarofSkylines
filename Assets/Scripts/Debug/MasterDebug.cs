@@ -32,7 +32,7 @@ public class MasterDebug : MonoBehaviour {
 
     private void OnDisable()
     {
-        if (player)
+        if (player && Application.isPlaying)
             player.CharData.Jump.MaxAerialJumps = 1;
     }
 }
