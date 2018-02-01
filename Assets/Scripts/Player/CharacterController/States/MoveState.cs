@@ -69,8 +69,6 @@ namespace Game.Player.CharacterController.States
 		public StateReturnContainer Update(float dt) {
 			PlayerInputInfo inputInfo = charController.InputInfo;
 
-
-            Debug.Log("ground normal : " + charController.CollisionInfo.currentGroundNormal);
             var result = new StateReturnContainer
             {
                 CanTurnPlayer = true,
