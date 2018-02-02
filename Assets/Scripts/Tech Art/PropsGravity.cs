@@ -6,7 +6,7 @@ public class PropsGravity : MonoBehaviour {
 
 	public enum gravityFields {EastSurface,WestSurface, None}
 	public gravityFields gravityField;
-	public float gravityForce = 9.81f; 
+	float gravityForce = 20f; 
 	Rigidbody rb;
 
 	public bool useGravity;
@@ -20,6 +20,7 @@ public class PropsGravity : MonoBehaviour {
 		gravityWest = new Vector3 (gravityForce,0,0);
 		gravityEast = new Vector3 (-gravityForce,0,0);
 		rb = this.GetComponent<Rigidbody> ();
+		rb.isKinematic = true;
 	}
 
 	void Start ()
@@ -41,6 +42,7 @@ public class PropsGravity : MonoBehaviour {
 	IEnumerator StartGravity()
 	{
 		yield return new WaitForSecondsRealtime (5);
+		rb.isKinematic = false;
 		useGravity = true;
 	}
 
