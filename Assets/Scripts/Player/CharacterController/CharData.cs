@@ -46,11 +46,7 @@ namespace Game.Player.CharacterController
         [SerializeField]
         GlideData glide = new GlideData();
         public GlideData Glide { get { return glide; } }
-
-        [SerializeField]
-        WallDriftData wallDrift = new WallDriftData();
-        public WallDriftData WallDrift { get { return wallDrift; } }
-
+        
         [SerializeField]
         WallRunData wallRun = new WallRunData();
         public WallRunData WallRun { get { return wallRun; } }
@@ -80,7 +76,6 @@ namespace Game.Player.CharacterController
             dash.OnValidate();
             slide.OnValidate();
             glide.OnValidate();
-            wallDrift.OnValidate();
             wallRun.OnValidate();
         }
 
@@ -439,6 +434,10 @@ namespace Game.Player.CharacterController
             [SerializeField]
             float horizAngleCtrl;
             public float HorizAngleCtrl { get { return horizAngleCtrl; } }
+            
+            [SerializeField]
+            float exitInertiaTime;
+            public float ExitInertiaTime { get { return exitInertiaTime; } }
 
             public void OnValidate()
             {
@@ -446,35 +445,7 @@ namespace Game.Player.CharacterController
         }
 
         #endregion glide
-
-        //*******************************************
-
-        #region wall drift
-
-        [System.Serializable]
-        public class WallDriftData
-        {
-            [SerializeField]
-            float targetSpeed = 3;
-            public float TargetSpeed { get { return targetSpeed; } }
-
-            [SerializeField]
-            float transitionSpeed = 3;
-            public float TransitionSpeed { get { return transitionSpeed; } }
-
-            [SerializeField]
-            float maxTriggerAngle = 60;
-            public float MaxTriggerAngle { get { return maxTriggerAngle; } }
-
-            public void OnValidate()
-            {
-                transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
-                maxTriggerAngle = Mathf.Clamp(maxTriggerAngle, 0, float.MaxValue);
-            }
-        }
-
-        #endregion wall drift
-
+        
         //*******************************************
 
         #region wall run
@@ -505,6 +476,10 @@ namespace Game.Player.CharacterController
             [SerializeField]
             float speed;
             public float Speed { get { return speed; } }
+
+            [SerializeField]
+            float timeToUnstick;
+            public float TimeToUnstick { get { return timeToUnstick; } }
 
             public void OnValidate()
             {

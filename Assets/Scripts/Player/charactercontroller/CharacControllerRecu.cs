@@ -72,6 +72,7 @@ namespace Game.Player.CharacterController
 
 		bool belowLastFrame;
         bool climbingStep;
+        bool insideWallOnThisFrame;
         Vector3 stepOffset;
 
         Quaternion playerAngle;
@@ -137,6 +138,7 @@ namespace Game.Player.CharacterController
             else
             {
                 Debug.LogWarning("The player's inside " + wallsOverPlayer.Length + " wall(s) : " + wallsOverPlayer[0].name);
+                insideWallOnThisFrame = true;
                 finalVelocity = AdjustPlayerPosition(velocity);
             }
 
@@ -223,7 +225,7 @@ namespace Game.Player.CharacterController
 				result = ConfirmMovement(velocity);
             }
 
-			if (belowLastFrame)
+			if (belowLastFrame && !insideWallOnThisFrame)
 			{
 				print("must be below");
 				int security = 5;
@@ -234,7 +236,7 @@ namespace Game.Player.CharacterController
 				}
 			}
 
-            if (collisions.lastWallNormal != Vector3.zero)
+            if (collisions.lastWallNormal != Vector3.zero && myPlayer.CurrentState == ePlayerState.wallRun)
             {
                 print("must be on a wall");
                 int security = 5;
@@ -278,9 +280,10 @@ namespace Game.Player.CharacterController
             collisions.below = Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask) || climbingStep;
 
 
-            if (!Physics.Raycast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2), -myTransform.up, out hit2, myPlayer.CharData.Physics.MaxStepHeight, collisionMask))
+            if (Physics.Raycast(myTransform.position, hit.point - myTransform.position, out hit2, height*2, collisionMask))
             {
-                collisions.cornerNormal = true;
+                if (Vector3.Angle(hit.normal, hit2.normal) > 1f)
+                    collisions.cornerNormal = true;
             }
 
             if (collisions.below && !climbingStep)
@@ -333,7 +336,6 @@ namespace Game.Player.CharacterController
                 int security = 2;
                 while (!colliding && security > 0 && !collisions.below)
                 {
-                    Debug.Log("moving towards wall");
                     myTransform.position += -collisions.lastWallNormal * skinWidth * 2;
 
                     colliding = Physics.CapsuleCast(
