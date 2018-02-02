@@ -1,5 +1,4 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 using Game.Player.CharacterController;
 
@@ -17,7 +16,8 @@ public class PoS_Camera : MonoBehaviour {
         Air = 2,
         Slope = 20,
         FollowBehind = 40,
-        AroundCorner = 60,
+        AroundCorner = 50,
+        WallRun = 60,
         Overriden = 70,
         Resetting = 80,
         LookAt = 90,
@@ -29,6 +29,7 @@ public class PoS_Camera : MonoBehaviour {
     public enum eResetType {
         None, ManualGround, ManualAir,
         AxisAlign, InverseAxisAlign, POI,
+        WallRun,
     }
 
 	[Header("Position")]
@@ -222,9 +223,7 @@ public class PoS_Camera : MonoBehaviour {
     void RealignPlayer() {
         if (state == eCameraState.HomeDoor)
             return; // Dans ce cas, osef de tout le reste
-
-                    // TODO: During a camera realignment, wait before realigning player
-
+        // TODO: During a camera realignment, wait before realigning player
         Vector3 characterUp = target.parent.up; // TODO: only change this value when there's a change of gravity?
         target.LookAt(target.position + Vector3.ProjectOnPlane(my.forward, characterUp), characterUp); // Reoriente the character's rotator
     }
@@ -300,11 +299,12 @@ public class PoS_Camera : MonoBehaviour {
 		Vector3 targetPos = target.position;
         
 		Vector3 targetWithOffset = targetPos + my.right * offset.x + my.up * offset.y;
-		targetWithOffset += GetContextualOffset();
 
         CheckForCollision(targetPos, targetWithOffset);
         negDistance.z = -currentDistance;
 
+        targetWithOffset += GetContextualOffset(camRotation * negDistance + targetWithOffset);
+        
         camPosition = camRotation * negDistance + targetWithOffset;
 	}
 
@@ -356,12 +356,12 @@ public class PoS_Camera : MonoBehaviour {
 
 		targetSpace = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, target.up), Vector3.Cross(Vector3.up, target.up));
 
-        bool isGrounded = (playerState & (ePlayerState.move | ePlayerState.stand | ePlayerState.slide | ePlayerState.wallRun )) != 0;
+        bool isGrounded = (playerState & (ePlayerState.move | ePlayerState.stand | ePlayerState.slide | ePlayerState.wallRun | ePlayerState.hover )) != 0;
         float slopeValue = CheckGroundAndReturnSlopeValue();
 
         // TODO: Il nous faut ptet une fonction SetState() pour pouvoir faire des trucs uniquement lors d'un changement de State
         
-        // DO FOV ?? //TODO: place somewhere that makes more sense ??
+        // TODO: place FOV action somewhere that makes more sense ??
         targetFov = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
 
         if (playerState == ePlayerState.dash) { // DASH
@@ -369,12 +369,7 @@ public class PoS_Camera : MonoBehaviour {
             ResetCamera(slopeValue);
             additionalDistance = 3;
         }
-
-        if (playerState == ePlayerState.wallRun)
-        {
-            //ResetCamera(slopeValue);
-        }
-
+        
         if (inverseFacingDirection && Input.GetAxis("Vertical") >= 0) {
             startFacingDirection ^= true;
             inverseFacingDirection = false;
@@ -398,10 +393,10 @@ public class PoS_Camera : MonoBehaviour {
             if (Time.time > lastInput + timeBeforeAutoReset && canAutoReset) {
                 if (overriden)
                     state = eCameraState.Overriden;
-                else if (nearPOI) // Points of Interest have priority over axis alignment
-                    LookAtTargetPOI(); // TODO: manual priority just in case?
                 else if (axisAligned.sqrMagnitude != 0)
                     AlignWithAxis();
+                else if (nearPOI)
+                    LookAtTargetPOI();
             }
             
             if (isGrounded)
@@ -409,12 +404,24 @@ public class PoS_Camera : MonoBehaviour {
 			else
                 AirStateCamera();
             
+            if (playerState == ePlayerState.wallRun) {
+                Vector3 newYaw = Vector3.Cross(target.parent.up, controller.collisions.lastWallNormal);
+
+                if (Vector3.Dot(newYaw, my.forward) < 0)
+                    newYaw *= -1;
+
+                resetType = eResetType.WallRun;
+                AllowAutoReset(true, true);
+                SetTargetRotation(defaultPitch, GetRotationTowardsDirection(newYaw).y, resetDamp);
+                state = eCameraState.WallRun;
+            }
+
             if (playerState == ePlayerState.glide || playerState == ePlayerState.windTunnel) {
                 SetTargetRotation(-2 * playerVelocity.y + defaultPitch, GetYawBehindPlayer(), resetDamp);
                 state = eCameraState.FollowBehind;
             }
         }
-        
+
 		if (Input.GetButton("ResetCamera"))
             ResetCamera(slopeValue);
     }
@@ -579,11 +586,11 @@ public class PoS_Camera : MonoBehaviour {
 
 		RaycastHit hit;
 		blockedByAWall = Physics.SphereCast(rayStart, rayRadius, rayEnd - rayStart, out hit, idealDistance, blockingLayer);
-        //Debug.DrawLine(rayStart, rayEnd, Color.yellow);
+        Debug.DrawLine(rayStart, rayEnd, Color.yellow);
 
         if (blockedByAWall && hit.distance > 0) {// If we hit something, hitDistance cannot be 0, nor higher than idealDistance
 			lastHitDistance = Mathf.Min(hit.distance - rayRadius, idealDistance);
-
+            
 			// Les angles on fera ça plus tard
 			if (state <= eCameraState.AroundCorner && currentDistance >= hit.distance) { // auto move around corners
 				float tempYaw = GetYawBehindPlayer();
@@ -597,7 +604,7 @@ public class PoS_Camera : MonoBehaviour {
 
 				if (delta > 1 && delta < 100) {
 					SetTargetRotation(null, GetYawBehindPlayer(), slideDamp);
-					state = eCameraState.Resetting;
+					state = eCameraState.AroundCorner;
 				}
 			}
 		}
@@ -750,23 +757,31 @@ public class PoS_Camera : MonoBehaviour {
     Vector3 contextualOffset;
     bool cameraBounce;
 
-    public void SetVerticalOffset(float verticalOffset)
-    {
+    public void SetVerticalOffset(float verticalOffset) {
         return; // TODO: fix that buggy offset thingy
         recoilIntensity = recoilOnImpact * verticalOffset;
         contextualOffset.y = -verticalOffset;
         cameraBounce = true;
     }
 
-    Vector3 GetContextualOffset()
-    {
+    Vector3 GetContextualOffset(Vector3 potentialPosition) {
         Vector3 offset = new Vector3(0, 0, 0);
-
         // multiplier l'offset contextuel par un modifier qui dépend de la distance actuelle
         // si on est à zéro distance alors pas d'offset
 
-        if (cameraBounce)
-        {
+        if (onEdgeOfCliff)
+        { // Appliquer l'offset contextuel sur le bord des falaises
+            float cliffOffsetDistance = Mathf.Max(0, pitch) / cliffOffsetDivision.Lerp(currentDistance / maxDistance);
+            //Debug.DrawLine(potentialPosition, potentialPosition + player.transform.forward * cliffOffsetDistance, Color.white);
+
+            RaycastHit hit;
+            if (Physics.Linecast(potentialPosition, potentialPosition + player.transform.forward * cliffOffsetDistance, out hit, blockingLayer))
+                cliffOffsetDistance = Mathf.Min(cliffOffsetDistance, hit.distance - rayRadius);
+
+            contextualOffset = Vector3.Lerp(contextualOffset, player.transform.forward * cliffOffsetDistance, deltaTime / autoResetDamp);
+            // tirer un rayon pour voir s'il y a un mur en travers de l'offset prévu, réduire l'offset si c'est le cas
+        }
+        if (cameraBounce) {
             offset += contextualOffset.y * target.up * recoilIntensity;
             contextualOffset.y = Mathf.Lerp(contextualOffset.y, 0, deltaTime / smoothDamp);
             if (Mathf.Abs(contextualOffset.y - 0) < .01f)
@@ -774,8 +789,6 @@ public class PoS_Camera : MonoBehaviour {
             // use impactFromSpeed (animCurve) to attenuate the impact on low speed
             // impactFromSpeed on recoilOnImpact
         }
-        if (onEdgeOfCliff) // Appliquer l'offset contextuel sur le bord des falaises
-            contextualOffset = Vector3.Lerp(contextualOffset, player.transform.forward * (Mathf.Max(0, pitch) / cliffOffsetDivision.Lerp(currentDistance / maxDistance)), deltaTime / autoResetDamp);
         else
             contextualOffset = Vector3.Lerp(contextualOffset, Vector3.zero, deltaTime / autoResetDamp);
         return offset + contextualOffset;
