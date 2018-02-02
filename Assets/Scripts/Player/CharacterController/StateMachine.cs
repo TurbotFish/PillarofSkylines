@@ -27,6 +27,8 @@ namespace Game.Player.CharacterController
         public float speedMultiplier = 1;
         [HideInInspector]
         public float jumpMultiplier = 1;
+        [HideInInspector]
+        public float glideMultiplier = 1;
         float boostTimer;
 
 
@@ -139,6 +141,7 @@ namespace Game.Player.CharacterController
             boostTimer = timer;
             jumpMultiplier = character.CharData.EchoBoost.JumpMultiplier;
             speedMultiplier = character.CharData.EchoBoost.SpeedMultiplier;
+            glideMultiplier = character.CharData.EchoBoost.GlideMultiplier;
         }
 
         public void EndEchoBoost()
@@ -146,6 +149,7 @@ namespace Game.Player.CharacterController
             boostTimer = 0;
             jumpMultiplier = 1;
             speedMultiplier = 1;
+            glideMultiplier = 1;
         }
 
         //#############################################################################

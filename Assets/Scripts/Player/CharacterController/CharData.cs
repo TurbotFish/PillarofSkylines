@@ -513,12 +513,17 @@ namespace Game.Player.CharacterController
             float jumpMultiplier;
             public float JumpMultiplier { get { return jumpMultiplier; } }
 
+            [SerializeField]
+            float glideMultiplier;
+            public float GlideMultiplier { get { return glideMultiplier; } }
+
             public void OnValidate()
             {
                 duration = Mathf.Clamp(duration, 0, float.MaxValue);
                 lerpSpeed = Mathf.Clamp(lerpSpeed, 0, float.MaxValue);
                 speedMultiplier = Mathf.Clamp(speedMultiplier, 0, float.MaxValue);
                 jumpMultiplier = Mathf.Clamp(jumpMultiplier, 0, float.MaxValue);
+                glideMultiplier = Mathf.Clamp(glideMultiplier, 0, float.MaxValue);
             }
         }
 
