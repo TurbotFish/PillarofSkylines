@@ -758,7 +758,6 @@ public class PoS_Camera : MonoBehaviour {
     bool cameraBounce;
 
     public void SetVerticalOffset(float verticalOffset) {
-        return; // TODO: fix that buggy offset thingy
         recoilIntensity = recoilOnImpact * verticalOffset;
         contextualOffset.y = -verticalOffset;
         cameraBounce = true;
@@ -782,10 +781,15 @@ public class PoS_Camera : MonoBehaviour {
             // tirer un rayon pour voir s'il y a un mur en travers de l'offset prévu, réduire l'offset si c'est le cas
         }
         if (cameraBounce) {
+
+            print("RECOIL INTENSITY: " + recoilIntensity);
+
             offset += contextualOffset.y * target.up * recoilIntensity;
             contextualOffset.y = Mathf.Lerp(contextualOffset.y, 0, deltaTime / smoothDamp);
-            if (Mathf.Abs(contextualOffset.y - 0) < .01f)
+            if (Mathf.Abs(contextualOffset.y - 0) < .01f) {
                 cameraBounce = false;
+
+            }
             // use impactFromSpeed (animCurve) to attenuate the impact on low speed
             // impactFromSpeed on recoilOnImpact
         }
