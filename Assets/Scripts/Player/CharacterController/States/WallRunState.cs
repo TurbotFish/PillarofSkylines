@@ -81,14 +81,13 @@ namespace Game.Player.CharacterController.States
             //jump
             else if (inputInfo.jumpButtonDown)
             {
-                Vector3 parallelDir = movementInfo.velocity / 10;
+                Vector3 parallelDir = Vector3.ProjectOnPlane(movementInfo.velocity / 10, charController.MyTransform.up);
                 Vector3 jumpDirection = Vector3.ProjectOnPlane(lastWallNormal + (parallelDir.sqrMagnitude > .25f? parallelDir : Vector3.zero), charController.MyTransform.up).normalized;
                 charController.MyTransform.rotation = Quaternion.LookRotation(jumpDirection, charController.MyTransform.up);
-
-
+                
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
-                state.SetJumpDirection(jumpDirection);
+                state.SetJumpDirection(charController.TurnSpaceToLocal(jumpDirection));
                 state.SetTimerAirControl(wallRunData.TimerBeforeAirControl);
 
                 stateMachine.ChangeState(state);
@@ -145,11 +144,14 @@ namespace Game.Player.CharacterController.States
             var result = new StateReturnContainer()
             {
                 CanTurnPlayer = false,
-                PlayerForward = charController.TurnLocalToSpace(localWallRunDir.normalized),
                 Acceleration = acceleration,
                 GravityMultiplier = wallRunData.GravityModifier,
                 TransitionSpeed = wallRunData.TransitionSpeed
             };
+
+
+            if (localWallRunDir != Vector3.zero)
+                result.PlayerForward = charController.TurnLocalToSpace(localWallRunDir.normalized);
 
             if (firstFrame) firstFrame = false;
 
