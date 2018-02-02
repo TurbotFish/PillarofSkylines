@@ -257,7 +257,6 @@ namespace Game.Player.CharacterController
             Vector3 tempVertical = new Vector3();
             Vector3 newVelocity = new Vector3();
 
-            Debug.Log("acceleration received : " + stateReturn.Acceleration);
 
             if (stateReturn.keepVerticalMovement)
             {

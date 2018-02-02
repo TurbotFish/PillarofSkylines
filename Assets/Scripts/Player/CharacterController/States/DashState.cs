@@ -62,7 +62,6 @@ namespace Game.Player.CharacterController.States
             result.IgnoreGravity = true;
             result.PlayerForward = forward;
             result.Acceleration = charController.TurnSpaceToLocal(forward * dashData.Speed * stateMachine.speedMultiplier);
-            Debug.Log("acceleration calculated : " + result.Acceleration);
             result.MaxSpeed = result.Acceleration.magnitude + 1; //+1 is just for security
             result.TransitionSpeed = dashData.TransitionSpeed;
             result.keepVerticalMovement = true;
