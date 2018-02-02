@@ -107,7 +107,7 @@ namespace Game.Player.CharacterController.States
 
                 currentSpeed = Mathf.Lerp(
 					movementInfo.velocity.magnitude,
-					glideData.BaseSpeed + glideData.DownwardAcceleration.Evaluate((verticalAngle - glideData.BaseAngle) / (glideData.MaxAngle - glideData.BaseAngle)),
+					(glideData.BaseSpeed + glideData.DownwardAcceleration.Evaluate((verticalAngle - glideData.BaseAngle) / (glideData.MaxAngle - glideData.BaseAngle))) * stateMachine.glideMultiplier,
 					glideData.SpeedSmooth /** dt*/
 				);
 			}
@@ -141,7 +141,7 @@ namespace Game.Player.CharacterController.States
 
             var result = new StateReturnContainer
             {
-                Acceleration = TurnSpaceToLocal(targetVelocity * stateMachine.speedMultiplier),
+                Acceleration = TurnSpaceToLocal(targetVelocity),
                 TransitionSpeed = 8,
                 CanTurnPlayer = false,
                 IgnoreGravity = true
