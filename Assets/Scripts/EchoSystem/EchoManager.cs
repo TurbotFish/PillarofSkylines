@@ -7,6 +7,8 @@ namespace Game.EchoSystem
     {
         //##################################################################
 
+        [HideInInspector] public bool atHome;
+
         [SerializeField] Echo echoPrefab;
         public BreakEchoParticles breakEchoParticles;
         [SerializeField] int maxEchoes = 3;
@@ -101,7 +103,14 @@ namespace Game.EchoSystem
                             homeDoor.transform.rotation = playerTransform.rotation;
 
                             homeDoor.SetActive(true);
-                            camera.LookAtHomeDoor(homeDoor.transform.position, homeDoor.transform.forward, homePoint.position);
+
+                            HomePortalCamera portal = homeDoor.GetComponentInChildren<HomePortalCamera>();
+                            portal.worldAnchorPoint.gameObject.SetActive(!atHome);
+                            portal.portalRenderer.gameObject.SetActive(!atHome);
+                            portal.otherPortal.gameObject.SetActive(!atHome);
+
+                            if (!atHome)
+                                camera.LookAtHomeDoor(homeDoor.transform.position, homeDoor.transform.forward, homePoint.position);
 
                         } else {
                             print("Assign HomePoint to the EchoManager if you want it to work with the GameControllerLite");
@@ -112,7 +121,8 @@ namespace Game.EchoSystem
                     if (isDoorActive) {
                         isDoorActive = false;
                         homeDoor.SetActive(false);
-                        camera.StopLookingAtHomeDoor();
+                        if (!atHome)
+                            camera.StopLookingAtHomeDoor();
                     }
                     else if (driftInputDown > 0)
                         Drift();
@@ -137,7 +147,7 @@ namespace Game.EchoSystem
                 int lastIndex = echoList.Count - 1;
                 var targetEcho = echoList[lastIndex];
 
-                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, targetEcho.MyTransform.rotation, false);
+                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, false);
                 Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
 
                 Utilities.EventManager.SendEchoDestroyedEvent(this);

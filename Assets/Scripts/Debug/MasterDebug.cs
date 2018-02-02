@@ -29,4 +29,10 @@ public class MasterDebug : MonoBehaviour {
             player.CharData.Jump.MaxAerialJumps = player.CharData.Jump.MaxAerialJumps == 1000 ? 1 : 1000;
         }
     }
+
+    private void OnDisable()
+    {
+        if (player && Application.isPlaying)
+            player.CharData.Jump.MaxAerialJumps = 1;
+    }
 }

@@ -49,18 +49,23 @@ namespace Game.Player.CharacterController.States
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
-				state.SetJumpDirection(collisionInfo.currentGroundNormal);
+				state.SetJumpDirection(Vector3.ProjectOnPlane(collisionInfo.currentGroundNormal, charController.MyTransform.up));
                 stateMachine.ChangeState(state);
             }
             //fall
             else if (!collisionInfo.below)
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
-
+                stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
                 stateMachine.ChangeState(state);
+            } 
+            //dash
+            else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
+            {
+                stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             }
             //stop
-			else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle && !collisionInfo.SlippySlope || Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < 2f) 
+            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle && !collisionInfo.SlippySlope || Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < 2f) 
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
@@ -81,7 +86,8 @@ namespace Game.Player.CharacterController.States
                 result.Acceleration += charController.InputInfo.leftStickToSlope * slideData.Control;
             } else {
                 result.IgnoreGravity = false;
-                result.Acceleration = Vector3.ProjectOnPlane(-charController.MyTransform.up, charController.CollisionInfo.currentGroundNormal).normalized;
+                result.Acceleration = Vector3.ProjectOnPlane(-charController.MyTransform.up, charController.CollisionInfo.currentGroundNormal).normalized * slideData.MinimalSpeed;
+                result.Acceleration += charController.InputInfo.leftStickToSlope * slideData.Control;
             }
             result.PlayerForward = result.Acceleration.normalized;
 

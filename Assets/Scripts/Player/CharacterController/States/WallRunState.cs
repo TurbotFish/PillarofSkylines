@@ -15,6 +15,9 @@ namespace Game.Player.CharacterController.States
         StateMachine stateMachine;
         CharData.WallRunData wallRunData;
 
+        bool firstFrame = true;
+
+        float timerToUnstick;
         int noWallCounter = 0;
         Vector3 lastWallNormal;
 
@@ -31,24 +34,28 @@ namespace Game.Player.CharacterController.States
 
         public void Enter()
         {
-            Debug.LogWarning("Enter State: Wall Run");
+            Debug.Log("Enter State: Wall Run");
+
 
             //if the player should not be able to walldrift he starts falling again
             if (!CheckCanEnterWallRun(charController))
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
+            charController.animator.SetBool("WallRunning", true);
         }
 
         public void Exit()
         {
-            Debug.LogWarning("Exit State: Wall Run");
+            Debug.Log("Exit State: Wall Run");
+            charController.animator.SetBool("WallRunning", false);
         }
 
         //#############################################################################
 
         public void HandleInput()
         {
+            PlayerMovementInfo movementInfo = charController.MovementInfo;
             PlayerInputInfo inputInfo = charController.InputInfo;
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
@@ -62,20 +69,27 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
-            else if (!CheckWallRunStick(inputInfo, lastWallNormal, wallRunData.MaxTriggerAngle))
+            else if (timerToUnstick > wallRunData.TimeToUnstick)
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
+            }
+            //dash
+            else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
+            {
+                stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             }
             //jump
             else if (inputInfo.jumpButtonDown)
             {
-                charController.MyTransform.rotation = Quaternion.LookRotation(lastWallNormal, charController.MyTransform.up);
+                Vector3 parallelDir = movementInfo.velocity / 10;
+                Vector3 jumpDirection = Vector3.ProjectOnPlane(lastWallNormal + (parallelDir.sqrMagnitude > .25f? parallelDir : Vector3.zero), charController.MyTransform.up).normalized;
+                charController.MyTransform.rotation = Quaternion.LookRotation(jumpDirection, charController.MyTransform.up);
 
-                Vector3 jumpDirection = (charController.MyTransform.up + collisionInfo.currentWallNormal + charController.MyTransform.forward).normalized;
 
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
+                stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
                 state.SetJumpDirection(jumpDirection);
-                state.SetAirControl(false);
+                state.SetTimerAirControl(wallRunData.TimerBeforeAirControl);
 
                 stateMachine.ChangeState(state);
             }
@@ -86,51 +100,58 @@ namespace Game.Player.CharacterController.States
         {
             PlayerMovementInfo movementInfo = charController.MovementInfo;
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
+            PlayerInputInfo inputInfo = charController.InputInfo;
 
             if (collisionInfo.side)
             {
                 noWallCounter = 0;
-                lastWallNormal = collisionInfo.currentWallNormal;
+                if (collisionInfo.currentWallNormal != Vector3.zero)
+                    lastWallNormal = collisionInfo.currentWallNormal;
             }
             else
             {
                 noWallCounter++;
             }
 
-            //********************************
-            //acceleration
-
-            float previousSpeed = movementInfo.velocity.magnitude;
-
-            //the direction along the wall (laft or right)
-            Vector3 wallRunDir = Vector3.ProjectOnPlane(movementInfo.velocity, lastWallNormal);
-
-            //flattening the direction
-            wallRunDir = Vector3.ProjectOnPlane(wallRunDir, charController.MyTransform.up);
+            if (!CheckWallRunStick(inputInfo, lastWallNormal, wallRunData.MaxTriggerAngle) && !inputInfo.leftStickAtZero)
+            {
+                timerToUnstick += Time.deltaTime;
+            } else
+            {
+                timerToUnstick = 0f;
+            }
+                //********************************
+                //the direction along the wall
+                Vector3 wallRunDir = Vector3.zero;
+            if (firstFrame)
+                wallRunDir = Vector3.ProjectOnPlane(movementInfo.velocity * wallRunData.SpeedMultiplier, lastWallNormal);
+            
 
             //translate the direction to local space
             Vector3 localWallRunDir = charController.MyTransform.worldToLocalMatrix.MultiplyVector(wallRunDir);
 
-            Vector3 acceleration = localWallRunDir.normalized * (previousSpeed * wallRunData.SlowdownFactor);
+            localWallRunDir += Vector3.ProjectOnPlane(inputInfo.leftStickToCamera, lastWallNormal) * wallRunData.Speed;
+            Vector3 acceleration = localWallRunDir;
+
+            charController.animator.SetFloat("WallRunSpeed", Vector3.ProjectOnPlane(localWallRunDir, charController.MyTransform.up).sqrMagnitude * (Vector3.Dot(lastWallNormal, charController.MyTransform.right) > 0 ? 1 : -1)/80f);
+            charController.animator.SetFloat("VerticalSpeed", Vector3.Project(localWallRunDir, charController.MyTransform.up).sqrMagnitude);
 
             //********************************
+
             //wall hugging
-            Vector3 wallHugging = charController.MyTransform.worldToLocalMatrix.MultiplyVector(-lastWallNormal) * 4f * (noWallCounter + 1);
+            //Vector3 wallHugging = charController.MyTransform.worldToLocalMatrix.MultiplyVector(-lastWallNormal) * 4f * (noWallCounter + 1);
 
-            //if the wall is to the left of the player, wallHugging is inversed
-            if (Vector3.SignedAngle(wallRunDir, lastWallNormal, charController.MyTransform.up) < 0)
-            {
-                wallHugging *= -1;
-            }
 
-            //
             var result = new StateReturnContainer()
             {
                 CanTurnPlayer = false,
-                PlayerForward = wallRunDir.normalized,
-                Acceleration = wallHugging + acceleration,
+                PlayerForward = Vector3.ProjectOnPlane(localWallRunDir, charController.MyTransform.up).normalized,
+                Acceleration = acceleration,
+                GravityMultiplier = wallRunData.GravityModifier,
                 TransitionSpeed = wallRunData.TransitionSpeed
             };
+
+            if (firstFrame) firstFrame = false;
 
             return result;
         }
@@ -151,18 +172,17 @@ namespace Game.Player.CharacterController.States
             bool isTouchingWall = charController.CollisionInfo.side;
 
             //is the wall slope valid? If the wall is bend to the outside it is not
-            bool isWallSlopeValid = Vector3.SignedAngle(charController.CollisionInfo.currentWallNormal, charController.MyTransform.up, charController.MyTransform.forward) >= 0f;
-
-            //is the player jumping
-            bool isJumping = charController.MovementInfo.velocity.y > 0;
-
+            bool isWallSlopeValid = Vector3.Dot(charController.CollisionInfo.currentWallNormal, charController.MyTransform.up) >= -0.1f;
+            
             //is the player facing the wall
             bool directionOK = CheckPlayerForward(charController, 0f, charController.CharData.WallRun.MaxTriggerAngle);
 
             //is the player
-            bool stickOK = CheckWallRunStick(charController.InputInfo, charController.CollisionInfo.currentWallNormal, charController.CharData.WallRun.MaxTriggerAngle);
+            bool stickOK = CheckWallRunStick(charController.InputInfo, charController.CollisionInfo.currentWallNormal, charController.CharData.WallRun.MaxTriggerAngle) || charController.InputInfo.leftStickAtZero;
 
-            return (isAbilityActive && isTouchingWall && isWallSlopeValid && isJumping && directionOK && stickOK);
+            //Debug.Log("act : " + isAbilityActive + " touch : " + isTouchingWall + " slope : " + isWallSlopeValid + " dir : " + directionOK + " stick : " + stickOK);
+
+            return (isAbilityActive && isTouchingWall && isWallSlopeValid && directionOK && stickOK);
         }
 
         /// <summary>
@@ -191,7 +211,9 @@ namespace Game.Player.CharacterController.States
 
             float angle = Vector3.Angle(-wallNormal, stick);
 
-            if (!inputInfo.leftStickAtZero && angle < maxAngle)
+            //Debug.Log("stick : " + stick + " wall : " + -wallNormal + " angle : " + angle);
+
+            if (angle < maxAngle)
             {
                 return true;
             }

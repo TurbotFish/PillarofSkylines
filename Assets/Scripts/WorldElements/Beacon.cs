@@ -12,9 +12,9 @@ public class Beacon : MonoBehaviour {
     [Header("Rendering")]
     public Renderer socle;
     public Material matOn, matOff;
-
+    
     [HideInInspector] public Transform destination;
-
+    
     private void Awake()
     {
         if (otherBeacon != null)
@@ -28,6 +28,31 @@ public class Beacon : MonoBehaviour {
 
         if (!isHomeBeacon)
             otherBeacon.Activate();
+    }
+
+    public void SetTombReferences(string[] favourIDs)
+    {
+        Game.World.Interaction.FavourStatue[] statues = GetComponentsInChildren<Game.World.Interaction.FavourStatue>();
+        for (int i = 0; i < statues.Length; i++)
+            statues[i].favourID = favourIDs[i];
+
+    }
+
+    private void OnValidate()
+    {
+        if (otherBeacon)
+        {
+            if (!otherBeacon.otherBeacon)
+                otherBeacon.otherBeacon = this;
+
+            Game.World.Interaction.FavourStatue[] statues = GetComponentsInChildren<Game.World.Interaction.FavourStatue>();
+            string[] IDs = new string[statues.Length];
+            for (int a = 0; a < statues.Length; a++)
+                IDs[a] = statues[a].favourID;
+            otherBeacon.SetTombReferences(IDs);
+
+        }
+
     }
 
 }

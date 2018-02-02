@@ -33,6 +33,8 @@ namespace Game.Player {
 
         Beacon beacon;
 
+        new PoS_Camera camera;
+
         //
         bool isActive = false;
         bool isInteractButtonDown = false;
@@ -49,6 +51,8 @@ namespace Game.Player {
             this.echoManager = echoManager;
 
             spawnPointManager = FindObjectOfType<World.SpawnPointSystem.SpawnPointManager>(); //TODO: Fix that
+
+            camera = player.myCamera.GetComponent<PoS_Camera>();
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
@@ -347,6 +351,14 @@ namespace Game.Player {
                     case "TutoBox":
                         ShowUiMessage(other.GetComponent<UI.TutoBox>().message, other.tag);
                         break;
+                    // Home
+                    case "Home":
+                        echoManager.atHome = true;
+                        break;
+                    // CameraControlTrigger
+                    case "CameraControlTrigger":
+                        camera.EnterTrigger(other.GetComponent<CameraControlTrigger>());
+                        break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
@@ -416,6 +428,14 @@ namespace Game.Player {
                     // Tutorial Message
                     case "TutoBox":
                         HideUiMessage(other.tag);
+                        break;
+                    // Home
+                    case "Home":
+                        echoManager.atHome = false;
+                        break;
+                    // CameraControlTrigger
+                    case "CameraControlTrigger":
+                        camera.ExitTrigger(other.GetComponent<CameraControlTrigger>());
                         break;
                     //other
                     default:

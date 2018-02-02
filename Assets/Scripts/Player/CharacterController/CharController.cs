@@ -119,6 +119,7 @@ namespace Game.Player.CharacterController
             stateMachine.RegisterAbility(ePlayerState.wallDrift, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallClimb, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
+            stateMachine.RegisterAbility(ePlayerState.hover, eAbilityType.Hover);
 
             stateMachine.ChangeState(new AirState(this, stateMachine, AirState.eAirStateMode.fall));
 
@@ -256,6 +257,7 @@ namespace Game.Player.CharacterController
             Vector3 tempVertical = new Vector3();
             Vector3 newVelocity = new Vector3();
 
+
             if (stateReturn.keepVerticalMovement)
             {
                 tempVertical = new Vector3(0, velocity.y, 0);
@@ -270,7 +272,7 @@ namespace Game.Player.CharacterController
             //adding gravity
             if (!stateReturn.IgnoreGravity)
             {
-                newVelocity += Vector3.down * (CharData.General.GravityStrength * Time.deltaTime);
+                newVelocity += Vector3.down * (CharData.General.GravityStrength * (stateReturn.GravityMultiplierSet? stateReturn.GravityMultiplier : 1) * Time.deltaTime);
             }
 
             //clamping speed
@@ -369,7 +371,7 @@ namespace Game.Player.CharacterController
             }
 
             animator.SetFloat("Turn", turn);
-            animator.SetBool("OnGround", tempCollisionInfo.below);
+            animator.SetBool("OnGround", tempCollisionInfo.below || stateMachine.CurrentState == ePlayerState.hover);
             animator.SetFloat("Speed", Vector3.ProjectOnPlane(velocity, Vector3.up).magnitude / animationRunSpeed);
             //animator.SetFloat("Turn", turn);
             animator.SetFloat("VerticalSpeed", velocity.y / animationJumpSpeed);
