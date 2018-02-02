@@ -66,7 +66,8 @@ public class PoS_Camera : MonoBehaviour {
     public float maxJumpHeight = 10;
     public float distanceReductionWhenFalling = 6;
     public float fallingDamp = 2;
-    public float recoilOnImpact = 20;
+    public float recoilOnImpact = 1;
+    public float recoilFOVImpact = 20;
 
     [Header("Edge of Cliff")]
 	public float distanceToCheckGroundForward = 2;
@@ -269,9 +270,7 @@ public class PoS_Camera : MonoBehaviour {
 	/// <param name="allow"> Whether or not to allow the automatic reset. </param>
 	/// <param name="immediate"> If true, a reset takes place immediately, else, wait for resetTime. </param>
 	void AllowAutoReset(bool allow, bool immediate = false) {
-
 		canAutoReset = allow; 
-
         if (resetType != eResetType.POI) // si je suis dja en train de reset je change pas les options de reset
             lastInput = immediate ? 0 : Time.time;
 
@@ -382,7 +381,6 @@ public class PoS_Camera : MonoBehaviour {
 			SetTargetRotation(null, null, smoothDamp);
 
         } else if (state != eCameraState.Resetting) {
-            // TODO: un switch sur playerState pour établir l'état de la caméra selon chaque state du joueur ?
 
             if (state == eCameraState.PlayerControl) { // Si on était en control Manuel avant
                 AllowAutoReset(true, false); // On autorise l'auto reset
@@ -768,8 +766,7 @@ public class PoS_Camera : MonoBehaviour {
         // multiplier l'offset contextuel par un modifier qui dépend de la distance actuelle
         // si on est à zéro distance alors pas d'offset
 
-        if (onEdgeOfCliff)
-        { // Appliquer l'offset contextuel sur le bord des falaises
+        if (onEdgeOfCliff) { // Appliquer l'offset contextuel sur le bord des falaises
             float cliffOffsetDistance = Mathf.Max(0, pitch) / cliffOffsetDivision.Lerp(currentDistance / maxDistance);
             //Debug.DrawLine(potentialPosition, potentialPosition + player.transform.forward * cliffOffsetDistance, Color.white);
 
@@ -781,17 +778,13 @@ public class PoS_Camera : MonoBehaviour {
             // tirer un rayon pour voir s'il y a un mur en travers de l'offset prévu, réduire l'offset si c'est le cas
         }
         if (cameraBounce) {
-
-            print("RECOIL INTENSITY: " + recoilIntensity);
-
             offset += contextualOffset.y * target.up * recoilIntensity;
             contextualOffset.y = Mathf.Lerp(contextualOffset.y, 0, deltaTime / smoothDamp);
-            if (Mathf.Abs(contextualOffset.y - 0) < .01f) {
-                cameraBounce = false;
 
-            }
-            // use impactFromSpeed (animCurve) to attenuate the impact on low speed
-            // impactFromSpeed on recoilOnImpact
+            targetFov += contextualOffset.y * recoilFOVImpact;
+
+            if (Mathf.Abs(contextualOffset.y) < .01f)
+                cameraBounce = false;
         }
         else
             contextualOffset = Vector3.Lerp(contextualOffset, Vector3.zero, deltaTime / autoResetDamp);
