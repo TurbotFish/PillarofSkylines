@@ -82,7 +82,6 @@ namespace Game.Player.CharacterController.States
             else if (inputInfo.jumpButtonDown)
             {
                 Vector3 parallelDir = movementInfo.velocity / 10;
-                Debug.LogWarning("para : " + parallelDir.sqrMagnitude);
                 Vector3 jumpDirection = Vector3.ProjectOnPlane(lastWallNormal + (parallelDir.sqrMagnitude > .25f? parallelDir : Vector3.zero), charController.MyTransform.up).normalized;
                 charController.MyTransform.rotation = Quaternion.LookRotation(jumpDirection, charController.MyTransform.up);
 
@@ -134,11 +133,14 @@ namespace Game.Player.CharacterController.States
             localWallRunDir += Vector3.ProjectOnPlane(inputInfo.leftStickToCamera, lastWallNormal) * wallRunData.Speed;
             Vector3 acceleration = localWallRunDir;
 
+            charController.animator.SetFloat("WallRunSpeed", Vector3.ProjectOnPlane(localWallRunDir, charController.MyTransform.up).sqrMagnitude * (Vector3.Dot(lastWallNormal, charController.MyTransform.right) > 0 ? 1 : -1)/80f);
+            charController.animator.SetFloat("VerticalSpeed", Vector3.Project(localWallRunDir, charController.MyTransform.up).sqrMagnitude);
+
             //********************************
-            
+
             //wall hugging
             //Vector3 wallHugging = charController.MyTransform.worldToLocalMatrix.MultiplyVector(-lastWallNormal) * 4f * (noWallCounter + 1);
-            
+
 
             var result = new StateReturnContainer()
             {
