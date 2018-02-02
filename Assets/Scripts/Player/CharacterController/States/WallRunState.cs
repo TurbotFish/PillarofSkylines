@@ -145,7 +145,7 @@ namespace Game.Player.CharacterController.States
             var result = new StateReturnContainer()
             {
                 CanTurnPlayer = false,
-                PlayerForward = Vector3.ProjectOnPlane(localWallRunDir, charController.MyTransform.up).normalized,
+                PlayerForward = charController.TurnLocalToSpace(localWallRunDir.normalized),
                 Acceleration = acceleration,
                 GravityMultiplier = wallRunData.GravityModifier,
                 TransitionSpeed = wallRunData.TransitionSpeed

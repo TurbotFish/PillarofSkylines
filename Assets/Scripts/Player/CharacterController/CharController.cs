@@ -16,7 +16,9 @@ namespace Game.Player.CharacterController
         [SerializeField]
         Transform rotator;
         [SerializeField]
-        public Transform myCamera;
+        public Transform myCameraTransform;
+        [SerializeField]
+        public PoS_Camera myCamera;
 
         //#############################################################################
 
@@ -101,7 +103,8 @@ namespace Game.Player.CharacterController
         {
             tempPhysicsHandler = GetComponent<CharacControllerRecu>();
             animator = GetComponentInChildren<Animator>();
-            myCamera = FindObjectOfType<PoS_Camera>().transform;
+            myCamera = FindObjectOfType<PoS_Camera>();
+            myCameraTransform = myCamera.transform;
 
 
             PlayerModel = gameController.PlayerModel;
@@ -238,6 +241,7 @@ namespace Game.Player.CharacterController
 
             if (stateReturn.PlayerForwardSet)
             {
+                Debug.Log("forward is : " + stateReturn.PlayerForward);
                 MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up), MyTransform.up);
             }
 
