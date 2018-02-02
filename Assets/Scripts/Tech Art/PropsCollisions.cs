@@ -21,6 +21,7 @@ public class PropsCollisions : MonoBehaviour {
 	void OnTriggerEnter(Collider col)
 	{
 		if (col.GetComponent<PropsGravity> () != null) {
+			col.GetComponent<Rigidbody> ().isKinematic = false;
 			col.GetComponent<Rigidbody> ().AddForce (playerVelocity.normalized*minForce + playerVelocity*multiplier);
 		}
 	}
