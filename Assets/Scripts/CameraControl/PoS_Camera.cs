@@ -396,23 +396,14 @@ public class PoS_Camera : MonoBehaviour {
                 else if (nearPOI)
                     LookAtTargetPOI();
             }
-            
+
             if (isGrounded)
                 GroundStateCamera(slopeValue);
-			else
+            else
                 AirStateCamera();
-            
-            if (playerState == ePlayerState.wallRun) {
-                Vector3 newYaw = Vector3.Cross(target.parent.up, controller.collisions.lastWallNormal);
 
-                if (Vector3.Dot(newYaw, my.forward) < 0)
-                    newYaw *= -1;
-
-                resetType = eResetType.WallRun;
-                AllowAutoReset(true, true);
-                SetTargetRotation(defaultPitch, GetRotationTowardsDirection(newYaw).y, resetDamp);
-                state = eCameraState.WallRun;
-            }
+            if (playerState == ePlayerState.wallRun)
+                WallRunCamera();
 
             if (playerState == ePlayerState.glide || playerState == ePlayerState.windTunnel) {
                 SetTargetRotation(-2 * playerVelocity.y + defaultPitch, GetYawBehindPlayer(), resetDamp);
@@ -496,6 +487,19 @@ public class PoS_Camera : MonoBehaviour {
 				manualPitch = targetPitch = defaultPitch;
 		}
 	}
+
+    void WallRunCamera() {
+        Vector3 newYaw = Vector3.Cross(target.parent.up, controller.collisions.lastWallNormal);
+
+        if (Vector3.Dot(newYaw, target.parent.forward) < 0)
+            newYaw *= -1;
+
+        resetType = eResetType.WallRun;
+        AllowAutoReset(true, true);
+        SetTargetRotation(defaultPitch, GetRotationTowardsDirection(newYaw).y, resetDamp);
+        state = eCameraState.WallRun;
+    }
+
 	#endregion
 	
 	#region Rotation
