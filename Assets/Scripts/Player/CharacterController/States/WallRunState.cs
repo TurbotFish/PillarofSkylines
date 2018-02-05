@@ -92,7 +92,7 @@ namespace Game.Player.CharacterController.States
                     jumpDirection = Vector3.ProjectOnPlane(lastWallNormal + (parallelDir.sqrMagnitude > .25f ? parallelDir : Vector3.zero), charController.MyTransform.up).normalized;
                 } else
                 {
-                    state.SetJumpStrengthFromState(.5f);
+                    state.SetJumpStrengthModifierFromState(wallRunData.JumpStrengthModifierLedgeGrab);
                 }
                 charController.MyTransform.rotation = Quaternion.LookRotation(jumpDirection, charController.MyTransform.up);
                 state.SetJumpDirection(charController.TurnSpaceToLocal(jumpDirection));
@@ -132,6 +132,7 @@ namespace Game.Player.CharacterController.States
             ledgeGrab = !Physics.Raycast(charController.MyTransform.position + charController.tempPhysicsHandler.playerAngle * (charController.tempPhysicsHandler.center + charController.tempPhysicsHandler.capsuleHeightModifier / 2)
                                                     , -lastWallNormal, charController.tempPhysicsHandler.radius * 1.2f, charController.tempPhysicsHandler.collisionMask);
            
+
             //********************************
             //the direction along the wall
             Vector3 wallRunDir = Vector3.zero;

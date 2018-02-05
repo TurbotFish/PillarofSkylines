@@ -481,6 +481,10 @@ namespace Game.Player.CharacterController
             float timeToUnstick;
             public float TimeToUnstick { get { return timeToUnstick; } }
 
+            [SerializeField]
+            float jumpStrengthModifierLedgeGrab;
+            public float JumpStrengthModifierLedgeGrab { get { return jumpStrengthModifierLedgeGrab; } }
+
             public void OnValidate()
             {
                 transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);

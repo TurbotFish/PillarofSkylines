@@ -94,7 +94,7 @@ namespace Game.Player.CharacterController.States
             this.timerAirControl = timerAirControl;
         }
 
-        public void SetJumpStrengthFromState(float jumpStrengthModifier)
+        public void SetJumpStrengthModifierFromState(float jumpStrengthModifier)
         {
             if (!initializing)
             {
