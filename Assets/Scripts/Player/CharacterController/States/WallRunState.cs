@@ -16,6 +16,7 @@ namespace Game.Player.CharacterController.States
         CharData.WallRunData wallRunData;
 
         bool firstFrame = true;
+        bool ledgeGrab = false;
 
         float timerToUnstick;
         int noWallCounter = 0;
@@ -81,12 +82,19 @@ namespace Game.Player.CharacterController.States
             //jump
             else if (inputInfo.jumpButtonDown)
             {
-                Vector3 parallelDir = Vector3.ProjectOnPlane(movementInfo.velocity / 10, charController.MyTransform.up);
-                Vector3 jumpDirection = Vector3.ProjectOnPlane(lastWallNormal + (parallelDir.sqrMagnitude > .25f? parallelDir : Vector3.zero), charController.MyTransform.up).normalized;
-                charController.MyTransform.rotation = Quaternion.LookRotation(jumpDirection, charController.MyTransform.up);
                 
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
+                Vector3 parallelDir = Vector3.ProjectOnPlane(movementInfo.velocity / 10, charController.MyTransform.up);
+                Vector3 jumpDirection = Vector3.zero;
+                if (!ledgeGrab)
+                {
+                    jumpDirection = Vector3.ProjectOnPlane(lastWallNormal + (parallelDir.sqrMagnitude > .25f ? parallelDir : Vector3.zero), charController.MyTransform.up).normalized;
+                } else
+                {
+                    state.SetJumpStrengthFromState(.5f);
+                }
+                charController.MyTransform.rotation = Quaternion.LookRotation(jumpDirection, charController.MyTransform.up);
                 state.SetJumpDirection(charController.TurnSpaceToLocal(jumpDirection));
                 state.SetTimerAirControl(wallRunData.TimerBeforeAirControl);
 
@@ -106,6 +114,7 @@ namespace Game.Player.CharacterController.States
                 noWallCounter = 0;
                 if (collisionInfo.currentWallNormal != Vector3.zero)
                     lastWallNormal = collisionInfo.currentWallNormal;
+
             }
             else
             {
@@ -119,9 +128,13 @@ namespace Game.Player.CharacterController.States
             {
                 timerToUnstick = 0f;
             }
-                //********************************
-                //the direction along the wall
-                Vector3 wallRunDir = Vector3.zero;
+
+            ledgeGrab = !Physics.Raycast(charController.MyTransform.position + charController.tempPhysicsHandler.playerAngle * (charController.tempPhysicsHandler.center + charController.tempPhysicsHandler.capsuleHeightModifier / 2)
+                                                    , -lastWallNormal, charController.tempPhysicsHandler.radius * 1.2f, charController.tempPhysicsHandler.collisionMask);
+           
+            //********************************
+            //the direction along the wall
+            Vector3 wallRunDir = Vector3.zero;
             if (firstFrame)
                 wallRunDir = Vector3.ProjectOnPlane(movementInfo.velocity * wallRunData.SpeedMultiplier, lastWallNormal);
             
@@ -150,8 +163,15 @@ namespace Game.Player.CharacterController.States
             };
 
 
-            if (localWallRunDir != Vector3.zero)
-                result.PlayerForward = charController.TurnLocalToSpace(localWallRunDir.normalized);
+            if (ledgeGrab)
+            {
+                result.PlayerForward = charController.TurnLocalToSpace(-lastWallNormal);
+            }
+            else
+            {
+                if (localWallRunDir != Vector3.zero)
+                    result.PlayerForward = charController.TurnLocalToSpace(localWallRunDir.normalized);
+            }
 
             if (firstFrame) firstFrame = false;
 

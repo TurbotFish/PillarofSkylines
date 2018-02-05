@@ -25,7 +25,8 @@ namespace Game.Player.CharacterController
         /// <summary>
         /// The controller checking if there's collisions on the way.
         /// </summary>
-        CharacControllerRecu tempPhysicsHandler;
+        [HideInInspector]
+        public CharacControllerRecu tempPhysicsHandler;
         CharacControllerRecu.CollisionInfo tempCollisionInfo;
 
         public CharacControllerRecu.CollisionInfo CollisionInfo { get { return tempCollisionInfo; } }

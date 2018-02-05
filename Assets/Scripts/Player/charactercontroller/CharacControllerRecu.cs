@@ -33,7 +33,8 @@ namespace Game.Player.CharacterController
         /// <summary>
         /// The height difference between the two points of the capsule.
         /// </summary>
-        Vector3 capsuleHeightModifier;
+        [HideInInspector]
+        public Vector3 capsuleHeightModifier;
         /// <summary>
         /// The safety margin used when casting for obstacles.
         /// </summary>
@@ -75,7 +76,8 @@ namespace Game.Player.CharacterController
         bool insideWallOnThisFrame;
         Vector3 stepOffset;
 
-        Quaternion playerAngle;
+        [HideInInspector]
+        public Quaternion playerAngle;
         RaycastHit hit;
         RaycastHit hit2;
         Vector3 wallDir;
