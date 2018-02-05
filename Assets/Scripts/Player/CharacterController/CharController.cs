@@ -329,7 +329,6 @@ namespace Game.Player.CharacterController
                 if (stateReturn.RotationSet)
                 {
                     MyTransform.Rotate(MyTransform.up, stateReturn.Rotation, Space.World);
-                    Debug.LogError("aaa");
                 }
                 else if(!inputInfo.leftStickAtZero)
                 {
@@ -337,7 +336,6 @@ namespace Game.Player.CharacterController
                     float angle = Mathf.Lerp(0f, Vector3.SignedAngle(MyTransform.forward, to, MyTransform.up), CharData.General.TurnSpeed * Time.deltaTime);
 
                     MyTransform.Rotate(MyTransform.up, angle, Space.World);
-                    Debug.LogErrorFormat("bbb, angle={0}", angle);
                 }
             }
 

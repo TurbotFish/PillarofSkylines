@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using Game.GameControl;
 
 namespace Game.UI
 {
@@ -52,7 +53,7 @@ namespace Game.UI
 
         //###########################################################
 
-        void IUiState.Initialize(Player.PlayerModel playerModel)
+        void IUiState.Initialize(IGameControllerBase gameController)
         {
             //this.playerModel = playerModel;
 

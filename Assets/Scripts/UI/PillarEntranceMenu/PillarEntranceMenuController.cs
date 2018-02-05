@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Game.GameControl;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -60,9 +61,9 @@ namespace Game.UI.PillarEntranceMenu
 
         //###########################################################
 
-        void IUiState.Initialize(Player.PlayerModel playerModel)
+        void IUiState.Initialize(IGameControllerBase gameController)
         {
-            this.playerModel = playerModel;
+            this.playerModel = gameController.PlayerModel;
         }
 
         void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)

@@ -12,30 +12,33 @@ namespace Game.GameControl
         [SerializeField]
         bool showIntroMenu = false;
 
+        [SerializeField]
+        private GameObject uiPrefab;
+
         //
         Player.PlayerModel playerModel;
-        public Player.PlayerModel PlayerModel { get { return this.playerModel; } }
+        public Player.PlayerModel PlayerModel { get { return playerModel; } }
 
         EchoSystem.EchoManager echoManager;
-        public EchoSystem.EchoManager EchoManager { get { return this.echoManager; } }
+        public EchoSystem.EchoManager EchoManager { get { return echoManager; } }
 
         EclipseManager eclipseManager;
-        public EclipseManager EclipseManager { get { return this.eclipseManager; } }
+        public EclipseManager EclipseManager { get { return eclipseManager; } }
 
 
         //
         UI.UiController uiController;
-        public UI.UiController UiController { get { return this.uiController; } }
+        public UI.UiController UiController { get { return uiController; } }
 
 
         //
         Player.PlayerController playerController;
-        public Player.PlayerController PlayerController { get { return this.playerController; } }
+        public Player.PlayerController PlayerController { get { return playerController; } }
 
         public CameraControl.CameraController CameraController { get; private set; }
 
         World.ChunkSystem.WorldController worldController;
-        public World.ChunkSystem.WorldController WorldController { get { return this.worldController; } }
+        public World.ChunkSystem.WorldController WorldController { get { return worldController; } }
 
         //###############################################################
         //###############################################################
@@ -45,22 +48,35 @@ namespace Game.GameControl
             StartCoroutine(LoadScenesRoutine());
         }
 
+        /// <summary>
+        /// DO NOT USE!
+        /// </summary>
+        public void StartGame()
+        {
+            throw new System.NotImplementedException();
+        }
+
         //###############################################################
         //###############################################################
 
         IEnumerator LoadScenesRoutine()
         {
-            yield return null;
+            //***********************
+            //loading the UI
+
+            var uiGO = Instantiate(uiPrefab);
+            uiController = uiGO.GetComponentInChildren<UI.UiController>();
+
             yield return null;
             //***********************
 
             //getting references in game controller
-            this.playerModel = GetComponentInChildren<Player.PlayerModel>();
-            this.echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
-            this.eclipseManager = GetComponentInChildren<EclipseManager>();
+            playerModel = GetComponentInChildren<Player.PlayerModel>();
+            echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
+            eclipseManager = GetComponentInChildren<EclipseManager>();
 
             //initializing game controller
-            this.playerModel.InitializePlayerModel();
+            playerModel.InitializePlayerModel();
 
             //cleaning up, just in case
             var echoManagers = FindObjectsOfType<EchoSystem.EchoManager>();
@@ -82,40 +98,27 @@ namespace Game.GameControl
             }
 
             //getting references in local scene
-            this.playerController = FindObjectOfType<Player.PlayerController>();
-            this.CameraController = FindObjectOfType<CameraControl.CameraController>();
-            this.worldController = FindObjectOfType<World.ChunkSystem.WorldController>();
+            playerController = FindObjectOfType<Player.PlayerController>();
+            CameraController = FindObjectOfType<CameraControl.CameraController>();
+            worldController = FindObjectOfType<World.ChunkSystem.WorldController>();
 
-            yield return null;
-            //***********************
-
-            //loading UI scene
-            SceneManager.LoadScene(UI_SCENE_NAME, LoadSceneMode.Additive);
-
-            yield return null;
-            //***********************
-
-            //getting references in UI scene
-            var uiScene = SceneManager.GetSceneByName(UI_SCENE_NAME);
-            this.uiController = SearchForScriptInScene<UI.UiController>(uiScene);
-
-            //initializing ui
-            this.uiController.InitializeUi(this);
+            //initializing the ui
+            uiController.InitializeUi(this, UI.eUiState.LoadingScreen);
 
             yield return null;
             //***********************
 
             //initializing game
-            this.playerController.InitializePlayerController(this);
-            this.CameraController.InitializeCameraController(this);
+            playerController.InitializePlayerController(this);
+            CameraController.InitializeCameraController(this);
 
             if (worldController != null)
             {
                 worldController.InitializeWorldController(this);
             }
 
-            this.echoManager.InitializeEchoManager(this);
-            this.EclipseManager.InitializeEclipseManager(this);
+            echoManager.InitializeEchoManager(this);
+            EclipseManager.InitializeEclipseManager(this);
 
             yield return null;
             //***********************
@@ -123,7 +126,7 @@ namespace Game.GameControl
             //starting game
             Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());
 
-            if (this.showIntroMenu)
+            if (showIntroMenu)
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.Intro));
             }
@@ -151,7 +154,7 @@ namespace Game.GameControl
             }
 
             return result;
-        }
+        }       
 
         //###############################################################
     }
