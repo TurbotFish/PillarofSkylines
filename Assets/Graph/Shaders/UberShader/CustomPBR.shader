@@ -30,7 +30,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 
 		[NoScaleOffset] _DetailMask ("Detail Mask", 2D) = "white"{}
 
-		_AlphaCutoff ("Alpha Cutoff", Range(0,1)) = 0.5
+		_Cutoff ("Alpha Cutoff", Range(0,1)) = 0.5
 
 		_ThicknessMap ("Thickness", 2D) = "black" {}
 		_DistortionSSS ("Distortion", Range(0,1)) = 1
@@ -139,11 +139,10 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 
 			#pragma multi_compile _ _VERTEX_WIND
 			#pragma multi_compile _ _VERTEX_BEND
-			#pragma multi_compile _ SHADOWS_SCREEN
-			#pragma multi_compile _ VERTEXLIGHT_ON
 			#pragma multi_compile_fog
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
 			#pragma multi_compile_instancing
+			#pragma multi_compile_fwdbase
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
@@ -201,6 +200,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma multi_compile_fog
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
 
+
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
 
@@ -252,9 +252,9 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 
 			#pragma multi_compile _ _VERTEX_WIND
 			#pragma multi_compile _ _VERTEX_BEND
-			#pragma multi_compile _ UNITY_HDR_ON
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
 			#pragma multi_compile_instancing
+			#pragma multi_compile_prepassfinal
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
@@ -289,6 +289,34 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#include "ShadowsCustomPBR.cginc"
 
 			ENDCG
+		}
+
+		Pass {
+			Tags {
+				"LightMode" = "Meta"
+			}
+
+			Cull Off
+
+			CGPROGRAM
+
+			#pragma vertex LightmappingVertexProgram
+			#pragma fragment LightmappingFragmentProgram
+
+			#pragma shader_feature _METALLIC_MAP
+			#pragma shader_feature _ _SMOOTHNESS_ALBEDO _SMOOTHNESS_METALLIC
+			#pragma shader_feature _EMISSION_MAP
+			#pragma shader_feature _DETAIL_MASK
+			#pragma shader_feature _DETAIL_ALBEDO_MAP
+
+			#pragma shader_feature _ALBEDO_VERTEX_MASK
+			#pragma shader_feature _WALL_TINT
+			#pragma shader_feature _GROUND_TINT
+
+			#include"AloLightmapping.cginc"
+
+			ENDCG
+
 		}
 	}
 	CustomEditor "CustomPBR_GUI"

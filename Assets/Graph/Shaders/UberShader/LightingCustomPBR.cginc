@@ -3,7 +3,7 @@
 
 	#define LIGHTING_CUSTOM_PBR_INCLUDED
 
-	//float4 _Color;
+	//float4 _Color;//changed for instancing
 	sampler2D _MainTex, _DetailTex, _DetailMask;
 	float4 _MainTex_ST, _DetailTex_ST;
 
@@ -20,7 +20,7 @@
 	sampler2D _OcclusionMap;
 	float _OcclusionStrength;
 
-	float _AlphaCutoff;
+	float _Cutoff;
 
 	#if defined(_SSS)
 		float _DistortionSSS;
@@ -106,6 +106,8 @@
 		#if defined(_VERTEX_MASK_COLOUR) || defined(_ALBEDO_VERTEX_MASK)
 			float4 color : COLOR;
 		#endif
+
+		float2 uv1 : TEXCOORD1;
 	};
 
 	struct Interpolators {
@@ -127,10 +129,14 @@
 			float3 worldPos : TEXCOORD4;
 		#endif
 
-		SHADOW_COORDS(5)
+		UNITY_SHADOW_COORDS(5)
 
 		#if defined(VERTEXLIGHT_ON)
 			float3 vertexLightColor : TEXCOORD6;
+		#endif
+
+		#if defined(LIGHTMAP_ON)
+			float2 lightmapUV : TEXCOORD6;
 		#endif
 
 		#if defined(_DISTANCE_DITHER) || defined(_DITHER_OBSTRUCTION)
@@ -314,6 +320,7 @@
 
 	Interpolators MyVertexProgram(VertexData v) {
 		Interpolators i;
+		UNITY_INITIALIZE_OUTPUT(Interpolators, i);
 		UNITY_SETUP_INSTANCE_ID(v);
 		UNITY_TRANSFER_INSTANCE_ID(v,i);
 
@@ -385,6 +392,10 @@
 		i.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
 		i.uv.zw = TRANSFORM_TEX(v.uv, _DetailTex);
 
+		#if defined(LIGHTMAP_ON)
+			i.lightmapUV = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
+		#endif
+
 		#if defined(_LOCAL_NORMAL_DEBUG)
 			i.normal = v.normal;
 		#else
@@ -403,7 +414,7 @@
 			i.binormal = CreateBinormal(i.normal, i.tangent, v.tangent.w);
 		#endif
 
-		TRANSFER_SHADOW(i);
+		UNITY_TRANSFER_SHADOW(i, v.uv1);
 
 		ComputeVertexLightColor(i);
 		return i;
@@ -458,7 +469,18 @@
 		#endif
 
 		#if defined(FORWARD_BASE_PASS) || defined(DEFERRED_PASS)
-			indirectLight.diffuse += max(0, ShadeSH9(float4(i.normal, 1)));
+			#if defined(LIGHTMAP_ON)
+				indirectLight.diffuse = DecodeLightmap(UNITY_SAMPLE_TEX2D(unity_Lightmap, i.lightmapUV));
+
+				#if defined(DIRLIGHTMAP_COMBINED)
+					float4 lightmapDirection = UNITY_SAMPLE_TEX2D_SAMPLER(unity_LightmapInd, unity_Lightmap, i.lightmapUV);
+					indirectLight.diffuse = DecodeDirectionalLightmap(indirectLight.diffuse, lightmapDirection, i.normal);
+				#endif
+
+			#else
+				indirectLight.diffuse += max(0, ShadeSH9(float4(i.normal, 1)));
+			#endif
+
 			float3 reflectionDir = reflect(-viewDir, i.normal);
 
 			Unity_GlossyEnvironmentData envData;
@@ -584,7 +606,7 @@
 		UNITY_SETUP_INSTANCE_ID(i);
 		float alpha = GetAlpha(i);
 		#if defined(_RENDERING_CUTOUT)
-			clip(alpha - _AlphaCutoff);
+			clip(alpha - _Cutoff);
 		#endif
 
 		float3 viewVec = _WorldSpaceCameraPos - i.worldPos.xyz;

@@ -19,10 +19,10 @@
 	#endif
 #endif
 
-//float4 _Color;
+//float4 _Color;//instancing
 sampler2D _MainTex;
 float4 _MainTex_ST;
-float _AlphaCutoff;
+float _Cutoff;
 sampler3D _DitherMaskLOD;
 
 UNITY_INSTANCING_CBUFFER_START(InstanceProperties)
@@ -99,7 +99,7 @@ float4 ShadowFragmentProgram (Interpolators i) : SV_TARGET {
 	UNITY_SETUP_INSTANCE_ID(i);
 	float alpha = GetAlpha(i);
 	#if defined(_RENDERING_CUTOUT)
-		clip(alpha - _AlphaCutoff);
+		clip(alpha - _Cutoff);
 	#endif
 
 	#if SHADOWS_SEMITRANSPARENT
