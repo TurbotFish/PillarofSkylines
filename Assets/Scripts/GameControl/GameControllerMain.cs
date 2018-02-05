@@ -290,7 +290,7 @@ namespace Game.GameControl
             //switch pillar to destroyed state
             if (pillarDestroyed)
             {
-                this.playerModel.SetPillarDestroyed(this.activePillarId);
+                this.playerModel.DestroyPillar(this.activePillarId);
             }
 
             yield return null;
