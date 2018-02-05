@@ -20,8 +20,6 @@ namespace Game.Player.CharacterController
         [SerializeField]
         public PoS_Camera myCamera;
 
-        //#############################################################################
-
         /// <summary>
         /// The controller checking if there's collisions on the way.
         /// </summary>
@@ -39,8 +37,6 @@ namespace Game.Player.CharacterController
         [Header("Animation stuff")]
         public float animationRunSpeed;
         public float animationJumpSpeed;
-
-        //#############################################################################
 
         public PlayerModel PlayerModel { get; private set; }
 
@@ -65,12 +61,14 @@ namespace Game.Player.CharacterController
         }
 
         bool isInitialized;
+
+        /// <summary>
+        /// This is set to false if the player has opened a menu, true otherwise.
+        /// </summary>
         bool isHandlingInput;
 
         Vector3 velocity;
         Vector3 externalVelocity;
-
-
 
         List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
 
@@ -85,7 +83,6 @@ namespace Game.Player.CharacterController
         public PlayerMovementInfo MovementInfo { get { return movementInfo; } }
 
         //#############################################################################
-
 
         [Space(10)]
         [Header("Particles/FX")]
@@ -187,12 +184,13 @@ namespace Game.Player.CharacterController
 
             //*******************************************
             //handling input
-
-            bool sprintDownLastFrame = inputInfo.sprintButton;
+           
             inputInfo.Reset();
 
             if (isHandlingInput)
             {
+                bool sprintDownLastFrame = inputInfo.sprintButton;
+
                 float stickH = Input.GetAxisRaw("Horizontal");
                 float stickV = Input.GetAxisRaw("Vertical");
 
@@ -201,6 +199,10 @@ namespace Game.Player.CharacterController
                 if (inputInfo.leftStickRaw.magnitude < CharData.General.StickDeadMaxVal)
                 {
                     inputInfo.leftStickAtZero = true;
+                }
+                else
+                {
+                    inputInfo.leftStickAtZero = false;
                 }
 
                 var toCameraAngle = Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up));
@@ -326,13 +328,15 @@ namespace Game.Player.CharacterController
                 if (stateReturn.RotationSet)
                 {
                     MyTransform.Rotate(MyTransform.up, stateReturn.Rotation, Space.World);
+                    Debug.LogError("aaa");
                 }
-                else
+                else if(!inputInfo.leftStickAtZero)
                 {
                     Vector3 to = Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), MyTransform.up);
                     float angle = Mathf.Lerp(0f, Vector3.SignedAngle(MyTransform.forward, to, MyTransform.up), CharData.General.TurnSpeed * Time.deltaTime);
 
                     MyTransform.Rotate(MyTransform.up, angle, Space.World);
+                    Debug.LogErrorFormat("bbb, angle={0}", angle);
                 }
             }
 
