@@ -760,9 +760,11 @@ public class PoS_Camera : MonoBehaviour {
     bool cameraBounce;
 
     public void SetVerticalOffset(float verticalOffset) {
+        #if FALSE
         recoilIntensity = recoilOnImpact * verticalOffset;
         contextualOffset.y = -verticalOffset;
         cameraBounce = true;
+        #endif
     }
 
     Vector3 GetContextualOffset(Vector3 potentialPosition) {
