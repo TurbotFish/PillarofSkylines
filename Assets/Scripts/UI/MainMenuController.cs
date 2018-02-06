@@ -1,22 +1,31 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Game.GameControl;
+﻿using Game.GameControl;
 using Game.Player;
 using Game.Utilities;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace Game.UI
 {
-    public class HelpMenuController : MonoBehaviour, IUiState
+
+    public class MainMenuController : MonoBehaviour, IUiState
     {
         //##################################################################
 
         public bool IsActive { get; private set; }
 
+        IGameControllerBase gameController;
+
+        [SerializeField]
+        private Button playButton;
+
         //##################################################################
 
         void IUiState.Initialize(IGameControllerBase gameController)
         {
+            this.gameController = gameController;
         }
 
         //##################################################################
@@ -30,15 +39,21 @@ namespace Game.UI
 
             IsActive = true;
             gameObject.SetActive(true);
+
+            //
+            playButton.Select();
         }
 
         void IUiState.Deactivate()
         {
             IsActive = false;
             gameObject.SetActive(false);
+
+            //
+            EventSystem.current.SetSelectedGameObject(null);
         }
 
-        //##################################################################     
+        //##################################################################
 
         // Update is called once per frame
         void Update()
@@ -48,11 +63,12 @@ namespace Game.UI
                 return;
             }
 
-            if (Input.GetButtonDown("Back"))
+            if (Input.GetButtonDown("Interact"))
             {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HUD));
-                return;
+                gameController.StartGame();
             }
         }
+
+        //##################################################################
     }
-}
+} //end of namespace

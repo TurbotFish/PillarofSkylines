@@ -39,7 +39,9 @@ namespace Game.UI
         [SerializeField]
         HelpMenuController helpMenu;
 
-
+        //main menu controller
+        [SerializeField]
+        MainMenuController mainMenu;
 
 
 
@@ -52,7 +54,7 @@ namespace Game.UI
 
         //###########################################################
 
-        public void InitializeUi(GameControl.IGameControllerBase gameController)
+        public void InitializeUi(GameControl.IGameControllerBase gameController, eUiState startState)
         {
             this.gameController = gameController;
 
@@ -66,15 +68,16 @@ namespace Game.UI
             uiStates.Add(eUiState.LoadingScreen, this.loadingScreenController);
             uiStates.Add(eUiState.PillarEntrance, this.pillarEntranceMenuController);
             uiStates.Add(eUiState.HelpMenu, helpMenu);
+            uiStates.Add(eUiState.MainMenu, mainMenu);
 
             foreach (var uiState in uiStates.Values)
             {
                 if (!uiState.Equals(this.loadingScreenController))
-                    uiState.Initialize(this.gameController.PlayerModel);
+                    uiState.Initialize(this.gameController);
                 uiState.Deactivate();
             }
 
-            SwitchState(eUiState.LoadingScreen);
+            SwitchState(startState);
 
             Utilities.EventManager.OnShowMenuEvent += OnShowMenuEventHandler;
 

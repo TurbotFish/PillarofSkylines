@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Game.World;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,8 +16,8 @@ namespace Game.Player
         public AbilitySystem.AbilityData AbilityData { get { return abilityData; } }
 
         //pillar data
-        World.PillarData pillarData;
-        public World.PillarData PillarData { get { return pillarData; } }
+        PillarData pillarData;
+        public PillarData PillarData { get { return pillarData; } }
 
         //
         public bool hasNeedle;
@@ -30,7 +31,9 @@ namespace Game.Player
         List<eAbilityType> flaggedAbilities = new List<eAbilityType>();
 
         //
-        List<World.ePillarId> destoyedPillars = new List<World.ePillarId>();
+        List<ePillarId> destoyedPillars = new List<ePillarId>();
+        List<ePillarId> unlockedPillars = new List<ePillarId>();
+
         List<string> pickedUpFavours = new List<string>();
 
         //###########################################################
@@ -40,8 +43,6 @@ namespace Game.Player
             this.pillarData = Resources.Load<World.PillarData>("ScriptableObjects/PillarData");
 
             UnlockAbilityGroup(eAbilityGroup.Default);
-
-            Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
         }
 
         //###########################################################
@@ -310,75 +311,119 @@ namespace Game.Player
 
         //###########################################################
 
-        #region pillar state methods
+        #region pillar methods
 
-        public void SetPillarDestroyed(World.ePillarId pillarId)
+        /// <summary>
+        /// Destroys a pillar.
+        /// </summary>
+        /// <param name="pillarId">The Id of the pillar to destroy.</param>
+        public void DestroyPillar(ePillarId pillarId)
         {
-            if (!this.destoyedPillars.Contains(pillarId))
+            if (!destoyedPillars.Contains(pillarId))
             {
-                this.destoyedPillars.Add(pillarId);
+                destoyedPillars.Add(pillarId);
                 UnlockAbilityGroup(pillarData.GetPillarAbilityGroup(pillarId));
 
                 Utilities.EventManager.SendPillarDestroyedEvent(this, new Utilities.EventManager.PillarDestroyedEventArgs(pillarId));
             }
         }
 
-        public bool IsPillarDestroyed(World.ePillarId pillarId)
+        /// <summary>
+        /// Checks if a pillar has been destroyed.
+        /// </summary>
+        /// <param name="pillarId">The Id of the pillar to check.</param>
+        /// <returns></returns>
+        public bool CheckIsPillarDestroyed(ePillarId pillarId)
         {
-            if (this.destoyedPillars.Contains(pillarId))
-            {
-                return true;
-            }
-
-            return false;
+            return destoyedPillars.Contains(pillarId);
         }
 
-        #endregion pillar state methods
+        /// <summary>
+        /// Unlocks a pillar. The entry price will be removed from the player's favours.
+        /// </summary>
+        /// <param name="pillarId">The Id of the pillar to unlock.</param>
+        public void UnlockPillar(ePillarId pillarId)
+        {
+            if (unlockedPillars.Contains(pillarId))
+            {
+                return;
+            }
+            else
+            {
+                unlockedPillars.Add(pillarId);
+                ChangeFavourAmount(-PillarData.GetPillarEntryPrice(pillarId));
+            }
+        }
+
+        /// <summary>
+        /// Returns the amount of favours that need to be sacrificed in order to unlock a pillar.
+        /// </summary>
+        /// <param name="pillarId">The Id of the pillar to be unlocked.</param>
+        /// <returns></returns>
+        public int GetPillarEntryPrice(ePillarId pillarId)
+        {
+            if (unlockedPillars.Contains(pillarId))
+            {
+                return 0;
+            }
+            else
+            {
+                return pillarData.GetPillarEntryPrice(pillarId);
+            }
+        }
+
+        /// <summary>
+        /// Checks if a pillar has been destroyed.
+        /// </summary>
+        /// <param name="pillarId">The Id of the pillar to check.</param>
+        /// <returns></returns>
+        public bool CheckIsPillarUnlocked(ePillarId pillarId)
+        {
+            return unlockedPillars.Contains(pillarId);
+        }
+
+        #endregion pillar methods
 
         //###########################################################
 
-        #region favours
+        #region favour methods
 
-        void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
+        /// <summary>
+        /// Informs the model that a favour has been picked up.
+        /// </summary>
+        /// <param name="favourId">The Id of the picked-up favour.</param>
+        public void PickupFavour(string favourId)
         {
-            if (pickedUpFavours.Contains(args.FavourId))
+            if (pickedUpFavours.Contains(favourId))
             {
                 Debug.LogWarning("Favour already picked up!");
             }
             else
             {
-                pickedUpFavours.Add(args.FavourId);
+                //pick up favour
+                ChangeFavourAmount(1);
+                pickedUpFavours.Add(favourId);
+
+                //send event
+                Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(favourId));
             }
         }
 
-        public bool IsFavourPickedUp(string favourId)
+        /// <summary>
+        /// Checks whether the favour has already been picked up.
+        /// </summary>
+        /// <param name="favourId">The Id of the favour to check.</param>
+        /// <returns></returns>
+        public bool CheckIsFavourPickedUp(string favourId)
         {
             return pickedUpFavours.Contains(favourId);
         }
 
-        #endregion favours
-
-        //###########################################################
-
-        public eAbilityState GetAbilityState(eAbilityType abilityType)
-        {
-            var ability = abilityData.GetAbility(abilityType);
-
-            if (activatedAbilities.Contains(abilityType))
-            {
-                return eAbilityState.active;
-            }
-            else if (unlockedAbilityGroups.Contains(ability.Group) && Favours >= ability.ActivationPrice)
-            {
-                return eAbilityState.available;
-            }
-            else
-            {
-                return eAbilityState.locked;
-            }
-        }
-
-        public void ChangeFavourAmount(int favourDelta)
+        /// <summary>
+        /// Changes the amount of favours of the player. Checks whether abilities have become available and sends appropriate events.
+        /// </summary>
+        /// <param name="favourDelta"></param>
+        private void ChangeFavourAmount(int favourDelta)
         {
             Favours += favourDelta;
 
@@ -404,9 +449,33 @@ namespace Game.Player
             }
         }
 
+        #endregion favour methods
+
+        //###########################################################
+
+        #region stuff
+
+        public eAbilityState GetAbilityState(eAbilityType abilityType)
+        {
+            var ability = abilityData.GetAbility(abilityType);
+
+            if (activatedAbilities.Contains(abilityType))
+            {
+                return eAbilityState.active;
+            }
+            else if (unlockedAbilityGroups.Contains(ability.Group) && Favours >= ability.ActivationPrice)
+            {
+                return eAbilityState.available;
+            }
+            else
+            {
+                return eAbilityState.locked;
+            }
+        }
 
 
 
+        #endregion stuff
 
         //###########################################################
     }

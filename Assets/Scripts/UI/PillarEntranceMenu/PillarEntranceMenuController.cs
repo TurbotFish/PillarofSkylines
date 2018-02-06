@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Game.GameControl;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -34,7 +35,7 @@ namespace Game.UI.PillarEntranceMenu
         // Update is called once per frame
         void Update()
         {
-            if (!this.IsActive)
+            if (!IsActive)
             {
                 return;
             }
@@ -43,11 +44,16 @@ namespace Game.UI.PillarEntranceMenu
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HUD));
             }
-
-            if (this.canEnterPillar && Input.GetButtonDown("Interact"))
+            else if (canEnterPillar && Input.GetButtonDown("Interact"))
             {
-                playerModel.ChangeFavourAmount(-playerModel.PillarData.GetPillarEntryPrice(pillarId));
-                Utilities.EventManager.SendEnterPillarEvent(this, new Utilities.EventManager.EnterPillarEventArgs(this.pillarId));
+                if (playerModel.CheckIsPillarUnlocked(pillarId))
+                {
+                    Utilities.EventManager.SendEnterPillarEvent(this, new Utilities.EventManager.EnterPillarEventArgs(this.pillarId));
+                }
+                else
+                {
+                    playerModel.UnlockPillar(pillarId);
+                }                
             }
         }
 
@@ -55,14 +61,14 @@ namespace Game.UI.PillarEntranceMenu
 
         //###########################################################
 
-        void IUiState.Initialize(Player.PlayerModel playerModel)
+        void IUiState.Initialize(IGameControllerBase gameController)
         {
-            this.playerModel = playerModel;
+            this.playerModel = gameController.PlayerModel;
         }
 
         void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
         {
-            if (this.IsActive)
+            if (IsActive)
             {
                 return;
             }
@@ -71,32 +77,32 @@ namespace Game.UI.PillarEntranceMenu
                 throw new System.Exception("ERROR!");
             }
 
-            this.IsActive = true;
-            this.gameObject.SetActive(true);
+            IsActive = true;
+            gameObject.SetActive(true);
 
 
-            this.pillarId = (args as Utilities.EventManager.OnShowPillarEntranceMenuEventArgs).PillarId;
+            pillarId = (args as Utilities.EventManager.OnShowPillarEntranceMenuEventArgs).PillarId;
 
-            int cost = this.playerModel.PillarData.GetPillarEntryPrice(this.pillarId);
-            this.costPanelView.Initialize(cost);
+            int cost = playerModel.GetPillarEntryPrice(pillarId);
+            costPanelView.Initialize(cost);
 
-            if (this.playerModel.Favours < cost)
+            if (playerModel.Favours < cost)
             {
-                this.warningMessage.SetActive(true);
+                warningMessage.SetActive(true);
             }
             else
             {
-                this.warningMessage.SetActive(false);
-                this.canEnterPillar = true;
+                warningMessage.SetActive(false);
+                canEnterPillar = true;
             }
         }
 
         void IUiState.Deactivate()
         {
-            bool wasActive = this.IsActive;
+            bool wasActive = IsActive;
 
-            this.IsActive = false;
-            this.gameObject.SetActive(false);
+            IsActive = false;
+            gameObject.SetActive(false);
         }
 
         //###########################################################
