@@ -40,7 +40,7 @@ public class MovingPlatform : MonoBehaviour {
 		impactPoint = playerImpactPoint;
 	}
 
-	public void RemovePlayer() {
+	virtual public void RemovePlayer() {
 		currPlayer = null;
 	}
 }
