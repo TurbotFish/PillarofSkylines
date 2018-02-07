@@ -1,7 +1,7 @@
 ﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
 Shader "Alo/PBR/CustomPBR(Hubert)" {
-
+//no LLPV support
 	Properties {
 		_Color ("Tint", Color) = (1.0,1.0,1.0,1.0)
 		_MainTex ("Albedo", 2D) = "white"{}
@@ -143,6 +143,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
 			#pragma multi_compile_instancing
 			#pragma multi_compile_fwdbase
+			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
@@ -199,6 +200,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma multi_compile_fwdadd_fullshadows
 			#pragma multi_compile_fog
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
+			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
 
 			#pragma vertex MyVertexProgram
@@ -255,6 +257,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
 			#pragma multi_compile_instancing
 			#pragma multi_compile_prepassfinal
+			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
@@ -285,6 +288,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma shader_feature _SMOOTHNESS_ALBEDO
 			#pragma shader_feature _SEMITRANSPARENT_SHADOWS
 			#pragma multi_compile_instancing
+			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
 			#include "ShadowsCustomPBR.cginc"
 

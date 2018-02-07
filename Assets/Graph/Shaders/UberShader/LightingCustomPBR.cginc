@@ -95,6 +95,18 @@
 		#define FOG_ON 1
 	#endif
 
+	#if !defined(LIGHTMAP_ON) && defined(SHADOWS_SCREEN)
+		#if defined (SHADOWS_SHADOWMASK) && !defined(UNITY_NO_SCREENSPACE_SHADOWS)
+			#define ADDITIONAL_MASKED_DIRECTIONAL_SHADOWS 1
+		#endif
+	#endif
+
+	#if defined(LIGHTMAP_ON) && defined(SHADOWS_SCREEN)
+		#if defined(LIGHTMAP_SHADOW_MIXING) && !defined(SHADOWS_SHADOWMASK)
+			#define SUBTRACTIVE_LIGHTING 1
+		#endif
+	#endif
+
 
 	struct VertexData {
 		UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -108,6 +120,7 @@
 		#endif
 
 		float2 uv1 : TEXCOORD1;
+		float2 uv2 : TEXCOORD2;
 	};
 
 	struct Interpolators {
@@ -135,7 +148,7 @@
 			float3 vertexLightColor : TEXCOORD6;
 		#endif
 
-		#if defined(LIGHTMAP_ON)
+		#if defined(LIGHTMAP_ON) || ADDITIONAL_MASKED_DIRECTIONAL_SHADOWS
 			float2 lightmapUV : TEXCOORD6;
 		#endif
 
@@ -150,6 +163,10 @@
 
 		#if defined(_ALBEDO_VERTEX_MASK)
 			float4 color : COLOR;
+		#endif
+
+		#if defined(DYNAMICLIGHTMAP_ON)
+			float2 dynamicLightmapUV : TEXCOORD10;
 		#endif
 	};
 
@@ -396,6 +413,10 @@
 			i.lightmapUV = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
 		#endif
 
+		#if defined(DYNAMICLIGHTMAP_ON)
+			i.dynamicLightmapUV = v.uv2 * unity_DynamicLightmapST.xy + unity_DynamicLightmapST.zw;
+		#endif
+
 		#if defined(_LOCAL_NORMAL_DEBUG)
 			i.normal = v.normal;
 		#else
@@ -420,10 +441,44 @@
 		return i;
 	}
 
+
+	float FadeShadows(Interpolators i, float attenuation){
+	#if HANDLE_SHADOWS_BLENDING_IN_GI || ADDITIONAL_MASKED_DIRECTIONAL_SHADOWS
+
+		#if ADDITIONAL_MASKED_DIRECTIONAL_SHADOWS
+			attenuation = SHADOW_ATTENUATION(i);
+		#endif
+
+		float viewZ = dot(_WorldSpaceCameraPos - i.worldPos, UNITY_MATRIX_V[2].xyz);
+		float shadowFadeDistance = UnityComputeShadowFadeDistance(i.worldPos, viewZ);
+		float shadowFade = UnityComputeShadowFade(shadowFadeDistance);
+
+		float bakedAttenuation = UnitySampleBakedOcclusion(i.lightmapUV, i.worldPos);
+
+		attenuation = UnityMixRealtimeAndBakedShadows(attenuation, bakedAttenuation, shadowFade);
+	#endif
+		return attenuation;
+	}
+
+	void ApplySubtractiveLighting ( Interpolators i, inout UnityIndirect indirectLight){
+	#if SUBTRACTIVE_LIGHTING
+		UNITY_LIGHT_ATTENUATION(attenuation, i, i.worldPos.xyz);
+		attenuation = FadeShadows(i, attenuation);
+
+		float ndotl = saturate(dot(i.normal, _WorldSpaceLightPos0.xyz));
+		float3 shadowedLightEstimate = ndotl * (1 - attenuation) * _LightColor0.rgb;
+		float3 subtractedLight = indirectLight.diffuse - shadowedLightEstimate;
+		subtractedLight = max(subtractedLight, unity_ShadowColor.rgb);
+		subtractedLight = lerp(subtractedLight, inditectLight.diffuse, _LightShadowData.x);
+		indirectLight.diffuse = min(subtractedLight, indirectLight.diffuse);
+	#endif
+
+	}
+
 	UnityLight CreateLight(Interpolators i){
 		UnityLight light;
 
-		#if defined(DEFERRED_PASS)
+		#if defined(DEFERRED_PASS) || SUBTRACTIVE_LIGHTING
 			light.dir = float3(0,1,0);
 			light.color = 0;
 		#else
@@ -436,7 +491,7 @@
 
 
 			UNITY_LIGHT_ATTENUATION(attenuation, i, i.worldPos.xyz);
-
+			attenuation = FadeShadows(i, attenuation);
 
 			light.color = _LightColor0.rgb * attenuation;
 
@@ -477,7 +532,24 @@
 					indirectLight.diffuse = DecodeDirectionalLightmap(indirectLight.diffuse, lightmapDirection, i.normal);
 				#endif
 
-			#else
+				ApplySubtractiveLighting(i, indirectLight);
+			#endif
+
+
+			#if defined(DYNAMICLIGHTMAP_ON)
+				float3 dynamicLightDiffuse = DecodeRealtimeLightmap(UNITY_SAMPLE_TEX2D(unity_DynamicLightmap, i.dynamicLightmapUV));
+
+				#if defined(DIRLIGHTMAP_COMBINED)
+					float4 dynamicLightmapDirection = UNITY_SAMPLE_TEX2D_SAMPLER(unity_DynamicDirectionality, unity_DynamicLightmap, i.dynamicLightmapUV);
+					indirectLight.diffuse += DecodeDirectionalLightmap(dynamicLightDiffuse, dynamicLightmapDirection, i.normal);
+				
+				#else
+					indirectLight.diffuse += dynamicLightDiffuse;
+				#endif
+			#endif
+
+
+			#if !defined(LIGHTMAP_ON) && !defined(DYNAMICLIGHTMAP_ON)
 				indirectLight.diffuse += max(0, ShadeSH9(float4(i.normal, 1)));
 			#endif
 
@@ -597,6 +669,12 @@
 			float4 gBuffer1 : SV_Target1;
 			float4 gBuffer2 : SV_Target2;
 			float4 gBuffer3 : SV_Target3;
+
+			#if defined(SHADOWS_SHADOWMASK) && (UNITY_ALLOWED_MRT_COUNT > 4)
+				float4 gBuffer4 : SV_Target4;
+			#endif
+
+
 		#else
 			float4 color : SV_Target;
 		#endif
@@ -702,6 +780,18 @@
 			output.gBuffer1.a = GetSmoothness(i);
 			output.gBuffer2.rgba = float4(i.normal.xyz * 0.5 + 0.5, GetCelShadingMask());
 			output.gBuffer3 = color;
+
+			#if defined (SHADOWS_SHADOWMASK) && (UNITY_ALLOWED_MRT_COUNT > 4)
+				#if defined(LIGHTMAP_ON)
+					shadowUV = i.lightmapUV;
+				#endif
+
+				output.gBuffer4 = UnityGetRawBakedOcclusions(shadowUV, i.worldPos.xyz);
+			#endif
+
+
+
+
 
 		#else
 			#if !defined(_LOCAL_NORMAL_DEBUG)

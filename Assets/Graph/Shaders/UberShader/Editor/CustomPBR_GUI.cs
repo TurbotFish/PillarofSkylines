@@ -238,6 +238,7 @@ public class CustomPBR_GUI : ShaderGUI {
 		EditorGUI.BeginChangeCheck ();
 
 		editor.TexturePropertyWithHDRColor (MakeLabel (map, "Emission (R)"), map, FindProperty ("_Emission"), emissionConfig, false);
+		editor.LightmapEmissionProperty (2);
 		if (EditorGUI.EndChangeCheck () && tex != map.textureValue) {
 
 			if (tex != map.textureValue) {
@@ -245,7 +246,7 @@ public class CustomPBR_GUI : ShaderGUI {
 			}
 
 			foreach (Material m in editor.targets) {
-				m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.BakedEmissive;
+				m.globalIlluminationFlags &= ~MaterialGlobalIlluminationFlags.BakedEmissive;
 			}
 		}
 	}
