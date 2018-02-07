@@ -33,7 +33,8 @@ namespace Game.Player.CharacterController
         /// <summary>
         /// The height difference between the two points of the capsule.
         /// </summary>
-        Vector3 capsuleHeightModifier;
+        [HideInInspector]
+        public Vector3 capsuleHeightModifier;
         /// <summary>
         /// The safety margin used when casting for obstacles.
         /// </summary>
@@ -75,7 +76,8 @@ namespace Game.Player.CharacterController
         bool insideWallOnThisFrame;
         Vector3 stepOffset;
 
-        Quaternion playerAngle;
+        [HideInInspector]
+        public Quaternion playerAngle;
         RaycastHit hit;
         RaycastHit hit2;
         Vector3 wallDir;
@@ -299,6 +301,11 @@ namespace Game.Player.CharacterController
 				} else {
 					collisions.SlippySlope = false;
 				}
+            }
+
+            if (collisions.below && !belowLastFrame)
+            {
+                myPlayer.myCamera.SetVerticalOffset(Vector3.Project(collisions.initialVelocityOnThisFrame, myTransform.up).magnitude);
             }
 
             collisions.above = Physics.SphereCast(myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) - myTransform.up * skinWidth * 2, radius, myTransform.up, out hit, skinWidth * 4, collisionMask);

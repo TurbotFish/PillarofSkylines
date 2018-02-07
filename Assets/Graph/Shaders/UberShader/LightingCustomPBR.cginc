@@ -3,7 +3,7 @@
 
 	#define LIGHTING_CUSTOM_PBR_INCLUDED
 
-	//float4 _Color;
+	float4 _Color;
 	sampler2D _MainTex, _DetailTex, _DetailMask;
 	float4 _MainTex_ST, _DetailTex_ST;
 
@@ -97,7 +97,6 @@
 
 
 	struct VertexData {
-		UNITY_VERTEX_INPUT_INSTANCE_ID
 		float4 vertex : POSITION;
 		float3 normal : NORMAL;
 		float4 tangent : TANGENT;
@@ -109,7 +108,6 @@
 	};
 
 	struct Interpolators {
-		UNITY_VERTEX_INPUT_INSTANCE_ID
 		float4 pos : SV_POSITION;
 		float4 uv : TEXCOORD0;
 		float3 normal : TEXCOORD1;
@@ -147,10 +145,6 @@
 		#endif
 	};
 
-	UNITY_INSTANCING_CBUFFER_START(InstanceProperties)
-		UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
-	UNITY_INSTANCING_CBUFFER_END
-
 	void ComputeVertexLightColor(inout Interpolators i){
 		#if defined(VERTEXLIGHT_ON)
 			i.vertexLightColor = Shade4PointLights(
@@ -183,8 +177,8 @@
 	}
 
 	float3 GetAlbedo(Interpolators i){
-		float3 albedoTex = tex2D(_MainTex, i.uv.xy).rgb * UNITY_ACCESS_INSTANCED_PROP(_Color).rgb;
-		float3 albedo = albedoTex * UNITY_ACCESS_INSTANCED_PROP(_Color).rgb;
+		float3 albedoTex = tex2D(_MainTex, i.uv.xy).rgb;
+		float3 albedo = albedoTex * _Color.rgb;
 		#if defined(_ALBEDO_VERTEX_MASK)
 			albedo = lerp(albedoTex, albedo, i.color.g);
 		#endif
@@ -268,7 +262,7 @@
 	}
 
 	float GetAlpha(Interpolators i){
-		float alpha = UNITY_ACCESS_INSTANCED_PROP(_Color).a;
+		float alpha = _Color.a;
 		#if !defined(_SMOOTHNESS_ALBEDO)
 			alpha *= tex2D(_MainTex, i.uv.xy).a;
 		#endif
@@ -314,8 +308,7 @@
 
 	Interpolators MyVertexProgram(VertexData v) {
 		Interpolators i;
-		UNITY_SETUP_INSTANCE_ID(v);
-		UNITY_TRANSFER_INSTANCE_ID(v,i);
+
 
 		#if defined(_VERTEX_BEND) || defined(_VERTEX_WIND)
 
@@ -581,7 +574,6 @@
 	};
 
 	FragmentOutput MyFragmentProgram(Interpolators i) {
-		UNITY_SETUP_INSTANCE_ID(i);
 		float alpha = GetAlpha(i);
 		#if defined(_RENDERING_CUTOUT)
 			clip(alpha - _AlphaCutoff);

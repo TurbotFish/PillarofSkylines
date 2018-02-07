@@ -481,6 +481,10 @@ namespace Game.Player.CharacterController
             float timeToUnstick;
             public float TimeToUnstick { get { return timeToUnstick; } }
 
+            [SerializeField]
+            float jumpStrengthModifierLedgeGrab;
+            public float JumpStrengthModifierLedgeGrab { get { return jumpStrengthModifierLedgeGrab; } }
+
             public void OnValidate()
             {
                 transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
@@ -513,12 +517,17 @@ namespace Game.Player.CharacterController
             float jumpMultiplier;
             public float JumpMultiplier { get { return jumpMultiplier; } }
 
+            [SerializeField]
+            float glideMultiplier;
+            public float GlideMultiplier { get { return glideMultiplier; } }
+
             public void OnValidate()
             {
                 duration = Mathf.Clamp(duration, 0, float.MaxValue);
                 lerpSpeed = Mathf.Clamp(lerpSpeed, 0, float.MaxValue);
                 speedMultiplier = Mathf.Clamp(speedMultiplier, 0, float.MaxValue);
                 jumpMultiplier = Mathf.Clamp(jumpMultiplier, 0, float.MaxValue);
+                glideMultiplier = Mathf.Clamp(glideMultiplier, 0, float.MaxValue);
             }
         }
 

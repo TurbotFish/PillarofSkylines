@@ -52,7 +52,7 @@ namespace Game.Player {
 
             spawnPointManager = FindObjectOfType<World.SpawnPointSystem.SpawnPointManager>(); //TODO: Fix that
 
-            camera = player.myCamera.GetComponent<PoS_Camera>();
+            camera = player.myCameraTransform.GetComponent<PoS_Camera>();
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;

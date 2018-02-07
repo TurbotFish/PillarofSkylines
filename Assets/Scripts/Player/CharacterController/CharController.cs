@@ -16,14 +16,17 @@ namespace Game.Player.CharacterController
         [SerializeField]
         Transform rotator;
         [SerializeField]
-        public Transform myCamera;
+        public Transform myCameraTransform;
+        [SerializeField]
+        public PoS_Camera myCamera;
 
         //#############################################################################
 
         /// <summary>
         /// The controller checking if there's collisions on the way.
         /// </summary>
-        CharacControllerRecu tempPhysicsHandler;
+        [HideInInspector]
+        public CharacControllerRecu tempPhysicsHandler;
         CharacControllerRecu.CollisionInfo tempCollisionInfo;
 
         public CharacControllerRecu.CollisionInfo CollisionInfo { get { return tempCollisionInfo; } }
@@ -101,7 +104,8 @@ namespace Game.Player.CharacterController
         {
             tempPhysicsHandler = GetComponent<CharacControllerRecu>();
             animator = GetComponentInChildren<Animator>();
-            myCamera = FindObjectOfType<PoS_Camera>().transform;
+            myCamera = FindObjectOfType<PoS_Camera>();
+            myCameraTransform = myCamera.transform;
 
 
             PlayerModel = gameController.PlayerModel;
@@ -238,6 +242,7 @@ namespace Game.Player.CharacterController
 
             if (stateReturn.PlayerForwardSet)
             {
+                Debug.Log("forward is : " + stateReturn.PlayerForward);
                 MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up), MyTransform.up);
             }
 
@@ -256,6 +261,7 @@ namespace Game.Player.CharacterController
 
             Vector3 tempVertical = new Vector3();
             Vector3 newVelocity = new Vector3();
+
 
             if (stateReturn.keepVerticalMovement)
             {
