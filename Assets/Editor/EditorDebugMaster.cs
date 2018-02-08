@@ -84,10 +84,9 @@ public class EditorDebugMaster : EditorWindow
         min.z = worldPos.z - worldSize.z / 2f;
         max.z = worldPos.z + worldSize.z / 2f;
 
-        Debug.Log("traduction : " + new Vector3((viewPos.position.x > max.x ? -size.x : 0), (viewPos.position.y > max.y ? -size.y : 0), (viewPos.position.z > max.z ? -size.z : 0)));
-        SceneView.lastActiveSceneView.pivot += new Vector3((viewPos.position.x > max.x ? -size.x : 0), (viewPos.position.y > max.y ? -size.y : 0), (viewPos.position.z > max.z ? -size.z : 0));
 
-        Debug.Log("traduction2 : " + new Vector3((viewPos.position.x < min.x ? size.x : 0), (viewPos.position.y < min.y ? size.y : 0), (viewPos.position.z < min.z ? size.z : 0)));
+        SceneView.lastActiveSceneView.pivot += new Vector3((viewPos.position.x > max.x ? -size.x : 0), (viewPos.position.y > max.y ? -size.y : 0), (viewPos.position.z > max.z ? -size.z : 0));
+        
         SceneView.lastActiveSceneView.pivot += new Vector3((viewPos.position.x < min.x ? size.x : 0), (viewPos.position.y < min.y ? size.y : 0), (viewPos.position.z < min.z ? size.z : 0));
 
 
