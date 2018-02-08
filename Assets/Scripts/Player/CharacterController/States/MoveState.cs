@@ -26,11 +26,11 @@ namespace Game.Player.CharacterController.States
 		//#############################################################################
 
 		public void Enter() {
-			Debug.Log("Enter State: Move");
+			//Debug.Log("Enter State: Move");
 		}
 
 		public void Exit() {
-			Debug.Log("Exit State: Move");
+			//Debug.Log("Exit State: Move");
 		}
 
 		//#############################################################################

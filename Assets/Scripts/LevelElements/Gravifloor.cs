@@ -1,28 +1,78 @@
-﻿
-using Game.Player.CharacterController;
+﻿using Game.Player.CharacterController;
+using System.Collections;
 using UnityEngine;
 
-public class Gravifloor : MovingPlatform {
+public class Gravifloor : MonoBehaviour {
     
-    Vector3 gravityDirection, trueGravityDirection;
+    Vector3 gravityDirection;
+    static Gravifloor lastActive;
+
+    float rotationDuration = 0.05f;
+
+    float resetDelay = 0.1f; // just in case there is a microspace between two gravifloors
+    [SerializeField] float resetDuration = 0.5f;
+    
+    Vector3 regularGravity = new Vector3(0, -1, 0);
+
+    CharController currPlayer;
+
 
     private void Awake()
     {
-        trueGravityDirection = Vector3.down;
         gravityDirection = -transform.up;
+        gameObject.tag = "Gravifloor";
     }
 
-    public override void AddPlayer(CharController player, Vector3 playerImpactPoint)
+    public void AddPlayer(CharController player)
     {
-        base.AddPlayer(player, playerImpactPoint);
-        
-        currPlayer.ChangeGravityDirection(gravityDirection);
+        if (lastActive)
+        {
+            lastActive.StopAllCoroutines();
+            lastActive = this;
+        }
+        currPlayer = player;
+
+        StartCoroutine(_ChangeGravity(gravityDirection));
     }
-
-    public override void RemovePlayer()
+    
+    public void RemovePlayer(bool isJumping)
     {
-        base.RemovePlayer();
+        if (isJumping)
+            StartCoroutine(_ResetGravity());
+        else
+            StartCoroutine(_ChangeGravity(regularGravity));
+    }
+    
+    public IEnumerator _ChangeGravity(Vector3 gravityGoal)
+    {
+        CharController player = currPlayer;
 
+        player.ChangeGravityDirection(gravityGoal);
+        yield break;
+
+        Vector3 currentGravity = -player.MyTransform.up;
+
+        for (float elapsed = 0; elapsed < rotationDuration; elapsed += Time.deltaTime)
+        {
+            player.ChangeGravityDirection(Vector3.Lerp(currentGravity, gravityGoal, elapsed / rotationDuration));
+            yield return null;
+        }
+        player.ChangeGravityDirection(gravityGoal);
+    }
+    
+
+    public IEnumerator _ResetGravity()
+    {
+        CharController player = currPlayer;
+
+        yield return new WaitForSeconds(resetDelay);
+
+        for (float elapsed = 0; elapsed < resetDuration; elapsed+=Time.deltaTime)
+        {
+            player.ChangeGravityDirection(Vector3.Lerp(gravityDirection, regularGravity, elapsed / resetDuration));
+            yield return null;
+        }
+        player.ChangeGravityDirection(regularGravity);
     }
 
 }

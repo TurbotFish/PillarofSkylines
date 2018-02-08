@@ -27,7 +27,7 @@ namespace Game.GameControl
 
         private Dictionary<World.ePillarId, PillarSceneInfo> pillarSceneDictionary = new Dictionary<World.ePillarId, PillarSceneInfo>();
 
-        private bool isPillarActive = false;
+        [HideInInspector] public bool isPillarActive = false;
         private World.ePillarId activePillarId;
         private bool isGameStarted = false;
 
