@@ -31,11 +31,12 @@ public class ChangeDefaultLayer : EditorWindow {
 		Repaint ();
 	}
 
-	void ApplyNewLayer(GameObject target, int selectedLayer) {
-		target.layer = selectedLayer;
+	void ApplyNewLayer(GameObject target, int selectedLayer)
+    {
+        if (target.gameObject.layer == 0)
+            target.layer = selectedLayer;
 		foreach (Transform child in target.transform) {
-			if (child.gameObject.layer == 0)
-				ApplyNewLayer (child.gameObject, selectedLayer);
+			ApplyNewLayer(child.gameObject, selectedLayer);
 		}
 	}
 }

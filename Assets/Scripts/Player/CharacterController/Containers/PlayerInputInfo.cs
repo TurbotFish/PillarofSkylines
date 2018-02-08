@@ -28,7 +28,7 @@ namespace Game.Player.CharacterController.Containers
             leftStickRaw = Vector3.zero;
             leftStickToCamera = Vector3.zero;
             leftStickToSlope = Vector3.zero;
-            leftStickAtZero = false;
+            leftStickAtZero = true;
 
             jumpButton = false;
             jumpButtonDown = false;
