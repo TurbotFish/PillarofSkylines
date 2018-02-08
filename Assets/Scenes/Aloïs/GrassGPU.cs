@@ -9,6 +9,7 @@ public class GrassGPU : MonoBehaviour {
 	public float scaleFactor = 1f;
 
 	int batchSize = 1023;
+	Matrix4x4[] test = new Matrix4x4[5000];
 
 	void Start(){
 		Mesh _mesh = obj.GetComponent<MeshFilter> ().mesh;

@@ -142,6 +142,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma multi_compile_fog
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
 			#pragma multi_compile_instancing
+			#pragma instancing_options lodfade
 			#pragma multi_compile_fwdbase
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
@@ -256,6 +257,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma multi_compile _ _VERTEX_BEND
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
 			#pragma multi_compile_instancing
+			#pragma instancing_options lodfade
 			#pragma multi_compile_prepassfinal
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
@@ -288,6 +290,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma shader_feature _SMOOTHNESS_ALBEDO
 			#pragma shader_feature _SEMITRANSPARENT_SHADOWS
 			#pragma multi_compile_instancing
+			#pragma instancing_options lodfade
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
 			#include "ShadowsCustomPBR.cginc"
