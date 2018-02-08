@@ -29,7 +29,7 @@ public class TriggerBox : Trigger {
     
     private void OnTriggerEnter(Collider other) {
         if (other.tag == tagToActivate) {
-            if (toggle)
+            if (Toggle)
                 TriggerState ^= true;
             else
                 TriggerState = true;
@@ -43,7 +43,7 @@ public class TriggerBox : Trigger {
     }
 
     private IEnumerator OnTriggerExit(Collider other) {
-        if (definitiveActivation || toggle) yield break;
+        if (definitiveActivation || Toggle) yield break;
         if (other.tag == tagToActivate) {
             yield return new WaitForSeconds(delayBeforeDeactivation);
             TriggerState = false;
@@ -55,7 +55,7 @@ public class TriggerBox : Trigger {
         BoxCollider box = GetComponent<BoxCollider>();
         box.isTrigger = true;
         
-        if (targets == null || targets.Count == 0)
+        if (Targets == null || Targets.Count == 0)
             Gizmos.color = Color.red;
         else
             Gizmos.color = Color.green;
