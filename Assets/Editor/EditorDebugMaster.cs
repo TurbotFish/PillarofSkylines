@@ -57,6 +57,42 @@ public class EditorDebugMaster : EditorWindow
         }
     }
 
+    [MenuItem("PoS Debug/Get Scene View in World %#W", false)]
+    public static void GetSceneView()
+    {
+        Debug.Log("get scene view !");
+        Transform viewPos = SceneView.lastActiveSceneView.camera.transform;
+        Game.World.ChunkSystem.WorldController worldController = FindObjectOfType<Game.World.ChunkSystem.WorldController>();
+
+
+        Debug.Log("world : " + worldController.name);
+
+        Vector3 min, max, size = Vector3.zero;
+
+        Vector3 worldPos = worldController.transform.position;
+        Vector3 worldSize = worldController.WorldSize;
+
+        size.x = worldSize.x;
+        min.x = worldPos.x - worldSize.x / 2f;
+        max.x = worldPos.x + worldSize.x / 2f;
+
+        size.y = worldSize.y;
+        min.y = worldPos.y - worldSize.y / 2f;
+        max.y = worldPos.y + worldSize.y / 2f;
+
+        size.z = worldSize.z;
+        min.z = worldPos.z - worldSize.z / 2f;
+        max.z = worldPos.z + worldSize.z / 2f;
+
+        Debug.Log("traduction : " + new Vector3((viewPos.position.x > max.x ? -size.x : 0), (viewPos.position.y > max.y ? -size.y : 0), (viewPos.position.z > max.z ? -size.z : 0)));
+        SceneView.lastActiveSceneView.pivot += new Vector3((viewPos.position.x > max.x ? -size.x : 0), (viewPos.position.y > max.y ? -size.y : 0), (viewPos.position.z > max.z ? -size.z : 0));
+
+        Debug.Log("traduction2 : " + new Vector3((viewPos.position.x < min.x ? size.x : 0), (viewPos.position.y < min.y ? size.y : 0), (viewPos.position.z < min.z ? size.z : 0)));
+        SceneView.lastActiveSceneView.pivot += new Vector3((viewPos.position.x < min.x ? size.x : 0), (viewPos.position.y < min.y ? size.y : 0), (viewPos.position.z < min.z ? size.z : 0));
+
+
+    }
+
     [MenuItem("PoS Debug/Project Data/Scenes", false)]
     public static void EditSceneData()
     {

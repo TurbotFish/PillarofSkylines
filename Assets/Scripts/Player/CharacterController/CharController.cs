@@ -147,7 +147,6 @@ namespace Game.Player.CharacterController
         // Use this for initialization
         void Start()
         {
-
         }
 
         void OnDestroy()
