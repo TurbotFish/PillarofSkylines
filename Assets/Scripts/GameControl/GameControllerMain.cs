@@ -11,39 +11,37 @@ namespace Game.GameControl
     {
         public const string UI_SCENE_NAME = "UiScene";
 
-        //
-        SceneNamesData sceneNames;
+        //###############################################################
 
-        //
-        Player.PlayerModel playerModel;
-        public Player.PlayerModel PlayerModel { get { return this.playerModel; } }
+        private SceneNamesData sceneNames;
 
-        //TimeController timeController;
+        private Player.PlayerModel playerModel;
+        private EchoSystem.EchoManager echoManager;
+        private EclipseManager eclipseManager;
 
-        public EchoSystem.EchoManager EchoManager { get; private set; }
-        public EclipseManager EclipseManager { get; private set; }
+        private OpenWorldSceneInfo openWorldSceneInfo = new OpenWorldSceneInfo();
 
+        private Player.PlayerController playerController;
+        private CameraControl.CameraController cameraController;
+        private UI.UiController uiController;
 
-        //
-        UiSceneInfo uiSceneInfo = new UiSceneInfo();
-        public UI.UiController UiController { get { return this.uiSceneInfo.UiController; } }
+        private Dictionary<World.ePillarId, PillarSceneInfo> pillarSceneDictionary = new Dictionary<World.ePillarId, PillarSceneInfo>();
 
+        [HideInInspector] public bool isPillarActive = false;
+        private World.ePillarId activePillarId;
+        private bool isGameStarted = false;
 
-        //
-        Player.PlayerController playerController;
-        public Player.PlayerController PlayerController { get { return this.playerController; } }
+        //###############################################################
 
-        public CameraControl.CameraController CameraController { get; private set; }
+        public Player.PlayerModel PlayerModel { get { return playerModel; } }
+        public EchoSystem.EchoManager EchoManager { get { return echoManager; } }
+        public EclipseManager EclipseManager { get { return eclipseManager; } }
 
-        OpenWorldSceneInfo openWorldSceneInfo = new OpenWorldSceneInfo();
-        public World.ChunkSystem.WorldController WorldController { get { return this.openWorldSceneInfo.WorldController; } }
+        public World.ChunkSystem.WorldController WorldController { get { return openWorldSceneInfo.WorldController; } }
 
-        Dictionary<World.ePillarId, PillarSceneInfo> pillarSceneDictionary = new Dictionary<World.ePillarId, PillarSceneInfo>();
-
-
-        //
-        bool isPillarActive = false;
-        World.ePillarId activePillarId;
+        public Player.PlayerController PlayerController { get { return playerController; } }
+        public CameraControl.CameraController CameraController { get { return cameraController; } }
+        public UI.UiController UiController { get { return uiController; } }
 
         //###############################################################
         //###############################################################
@@ -51,10 +49,23 @@ namespace Game.GameControl
         void Start()
         {
             //load resources
-            this.sceneNames = Resources.Load<SceneNamesData>("ScriptableObjects/SceneNamesData");
+            sceneNames = Resources.Load<SceneNamesData>("ScriptableObjects/SceneNamesData");
 
-            //load everything            
-            StartCoroutine(LoadScenesRoutine());
+            //getting references in game controller
+            playerModel = GetComponentInChildren<Player.PlayerModel>();
+            echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
+            eclipseManager = GetComponentInChildren<EclipseManager>();
+
+            //initializing game controller
+            playerModel.InitializePlayerModel();
+
+            //gatting references in main scene
+            playerController = FindObjectOfType<Player.PlayerController>();
+            cameraController = FindObjectOfType<CameraControl.CameraController>();
+            uiController = FindObjectOfType<UI.UiController>();
+
+            //initializing the UI
+            uiController.InitializeUi(this, UI.eUiState.MainMenu);
 
             //register to events
             Utilities.EventManager.LeavePillarEvent += OnLeavePillarEventHandler;
@@ -74,44 +85,29 @@ namespace Game.GameControl
 
         #region initialization methods
 
-        IEnumerator LoadScenesRoutine()
+        /// <summary>
+        /// Starts the game.
+        /// </summary>
+        public void StartGame()
         {
+            if (isGameStarted)
+            {
+                return;
+            }
+
+            StartCoroutine(StartGameCR());
+        }
+
+        IEnumerator StartGameCR()
+        {
+            //switch to loading screen
+            Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.LoadingScreen));
+
+            //register to sceneLoaded event
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
-            //getting references in game controller
-            this.playerModel = GetComponentInChildren<Player.PlayerModel>();
-            //this.timeController = GetComponentInChildren<TimeController>();
-            this.EchoManager = GetComponentInChildren<EchoSystem.EchoManager>();
-            this.EclipseManager = GetComponentInChildren<EclipseManager>();
-
-            //initializing game controller
-            this.playerModel.InitializePlayerModel();
-
-            //gatting references in main scene
-            this.playerController = FindObjectOfType<Player.PlayerController>();
-            this.CameraController = FindObjectOfType<CameraControl.CameraController>();
-
-            yield return null;
-            //***********************
-
-            //loading ui scene
-            SceneManager.LoadScene(UI_SCENE_NAME, LoadSceneMode.Additive);
-
-            yield return null;
-            //***********************
-
-            //getting references in ui scene
-            this.uiSceneInfo.Scene = SceneManager.GetSceneByName(UI_SCENE_NAME);
-            this.uiSceneInfo.UiController = SearchForScriptInScene<UI.UiController>(this.uiSceneInfo.Scene);
-
-            //initializing ui
-            this.uiSceneInfo.UiController.InitializeUi(this);
-
-            yield return null;
-            //***********************
-
             //loading open world scene
-            SceneManager.LoadScene(this.sceneNames.GetOpenWorldSceneName(), LoadSceneMode.Additive);
+            SceneManager.LoadScene(sceneNames.GetOpenWorldSceneName(), LoadSceneMode.Additive);
 
             yield return null;
             //***********************
@@ -290,7 +286,7 @@ namespace Game.GameControl
             //switch pillar to destroyed state
             if (pillarDestroyed)
             {
-                this.playerModel.SetPillarDestroyed(this.activePillarId);
+                this.playerModel.DestroyPillar(this.activePillarId);
             }
 
             yield return null;

@@ -42,12 +42,17 @@ namespace Game.EchoSystem
         Transform MyTransform { get; set; }
         World.SpawnPointSystem.SpawnPointManager spawnPointManager;
 
+        GameControl.GameControllerMain gameController;
+
         //##################################################################
 
         #region initialization
 
         public void InitializeEchoManager(GameControl.IGameControllerBase gameController, World.SpawnPointSystem.SpawnPointManager spawnPointManager = null) {
 
+            #if !UNITY_EDITOR
+            this.gameController = (GameControl.GameControllerMain)gameController;
+            #endif
             camera = gameController.CameraController.PoS_Camera;
             echoCamera = gameController.CameraController.EchoCameraEffect;
             playerTransform = gameController.PlayerController.PlayerTransform;
@@ -68,7 +73,7 @@ namespace Game.EchoSystem
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
         }
 
-        #endregion initialization
+#endregion initialization
 
         //##################################################################
 
@@ -78,7 +83,7 @@ namespace Game.EchoSystem
 
                 if (driftInput > driftInputIntensity) {
                     driftInputDown += Time.deltaTime;
-                    if (driftInputDown >= timeToHoldForDoor && !isDoorActive) {
+                    if (driftInputDown >= timeToHoldForDoor && !isDoorActive && (!gameController || (gameController && !gameController.isPillarActive))) {
                         // do the door thing!
                         isDoorActive = true;
 
@@ -136,7 +141,7 @@ namespace Game.EchoSystem
 
         //##################################################################
 
-        #region private methods
+#region private methods
 
         void Drift() {
             if (echoList.Count > 0) {
@@ -188,7 +193,7 @@ namespace Game.EchoSystem
                 Break(oldestEcho);
             }
 
-            Echo newEcho = Instantiate(echoPrefab, playerTransform.position, Quaternion.identity);
+            Echo newEcho = Instantiate(echoPrefab, playerTransform.position, playerTransform.rotation);
             newEcho.playerEcho = isPlayerEcho;
             newEcho.echoManager = this;
             echoList.Add(newEcho);
@@ -221,11 +226,11 @@ namespace Game.EchoSystem
 		}
 
 
-        #endregion private methods
+#endregion private methods
 
         //##################################################################
 
-        #region event handlers
+#region event handlers
 
         void OnEclipseEventHandler(object sender, Utilities.EventManager.EclipseEventArgs args)
         {
@@ -259,7 +264,7 @@ namespace Game.EchoSystem
             echoList.Clear();
         }
 
-        #endregion event handlers
+#endregion event handlers
 
         //##################################################################
     }

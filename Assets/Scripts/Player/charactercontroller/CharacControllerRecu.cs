@@ -71,6 +71,8 @@ namespace Game.Player.CharacterController
         /// </summary>
         MovingPlatform currentPF;
 
+        Gravifloor currentGravifloor;
+
 		bool belowLastFrame;
         bool climbingStep;
         bool insideWallOnThisFrame;
@@ -298,11 +300,27 @@ namespace Game.Player.CharacterController
                     currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
                     currentPF.AddPlayer(myPlayer, hit.point);
                 }
+                if (hit.collider.CompareTag("Gravifloor") && (currentGravifloor == null || currentGravifloor != hit.collider.GetComponent<Gravifloor>()))
+                {
+                    if (Vector3.Dot(hit.transform.up, myTransform.up) > 0.7f)
+                    {
+                        currentGravifloor = hit.collider.GetComponent<Gravifloor>();
+                        print("Found Gravifloor " + currentGravifloor.name);
+                        currentGravifloor.AddPlayer(myPlayer);
+                    }
+                }
 				if (hit.collider.CompareTag("SlipperySlope")) {
 					collisions.SlippySlope = true;
 				} else {
 					collisions.SlippySlope = false;
 				}
+            }
+
+            if (currentGravifloor != null && (!collisions.below || !hit.collider.CompareTag("Gravifloor")))
+            {
+                currentGravifloor.RemovePlayer(!collisions.below);
+                print("Quit Gravifloor " + currentGravifloor.name + " Collision Below: " + collisions.below);
+                currentGravifloor = null;
             }
 
             if (collisions.below && !belowLastFrame)
