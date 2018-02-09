@@ -170,6 +170,8 @@ namespace Game.Player.CharacterController.States
             //landing
             else if (collisionInfo.below) {
 				stateMachine.ChangeState(new StandState(charController, stateMachine));
+                if (!collisionInfo.SlippySlope)
+                    charController.SetVelocity(Vector3.Project(movementInfo.velocity, inputInfo.leftStickToSlope), false);
 			}
             //wall- run/drift
             else if (collisionInfo.side && WallRunState.CheckCanEnterWallRun(charController)) {
