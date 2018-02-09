@@ -490,9 +490,11 @@ public class PoS_Camera : MonoBehaviour {
 
     void WallRunCamera() {
         Vector3 newYaw = Vector3.Cross(target.parent.up, controller.collisions.lastWallNormal);
-
+        
         if (Vector3.Dot(newYaw, target.parent.forward) < 0)
             newYaw *= -1;
+
+        newYaw = Vector3.Lerp(my.forward, newYaw, Vector3.Dot(newYaw, playerVelocity.normalized)); // test
 
         resetType = eResetType.WallRun;
         AllowAutoReset(true, true);
