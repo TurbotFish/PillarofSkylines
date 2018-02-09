@@ -69,6 +69,10 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
+            else if (inputInfo.rightStickButtonDown)
+            {
+                stateMachine.ChangeState(new GraviSwapState(charController, stateMachine));
+            }
         }
 
         public StateReturnContainer Update(float dt)
