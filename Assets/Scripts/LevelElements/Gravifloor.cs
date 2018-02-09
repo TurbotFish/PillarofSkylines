@@ -38,6 +38,8 @@ public class Gravifloor : MonoBehaviour {
         print("Exit Gravifloor " + name + " current active is " + currentActive);
         if (currentActive == this)
         {
+            currPlayer.AddExternalVelocity(-gravityDirection*10, false, false);
+
             if (isJumping)
                 StartCoroutine(_ResetGravity());
             else
