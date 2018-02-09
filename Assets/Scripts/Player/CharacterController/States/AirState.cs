@@ -176,7 +176,11 @@ namespace Game.Player.CharacterController.States
             //wall- run/drift
             else if (collisionInfo.side && WallRunState.CheckCanEnterWallRun(charController)) {
 				stateMachine.ChangeState(new WallRunState(charController, stateMachine));
-			}
+            }
+            else if (inputInfo.rightStickButtonDown)
+            {
+                stateMachine.ChangeState(new GraviSwapState(charController, stateMachine));
+            }
         }
 
 		public StateReturnContainer Update(float dt) {

@@ -225,10 +225,9 @@ namespace Game.Player.CharacterController
                 inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint");
                 inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint");
 
-                /*
-                if (Input.GetButtonDown("RightStickClick"))
-                    ChangeGravityDirection(myCameraTransform.forward);
-                    */
+
+                inputInfo.rightStickButtonDown = Input.GetButtonDown("RightStickClick");
+
                 //
                 stateMachine.HandleInput();
             }
