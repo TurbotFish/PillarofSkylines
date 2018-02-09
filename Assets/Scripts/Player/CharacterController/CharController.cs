@@ -83,6 +83,11 @@ namespace Game.Player.CharacterController
 
         public PlayerMovementInfo MovementInfo { get { return movementInfo; } }
 
+        /// <summary>
+        /// debug pour graviswap parce que je sais pas activer/désactiver des abilities
+        /// </summary>
+        public bool graviswapAvailable = false;
+
         //#############################################################################
 
         [Space(10)]
@@ -121,6 +126,7 @@ namespace Game.Player.CharacterController
             stateMachine.RegisterAbility(ePlayerState.wallClimb, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.hover, eAbilityType.Hover);
+            stateMachine.RegisterAbility(ePlayerState.graviswap, eAbilityType.Graviswap);
 
             stateMachine.ChangeState(new AirState(this, stateMachine, AirState.eAirStateMode.fall));
 

@@ -25,8 +25,15 @@ public class MasterDebug : MonoBehaviour {
             } else
                 shaderScript.enabled = false;
 
-        } else if (Input.GetKeyDown(KeyCode.F3)) {
+        }
+        else if (Input.GetKeyDown(KeyCode.F3))
+        {
             player.CharData.Jump.MaxAerialJumps = player.CharData.Jump.MaxAerialJumps == 1000 ? 1 : 1000;
+        }
+        else if (Input.GetKeyDown(KeyCode.F7))
+        {
+            player.graviswapAvailable = !player.graviswapAvailable;
+            print("Graviswap is " + player.graviswapAvailable);
         }
     }
 

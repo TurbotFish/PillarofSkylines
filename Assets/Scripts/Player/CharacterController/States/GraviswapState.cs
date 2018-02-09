@@ -9,7 +9,7 @@ namespace Game.Player.CharacterController.States
     {
         //#############################################################################
 
-        public ePlayerState StateId { get { return ePlayerState.stand; } }
+        public ePlayerState StateId { get { return ePlayerState.graviswap; } }
 
         CharController charController;
         StateMachine stateMachine;
@@ -62,8 +62,8 @@ namespace Game.Player.CharacterController.States
 
             PlayerInputInfo inputInfo = charController.InputInfo;
 
-            charController.MyTransform.Rotate(charController.MyTransform.up, inputInfo.leftStickRaw.x, Space.World);
-            charController.MyTransform.Rotate(charController.MyTransform.right, -inputInfo.leftStickRaw.z, Space.World);
+            charController.MyTransform.Rotate(charController.MyTransform.forward, -inputInfo.leftStickRaw.x * 15, Space.World);
+            charController.MyTransform.Rotate(charController.MyTransform.right, -inputInfo.leftStickRaw.z * 15, Space.World);
 
             var result = new StateReturnContainer
             {

@@ -177,9 +177,9 @@ namespace Game.Player.CharacterController.States
             else if (collisionInfo.side && WallRunState.CheckCanEnterWallRun(charController)) {
 				stateMachine.ChangeState(new WallRunState(charController, stateMachine));
             }
-            else if (inputInfo.rightStickButtonDown)
+            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable)
             {
-                stateMachine.ChangeState(new GraviSwapState(charController, stateMachine));
+                stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
             }
         }
 
