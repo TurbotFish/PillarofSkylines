@@ -13,8 +13,11 @@ public class GPUInstancingEditor : Editor {
 		serializedObject.Update ();
 		base.OnInspectorGUI ();
 
+		//set layer
 		layerIndex = EditorGUILayout.Popup ("Layer", layerIndex, layers);
 		behaviourLayer.intValue = layerIndex;
+
+
 		serializedObject.ApplyModifiedProperties ();
 
 	}
@@ -35,6 +38,8 @@ public class GPUInstancingEditor : Editor {
 		}
 
 		layers = layerList.ToArray ();
+
+
 	}
 
 

@@ -11,6 +11,6 @@ public class GPUInstancingManager : MonoBehaviour {
 	}
 
 	void DrawAllTheMeshes(GPUInstancingBehaviour _gpui){
-		Graphics.DrawMeshInstanced (_gpui.mesh, _gpui.subMeshIndex, _gpui.mat, _gpui.matrices, _gpui.instances, null, _gpui.shadowCasting, _gpui.receiveShadows, _gpui.layer);
+		Graphics.DrawMeshInstanced (_gpui.mesh, _gpui.subMeshIndex, _gpui.material, _gpui.matrices, _gpui.instances, null, _gpui.shadowCasting, _gpui.receiveShadows, _gpui.layer);
 	}
 }
