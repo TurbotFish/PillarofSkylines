@@ -33,7 +33,8 @@ namespace Game.Player.CharacterController
         /// <summary>
         /// The height difference between the two points of the capsule.
         /// </summary>
-        Vector3 capsuleHeightModifier;
+        [HideInInspector]
+        public Vector3 capsuleHeightModifier;
         /// <summary>
         /// The safety margin used when casting for obstacles.
         /// </summary>
@@ -70,12 +71,15 @@ namespace Game.Player.CharacterController
         /// </summary>
         MovingPlatform currentPF;
 
+        Gravifloor currentGravifloor;
+
 		bool belowLastFrame;
         bool climbingStep;
         bool insideWallOnThisFrame;
         Vector3 stepOffset;
 
-        Quaternion playerAngle;
+        [HideInInspector]
+        public Quaternion playerAngle;
         RaycastHit hit;
         RaycastHit hit2;
         Vector3 wallDir;
@@ -294,11 +298,32 @@ namespace Game.Player.CharacterController
                     currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
                     currentPF.AddPlayer(myPlayer, hit.point);
                 }
+                if (hit.collider.CompareTag("Gravifloor") && (currentGravifloor == null || currentGravifloor != hit.collider.GetComponent<Gravifloor>()))
+                {
+                    if (Vector3.Dot(hit.transform.up, myTransform.up) > 0.7f)
+                    {
+                        currentGravifloor = hit.collider.GetComponent<Gravifloor>();
+                        print("Found Gravifloor " + currentGravifloor.name);
+                        currentGravifloor.AddPlayer(myPlayer);
+                    }
+                }
 				if (hit.collider.CompareTag("SlipperySlope")) {
 					collisions.SlippySlope = true;
 				} else {
 					collisions.SlippySlope = false;
 				}
+            }
+
+            if (currentGravifloor != null && (!collisions.below || !hit.collider.CompareTag("Gravifloor")))
+            {
+                currentGravifloor.RemovePlayer(!collisions.below);
+                print("Quit Gravifloor " + currentGravifloor.name + " Collision Below: " + collisions.below);
+                currentGravifloor = null;
+            }
+
+            if (collisions.below && !belowLastFrame)
+            {
+                myPlayer.myCamera.SetVerticalOffset(Vector3.Project(collisions.initialVelocityOnThisFrame, myTransform.up).magnitude);
             }
 
             collisions.above = Physics.SphereCast(myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) - myTransform.up * skinWidth * 2, radius, myTransform.up, out hit, skinWidth * 4, collisionMask);

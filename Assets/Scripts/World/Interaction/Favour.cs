@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Game.World.ChunkSystem;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace Game.World.Interaction
 
         [Header("Name")]
         [SerializeField]
-        string favourId = Utilities.Generator.GenerateRandomString(16);
+        string favourId = "replace this!";
 
         [Header("")]
         bool favourPickedUp = false;
@@ -75,7 +76,7 @@ namespace Game.World.Interaction
             myCollider = GetComponent<BoxCollider>();
             this.isCopy = isCopy;
 
-            if (worldController.GameController.PlayerModel.IsFavourPickedUp(favourId))
+            if (worldController.GameController.PlayerModel.CheckIsFavourPickedUp(favourId))
             {
                 PickUp();
 

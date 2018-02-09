@@ -52,7 +52,7 @@ namespace Game.Player {
 
             spawnPointManager = FindObjectOfType<World.SpawnPointSystem.SpawnPointManager>(); //TODO: Fix that
 
-            camera = player.myCamera.GetComponent<PoS_Camera>();
+            camera = player.myCameraTransform.GetComponent<PoS_Camera>();
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
@@ -76,13 +76,9 @@ namespace Game.Player {
                 //favour
                 if (favourPickUpInRange)
                 {
-                    if (!playerModel.IsFavourPickedUp(favour.FavourId))
+                    if (!playerModel.CheckIsFavourPickedUp(favour.FavourId))
                     {
-                        //pick up favour
-                        playerModel.ChangeFavourAmount(1);
-                        
-                        //send event
-                        Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(favour.FavourId));
+                        playerModel.PickupFavour(favour.FavourId);
                     }
 
                     //clean up
@@ -198,7 +194,7 @@ namespace Game.Player {
                         {
                             favour = other.GetComponent<World.Interaction.Favour>();
 
-                            if (!playerModel.IsFavourPickedUp(favour.FavourId))
+                            if (!playerModel.CheckIsFavourPickedUp(favour.FavourId))
                             {
                                 favourPickUpInRange = true;
 
@@ -213,7 +209,7 @@ namespace Game.Player {
                         var pillarEntrance = other.GetComponent<World.Interaction.PillarEntrance>();
                         if (pillarEntrance != null)
                         {
-                            if (!playerModel.IsPillarDestroyed(pillarEntrance.PillarId))
+                            if (!playerModel.CheckIsPillarDestroyed(pillarEntrance.PillarId))
                             {
                                 pillarEntranceInfo.IsPillarEntranceInRange = true;
                                 pillarEntranceInfo.CurrentPillarEntrance = pillarEntrance;

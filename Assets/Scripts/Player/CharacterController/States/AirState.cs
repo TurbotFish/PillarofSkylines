@@ -30,7 +30,8 @@ namespace Game.Player.CharacterController.States
 		eAirStateMode mode = eAirStateMode.fall;
 		int remainingAerialJumps = 0;
 		float jumpTimer = 0;
-		Vector3 jumpDirection = Vector3.zero;
+        float jumpStrengthFromState = 1;
+        Vector3 jumpDirection = Vector3.zero;
         float timerAirControl = 0;
 
 		bool initializing;
@@ -93,6 +94,16 @@ namespace Game.Player.CharacterController.States
             this.timerAirControl = timerAirControl;
         }
 
+        public void SetJumpStrengthModifierFromState(float jumpStrengthModifier)
+        {
+            if (!initializing)
+            {
+                return;
+            }
+
+            this.jumpStrengthFromState = jumpStrengthModifier;
+        }
+
         #endregion setters
 
         //#############################################################################
@@ -100,7 +111,7 @@ namespace Game.Player.CharacterController.States
         #region
 
         public void Enter() {
-			Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
+			//Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
 
             remainingAerialJumps = stateMachine.CheckRemainingAerialJumps();
 			initializing = false;
@@ -110,7 +121,7 @@ namespace Game.Player.CharacterController.States
 		}
 
 		public void Exit() {
-			Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
+			//Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
 
 			Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
 		}
@@ -189,7 +200,7 @@ namespace Game.Player.CharacterController.States
 
 			//first update for jump (initial force)
 			if (firstUpdate && (mode == eAirStateMode.jump || mode == eAirStateMode.aerialJump)) {
-				float jumpStrength = jumpData.Strength * stateMachine.jumpMultiplier;
+				float jumpStrength = jumpData.Strength * stateMachine.jumpMultiplier * jumpStrengthFromState;
 
 				if (mode == eAirStateMode.aerialJump) {
 					jumpStrength *= jumpData.AerialJumpCoeff;
