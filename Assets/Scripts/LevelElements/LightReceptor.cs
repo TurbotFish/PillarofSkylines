@@ -27,6 +27,6 @@ public class LightReceptor : Trigger {
         if (TriggerState == inverse)
             rend.sharedMaterial = on;
         else
-            rend.sharedMaterial = off;
+        rend.sharedMaterial = off;
     }
 }
