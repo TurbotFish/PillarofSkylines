@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [ExecuteInEditMode]
 public class MasterDebug : MonoBehaviour {
@@ -34,6 +35,11 @@ public class MasterDebug : MonoBehaviour {
         {
             player.graviswapAvailable = !player.graviswapAvailable;
             print("Graviswap is " + player.graviswapAvailable);
+        }
+        else if (Input.GetKeyDown(KeyCode.F12))
+        {
+            Application.Unload();
+            SceneManager.LoadScene(0);
         }
     }
 
