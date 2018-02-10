@@ -38,8 +38,8 @@ public class MasterDebug : MonoBehaviour {
         }
         else if (Input.GetKeyDown(KeyCode.F12))
         {
-            Application.Unload();
-            SceneManager.LoadScene(0);
+            System.Diagnostics.Process.Start(Application.dataPath.Replace("_Data", ".exe"));
+            Application.Quit();
         }
     }
 
