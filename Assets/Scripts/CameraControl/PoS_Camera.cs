@@ -405,7 +405,7 @@ public class PoS_Camera : MonoBehaviour {
             if (playerState == ePlayerState.wallRun)
                 WallRunCamera();
 
-            if (playerState == ePlayerState.glide) {
+            if (playerState == ePlayerState.glide || playerState == ePlayerState.graviswap) {
                 SetTargetRotation(-2 * playerVelocity.y + defaultPitch, GetYawBehindPlayer(), resetDamp);
                 state = eCameraState.FollowBehind;
             }

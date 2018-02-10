@@ -52,7 +52,7 @@ namespace Game.Player.CharacterController.States
             if (inputInfo.jumpButtonDown || inputInfo.rightStickButtonDown)
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
-                charController.SetVelocity(initialVelocity, true);
+                charController.SetVelocity(initialVelocity, false);
                 stateMachine.ChangeState(state);
             }
         }
@@ -62,8 +62,8 @@ namespace Game.Player.CharacterController.States
 
             PlayerInputInfo inputInfo = charController.InputInfo;
 
-            charController.MyTransform.Rotate(charController.MyTransform.forward, -inputInfo.leftStickRaw.x * 15, Space.World);
-            charController.MyTransform.Rotate(charController.MyTransform.right, -inputInfo.leftStickRaw.z * 15, Space.World);
+            charController.MyTransform.Rotate(charController.MyTransform.forward, inputInfo.leftStickRaw.x * 10, Space.World);
+            charController.MyTransform.Rotate(charController.MyTransform.right, -inputInfo.leftStickRaw.z * 10, Space.World);
 
             var result = new StateReturnContainer
             {
