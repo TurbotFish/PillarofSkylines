@@ -12,10 +12,12 @@ namespace Game.GameControl
         EclipseManager EclipseManager { get; }
 
         Player.PlayerController PlayerController { get; }
-        CameraControl.CameraController CameraController { get; }
-        
+        CameraControl.CameraController CameraController { get; }        
         UI.UiController UiController { get; }
 
         World.ChunkSystem.WorldController WorldController { get; }
+
+        //temp
+        void StartGame();
     }
 }

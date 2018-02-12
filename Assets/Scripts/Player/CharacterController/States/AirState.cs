@@ -111,7 +111,7 @@ namespace Game.Player.CharacterController.States
         #region
 
         public void Enter() {
-			Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
+			//Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
 
             remainingAerialJumps = stateMachine.CheckRemainingAerialJumps();
 			initializing = false;
@@ -121,7 +121,7 @@ namespace Game.Player.CharacterController.States
 		}
 
 		public void Exit() {
-			Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
+			//Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
 
 			Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
 		}
@@ -170,11 +170,17 @@ namespace Game.Player.CharacterController.States
             //landing
             else if (collisionInfo.below) {
 				stateMachine.ChangeState(new StandState(charController, stateMachine));
+                if (!collisionInfo.SlippySlope)
+                    charController.SetVelocity(Vector3.Project(movementInfo.velocity, inputInfo.leftStickToSlope), false);
 			}
             //wall- run/drift
             else if (collisionInfo.side && WallRunState.CheckCanEnterWallRun(charController)) {
 				stateMachine.ChangeState(new WallRunState(charController, stateMachine));
-			}
+            }
+            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable)
+            {
+                stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
+            }
         }
 
 		public StateReturnContainer Update(float dt) {

@@ -11,7 +11,8 @@ public class MovingPlatform : MonoBehaviour {
 	public Vector3 impactPoint;
 
 	void Start () {
-		transform.tag = "MovingPlatform";
+        if (transform.tag == "Untagged")
+            transform.tag = "MovingPlatform";
         TestChildren(transform);
 	}
 
@@ -30,7 +31,7 @@ public class MovingPlatform : MonoBehaviour {
 
     public void Move(Vector3 movement)
     {
-        transform.position += movement;
+        transform.localPosition += movement;
         if(currPlayer!= null)
             currPlayer.ImmediateMovement(movement, false);
     }
@@ -40,7 +41,7 @@ public class MovingPlatform : MonoBehaviour {
 		impactPoint = playerImpactPoint;
 	}
 
-	public void RemovePlayer() {
+	virtual public void RemovePlayer() {
 		currPlayer = null;
 	}
 }

@@ -20,8 +20,6 @@ namespace Game.Player.CharacterController
         [SerializeField]
         public PoS_Camera myCamera;
 
-        //#############################################################################
-
         /// <summary>
         /// The controller checking if there's collisions on the way.
         /// </summary>
@@ -40,8 +38,6 @@ namespace Game.Player.CharacterController
         [Header("Animation stuff")]
         public float animationRunSpeed;
         public float animationJumpSpeed;
-
-        //#############################################################################
 
         public PlayerModel PlayerModel { get; private set; }
 
@@ -66,12 +62,14 @@ namespace Game.Player.CharacterController
         }
 
         bool isInitialized;
+
+        /// <summary>
+        /// This is set to false if the player has opened a menu, true otherwise.
+        /// </summary>
         bool isHandlingInput;
 
         Vector3 velocity;
         Vector3 externalVelocity;
-
-
 
         List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
 
@@ -85,8 +83,12 @@ namespace Game.Player.CharacterController
 
         public PlayerMovementInfo MovementInfo { get { return movementInfo; } }
 
-        //#############################################################################
+        /// <summary>
+        /// debug pour graviswap parce que je sais pas activer/désactiver des abilities
+        /// </summary>
+        public bool graviswapAvailable = false;
 
+        //#############################################################################
 
         [Space(10)]
         [Header("Particles/FX")]
@@ -124,6 +126,7 @@ namespace Game.Player.CharacterController
             stateMachine.RegisterAbility(ePlayerState.wallClimb, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.hover, eAbilityType.Hover);
+            stateMachine.RegisterAbility(ePlayerState.graviswap, eAbilityType.Graviswap);
 
             stateMachine.ChangeState(new AirState(this, stateMachine, AirState.eAirStateMode.fall));
 
@@ -147,7 +150,6 @@ namespace Game.Player.CharacterController
         // Use this for initialization
         void Start()
         {
-
         }
 
         void OnDestroy()
@@ -188,12 +190,13 @@ namespace Game.Player.CharacterController
 
             //*******************************************
             //handling input
-
-            bool sprintDownLastFrame = inputInfo.sprintButton;
+           
             inputInfo.Reset();
 
             if (isHandlingInput)
             {
+                bool sprintDownLastFrame = inputInfo.sprintButton;
+
                 float stickH = Input.GetAxisRaw("Horizontal");
                 float stickV = Input.GetAxisRaw("Vertical");
 
@@ -202,6 +205,10 @@ namespace Game.Player.CharacterController
                 if (inputInfo.leftStickRaw.magnitude < CharData.General.StickDeadMaxVal)
                 {
                     inputInfo.leftStickAtZero = true;
+                }
+                else
+                {
+                    inputInfo.leftStickAtZero = false;
                 }
 
                 var toCameraAngle = Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up));
@@ -224,6 +231,9 @@ namespace Game.Player.CharacterController
                 inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint");
                 inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint");
 
+
+                inputInfo.rightStickButtonDown = Input.GetButtonDown("RightStickClick");
+
                 //
                 stateMachine.HandleInput();
             }
@@ -242,7 +252,7 @@ namespace Game.Player.CharacterController
 
             if (stateReturn.PlayerForwardSet)
             {
-                Debug.Log("forward is : " + stateReturn.PlayerForward);
+                //Debug.Log("forward is : " + stateReturn.PlayerForward);
                 MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up), MyTransform.up);
             }
 
@@ -328,7 +338,7 @@ namespace Game.Player.CharacterController
                 {
                     MyTransform.Rotate(MyTransform.up, stateReturn.Rotation, Space.World);
                 }
-                else
+                else if(!inputInfo.leftStickAtZero)
                 {
                     Vector3 to = Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), MyTransform.up);
                     float angle = Mathf.Lerp(0f, Vector3.SignedAngle(MyTransform.forward, to, MyTransform.up), CharData.General.TurnSpeed * Time.deltaTime);

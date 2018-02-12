@@ -229,12 +229,12 @@ namespace Game.World.ChunkSystem
             }
 
             var nearestFavour = favourList[0];
-            float shortestDistance = Vector3.Distance(position, nearestFavour.MyTransform.position);
+            float shortestDistance = Vector3.Distance(position, nearestFavour.FinderTarget);
 
             for (int i = 1; i < favourList.Count; i++)
             {
                 var favour = favourList[i];
-                float distance = Vector3.Distance(position, favour.MyTransform.position);
+                float distance = Vector3.Distance(position, favour.FinderTarget);
 
                 if (distance < shortestDistance)
                 {

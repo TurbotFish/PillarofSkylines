@@ -71,6 +71,8 @@ namespace Game.Player.CharacterController
         /// </summary>
         MovingPlatform currentPF;
 
+        Gravifloor currentGravifloor;
+
 		bool belowLastFrame;
         bool climbingStep;
         bool insideWallOnThisFrame;
@@ -265,6 +267,7 @@ namespace Game.Player.CharacterController
 
             if (currentPF != null)
             {
+                Debug.Log("removing platform");
                 currentPF.RemovePlayer();
                 currentPF = null;
             }
@@ -293,14 +296,31 @@ namespace Game.Player.CharacterController
                 collisions.currentGroundNormal = hit.normal;
                 if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
                 {
+                    Debug.Log("adding platform below");
                     currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
                     currentPF.AddPlayer(myPlayer, hit.point);
+                }
+                if (hit.collider.CompareTag("Gravifloor") && (currentGravifloor == null || currentGravifloor != hit.collider.GetComponent<Gravifloor>()))
+                {
+                    if (Vector3.Dot(hit.transform.up, myTransform.up) > 0.7f)
+                    {
+                        currentGravifloor = hit.collider.GetComponent<Gravifloor>();
+                        print("Found Gravifloor " + currentGravifloor.name);
+                        currentGravifloor.AddPlayer(myPlayer);
+                    }
                 }
 				if (hit.collider.CompareTag("SlipperySlope")) {
 					collisions.SlippySlope = true;
 				} else {
 					collisions.SlippySlope = false;
 				}
+            }
+
+            if (currentGravifloor != null && (!collisions.below || !hit.collider.CompareTag("Gravifloor")))
+            {
+                currentGravifloor.RemovePlayer(!collisions.below);
+                print("Quit Gravifloor " + currentGravifloor.name + " Collision Below: " + collisions.below);
+                currentGravifloor = null;
             }
 
             if (collisions.below && !belowLastFrame)
@@ -317,6 +337,7 @@ namespace Game.Player.CharacterController
                 }
                 if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
                 {
+                    Debug.Log("adding platform above");
                     currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
                     currentPF.AddPlayer(myPlayer, hit.point);
                 }
@@ -341,7 +362,7 @@ namespace Game.Player.CharacterController
 
                 //Debug.Log("colliding : " + colliding);
                 int security = 2;
-                while (!colliding && security > 0 && !collisions.below)
+                while (!colliding && security > 0 && !collisions.below && myPlayer.CurrentState == ePlayerState.wallRun)
                 {
                     myTransform.position += -collisions.lastWallNormal * skinWidth * 2;
 
@@ -393,6 +414,7 @@ namespace Game.Player.CharacterController
             { //register with moving platforms
                 if (currentPF == null && sideHit.collider.CompareTag("MovingPlatform"))
                 {
+                    Debug.Log("adding platform side");
                     currentPF = sideHit.collider.GetComponentInParent<MovingPlatform>();
                     currentPF.AddPlayer(myPlayer, sideHit.point);
                 }

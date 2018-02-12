@@ -1,54 +1,83 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System;
+using Game.World;
+using Game.World.ChunkSystem;
 
 /// <summary>
 /// Use this class for objects that can be activated by triggers.
 /// </summary>
-public abstract class TriggerableObject : MonoBehaviour {
-    [Header("Triggerable Object")]
-    public bool triggered;
-    public List<Trigger> triggers;
-    
-    enum TriggerOperator {
+public abstract class TriggerableObject : MonoBehaviour, IWorldObjectInitialization
+{
+    //###########################################################
+
+    enum TriggerOperator
+    {
         None, OneOfThem, AllOfThem
     }
+
+    //###########################################################
+
     [SerializeField]
-    TriggerOperator triggerWith = TriggerOperator.AllOfThem;
+    [HideInInspector]
+    private string id;
+
+    [Header("Triggerable Object")]
+    public bool triggered;
+
+    public List<Trigger> triggers;
+
     [SerializeField]
-    bool definitiveActivation;
-    
+    private TriggerOperator triggerWith = TriggerOperator.AllOfThem;
+
+    [SerializeField]
+    private bool definitiveActivation;
+
+    //###########################################################
+
+    protected abstract void Activate();
+    protected abstract void Deactivate();
+
+    //###########################################################
+
+    public virtual void Initialize(WorldController worldController, bool isCopy)
+    {
+
+    }
+
+    //###########################################################
+
     // Have a ToggleState() to toggle without needing to check states and all since toggle is immediate
-
-    public void UpdateState(bool toggle = false) {
-
-        if (toggle) {
+    public void UpdateState(bool toggle = false)
+    {
+        if (toggle)
+        {
             triggered ^= true;
             if (triggered) Activate();
             else Deactivate();
-
-        } else {
+        }
+        else
+        {
             bool needsUpdate = triggered; //get previous state
             triggered = CheckTriggers();  //check triggers
             needsUpdate ^= triggered;     //see if state has changed
-            if (needsUpdate) {
+            if (needsUpdate)
+            {
                 if (triggered) Activate();
                 else if (!definitiveActivation) Deactivate();
             }
         }
-
     }
 
-    protected abstract void Activate();
-    protected abstract void Deactivate();
-    
-    bool CheckTriggers() {
-        switch (triggerWith) {
+    private bool CheckTriggers()
+    {
+        switch (triggerWith)
+        {
             case TriggerOperator.AllOfThem:
                 foreach (Trigger trigger in triggers)
                     if (!trigger.TriggerState) return false;
                 return true;
-            
+
             case TriggerOperator.OneOfThem:
                 foreach (Trigger trigger in triggers)
                     if (trigger.TriggerState) return true;
@@ -70,4 +99,6 @@ public abstract class TriggerableObject : MonoBehaviour {
             }
         }
     }*/
+
+    //###########################################################
 }

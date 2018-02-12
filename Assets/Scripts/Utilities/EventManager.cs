@@ -256,14 +256,16 @@ namespace Game.Utilities
             /// </summary>
             public bool TakeRotation { get; private set; }
 
-            public TeleportPlayerEventArgs(Vector3 position, bool isNewScene) {
+            public TeleportPlayerEventArgs(Vector3 position, bool isNewScene)
+            {
                 Position = position;
                 Rotation = Quaternion.identity;
                 IsNewScene = isNewScene;
                 TakeRotation = false;
             }
 
-            public TeleportPlayerEventArgs(Vector3 position, Quaternion rotation, bool isNewScene) {
+            public TeleportPlayerEventArgs(Vector3 position, Quaternion rotation, bool isNewScene)
+            {
                 Position = position;
                 Rotation = rotation;
                 IsNewScene = isNewScene;
@@ -424,6 +426,7 @@ namespace Game.Utilities
 
         //***********************************************************
 
+        #region echo destroyed event
 
         public delegate void EchoDestroyedEventHandler(object sender);
 
@@ -434,11 +437,13 @@ namespace Game.Utilities
             EchoDestroyedEvent?.Invoke(sender);
         }
 
+        #endregion echo destroyed event
+
         //***********************************************************
 
         #region wind tunnel events
 
-        public class WindTunnelPartEnteredEventArgs: EventArgs
+        public class WindTunnelPartEnteredEventArgs : EventArgs
         {
             public WindTunnelPart WindTunnelPart { get; private set; }
 
@@ -459,7 +464,7 @@ namespace Game.Utilities
 
         //***
 
-        public class WindTunnelPartExitedEventArgs: EventArgs
+        public class WindTunnelPartExitedEventArgs : EventArgs
         {
             public WindTunnelPart WindTunnelPart { get; private set; }
 
@@ -479,6 +484,33 @@ namespace Game.Utilities
         }
 
         #endregion wind tunnel events
+
+        //***********************************************************
+
+        #region trigger updated
+
+        public class TriggerUpdatedEventArgs : EventArgs
+        {
+            public string TriggerId { get; private set; }
+            public Trigger Trigger { get; private set; }
+
+            public TriggerUpdatedEventArgs(Trigger trigger)
+            {
+                TriggerId = trigger.Id;
+                Trigger = trigger;
+            }
+        }
+
+        public delegate void TriggerUpdatedEventHandler(object sender, TriggerUpdatedEventArgs args);
+
+        public static event TriggerUpdatedEventHandler TriggerUpdatedEvent;
+
+        public static void SendTriggerUpdatedEvent(object sender, TriggerUpdatedEventArgs args)
+        {
+            TriggerUpdatedEvent?.Invoke(sender, args);
+        }
+
+        #endregion trigger updated
 
         //***********************************************************
 

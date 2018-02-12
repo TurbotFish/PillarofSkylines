@@ -26,13 +26,13 @@ namespace Game.Player.CharacterController.States
 
         public void Enter()
         {
-            Debug.Log("Enter State: Slide");
+            //Debug.Log("Enter State: Slide");
 			charController.animator.SetBool("Sliding", true); 
         }
 
         public void Exit()
         {
-            Debug.Log("Exit State: Slide");
+            //Debug.Log("Exit State: Slide");
 			charController.animator.SetBool("Sliding", false); 
 		}
 
