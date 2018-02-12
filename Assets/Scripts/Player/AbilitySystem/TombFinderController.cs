@@ -131,7 +131,7 @@ namespace Game.Player.AbilitySystem
                 return;
             }
 
-            var relativePos = favour.MyTransform.position - this.myTransform.position;
+            var relativePos = favour.FinderTarget - this.myTransform.position;
             Quaternion newRotation = Quaternion.LookRotation(relativePos);
             this.myTransform.rotation = newRotation;
         }

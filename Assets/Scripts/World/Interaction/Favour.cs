@@ -10,7 +10,7 @@ namespace Game.World.Interaction
     {
         //##################################################################
 
-        #region varizables
+        #region variables
 
         [Header("Name")]
         [SerializeField]
@@ -21,6 +21,8 @@ namespace Game.World.Interaction
         WorldController worldController;
         BoxCollider myCollider;
         bool isCopy;
+        [HideInInspector]
+        public Vector3 FinderTarget;
 
         // FSM: Faveur_activation
         float animSpeed = 0.0005f;
@@ -71,6 +73,17 @@ namespace Game.World.Interaction
         void IWorldObjectInitialization.Initialize(WorldController worldController, bool isCopy)
         {
             MyTransform = transform;
+
+            FinderTarget = MyTransform.position;
+
+            foreach (Transform child in MyTransform)
+            {
+                if (child.CompareTag("Favour"))
+                {
+                    FinderTarget = child.position;
+                    break;
+                }
+            }
 
             this.worldController = worldController;
             myCollider = GetComponent<BoxCollider>();
