@@ -16,7 +16,4 @@ public class GPUInstancingBehaviour : ScriptableObject {
 
 	[HideInInspector]
 	public Matrix4x4[] matrices = new Matrix4x4[1023];
-
-	[HideInInspector]
-	public Object source;
 }
