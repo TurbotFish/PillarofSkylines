@@ -23,7 +23,7 @@ public class RacingTrigger : Trigger
     private void OnValidate()
     {
         if (!racer) racer = transform;
-        if (!target && targets[0]) target = targets[0].transform;
+        if (!target && Targets[0]) target = Targets[0].transform;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -58,5 +58,4 @@ public class RacingTrigger : Trigger
         racer.position = startPosition;
         racing = false;
     }
-    
 }

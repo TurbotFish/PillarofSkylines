@@ -267,6 +267,7 @@ namespace Game.Player.CharacterController
 
             if (currentPF != null)
             {
+                Debug.Log("removing platform");
                 currentPF.RemovePlayer();
                 currentPF = null;
             }
@@ -295,6 +296,7 @@ namespace Game.Player.CharacterController
                 collisions.currentGroundNormal = hit.normal;
                 if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
                 {
+                    Debug.Log("adding platform below");
                     currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
                     currentPF.AddPlayer(myPlayer, hit.point);
                 }
@@ -335,6 +337,7 @@ namespace Game.Player.CharacterController
                 }
                 if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
                 {
+                    Debug.Log("adding platform above");
                     currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
                     currentPF.AddPlayer(myPlayer, hit.point);
                 }
@@ -411,6 +414,7 @@ namespace Game.Player.CharacterController
             { //register with moving platforms
                 if (currentPF == null && sideHit.collider.CompareTag("MovingPlatform"))
                 {
+                    Debug.Log("adding platform side");
                     currentPF = sideHit.collider.GetComponentInParent<MovingPlatform>();
                     currentPF.AddPlayer(myPlayer, sideHit.point);
                 }

@@ -84,9 +84,9 @@ namespace Game.Player.CharacterController
             return false; //not locked
         }
 
-        public bool ChangeState(IState state)
+        public bool ChangeState(IState state, bool overrideLock = false)
         {
-            if (CheckStateLocked(state.StateId))
+            if (CheckStateLocked(state.StateId) && !overrideLock)
             {
                 Debug.LogWarningFormat("Change State failed: current: {0}; new: {1}", currentState.StateId.ToString(), state.StateId.ToString());
                 return false;

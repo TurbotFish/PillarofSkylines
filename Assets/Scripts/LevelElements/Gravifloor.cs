@@ -5,9 +5,9 @@ using UnityEngine;
 public class Gravifloor : MonoBehaviour {
     
     Vector3 gravityDirection;
-    static Gravifloor lastActive;
+    static Gravifloor currentActive;
 
-    float rotationDuration = 0.05f;
+    float rotationDuration = 0.2f;
 
     float resetDelay = 0.1f; // just in case there is a microspace between two gravifloors
     [SerializeField] float resetDuration = 0.5f;
@@ -17,7 +17,7 @@ public class Gravifloor : MonoBehaviour {
     CharController currPlayer;
 
 
-    private void Awake()
+    private void Start()
     {
         gravityDirection = -transform.up;
         gameObject.tag = "Gravifloor";
@@ -25,11 +25,9 @@ public class Gravifloor : MonoBehaviour {
 
     public void AddPlayer(CharController player)
     {
-        if (lastActive)
-        {
-            lastActive.StopAllCoroutines();
-            lastActive = this;
-        }
+        if (currentActive)
+            currentActive.StopAllCoroutines();
+        currentActive = this;
         currPlayer = player;
 
         StartCoroutine(_ChangeGravity(gravityDirection));
@@ -37,19 +35,22 @@ public class Gravifloor : MonoBehaviour {
     
     public void RemovePlayer(bool isJumping)
     {
-        if (isJumping)
-            StartCoroutine(_ResetGravity());
-        else
-            StartCoroutine(_ChangeGravity(regularGravity));
+        print("Exit Gravifloor " + name + " current active is " + currentActive);
+        if (currentActive == this)
+        {
+            currPlayer.AddExternalVelocity(-gravityDirection*10, false, false);
+
+            if (isJumping)
+                StartCoroutine(_ResetGravity());
+            else
+                StartCoroutine(_ChangeGravity(regularGravity));
+        }
     }
     
     public IEnumerator _ChangeGravity(Vector3 gravityGoal)
     {
         CharController player = currPlayer;
-
-        player.ChangeGravityDirection(gravityGoal);
-        yield break;
-
+        
         Vector3 currentGravity = -player.MyTransform.up;
 
         for (float elapsed = 0; elapsed < rotationDuration; elapsed += Time.deltaTime)

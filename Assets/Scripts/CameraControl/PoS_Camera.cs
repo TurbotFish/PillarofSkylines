@@ -405,7 +405,7 @@ public class PoS_Camera : MonoBehaviour {
             if (playerState == ePlayerState.wallRun)
                 WallRunCamera();
 
-            if (playerState == ePlayerState.glide) {
+            if (playerState == ePlayerState.glide || playerState == ePlayerState.graviswap) {
                 SetTargetRotation(-2 * playerVelocity.y + defaultPitch, GetYawBehindPlayer(), resetDamp);
                 state = eCameraState.FollowBehind;
             }
@@ -490,9 +490,11 @@ public class PoS_Camera : MonoBehaviour {
 
     void WallRunCamera() {
         Vector3 newYaw = Vector3.Cross(target.parent.up, controller.collisions.lastWallNormal);
-
+        
         if (Vector3.Dot(newYaw, target.parent.forward) < 0)
             newYaw *= -1;
+
+        newYaw = Vector3.Lerp(my.forward, newYaw, Vector3.Dot(newYaw, playerVelocity.normalized)); // test
 
         resetType = eResetType.WallRun;
         AllowAutoReset(true, true);

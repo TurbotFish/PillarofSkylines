@@ -83,6 +83,11 @@ namespace Game.Player.CharacterController
 
         public PlayerMovementInfo MovementInfo { get { return movementInfo; } }
 
+        /// <summary>
+        /// debug pour graviswap parce que je sais pas activer/désactiver des abilities
+        /// </summary>
+        public bool graviswapAvailable = false;
+
         //#############################################################################
 
         [Space(10)]
@@ -121,6 +126,7 @@ namespace Game.Player.CharacterController
             stateMachine.RegisterAbility(ePlayerState.wallClimb, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.hover, eAbilityType.Hover);
+            stateMachine.RegisterAbility(ePlayerState.graviswap, eAbilityType.Graviswap);
 
             stateMachine.ChangeState(new AirState(this, stateMachine, AirState.eAirStateMode.fall));
 
@@ -144,7 +150,6 @@ namespace Game.Player.CharacterController
         // Use this for initialization
         void Start()
         {
-
         }
 
         void OnDestroy()
@@ -225,6 +230,9 @@ namespace Game.Player.CharacterController
                 inputInfo.sprintButton = (Input.GetAxis("Left Trigger") > .9f) || Input.GetButton("Sprint");
                 inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint");
                 inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint");
+
+
+                inputInfo.rightStickButtonDown = Input.GetButtonDown("RightStickClick");
 
                 //
                 stateMachine.HandleInput();
