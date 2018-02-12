@@ -362,7 +362,7 @@ namespace Game.Player.CharacterController
 
                 //Debug.Log("colliding : " + colliding);
                 int security = 2;
-                while (!colliding && security > 0 && !collisions.below)
+                while (!colliding && security > 0 && !collisions.below && myPlayer.CurrentState == ePlayerState.wallRun)
                 {
                     myTransform.position += -collisions.lastWallNormal * skinWidth * 2;
 
