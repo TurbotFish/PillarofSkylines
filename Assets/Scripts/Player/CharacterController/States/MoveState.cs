@@ -63,7 +63,11 @@ namespace Game.Player.CharacterController.States
                 state.SetJumpTimer(moveData.CanStillJumpTimer);
 
                 stateMachine.ChangeState(state);
-			}
+            }
+            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable)
+            {
+                stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
+            }
         }
 
 		public StateReturnContainer Update(float dt) {

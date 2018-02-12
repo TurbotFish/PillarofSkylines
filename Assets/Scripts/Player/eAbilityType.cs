@@ -16,6 +16,7 @@ namespace Game.Player
         Glide,
         WallRun,
         Dash,
-        Hover
+        Hover,
+        Graviswap
     }
 } //end of namespace

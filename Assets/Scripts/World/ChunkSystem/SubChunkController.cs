@@ -25,7 +25,7 @@ namespace Game.World.ChunkSystem
         public bool IsCopy { get; private set; }
 
         List<Renderer> rendererList = new List<Renderer>();
-        List<Interaction.IWorldObjectActivation> worldObjectActivationList = new List<Interaction.IWorldObjectActivation>();
+        List<IWorldObjectActivation> worldObjectActivationList = new List<IWorldObjectActivation>();
 
         //##################################################################
 
@@ -51,7 +51,7 @@ namespace Game.World.ChunkSystem
             RebuildIndexes();
 
             //initialize world objects
-            var worldObjects = GetComponentsInChildren<Interaction.IWorldObjectInitialization>();
+            var worldObjects = GetComponentsInChildren<IWorldObjectInitialization>();
             for (int i = 0; i < worldObjects.Length; i++)
             {
                 var worldObject = worldObjects[i];
@@ -181,7 +181,7 @@ namespace Game.World.ChunkSystem
             rendererList.AddRange(GetComponentsInChildren<Renderer>());
 
             worldObjectActivationList.Clear();
-            worldObjectActivationList.AddRange(GetComponentsInChildren<Interaction.IWorldObjectActivation>());
+            worldObjectActivationList.AddRange(GetComponentsInChildren<IWorldObjectActivation>());
 
             //var candidateStack = new Stack<Transform>();
             //for (int i = 0; i < myTransform.childCount; i++)

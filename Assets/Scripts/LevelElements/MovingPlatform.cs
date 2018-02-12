@@ -11,7 +11,8 @@ public class MovingPlatform : MonoBehaviour {
 	public Vector3 impactPoint;
 
 	void Start () {
-		transform.tag = "MovingPlatform";
+        if (transform.tag == "Untagged")
+            transform.tag = "MovingPlatform";
         TestChildren(transform);
 	}
 

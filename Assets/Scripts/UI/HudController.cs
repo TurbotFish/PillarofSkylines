@@ -1,18 +1,26 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using System.Linq;
+﻿using UnityEngine;
 using Game.GameControl;
 
 namespace Game.UI
 {
+
+    public enum eMessageType
+    {
+        Help = 0,
+        Important
+    }
+
     public class HudController : MonoBehaviour, IUiState
     {
         [SerializeField]
-        TMPro.TextMeshProUGUI messageView;
-        GameObject messagePanel;
-
-        //Player.PlayerModel playerModel;
+        TMPro.TextMeshProUGUI helpMessage;
+        GameObject helpPanel;
+        
+        [SerializeField]
+        TMPro.TextMeshProUGUI importantTitle;
+        [SerializeField]
+        TMPro.TextMeshProUGUI importantDescription;
+        GameObject importantPanel;
 
         public bool IsActive { get; private set; }
 
@@ -20,22 +28,22 @@ namespace Game.UI
         //###########################################################
 
         #region monobehaviour methods
-
-        // Use this for initialization
+            
         void Start()
         {
-            messagePanel = this.messageView.transform.parent.gameObject;
-            messagePanel.SetActive(false);
+            helpPanel = helpMessage.transform.parent.gameObject;
+            helpPanel.SetActive(false);
+
+            importantPanel = importantTitle.transform.parent.gameObject;
+            importantPanel.SetActive(false);
+
             Utilities.EventManager.OnShowHudMessageEvent += OnShowHudMessageEventHandler;
         }
-
-        // Update is called once per frame
+        
         void Update()
         {
-            if (!this.IsActive)
-            {
+            if (!IsActive)
                 return;
-            }
 
             if (Input.GetButtonDown("MenuButton"))
             {
@@ -47,6 +55,11 @@ namespace Game.UI
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HelpMenu));
                 return;
             }
+            else if (Input.GetButtonDown("Interact") && importantPanel.activeSelf)
+            {
+                Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false, "", eMessageType.Important));
+                return;
+            }
         }
 
         #endregion monobehaviour methods
@@ -55,26 +68,21 @@ namespace Game.UI
 
         void IUiState.Initialize(IGameControllerBase gameController)
         {
-            //this.playerModel = playerModel;
-
-            this.messageView.text = "";
+            helpMessage.text = "";
         }
 
         void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
         {
-            if (this.IsActive)
-            {
+            if (IsActive)
                 return;
-            }
-
-            this.IsActive = true;
-            this.gameObject.SetActive(true);          
+            IsActive = true;
+            gameObject.SetActive(true);          
         }
 
         void IUiState.Deactivate()
         {
-            this.IsActive = false;
-            this.gameObject.SetActive(false);
+            IsActive = false;
+            gameObject.SetActive(false);
         }
 
         //###########################################################
@@ -83,15 +91,30 @@ namespace Game.UI
         {
             Debug.LogFormat("showHudMessageEvent: show={0}, message={1}", args.Show.ToString(), args.Message);
 
-            if (args.Show)
+            switch (args.MessageType)
             {
-                messagePanel.SetActive(true);
-                this.messageView.text = args.Message;
-            }
-            else
-            {
-                this.messageView.text = "";
-                messagePanel.SetActive(false);
+                default:
+                case eMessageType.Help:
+                    helpPanel.SetActive(args.Show);
+                    if (args.Show)
+                        helpMessage.text = args.Message;
+                    else
+                        helpMessage.text = "";
+                    break;
+
+                case eMessageType.Important:
+                    importantPanel.SetActive(args.Show);
+                    if (args.Show)
+                    {
+                        importantTitle.text = args.Message;
+                        importantDescription.text = args.Description;
+                    }
+                    else
+                    {
+                        importantTitle.text = "";
+                        importantDescription.text = "";
+                    }
+                    break;
             }
         }
 

@@ -345,7 +345,14 @@ namespace Game.Player {
                         break;
                     // Tutorial Message
                     case "TutoBox":
-                        ShowUiMessage(other.GetComponent<UI.TutoBox>().message, other.tag);
+                        UI.TutoBox tutoBox = other.GetComponent<UI.TutoBox>();
+                        if (tutoBox.messageType == UI.eMessageType.Important)
+                        {
+                            ShowImportantMessage(tutoBox.message, tutoBox.description);
+                            Destroy(other);
+                        }
+                        else
+                            ShowUiMessage(tutoBox.message, other.tag);
                         break;
                     // Home
                     case "Home":
@@ -457,6 +464,11 @@ namespace Game.Player {
         {
             lastTag = tag;
             Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message));
+        }
+
+        void ShowImportantMessage(string message, string description)
+        {
+            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, UI.eMessageType.Important, description));
         }
 
         void HideUiMessage()
