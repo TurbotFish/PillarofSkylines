@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game.World.Interaction
+namespace Game.World
 {
     public interface IWorldObjectInitialization
     {
