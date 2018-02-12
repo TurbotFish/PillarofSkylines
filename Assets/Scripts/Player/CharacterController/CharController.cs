@@ -96,6 +96,7 @@ namespace Game.Player.CharacterController
         public ParticlesManager windParticles;
         public ParticlesManager glideParticles;
         public ParticleSystem aerialJumpFX;
+        public ParticleSystem hoverFX;
 
         //#############################################################################
 
