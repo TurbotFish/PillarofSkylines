@@ -46,11 +46,15 @@ namespace Game.Utilities
         {
             public bool Show { get; private set; }
             public string Message { get; private set; }
+            public string Description { get; private set; }
+            public UI.eMessageType MessageType { get; private set; }
 
-            public OnShowHudMessageEventArgs(bool show, string message = null)
+            public OnShowHudMessageEventArgs(bool show, string message = null, UI.eMessageType messageType = 0, string description = "")
             {
-                this.Show = show;
-                this.Message = message;
+                Show = show;
+                Message = message;
+                MessageType = messageType;
+                Description = description;
             }
         }
 
@@ -111,31 +115,6 @@ namespace Game.Utilities
         }
 
         #endregion show menu event
-
-        //***********************************************************
-
-        //#region ability menu events
-
-        //public static class AbilityMenuEvents
-        //{
-
-        //    #region on pointer enter slot event
-
-        //    public class PointerEnterSlotEventArgs : EventArgs
-        //    {
-
-        //    }
-
-        //    public static void SendPointerEnterSlotEvent()
-        //    {
-
-        //    }
-
-        //    #endregion on pointer enter slot event
-
-        //}
-
-        //#endregion ability menu events
 
         //***********************************************************
 
