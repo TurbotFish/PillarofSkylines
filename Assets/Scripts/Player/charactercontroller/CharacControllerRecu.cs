@@ -69,7 +69,7 @@ namespace Game.Player.CharacterController
         /// <summary>
         /// The moving platform the player is currently on (null if not on a moving platform).
         /// </summary>
-        MovingPlatform currentPF;
+        MovingPlatform[] currentPFs;
 
         Gravifloor currentGravifloor;
 
@@ -265,11 +265,14 @@ namespace Game.Player.CharacterController
         void CollisionUpdate(Vector3 velocity)
         {
 
-            if (currentPF != null)
+            if (currentPFs != null)
             {
                 Debug.Log("removing platform");
-                currentPF.RemovePlayer();
-                currentPF = null;
+                foreach (MovingPlatform PF in currentPFs)
+                {
+                    PF.RemovePlayer();
+                }
+                currentPFs = null;
             }
             // EN TEST POUR BIEN RESTER AU SOL, à voir ce que ça vaut
             if (myPlayer.CurrentState == ePlayerState.stand || myPlayer.CurrentState == ePlayerState.move)
@@ -294,11 +297,14 @@ namespace Game.Player.CharacterController
             if (collisions.below && !climbingStep)
             {
                 collisions.currentGroundNormal = hit.normal;
-                if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
+                if (currentPFs == null && hit.collider.CompareTag("MovingPlatform"))
                 {
                     Debug.Log("adding platform below");
-                    currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
-                    currentPF.AddPlayer(myPlayer, hit.point);
+                    currentPFs = hit.collider.GetComponentsInParent<MovingPlatform>();
+                    foreach (MovingPlatform PF in currentPFs)
+                    {
+                      PF.AddPlayer(myPlayer, hit.point);
+                    }
                 }
                 if (hit.collider.CompareTag("Gravifloor") && (currentGravifloor == null || currentGravifloor != hit.collider.GetComponent<Gravifloor>()))
                 {
@@ -335,11 +341,14 @@ namespace Game.Player.CharacterController
                 {
                     collisions.above = false;
                 }
-                if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
+                if (currentPFs == null && hit.collider.CompareTag("MovingPlatform"))
                 {
                     Debug.Log("adding platform above");
-                    currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
-                    currentPF.AddPlayer(myPlayer, hit.point);
+                    currentPFs = hit.collider.GetComponentsInParent<MovingPlatform>();
+                    foreach (MovingPlatform PF in currentPFs)
+                    {
+                        PF.AddPlayer(myPlayer, hit.point);
+                    }
                 }
             }
 
@@ -412,11 +421,14 @@ namespace Game.Player.CharacterController
 
             if (collisions.side)
             { //register with moving platforms
-                if (currentPF == null && sideHit.collider.CompareTag("MovingPlatform"))
+                if (currentPFs == null && sideHit.collider.CompareTag("MovingPlatform"))
                 {
                     Debug.Log("adding platform side");
-                    currentPF = sideHit.collider.GetComponentInParent<MovingPlatform>();
-                    currentPF.AddPlayer(myPlayer, sideHit.point);
+                    currentPFs = sideHit.collider.GetComponentsInParent<MovingPlatform>();
+                    foreach (MovingPlatform PF in currentPFs)
+                    {
+                        PF.AddPlayer(myPlayer, sideHit.point);
+                    }
                 }
             }
 
