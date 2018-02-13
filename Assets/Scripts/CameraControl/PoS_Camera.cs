@@ -152,7 +152,7 @@ public class PoS_Camera : MonoBehaviour {
 		manualPitch = defaultPitch;
 		state = eCameraState.Default;
 
-        UpdateGravity();
+        ResetGravity();
         PlaceBehindPlayerNoLerp();
     }
 
@@ -208,9 +208,8 @@ public class PoS_Camera : MonoBehaviour {
             pitch = defaultPitch;
             camRotation = my.rotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
 
-        } else {
+        } else
             my.position = args.Position - lastFrameOffset;
-        }
 
         negDistance.z = -currentDistance;
         Vector3 targetWithOffset = args.Position + my.right * offset.x + my.up * offset.y;
@@ -224,10 +223,17 @@ public class PoS_Camera : MonoBehaviour {
 
     Vector3 characterUp;
 
+    public void ResetGravity() {
+        characterUp = target.parent.up;
+        float angle = Vector3.Angle(worldUp, characterUp);
+        Vector3 axis = Vector3.Cross(worldUp, characterUp);
+        targetSpace = Quaternion.AngleAxis(angle, axis);
+    }
+
     public void UpdateGravity() {
         characterUp = target.parent.up;
-        targetSpace = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, characterUp), Vector3.Cross(Vector3.up, characterUp));
-        // TODO: find a way to ensure camera yaw stays always the same upon changing gravity
+        Vector3 currentUp = targetSpace * worldUp;
+        targetSpace = Quaternion.FromToRotation(currentUp, characterUp) * targetSpace;
     }
 
     void RealignPlayer() {
@@ -551,9 +557,10 @@ public class PoS_Camera : MonoBehaviour {
 		autoDamp = damp;
 	}
 
-	Vector3 worldForward = new Vector3(0, 0, 1);
+    Vector3 worldForward = new Vector3(0, 0, 1);
+    Vector3 worldUp = new Vector3(0, 1, 0);
 
-	Vector2 GetRotationTowardsPoint(Vector3 point) {
+    Vector2 GetRotationTowardsPoint(Vector3 point) {
 		Vector3 direction = point - camPosition;
 		float distance = direction.magnitude;
 		direction /= distance;

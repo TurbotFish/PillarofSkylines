@@ -305,7 +305,6 @@ namespace Game.Player.CharacterController
                     if (Vector3.Dot(hit.transform.up, myTransform.up) > 0.7f)
                     {
                         currentGravifloor = hit.collider.GetComponent<Gravifloor>();
-                        print("Found Gravifloor " + currentGravifloor.name);
                         currentGravifloor.AddPlayer(myPlayer);
                     }
                 }
@@ -319,7 +318,6 @@ namespace Game.Player.CharacterController
             if (currentGravifloor != null && (!collisions.below || !hit.collider.CompareTag("Gravifloor")))
             {
                 currentGravifloor.RemovePlayer(!collisions.below);
-                print("Quit Gravifloor " + currentGravifloor.name + " Collision Below: " + collisions.below);
                 currentGravifloor = null;
             }
 
