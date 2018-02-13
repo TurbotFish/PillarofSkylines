@@ -1,16 +1,20 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(GPUISeeder)), CanEditMultipleObjects]
+[CanEditMultipleObjects]
+[CustomEditor(typeof(GPUISeeder))]
 public class GPUISeederEditor : Editor {
 
 	public override void OnInspectorGUI(){
 		base.OnInspectorGUI ();
 
-		GPUISeeder _seeder = (GPUISeeder)target;
+		//GPUISeeder _seeder = (GPUISeeder)target;
 
 		if (GUILayout.Button ("Bake Matrices")) {
-			_seeder.BakeGPUIData ();
+			foreach (GPUISeeder item in targets) {
+				item.BakeGPUIData ();
+			}
+			//_seeder.BakeGPUIData ();
 		}
 
 	}
