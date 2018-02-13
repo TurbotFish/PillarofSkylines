@@ -500,11 +500,13 @@ namespace Game.Player.CharacterController
         public void ChangeGravityDirection(Vector3 newGravity)
         {
             MyTransform.Rotate(Vector3.Cross(MyTransform.up, -newGravity), Vector3.SignedAngle(MyTransform.up, -newGravity, Vector3.Cross(MyTransform.up, -newGravity)), Space.World);
+            myCamera.UpdateGravity();
         }
 
         public void ChangeGravityDirection(Vector3 newGravity, Vector3 point)
         {
             MyTransform.RotateAround(point, Vector3.Cross(MyTransform.up, -newGravity), Vector3.SignedAngle(MyTransform.up, -newGravity, Vector3.Cross(MyTransform.up, -newGravity)));
+            myCamera.UpdateGravity();
         }
 
         #endregion cancer

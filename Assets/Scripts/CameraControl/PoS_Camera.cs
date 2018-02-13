@@ -152,6 +152,7 @@ public class PoS_Camera : MonoBehaviour {
 		manualPitch = defaultPitch;
 		state = eCameraState.Default;
 
+        UpdateGravity();
         PlaceBehindPlayerNoLerp();
     }
 
@@ -220,12 +221,19 @@ public class PoS_Camera : MonoBehaviour {
             my.position = camPosition;
         }
     }
-	
+
+    Vector3 characterUp;
+
+    public void UpdateGravity() {
+        characterUp = target.parent.up;
+        targetSpace = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, characterUp), Vector3.Cross(Vector3.up, characterUp));
+        // TODO: find a way to ensure camera yaw stays always the same upon changing gravity
+    }
+
     void RealignPlayer() {
         if (state == eCameraState.HomeDoor)
             return; // Dans ce cas, osef de tout le reste
         // TODO: During a camera realignment, wait before realigning player
-        Vector3 characterUp = target.parent.up; // TODO: only change this value when there's a change of gravity?
         target.LookAt(target.position + Vector3.ProjectOnPlane(my.forward, characterUp), characterUp); // Reoriente the character's rotator
     }
 
@@ -352,9 +360,7 @@ public class PoS_Camera : MonoBehaviour {
 
 		playerState = player.CurrentState;
 		playerVelocity = player.MovementInfo.velocity;
-
-		targetSpace = Quaternion.AngleAxis(Vector3.Angle(Vector3.up, target.up), Vector3.Cross(Vector3.up, target.up));
-
+        
         bool isGrounded = (playerState & (ePlayerState.move | ePlayerState.stand | ePlayerState.slide | ePlayerState.wallRun | ePlayerState.hover )) != 0;
         float slopeValue = CheckGroundAndReturnSlopeValue();
 
