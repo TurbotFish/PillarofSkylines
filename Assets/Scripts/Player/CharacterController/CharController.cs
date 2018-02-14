@@ -20,6 +20,8 @@ namespace Game.Player.CharacterController
         [SerializeField]
         public PoS_Camera myCamera;
 
+        //public float gameSpeed = 10f;
+
         /// <summary>
         /// The controller checking if there's collisions on the way.
         /// </summary>
@@ -270,15 +272,15 @@ namespace Game.Player.CharacterController
                 velocity.y = 0;
             }
 
-            Vector3 tempVertical = new Vector3();
+            float tempVertical;
             Vector3 newVelocity = new Vector3();
 
 
             if (stateReturn.keepVerticalMovement)
             {
-                tempVertical = new Vector3(0, velocity.y, 0);
+                tempVertical = velocity.y;
                 newVelocity = Vector3.Lerp(Vector3.ProjectOnPlane(velocity, Vector3.up), acceleration, Time.deltaTime * transitionSpeed);
-                newVelocity += tempVertical;
+                newVelocity = new Vector3(newVelocity.x, tempVertical, newVelocity.z);
             }
             else
             {
