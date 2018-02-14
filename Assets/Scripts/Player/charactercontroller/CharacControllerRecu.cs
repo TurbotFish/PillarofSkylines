@@ -267,7 +267,6 @@ namespace Game.Player.CharacterController
 
             if (currentPF != null)
             {
-                Debug.Log("removing platform");
                 currentPF.RemovePlayer();
                 currentPF = null;
             }
@@ -296,7 +295,6 @@ namespace Game.Player.CharacterController
                 collisions.currentGroundNormal = hit.normal;
                 if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
                 {
-                    Debug.Log("adding platform below");
                     currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
                     currentPF.AddPlayer(myPlayer, hit.point);
                 }
@@ -305,7 +303,6 @@ namespace Game.Player.CharacterController
                     if (Vector3.Dot(hit.transform.up, myTransform.up) > 0.7f)
                     {
                         currentGravifloor = hit.collider.GetComponent<Gravifloor>();
-                        print("Found Gravifloor " + currentGravifloor.name);
                         currentGravifloor.AddPlayer(myPlayer);
                     }
                 }
@@ -319,7 +316,6 @@ namespace Game.Player.CharacterController
             if (currentGravifloor != null && (!collisions.below || !hit.collider.CompareTag("Gravifloor")))
             {
                 currentGravifloor.RemovePlayer(!collisions.below);
-                print("Quit Gravifloor " + currentGravifloor.name + " Collision Below: " + collisions.below);
                 currentGravifloor = null;
             }
 
