@@ -198,7 +198,7 @@ namespace Game.Player.CharacterController.States
 
             var result = new StateReturnContainer()
 			{
-				keepVerticalMovement = true
+				//keepVerticalMovement = true
 			};
 
 			//set wether the player can turn the character
@@ -217,6 +217,7 @@ namespace Game.Player.CharacterController.States
 
 				charController.AddExternalVelocity((direction) * jumpStrength + Vector3.ProjectOnPlane(charController.MovementInfo.velocity, Vector3.up) * jumpData.ImpactOfCurrentSpeed, false, false);
 				result.resetVerticalVelocity = true;
+                //Debug.Log("velocity added : " + (direction) * jumpStrength + Vector3.ProjectOnPlane(charController.MovementInfo.velocity, Vector3.up) * jumpData.ImpactOfCurrentSpeed);
 				//result.Acceleration = (movementInfo.velocity * 0.05f + Vector3.up) * jumpStrength;
 				//result.TransitionSpeed = 1 / dt;
 
@@ -227,6 +228,7 @@ namespace Game.Player.CharacterController.States
 				result.MaxSpeed = fallData.MaxSpeed;
 				result.TransitionSpeed = fallData.TransitionSpeed;
 				result.Acceleration = timerAirControl <= 0 ? inputInfo.leftStickToCamera * fallData.Speed * stateMachine.speedMultiplier : jumpDirection * fallData.Speed * stateMachine.speedMultiplier;
+                result.keepVerticalMovement = true;
 			}
             //jumping
             else if (mode == eAirStateMode.jump || mode == eAirStateMode.aerialJump) {
@@ -249,6 +251,7 @@ namespace Game.Player.CharacterController.States
             else {
 				Debug.LogError("error!");
 			}
+
 
 			return result;
 		}
