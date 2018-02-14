@@ -407,7 +407,10 @@ namespace Game.Player
             else
             {
                 //pick up favour
-                ChangeFavourAmount(1);
+                if (favourId == "ECHO")
+                    ChangeFavourAmount(0); // THIS IS TEMPORARY
+                else
+                    ChangeFavourAmount(1);
                 pickedUpFavours.Add(favourId);
 
                 //send event
