@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class GPUIDisplayManager : MonoBehaviour {
 
 	//Ce script a été optimisé avec l'esprit de Bruno Mabille
-
+	//TO DO (MAYBE): use list of class to allow for other meshes without the overhead of using more lists//Not sure that would work
 	Dictionary<int, List<Matrix4x4>> transformsID = new Dictionary<int, List<Matrix4x4>> ();
 	List<Matrix4x4> matrices = new List<Matrix4x4> ();
 	List<int> indices = new List<int> ();
@@ -22,6 +22,7 @@ public class GPUIDisplayManager : MonoBehaviour {
 	//temp, should be on seeder
 	public Mesh meshToDraw;
 	public Material materialToDraw;
+	public UnityEngine.Rendering.ShadowCastingMode shadowMode;
 
 
 	void Awake(){
@@ -59,7 +60,7 @@ public class GPUIDisplayManager : MonoBehaviour {
 
 		for (int i = 0; i < numberOfCalls; i++) {
 			//To DO: take layer into account
-			Graphics.DrawMeshInstanced (meshToDraw, 0, materialToDraw, matrices1023[i], null, UnityEngine.Rendering.ShadowCastingMode.Off, false, 0, null);
+			Graphics.DrawMeshInstanced (meshToDraw, 0, materialToDraw, matrices1023[i], null, shadowMode, false, 0, null);
 
 		}
 	}

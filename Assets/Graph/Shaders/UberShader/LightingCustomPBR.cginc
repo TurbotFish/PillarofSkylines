@@ -372,7 +372,7 @@
 				windDir = mul(unity_WorldToObject, windDir);
 				windDir = normalize(windDir);
 
-				float windIntensity = tex2Dlod(_WindTex, float4(_Time.x, _Time.x, 0,0)).r;
+				float windIntensity = tex2Dlod(_WindTex, float4(_Time.x,_Time.x, 0,0)).r;
 				windIntensity = saturate(windIntensity + 0.0);//not necessary with a good wind map
 
 				float angle = windIntensity * (sin(_Time.y * windSpeed + _offset) * 0.65+0.35) * (_MaxBendAngle) * rotationMask;
