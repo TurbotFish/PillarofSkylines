@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class GPUIDisplayManager : MonoBehaviour {
 
 	//Ce script a été optimisé avec l'esprit de Bruno Mabille
-	//TO DO (MAYBE): use list of class to allow for other meshes without the overhead of using more lists//Not sure that would work
+
 	Dictionary<int, List<Matrix4x4>> transformsID = new Dictionary<int, List<Matrix4x4>> ();
 	List<Matrix4x4> matrices = new List<Matrix4x4> ();
 	List<int> indices = new List<int> ();
@@ -23,7 +23,13 @@ public class GPUIDisplayManager : MonoBehaviour {
 	public Mesh meshToDraw;
 	public Material materialToDraw;
 	public UnityEngine.Rendering.ShadowCastingMode shadowMode;
+	public Transform player;
 
+	string east = "EastPlane";
+	string west = "WestPlane";
+	int eastLayer;
+	int westLayer;
+	int currentLayer;
 
 	void Awake(){
 		displayManager = this;
@@ -31,6 +37,10 @@ public class GPUIDisplayManager : MonoBehaviour {
 		for (int i = 0; i < matrices1023.Length; i++) {
 			matrices1023 [i] = new List<Matrix4x4> ();
 		}
+
+		eastLayer = LayerMask.NameToLayer (east);
+		westLayer = LayerMask.NameToLayer (west);
+
 	}
 
 	public void AddStuffToDraw(List<Matrix4x4> _mat, int _id){
@@ -48,7 +58,9 @@ public class GPUIDisplayManager : MonoBehaviour {
 	void LateUpdate(){
 		if (updatedThisFrame)
 			RearrangeListOfObjectsToDraw ();
-		
+
+		SetGPUILayer ();
+
 		GPUIDraw();
 		updatedThisFrame = false;
 	}
@@ -59,8 +71,7 @@ public class GPUIDisplayManager : MonoBehaviour {
 			return;
 
 		for (int i = 0; i < numberOfCalls; i++) {
-			//To DO: take layer into account
-			Graphics.DrawMeshInstanced (meshToDraw, 0, materialToDraw, matrices1023[i], null, shadowMode, false, 0, null);
+			Graphics.DrawMeshInstanced (meshToDraw, 0, materialToDraw, matrices1023[i], null, shadowMode, false, currentLayer, null);
 
 		}
 	}
@@ -82,6 +93,10 @@ public class GPUIDisplayManager : MonoBehaviour {
 			matrices1023 [i].Clear ();
 			matrices1023 [i].AddRange (matrices.GetRange (boundaryLow, instancesPerList));
 		}
+	}
+
+	void SetGPUILayer(){
+		currentLayer = player.position.x > 0 ? eastLayer : westLayer;
 	}
 
 }
