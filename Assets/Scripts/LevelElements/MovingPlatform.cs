@@ -6,14 +6,18 @@ using UnityEngine;
 public class MovingPlatform : MonoBehaviour {
 
 	public CharController currPlayer;
+    public bool active = true;
 
 	[HideInInspector]
 	public Vector3 impactPoint;
 
 	void Start () {
-        if (transform.tag == "Untagged")
-            transform.tag = "MovingPlatform";
-        TestChildren(transform);
+        if (active)
+        {
+            if (transform.tag == "Untagged")
+                transform.tag = "MovingPlatform";
+            TestChildren(transform);
+        }
 	}
 
     void TestChildren(Transform trans)
