@@ -194,11 +194,12 @@ namespace Game.Player.CharacterController
             //*******************************************
             //handling input
            
-            inputInfo.Reset();
 
             if (isHandlingInput)
             {
                 bool sprintDownLastFrame = inputInfo.sprintButton;
+
+                inputInfo.Reset();
 
                 float stickH = Input.GetAxisRaw("Horizontal");
                 float stickV = Input.GetAxisRaw("Vertical");
@@ -233,7 +234,6 @@ namespace Game.Player.CharacterController
                 inputInfo.sprintButton = (Input.GetAxis("Left Trigger") > .9f) || Input.GetButton("Sprint");
                 inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint");
                 inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint");
-
 
                 inputInfo.rightStickButtonDown = Input.GetButtonDown("RightStickClick");
 
