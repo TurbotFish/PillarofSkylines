@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using Game.World.ChunkSystem;
 using UnityEngine;
 
@@ -12,7 +10,6 @@ namespace Game.World.Interaction
 
         #region variables
 
-        [Header("Name")]
         [SerializeField]
         string favourId = "replace this!";
 
@@ -24,20 +21,21 @@ namespace Game.World.Interaction
         [HideInInspector]
         public Vector3 FinderTarget;
 
+        // FSM: FaveurManager
+        [SerializeField] Transform faveur;
+        float duration = 1.9f;
+        
         // FSM: Faveur_activation
         float animSpeed = 0.0005f;
         float startDelay = 4;
         float disparitionEnd = 10;
         float disparitionSpeed = .03f;
 
+        [Header("Visuals")]
         [SerializeField] Animator animator;
         [SerializeField] Renderer recept;
         [SerializeField] GameObject favSparkUp;
-
-        // FSM: FaveurManager
-        [SerializeField] Transform faveur;
-        float duration = 1.9f;
-
+        
         // FSM: ParticleManager
         float delay2 = 3f;
         float delay3 = 0.2f;

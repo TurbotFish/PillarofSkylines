@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 9462265c932cac44ea8604a6c23b8c86
-timeCreated: 1516802224
+timeCreated: 1518522914
 licenseType: Free
 SubstanceImporter:
   serializedVersion: 5
@@ -37,7 +37,7 @@ SubstanceImporter:
         texture: {instanceID: 0}
     - name: Dirt_Level
       value:
-        scalar[0]: 0.48
+        scalar[0]: 0.497
         scalar[1]: 0
         scalar[2]: 0
         scalar[3]: 0
@@ -58,21 +58,21 @@ SubstanceImporter:
         texture: {instanceID: 0}
     - name: Large_Cracks_X_Amount
       value:
-        scalar[0]: 21.2
+        scalar[0]: 12
         scalar[1]: 0
         scalar[2]: 0
         scalar[3]: 0
         texture: {instanceID: 0}
     - name: Large_Cracks_Y_Amount
       value:
-        scalar[0]: 7.8
+        scalar[0]: 4
         scalar[1]: 0
         scalar[2]: 0
         scalar[3]: 0
         texture: {instanceID: 0}
     - name: Large_Cracks_Scale
       value:
-        scalar[0]: 0.94
+        scalar[0]: 2
         scalar[1]: 0
         scalar[2]: 0
         scalar[3]: 0
