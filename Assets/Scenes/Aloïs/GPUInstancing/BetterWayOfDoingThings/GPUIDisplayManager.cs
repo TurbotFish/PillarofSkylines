@@ -84,7 +84,7 @@ public class GPUIDisplayManager : MonoBehaviour {
 		}
 
 		numberOfCalls = matrices.Count / 1024 + 1;
-		Debug.Log ("calls : "+numberOfCalls+"    vertices : "+matrices.Count);
+		//Debug.Log ("calls : "+numberOfCalls+"    vertices : "+matrices.Count);
 
 		for (int i = 0; i < numberOfCalls; i++) {
 			boundaryLow = i * 1023;
