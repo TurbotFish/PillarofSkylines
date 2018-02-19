@@ -286,7 +286,7 @@ namespace Game.Player {
                     // air particle
                     case "AirReceptor":
                         if (airParticle) {
-                            other.GetComponent<AirReceptor>().Activate();
+                            other.GetComponent<LevelElements.AirReceptor>().Activate();
                             Destroy(airParticle.gameObject);
                             Destroy(airOrigin.gameObject);
                             airParticle = null;

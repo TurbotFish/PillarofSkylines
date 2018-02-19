@@ -68,7 +68,7 @@ namespace Game.World.Interaction
 
         #region initialization
 
-        void IWorldObjectInitialization.Initialize(WorldController worldController, bool isCopy)
+        void IWorldObjectInitialization.Initialize(GameControl.IGameControllerBase gameController, bool isCopy)
         {
             MyTransform = transform;
 
@@ -83,7 +83,7 @@ namespace Game.World.Interaction
                 }
             }
 
-            this.worldController = worldController;
+            worldController = gameController.WorldController;
             myCollider = GetComponent<BoxCollider>();
             this.isCopy = isCopy;
 
