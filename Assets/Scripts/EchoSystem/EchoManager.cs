@@ -13,12 +13,12 @@ namespace Game.EchoSystem
         public BreakEchoParticles breakEchoParticles;
         [SerializeField] int maxEchoes = 3;
         [SerializeField] float driftInputIntensity = 0.5f;
-
+        /*
         [Header("Home")]
         [SerializeField] GameObject homeDoor;
         [SerializeField, Tooltip("Only for GameControllerLite")] Transform homePoint;
         [SerializeField] float timeToHoldForDoor = 1.5f;
-
+        */
 		[Header("ShellFX")]
 		[SerializeField] GameObject shell;
 		Animator playerAnimator;
@@ -59,14 +59,14 @@ namespace Game.EchoSystem
             echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();
 
             MyTransform = transform;
-            
+            /*
             this.spawnPointManager = spawnPointManager;
             if (spawnPointManager)
                 homePoint = spawnPointManager.GetHomeSpawnTransform();
             homeDoor = Instantiate(homeDoor);
             homeDoor.GetComponentInChildren<HomePortalCamera>().anchorPoint = homePoint;
             homeDoor.SetActive(false);
-
+            */
 			playerAnimator = gameController.PlayerController.CharController.animator;
 
             Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
@@ -83,6 +83,7 @@ namespace Game.EchoSystem
 
                 if (driftInput > driftInputIntensity) {
                     driftInputDown += Time.deltaTime;
+                    /*
                     if (driftInputDown >= timeToHoldForDoor && !isDoorActive && (!gameController || (gameController && !gameController.isPillarActive))) {
                         // do the door thing!
                         isDoorActive = true;
@@ -121,15 +122,17 @@ namespace Game.EchoSystem
                             print("Assign HomePoint to the EchoManager if you want it to work with the GameControllerLite");
                         }
                     }
+                    */
 
-                } else if (driftInput < 0.4f) {
-                    if (isDoorActive) {
+                }
+                else if (driftInput < 0.4f) {
+                    /*if (isDoorActive) {
                         isDoorActive = false;
                         homeDoor.SetActive(false);
                         if (!atHome)
                             camera.StopLookingAtHomeDoor();
                     }
-                    else if (driftInputDown > 0)
+                    else if (driftInputDown > 0)*/
                         Drift();
                     driftInputDown = 0;
                 }
