@@ -59,6 +59,10 @@ namespace Game.Player.CharacterController
         HoverData hover = new HoverData();
         public HoverData Hover { get { return hover; } }
 
+        [SerializeField]
+        GroundRiseData groundRise = new GroundRiseData();
+        public GroundRiseData GroundRise { get { return groundRise; } }
+
         #endregion inspector variables
 
         //#############################################################################
@@ -551,6 +555,36 @@ namespace Game.Player.CharacterController
         }
 
         #endregion hover
+
+        //*******************************************
+        
+        #region ground rise
+
+        [System.Serializable]
+        public class GroundRiseData
+        {
+
+            [SerializeField]
+            float height;
+            public float Height { get { return height; } }
+
+            [SerializeField]
+            float strength;
+            public float Strength { get { return strength; } }
+
+            [SerializeField]
+            float duration;
+            public float Duration { get { return duration; } }
+
+            public void OnValidate()
+            {
+                height = Mathf.Clamp(height, 0, float.MaxValue);
+                strength = Mathf.Clamp(strength, 0, float.MaxValue);
+                duration = Mathf.Clamp(duration, 0, float.MaxValue);
+            }
+        }
+
+        #endregion ground rise
 
         //*******************************************
 

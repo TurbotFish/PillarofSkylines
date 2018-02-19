@@ -15,11 +15,11 @@ public class StraightMovementAndTeleport : MovingPlatform {
 
 	bool waiting = false, moving = false;
 
-	void Start() {
+	public override void Start() {
 		waiting = true;
 		currWaitTime = waitTime + initialWaitTime;
 		initialPosition = transform.position;
-        gameObject.tag = "MovingPlatform";
+        base.Start();
 	}
 
 	// Update is called once per frame
