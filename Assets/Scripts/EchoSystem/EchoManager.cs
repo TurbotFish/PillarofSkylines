@@ -220,8 +220,12 @@ namespace Game.EchoSystem
 			_shell = Instantiate (shell, playerTransform.position - new Vector3 (0,-0.2f,0), playerTransform.rotation) as GameObject;
 			//_shell.GetComponent<Animator> ().runtimeAnimatorController = playerAnimator.runtimeAnimatorController;
 			Animator _anim = _shell.GetComponent<Animator> ();
-			_anim.Play ("Start Run", 0, 0.5f);
-			_anim.SetFloat ("Speed", 1);
+            _anim.Play(playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash);
+            int i = 0;
+            foreach (var param in playerAnimator.parameters)
+            {
+                _anim.parameters[i] = playerAnimator.parameters[i];
+            }
 			_anim.speed = 0;
 		}
 

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using Game.World.ChunkSystem;
 using UnityEngine;
 
@@ -10,9 +8,8 @@ namespace Game.World.Interaction
     {
         //##################################################################
 
-        #region varizables
+        #region variables
 
-        [Header("Name")]
         [SerializeField]
         string favourId = "replace this!";
 
@@ -21,21 +18,24 @@ namespace Game.World.Interaction
         WorldController worldController;
         BoxCollider myCollider;
         bool isCopy;
+        [HideInInspector]
+        public Vector3 FinderTarget;
 
+        // FSM: FaveurManager
+        [SerializeField] Transform faveur;
+        float duration = 1.9f;
+        
         // FSM: Faveur_activation
         float animSpeed = 0.0005f;
         float startDelay = 4;
         float disparitionEnd = 10;
         float disparitionSpeed = .03f;
 
+        [Header("Visuals")]
         [SerializeField] Animator animator;
         [SerializeField] Renderer recept;
         [SerializeField] GameObject favSparkUp;
-
-        // FSM: FaveurManager
-        [SerializeField] Transform faveur;
-        float duration = 1.9f;
-
+        
         // FSM: ParticleManager
         float delay2 = 3f;
         float delay3 = 0.2f;
@@ -71,6 +71,17 @@ namespace Game.World.Interaction
         void IWorldObjectInitialization.Initialize(WorldController worldController, bool isCopy)
         {
             MyTransform = transform;
+
+            FinderTarget = MyTransform.position;
+
+            foreach (Transform child in MyTransform)
+            {
+                if (child.CompareTag("Favour"))
+                {
+                    FinderTarget = child.position;
+                    break;
+                }
+            }
 
             this.worldController = worldController;
             myCollider = GetComponent<BoxCollider>();

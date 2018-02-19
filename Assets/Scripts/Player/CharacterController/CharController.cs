@@ -20,6 +20,8 @@ namespace Game.Player.CharacterController
         [SerializeField]
         public PoS_Camera myCamera;
 
+        //public float gameSpeed = 10f;
+
         /// <summary>
         /// The controller checking if there's collisions on the way.
         /// </summary>
@@ -96,6 +98,7 @@ namespace Game.Player.CharacterController
         public ParticlesManager windParticles;
         public ParticlesManager glideParticles;
         public ParticleSystem aerialJumpFX;
+        public ParticleSystem hoverFX;
 
         //#############################################################################
 
@@ -191,11 +194,12 @@ namespace Game.Player.CharacterController
             //*******************************************
             //handling input
            
-            inputInfo.Reset();
 
             if (isHandlingInput)
             {
                 bool sprintDownLastFrame = inputInfo.sprintButton;
+
+                inputInfo.Reset();
 
                 float stickH = Input.GetAxisRaw("Horizontal");
                 float stickV = Input.GetAxisRaw("Vertical");
@@ -230,7 +234,6 @@ namespace Game.Player.CharacterController
                 inputInfo.sprintButton = (Input.GetAxis("Left Trigger") > .9f) || Input.GetButton("Sprint");
                 inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint");
                 inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint");
-
 
                 inputInfo.rightStickButtonDown = Input.GetButtonDown("RightStickClick");
 
@@ -269,15 +272,15 @@ namespace Game.Player.CharacterController
                 velocity.y = 0;
             }
 
-            Vector3 tempVertical = new Vector3();
+            float tempVertical;
             Vector3 newVelocity = new Vector3();
 
 
             if (stateReturn.keepVerticalMovement)
             {
-                tempVertical = new Vector3(0, velocity.y, 0);
+                tempVertical = velocity.y;
                 newVelocity = Vector3.Lerp(Vector3.ProjectOnPlane(velocity, Vector3.up), acceleration, Time.deltaTime * transitionSpeed);
-                newVelocity += tempVertical;
+                newVelocity = new Vector3(newVelocity.x, tempVertical, newVelocity.z);
             }
             else
             {
@@ -499,11 +502,13 @@ namespace Game.Player.CharacterController
         public void ChangeGravityDirection(Vector3 newGravity)
         {
             MyTransform.Rotate(Vector3.Cross(MyTransform.up, -newGravity), Vector3.SignedAngle(MyTransform.up, -newGravity, Vector3.Cross(MyTransform.up, -newGravity)), Space.World);
+            myCamera.UpdateGravity();
         }
 
         public void ChangeGravityDirection(Vector3 newGravity, Vector3 point)
         {
             MyTransform.RotateAround(point, Vector3.Cross(MyTransform.up, -newGravity), Vector3.SignedAngle(MyTransform.up, -newGravity, Vector3.Cross(MyTransform.up, -newGravity)));
+            myCamera.UpdateGravity();
         }
 
         #endregion cancer
