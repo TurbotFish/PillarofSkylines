@@ -132,7 +132,7 @@ namespace Game.EchoSystem
                         if (!atHome)
                             camera.StopLookingAtHomeDoor();
                     }
-                    else if (driftInputDown > 0)*/
+                    else */if (driftInputDown > 0)
                         Drift();
                     driftInputDown = 0;
                 }

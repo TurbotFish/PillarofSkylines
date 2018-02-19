@@ -5,6 +5,9 @@
 public class LightRay : MonoBehaviour {
 
     [SerializeField]
+    LayerMask layerMask;
+
+    [SerializeField]
     Transform lookAtTarget;
 
     [SerializeField] bool inverseState;
@@ -26,7 +29,7 @@ public class LightRay : MonoBehaviour {
     private void Update() {
 
         RaycastHit hit;
-        if (Physics.Raycast(my.position, my.forward, out hit, Mathf.Infinity)) {
+        if (Physics.Raycast(my.position, my.forward, out hit, Mathf.Infinity, layerMask)) {
 
             renderer.SetPosition(1, my.InverseTransformPoint(hit.point));
             LightReceptor newReceptor = hit.transform.GetComponent<LightReceptor>();

@@ -22,8 +22,8 @@ namespace Game.Utilities
 
             public OnMenuSwitchedEventArgs(UI.eUiState newUiState, UI.eUiState previousUiState)
             {
-                this.NewUiState = newUiState;
-                this.PreviousUiState = previousUiState;
+                NewUiState = newUiState;
+                PreviousUiState = previousUiState;
             }
         }
 
@@ -47,14 +47,16 @@ namespace Game.Utilities
             public bool Show { get; private set; }
             public string Message { get; private set; }
             public string Description { get; private set; }
+            public float Time { get; private set; }
             public UI.eMessageType MessageType { get; private set; }
-
-            public OnShowHudMessageEventArgs(bool show, string message = null, UI.eMessageType messageType = 0, string description = "")
+            
+            public OnShowHudMessageEventArgs(bool show, string message = null, UI.eMessageType messageType = 0, string description = "", float time = 2)
             {
                 Show = show;
                 Message = message;
                 MessageType = messageType;
                 Description = description;
+                Time = time;
             }
         }
 

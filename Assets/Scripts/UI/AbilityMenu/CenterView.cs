@@ -1,6 +1,4 @@
 ﻿using Game.Player.AbilitySystem;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,6 +24,8 @@ namespace Game.UI.AbilityMenu
         AbilityMenuController menuController;
         Ability currentAbility;
 
+        GameObject descriptionPanel;
+
         //##################################################################
 
         public void Initialize(Player.PlayerModel playerModel, AbilityMenuController menuController)
@@ -39,11 +39,13 @@ namespace Game.UI.AbilityMenu
             abilityDescriptionText.text = string.Empty;
             backgroundImage.color = menuController.AvailableAbilityColour;
 
+            descriptionPanel = abilityDescriptionText.transform.parent.gameObject;
+
             Utilities.EventManager.FavourAmountChangedEvent += OnFavourAmountChangedEventHandler;
             Utilities.EventManager.AbilityStateChangedEvent += OnAbilityStateChangedEventHandler;
         }
 
-        public void SetContent(Player.AbilitySystem.Ability ability)
+        public void SetContent(Ability ability)
         {
             currentAbility = ability;
 
@@ -52,9 +54,12 @@ namespace Game.UI.AbilityMenu
                 abilityNameText.text = string.Empty;
                 abilityDescriptionText.text = string.Empty;
                 backgroundImage.color = menuController.AvailableAbilityColour;
+                descriptionPanel.SetActive(false);
             }
             else
             {
+                if (!descriptionPanel.activeSelf)
+                    descriptionPanel.SetActive(true);
                 abilityNameText.text = ability.Name;
                 abilityDescriptionText.text = ability.Description;
 
@@ -72,9 +77,7 @@ namespace Game.UI.AbilityMenu
         void OnAbilityStateChangedEventHandler(object sender, Utilities.EventManager.AbilityStateChangedEventArgs args)
         {
             if (currentAbility == null || args.AbilityType != currentAbility.Type)
-            {
                 return;
-            }
 
             SetBackgroundColour(args.AbilityState);
         }

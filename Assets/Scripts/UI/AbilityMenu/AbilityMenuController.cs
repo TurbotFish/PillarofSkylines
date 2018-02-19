@@ -47,7 +47,10 @@ namespace Game.UI.AbilityMenu
         Color activeAbilityColour;
         public Color ActiveAbilityColour { get { return activeAbilityColour; } }
 
+        [Space, SerializeField]
+        TMPro.TextMeshProUGUI helpMessage;
 
+        public Cursor cursor;
 
         Player.PlayerModel playerModel;
 
@@ -111,9 +114,7 @@ namespace Game.UI.AbilityMenu
         void Update()
         {
             if (!IsActive)
-            {
                 return;
-            }
 
             //exit ability menu
             if (Input.GetButtonDown("MenuButton") || Input.GetButtonDown("Cancel"))
@@ -231,6 +232,7 @@ namespace Game.UI.AbilityMenu
             {
                 if (i == selectedSlotIndex)
                 {
+                    cursor.GoTo(abilityViews[i].transform.position);
                     abilityViews[i].SetSelected(true);
                 }
                 else
@@ -242,29 +244,48 @@ namespace Game.UI.AbilityMenu
             if (SelectedSlot == null)
             {
                 centerView.SetContent(null);
+                cursor.gameObject.SetActive(false);
             }
             else
             {
+                cursor.gameObject.SetActive(true);
                 centerView.SetContent(playerModel.AbilityData.GetAbility(SelectedSlot.AbilityType));
             }
+
+            UpdateInputMessage();
         }
 
         void ActivateSelectedAbility()
         {
             if (SelectedSlot == null)
-            {
                 return;
-            }
 
             if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
-            {
-                //Debug.LogFormat("Ability Menu: deactivating ability {0}", SelectedSlot.AbilityType);
                 playerModel.DeactivateAbility(SelectedSlot.AbilityType);
-            }
+            else
+                playerModel.ActivateAbility(SelectedSlot.AbilityType);
+            UpdateInputMessage();
+        }
+
+        void UpdateInputMessage()
+        {
+            helpMessage.color = new Color(1, 1, 1);
+            if (SelectedSlot == null)
+                helpMessage.text = "";
+            else if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
+                    helpMessage.text = "[A] Remove Favour";
             else
             {
-                //Debug.LogFormat("Ability Menu: activating ability {0}", SelectedSlot.AbilityType);
-                playerModel.ActivateAbility(SelectedSlot.AbilityType);
+                if (!playerModel.CheckAbilityUnlocked(SelectedSlot.AbilityType))
+                    helpMessage.text = "Destroy a Pillar to Unlock";
+                else if (playerModel.Favours <= 0)
+                    helpMessage.text = "";
+                else 
+                {
+                    helpMessage.text = "[A] Place Favour";
+                    helpMessage.color = ActiveAbilityColour;
+                }
+
             }
         }
 
