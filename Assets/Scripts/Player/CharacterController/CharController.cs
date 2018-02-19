@@ -16,14 +16,17 @@ namespace Game.Player.CharacterController
         [SerializeField]
         Transform rotator;
         [SerializeField]
-        public Transform myCamera;
+        public Transform myCameraTransform;
+        [SerializeField]
+        public PoS_Camera myCamera;
 
-        //#############################################################################
+        //public float gameSpeed = 10f;
 
         /// <summary>
         /// The controller checking if there's collisions on the way.
         /// </summary>
-        CharacControllerRecu tempPhysicsHandler;
+        [HideInInspector]
+        public CharacControllerRecu tempPhysicsHandler;
         CharacControllerRecu.CollisionInfo tempCollisionInfo;
 
         public CharacControllerRecu.CollisionInfo CollisionInfo { get { return tempCollisionInfo; } }
@@ -37,8 +40,6 @@ namespace Game.Player.CharacterController
         [Header("Animation stuff")]
         public float animationRunSpeed;
         public float animationJumpSpeed;
-
-        //#############################################################################
 
         public PlayerModel PlayerModel { get; private set; }
 
@@ -63,12 +64,14 @@ namespace Game.Player.CharacterController
         }
 
         bool isInitialized;
+
+        /// <summary>
+        /// This is set to false if the player has opened a menu, true otherwise.
+        /// </summary>
         bool isHandlingInput;
 
         Vector3 velocity;
         Vector3 externalVelocity;
-
-
 
         List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
 
@@ -82,8 +85,12 @@ namespace Game.Player.CharacterController
 
         public PlayerMovementInfo MovementInfo { get { return movementInfo; } }
 
-        //#############################################################################
+        /// <summary>
+        /// debug pour graviswap parce que je sais pas activer/désactiver des abilities
+        /// </summary>
+        public bool graviswapAvailable = false;
 
+        //#############################################################################
 
         [Space(10)]
         [Header("Particles/FX")]
@@ -91,6 +98,7 @@ namespace Game.Player.CharacterController
         public ParticlesManager windParticles;
         public ParticlesManager glideParticles;
         public ParticleSystem aerialJumpFX;
+        public ParticleSystem hoverFX;
 
         //#############################################################################
 
@@ -101,7 +109,8 @@ namespace Game.Player.CharacterController
         {
             tempPhysicsHandler = GetComponent<CharacControllerRecu>();
             animator = GetComponentInChildren<Animator>();
-            myCamera = FindObjectOfType<PoS_Camera>().transform;
+            myCamera = FindObjectOfType<PoS_Camera>();
+            myCameraTransform = myCamera.transform;
 
 
             PlayerModel = gameController.PlayerModel;
@@ -120,6 +129,7 @@ namespace Game.Player.CharacterController
             stateMachine.RegisterAbility(ePlayerState.wallClimb, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.hover, eAbilityType.Hover);
+            stateMachine.RegisterAbility(ePlayerState.graviswap, eAbilityType.Graviswap);
 
             stateMachine.ChangeState(new AirState(this, stateMachine, AirState.eAirStateMode.fall));
 
@@ -143,7 +153,6 @@ namespace Game.Player.CharacterController
         // Use this for initialization
         void Start()
         {
-
         }
 
         void OnDestroy()
@@ -184,12 +193,14 @@ namespace Game.Player.CharacterController
 
             //*******************************************
             //handling input
-
-            bool sprintDownLastFrame = inputInfo.sprintButton;
-            inputInfo.Reset();
+           
 
             if (isHandlingInput)
             {
+                bool sprintDownLastFrame = inputInfo.sprintButton;
+
+                inputInfo.Reset();
+
                 float stickH = Input.GetAxisRaw("Horizontal");
                 float stickV = Input.GetAxisRaw("Vertical");
 
@@ -198,6 +209,10 @@ namespace Game.Player.CharacterController
                 if (inputInfo.leftStickRaw.magnitude < CharData.General.StickDeadMaxVal)
                 {
                     inputInfo.leftStickAtZero = true;
+                }
+                else
+                {
+                    inputInfo.leftStickAtZero = false;
                 }
 
                 var toCameraAngle = Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up));
@@ -220,6 +235,8 @@ namespace Game.Player.CharacterController
                 inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint");
                 inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint");
 
+                inputInfo.rightStickButtonDown = Input.GetButtonDown("RightStickClick");
+
                 //
                 stateMachine.HandleInput();
             }
@@ -238,6 +255,7 @@ namespace Game.Player.CharacterController
 
             if (stateReturn.PlayerForwardSet)
             {
+                //Debug.Log("forward is : " + stateReturn.PlayerForward);
                 MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up), MyTransform.up);
             }
 
@@ -254,14 +272,15 @@ namespace Game.Player.CharacterController
                 velocity.y = 0;
             }
 
-            Vector3 tempVertical = new Vector3();
+            float tempVertical;
             Vector3 newVelocity = new Vector3();
+
 
             if (stateReturn.keepVerticalMovement)
             {
-                tempVertical = new Vector3(0, velocity.y, 0);
+                tempVertical = velocity.y;
                 newVelocity = Vector3.Lerp(Vector3.ProjectOnPlane(velocity, Vector3.up), acceleration, Time.deltaTime * transitionSpeed);
-                newVelocity += tempVertical;
+                newVelocity = new Vector3(newVelocity.x, tempVertical, newVelocity.z);
             }
             else
             {
@@ -322,7 +341,7 @@ namespace Game.Player.CharacterController
                 {
                     MyTransform.Rotate(MyTransform.up, stateReturn.Rotation, Space.World);
                 }
-                else
+                else if(!inputInfo.leftStickAtZero)
                 {
                     Vector3 to = Vector3.ProjectOnPlane(TurnLocalToSpace(inputInfo.leftStickToCamera), MyTransform.up);
                     float angle = Mathf.Lerp(0f, Vector3.SignedAngle(MyTransform.forward, to, MyTransform.up), CharData.General.TurnSpeed * Time.deltaTime);
@@ -483,11 +502,13 @@ namespace Game.Player.CharacterController
         public void ChangeGravityDirection(Vector3 newGravity)
         {
             MyTransform.Rotate(Vector3.Cross(MyTransform.up, -newGravity), Vector3.SignedAngle(MyTransform.up, -newGravity, Vector3.Cross(MyTransform.up, -newGravity)), Space.World);
+            myCamera.UpdateGravity();
         }
 
         public void ChangeGravityDirection(Vector3 newGravity, Vector3 point)
         {
             MyTransform.RotateAround(point, Vector3.Cross(MyTransform.up, -newGravity), Vector3.SignedAngle(MyTransform.up, -newGravity, Vector3.Cross(MyTransform.up, -newGravity)));
+            myCamera.UpdateGravity();
         }
 
         #endregion cancer

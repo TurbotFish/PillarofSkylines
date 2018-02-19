@@ -17,6 +17,7 @@ namespace Game.Player.CharacterController.States
         CharData.MoveData moveData;
         CharData.HoverData hoverData;
 
+        int nbrOfBlocksFeedback = 10;
         float timer;
 
         //#############################################################################
@@ -35,11 +36,15 @@ namespace Game.Player.CharacterController.States
         public void Enter()
         {
             Debug.Log("Enter State: Hover");
+            ParticleSystem.MainModule mainMod = charController.hoverFX.main;
+            mainMod.duration = hoverData.Duration;
+            charController.hoverFX.Play();
         }
 
         public void Exit()
         {
             Debug.Log("Exit State: Hover");
+            charController.hoverFX.Stop();
         }
 
         //#############################################################################
@@ -69,10 +74,20 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
+            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable)
+            {
+                stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
+            }
         }
 
         public StateReturnContainer Update(float dt)
         {
+            /*
+            ParticleSystem parts = Object.Instantiate(charController.hoverFX, charController.MyTransform.position, charController.MyTransform.rotation);
+            parts.transform.localScale *= (timer / hoverData.Duration) * 5;
+            parts.Play();
+            */
+
             PlayerInputInfo inputInfo = charController.InputInfo;
 
             timer -= dt;

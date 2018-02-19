@@ -26,11 +26,11 @@ namespace Game.Player.CharacterController.States
 		//#############################################################################
 
 		public void Enter() {
-			Debug.Log("Enter State: Move");
+			//Debug.Log("Enter State: Move");
 		}
 
 		public void Exit() {
-			Debug.Log("Exit State: Move");
+			//Debug.Log("Exit State: Move");
 		}
 
 		//#############################################################################
@@ -63,13 +63,15 @@ namespace Game.Player.CharacterController.States
                 state.SetJumpTimer(moveData.CanStillJumpTimer);
 
                 stateMachine.ChangeState(state);
-                
-			}
+            }
+            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable)
+            {
+                stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
+            }
         }
 
 		public StateReturnContainer Update(float dt) {
 			PlayerInputInfo inputInfo = charController.InputInfo;
-
 
             var result = new StateReturnContainer
             {

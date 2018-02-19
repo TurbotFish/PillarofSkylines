@@ -77,6 +77,8 @@ namespace Game.EchoSystem
 
             collider.size *= colliderSizeWhenSolid;
             collider.isTrigger = false;
+
+            MyTransform.rotation = Quaternion.identity;
         }
 
         public void Unfreeze()

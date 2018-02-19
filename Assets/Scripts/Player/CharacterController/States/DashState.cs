@@ -61,11 +61,12 @@ namespace Game.Player.CharacterController.States
             result.CanTurnPlayer = false;
             result.IgnoreGravity = true;
             result.PlayerForward = forward;
-            result.Acceleration = forward * dashData.Speed * stateMachine.speedMultiplier;
+            result.Acceleration = charController.TurnSpaceToLocal(forward * dashData.Speed * stateMachine.speedMultiplier);
             result.MaxSpeed = result.Acceleration.magnitude + 1; //+1 is just for security
             result.TransitionSpeed = dashData.TransitionSpeed;
+            result.keepVerticalMovement = true;
             result.resetVerticalVelocity = true;
-            if(timer <= 0)
+            if (timer <= 0)
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }

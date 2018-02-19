@@ -48,7 +48,9 @@ namespace Game.Player.CharacterController.States
 
 			//stop gliding
 			if (inputInfo.sprintButtonDown) {
-                stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
+                AirState state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
+                state.SetTimerAirControl(glideData.ExitInertiaTime);
+                stateMachine.ChangeState(state);
 			}
             //landing
             else if (collisionInfo.below) {
@@ -58,7 +60,7 @@ namespace Game.Player.CharacterController.States
             else if (collisionInfo.below) {
 				stateMachine.ChangeState(new StandState(charController, stateMachine));
 			}
-		}
+        }
 
 		public StateReturnContainer Update(float dt) {
 			PlayerInputInfo inputInfo = charController.InputInfo;
@@ -68,13 +70,20 @@ namespace Game.Player.CharacterController.States
 
             //---------VERTICAL
 
-			//Turn the vertical input of the player into an angle between glideMinAngle and glideMaxAngle
-			float targetVerticalAngle = Mathf.Clamp(
-				                            Mathf.Lerp(glideData.MinAngle,
-					                            glideData.MaxAngle,
-					                            (inputInfo.leftStickRaw.z / 2) + .5f) + glideData.BaseAngle,
-				                            glideData.MinAngle, glideData.MaxAngle
-			                            );
+            //Turn the player horizontally with the angle calculated above
+            charController.MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(movementInfo.velocity, charController.MyTransform.up), charController.MyTransform.up);
+
+            //Turn the vertical input of the player into an angle between glideMinAngle and glideMaxAngl
+            float targetVerticalAngle;
+            if (inputInfo.leftStickRaw.z > 0)
+            {
+                targetVerticalAngle = Mathf.Lerp(glideData.BaseAngle, glideData.MaxAngle, (inputInfo.leftStickRaw.z));
+            } else
+            {
+                targetVerticalAngle = Mathf.Lerp(glideData.MinAngle, glideData.BaseAngle, (inputInfo.leftStickRaw.z + 1f));
+            }
+
+
 
 
 			//Update the current vertical angle of the player depending on the angle calculated above
@@ -91,7 +100,6 @@ namespace Game.Player.CharacterController.States
 
             //Update the speed of the player
             float currentSpeed;
-
             if (verticalAngle < glideData.BaseAngle) {
 
                 currentSpeed = movementInfo.velocity.magnitude - glideData.UpwardDecceleration.Evaluate(Mathf.Abs((verticalAngle - glideData.BaseAngle) / (glideData.MinAngle - glideData.BaseAngle)) /** dt*/);
@@ -99,10 +107,12 @@ namespace Game.Player.CharacterController.States
 
                 currentSpeed = Mathf.Lerp(
 					movementInfo.velocity.magnitude,
-					glideData.BaseSpeed + glideData.DownwardAcceleration.Evaluate((verticalAngle - glideData.BaseAngle) / (glideData.MaxAngle - glideData.BaseAngle)),
+					(glideData.BaseSpeed + glideData.DownwardAcceleration.Evaluate((verticalAngle - glideData.BaseAngle) / (glideData.MaxAngle - glideData.BaseAngle))) * stateMachine.glideMultiplier,
 					glideData.SpeedSmooth /** dt*/
 				);
 			}
+
+            Debug.Log("vertical angle : " + verticalAngle + "speed : " + currentSpeed);
 
 			//Calculate the velocity of the player with his speed and vertical angle
 			Vector3 targetVelocity = Quaternion.AngleAxis(verticalAngle, charController.MyTransform.right) * charController.MyTransform.forward * currentSpeed;
@@ -124,13 +134,14 @@ namespace Game.Player.CharacterController.States
 				targetHorizontalAngle,
 				(Mathf.Abs(horizontalAngle) > Mathf.Abs(targetHorizontalAngle) ? glideData.HorizComingBack : glideData.HorizAngleCtrl) * dt
 			);
-			//Turn the player horizontally with the angle calculated above
-			charController.MyTransform.Rotate(Vector3.up, horizontalAngle, Space.Self);
+            //Turn the player horizontally with the angle calculated above
+            //charController.MyTransform.Rotate(Vector3.up, horizontalAngle, Space.Self);
+            targetVelocity = Quaternion.AngleAxis(horizontalAngle, charController.MyTransform.up) * targetVelocity;
 
 
             var result = new StateReturnContainer
             {
-                Acceleration = TurnSpaceToLocal(targetVelocity * stateMachine.speedMultiplier),
+                Acceleration = TurnSpaceToLocal(targetVelocity),
                 TransitionSpeed = 8,
                 CanTurnPlayer = false,
                 IgnoreGravity = true

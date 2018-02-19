@@ -23,12 +23,14 @@ namespace Game.Player.CharacterController.Containers
         public bool sprintButtonDown;
         public bool sprintButtonUp;
 
+        public bool rightStickButtonDown;
+
         public void Reset()
         {
             leftStickRaw = Vector3.zero;
             leftStickToCamera = Vector3.zero;
             leftStickToSlope = Vector3.zero;
-            leftStickAtZero = false;
+            leftStickAtZero = true;
 
             jumpButton = false;
             jumpButtonDown = false;
@@ -41,6 +43,8 @@ namespace Game.Player.CharacterController.Containers
             sprintButton = false;
             sprintButtonDown = false;
             sprintButtonUp = false;
+
+            rightStickButtonDown = false;
         }
     }
 }

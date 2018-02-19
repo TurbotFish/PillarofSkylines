@@ -26,13 +26,13 @@ namespace Game.Player.CharacterController.States
 
         public void Enter()
         {
-            Debug.Log("Enter State: Slide");
+            //Debug.Log("Enter State: Slide");
 			charController.animator.SetBool("Sliding", true); 
         }
 
         public void Exit()
         {
-            Debug.Log("Exit State: Slide");
+            //Debug.Log("Exit State: Slide");
 			charController.animator.SetBool("Sliding", false); 
 		}
 
@@ -56,7 +56,7 @@ namespace Game.Player.CharacterController.States
             else if (!collisionInfo.below)
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
-
+                stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
                 stateMachine.ChangeState(state);
             } 
             //dash

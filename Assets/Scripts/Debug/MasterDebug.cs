@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [ExecuteInEditMode]
 public class MasterDebug : MonoBehaviour {
@@ -25,8 +26,26 @@ public class MasterDebug : MonoBehaviour {
             } else
                 shaderScript.enabled = false;
 
-        } else if (Input.GetKeyDown(KeyCode.F3)) {
+        }
+        else if (Input.GetKeyDown(KeyCode.F3))
+        {
             player.CharData.Jump.MaxAerialJumps = player.CharData.Jump.MaxAerialJumps == 1000 ? 1 : 1000;
         }
+        else if (Input.GetKeyDown(KeyCode.F7))
+        {
+            player.graviswapAvailable = !player.graviswapAvailable;
+            print("Graviswap is " + player.graviswapAvailable);
+        }
+        else if (Input.GetKeyDown(KeyCode.F12))
+        {
+            System.Diagnostics.Process.Start(Application.dataPath.Replace("_Data", ".exe"));
+            Application.Quit();
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (player && Application.isPlaying)
+            player.CharData.Jump.MaxAerialJumps = 1;
     }
 }

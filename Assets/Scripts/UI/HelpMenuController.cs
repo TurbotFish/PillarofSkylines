@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Game.GameControl;
 using Game.Player;
 using Game.Utilities;
 using UnityEngine;
@@ -14,14 +15,8 @@ namespace Game.UI
 
         //##################################################################
 
-        void IUiState.Initialize(PlayerModel playerModel)
+        void IUiState.Initialize(IGameControllerBase gameController)
         {
-        }
-
-        // Use this for initialization
-        void Start()
-        {
-
         }
 
         //##################################################################

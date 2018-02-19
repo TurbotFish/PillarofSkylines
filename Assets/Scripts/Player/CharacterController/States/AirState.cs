@@ -30,7 +30,8 @@ namespace Game.Player.CharacterController.States
 		eAirStateMode mode = eAirStateMode.fall;
 		int remainingAerialJumps = 0;
 		float jumpTimer = 0;
-		Vector3 jumpDirection = Vector3.zero;
+        float jumpStrengthFromState = 1;
+        Vector3 jumpDirection = Vector3.zero;
         float timerAirControl = 0;
 
 		bool initializing;
@@ -93,14 +94,24 @@ namespace Game.Player.CharacterController.States
             this.timerAirControl = timerAirControl;
         }
 
-		#endregion setters
+        public void SetJumpStrengthModifierFromState(float jumpStrengthModifier)
+        {
+            if (!initializing)
+            {
+                return;
+            }
 
-		//#############################################################################
+            this.jumpStrengthFromState = jumpStrengthModifier;
+        }
 
-		#region
+        #endregion setters
 
-		public void Enter() {
-			Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
+        //#############################################################################
+
+        #region
+
+        public void Enter() {
+			//Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
 
             remainingAerialJumps = stateMachine.CheckRemainingAerialJumps();
 			initializing = false;
@@ -110,7 +121,7 @@ namespace Game.Player.CharacterController.States
 		}
 
 		public void Exit() {
-			Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
+			//Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
 
 			Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
 		}
@@ -159,11 +170,17 @@ namespace Game.Player.CharacterController.States
             //landing
             else if (collisionInfo.below) {
 				stateMachine.ChangeState(new StandState(charController, stateMachine));
+                if (!collisionInfo.SlippySlope)
+                    charController.SetVelocity(Vector3.Project(movementInfo.velocity, inputInfo.leftStickToSlope), false);
 			}
             //wall- run/drift
             else if (collisionInfo.side && WallRunState.CheckCanEnterWallRun(charController)) {
 				stateMachine.ChangeState(new WallRunState(charController, stateMachine));
-			}
+            }
+            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable)
+            {
+                stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
+            }
         }
 
 		public StateReturnContainer Update(float dt) {
@@ -181,7 +198,7 @@ namespace Game.Player.CharacterController.States
 
             var result = new StateReturnContainer()
 			{
-				keepVerticalMovement = true
+				//keepVerticalMovement = true
 			};
 
 			//set wether the player can turn the character
@@ -189,7 +206,7 @@ namespace Game.Player.CharacterController.States
 
 			//first update for jump (initial force)
 			if (firstUpdate && (mode == eAirStateMode.jump || mode == eAirStateMode.aerialJump)) {
-				float jumpStrength = jumpData.Strength * stateMachine.jumpMultiplier;
+				float jumpStrength = jumpData.Strength * stateMachine.jumpMultiplier * jumpStrengthFromState;
 
 				if (mode == eAirStateMode.aerialJump) {
 					jumpStrength *= jumpData.AerialJumpCoeff;
@@ -200,6 +217,7 @@ namespace Game.Player.CharacterController.States
 
 				charController.AddExternalVelocity((direction) * jumpStrength + Vector3.ProjectOnPlane(charController.MovementInfo.velocity, Vector3.up) * jumpData.ImpactOfCurrentSpeed, false, false);
 				result.resetVerticalVelocity = true;
+                //Debug.Log("velocity added : " + (direction) * jumpStrength + Vector3.ProjectOnPlane(charController.MovementInfo.velocity, Vector3.up) * jumpData.ImpactOfCurrentSpeed);
 				//result.Acceleration = (movementInfo.velocity * 0.05f + Vector3.up) * jumpStrength;
 				//result.TransitionSpeed = 1 / dt;
 
@@ -210,6 +228,7 @@ namespace Game.Player.CharacterController.States
 				result.MaxSpeed = fallData.MaxSpeed;
 				result.TransitionSpeed = fallData.TransitionSpeed;
 				result.Acceleration = timerAirControl <= 0 ? inputInfo.leftStickToCamera * fallData.Speed * stateMachine.speedMultiplier : jumpDirection * fallData.Speed * stateMachine.speedMultiplier;
+                result.keepVerticalMovement = true;
 			}
             //jumping
             else if (mode == eAirStateMode.jump || mode == eAirStateMode.aerialJump) {
@@ -232,6 +251,7 @@ namespace Game.Player.CharacterController.States
             else {
 				Debug.LogError("error!");
 			}
+
 
 			return result;
 		}

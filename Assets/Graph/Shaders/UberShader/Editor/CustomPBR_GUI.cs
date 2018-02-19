@@ -39,8 +39,6 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoRenderQueue ();
 
 		//Debug.Log ("HELLOOOO");
-
-		DoAdvanced ();
 	}
 
 	void DoMain(){
@@ -695,11 +693,6 @@ public class CustomPBR_GUI : ShaderGUI {
 		if (avatarShader) {
 			target.renderQueue = (int)RenderQueue.Geometry+501;
 		}
-	}
-
-	void DoAdvanced(){
-		GUILayout.Label ("Advanced options", EditorStyles.boldLabel);
-		editor.EnableInstancingField();
 	}
 
 	#region debug

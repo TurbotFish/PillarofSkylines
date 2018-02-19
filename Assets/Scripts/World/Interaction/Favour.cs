@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using Game.World.ChunkSystem;
 using UnityEngine;
 
@@ -9,32 +8,34 @@ namespace Game.World.Interaction
     {
         //##################################################################
 
-        #region varizables
+        #region variables
 
-        [Header("Name")]
         [SerializeField]
-        string favourId = Utilities.Generator.GenerateRandomString(16);
+        string favourId = "replace this!";
 
         [Header("")]
         bool favourPickedUp = false;
         WorldController worldController;
         BoxCollider myCollider;
         bool isCopy;
+        [HideInInspector]
+        public Vector3 FinderTarget;
 
+        // FSM: FaveurManager
+        [SerializeField] Transform faveur;
+        float duration = 1.9f;
+        
         // FSM: Faveur_activation
         float animSpeed = 0.0005f;
         float startDelay = 4;
         float disparitionEnd = 10;
         float disparitionSpeed = .03f;
 
+        [Header("Visuals")]
         [SerializeField] Animator animator;
         [SerializeField] Renderer recept;
         [SerializeField] GameObject favSparkUp;
-
-        // FSM: FaveurManager
-        [SerializeField] Transform faveur;
-        float duration = 1.9f;
-
+        
         // FSM: ParticleManager
         float delay2 = 3f;
         float delay3 = 0.2f;
@@ -71,11 +72,22 @@ namespace Game.World.Interaction
         {
             MyTransform = transform;
 
+            FinderTarget = MyTransform.position;
+
+            foreach (Transform child in MyTransform)
+            {
+                if (child.CompareTag("Favour"))
+                {
+                    FinderTarget = child.position;
+                    break;
+                }
+            }
+
             this.worldController = worldController;
             myCollider = GetComponent<BoxCollider>();
             this.isCopy = isCopy;
 
-            if (worldController.GameController.PlayerModel.IsFavourPickedUp(favourId))
+            if (worldController.GameController.PlayerModel.CheckIsFavourPickedUp(favourId))
             {
                 PickUp();
 

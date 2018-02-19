@@ -33,6 +33,8 @@ namespace Game.Player {
 
         Beacon beacon;
 
+        new PoS_Camera camera;
+
         //
         bool isActive = false;
         bool isInteractButtonDown = false;
@@ -49,6 +51,8 @@ namespace Game.Player {
             this.echoManager = echoManager;
 
             spawnPointManager = FindObjectOfType<World.SpawnPointSystem.SpawnPointManager>(); //TODO: Fix that
+
+            camera = player.myCameraTransform.GetComponent<PoS_Camera>();
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
@@ -72,13 +76,9 @@ namespace Game.Player {
                 //favour
                 if (favourPickUpInRange)
                 {
-                    if (!playerModel.IsFavourPickedUp(favour.FavourId))
+                    if (!playerModel.CheckIsFavourPickedUp(favour.FavourId))
                     {
-                        //pick up favour
-                        playerModel.ChangeFavourAmount(1);
-                        
-                        //send event
-                        Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(favour.FavourId));
+                        playerModel.PickupFavour(favour.FavourId);
                     }
 
                     //clean up
@@ -194,7 +194,7 @@ namespace Game.Player {
                         {
                             favour = other.GetComponent<World.Interaction.Favour>();
 
-                            if (!playerModel.IsFavourPickedUp(favour.FavourId))
+                            if (!playerModel.CheckIsFavourPickedUp(favour.FavourId))
                             {
                                 favourPickUpInRange = true;
 
@@ -209,7 +209,7 @@ namespace Game.Player {
                         var pillarEntrance = other.GetComponent<World.Interaction.PillarEntrance>();
                         if (pillarEntrance != null)
                         {
-                            if (!playerModel.IsPillarDestroyed(pillarEntrance.PillarId))
+                            if (!playerModel.CheckIsPillarDestroyed(pillarEntrance.PillarId))
                             {
                                 pillarEntranceInfo.IsPillarEntranceInRange = true;
                                 pillarEntranceInfo.CurrentPillarEntrance = pillarEntrance;
@@ -345,11 +345,22 @@ namespace Game.Player {
                         break;
                     // Tutorial Message
                     case "TutoBox":
-                        ShowUiMessage(other.GetComponent<UI.TutoBox>().message, other.tag);
+                        UI.TutoBox tutoBox = other.GetComponent<UI.TutoBox>();
+                        if (tutoBox.messageType == UI.eMessageType.Important)
+                        {
+                            ShowImportantMessage(tutoBox.message, tutoBox.description);
+                            Destroy(other);
+                        }
+                        else
+                            ShowUiMessage(tutoBox.message, other.tag);
                         break;
                     // Home
                     case "Home":
                         echoManager.atHome = true;
+                        break;
+                    // CameraControlTrigger
+                    case "CameraControlTrigger":
+                        camera.EnterTrigger(other.GetComponent<CameraControlTrigger>());
                         break;
                     //other
                     default:
@@ -425,6 +436,10 @@ namespace Game.Player {
                     case "Home":
                         echoManager.atHome = false;
                         break;
+                    // CameraControlTrigger
+                    case "CameraControlTrigger":
+                        camera.ExitTrigger(other.GetComponent<CameraControlTrigger>());
+                        break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
@@ -449,6 +464,11 @@ namespace Game.Player {
         {
             lastTag = tag;
             Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message));
+        }
+
+        void ShowImportantMessage(string message, string description)
+        {
+            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, UI.eMessageType.Important, description));
         }
 
         void HideUiMessage()
