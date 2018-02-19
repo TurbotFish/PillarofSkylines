@@ -49,7 +49,7 @@
 		float attenuation = 1;
 		#if defined(SHADOWS_SHADOWMASK)
 			float4 mask = tex2D(_CameraGBufferTexture4, uv);
-			attenuation = saturate(dot(mask, unity_OccilusionMaskSelector));
+			attenuation = saturate(dot(mask, unity_OcclusionMaskSelector));
 		#endif
 		return attenuation;
 	}

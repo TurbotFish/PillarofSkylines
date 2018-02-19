@@ -80,7 +80,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 	CGINCLUDE
 
 
-	//#define BINORMAL_PER_FRAGMENT
+	#define BINORMAL_PER_FRAGMENT
 	#define FOG_DISTANCE
 
 	ENDCG

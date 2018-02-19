@@ -158,7 +158,7 @@
 
 		#if defined(_REFRACTION)
 			float4 grabPos : TEXCOORD8;
-			float4 refraction : TEXCOORD9;
+			float4 refraction : TEXCOORD10;
 		#endif
 
 		#if defined(_ALBEDO_VERTEX_MASK)
@@ -166,7 +166,7 @@
 		#endif
 
 		#if defined(DYNAMICLIGHTMAP_ON)
-			float2 dynamicLightmapUV : TEXCOORD10;
+			float2 dynamicLightmapUV : TEXCOORD9;
 		#endif
 	};
 
@@ -206,7 +206,7 @@
 	}
 
 	float3 GetAlbedo(Interpolators i){
-		float3 albedoTex = tex2D(_MainTex, i.uv.xy).rgb * UNITY_ACCESS_INSTANCED_PROP(_Color).rgb;
+		float3 albedoTex = tex2D(_MainTex, i.uv.xy).rgb;
 		float3 albedo = albedoTex * UNITY_ACCESS_INSTANCED_PROP(_Color).rgb;
 		#if defined(_ALBEDO_VERTEX_MASK)
 			albedo = lerp(albedoTex, albedo, i.color.g);
@@ -409,7 +409,7 @@
 		i.uv.xy = TRANSFORM_TEX(v.uv, _MainTex);
 		i.uv.zw = TRANSFORM_TEX(v.uv, _DetailTex);
 
-		#if defined(LIGHTMAP_ON)
+		#if defined(LIGHTMAP_ON) || ADDITIONAL_MASKED_DIRECTIONAL_SHADOWS
 			i.lightmapUV = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
 		#endif
 
@@ -550,8 +550,25 @@
 
 
 			#if !defined(LIGHTMAP_ON) && !defined(DYNAMICLIGHTMAP_ON)
+			#if UNITY_LIGHT_PROBE_PROXY_VOLUME
+				if (unity_ProbeVolumeParams.x == 1) {
+					indirectLight.diffuse = SHEvalLinearL0L1_SampleProbeVolume(
+						float4(i.normal, 1), i.worldPos
+					);
+					indirectLight.diffuse = max(0, indirectLight.diffuse);
+					#if defined(UNITY_COLORSPACE_GAMMA)
+			            indirectLight.diffuse =
+			            	LinearToGammaSpace(indirectLight.diffuse);
+			        #endif
+				}
+				else {
+					indirectLight.diffuse +=
+						max(0, ShadeSH9(float4(i.normal, 1)));
+				}
+			#else
 				indirectLight.diffuse += max(0, ShadeSH9(float4(i.normal, 1)));
 			#endif
+		#endif
 
 			float3 reflectionDir = reflect(-viewDir, i.normal);
 

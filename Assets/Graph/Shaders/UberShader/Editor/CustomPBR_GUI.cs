@@ -237,7 +237,7 @@ public class CustomPBR_GUI : ShaderGUI {
 
 		editor.TexturePropertyWithHDRColor (MakeLabel (map, "Emission (R)"), map, FindProperty ("_Emission"), emissionConfig, false);
 		editor.LightmapEmissionProperty (2);
-		if (EditorGUI.EndChangeCheck () && tex != map.textureValue) {
+		if (EditorGUI.EndChangeCheck ()) {
 
 			if (tex != map.textureValue) {
 				SetKeyword ("_EMISSION_MAP", map.textureValue);

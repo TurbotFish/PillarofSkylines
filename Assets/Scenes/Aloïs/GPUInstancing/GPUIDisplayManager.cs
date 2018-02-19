@@ -25,11 +25,17 @@ public class GPUIDisplayManager : MonoBehaviour {
 	public UnityEngine.Rendering.ShadowCastingMode shadowMode;
 	public Transform player;
 
+	public Gradient colourVariations;
+
 	string east = "EastPlane";
 	string west = "WestPlane";
 	int eastLayer;
 	int westLayer;
 	int currentLayer;
+
+	//Testing colour variations
+	MaterialPropertyBlock properties;
+	Vector4[] customColors = new Vector4[1023];
 
 	void Awake(){
 		displayManager = this;
@@ -40,6 +46,15 @@ public class GPUIDisplayManager : MonoBehaviour {
 
 		eastLayer = LayerMask.NameToLayer (east);
 		westLayer = LayerMask.NameToLayer (west);
+
+		///doesn't work great
+		//colour variation test
+		properties = new MaterialPropertyBlock();
+		for (int i = 0; i < customColors.Length; i++) {
+			customColors [i] = colourVariations.Evaluate ((float)i / (float)customColors.Length);
+		}
+		properties.SetVectorArray ("_Color", customColors);
+		///:sadface:
 
 	}
 
@@ -71,7 +86,13 @@ public class GPUIDisplayManager : MonoBehaviour {
 			return;
 
 		for (int i = 0; i < numberOfCalls; i++) {
-			Graphics.DrawMeshInstanced (meshToDraw, 0, materialToDraw, matrices1023[i], null, shadowMode, false, currentLayer, null);
+
+			//test colour variation
+
+			Graphics.DrawMeshInstanced (meshToDraw, 0, materialToDraw, matrices1023[i], properties, shadowMode, false, currentLayer, null);
+
+
+
 
 		}
 	}
