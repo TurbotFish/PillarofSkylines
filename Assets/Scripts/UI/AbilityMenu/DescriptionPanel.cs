@@ -19,17 +19,23 @@ namespace Game.UI.AbilityMenu
             hiddenPosition = new Vector3(rec.localPosition.x + 700, rec.localPosition.y, rec.localPosition.z);
         }
 
+        public void Appear()
+        {
+            StopCoroutine(_Appear());
+            StartCoroutine(_Appear());
+        }
+
         private void OnEnable()
         {
-            StartCoroutine(Appear());
+            StartCoroutine(_Appear());
         }
 
         private void OnDisable()
         {
-            StopCoroutine(Appear());
+            StopCoroutine(_Appear());
         }
         
-        IEnumerator Appear()
+        IEnumerator _Appear()
         {
             if (!rec) yield break;
 

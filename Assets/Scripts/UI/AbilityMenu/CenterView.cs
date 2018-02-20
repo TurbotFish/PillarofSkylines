@@ -15,16 +15,18 @@ namespace Game.UI.AbilityMenu
         Text favourText;
 
         [SerializeField]
-        Text abilityNameText;
+        TMPro.TextMeshProUGUI abilityNameText;
+        [SerializeField]
+        TMPro.TextMeshProUGUI nameForDescription;
 
         [SerializeField]
-        Text abilityDescriptionText;
+        TMPro.TextMeshProUGUI abilityDescriptionText;
 
         Player.PlayerModel playerModel;
         AbilityMenuController menuController;
         Ability currentAbility;
 
-        GameObject descriptionPanel;
+        DescriptionPanel descriptionPanel;
 
         //##################################################################
 
@@ -35,11 +37,11 @@ namespace Game.UI.AbilityMenu
 
             favourText.text = playerModel.Favours.ToString();
 
-            abilityNameText.text = string.Empty;
+            nameForDescription.text = abilityNameText.text = string.Empty;
             abilityDescriptionText.text = string.Empty;
             backgroundImage.color = menuController.AvailableAbilityColour;
 
-            descriptionPanel = abilityDescriptionText.transform.parent.gameObject;
+            descriptionPanel = abilityDescriptionText.transform.parent.GetComponent<DescriptionPanel>();
 
             Utilities.EventManager.FavourAmountChangedEvent += OnFavourAmountChangedEventHandler;
             Utilities.EventManager.AbilityStateChangedEvent += OnAbilityStateChangedEventHandler;
@@ -47,20 +49,22 @@ namespace Game.UI.AbilityMenu
 
         public void SetContent(Ability ability)
         {
+            if (currentAbility != ability)
+                descriptionPanel.Appear();
+
             currentAbility = ability;
 
             if (ability == null)
             {
-                abilityNameText.text = string.Empty;
+                nameForDescription.text = abilityNameText.text = string.Empty;
                 abilityDescriptionText.text = string.Empty;
                 backgroundImage.color = menuController.AvailableAbilityColour;
-                descriptionPanel.SetActive(false);
+                descriptionPanel.gameObject.SetActive(false);
             }
             else
             {
-                if (!descriptionPanel.activeSelf)
-                    descriptionPanel.SetActive(true);
-                abilityNameText.text = ability.Name;
+                descriptionPanel.gameObject.SetActive(true);
+                nameForDescription.text = abilityNameText.text = ability.Name;
                 abilityDescriptionText.text = ability.Description;
 
                 SetBackgroundColour(playerModel.GetAbilityState(ability.Type));

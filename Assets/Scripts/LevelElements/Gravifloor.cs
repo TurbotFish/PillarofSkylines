@@ -7,7 +7,7 @@ public class Gravifloor : MonoBehaviour {
     Vector3 gravityDirection;
     static Gravifloor currentActive;
 
-    float rotationDuration = 0.2f;
+    float rotationDuration = 0.3f;
 
     float resetDelay = 0.1f; // just in case there is a microspace between two gravifloors
     [SerializeField] float resetDuration = 0.5f;
@@ -54,7 +54,7 @@ public class Gravifloor : MonoBehaviour {
 
         for (float elapsed = 0; elapsed < rotationDuration; elapsed += Time.deltaTime)
         {
-            player.ChangeGravityDirection(Vector3.Lerp(currentGravity, gravityGoal, elapsed / rotationDuration));
+            player.ChangeGravityDirection(Vector3.Lerp(currentGravity, gravityGoal, elapsed / rotationDuration), player.MyTransform.position + player.MyTransform.up);
             yield return null;
         }
         player.ChangeGravityDirection(gravityGoal);

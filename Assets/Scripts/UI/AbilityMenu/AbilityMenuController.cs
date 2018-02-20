@@ -50,6 +50,9 @@ namespace Game.UI.AbilityMenu
         [Space, SerializeField]
         TMPro.TextMeshProUGUI helpMessage;
 
+        [Space, SerializeField]
+        TMPro.TextMeshProUGUI descriptionHelpMessage;
+
         public Cursor cursor;
 
         Player.PlayerModel playerModel;
@@ -88,6 +91,7 @@ namespace Game.UI.AbilityMenu
             }
 
             centerView.Initialize(playerModel, this);
+            helpMessage.text = "";
         }
 
         void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
@@ -273,16 +277,26 @@ namespace Game.UI.AbilityMenu
             if (SelectedSlot == null)
                 helpMessage.text = "";
             else if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
-                    helpMessage.text = "[A] Remove Favour";
+            {
+                helpMessage.text = "[A] Remove Favour";
+                descriptionHelpMessage.text = "Press [A] to stop using this ability";
+            }
             else
             {
                 if (!playerModel.CheckAbilityUnlocked(SelectedSlot.AbilityType))
+                {
                     helpMessage.text = "Destroy a Pillar to Unlock";
+                    descriptionHelpMessage.text = "Destroy a Pillar to unlock this ability";
+                }
                 else if (playerModel.Favours <= 0)
+                {
                     helpMessage.text = "";
+                    descriptionHelpMessage.text = "You don't have enough Favours to unlock this ability";
+                }
                 else 
                 {
                     helpMessage.text = "[A] Place Favour";
+                    descriptionHelpMessage.text = "Press [A] to start using this ability";
                     helpMessage.color = ActiveAbilityColour;
                 }
 
