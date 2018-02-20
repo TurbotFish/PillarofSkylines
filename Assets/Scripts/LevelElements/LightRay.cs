@@ -1,53 +1,94 @@
-﻿using UnityEngine;
+﻿using Game.GameControl;
+using Game.World;
+using UnityEngine;
 
-[ExecuteInEditMode]
-[RequireComponent(typeof(LineRenderer))]
-public class LightRay : MonoBehaviour {
+namespace Game.LevelElements
+{
+    [ExecuteInEditMode]
+    [RequireComponent(typeof(LineRenderer))]
+    public class LightRay : MonoBehaviour, IWorldObjectInitialization
+    {
+        //###########################################################
 
-    [SerializeField]
-    LayerMask layerMask;
+        [SerializeField]
+        private Transform lookAtTarget;
 
-    [SerializeField]
-    Transform lookAtTarget;
+        [SerializeField]
+        private bool inverseState;
 
-    [SerializeField] bool inverseState;
+        [SerializeField]
+        private Transform endOfRay;
 
-    [SerializeField] Transform endOfRay;
+        private LightReceptor receptor;
+        private new LineRenderer renderer;
+        private Transform my;
+        private bool isInitialized = false;
 
-    LightReceptor receptor;
-    new LineRenderer renderer;
-    Transform my;
+        //###########################################################
 
-    private void Start() {
-        my = transform;
-        renderer = GetComponent<LineRenderer>();
-        renderer.useWorldSpace = false;
-        renderer.positionCount = 2;
-        renderer.SetPosition(0, Vector3.zero);
-    }
+        #region monobehaviour methods
 
-    private void Update() {
-
-        RaycastHit hit;
-        if (Physics.Raycast(my.position, my.forward, out hit, Mathf.Infinity, layerMask)) {
-
-            renderer.SetPosition(1, my.InverseTransformPoint(hit.point));
-            LightReceptor newReceptor = hit.transform.GetComponent<LightReceptor>();
-
-            if (newReceptor) {
-                receptor = newReceptor;
-                receptor.Toggle(inverseState, inverseState);
-            } else if (receptor) {
-                receptor.Toggle(!inverseState, inverseState);
+        private void Update()
+        {
+            if (!isInitialized)
+            {
+                return;
             }
 
-            if (endOfRay)
-                endOfRay.position = hit.point;
+            RaycastHit hit;
+            if (Physics.Raycast(my.position, my.forward, out hit, Mathf.Infinity))
+            {
+                renderer.SetPosition(1, my.InverseTransformPoint(hit.point));
+                LightReceptor newReceptor = hit.transform.GetComponent<LightReceptor>();
+
+                if (newReceptor && newReceptor != receptor) //the ray has hit a new receptor
+                {
+                    if (receptor) //the ray was previously hitting another receptor
+                    {
+                        receptor.SetToggle(!inverseState, inverseState); //deactivate(?) current receptor
+                    }
+
+                    receptor = newReceptor; //replace the current receptor
+                    receptor.SetToggle(inverseState, inverseState); //activate the new receptor
+                }
+                else if (!newReceptor && receptor) //the ray is not hitting any receptor anymore
+                {
+                    receptor.SetToggle(!inverseState, inverseState); //deactivate(?) current receptor
+                    receptor = null;
+                }
+
+                if (endOfRay)
+                {
+                    endOfRay.position = hit.point;
+                }
+            }
+
+            if (lookAtTarget)
+            {
+                transform.LookAt(lookAtTarget);
+                lookAtTarget.LookAt(my);
+            }
         }
-        
-        if (lookAtTarget) {
-            transform.LookAt(lookAtTarget);
-            lookAtTarget.LookAt(my);
+
+        #endregion monobehaviour methods
+
+        //###########################################################
+
+        #region public methods
+
+        public void Initialize(IGameControllerBase gameController, bool isCopy)
+        {
+            my = transform;
+            renderer = GetComponent<LineRenderer>();
+            renderer.useWorldSpace = false;
+            renderer.positionCount = 2;
+            renderer.SetPosition(0, Vector3.zero);
+
+            isInitialized = true;
         }
+
+        #endregion public methods
+
+        //###########################################################
     }
-}
+} //end of namespace

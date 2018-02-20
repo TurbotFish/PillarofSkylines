@@ -473,9 +473,9 @@ namespace Game.Utilities
         public class TriggerUpdatedEventArgs : EventArgs
         {
             public string TriggerId { get; private set; }
-            public Trigger Trigger { get; private set; }
+            public LevelElements.Trigger Trigger { get; private set; }
 
-            public TriggerUpdatedEventArgs(Trigger trigger)
+            public TriggerUpdatedEventArgs(LevelElements.Trigger trigger)
             {
                 TriggerId = trigger.Id;
                 Trigger = trigger;

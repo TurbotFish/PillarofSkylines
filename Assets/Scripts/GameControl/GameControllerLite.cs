@@ -116,6 +116,17 @@ namespace Game.GameControl
             {
                 worldController.InitializeWorldController(this);
             }
+            else //this is a Pillar
+            {
+                var worldObjects = FindObjectsOfType<MonoBehaviour>();
+                foreach(var obj in worldObjects)
+                {
+                    if (obj is World.IWorldObjectInitialization)
+                    {
+                        (obj as World.IWorldObjectInitialization).Initialize(this, false);
+                    }
+                }
+            }
 
             echoManager.InitializeEchoManager(this);
             EclipseManager.InitializeEclipseManager(this);

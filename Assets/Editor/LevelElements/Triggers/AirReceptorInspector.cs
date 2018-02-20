@@ -8,13 +8,13 @@ namespace Game.LevelElements
     [CustomEditor(typeof(AirReceptor))]
     public class AirReceptorInspector : TriggerInspector
     {
-        private AirReceptor self;
+        private AirReceptor airReceptor;
 
         protected override void OnEnable()
         {
             base.OnEnable();
 
-            self = target as AirReceptor;
+            airReceptor = target as AirReceptor;
         }
 
         public override void OnInspectorGUI()

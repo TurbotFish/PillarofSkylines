@@ -8,13 +8,13 @@ namespace Game.LevelElements
     [CustomEditor(typeof(RacingTrigger))]
     public class RecingTriggerInspector : TriggerInspector
     {
-        private RacingTrigger self;
+        private RacingTrigger racingTrigger;
 
         protected override void OnEnable()
         {
             base.OnEnable();
 
-            self = target as RacingTrigger;
+            racingTrigger = target as RacingTrigger;
         }
 
         public override void OnInspectorGUI()

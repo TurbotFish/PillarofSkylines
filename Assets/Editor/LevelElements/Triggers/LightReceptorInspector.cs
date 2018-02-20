@@ -8,13 +8,13 @@ namespace Game.LevelElements
     [CustomEditor(typeof(LightReceptor))]
     public class LightReceptorInspector : TriggerInspector
     {
-        private LightReceptor self;
+        private LightReceptor lightReceptor;
 
         protected override void OnEnable()
         {
             base.OnEnable();
 
-            self = target as LightReceptor;
+            lightReceptor = target as LightReceptor;
         }
 
         public override void OnInspectorGUI()

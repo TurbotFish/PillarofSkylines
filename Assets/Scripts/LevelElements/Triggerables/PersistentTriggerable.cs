@@ -13,15 +13,21 @@ namespace Game.LevelElements
         [SerializeField]
         private string id;
 
+        [SerializeField]
+        private bool triggered;
+
         //###########################################################
 
         public string Id { get { return id; } }
+
+        public bool Triggered { get { return triggered; } set { triggered = value; } }
 
         //###########################################################
 
         public PersistentTriggerable(TriggerableObject triggerable)
         {
-            //id = triggerable
+            id = triggerable.Id;
+            triggered = triggerable.Triggered;
         }
 
         //###########################################################

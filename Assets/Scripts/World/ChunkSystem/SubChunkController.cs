@@ -56,7 +56,7 @@ namespace Game.World.ChunkSystem
             {
                 var worldObject = worldObjects[i];
 
-                worldObject.Initialize(worldController, IsCopy);
+                worldObject.Initialize(worldController.GameController, IsCopy);
             }            
 
             //
