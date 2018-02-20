@@ -88,7 +88,7 @@ public abstract class Trigger : MonoBehaviour, IWorldObjectInitialization
 
     protected virtual void OnDestroy()
     {
-        if (!isCopy)
+        if (!isCopy && persistentTrigger != null)
         {
             persistentTrigger.TriggerState = _triggerState;
         }

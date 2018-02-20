@@ -568,7 +568,7 @@ public class PoS_Camera : MonoBehaviour {
 	}
 
 	Vector2 GetRotationTowardsDirection(Vector3 direction) {
-		Quaternion q = Quaternion.LookRotation(direction);
+		Quaternion q = Quaternion.LookRotation(direction, target.up);
 		return new Vector2(q.eulerAngles.x, q.eulerAngles.y);
 	}
 

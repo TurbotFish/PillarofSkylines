@@ -7,7 +7,8 @@ namespace Game.UI
     public enum eMessageType
     {
         Help = 0,
-        Important
+        Important,
+        Announcement
     }
 
     public class HudController : MonoBehaviour, IUiState
@@ -21,6 +22,11 @@ namespace Game.UI
         [SerializeField]
         TMPro.TextMeshProUGUI importantDescription;
         GameObject importantPanel;
+        
+        [SerializeField]
+        TMPro.TextMeshProUGUI announcement;
+        GameObject announcePanel;
+        float announceTime;
 
         public bool IsActive { get; private set; }
 
@@ -37,6 +43,9 @@ namespace Game.UI
             importantPanel = importantTitle.transform.parent.gameObject;
             importantPanel.SetActive(false);
 
+            announcePanel = announcement.transform.parent.gameObject;
+            announcePanel.SetActive(false);
+
             Utilities.EventManager.OnShowHudMessageEvent += OnShowHudMessageEventHandler;
         }
         
@@ -44,6 +53,13 @@ namespace Game.UI
         {
             if (!IsActive)
                 return;
+
+            if (announcePanel.activeSelf && announceTime > 0)
+            {
+                announceTime -= Time.unscaledDeltaTime;
+                if (announceTime <= 0)
+                    announcePanel.SetActive(false);
+            }
 
             if (Input.GetButtonDown("MenuButton"))
             {
@@ -113,6 +129,20 @@ namespace Game.UI
                     {
                         importantTitle.text = "";
                         importantDescription.text = "";
+                    }
+                    break;
+
+                case eMessageType.Announcement:
+                    announcePanel.SetActive(args.Show);
+                    if (args.Show)
+                    {
+                        announcement.text = args.Message;
+                        announceTime = args.Time;
+                    }
+                    else
+                    {
+                        announcement.text = "";
+                        announceTime = 0;
                     }
                     break;
             }

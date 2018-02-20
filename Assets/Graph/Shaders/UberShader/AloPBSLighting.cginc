@@ -12,7 +12,7 @@
 #if !defined (ALO_BRDF_PBS) // allow to explicitly override BRDF in custom shader
     // still add safe net for low shader models, otherwise we might end up with shaders failing to compile
     #if SHADER_TARGET < 30
-        #define ALO_BRDF_PBS BRDF3_Unity_PBS
+        #define ALO_BRDF_PBS BRDF1_Alo_PBS
     #elif defined(UNITY_PBS_USE_BRDF3)
         #define ALO_BRDF_PBS BRDF3_Unity_PBS
     #elif defined(UNITY_PBS_USE_BRDF2)
