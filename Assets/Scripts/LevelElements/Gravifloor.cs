@@ -23,7 +23,7 @@ public class Gravifloor : MonoBehaviour {
         gameObject.tag = "Gravifloor";
     }
 
-    public void AddPlayer(CharController player)
+    public void AddPlayer(CharController player, Vector3 newGravity)
     {
         if (currentActive)
             currentActive.StopAllCoroutines();

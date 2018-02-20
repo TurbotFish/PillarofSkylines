@@ -308,7 +308,7 @@ namespace Game.Player.CharacterController
                     if (Vector3.Dot(hit.transform.up, myTransform.up) > 0.7f)
                     {
                         currentGravifloor = hit.collider.GetComponent<Gravifloor>();
-                        currentGravifloor.AddPlayer(myPlayer);
+                        currentGravifloor.AddPlayer(myPlayer, -hit.normal);
                     }
                 }
 				if (hit.collider.CompareTag("SlipperySlope")) {
