@@ -23,11 +23,11 @@ namespace Game.LevelElements
 
         //###########################################################
 
-#if UNITY_EDITOR
+//#if UNITY_EDITOR
         [HideInInspector]
         [SerializeField]
         private int instanceId; //used in editor to detect duplication
-#endif
+//#endif
 
         [HideInInspector]
         [SerializeField]
@@ -37,10 +37,10 @@ namespace Game.LevelElements
         [SerializeField]
         protected bool triggered;
 
-#if UNITY_EDITOR
+//#if UNITY_EDITOR
         [SerializeField]
         private List<Trigger> triggers; //list of Trigger objects
-#endif
+//#endif
 
         [SerializeField]
         private TriggerOperator triggerWith = TriggerOperator.AllOfThem;
@@ -69,7 +69,7 @@ namespace Game.LevelElements
 
         #region editor methods
 
-#if UNITY_EDITOR
+//#if UNITY_EDITOR
 
         public bool ContainsTrigger(Trigger trigger)
         {
@@ -91,7 +91,7 @@ namespace Game.LevelElements
             triggerIds.Remove(trigger.Id);
         }
 
-#endif
+//#endif
 
         #endregion editor methods
 
