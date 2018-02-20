@@ -62,7 +62,16 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoRimLight ();
 		DoWallTint ();
 		DoGroundTint ();
+		DoWorldPosAlbedo ();
 		editor.TextureScaleOffsetProperty (mainTex);
+	}
+
+	void DoWorldPosAlbedo(){
+		EditorGUI.BeginChangeCheck ();
+		bool useWP = EditorGUILayout.Toggle (MakeLabel ("WorldPos Albedo"), IsKeywordEnabled ("_ALBEDO_WORLDPOS"));
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_ALBEDO_WORLDPOS", useWP);
+		}
 	}
 
 	void DoAlbedoVertexMask(){

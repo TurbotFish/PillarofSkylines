@@ -84,6 +84,12 @@
 		float4 _RimColor;
 	#endif 
 
+
+	//GPUI colour variation with worldpos
+	#if defined(_ALBEDO_WORLDPOS)
+		sampler2D _GPUIColorMap;
+	#endif
+
 	#include "AloPBSLighting.cginc"
 	#include "AutoLight.cginc"
 	#include "WindSystem.cginc"
@@ -226,6 +232,16 @@
 		#if defined(_GROUND_TINT)
 			float _groundCoeff = pow(saturate(i.normal.y), _GroundTintPow);
 			albedo = lerp(albedo, albedo * _GroundTintCol, _groundCoeff);
+		#endif
+
+		#if defined(_ALBEDO_WORLDPOS)
+			float2 surfaceUV = float2(((i.worldPos.z + 250)/500), (i.worldPos.y + 250)/500);
+				
+
+			#if defined(_GPUI_WEST)
+				surfaceUV.x = 1 - surfaceUV.x;
+			#endif
+			albedo = tex2D(_GPUIColorMap, surfaceUV).rgb;
 		#endif
 
 		return albedo; 
