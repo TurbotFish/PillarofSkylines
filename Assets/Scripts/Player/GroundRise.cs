@@ -26,6 +26,9 @@ namespace Game.Player.CharacterController
             strength = grRiseData.Strength;
             this.playerUp = playerUp;
 
+            goUp = transform.GetChild(0).gameObject;
+            goFlat = transform.GetChild(1).gameObject;
+
             //print("test : " + Vector3.ProjectOnPlane(velocity, playerUp).magnitude + " > " + grRiseData.VelocityToFlat);
             if (Vector3.ProjectOnPlane(velocity, playerUp).magnitude > grRiseData.VelocityToFlat)
             {
@@ -35,12 +38,16 @@ namespace Game.Player.CharacterController
 
             if (Physics.Raycast(position + (playerUp*.01f), -playerUp, out hit, grRiseData.Range, player.tempPhysicsHandler.collisionMaskNoCloud))
             {
-                if (hit.transform.CompareTag("Untagged"))
+                if (!hit.transform.CompareTag("MovingPlatform") && !hit.transform.CompareTag("GroundRise"))
                 {
-
                     Debug.Log("oui groundrise !");
                     transform.position = hit.point;
                     print("point : " + hit.point);
+                    if (player.CurrentState == ePlayerState.slide)
+                    {
+                        flat = true;
+                        goFlat.tag = "SlipperySlope";
+                    }
                     if (player.CollisionInfo.below && !flat)
                         currPlayer = player;
                     transform.rotation = player.MyTransform.rotation;
@@ -48,20 +55,28 @@ namespace Game.Player.CharacterController
                 {
                     return;
                 }
-            } else
+            }
+            else
             {
                 return;
             }
-            goUp = transform.GetChild(0).gameObject;
-            goFlat = transform.GetChild(1).gameObject;
 
             if (flat)
             {
                 height = grRiseData.FlatLength;
                 goFlat.SetActive(true);
                 transform.localScale = new Vector3(transform.localScale.x, grRiseData.FlatLength, transform.localScale.z);
-                transform.Rotate(90 - grRiseData.FlatAngle, 0, 0);
-                transform.position += Vector3.ProjectOnPlane(velocity, playerUp).normalized;
+                float groundAngle = Vector3.Angle(playerUp, player.CollisionInfo.currentGroundNormal);
+                transform.Rotate(groundAngle, 0, 0);
+                transform.Translate(Vector3.forward);
+                if (groundAngle + (90 - grRiseData.FlatAngle) < 90 && goFlat.CompareTag("SlipperySlope"))
+                {
+                    transform.Rotate(90 - groundAngle, 0, 0);
+                }
+                else
+                {
+                    transform.Rotate(90 - grRiseData.FlatAngle, 0, 0);
+                }
             }
             else
             {
@@ -70,7 +85,6 @@ namespace Game.Player.CharacterController
                 goUp.SetActive(true);
             }
             timeRemaining = grRiseData.Duration;
-
         }
 
         public override void Start()

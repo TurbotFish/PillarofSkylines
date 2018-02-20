@@ -491,8 +491,8 @@ namespace Game.Player.CharacterController
         void CreateGroundRise()
         {
             Debug.Log("Groundrise ?");
-            GroundRise grRise = Instantiate(groundRisePrefab);
-            grRise.Initialize(MyTransform.position, MyTransform.up, this, velocity);
+            //GroundRise grRise = Instantiate(groundRisePrefab);
+            //grRise.Initialize(MyTransform.position, MyTransform.up, this, velocity);
         }
 
         public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool lerped)
