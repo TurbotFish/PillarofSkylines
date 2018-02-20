@@ -37,8 +37,10 @@ namespace Game.Player.CharacterController
             {
                 if (hit.transform.CompareTag("Untagged"))
                 {
+
                     Debug.Log("oui groundrise !");
                     transform.position = hit.point;
+                    print("point : " + hit.point);
                     if (player.CollisionInfo.below && !flat)
                         currPlayer = player;
                     transform.rotation = player.MyTransform.rotation;
