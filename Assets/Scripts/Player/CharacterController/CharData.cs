@@ -576,11 +576,32 @@ namespace Game.Player.CharacterController
             float duration;
             public float Duration { get { return duration; } }
 
+            [SerializeField]
+            float range;
+            public float Range { get { return range; } }
+
+            [SerializeField]
+            float velocityToFlat;
+            public float VelocityToFlat { get { return velocityToFlat; } }
+
+            [SerializeField]
+            float flatLength;
+            public float FlatLength { get { return flatLength; } }
+
+            [SerializeField]
+            float flatAngle;
+            public float FlatAngle { get { return flatAngle; } }
+
+
             public void OnValidate()
             {
                 height = Mathf.Clamp(height, 0, float.MaxValue);
                 strength = Mathf.Clamp(strength, 0, float.MaxValue);
                 duration = Mathf.Clamp(duration, 0, float.MaxValue);
+                range = Mathf.Clamp(range, 0, float.MaxValue);
+                velocityToFlat = Mathf.Clamp(velocityToFlat, 0, float.MaxValue);
+                flatLength = Mathf.Clamp(flatLength, 0, float.MaxValue);
+                flatAngle = Mathf.Clamp(flatAngle, 0, 90);
             }
         }
 

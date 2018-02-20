@@ -245,9 +245,7 @@ namespace Game.Player.CharacterController
 
                 if (Input.GetButtonDown("GroundRise"))
                 {
-                    Debug.Log("Groundrise ?");
-                    GroundRise grRise = Instantiate(groundRisePrefab);
-                    grRise.Initialize(CharData.GroundRise.Height, CharData.GroundRise.Strength, MyTransform.position, MyTransform.up, this);
+                    CreateGroundRise();
                 }
 
                 //
@@ -489,6 +487,13 @@ namespace Game.Player.CharacterController
         //#############################################################################
 
         #region cancer
+
+        void CreateGroundRise()
+        {
+            Debug.Log("Groundrise ?");
+            GroundRise grRise = Instantiate(groundRisePrefab);
+            grRise.Initialize(MyTransform.position, MyTransform.up, this, velocity);
+        }
 
         public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool lerped)
         {
