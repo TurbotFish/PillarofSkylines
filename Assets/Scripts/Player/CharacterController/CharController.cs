@@ -31,6 +31,12 @@ namespace Game.Player.CharacterController
 
         public CharacControllerRecu.CollisionInfo CollisionInfo { get { return tempCollisionInfo; } }
 
+
+        [Space(10)]
+        [Header("Prefabs")]
+        public GroundRise groundRisePrefab;
+
+
         /// <summary>
         /// The animator of the character.
         /// </summary>
@@ -237,6 +243,11 @@ namespace Game.Player.CharacterController
 
                 inputInfo.rightStickButtonDown = Input.GetButtonDown("RightStickClick");
 
+                if (Input.GetButtonDown("GroundRise"))
+                {
+                    CreateGroundRise();
+                }
+
                 //
                 stateMachine.HandleInput();
             }
@@ -301,7 +312,7 @@ namespace Game.Player.CharacterController
                 //Debug.LogFormat("clamped velocity: {0}", newVelocity);
             }
 
-            //
+            
             newVelocity += externalVelocity;
 
             //*******************************************
@@ -477,6 +488,13 @@ namespace Game.Player.CharacterController
 
         #region cancer
 
+        void CreateGroundRise()
+        {
+            Debug.Log("Groundrise ?");
+            GroundRise grRise = Instantiate(groundRisePrefab);
+            grRise.Initialize(MyTransform.position, MyTransform.up, this, velocity);
+        }
+
         public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool lerped)
         {
             if (lerped)
@@ -485,13 +503,17 @@ namespace Game.Player.CharacterController
             }
             else
             {
-                externalVelocity += (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
+                newVelocity = (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
+                print("external velocity added : " + newVelocity);
+                externalVelocity += newVelocity;
             }
         }
 
         public void ImmediateMovement(Vector3 newVelocity, bool worldSpace)
         {
-            tempPhysicsHandler.Move((worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity));
+            newVelocity = tempPhysicsHandler.Move((worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity));
+            print("immediate velocity : " + newVelocity);
+            velocity += newVelocity/Time.deltaTime;
         }
      
         public void SetVelocity(Vector3 newVelocity, bool worldSpace)
