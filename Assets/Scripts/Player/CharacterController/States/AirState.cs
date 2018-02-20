@@ -245,7 +245,7 @@ namespace Game.Player.CharacterController.States
 					//result.Acceleration += Vector3.down * (movementInfo.velocity.y - minJumpStrength) * (0.1f / dt);
 				}
 
-				result.TransitionSpeed = jumpData.TransitionSpeed;
+                result.TransitionSpeed = jumpData.TransitionSpeed;
 			}
             //error
             else {
