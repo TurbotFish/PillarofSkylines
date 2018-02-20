@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Game.GameControl;
 using UnityEngine;
 
 namespace Game.LevelElements
@@ -11,25 +12,22 @@ namespace Game.LevelElements
         public Bool3 retractingAxis;
         public float timeToRetract = 1;
         public bool startOpen;
-        Transform my;
-        Vector3 startScale;
+
+        private Transform my;
+        private Vector3 startScale;
 
         //###########################################################
 
-        protected override void Awake()
-        {
-            base.Awake();
+        #region public methods
 
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-#endif
+        public override void Initialize(IGameControllerBase gameController, bool isCopy)
+        {
+            base.Initialize(gameController, isCopy);
 
             my = transform;
             startScale = my.localScale;
             triggered = false;
+
             if (startOpen)
             {
                 Vector3 targetScale = new Vector3(retractingAxis.x ? 0 : 1,
@@ -39,7 +37,11 @@ namespace Game.LevelElements
             }
         }
 
+        #endregion public methods
+
         //###########################################################
+
+        #region protected methods
 
         protected override void Activate()
         {
@@ -51,7 +53,11 @@ namespace Game.LevelElements
             Toggle(!startOpen);
         }
 
+        #endregion protected methods
+
         //###########################################################
+
+        #region private methods
 
         private void Toggle(bool yo)
         {
@@ -86,6 +92,8 @@ namespace Game.LevelElements
             }
             my.localScale = targetScale;
         }
+
+        #endregion private methods
 
         //###########################################################
     }

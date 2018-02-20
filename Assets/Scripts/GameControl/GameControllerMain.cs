@@ -151,6 +151,14 @@ namespace Game.GameControl
 
                 this.pillarSceneDictionary.Add(pillarId, pillarInfo);
 
+                //initializing world objects in pillar
+                var worldObjects = SearchForScriptsInScene<World.IWorldObjectInitialization>(pillarScene);
+
+                foreach(var worldObject in worldObjects)
+                {
+                    worldObject.Initialize(this, false);
+                }
+
                 //deactivating scene
                 foreach (var go in pillarScene.GetRootGameObjects())
                 {

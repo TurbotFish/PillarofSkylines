@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Game.GameControl;
 using UnityEngine;
 
 namespace Game.LevelElements
@@ -8,26 +9,23 @@ namespace Game.LevelElements
         //###########################################################
 
         [Header("Child Triggerer")]
-        public Vector3 offsetWhenOpen;
-        Vector3 localPositionWhenOpen, localPositionWhenClosed;
+        [SerializeField]
+        private Vector3 offsetWhenOpen;
 
-        public float timeToMove = 1;
-        Transform my;
+        [SerializeField]
+        private float timeToMove = 1;
 
-        float elapsed;
+        private Vector3 localPositionWhenOpen, localPositionWhenClosed;       
+        private Transform my;
+        private float elapsed;
 
         //###########################################################
 
-        protected override void Awake()
-        {
-            base.Awake();
+        #region public methods
 
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-#endif
+        public override void Initialize(IGameControllerBase gameController, bool isCopy)
+        {
+            base.Initialize(gameController, isCopy);
 
             my = transform;
 
@@ -43,7 +41,11 @@ namespace Game.LevelElements
             }
         }
 
+        #endregion public methods
+
         //###########################################################
+
+        #region protected methods
 
         protected override void Activate()
         {
@@ -58,15 +60,19 @@ namespace Game.LevelElements
             Move(localPositionWhenOpen, localPositionWhenClosed);
         }
 
+        #endregion protected methods
+
         //###########################################################
 
-        void Move(Vector3 startPos, Vector3 endPos)
+        #region private methods
+
+        private void Move(Vector3 startPos, Vector3 endPos)
         {
             StopAllCoroutines();
             StartCoroutine(_Move(startPos, endPos));
         }
 
-        IEnumerator _Move(Vector3 startPos, Vector3 endPos)
+        private IEnumerator _Move(Vector3 startPos, Vector3 endPos)
         {
 
             for (elapsed = timeToMove - elapsed; elapsed < timeToMove; elapsed += Time.deltaTime)
@@ -77,6 +83,8 @@ namespace Game.LevelElements
             }
             my.localEulerAngles = endPos;
         }
+
+        #endregion private methods
 
         //###########################################################
     }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Game.GameControl;
+using UnityEngine;
 
 namespace Game.LevelElements
 {
@@ -8,29 +9,34 @@ namespace Game.LevelElements
 
         [Header("Disabler")]
         [SerializeField]
-        bool disabledByDefault;
+        private bool disabledByDefault;
 
-        [SerializeField] GameObject[] objects;
+        [SerializeField]
+        private GameObject[] objects;
 
-        Renderer rend;
+        private Renderer rend;
 
         //###########################################################
 
-        private void Start()
+        #region public methods
+
+        public override void Initialize(IGameControllerBase gameController, bool isCopy)
         {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-#endif
+            base.Initialize(gameController, isCopy);
 
             rend = GetComponent<Renderer>();
+
             foreach (GameObject go in objects)
+            {
                 go.SetActive(!disabledByDefault);
+            }
         }
 
+        #endregion public methods
+
         //###########################################################
+
+        #region protected methods
 
         protected override void Activate()
         {
@@ -43,6 +49,8 @@ namespace Game.LevelElements
             foreach (GameObject go in objects)
                 go.SetActive(!disabledByDefault);
         }
+
+        #endregion protected methods
 
         //###########################################################
     }

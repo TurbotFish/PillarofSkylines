@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Game.GameControl;
 
 namespace Game.LevelElements
 {
@@ -29,66 +30,6 @@ namespace Game.LevelElements
 
         //###########################################################
 
-        #region monobehaviour methods
-
-        private void Start()
-        {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-#endif
-
-            GetComponent<BoxCollider>().isTrigger = true;
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-#endif
-
-            if (other.tag == tagToActivate)
-            {
-                if (Toggle)
-                    TriggerState ^= true;
-                else
-                    TriggerState = true;
-
-                if (changeMaterial)
-                {
-                    Material[] sharedMaterialsCopy = renderer.sharedMaterials;
-                    sharedMaterialsCopy[materialID] = TriggerState ? on : off;
-                    renderer.sharedMaterials = sharedMaterialsCopy;
-                }
-            }
-        }
-
-        private IEnumerator OnTriggerExit(Collider other)
-        {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                yield break;
-            }
-#endif
-
-            if (definitiveActivation || Toggle) yield break;
-            if (other.tag == tagToActivate)
-            {
-                yield return new WaitForSeconds(delayBeforeDeactivation);
-                TriggerState = false;
-            }
-        }
-
-        #endregion monobehaviour methods
-
-        //###########################################################
-
         #region editor methods
 
 #if UNITY_EDITOR
@@ -110,6 +51,53 @@ namespace Game.LevelElements
 #endif
 
         #endregion editor methods
+
+        //###########################################################
+
+        #region monobehaviour methods
+
+        private void OnTriggerEnter(Collider other)
+        {
+            if (other.tag == tagToActivate)
+            {
+                if (Toggle)
+                    TriggerState ^= true;
+                else
+                    TriggerState = true;
+
+                if (changeMaterial)
+                {
+                    Material[] sharedMaterialsCopy = renderer.sharedMaterials;
+                    sharedMaterialsCopy[materialID] = TriggerState ? on : off;
+                    renderer.sharedMaterials = sharedMaterialsCopy;
+                }
+            }
+        }
+
+        private IEnumerator OnTriggerExit(Collider other)
+        {
+            if (definitiveActivation || Toggle) yield break;
+            if (other.tag == tagToActivate)
+            {
+                yield return new WaitForSeconds(delayBeforeDeactivation);
+                TriggerState = false;
+            }
+        }
+
+        #endregion monobehaviour methods
+
+        //###########################################################
+
+        #region public methods
+
+        public override void Initialize(IGameControllerBase gameController, bool isCopy)
+        {
+            base.Initialize(gameController, isCopy);
+
+            GetComponent<BoxCollider>().isTrigger = true;
+        }
+
+        #endregion public methods
 
         //###########################################################
     }

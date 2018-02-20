@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Game.GameControl;
+using UnityEngine;
 
 namespace Game.LevelElements
 {
@@ -8,32 +9,37 @@ namespace Game.LevelElements
 
         [Header("Material")]
         [SerializeField]
-        Material on;
-        [SerializeField] Material off;
+        private Material on;
+
+        [SerializeField]
+        private Material off;
 
         [Header("Particles")]
         [SerializeField]
-        ParticleSystem onActive;
-        [SerializeField] ParticleSystem onUnactive;
+        private ParticleSystem onActive;
 
-        Renderer rend;
+        [SerializeField]
+        private ParticleSystem onUnactive;
+
+        private Renderer rend;
 
         //###########################################################
 
-        private void Start()
+        #region public methods
+
+        public override void Initialize(IGameControllerBase gameController, bool isCopy)
         {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-#endif
+            base.Initialize(gameController, isCopy);
 
             rend = GetComponent<Renderer>();
             rend.sharedMaterial = off;
         }
 
+        #endregion public methods
+
         //###########################################################
+
+        #region protected methods
 
         protected override void Activate()
         {
@@ -48,6 +54,8 @@ namespace Game.LevelElements
             if (onUnactive)
                 onUnactive.Play();
         }
+
+        #endregion protected methods
 
         //###########################################################
     }

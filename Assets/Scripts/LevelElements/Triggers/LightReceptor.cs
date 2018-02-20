@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Game.GameControl;
+using UnityEngine;
 
 namespace Game.LevelElements
 {
@@ -39,35 +40,35 @@ namespace Game.LevelElements
 
         //###########################################################
 
-        #region monobehaviour methods
+        #region public methods
 
-        private void Start()
+        public override void Initialize(IGameControllerBase gameController, bool isCopy)
         {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-#endif
+            base.Initialize(gameController, isCopy);
 
             rend = GetComponent<Renderer>();
             TriggerState = false;
             rend.sharedMaterial = off;
         }
 
-        #endregion monobehaviour methods
-
-        //###########################################################
-
-        #region public methods
-
+        /// <summary>
+        /// Activates or deactivates the LightReceptor.
+        /// </summary>
+        /// <param name="newState"></param>
+        /// <param name="inverse"></param>
         public void SetToggle(bool newState, bool inverse)
         {
+            Debug.LogFormat("LightReceptor: SetToggle: newState={0}", newState);
             TriggerState = newState;
+
             if (TriggerState == inverse)
+            {
                 rend.sharedMaterial = on;
+            }
             else
+            {
                 rend.sharedMaterial = off;
+            }
         }
 
         #endregion public methods

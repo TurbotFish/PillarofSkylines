@@ -24,13 +24,13 @@ namespace Game.LevelElements
         //###########################################################
 
 #if UNITY_EDITOR
+        [HideInInspector]
         [SerializeField]
-        //[HideInInspector]
-        private int instanceId = 0; //used in editor to detect duplication
+        private int instanceId; //used in editor to detect duplication
 #endif
 
+        [HideInInspector]
         [SerializeField]
-        //[HideInInspector]
         private string id;
 
         [Header("Triggerable Object")]
@@ -48,8 +48,8 @@ namespace Game.LevelElements
         [SerializeField]
         private bool definitiveActivation;
 
+        [HideInInspector]
         [SerializeField]
-        //[HideInInspector]
         private List<string> triggerIds = new List<string>(); //list with the Id's of the Trigger objects
 
         private PersistentTriggerable persistentTriggerable;
@@ -99,18 +99,38 @@ namespace Game.LevelElements
 
         #region monobehaviour methods
 
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            triggerIds.Clear();
+            triggers.RemoveAll(item => item == null);
+
+            foreach(var trigger in triggers)
+            {
+                triggerIds.Add(trigger.Id);
+            }
+        }
+#endif
+
+        protected virtual void Awake()
+        {
+
+        }
+
         /// <summary>
         /// EDITOR: sets or resets the id of the TriggerableObject.
         /// </summary>
-        protected virtual void Awake()
+        private void Update()
         {
 #if UNITY_EDITOR
+
             if (Application.isPlaying)
             {
                 return;
             }
             else if (instanceId == 0) //first time
             {
+                Debug.Log("triggerable: awake: instanceId == 0!");
                 instanceId = GetInstanceID();
 
                 if (string.IsNullOrEmpty(id))
@@ -122,6 +142,7 @@ namespace Game.LevelElements
                 if (triggerIds.Count != triggers.Count)
                 {
                     triggerIds.Clear();
+                    triggers.RemoveAll(item => item == null);
 
                     foreach (var trigger in triggers)
                     {
@@ -135,9 +156,13 @@ namespace Game.LevelElements
                         }
                     }
                 }
+
+                //"save" changes
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
             }
-            else if (instanceId != GetInstanceID() && GetInstanceID() < 0) //the script has been duplicated
+            else if (instanceId != GetInstanceID() /*&& GetInstanceID() < 0*/) //the script has been duplicated
             {
+                Debug.Log("triggerable: awake: instanceId changed!");
                 instanceId = GetInstanceID();
 
                 id = Guid.NewGuid().ToString();
@@ -145,8 +170,12 @@ namespace Game.LevelElements
                 //resetting things
                 triggers.Clear();
                 triggerIds.Clear();
+
+                //"save" changes
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
             }
-#endif
+
+#endif //UNITY_EDITOR
         }
 
         protected virtual void OnDestroy()
@@ -190,7 +219,7 @@ namespace Game.LevelElements
         /// </summary>
         /// <param name="worldController"></param>
         /// <param name="isCopy"></param>
-        public void Initialize(GameControl.IGameControllerBase gameController, bool isCopy)
+        public virtual void Initialize(GameControl.IGameControllerBase gameController, bool isCopy)
         {
             //Debug.Log("triggerable " + gameObject.activeInHierarchy);
 
@@ -210,8 +239,6 @@ namespace Game.LevelElements
             {
                 triggered = persistentTriggerable.Triggered;
             }
-
-            StartCoroutine(OnTriggeredChangedCR());
 
             //
             Game.Utilities.EventManager.TriggerUpdatedEvent += OnTriggerUpdated;
@@ -298,13 +325,13 @@ namespace Game.LevelElements
             }
         }
 
-        private IEnumerator OnTriggeredChangedCR()
-        {
-            yield return null;
-            yield return null;
+        //private IEnumerator OnTriggeredChangedCR()
+        //{
+        //    yield return null;
+        //    yield return null;
 
-            OnTriggeredChanged();
-        }
+        //    OnTriggeredChanged();
+        //}
 
         #endregion private methods
 

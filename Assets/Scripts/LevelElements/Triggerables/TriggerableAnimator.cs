@@ -7,17 +7,23 @@ namespace Game.LevelElements
     {
         //###########################################################
 
-        [SerializeField] Animator animator;
+        [SerializeField]
+        private Animator animator;
 
-        [SerializeField] AnimatorComponent[] animTriggers;
+        [SerializeField]
+        private AnimatorComponent[] animTriggers;
 
         //###########################################################
+
+#if UNITY_EDITOR
 
         private void OnValidate()
         {
             if (!animator && GetComponent<Animator>())
                 animator = GetComponent<Animator>();
         }
+
+#endif
 
         //###########################################################
 

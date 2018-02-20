@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Game.GameControl;
 using UnityEngine;
 
 namespace Game.LevelElements
@@ -10,30 +11,24 @@ namespace Game.LevelElements
 
         [Header("Door")]
         public Vector3 offsetWhenOpen;
+
         Vector3 localPositionWhenOpen, localPositionWhenClosed;
 
         public float timeToMove = 1;
+
         Transform my;
-
         MovingPlatform platform;
-
         float elapsed;
 
         //###########################################################
 
-        protected override void Awake()
-        {
-            base.Awake();
+        #region public methods
 
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-#endif
+        public override void Initialize(IGameControllerBase gameController, bool isCopy)
+        {
+            base.Initialize(gameController, isCopy);
 
             my = transform;
-
             platform = GetComponent<MovingPlatform>();
 
             if (triggered)
@@ -48,19 +43,33 @@ namespace Game.LevelElements
             }
         }
 
+        #endregion public methods
+
         //###########################################################
+
+        #region protected methods
 
         protected override void Activate()
         {
+            Debug.LogFormat("Door \"{0}\": Activate called!", name);
+
             localPositionWhenOpen = localPositionWhenClosed + offsetWhenOpen;
             Move(localPositionWhenClosed, localPositionWhenOpen);
         }
 
         protected override void Deactivate()
         {
+            Debug.LogFormat("Door \"{0}\": Deactivate called!", name);
+
             localPositionWhenClosed = localPositionWhenOpen - offsetWhenOpen;
             Move(localPositionWhenOpen, localPositionWhenClosed);
         }
+
+        #endregion protected methods
+
+        //###########################################################
+
+        #region private methods
 
         private void Move(Vector3 startPos, Vector3 endPos)
         {
@@ -79,8 +88,11 @@ namespace Game.LevelElements
                 platform.Move(movement);
                 yield return null;
             }
+
             my.localPosition = endPos;
         }
+
+        #endregion private methods
 
         //###########################################################
     }

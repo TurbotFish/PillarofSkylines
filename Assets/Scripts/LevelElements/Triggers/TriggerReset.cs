@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Game.GameControl;
 
 namespace Game.LevelElements
 {
@@ -9,47 +10,30 @@ namespace Game.LevelElements
         //###########################################################
 
         [SerializeField]
-        string tagToActivate = "Player";
+        private string tagToActivate = "Player";
         [SerializeField]
-        bool definitiveActivation;
+        private bool definitiveActivation;
         [SerializeField]
-        float delayBeforeDeactivation;
+        private float delayBeforeDeactivation;
 
         [SerializeField]
-        bool changeMaterial;
+        private bool changeMaterial;
 
         [ConditionalHide("changeMaterial"), SerializeField]
-        int materialID = 0;
+        private int materialID = 0;
 
         [ConditionalHide("changeMaterial"), SerializeField]
-        Material on, off;
+        private Material on, off;
 
         [ConditionalHide("changeMaterial"), SerializeField]
-        new Renderer renderer;
+        private new Renderer renderer;
 
         //###########################################################
 
-        private void Start()
-        {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-#endif
-
-            GetComponent<BoxCollider>().isTrigger = true;
-        }
+        #region monobehaviour methods
 
         private void OnTriggerEnter(Collider other)
         {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-#endif
-
             if (other.tag == tagToActivate)
             {
                 /*if (Toggle)
@@ -65,6 +49,21 @@ namespace Game.LevelElements
                 }
             }
         }
+
+        #endregion monobehaviour methods
+
+        //###########################################################
+
+        #region public methods
+
+        public override void Initialize(IGameControllerBase gameController, bool isCopy)
+        {
+            base.Initialize(gameController, isCopy);
+
+            GetComponent<BoxCollider>().isTrigger = true;
+        }
+
+        #endregion public methods
 
         //###########################################################
 

@@ -57,16 +57,23 @@ namespace Game.LevelElements
             get { return _triggerState; }
             protected set
             {
-                _triggerState = value;
-
-                if (!isCopy)
+                if (_triggerState == value) //if the value does not change we don't do anything
                 {
-                    if (persistentTrigger != null)
-                    {
-                        persistentTrigger.TriggerState = _triggerState;
-                    }
+                    return;
+                }
+                else
+                {
+                    _triggerState = value;
 
-                    EventManager.SendTriggerUpdatedEvent(this, new EventManager.TriggerUpdatedEventArgs(this));
+                    if (!isCopy)
+                    {
+                        if (persistentTrigger != null)
+                        {
+                            persistentTrigger.TriggerState = _triggerState;
+                        }
+
+                        EventManager.SendTriggerUpdatedEvent(this, new EventManager.TriggerUpdatedEventArgs(this));
+                    }
                 }
             }
         }
@@ -146,6 +153,9 @@ namespace Game.LevelElements
                 {
                     id = Guid.NewGuid().ToString();
                 }
+
+                //"save" changes
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
             }
             else if (instanceId != GetInstanceID() && GetInstanceID() < 0) //the script has been duplicated
             {
@@ -156,8 +166,12 @@ namespace Game.LevelElements
                 //resetting things
                 targets.Clear();
                 targetsOld.Clear();
+
+                //"save" changes
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
             }
-#endif
+
+#endif //UNITY_EDITOR
         }
 
         protected virtual void OnDestroy()

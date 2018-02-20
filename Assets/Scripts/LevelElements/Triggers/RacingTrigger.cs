@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Game.GameControl;
 
 namespace Game.LevelElements
 {
@@ -8,15 +9,22 @@ namespace Game.LevelElements
     {
         //###########################################################
 
-        [SerializeField] Transform racer;
-        [SerializeField] Transform target;
+        [SerializeField]
+        Transform racer;
+
+        [SerializeField]
+        Transform target;
 
         [Space]
 
         [SerializeField]
         float timeToReachTarget = 5;
-        [SerializeField] float timeActive = 1;
-        [SerializeField] BezierSpline spline;
+
+        [SerializeField]
+        float timeActive = 1;
+
+        [SerializeField]
+        BezierSpline spline;
 
         bool racing;
 
@@ -28,8 +36,15 @@ namespace Game.LevelElements
 
         private void OnValidate()
         {
-            if (!racer) racer = transform;
-            if (!target && Targets[0]) target = Targets[0].transform;
+            if (!racer)
+            {
+                racer = transform;
+            }
+
+            if (!target && Targets[0])
+            {
+                target = Targets[0].transform;
+            }
         }
 
 #endif
@@ -40,32 +55,28 @@ namespace Game.LevelElements
 
         #region monobehaviour methods
 
-        private void Start()
+        private void OnTriggerEnter(Collider other)
         {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
+            if (target && !racing)
             {
-                return;
+                StartCoroutine(Race());
             }
-#endif
+        }
+
+        #endregion monobehaviour methods
+
+        //###########################################################
+
+        #region public methods
+
+        public override void Initialize(IGameControllerBase gameController, bool isCopy)
+        {
+            base.Initialize(gameController, isCopy);
 
             GetComponent<BoxCollider>().isTrigger = true;
         }
 
-        private void OnTriggerEnter(Collider other)
-        {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-#endif
-
-            if (target && !racing)
-                StartCoroutine(Race());
-        }
-
-        #endregion monobehaviour methods
+        #endregion public methods
 
         //###########################################################
 
