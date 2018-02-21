@@ -15,7 +15,7 @@ public class GPUIDisplayManager : MonoBehaviour {
 	int boundaryLow;
 	int instancesPerList;
 
-	List<Matrix4x4>[] matrices1023 = new List<Matrix4x4>[300];
+	List<Matrix4x4>[] matrices1023 = new List<Matrix4x4>[150];
 
 	bool updatedThisFrame;
 
@@ -25,17 +25,16 @@ public class GPUIDisplayManager : MonoBehaviour {
 	public UnityEngine.Rendering.ShadowCastingMode shadowMode;
 	public Transform player;
 
-	public Gradient colourVariations;
+	[Header("Colour Variation Maps")]
+	public Texture2D eastMap;
+	public Texture2D westMap;
 
 	string east = "EastPlane";
 	string west = "WestPlane";
 	int eastLayer;
 	int westLayer;
 	int currentLayer;
-
-	//Testing colour variations
-	MaterialPropertyBlock properties;
-	Vector4[] customColors = new Vector4[1023];
+	Texture2D colorVariationMap;
 
 	void Awake(){
 		displayManager = this;
@@ -46,15 +45,6 @@ public class GPUIDisplayManager : MonoBehaviour {
 
 		eastLayer = LayerMask.NameToLayer (east);
 		westLayer = LayerMask.NameToLayer (west);
-
-		///doesn't work great
-		//colour variation test
-		properties = new MaterialPropertyBlock();
-		for (int i = 0; i < customColors.Length; i++) {
-			customColors [i] = colourVariations.Evaluate ((float)i / (float)customColors.Length);
-		}
-		properties.SetVectorArray ("_Color", customColors);
-		///:sadface:
 
 	}
 
@@ -87,13 +77,7 @@ public class GPUIDisplayManager : MonoBehaviour {
 
 		for (int i = 0; i < numberOfCalls; i++) {
 
-			//test colour variation
-
-			Graphics.DrawMeshInstanced (meshToDraw, 0, materialToDraw, matrices1023[i], properties, shadowMode, false, currentLayer, null);
-
-
-
-
+			Graphics.DrawMeshInstanced (meshToDraw, 0, materialToDraw, matrices1023[i], null, shadowMode, false, currentLayer, null);
 		}
 	}
 
@@ -117,7 +101,17 @@ public class GPUIDisplayManager : MonoBehaviour {
 	}
 
 	void SetGPUILayer(){
-		currentLayer = player.position.x > 0 ? eastLayer : westLayer;
+		//TO DO: optimise this to happen when it's changed
+		if (player.position.x > 0) {
+			currentLayer = eastLayer;
+			colorVariationMap = eastMap;
+			materialToDraw.DisableKeyword ("_GPUI_WEST");
+		} else {
+			currentLayer = westLayer;
+			colorVariationMap = westMap;
+			materialToDraw.EnableKeyword ("_GPUI_WEST");
+		}
+		Shader.SetGlobalTexture ("_GPUIColorMap", colorVariationMap);
 	}
 
 }
