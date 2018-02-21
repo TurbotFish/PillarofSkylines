@@ -21,20 +21,21 @@ namespace Game.UI.AbilityMenu
 
         [SerializeField]
         List<SlotView> abilityViews = new List<SlotView>();
+        
+        [Space, SerializeField]
+        TMPro.TextMeshProUGUI helpMessage;
 
-        //[SerializeField]
-        //GroupView orangeGroup;
+        [Space, SerializeField]
+        TMPro.TextMeshProUGUI descriptionHelpMessage;
 
-        //[SerializeField]
-        //GroupView yellowGroup;
+        public Cursor cursor;
 
-        //[SerializeField]
-        //GroupView blueGroup;
+        Player.PlayerModel playerModel;
 
-        //[SerializeField]
-        //GroupView greenGroup;
+        public bool IsActive { get; private set; }
 
-        [Header("")]
+
+        [Header("Colours")]
         [SerializeField]
         Color lockedAbilityColour;
         public Color LockedAbilityColour { get { return lockedAbilityColour; } }
@@ -47,17 +48,10 @@ namespace Game.UI.AbilityMenu
         Color activeAbilityColour;
         public Color ActiveAbilityColour { get { return activeAbilityColour; } }
 
-        [Space, SerializeField]
-        TMPro.TextMeshProUGUI helpMessage;
+        [SerializeField]
+        Color pillarLockedAbilityColour;
+        public Color PillarLockedAbilityColour { get { return pillarLockedAbilityColour; } }
 
-        [Space, SerializeField]
-        TMPro.TextMeshProUGUI descriptionHelpMessage;
-
-        public Cursor cursor;
-
-        Player.PlayerModel playerModel;
-
-        public bool IsActive { get; private set; }
 
         //List<SlotView> slotList = new List<SlotView>();
         int selectedSlotIndex = -1;

@@ -71,8 +71,11 @@ namespace Game.UI.AbilityMenu
                 case Player.eAbilityState.locked:
                     backgroundImage.color = menuController.LockedAbilityColour;
                     break;
+                case Player.eAbilityState.pillarLocked:
+                    backgroundImage.color = menuController.PillarLockedAbilityColour;
+                    break;
                 default:
-                    Debug.LogError("error!");
+                    Debug.LogError("No colour defined for this ability state: " + abilityState);
                     break;
             }
         }

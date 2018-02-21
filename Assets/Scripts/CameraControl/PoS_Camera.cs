@@ -500,17 +500,25 @@ public class PoS_Camera : MonoBehaviour {
 		}
 	}
 
+    [Header("WallRun")]
+    [SerializeField] float facingWallBuffer = 0.5f;
+    [SerializeField] float wallRunDamp = 0.5f;
+    
     void WallRunCamera() {
         Vector3 newYaw = Vector3.Cross(target.parent.up, controller.collisions.lastWallNormal);
-        
+
         if (Vector3.Dot(newYaw, target.parent.forward) < 0)
             newYaw *= -1;
+        
+        float dot = Vector3.Dot(newYaw, playerVelocity.normalized);
+        if (dot < facingWallBuffer)
+            dot = 0;
 
-        newYaw = Vector3.Lerp(my.forward, newYaw, Vector3.Dot(newYaw, playerVelocity.normalized)); // test
+        newYaw = Vector3.Lerp(my.forward, newYaw, dot);
 
         resetType = eResetType.WallRun;
         AllowAutoReset(true, true);
-        SetTargetRotation(defaultPitch, GetRotationTowardsDirection(newYaw).y, resetDamp);
+        SetTargetRotation(defaultPitch, GetRotationTowardsDirection(newYaw).y, wallRunDamp);
         state = eCameraState.WallRun;
     }
 
@@ -562,7 +570,7 @@ public class PoS_Camera : MonoBehaviour {
 
     Vector2 GetRotationTowardsPoint(Vector3 point) {
 		Vector3 direction = point - camPosition;
-		float distance = direction.magnitude;
+		float distance = direction.magnitude; // TODO: check if that's actually necessary?
 		direction /= distance;
 		return GetRotationTowardsDirection(direction);
 	}

@@ -101,6 +101,9 @@ namespace Game.UI.AbilityMenu
                 case Player.eAbilityState.available:
                     backgroundImage.color = menuController.AvailableAbilityColour;
                     break;
+                case Player.eAbilityState.pillarLocked:
+                    backgroundImage.color = menuController.PillarLockedAbilityColour;
+                    break;
                 default:
                     Debug.LogError("ERROR!");
                     break;

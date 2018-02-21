@@ -525,6 +525,9 @@ namespace Game.Player
             else if (unlockedAbilityGroups.Contains(ability.Group) && Favours >= ability.ActivationPrice)
             {
                 return eAbilityState.available;
+            } else if (!CheckAbilityUnlocked(abilityType))
+            {
+                return eAbilityState.pillarLocked;
             }
             else
             {
