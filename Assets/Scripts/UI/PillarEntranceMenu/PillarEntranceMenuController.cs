@@ -63,7 +63,7 @@ namespace Game.UI.PillarEntranceMenu
 
         void IUiState.Initialize(IGameControllerBase gameController)
         {
-            this.playerModel = gameController.PlayerModel;
+            playerModel = gameController.PlayerModel;
         }
 
         void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
@@ -86,7 +86,7 @@ namespace Game.UI.PillarEntranceMenu
             int cost = playerModel.GetPillarEntryPrice(pillarId);
             costPanelView.Initialize(cost);
 
-            if (playerModel.Favours < cost)
+            if (playerModel.GetCurrencyAmount(Model.eCurrencyType.PillarKey) < cost)
             {
                 warningMessage.SetActive(true);
             }

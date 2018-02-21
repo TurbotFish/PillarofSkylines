@@ -1,30 +1,38 @@
 ﻿using System.Collections;
+using Game.Model;
 using Game.World.ChunkSystem;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Game.World.Interaction
 {
-    public class Favour : MonoBehaviour, IWorldObjectInitialization
+    public class CurrencyPickUp : MonoBehaviour, IWorldObjectInitialization
     {
         //##################################################################
 
         #region variables
 
+        [Header("Pick Up")]
+        [FormerlySerializedAs("favourId")]
         [SerializeField]
-        string favourId = "replace this!";
+        string pickUpId = "replace this!";
 
-        [Header("")]
+        [SerializeField]
+        private eCurrencyType currencyType;
+
         bool favourPickedUp = false;
         WorldController worldController;
         BoxCollider myCollider;
-        bool isCopy;
+        bool isCopy;      
+
         [HideInInspector]
         public Vector3 FinderTarget;
 
         // FSM: FaveurManager
+        [Header("FaveurManager")]
         [SerializeField] Transform faveur;
         float duration = 1.9f;
-        
+
         // FSM: Faveur_activation
         float animSpeed = 0.0005f;
         float startDelay = 4;
@@ -32,10 +40,11 @@ namespace Game.World.Interaction
         float disparitionSpeed = .03f;
 
         [Header("Visuals")]
-        [SerializeField] Animator animator;
+        [SerializeField]
+        Animator animator;
         [SerializeField] Renderer recept;
         [SerializeField] GameObject favSparkUp;
-        
+
         // FSM: ParticleManager
         float delay2 = 3f;
         float delay3 = 0.2f;
@@ -59,14 +68,29 @@ namespace Game.World.Interaction
 
         #region properties
 
-        public string FavourId { get { return favourId; } }
+        public string PickUpId { get { return pickUpId; } }
         public Transform MyTransform { get; private set; }
+        public eCurrencyType CurrencyType { get { return currencyType; } }
 
         #endregion properties
 
         //##################################################################
 
-        #region initialization
+        #region monobehaviour methods
+
+        private void OnDestroy()
+        {
+            if (worldController != null)
+            {
+                worldController.UnregisterFavour(this);
+            }
+        }
+
+        #endregion monobehaviour methods
+
+        //##################################################################
+
+        #region public methods
 
         void IWorldObjectInitialization.Initialize(GameControl.IGameControllerBase gameController, bool isCopy)
         {
@@ -87,7 +111,7 @@ namespace Game.World.Interaction
             myCollider = GetComponent<BoxCollider>();
             this.isCopy = isCopy;
 
-            if (worldController.GameController.PlayerModel.CheckIsFavourPickedUp(favourId))
+            if (worldController.GameController.PlayerModel.CheckIfPickUpCollected(pickUpId))
             {
                 PickUp();
 
@@ -100,23 +124,20 @@ namespace Game.World.Interaction
             }
         }
 
-        void OnDestroy()
-        {
-            if (worldController != null)
-            {
-                worldController.UnregisterFavour(this);
-            }
-        }
-
-        #endregion initialization
+        #endregion public methods
 
         //##################################################################
 
-        #region event handling
+        #region private methods
 
-        void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
+        /// <summary>
+        /// Handles "FavourPickedUp" events.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
         {
-            if (args.FavourId == favourId && !favourPickedUp)
+            if (args.FavourId == pickUpId && !favourPickedUp)
             {
                 PickUp();
 
@@ -131,14 +152,10 @@ namespace Game.World.Interaction
             }
         }
 
-        #endregion event handling
-
-        //##################################################################
-
         /// <summary>
         /// Sets the state of the Favour object to picked up.
         /// </summary>
-        void PickUp()
+        private void PickUp()
         {
             favourPickedUp = true;
 
@@ -148,6 +165,8 @@ namespace Game.World.Interaction
                 myCollider.enabled = false;
             }
         }
+
+        #endregion private methods
 
         //##################################################################
 
