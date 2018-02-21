@@ -14,11 +14,11 @@ namespace Game.LevelElements
     {
         //###########################################################
 
-//#if UNITY_EDITOR
+#if UNITY_EDITOR
         [SerializeField]
         [HideInInspector]
         private int instanceId = 0; //used in editor to detect duplication
-//#endif
+#endif
 
         [SerializeField]
         [HideInInspector]
@@ -32,23 +32,25 @@ namespace Game.LevelElements
         [SerializeField]
         private bool toggle; //if true the triggerable object will disregard its own logic an be turned on or off
 
-//#if UNITY_EDITOR
+#if UNITY_EDITOR
         //DO NOT RENAME
         [SerializeField]
         private List<TriggerableObject> targets; //list of triggerable objects
-//#endif
+#endif
 
-//#if UNITY_EDITOR
+#if UNITY_EDITOR
         [SerializeField]
         [HideInInspector]
         private List<TriggerableObject> targetsOld = new List<TriggerableObject>();
-//#endif
+#endif
 
         private PlayerModel model;
         private PersistentTrigger persistentTrigger;
         private bool isCopy;
 
         //###########################################################
+
+        #region properties
 
         public string Id { get { return id; } }
 
@@ -80,15 +82,17 @@ namespace Game.LevelElements
 
         public bool Toggle { get { return toggle; } }
 
+#if UNITY_EDITOR
         public List<TriggerableObject> Targets { get { return new List<TriggerableObject>(targets); } }
+#endif
 
-
+        #endregion properties
 
         //###########################################################
 
         #region editor methods
 
-//#if UNITY_EDITOR
+#if UNITY_EDITOR
 
         private void OnValidate()
         {
@@ -126,7 +130,7 @@ namespace Game.LevelElements
             }
         }
 
-//#endif
+#endif
 
         #endregion editor methods
 

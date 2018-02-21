@@ -35,7 +35,7 @@ namespace Game.UI.AbilityMenu
             this.playerModel = playerModel;
             this.menuController = menuController;
 
-            favourText.text = playerModel.Favours.ToString();
+            favourText.text = playerModel.GetCurrencyAmount(Model.eCurrencyType.Favour).ToString();
 
             nameForDescription.text = abilityNameText.text = string.Empty;
             abilityDescriptionText.text = string.Empty;
@@ -43,7 +43,7 @@ namespace Game.UI.AbilityMenu
 
             descriptionPanel = abilityDescriptionText.transform.parent.GetComponent<DescriptionPanel>();
 
-            Utilities.EventManager.FavourAmountChangedEvent += OnFavourAmountChangedEventHandler;
+            Utilities.EventManager.CurrencyAmountChangedEvent += OnCurrencyAmountChangedEventHandler;
             Utilities.EventManager.AbilityStateChangedEvent += OnAbilityStateChangedEventHandler;
         }
 
@@ -73,9 +73,9 @@ namespace Game.UI.AbilityMenu
 
         //##################################################################
 
-        void OnFavourAmountChangedEventHandler(object sender, Utilities.EventManager.FavourAmountChangedEventArgs args)
+        void OnCurrencyAmountChangedEventHandler(object sender, Utilities.EventManager.CurrencyAmountChangedEventArgs args)
         {
-            favourText.text = args.FavourAmount.ToString();
+            favourText.text = args.CurrencyAmount.ToString();
         }
 
         void OnAbilityStateChangedEventHandler(object sender, Utilities.EventManager.AbilityStateChangedEventArgs args)

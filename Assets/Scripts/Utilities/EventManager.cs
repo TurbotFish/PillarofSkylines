@@ -128,28 +128,30 @@ namespace Game.Utilities
 
         //***********************************************************
 
-        #region favour amount changed event
+        #region currency amount changed event
 
-        public class FavourAmountChangedEventArgs : EventArgs
+        public class CurrencyAmountChangedEventArgs : EventArgs
         {
-            public int FavourAmount { get; private set; }
+            public Model.eCurrencyType CurrencyType { get; private set; }
+            public int CurrencyAmount { get; private set; }
 
-            public FavourAmountChangedEventArgs(int favourAmount)
+            public CurrencyAmountChangedEventArgs(Model.eCurrencyType currencyType, int currencyAmount)
             {
-                this.FavourAmount = favourAmount;
+                CurrencyType = currencyType;
+                CurrencyAmount = currencyAmount;
             }
         }
 
-        public delegate void FavourAmountChangedEventHandler(object sender, FavourAmountChangedEventArgs args);
+        public delegate void CurrencyAmountChangedEventHandler(object sender, CurrencyAmountChangedEventArgs args);
 
-        public static event FavourAmountChangedEventHandler FavourAmountChangedEvent;
+        public static event CurrencyAmountChangedEventHandler CurrencyAmountChangedEvent;
 
-        public static void SendFavourAmountChangedEvent(object sender, FavourAmountChangedEventArgs args)
+        public static void SendCurrencyAmountChangedEvent(object sender, CurrencyAmountChangedEventArgs args)
         {
-            FavourAmountChangedEvent?.Invoke(sender, args);
+            CurrencyAmountChangedEvent?.Invoke(sender, args);
         }
 
-        #endregion favour amount changed event
+        #endregion currency amount changed event
 
         //***********************************************************
 
@@ -382,7 +384,7 @@ namespace Game.Utilities
 
         //***********************************************************
 
-        #region favour picked up event
+        #region pick-up collected event
 
         public class FavourPickedUpEventArgs : EventArgs
         {
@@ -403,7 +405,7 @@ namespace Game.Utilities
             FavourPickedUpEvent?.Invoke(sender, args);
         }
 
-        #endregion favour picked up event
+        #endregion pick-up collected event
 
         //***********************************************************
 

@@ -1,5 +1,8 @@
 ﻿using Game.LevelElements;
+using Game.Model;
 using Game.World;
+using Game.World.Interaction;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +15,8 @@ namespace Game.Player
     /// </summary>
     public class PlayerModel : MonoBehaviour
     {
+        //###########################################################
+
         //ability data
         [SerializeField]
         AbilitySystem.AbilityData abilityData;
@@ -24,19 +29,20 @@ namespace Game.Player
         //
         public bool hasNeedle;
 
-        //
-        public int Favours { get; private set; }
+        //pick-ups
+        List<string> collectedPickUps = new List<string>(); //a list with the id's of the pick-ups that have been collected
+
+        //currencies
+        private Dictionary<eCurrencyType, int> currencies;
 
         //ability variables
         List<eAbilityGroup> unlockedAbilityGroups = new List<eAbilityGroup>();
         List<eAbilityType> activatedAbilities = new List<eAbilityType>();
         List<eAbilityType> flaggedAbilities = new List<eAbilityType>();
 
-        //
+        //pillars
         List<ePillarId> destoyedPillars = new List<ePillarId>();
         List<ePillarId> unlockedPillars = new List<ePillarId>();
-
-        List<string> pickedUpFavours = new List<string>();
 
         //level element data
         List<PersistentTrigger> persistentTriggers = new List<PersistentTrigger>();
@@ -46,7 +52,14 @@ namespace Game.Player
 
         public void InitializePlayerModel()
         {
-            pillarData = Resources.Load<World.PillarData>("ScriptableObjects/PillarData");
+            pillarData = Resources.Load<PillarData>("ScriptableObjects/PillarData");
+
+            //initializing currency dictionary
+            currencies = new Dictionary<eCurrencyType, int>();
+            foreach (var value in Enum.GetValues(typeof(eCurrencyType)).Cast<eCurrencyType>())
+            {
+                currencies.Add(value, 0);
+            }
 
             UnlockAbilityGroup(eAbilityGroup.Default);
         }
@@ -59,7 +72,7 @@ namespace Game.Player
         {
             if (Input.GetKeyUp(KeyCode.F2))
             {
-                ChangeFavourAmount(1);
+                ChangeCurrencyAmount(eCurrencyType.Favour, 1);
             }
             else if (Input.GetKeyUp(KeyCode.F5))
             {
@@ -211,9 +224,9 @@ namespace Game.Player
             {
                 return true;
             }
-            else if (CheckAbilityGroupUnlocked(ability.Group) && Favours >= ability.ActivationPrice)
+            else if (CheckAbilityGroupUnlocked(ability.Group) && GetCurrencyAmount(eCurrencyType.Favour) >= ability.ActivationPrice)
             {
-                ChangeFavourAmount(-ability.ActivationPrice);
+                ChangeCurrencyAmount(eCurrencyType.Favour, -ability.ActivationPrice);
                 activatedAbilities.Add(abilityType);
 
                 Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(abilityType, eAbilityState.active));
@@ -240,7 +253,7 @@ namespace Game.Player
             }
             else if (!flaggedAbilities.Contains(abilityType))
             {
-                ChangeFavourAmount(ability.ActivationPrice);
+                ChangeCurrencyAmount(eCurrencyType.Favour, ability.ActivationPrice);
                 activatedAbilities.Remove(abilityType);
 
                 Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(abilityType, eAbilityState.available));
@@ -347,18 +360,25 @@ namespace Game.Player
         /// <summary>
         /// Unlocks a pillar. The entry price will be removed from the player's favours.
         /// </summary>
-        /// <param name="pillarId">The Id of the pillar to unlock.</param>
-        public void UnlockPillar(ePillarId pillarId)
+        /// <param name="pillarId">The Id of the pillar to unlock</param>
+        /// <returns>true if the Pillar is unlocked, false otherwise</returns>
+        public bool UnlockPillar(ePillarId pillarId)
         {
             if (unlockedPillars.Contains(pillarId))
             {
-                return;
+                return true;
             }
             else
             {
-                unlockedPillars.Add(pillarId);
-                ChangeFavourAmount(-PillarData.GetPillarEntryPrice(pillarId));
+                if (GetCurrencyAmount(eCurrencyType.PillarKey) >= GetPillarEntryPrice(pillarId))
+                {
+                    unlockedPillars.Add(pillarId);
+                    ChangeCurrencyAmount(eCurrencyType.Favour, -PillarData.GetPillarEntryPrice(pillarId));
+                    return true;
+                }
             }
+
+            return false;
         }
 
         /// <summary>
@@ -392,51 +412,63 @@ namespace Game.Player
 
         //###########################################################
 
-        #region favour methods
+        #region pick-up methods
 
         /// <summary>
-        /// Informs the model that a favour has been picked up.
+        /// Informs the model that a Pick-up has been collected.
         /// </summary>
-        /// <param name="favourId">The Id of the picked-up favour.</param>
-        public void PickupFavour(string favourId)
+        /// <param name="pickUp">The collected Pick-up.</param>
+        public void CollectPickUp(CurrencyPickUp pickUp)
         {
-            if (pickedUpFavours.Contains(favourId))
+            if (collectedPickUps.Contains(pickUp.PickUpId))
             {
-                Debug.LogWarning("Favour already picked up!");
+                Debug.LogWarningFormat("Pick-up \"{0}\" already collected!", pickUp.PickUpId);
             }
             else
             {
                 //pick up favour
-                if (favourId == "ECHO")
-                    ChangeFavourAmount(0); // THIS IS TEMPORARY
+                if (pickUp.PickUpId == "ECHO")
+                    ChangeCurrencyAmount(eCurrencyType.Favour, 0); // THIS IS TEMPORARY
                 else
-                    ChangeFavourAmount(1);
-                pickedUpFavours.Add(favourId);
+                    ChangeCurrencyAmount(eCurrencyType.Favour, 1);
+
+                collectedPickUps.Add(pickUp.PickUpId);
 
                 //send event
-                Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(favourId));
+                Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(pickUp.PickUpId));
             }
         }
 
         /// <summary>
-        /// Checks whether the favour has already been picked up.
+        /// Checks whether a Pick-up has already been collected.
         /// </summary>
-        /// <param name="favourId">The Id of the favour to check.</param>
+        /// <param name="pickUpId">The Id of the favour to check.</param>
         /// <returns></returns>
-        public bool CheckIsFavourPickedUp(string favourId)
+        public bool CheckIfPickUpCollected(string pickUpId)
         {
-            return pickedUpFavours.Contains(favourId);
+            return collectedPickUps.Contains(pickUpId);
+        }
+
+        #endregion pick-up methods
+
+        //###########################################################
+
+        #region currency methods
+
+        public int GetCurrencyAmount(eCurrencyType currencyType)
+        {
+            return currencies[currencyType];
         }
 
         /// <summary>
-        /// Changes the amount of favours of the player. Checks whether abilities have become available and sends appropriate events.
+        /// Changes the amount of a currency. Checks whether abilities have become available and sends appropriate events.
         /// </summary>
-        /// <param name="favourDelta"></param>
-        private void ChangeFavourAmount(int favourDelta)
+        /// <param name="currencyDelta"></param>
+        private void ChangeCurrencyAmount(eCurrencyType currencyType, int currencyDelta)
         {
-            Favours += favourDelta;
+            currencies[currencyType] += currencyDelta;
 
-            Utilities.EventManager.SendFavourAmountChangedEvent(this, new Utilities.EventManager.FavourAmountChangedEventArgs(Favours));
+            Utilities.EventManager.SendCurrencyAmountChangedEvent(this, new Utilities.EventManager.CurrencyAmountChangedEventArgs(currencyType, currencies[currencyType]));
 
             //send events
             var abilities = abilityData.GetAllAbilities();
@@ -448,7 +480,7 @@ namespace Game.Player
                 {
                     var newState = eAbilityState.locked;
 
-                    if (Favours >= ability.ActivationPrice)
+                    if (GetCurrencyAmount(eCurrencyType.Favour) >= ability.ActivationPrice)
                     {
                         newState = eAbilityState.available;
                     }
@@ -458,7 +490,7 @@ namespace Game.Player
             }
         }
 
-        #endregion favour methods
+        #endregion currency methods
 
         //###########################################################
 
@@ -522,7 +554,7 @@ namespace Game.Player
             {
                 return eAbilityState.active;
             }
-            else if (unlockedAbilityGroups.Contains(ability.Group) && Favours >= ability.ActivationPrice)
+            else if (unlockedAbilityGroups.Contains(ability.Group) && GetCurrencyAmount(eCurrencyType.Favour) >= ability.ActivationPrice)
             {
                 return eAbilityState.available;
             } else if (!CheckAbilityUnlocked(abilityType))

@@ -284,7 +284,7 @@ namespace Game.UI.AbilityMenu
                     helpMessage.text = "Destroy a Pillar to Unlock";
                     descriptionHelpMessage.text = "Destroy a Pillar to unlock this ability";
                 }
-                else if (playerModel.Favours <= 0)
+                else if (playerModel.GetCurrencyAmount(Model.eCurrencyType.Favour) <= 0)
                 {
                     helpMessage.text = "";
                     descriptionHelpMessage.text = "You don't have enough Favours to unlock this ability";
