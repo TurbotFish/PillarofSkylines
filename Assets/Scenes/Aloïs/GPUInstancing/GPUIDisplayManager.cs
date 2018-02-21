@@ -25,9 +25,9 @@ public class GPUIDisplayManager : MonoBehaviour {
 	public UnityEngine.Rendering.ShadowCastingMode shadowMode;
 	public Transform player;
 
-	[Header("Colour Variation Maps")]
-	public Texture2D eastMap;
-	public Texture2D westMap;
+
+	Texture2D eastMap;
+	Texture2D westMap;
 
 	string east = "EastPlane";
 	string west = "WestPlane";
@@ -46,6 +46,9 @@ public class GPUIDisplayManager : MonoBehaviour {
 		eastLayer = LayerMask.NameToLayer (east);
 		westLayer = LayerMask.NameToLayer (west);
 
+		SurfaceTextureHolder _mapHolder = (SurfaceTextureHolder)Resources.Load ("ScriptableObjects/GrassColorMaps");
+		eastMap = _mapHolder.eastTex;
+		westMap = _mapHolder.westTex;
 	}
 
 	public void AddStuffToDraw(List<Matrix4x4> _mat, int _id){
@@ -105,11 +108,12 @@ public class GPUIDisplayManager : MonoBehaviour {
 		if (player.position.x > 0) {
 			currentLayer = eastLayer;
 			colorVariationMap = eastMap;
-			materialToDraw.DisableKeyword ("_GPUI_WEST");
+
+			materialToDraw.EnableKeyword ("_GPUI_EAST");
 		} else {
 			currentLayer = westLayer;
 			colorVariationMap = westMap;
-			materialToDraw.EnableKeyword ("_GPUI_WEST");
+			materialToDraw.DisableKeyword ("_GPUI_EAST");
 		}
 		Shader.SetGlobalTexture ("_GPUIColorMap", colorVariationMap);
 	}
