@@ -22,7 +22,7 @@ namespace Game.Player.CharacterController
         IState currentState;
         public ePlayerState CurrentState { get { return currentState.StateId; } }
 
-        //Multipliers
+        //Multipliers (echo boost)
         [HideInInspector]
         public float speedMultiplier = 1;
         [HideInInspector]

@@ -10,7 +10,7 @@ namespace Game.Player
     public enum eAbilityType
     {
         DoubleJump,
-        TombFinder,
+        GroundRise,
         EchoBoost,
         EchoDistance,
         Glide,

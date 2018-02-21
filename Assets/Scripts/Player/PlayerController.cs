@@ -21,7 +21,7 @@ namespace Game.Player
 
         WrappableObject wrappableObject;
 
-        public AbilitySystem.TombFinderController TombFinderController { get; private set; }
+        //public AbilitySystem.TombFinderController TombFinderController { get; private set; }
 
         /// <summary>
         /// Initializes the Player Prefab with references to outside scripts.
@@ -37,7 +37,7 @@ namespace Game.Player
 
             InteractionController = GetComponentInChildren<InteractionController>();
             wrappableObject = GetComponent<WrappableObject>();
-            TombFinderController = GetComponentInChildren<AbilitySystem.TombFinderController>();
+            //TombFinderController = GetComponentInChildren<AbilitySystem.TombFinderController>();
 
             //initializing all the things
             //OldPlayer.InitializePlayer(gameController.PlayerModel);
@@ -50,7 +50,7 @@ namespace Game.Player
                 wrappableObject.InitializeWrappableObject(gameController.WorldController);
             }
 
-            TombFinderController.InitializeTombFinderController(gameController);
+            //TombFinderController.InitializeTombFinderController(gameController);
         }
     }
 }
