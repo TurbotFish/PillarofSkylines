@@ -7,6 +7,7 @@ public class GPUISeederEditor : Editor {
 
 	Color buttonColor;
 
+
 	public override void OnInspectorGUI(){
 		base.OnInspectorGUI ();
 
@@ -15,6 +16,13 @@ public class GPUISeederEditor : Editor {
 			foreach (GPUISeeder item in targets) {
 				item.BakeGPUIData ();
 				ColorizeButton ();
+			}
+		}
+
+		GUI.backgroundColor = Color.white;
+		if (GUILayout.Button ("Paint Grass Colour Map")) {
+			foreach (GPUISeeder item in targets) {
+				item.PaintSurfaceTexture ();
 			}
 		}
 
