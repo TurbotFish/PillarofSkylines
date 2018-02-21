@@ -13,6 +13,8 @@ namespace Game.UI.AbilityMenu
 
         [SerializeField]
         Text favourText;
+        [SerializeField]
+        Text pillarKeyText;
 
         [SerializeField]
         TMPro.TextMeshProUGUI abilityNameText;
@@ -36,6 +38,7 @@ namespace Game.UI.AbilityMenu
             this.menuController = menuController;
 
             favourText.text = playerModel.GetCurrencyAmount(Model.eCurrencyType.Favour).ToString();
+            pillarKeyText.text = playerModel.GetCurrencyAmount(Model.eCurrencyType.PillarKey).ToString();
 
             nameForDescription.text = abilityNameText.text = string.Empty;
             abilityDescriptionText.text = string.Empty;
@@ -75,7 +78,10 @@ namespace Game.UI.AbilityMenu
 
         void OnCurrencyAmountChangedEventHandler(object sender, Utilities.EventManager.CurrencyAmountChangedEventArgs args)
         {
-            favourText.text = args.CurrencyAmount.ToString();
+            if (args.CurrencyType == Model.eCurrencyType.Favour)
+                favourText.text = args.CurrencyAmount.ToString();
+            else
+                pillarKeyText.text = args.CurrencyAmount.ToString();
         }
 
         void OnAbilityStateChangedEventHandler(object sender, Utilities.EventManager.AbilityStateChangedEventArgs args)
