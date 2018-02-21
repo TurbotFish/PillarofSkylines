@@ -178,11 +178,6 @@ namespace Game.Player.CharacterController
                 boostTimer -= dt;
             }
 
-            if (GuiFollowText.Instance != null)
-            {
-                GuiFollowText.Instance.SetText(currentState.StateId.ToString());
-            }
-
             //updating the current state
             return currentState.Update(dt);
         }

@@ -13,6 +13,8 @@ namespace Game.UI.AbilityMenu
 
         [SerializeField]
         Text favourText;
+        [SerializeField]
+        Text pillarKeyText;
 
         [SerializeField]
         TMPro.TextMeshProUGUI abilityNameText;
@@ -35,7 +37,8 @@ namespace Game.UI.AbilityMenu
             this.playerModel = playerModel;
             this.menuController = menuController;
 
-            favourText.text = playerModel.Favours.ToString();
+            favourText.text = playerModel.GetCurrencyAmount(Model.eCurrencyType.Favour).ToString();
+            pillarKeyText.text = playerModel.GetCurrencyAmount(Model.eCurrencyType.PillarKey).ToString();
 
             nameForDescription.text = abilityNameText.text = string.Empty;
             abilityDescriptionText.text = string.Empty;
@@ -43,7 +46,7 @@ namespace Game.UI.AbilityMenu
 
             descriptionPanel = abilityDescriptionText.transform.parent.GetComponent<DescriptionPanel>();
 
-            Utilities.EventManager.FavourAmountChangedEvent += OnFavourAmountChangedEventHandler;
+            Utilities.EventManager.CurrencyAmountChangedEvent += OnCurrencyAmountChangedEventHandler;
             Utilities.EventManager.AbilityStateChangedEvent += OnAbilityStateChangedEventHandler;
         }
 
@@ -73,9 +76,12 @@ namespace Game.UI.AbilityMenu
 
         //##################################################################
 
-        void OnFavourAmountChangedEventHandler(object sender, Utilities.EventManager.FavourAmountChangedEventArgs args)
+        void OnCurrencyAmountChangedEventHandler(object sender, Utilities.EventManager.CurrencyAmountChangedEventArgs args)
         {
-            favourText.text = args.FavourAmount.ToString();
+            if (args.CurrencyType == Model.eCurrencyType.Favour)
+                favourText.text = args.CurrencyAmount.ToString();
+            else
+                pillarKeyText.text = args.CurrencyAmount.ToString();
         }
 
         void OnAbilityStateChangedEventHandler(object sender, Utilities.EventManager.AbilityStateChangedEventArgs args)
@@ -100,6 +106,9 @@ namespace Game.UI.AbilityMenu
                     break;
                 case Player.eAbilityState.available:
                     backgroundImage.color = menuController.AvailableAbilityColour;
+                    break;
+                case Player.eAbilityState.pillarLocked:
+                    backgroundImage.color = menuController.PillarLockedAbilityColour;
                     break;
                 default:
                     Debug.LogError("ERROR!");

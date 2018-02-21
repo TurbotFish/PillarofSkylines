@@ -22,6 +22,13 @@ namespace Game.EchoSystem
         int pickUpLayer;
 
         public Transform MyTransform { get; private set; }
+        Transform fxTransform;
+
+        [Header("Animation")]
+        [SerializeField] float speed = 1;
+        [SerializeField] float intensity = 0.2f;
+        [SerializeField] float height = 1.5f;
+        Vector3 fxPosition;
 
         //##################################################################
 
@@ -32,11 +39,19 @@ namespace Game.EchoSystem
             myRenderer = myParticleSystem.GetComponent<Renderer>();
             defaultMaterial = myRenderer.sharedMaterial;
 
+            fxTransform = myParticleSystem.transform;
+
             collider = GetComponent<BoxCollider>();
             collider.isTrigger = true;
             defaultColliderSize = collider.size;
 
             pickUpLayer = gameObject.layer;
+        }
+
+        private void Update()
+        {
+            fxPosition.y = Mathf.Sin(Time.time * speed) * intensity + height;
+            fxTransform.localPosition = fxPosition;
         }
 
         //##################################################################

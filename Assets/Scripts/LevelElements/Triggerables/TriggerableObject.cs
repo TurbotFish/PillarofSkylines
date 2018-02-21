@@ -23,11 +23,11 @@ namespace Game.LevelElements
 
         //###########################################################
 
-//#if UNITY_EDITOR
+#if UNITY_EDITOR
         [HideInInspector]
         [SerializeField]
         private int instanceId; //used in editor to detect duplication
-//#endif
+#endif
 
         [HideInInspector]
         [SerializeField]
@@ -37,10 +37,10 @@ namespace Game.LevelElements
         [SerializeField]
         protected bool triggered;
 
-//#if UNITY_EDITOR
+#if UNITY_EDITOR
         [SerializeField]
         private List<Trigger> triggers; //list of Trigger objects
-//#endif
+#endif
 
         [SerializeField]
         private TriggerOperator triggerWith = TriggerOperator.AllOfThem;
@@ -54,6 +54,7 @@ namespace Game.LevelElements
 
         private PersistentTriggerable persistentTriggerable;
         private bool isCopy;
+        private Player.PlayerModel model;
 
         //###########################################################
 
@@ -69,7 +70,7 @@ namespace Game.LevelElements
 
         #region editor methods
 
-//#if UNITY_EDITOR
+#if UNITY_EDITOR
 
         public bool ContainsTrigger(Trigger trigger)
         {
@@ -91,7 +92,7 @@ namespace Game.LevelElements
             triggerIds.Remove(trigger.Id);
         }
 
-//#endif
+#endif
 
         #endregion editor methods
 
@@ -105,7 +106,7 @@ namespace Game.LevelElements
             triggerIds.Clear();
             triggers.RemoveAll(item => item == null);
 
-            foreach(var trigger in triggers)
+            foreach (var trigger in triggers)
             {
                 triggerIds.Add(trigger.Id);
             }
@@ -130,7 +131,7 @@ namespace Game.LevelElements
             }
             else if (instanceId == 0) //first time
             {
-                Debug.Log("triggerable: awake: instanceId == 0!");
+                //Debug.Log("triggerable: awake: instanceId == 0!");
                 instanceId = GetInstanceID();
 
                 if (string.IsNullOrEmpty(id))
@@ -162,7 +163,7 @@ namespace Game.LevelElements
             }
             else if (instanceId != GetInstanceID() /*&& GetInstanceID() < 0*/) //the script has been duplicated
             {
-                Debug.Log("triggerable: awake: instanceId changed!");
+                //Debug.Log("triggerable: awake: instanceId changed!");
                 instanceId = GetInstanceID();
 
                 id = Guid.NewGuid().ToString();
@@ -225,9 +226,9 @@ namespace Game.LevelElements
 
             //
             this.isCopy = isCopy;
+            model = gameController.PlayerModel;
 
             //
-            var model = gameController.PlayerModel;
             persistentTriggerable = model.GetPersistentTriggerable(id);
 
             if (persistentTriggerable == null)
@@ -274,21 +275,45 @@ namespace Game.LevelElements
 
         private bool CheckTriggers()
         {
+            var persistentTriggers = new List<PersistentTrigger>();
+            foreach (var triggerId in triggerIds)
+            {
+                persistentTriggers.Add(model.GetPersistentTrigger(triggerId));
+            }
+
             switch (triggerWith)
             {
-                case TriggerOperator.AllOfThem:
-                    foreach (Trigger trigger in triggers)
-                        if (!trigger.TriggerState) return false;
+                case TriggerOperator.AllOfThem: //if one trigger is not active, the check fails
+                    foreach (var persistentTrigger in persistentTriggers)
+                    {
+                        if (!persistentTrigger.TriggerState)
+                        {
+                            return false;
+                        }
+                    }
+
                     return true;
 
-                case TriggerOperator.OneOfThem:
-                    foreach (Trigger trigger in triggers)
-                        if (trigger.TriggerState) return true;
+                case TriggerOperator.OneOfThem: //if one trigger is active, the check succeeds
+                    foreach (var persistentTrigger in persistentTriggers)
+                    {
+                        if (persistentTrigger.TriggerState)
+                        {
+                            return true;
+                        }
+                    }
+
                     return false;
 
-                case TriggerOperator.None:
-                    foreach (Trigger trigger in triggers)
-                        if (trigger.TriggerState) return false;
+                case TriggerOperator.None:  //if one trigger is active the check fails
+                    foreach (var persistentTrigger in persistentTriggers)
+                    {
+                        if (persistentTrigger.TriggerState)
+                        {
+                            return false;
+                        }
+                    }
+
                     return true;
 
                 default: throw new ArgumentOutOfRangeException();

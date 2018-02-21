@@ -15,7 +15,7 @@ namespace Game.Player {
 
         //
         bool favourPickUpInRange = false;
-        World.Interaction.Favour favour;
+        World.Interaction.CurrencyPickUp favour;
 
         PillarEntranceInfo pillarEntranceInfo = new PillarEntranceInfo();
         bool pillarExitInRange = false;
@@ -76,9 +76,9 @@ namespace Game.Player {
                 //favour
                 if (favourPickUpInRange)
                 {
-                    if (!playerModel.CheckIsFavourPickedUp(favour.FavourId))
+                    if (!playerModel.CheckIfPickUpCollected(favour.PickUpId))
                     {
-                        playerModel.PickupFavour(favour.FavourId);
+                        playerModel.CollectPickUp(favour);
                     }
 
                     //clean up
@@ -192,9 +192,9 @@ namespace Game.Player {
                     case "Favour":
                         if (!favourPickUpInRange)
                         {
-                            favour = other.GetComponent<World.Interaction.Favour>();
+                            favour = other.GetComponent<World.Interaction.CurrencyPickUp>();
 
-                            if (!playerModel.CheckIsFavourPickedUp(favour.FavourId))
+                            if (!playerModel.CheckIfPickUpCollected(favour.PickUpId))
                             {
                                 favourPickUpInRange = true;
 

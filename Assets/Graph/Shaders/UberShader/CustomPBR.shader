@@ -252,6 +252,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma shader_feature _WALL_TINT
 			#pragma shader_feature _GROUND_TINT
 			#pragma shader_feature _RIMLIT
+			#pragma shader_feature _ALBEDO_WORLDPOS
 
 			#pragma multi_compile _ _VERTEX_WIND
 			#pragma multi_compile _ _VERTEX_BEND
@@ -260,6 +261,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma instancing_options lodfade
 			#pragma multi_compile_prepassfinal
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
+			#pragma multi_compile _GPUI_EAST _GPUI_WEST
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram

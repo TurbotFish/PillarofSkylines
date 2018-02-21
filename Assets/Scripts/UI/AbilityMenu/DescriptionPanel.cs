@@ -22,7 +22,8 @@ namespace Game.UI.AbilityMenu
         public void Appear()
         {
             StopCoroutine(_Appear());
-            StartCoroutine(_Appear());
+            if (gameObject.activeInHierarchy)
+                StartCoroutine(_Appear());
         }
 
         private void OnEnable()

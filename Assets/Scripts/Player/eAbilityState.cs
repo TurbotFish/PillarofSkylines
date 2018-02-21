@@ -8,6 +8,7 @@ namespace Game.Player
     {
         locked,
         available,
-        active
+        active,
+        pillarLocked
     }
 } //end of namespace
