@@ -258,6 +258,8 @@ namespace Game.UI.AbilityMenu
             if (SelectedSlot == null)
                 return;
 
+            print(" check if : " + SelectedSlot.AbilityType + " is active : " + playerModel.CheckAbilityActive(SelectedSlot.AbilityType));
+
             if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
                 playerModel.DeactivateAbility(SelectedSlot.AbilityType);
             else

@@ -15,10 +15,10 @@ namespace Game.Player.AbilitySystem
         Ability doubleJump = new Ability(eAbilityType.DoubleJump);
         public Ability DoubleJump { get { return doubleJump; } }
 
-        //tomb finder
+        //ground rise
         [SerializeField]
-        Ability tombFinder = new Ability(eAbilityType.TombFinder);
-        public Ability TombFinder { get { return tombFinder; } }
+        Ability groundRise = new Ability(eAbilityType.GroundRise);
+        public Ability GroundRise { get { return groundRise; } }
 
         //echo boost
         [SerializeField]
@@ -66,8 +66,8 @@ namespace Game.Player.AbilitySystem
                     return Glide;
                 case eAbilityType.WallRun:
                     return wallRun;
-                case eAbilityType.TombFinder:
-                    return tombFinder;
+                case eAbilityType.GroundRise:
+                    return groundRise;
                 case eAbilityType.EchoBoost:
                     return echoBoost;
                 case eAbilityType.EchoDistance:
@@ -84,7 +84,7 @@ namespace Game.Player.AbilitySystem
             return new List<Ability>()
             {
                 doubleJump,
-                tombFinder,
+                groundRise,
                 echoBoost,
                 echoDistance,
                 glide,

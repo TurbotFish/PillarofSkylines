@@ -280,7 +280,7 @@ namespace Game.Player.CharacterController
             //var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
             if (stateReturn.resetVerticalVelocity)
             {
-                velocity.y = 0;
+                ResetVerticalVelocity();
             }
 
             float tempVertical;
@@ -487,12 +487,20 @@ namespace Game.Player.CharacterController
         //#############################################################################
 
         #region cancer
-
+        
         void CreateGroundRise()
         {
-            Debug.Log("Groundrise ?");
-            //GroundRise grRise = Instantiate(groundRisePrefab);
-            //grRise.Initialize(MyTransform.position, MyTransform.up, this, velocity);
+            if (PlayerModel.CheckAbilityActive(eAbilityType.GroundRise))
+            {
+                GroundRise grRise = Instantiate(groundRisePrefab);
+                grRise.Initialize(MyTransform.position, MyTransform.up, this, velocity);
+            }
+        }
+
+        public void ResetVerticalVelocity(bool onlyDownVelocity = false)
+        {
+            if (!onlyDownVelocity || velocity.y <= 0f)
+                velocity.y = 0;
         }
 
         public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool lerped)
