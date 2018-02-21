@@ -48,7 +48,8 @@ namespace Game.Player.CharacterController
                         flat = true;
                         goFlat.tag = "SlipperySlope";
                     }
-                    if (player.CollisionInfo.below && !flat)
+                    print("distance : " + Vector3.Distance(position, transform.position));
+                    if (player.CollisionInfo.below && !flat && Vector3.Distance(position, transform.position) < 0.2f)
                         currPlayer = player;
                     transform.rotation = player.MyTransform.rotation;
                 } else
@@ -66,11 +67,12 @@ namespace Game.Player.CharacterController
                 height = grRiseData.FlatLength;
                 goFlat.SetActive(true);
                 transform.localScale = new Vector3(transform.localScale.x, grRiseData.FlatLength, transform.localScale.z);
+
                 float groundAngle = Vector3.Angle(playerUp, player.CollisionInfo.currentGroundNormal);
-                transform.Rotate(groundAngle, 0, 0);
                 transform.Translate(Vector3.forward);
                 if (groundAngle + (90 - grRiseData.FlatAngle) < 90 && goFlat.CompareTag("SlipperySlope"))
                 {
+                    transform.Rotate(groundAngle, 0, 0);
                     transform.Rotate(90 - groundAngle, 0, 0);
                 }
                 else
@@ -120,14 +122,31 @@ namespace Game.Player.CharacterController
 
                         if (currPlayer)
                             currPlayer.ImmediateMovement(playerUp * (height - (currHeight - (strength * Time.deltaTime))), true);
-
                     }
                     else
                     {
+                        RaycastHit hit;
+                        if (Physics.BoxCast(transform.position, new Vector3(goUp.transform.localScale.x / 2, 0.01f, goUp.transform.localScale.z / 2), playerUp, out hit, Quaternion.identity, strength * Time.deltaTime))
+                        {
+                            if (hit.transform.CompareTag("Player"))
+                            {
+                                currPlayer = hit.transform.GetComponentInParent<CharController>();
+                                print("bip bip detected player : " + currPlayer);
+                            } else
+                            {
+                                currPlayer = null;
+                            }
+                        } else
+                        {
+                            currPlayer = null;
+                        }
                         transform.Translate(Vector3.up * strength * Time.deltaTime, Space.Self);
 
                         if (currPlayer)
+                        {
+                            currPlayer.ResetVerticalVelocity(true);
                             currPlayer.ImmediateMovement(playerUp * strength * Time.deltaTime, true);
+                        }
                     }
                 }
             }
