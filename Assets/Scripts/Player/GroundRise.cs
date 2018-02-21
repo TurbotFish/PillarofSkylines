@@ -85,6 +85,11 @@ namespace Game.Player.CharacterController
                 height = grRiseData.Height;
                 transform.localScale = new Vector3(transform.localScale.x, height, transform.localScale.z);
                 goUp.SetActive(true);
+                float maxheight = height + player.tempPhysicsHandler.height * 2;
+                if (Physics.BoxCast(transform.position, new Vector3(goUp.transform.localScale.x / 2, 0.01f, goUp.transform.localScale.z / 2), playerUp, out hit, Quaternion.identity, maxheight, player.tempPhysicsHandler.collisionMask))
+                {
+                    height -= maxheight - hit.distance;
+                }
             }
             timeRemaining = grRiseData.Duration;
         }
