@@ -68,13 +68,7 @@ public class GPUISeederEditor : Editor {
 				foreach (GPUISeeder item in targets) {
 					item._paintColor = paintColor;
 				}
-			}
-			//_col = serializedObject.FindProperty ("_paintColor");
-			//paintColor = _col.colorValue;
-
-				
-			//_col.colorValue = paintColor;
-				
+			}	
 
 		}
 
