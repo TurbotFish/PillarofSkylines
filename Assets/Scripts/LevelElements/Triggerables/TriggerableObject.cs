@@ -5,6 +5,7 @@ using Game.World;
 using Game.World.ChunkSystem;
 using Game.LevelElements;
 using System.Collections;
+using Game.Model;
 
 namespace Game.LevelElements
 {
@@ -54,7 +55,7 @@ namespace Game.LevelElements
 
         private PersistentTriggerable persistentTriggerable;
         private bool isCopy;
-        private Player.PlayerModel model;
+        private PlayerModel model;
 
         //###########################################################
 

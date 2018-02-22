@@ -1,4 +1,4 @@
-﻿using Game.Player.AbilitySystem;
+﻿using Game.Model;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,7 +24,7 @@ namespace Game.UI.AbilityMenu
         [SerializeField]
         TMPro.TextMeshProUGUI abilityDescriptionText;
 
-        Player.PlayerModel playerModel;
+        PlayerModel playerModel;
         AbilityMenuController menuController;
         Ability currentAbility;
 
@@ -32,7 +32,7 @@ namespace Game.UI.AbilityMenu
 
         //##################################################################
 
-        public void Initialize(Player.PlayerModel playerModel, AbilityMenuController menuController)
+        public void Initialize(PlayerModel playerModel, AbilityMenuController menuController)
         {
             this.playerModel = playerModel;
             this.menuController = menuController;
@@ -94,20 +94,20 @@ namespace Game.UI.AbilityMenu
 
         //##################################################################
 
-        void SetBackgroundColour(Player.eAbilityState abilityState)
+        void SetBackgroundColour(eAbilityState abilityState)
         {
             switch (abilityState)
             {
-                case Player.eAbilityState.active:
+                case eAbilityState.active:
                     backgroundImage.color = menuController.ActiveAbilityColour;
                     break;
-                case Player.eAbilityState.locked:
+                case eAbilityState.locked:
                     backgroundImage.color = menuController.LockedAbilityColour;
                     break;
-                case Player.eAbilityState.available:
+                case eAbilityState.available:
                     backgroundImage.color = menuController.AvailableAbilityColour;
                     break;
-                case Player.eAbilityState.pillarLocked:
+                case eAbilityState.pillarLocked:
                     backgroundImage.color = menuController.PillarLockedAbilityColour;
                     break;
                 default:
