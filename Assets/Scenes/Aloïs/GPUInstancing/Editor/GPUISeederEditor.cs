@@ -57,7 +57,7 @@ public class GPUISeederEditor : Editor {
 		GUI.backgroundColor = colorsAreBaked ? colorBaked : colorNeverBaked;
 		if (GUILayout.Button ("Paint Grass Colour Map")) {
 			foreach (GPUISeeder item in targets) {
-				item.PaintSurfaceTexture ();
+				item.PaintSurfaceTexture (paintMode == PaintMode.Vertex);
 
 			}
 			colorsAreBaked = true;
