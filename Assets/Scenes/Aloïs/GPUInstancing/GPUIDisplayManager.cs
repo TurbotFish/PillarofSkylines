@@ -37,6 +37,7 @@ public class GPUIDisplayManager : MonoBehaviour {
 	Texture2D colorVariationMap;
 
 	void Awake(){
+		Shader.WarmupAllShaders ();
 		displayManager = this;
 
 		for (int i = 0; i < matrices1023.Length; i++) {
