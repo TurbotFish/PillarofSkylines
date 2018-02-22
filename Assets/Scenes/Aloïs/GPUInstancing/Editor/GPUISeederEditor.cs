@@ -16,12 +16,16 @@ public class GPUISeederEditor : Editor {
 	Color colorNeverBaked = new Color (1f, .31f, .31f, .5f);
 
 	int bakingState = 1;
-	public bool colorsAreBaked;
+	//public bool colorsAreBaked;
+
+	SerializedProperty _col;
+	bool colorsPainted;
+	SerializedProperty _colorsPainted;
 
 	public override void OnInspectorGUI(){
 		base.OnInspectorGUI ();
 
-		//int _bakingState = 5;
+		colorsPainted = serializedObject.FindProperty ("_colorsWerePainted").boolValue;
 
 		foreach (GPUISeeder item in targets) {
 			if (Time.frameCount % 60 == 0) {
@@ -29,7 +33,9 @@ public class GPUISeederEditor : Editor {
 				//1 : rebake needed
 				//2 : never baked
 				bakingState = item.AreMatricesUpToDate ();
-				colorsAreBaked = bakingState != 0 ? false : colorsAreBaked;
+				//colorsPainted = serializedObject.FindProperty ("_colorsWerePainted").boolValue;
+				colorsPainted = bakingState != 0 ? false : colorsPainted;
+
 				ColorizeButton (bakingState);
 			}
 		}
@@ -50,17 +56,19 @@ public class GPUISeederEditor : Editor {
 		GUI.backgroundColor = Color.white;
 		paintMode = (PaintMode)EditorGUILayout.EnumPopup ("Paint Mode", paintMode);
 		if (paintMode == PaintMode.Picker) {
+			_col = serializedObject.FindProperty ("_paintColor");
+			paintColor = _col.colorValue;
 			paintColor = EditorGUILayout.ColorField ("Grass Colour", paintColor);
-
+			_col.colorValue = paintColor;
 		}
 
-		GUI.backgroundColor = colorsAreBaked ? colorBaked : colorNeverBaked;
+		GUI.backgroundColor = colorsPainted ? colorBaked : colorNeverBaked;
 		if (GUILayout.Button ("Paint Grass Colour Map")) {
 			foreach (GPUISeeder item in targets) {
-				item.PaintSurfaceTexture (paintMode == PaintMode.Vertex);
+				item.PaintSurfaceTexture (paintMode == PaintMode.Vertex, paintColor);
 
 			}
-			colorsAreBaked = true;
+			colorsPainted = true;
 		}
 		EditorGUI.EndDisabledGroup ();
 
@@ -68,7 +76,8 @@ public class GPUISeederEditor : Editor {
 		if (bakingState != 0) {
 			EditorGUILayout.HelpBox ("Matrices must be baked to paint.", MessageType.Info);
 		}
-
+		serializedObject.FindProperty ("_colorsWerePainted").boolValue = colorsPainted;
+		serializedObject.ApplyModifiedProperties ();
 	}
 
 	void OnEnable(){
