@@ -261,7 +261,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma instancing_options lodfade
 			#pragma multi_compile_prepassfinal
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
-			#pragma multi_compile _GPUI_EAST _GPUI_WEST
+			#pragma multi_compile _GPUI_EAST
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
