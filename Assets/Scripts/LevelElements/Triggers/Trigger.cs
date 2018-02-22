@@ -6,6 +6,7 @@ using Game.Player;
 using Game.LevelElements;
 using Game.Utilities;
 using System;
+using Game.Model;
 
 namespace Game.LevelElements
 {

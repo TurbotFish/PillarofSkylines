@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using System;
 
-namespace Game.Player.AbilitySystem
+namespace Game.Model
 {
     [Serializable]
     public class Ability

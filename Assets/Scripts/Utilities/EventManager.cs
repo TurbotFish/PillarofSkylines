@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using Game.Model;
 
 namespace Game.Utilities
 {
@@ -184,10 +185,10 @@ namespace Game.Utilities
 
         public class AbilityStateChangedEventArgs : EventArgs
         {
-            public Player.eAbilityType AbilityType { get; private set; }
-            public Player.eAbilityState AbilityState { get; private set; }
+            public eAbilityType AbilityType { get; private set; }
+            public eAbilityState AbilityState { get; private set; }
 
-            public AbilityStateChangedEventArgs(Player.eAbilityType abilityType, Player.eAbilityState abilityState)
+            public AbilityStateChangedEventArgs(eAbilityType abilityType, eAbilityState abilityState)
             {
                 AbilityType = abilityType;
                 AbilityState = abilityState;

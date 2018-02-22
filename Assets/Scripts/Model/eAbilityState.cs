@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game.Player
+namespace Game.Model
 {
     public enum eAbilityState
     {

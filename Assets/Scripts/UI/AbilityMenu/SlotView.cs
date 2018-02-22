@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Game.Model;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -11,7 +12,7 @@ namespace Game.UI.AbilityMenu
         //##################################################################
 
         [SerializeField]
-        Player.eAbilityType ability;
+        eAbilityType ability;
 
         [SerializeField]
         Image backgroundImage;
@@ -26,11 +27,11 @@ namespace Game.UI.AbilityMenu
 
         //##################################################################
 
-        public Player.eAbilityType AbilityType { get { return ability; } }
+        public eAbilityType AbilityType { get { return ability; } }
 
         //##################################################################
 
-        public void Initialize(Player.PlayerModel playerModel, AbilityMenuController menuController)
+        public void Initialize(PlayerModel playerModel, AbilityMenuController menuController)
         {
             this.menuController = menuController;
 
@@ -58,20 +59,20 @@ namespace Game.UI.AbilityMenu
             SetBackgroundColour(args.AbilityState);
         }
 
-        void SetBackgroundColour(Player.eAbilityState abilityState)
+        void SetBackgroundColour(eAbilityState abilityState)
         {
             switch (abilityState)
             {
-                case Player.eAbilityState.active:
+                case eAbilityState.active:
                     backgroundImage.color = menuController.ActiveAbilityColour;
                     break;
-                case Player.eAbilityState.available:
+                case eAbilityState.available:
                     backgroundImage.color = menuController.AvailableAbilityColour;
                     break;
-                case Player.eAbilityState.locked:
+                case eAbilityState.locked:
                     backgroundImage.color = menuController.LockedAbilityColour;
                     break;
-                case Player.eAbilityState.pillarLocked:
+                case eAbilityState.pillarLocked:
                     backgroundImage.color = menuController.PillarLockedAbilityColour;
                     break;
                 default:

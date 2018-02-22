@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game.Player
+namespace Game.Model
 {
     /// <summary>
     /// The list of the abilities of the player
