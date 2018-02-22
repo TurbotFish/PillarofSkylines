@@ -15,7 +15,7 @@ namespace Game.Player {
 
         //
         bool favourPickUpInRange = false;
-        World.Interaction.Favour favour;
+        World.Interaction.CurrencyPickUp favour;
 
         PillarEntranceInfo pillarEntranceInfo = new PillarEntranceInfo();
         bool pillarExitInRange = false;
@@ -76,9 +76,9 @@ namespace Game.Player {
                 //favour
                 if (favourPickUpInRange)
                 {
-                    if (!playerModel.CheckIsFavourPickedUp(favour.FavourId))
+                    if (!playerModel.CheckIfPickUpCollected(favour.PickUpId))
                     {
-                        playerModel.PickupFavour(favour.FavourId);
+                        playerModel.CollectPickUp(favour);
                     }
 
                     //clean up
@@ -192,9 +192,9 @@ namespace Game.Player {
                     case "Favour":
                         if (!favourPickUpInRange)
                         {
-                            favour = other.GetComponent<World.Interaction.Favour>();
+                            favour = other.GetComponent<World.Interaction.CurrencyPickUp>();
 
-                            if (!playerModel.CheckIsFavourPickedUp(favour.FavourId))
+                            if (!playerModel.CheckIfPickUpCollected(favour.PickUpId))
                             {
                                 favourPickUpInRange = true;
 
@@ -286,7 +286,7 @@ namespace Game.Player {
                     // air particle
                     case "AirReceptor":
                         if (airParticle) {
-                            other.GetComponent<AirReceptor>().Activate();
+                            other.GetComponent<LevelElements.AirReceptor>().Activate();
                             Destroy(airParticle.gameObject);
                             Destroy(airOrigin.gameObject);
                             airParticle = null;
@@ -349,7 +349,12 @@ namespace Game.Player {
                         if (tutoBox.messageType == UI.eMessageType.Important)
                         {
                             ShowImportantMessage(tutoBox.message, tutoBox.description);
-                            Destroy(other);
+                            Destroy(other.gameObject);
+                        }
+                        else if (tutoBox.messageType == UI.eMessageType.Announcement)
+                        {
+                            ShowAnnounceMessage(tutoBox.message, tutoBox.time);
+                            Destroy(other.gameObject);
                         }
                         else
                             ShowUiMessage(tutoBox.message, other.tag);
@@ -361,6 +366,10 @@ namespace Game.Player {
                     // CameraControlTrigger
                     case "CameraControlTrigger":
                         camera.EnterTrigger(other.GetComponent<CameraControlTrigger>());
+                        break;
+                    // Miscelanous Interactive Elements
+                    case "Interactible":
+                        other.GetComponent<Interactible>().EnterTrigger();
                         break;
                     //other
                     default:
@@ -440,6 +449,10 @@ namespace Game.Player {
                     case "CameraControlTrigger":
                         camera.ExitTrigger(other.GetComponent<CameraControlTrigger>());
                         break;
+                    // Miscelanous Interactive Elements
+                    case "Interactible":
+                        other.GetComponent<Interactible>().ExitTrigger();
+                        break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
@@ -464,6 +477,11 @@ namespace Game.Player {
         {
             lastTag = tag;
             Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message));
+        }
+
+        void ShowAnnounceMessage(string message, float time)
+        {
+            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, UI.eMessageType.Announcement, "", time));
         }
 
         void ShowImportantMessage(string message, string description)

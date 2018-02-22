@@ -11,7 +11,7 @@ public class MovingPlatform : MonoBehaviour {
 	[HideInInspector]
 	public Vector3 impactPoint;
 
-	void Start () {
+	public virtual void Start () {
         if (active)
         {
             if (transform.tag == "Untagged")

@@ -62,7 +62,16 @@ public class CustomPBR_GUI : ShaderGUI {
 		DoRimLight ();
 		DoWallTint ();
 		DoGroundTint ();
+		DoWorldPosAlbedo ();
 		editor.TextureScaleOffsetProperty (mainTex);
+	}
+
+	void DoWorldPosAlbedo(){
+		EditorGUI.BeginChangeCheck ();
+		bool useWP = EditorGUILayout.Toggle (MakeLabel ("WorldPos Albedo"), IsKeywordEnabled ("_ALBEDO_WORLDPOS"));
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_ALBEDO_WORLDPOS", useWP);
+		}
 	}
 
 	void DoAlbedoVertexMask(){
@@ -138,7 +147,7 @@ public class CustomPBR_GUI : ShaderGUI {
 	}
 
 	void DoAlphaCutoff(){
-		MaterialProperty slider = FindProperty ("_AlphaCutoff");
+		MaterialProperty slider = FindProperty ("_Cutoff");
 		EditorGUI.indentLevel += 2;
 		editor.ShaderProperty (slider, MakeLabel (slider));
 		EditorGUI.indentLevel -= 2;
@@ -236,8 +245,16 @@ public class CustomPBR_GUI : ShaderGUI {
 		EditorGUI.BeginChangeCheck ();
 
 		editor.TexturePropertyWithHDRColor (MakeLabel (map, "Emission (R)"), map, FindProperty ("_Emission"), emissionConfig, false);
-		if (EditorGUI.EndChangeCheck () && tex != map.textureValue) {
-			SetKeyword ("_EMISSION_MAP", map.textureValue);
+		editor.LightmapEmissionProperty (2);
+		if (EditorGUI.EndChangeCheck ()) {
+
+			if (tex != map.textureValue) {
+				SetKeyword ("_EMISSION_MAP", map.textureValue);
+			}
+
+			foreach (Material m in editor.targets) {
+				m.globalIlluminationFlags &= ~MaterialGlobalIlluminationFlags.BakedEmissive;
+			}
 		}
 	}
 

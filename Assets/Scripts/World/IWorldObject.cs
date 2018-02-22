@@ -6,7 +6,7 @@ namespace Game.World
 {
     public interface IWorldObjectInitialization
     {
-        void Initialize(ChunkSystem.WorldController worldController, bool isCopy);
+        void Initialize(GameControl.IGameControllerBase gameController, bool isCopy);
     }
 
     public interface IWorldObjectActivation

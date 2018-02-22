@@ -8,13 +8,13 @@ namespace Game.LevelElements
     [CustomEditor(typeof(TriggerBox))]
     public class TriggerBoxInspector : TriggerInspector
     {
-        private TriggerBox self;
+        private TriggerBox triggerBox;
 
         protected override void OnEnable()
         {
             base.OnEnable();
 
-            self = target as TriggerBox;
+            triggerBox = target as TriggerBox;
         }
 
         public override void OnInspectorGUI()

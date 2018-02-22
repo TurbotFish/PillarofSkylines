@@ -151,6 +151,14 @@ namespace Game.GameControl
 
                 this.pillarSceneDictionary.Add(pillarId, pillarInfo);
 
+                //initializing world objects in pillar
+                var worldObjects = SearchForScriptsInScene<World.IWorldObjectInitialization>(pillarScene);
+
+                foreach(var worldObject in worldObjects)
+                {
+                    worldObject.Initialize(this, false);
+                }
+
                 //deactivating scene
                 foreach (var go in pillarScene.GetRootGameObjects())
                 {
@@ -264,35 +272,39 @@ namespace Game.GameControl
             yield return null;
 
             //deactivate pillar scene
-            var pillarScene = this.pillarSceneDictionary[this.activePillarId].Scene;
+            var pillarScene = pillarSceneDictionary[activePillarId].Scene;
             foreach (var go in pillarScene.GetRootGameObjects())
             {
                 go.SetActive(false);
             }
 
-            this.isPillarActive = false;
+            isPillarActive = false;
 
             yield return null;
 
             //activate open world scene
-            foreach (var go in this.openWorldSceneInfo.Scene.GetRootGameObjects())
+            foreach (var go in openWorldSceneInfo.Scene.GetRootGameObjects())
             {
                 go.SetActive(true);
             }
-            SceneManager.SetActiveScene(this.openWorldSceneInfo.Scene);
+            SceneManager.SetActiveScene(openWorldSceneInfo.Scene);
 
             yield return null;
 
             //switch pillar to destroyed state
             if (pillarDestroyed)
             {
-                this.playerModel.DestroyPillar(this.activePillarId);
+                playerModel.DestroyPillar(activePillarId);
             }
 
             yield return null;
 
             //
-            var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetPillarExitPoint(this.activePillarId), this.openWorldSceneInfo.SpawnPointManager.GetPillarExitOrientation(this.activePillarId), true);
+            World.ePillarState pillarState = pillarDestroyed ? World.ePillarState.Destroyed : World.ePillarState.Intact;
+            Vector3 position = openWorldSceneInfo.SpawnPointManager.GetPillarExitPoint(activePillarId, pillarState);
+            Quaternion rotation = openWorldSceneInfo.SpawnPointManager.GetPillarExitOrientation(activePillarId, pillarState);
+
+            var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(position, rotation, true);
             Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
             Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());

@@ -18,7 +18,7 @@ namespace Game.World.SpawnPointSystem
 
             spawnPoint.Type = (eSpawnPointType)EditorGUILayout.EnumPopup("Type", spawnPoint.Type);
 
-            if(spawnPoint.Type == eSpawnPointType.PillarExit)
+            if(spawnPoint.Type == eSpawnPointType.PillarExitIntact || spawnPoint.Type == eSpawnPointType.PillarExitDestroyed)
             {
                 spawnPoint.Pillar = (ePillarId)EditorGUILayout.EnumPopup("Pillar", spawnPoint.Pillar);
             }

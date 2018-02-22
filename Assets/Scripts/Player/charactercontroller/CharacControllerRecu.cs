@@ -264,10 +264,8 @@ namespace Game.Player.CharacterController
 
         void CollisionUpdate(Vector3 velocity)
         {
-
             if (currentPFs != null)
             {
-                Debug.Log("removing platform");
                 foreach (MovingPlatform PF in currentPFs)
                 {
                     PF.RemovePlayer();
@@ -299,7 +297,6 @@ namespace Game.Player.CharacterController
                 collisions.currentGroundNormal = hit.normal;
                 if (currentPFs == null && hit.collider.CompareTag("MovingPlatform"))
                 {
-                    Debug.Log("adding platform below");
                     currentPFs = hit.collider.GetComponentsInParent<MovingPlatform>();
                     foreach (MovingPlatform PF in currentPFs)
                     {
@@ -311,7 +308,7 @@ namespace Game.Player.CharacterController
                     if (Vector3.Dot(hit.transform.up, myTransform.up) > 0.7f)
                     {
                         currentGravifloor = hit.collider.GetComponent<Gravifloor>();
-                        currentGravifloor.AddPlayer(myPlayer);
+                        currentGravifloor.AddPlayer(myPlayer, -hit.normal);
                     }
                 }
 				if (hit.collider.CompareTag("SlipperySlope")) {

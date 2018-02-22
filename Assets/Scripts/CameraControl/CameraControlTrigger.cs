@@ -41,6 +41,8 @@ public class CameraControlTrigger : MonoBehaviour {
 
     private void OnValidate() {
         SetDisplay();
+        tag = "CameraControlTrigger";
+        gameObject.layer = LayerMask.NameToLayer("PickUps");
     }
 
     /// <summary>

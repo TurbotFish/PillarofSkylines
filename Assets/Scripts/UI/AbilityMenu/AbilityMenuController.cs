@@ -21,20 +21,21 @@ namespace Game.UI.AbilityMenu
 
         [SerializeField]
         List<SlotView> abilityViews = new List<SlotView>();
+        
+        [Space, SerializeField]
+        TMPro.TextMeshProUGUI helpMessage;
 
-        //[SerializeField]
-        //GroupView orangeGroup;
+        [Space, SerializeField]
+        TMPro.TextMeshProUGUI descriptionHelpMessage;
 
-        //[SerializeField]
-        //GroupView yellowGroup;
+        public Cursor cursor;
 
-        //[SerializeField]
-        //GroupView blueGroup;
+        Player.PlayerModel playerModel;
 
-        //[SerializeField]
-        //GroupView greenGroup;
+        public bool IsActive { get; private set; }
 
-        [Header("")]
+
+        [Header("Colours")]
         [SerializeField]
         Color lockedAbilityColour;
         public Color LockedAbilityColour { get { return lockedAbilityColour; } }
@@ -47,11 +48,10 @@ namespace Game.UI.AbilityMenu
         Color activeAbilityColour;
         public Color ActiveAbilityColour { get { return activeAbilityColour; } }
 
+        [SerializeField]
+        Color pillarLockedAbilityColour;
+        public Color PillarLockedAbilityColour { get { return pillarLockedAbilityColour; } }
 
-
-        Player.PlayerModel playerModel;
-
-        public bool IsActive { get; private set; }
 
         //List<SlotView> slotList = new List<SlotView>();
         int selectedSlotIndex = -1;
@@ -85,6 +85,7 @@ namespace Game.UI.AbilityMenu
             }
 
             centerView.Initialize(playerModel, this);
+            helpMessage.text = "";
         }
 
         void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
@@ -111,9 +112,7 @@ namespace Game.UI.AbilityMenu
         void Update()
         {
             if (!IsActive)
-            {
                 return;
-            }
 
             //exit ability menu
             if (Input.GetButtonDown("MenuButton") || Input.GetButtonDown("Cancel"))
@@ -231,6 +230,7 @@ namespace Game.UI.AbilityMenu
             {
                 if (i == selectedSlotIndex)
                 {
+                    cursor.GoTo(abilityViews[i].transform.position);
                     abilityViews[i].SetSelected(true);
                 }
                 else
@@ -242,29 +242,60 @@ namespace Game.UI.AbilityMenu
             if (SelectedSlot == null)
             {
                 centerView.SetContent(null);
+                cursor.gameObject.SetActive(false);
             }
             else
             {
+                cursor.gameObject.SetActive(true);
                 centerView.SetContent(playerModel.AbilityData.GetAbility(SelectedSlot.AbilityType));
             }
+
+            UpdateInputMessage();
         }
 
         void ActivateSelectedAbility()
         {
             if (SelectedSlot == null)
-            {
                 return;
-            }
+
+            print(" check if : " + SelectedSlot.AbilityType + " is active : " + playerModel.CheckAbilityActive(SelectedSlot.AbilityType));
 
             if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
-            {
-                //Debug.LogFormat("Ability Menu: deactivating ability {0}", SelectedSlot.AbilityType);
                 playerModel.DeactivateAbility(SelectedSlot.AbilityType);
+            else
+                playerModel.ActivateAbility(SelectedSlot.AbilityType);
+            UpdateInputMessage();
+        }
+
+        void UpdateInputMessage()
+        {
+            helpMessage.color = new Color(1, 1, 1);
+            if (SelectedSlot == null)
+                helpMessage.text = "";
+            else if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
+            {
+                helpMessage.text = "[A] Remove Favour";
+                descriptionHelpMessage.text = "Press [A] to stop using this ability";
             }
             else
             {
-                //Debug.LogFormat("Ability Menu: activating ability {0}", SelectedSlot.AbilityType);
-                playerModel.ActivateAbility(SelectedSlot.AbilityType);
+                if (!playerModel.CheckAbilityUnlocked(SelectedSlot.AbilityType))
+                {
+                    helpMessage.text = "Destroy a Pillar to Unlock";
+                    descriptionHelpMessage.text = "Destroy a Pillar to unlock this ability";
+                }
+                else if (playerModel.GetCurrencyAmount(Model.eCurrencyType.Favour) <= 0)
+                {
+                    helpMessage.text = "";
+                    descriptionHelpMessage.text = "You don't have enough Favours to unlock this ability";
+                }
+                else 
+                {
+                    helpMessage.text = "[A] Place Favour";
+                    descriptionHelpMessage.text = "Press [A] to start using this ability";
+                    helpMessage.color = ActiveAbilityColour;
+                }
+
             }
         }
 

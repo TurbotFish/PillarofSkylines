@@ -29,7 +29,7 @@ namespace Game.World.ChunkSystem
 
         List<GameObject> worldCopies = new List<GameObject>();
 
-        List<Interaction.Favour> favourList = new List<Interaction.Favour>();
+        List<Interaction.CurrencyPickUp> favourList = new List<Interaction.CurrencyPickUp>();
 
         bool isInitialized = false;
 
@@ -208,7 +208,7 @@ namespace Game.World.ChunkSystem
 
         #region favour methods
 
-        public void RegisterFavour(Interaction.Favour favour)
+        public void RegisterFavour(Interaction.CurrencyPickUp favour)
         {
             if (!favourList.Contains(favour))
             {
@@ -216,12 +216,12 @@ namespace Game.World.ChunkSystem
             }
         }
 
-        public void UnregisterFavour(Interaction.Favour favour)
+        public void UnregisterFavour(Interaction.CurrencyPickUp favour)
         {
             favourList.Remove(favour);
         }
 
-        public Interaction.Favour FindNearestFavour(Vector3 position)
+        public Interaction.CurrencyPickUp FindNearestFavour(Vector3 position)
         {
             if (favourList.Count == 0)
             {
@@ -254,10 +254,10 @@ namespace Game.World.ChunkSystem
 
         void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
         {
-            var favoursToRemove = new List<Interaction.Favour>();
+            var favoursToRemove = new List<Interaction.CurrencyPickUp>();
             foreach (var favour in favourList)
             {
-                if (favour.FavourId == args.FavourId)
+                if (favour.PickUpId == args.FavourId)
                 {
                     favoursToRemove.Add(favour);
                 }

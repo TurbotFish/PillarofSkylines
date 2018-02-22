@@ -3,14 +3,18 @@ using System.Collections;
 using UnityEngine;
 
 public class Gravifloor : MonoBehaviour {
-    
+
+    [SerializeField] bool customGavityDirection;
+
+    [ConditionalHide("customGavityDirection"), SerializeField]
     Vector3 gravityDirection;
+    
     static Gravifloor currentActive;
 
-    float rotationDuration = 0.2f;
-
+    [SerializeField]
+    float rotationSpeed = 180; // degree per second
+    
     float resetDelay = 0.1f; // just in case there is a microspace between two gravifloors
-    [SerializeField] float resetDuration = 0.5f;
     
     Vector3 regularGravity = new Vector3(0, -1, 0);
 
@@ -19,11 +23,18 @@ public class Gravifloor : MonoBehaviour {
 
     private void Start()
     {
-        gravityDirection = -transform.up;
+        if (!customGavityDirection)
+            gravityDirection = -transform.up;
         gameObject.tag = "Gravifloor";
     }
 
-    public void AddPlayer(CharController player)
+    private void OnValidate()
+    {
+        if (!customGavityDirection)
+            gravityDirection = -transform.up;
+    }
+
+    public void AddPlayer(CharController player, Vector3 newGravity)
     {
         if (currentActive)
             currentActive.StopAllCoroutines();
@@ -52,9 +63,14 @@ public class Gravifloor : MonoBehaviour {
         
         Vector3 currentGravity = -player.MyTransform.up;
 
+        float angle = Vector3.Angle(currentGravity, gravityGoal);
+        float rotationDuration = angle / rotationSpeed;
+
+        print("ANGLE: " + angle + " DURATION: " + rotationDuration);
+
         for (float elapsed = 0; elapsed < rotationDuration; elapsed += Time.deltaTime)
         {
-            player.ChangeGravityDirection(Vector3.Lerp(currentGravity, gravityGoal, elapsed / rotationDuration));
+            player.ChangeGravityDirection(Vector3.Slerp(currentGravity, gravityGoal, elapsed / rotationDuration), player.MyTransform.position + player.MyTransform.up);
             yield return null;
         }
         player.ChangeGravityDirection(gravityGoal);
@@ -65,11 +81,16 @@ public class Gravifloor : MonoBehaviour {
     {
         CharController player = currPlayer;
 
-        yield return new WaitForSeconds(resetDelay);
+        //yield return new WaitForSeconds(resetDelay);
 
-        for (float elapsed = 0; elapsed < resetDuration; elapsed+=Time.deltaTime)
+        float angle = Vector3.Angle(gravityDirection, regularGravity);
+        float rotationDuration = angle / rotationSpeed;
+
+        print("ANGLE: " + angle + " DURATION: " + rotationDuration);
+
+        for (float elapsed = 0; elapsed < rotationDuration; elapsed+=Time.deltaTime)
         {
-            player.ChangeGravityDirection(Vector3.Lerp(gravityDirection, regularGravity, elapsed / resetDuration));
+            player.ChangeGravityDirection(Vector3.Slerp(gravityDirection, regularGravity, elapsed / rotationDuration));
             yield return null;
         }
         player.ChangeGravityDirection(regularGravity);
