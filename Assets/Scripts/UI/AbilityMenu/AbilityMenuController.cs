@@ -1,4 +1,5 @@
 ﻿using Game.GameControl;
+using Game.Model;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -30,7 +31,7 @@ namespace Game.UI.AbilityMenu
 
         public Cursor cursor;
 
-        Player.PlayerModel playerModel;
+        PlayerModel playerModel;
 
         public bool IsActive { get; private set; }
 

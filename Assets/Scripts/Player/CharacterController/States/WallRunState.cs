@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Game.Model;
 using Game.Player.CharacterController.Containers;
 using UnityEngine;
 
