@@ -54,12 +54,22 @@ public class GPUISeederEditor : Editor {
 		EditorGUI.BeginDisabledGroup (bakingState != 0);
 
 		GUI.backgroundColor = Color.white;
+
 		paintMode = (PaintMode)EditorGUILayout.EnumPopup ("Paint Mode", paintMode);
+
 		if (paintMode == PaintMode.Picker) {
-			_col = serializedObject.FindProperty ("_paintColor");
-			paintColor = _col.colorValue;
+
+			foreach (GPUISeeder item in targets) {
+				paintColor = item._paintColor;
+			}
+			EditorGUI.BeginChangeCheck ();
 			paintColor = EditorGUILayout.ColorField ("Grass Colour", paintColor);
-			_col.colorValue = paintColor;
+			if (EditorGUI.EndChangeCheck ()) {
+				foreach (GPUISeeder item in targets) {
+					item._paintColor = paintColor;
+				}
+			}	
+
 		}
 
 		GUI.backgroundColor = colorsPainted ? colorBaked : colorNeverBaked;

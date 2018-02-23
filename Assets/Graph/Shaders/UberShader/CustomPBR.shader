@@ -137,8 +137,9 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma shader_feature _GROUND_TINT
 			#pragma shader_feature _RIMLIT
 
-			#pragma multi_compile _ _VERTEX_WIND
-			#pragma multi_compile _ _VERTEX_BEND
+			#pragma shader_feature _ _VERTEX_WIND
+			#pragma shader_feature _ _VERTEX_BEND
+
 			#pragma multi_compile_fog
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
 			#pragma multi_compile_instancing
@@ -196,8 +197,9 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma shader_feature _WALL_TINT
 			#pragma shader_feature _GROUND_TINT
 
-			#pragma multi_compile _ _VERTEX_WIND
-			#pragma multi_compile _ _VERTEX_BEND
+			#pragma shader_feature _ _VERTEX_WIND
+			#pragma shader_feature _ _VERTEX_BEND
+
 			#pragma multi_compile_fwdadd_fullshadows
 			#pragma multi_compile_fog
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
@@ -254,14 +256,15 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 			#pragma shader_feature _RIMLIT
 			#pragma shader_feature _ALBEDO_WORLDPOS
 
-			#pragma multi_compile _ _VERTEX_WIND
-			#pragma multi_compile _ _VERTEX_BEND
+			#pragma shader_feature _ _VERTEX_WIND
+			#pragma shader_feature _ _VERTEX_BEND
+
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
 			#pragma multi_compile_instancing
 			#pragma instancing_options lodfade
 			#pragma multi_compile_prepassfinal
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
-			#pragma multi_compile _GPUI_EAST
+			#pragma multi_compile _ _GPUI_EAST
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram

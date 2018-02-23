@@ -6,6 +6,7 @@ using Game.Player;
 using Game.LevelElements;
 using Game.Utilities;
 using System;
+using Game.Model;
 
 namespace Game.LevelElements
 {
@@ -99,7 +100,7 @@ namespace Game.LevelElements
             //register trigger
             foreach (var target in targets)
             {
-                if (!target.ContainsTrigger(this))
+                if (target && !target.ContainsTrigger(this))
                 {
                     target.AddTrigger(this);
                 }
@@ -108,7 +109,7 @@ namespace Game.LevelElements
             //unregister trigger
             foreach (var target in targetsOld)
             {
-                if (!targets.Contains(target) && target.ContainsTrigger(this))
+                if (target && !targets.Contains(target) && target.ContainsTrigger(this))
                 {
                     target.RemoveTrigger(this);
                 }

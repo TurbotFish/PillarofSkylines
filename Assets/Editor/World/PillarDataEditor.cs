@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Game.Model;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,7 +57,7 @@ namespace Game.World
                     }
                 }
 
-                pillarData.PillarAbilityGroups[index] = (Player.eAbilityGroup)EditorGUILayout.EnumPopup("Ability Group", pillarData.PillarAbilityGroups[index]);
+                pillarData.PillarAbilityGroups[index] = (eAbilityGroup)EditorGUILayout.EnumPopup("Ability Group", pillarData.PillarAbilityGroups[index]);
             }
 
             //

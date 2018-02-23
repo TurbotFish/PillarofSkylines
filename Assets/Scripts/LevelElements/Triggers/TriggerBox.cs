@@ -58,7 +58,7 @@ namespace Game.LevelElements
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.tag == tagToActivate)
+            if (other.tag == tagToActivate && Mathf.Abs(Vector3.Dot(other.transform.up, transform.up)) > 0.9f)
             {
                 if (Toggle)
                     TriggerState ^= true;

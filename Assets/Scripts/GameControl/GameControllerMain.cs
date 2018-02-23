@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Game.Model;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace Game.GameControl
 
         private SceneNamesData sceneNames;
 
-        private Player.PlayerModel playerModel;
+        private PlayerModel playerModel;
         private EchoSystem.EchoManager echoManager;
         private EclipseManager eclipseManager;
 
@@ -33,7 +34,7 @@ namespace Game.GameControl
 
         //###############################################################
 
-        public Player.PlayerModel PlayerModel { get { return playerModel; } }
+        public PlayerModel PlayerModel { get { return playerModel; } }
         public EchoSystem.EchoManager EchoManager { get { return echoManager; } }
         public EclipseManager EclipseManager { get { return eclipseManager; } }
 
@@ -52,7 +53,7 @@ namespace Game.GameControl
             sceneNames = Resources.Load<SceneNamesData>("ScriptableObjects/SceneNamesData");
 
             //getting references in game controller
-            playerModel = GetComponentInChildren<Player.PlayerModel>();
+            playerModel = GetComponentInChildren<PlayerModel>();
             echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
             eclipseManager = GetComponentInChildren<EclipseManager>();
 

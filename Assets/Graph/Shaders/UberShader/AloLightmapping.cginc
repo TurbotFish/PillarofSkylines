@@ -38,9 +38,9 @@ float GetDetailMask(Interpolators i){
 float3 GetAlbedo(Interpolators i){
 		float3 albedoTex = tex2D(_MainTex, i.uv.xy).rgb * _Color.rgb;
 		float3 albedo = albedoTex * _Color.rgb;
-		#if defined(_ALBEDO_VERTEX_MASK)
-			albedo = lerp(albedoTex, albedo, i.color.g);
-		#endif
+//		#if defined(_ALBEDO_VERTEX_MASK)
+//			albedo = lerp(albedoTex, albedo, i.color.g);
+//		#endif
 
 		#if defined(_DETAIL_ALBEDO_MAP)
 			float3 details = tex2D(_DetailTex, i.uv.zw) * unity_ColorSpaceDouble;
@@ -48,15 +48,15 @@ float3 GetAlbedo(Interpolators i){
 		#endif
 
 
-		#if defined(_WALL_TINT)
-			float _coeff = pow(abs(i.normal.z), _WallTintPow);
-			albedo = lerp(albedo, albedo * _WallTintCol, _coeff);
-		#endif
-
-		#if defined(_GROUND_TINT)
-			float _groundCoeff = pow(saturate(i.normal.y), _GroundTintPow);
-			albedo = lerp(albedo, albedo * _GroundTintCol, _groundCoeff);
-		#endif
+//		#if defined(_WALL_TINT)
+//			float _coeff = pow(abs(i.normal.z), _WallTintPow);
+//			albedo = lerp(albedo, albedo * _WallTintCol, _coeff);
+//		#endif
+//
+//		#if defined(_GROUND_TINT)
+//			float _groundCoeff = pow(saturate(i.normal.y), _GroundTintPow);
+//			albedo = lerp(albedo, albedo * _GroundTintCol, _groundCoeff);
+//		#endif
 
 		return albedo; 
 	}

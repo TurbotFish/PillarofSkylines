@@ -1,4 +1,5 @@
-﻿using Game.Player.CharacterController.Containers;
+﻿using Game.Model;
+using Game.Player.CharacterController.Containers;
 using Game.Player.CharacterController.States;
 using System.Collections;
 using System.Collections.Generic;

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Game.Model;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -39,13 +40,13 @@ namespace Game.World
 
         [SerializeField]
         [HideInInspector]
-        List<Player.eAbilityGroup> pillarAbilityGroups = new List<Player.eAbilityGroup>();
+        List<eAbilityGroup> pillarAbilityGroups = new List<eAbilityGroup>();
 
 #if UNITY_EDITOR
-        public List<Player.eAbilityGroup> PillarAbilityGroups { get { return pillarAbilityGroups; } set { pillarAbilityGroups = value; } }
+        public List<eAbilityGroup> PillarAbilityGroups { get { return pillarAbilityGroups; } set { pillarAbilityGroups = value; } }
 #endif
 
-        public Player.eAbilityGroup GetPillarAbilityGroup(ePillarId pillarId)
+        public eAbilityGroup GetPillarAbilityGroup(ePillarId pillarId)
         {
             if (pillarAbilityGroups.Count > (int)pillarId)
             {

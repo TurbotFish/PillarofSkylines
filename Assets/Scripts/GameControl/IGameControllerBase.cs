@@ -1,13 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.SceneManagement;
+﻿using Game.Model;
 
 namespace Game.GameControl
 {
     public interface IGameControllerBase
     {
-        Player.PlayerModel PlayerModel { get; }
+        PlayerModel PlayerModel { get; }
         EchoSystem.EchoManager EchoManager { get; }
         EclipseManager EclipseManager { get; }
 

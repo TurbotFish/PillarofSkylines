@@ -8,7 +8,11 @@ TextureImporter:
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
+<<<<<<< HEAD
     sRGBTexture: 1
+=======
+    sRGBTexture: 0
+>>>>>>> grr
     linearTexture: 0
     fadeOut: 0
     borderMipMap: 0
@@ -46,8 +50,13 @@ TextureImporter:
   spritePivot: {x: 0.5, y: 0.5}
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spritePixelsToUnits: 100
+<<<<<<< HEAD
   alphaUsage: 1
   alphaIsTransparency: 1
+=======
+  alphaUsage: 0
+  alphaIsTransparency: 0
+>>>>>>> grr
   spriteTessellationDetail: -1
   textureType: 0
   textureShape: 1
@@ -56,9 +65,17 @@ TextureImporter:
   textureFormatSet: 0
   platformSettings:
   - buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 32
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 3
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+  - buildTarget: Standalone
+    maxTextureSize: 32
+    textureFormat: -1
+    textureCompression: 3
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0

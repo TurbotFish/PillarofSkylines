@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Game.Model;
+using UnityEngine;
 
 namespace Game.Player {
     /// <summary>
