@@ -1,4 +1,5 @@
 ﻿using Game.GameControl;
+using Game.Model;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace Game.UI.PillarEntranceMenu
         [SerializeField]
         GameObject warningMessage;
 
-        Player.PlayerModel playerModel;
+        PlayerModel playerModel;
 
         //
         World.ePillarId pillarId;

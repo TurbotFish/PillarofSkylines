@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Game.Model;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -16,8 +17,8 @@ namespace Game.GameControl
         private GameObject uiPrefab;
 
         //
-        Player.PlayerModel playerModel;
-        public Player.PlayerModel PlayerModel { get { return playerModel; } }
+        PlayerModel playerModel;
+        public PlayerModel PlayerModel { get { return playerModel; } }
 
         EchoSystem.EchoManager echoManager;
         public EchoSystem.EchoManager EchoManager { get { return echoManager; } }
@@ -71,7 +72,7 @@ namespace Game.GameControl
             //***********************
 
             //getting references in game controller
-            playerModel = GetComponentInChildren<Player.PlayerModel>();
+            playerModel = GetComponentInChildren<PlayerModel>();
             echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
             eclipseManager = GetComponentInChildren<EclipseManager>();
 
