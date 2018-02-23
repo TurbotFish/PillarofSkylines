@@ -815,6 +815,7 @@
 			output.gBuffer3 = color;
 
 			#if defined (SHADOWS_SHADOWMASK) && (UNITY_ALLOWED_MRT_COUNT > 4)
+				float2 shadowUV = 0;
 				#if defined(LIGHTMAP_ON)
 					shadowUV = i.lightmapUV;
 				#endif
