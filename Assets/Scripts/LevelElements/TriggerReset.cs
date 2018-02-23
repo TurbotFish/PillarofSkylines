@@ -29,9 +29,9 @@ public class TriggerReset : Trigger {
     
     private void OnTriggerEnter(Collider other) {
         if (other.tag == tagToActivate) {
-            /*if (Toggle)
-                TriggerState ^= true;
-            else*/
+            if (TriggerState ==true)
+                TriggerState = false;
+            else
                 TriggerState = false;
 
             if (changeMaterial) {
