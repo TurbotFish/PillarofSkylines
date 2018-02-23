@@ -48,15 +48,15 @@ float3 GetAlbedo(Interpolators i){
 		#endif
 
 
-		#if defined(_WALL_TINT)
-			float _coeff = pow(abs(i.normal.z), _WallTintPow);
-			albedo = lerp(albedo, albedo * _WallTintCol, _coeff);
-		#endif
-
-		#if defined(_GROUND_TINT)
-			float _groundCoeff = pow(saturate(i.normal.y), _GroundTintPow);
-			albedo = lerp(albedo, albedo * _GroundTintCol, _groundCoeff);
-		#endif
+//		#if defined(_WALL_TINT)
+//			float _coeff = pow(abs(i.normal.z), _WallTintPow);
+//			albedo = lerp(albedo, albedo * _WallTintCol, _coeff);
+//		#endif
+//
+//		#if defined(_GROUND_TINT)
+//			float _groundCoeff = pow(saturate(i.normal.y), _GroundTintPow);
+//			albedo = lerp(albedo, albedo * _GroundTintCol, _groundCoeff);
+//		#endif
 
 		return albedo; 
 	}
