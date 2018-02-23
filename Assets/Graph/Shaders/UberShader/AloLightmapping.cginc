@@ -38,9 +38,9 @@ float GetDetailMask(Interpolators i){
 float3 GetAlbedo(Interpolators i){
 		float3 albedoTex = tex2D(_MainTex, i.uv.xy).rgb * _Color.rgb;
 		float3 albedo = albedoTex * _Color.rgb;
-		#if defined(_ALBEDO_VERTEX_MASK)
-			albedo = lerp(albedoTex, albedo, i.color.g);
-		#endif
+//		#if defined(_ALBEDO_VERTEX_MASK)
+//			albedo = lerp(albedoTex, albedo, i.color.g);
+//		#endif
 
 		#if defined(_DETAIL_ALBEDO_MAP)
 			float3 details = tex2D(_DetailTex, i.uv.zw) * unity_ColorSpaceDouble;
