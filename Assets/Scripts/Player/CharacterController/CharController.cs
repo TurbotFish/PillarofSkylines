@@ -248,8 +248,7 @@ namespace Game.Player.CharacterController
                 {
                     CreateGroundRise();
                 }
-
-                //
+                
                 stateMachine.HandleInput();
             }
 
