@@ -238,9 +238,9 @@
 			float2 surfaceUV = float2(((i.worldPos.z + 250)/500), (i.worldPos.y + 250)/500);
 				
 
-			#if defined(_GPUI_EAST)
-				surfaceUV.x = 1 - surfaceUV.x;
-			#endif
+//			#if defined(_GPUI_EAST)
+//				surfaceUV.x = 1 - surfaceUV.x;
+//			#endif
 			albedo = tex2D(_GPUIColorMap, surfaceUV).rgb;
 		#endif
 

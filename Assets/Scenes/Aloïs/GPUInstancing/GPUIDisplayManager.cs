@@ -110,11 +110,11 @@ public class GPUIDisplayManager : MonoBehaviour {
 			currentLayer = eastLayer;
 			colorVariationMap = eastMap;
 
-			materialToDraw.EnableKeyword ("_GPUI_EAST");
+			//materialToDraw.EnableKeyword ("_GPUI_EAST");
 		} else {
 			currentLayer = westLayer;
 			colorVariationMap = westMap;
-			materialToDraw.DisableKeyword ("_GPUI_EAST");
+			//materialToDraw.DisableKeyword ("_GPUI_EAST");
 		}
 		Shader.SetGlobalTexture ("_GPUIColorMap", colorVariationMap);
 	}
