@@ -153,7 +153,7 @@ namespace Game.GameControl
                 this.pillarSceneDictionary.Add(pillarId, pillarInfo);
 
                 //initializing world objects in pillar
-                var worldObjects = SearchForScriptsInScene<World.IWorldObjectInitialization>(pillarScene);
+                var worldObjects = SearchForScriptsInScene<World.IWorldObject>(pillarScene);
 
                 foreach(var worldObject in worldObjects)
                 {

@@ -13,7 +13,7 @@ namespace Game.LevelElements
     /// Use this class for objects that can be activated by triggers.
     /// </summary>
     [ExecuteInEditMode]
-    public abstract class TriggerableObject : MonoBehaviour, IWorldObjectInitialization
+    public abstract class TriggerableObject : MonoBehaviour, IWorldObject
     {
         //###########################################################
 

@@ -122,9 +122,9 @@ namespace Game.GameControl
                 var worldObjects = FindObjectsOfType<MonoBehaviour>();
                 foreach(var obj in worldObjects)
                 {
-                    if (obj is World.IWorldObjectInitialization)
+                    if (obj is World.IWorldObject)
                     {
-                        (obj as World.IWorldObjectInitialization).Initialize(this, false);
+                        (obj as World.IWorldObject).Initialize(this, false);
                     }
                 }
             }

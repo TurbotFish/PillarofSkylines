@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Game.GameControl;
 using Game.Model;
 using Game.World.ChunkSystem;
 using UnityEngine;
@@ -6,7 +7,7 @@ using UnityEngine.Serialization;
 
 namespace Game.World.Interaction
 {
-    public class CurrencyPickUp : MonoBehaviour, IWorldObjectInitialization
+    public class CurrencyPickUp : MonoBehaviour, IWorldObject
     {
         //##################################################################
 
@@ -21,7 +22,9 @@ namespace Game.World.Interaction
         private eCurrencyType currencyType;
 
         bool favourPickedUp = false;
+        IGameControllerBase gameController;
         WorldController worldController;
+        
         BoxCollider myCollider;
         bool isCopy;      
 
@@ -80,10 +83,6 @@ namespace Game.World.Interaction
 
         private void OnDestroy()
         {
-            if (worldController != null)
-            {
-                worldController.UnregisterFavour(this);
-            }
         }
 
         #endregion monobehaviour methods
@@ -92,7 +91,7 @@ namespace Game.World.Interaction
 
         #region public methods
 
-        void IWorldObjectInitialization.Initialize(GameControl.IGameControllerBase gameController, bool isCopy)
+        void IWorldObject.Initialize(IGameControllerBase gameController, bool isCopy)
         {
             MyTransform = transform;
 
@@ -107,6 +106,7 @@ namespace Game.World.Interaction
                 }
             }
 
+            this.gameController = gameController;
             worldController = gameController.WorldController;
             myCollider = GetComponent<BoxCollider>();
             this.isCopy = isCopy;
@@ -120,7 +120,6 @@ namespace Game.World.Interaction
             else
             {
                 Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
-                worldController.RegisterFavour(this);
             }
         }
 

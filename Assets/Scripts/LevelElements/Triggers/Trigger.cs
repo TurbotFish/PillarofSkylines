@@ -11,7 +11,7 @@ using Game.Model;
 namespace Game.LevelElements
 {
     [ExecuteInEditMode]
-    public abstract class Trigger : MonoBehaviour, IWorldObjectInitialization
+    public abstract class Trigger : MonoBehaviour, IWorldObject
     {
         //###########################################################
 

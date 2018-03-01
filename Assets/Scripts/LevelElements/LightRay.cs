@@ -6,7 +6,7 @@ namespace Game.LevelElements
 {
     [ExecuteInEditMode]
     [RequireComponent(typeof(LineRenderer))]
-    public class LightRay : MonoBehaviour, IWorldObjectInitialization
+    public class LightRay : MonoBehaviour, IWorldObject
     {
         //###########################################################
 
