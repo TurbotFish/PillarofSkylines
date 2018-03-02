@@ -1,9 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using Game.World;
-using Game.World.ChunkSystem;
-using Game.Player;
-using Game.LevelElements;
 using Game.Utilities;
 using System;
 using Game.Model;
@@ -48,6 +45,7 @@ namespace Game.LevelElements
         private PlayerModel model;
         private PersistentTrigger persistentTrigger;
         private bool isCopy;
+        private bool isInitialized;
 
         //###########################################################
 
@@ -55,31 +53,7 @@ namespace Game.LevelElements
 
         public string Id { get { return id; } }
 
-        public bool TriggerState
-        {
-            get { return _triggerState; }
-            protected set
-            {
-                if (_triggerState == value) //if the value does not change we don't do anything
-                {
-                    return;
-                }
-                else
-                {
-                    _triggerState = value;
-
-                    if (!isCopy)
-                    {
-                        if (persistentTrigger != null)
-                        {
-                            persistentTrigger.TriggerState = _triggerState;
-                        }
-
-                        EventManager.SendTriggerUpdatedEvent(this, new EventManager.TriggerUpdatedEventArgs(this));
-                    }
-                }
-            }
-        }
+        public bool TriggerState { get { return _triggerState; } }
 
         public bool Toggle { get { return toggle; } }
 
@@ -91,49 +65,67 @@ namespace Game.LevelElements
 
         //###########################################################
 
-        #region editor methods
+        #region public methods
 
-#if UNITY_EDITOR
-
-        private void OnValidate()
+        /// <summary>
+        /// Initializes the Trigger. Implemented from IWorldObjectInitialization.
+        /// </summary>
+        /// <param name="worldController"></param>
+        /// <param name="isCopy"></param>
+        public virtual void Initialize(GameControl.IGameControllerBase gameController, bool isCopy)
         {
-            //register trigger
-            foreach (var target in targets)
+            //Debug.Log("trigger " + gameObject.activeInHierarchy);
+
+            model = gameController.PlayerModel;
+            this.isCopy = isCopy;
+
+            persistentTrigger = model.GetPersistentTrigger(id);
+
+            if (persistentTrigger == null)
             {
-                if (target && !target.ContainsTrigger(this))
-                {
-                    target.AddTrigger(this);
-                }
+                persistentTrigger = new PersistentTrigger(this);
+                model.AddPersistentTrigger(persistentTrigger);
+            }
+            else
+            {
+                _triggerState = persistentTrigger.TriggerState;
             }
 
-            //unregister trigger
-            foreach (var target in targetsOld)
-            {
-                if (target && !targets.Contains(target) && target.ContainsTrigger(this))
-                {
-                    target.RemoveTrigger(this);
-                }
-            }
-
-            targetsOld = new List<TriggerableObject>(targets);
+            isInitialized = true;
         }
 
-        protected virtual void OnDrawGizmos()
+        /// <summary>
+        /// Sets the state of the Trigger. Will send an event to inform all the attached triggerables.
+        /// </summary>
+        /// <param name="triggerState"></param>
+        protected void SetTriggerState(bool triggerState)
         {
-            Matrix4x4 rotationMatrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.lossyScale);
-            Gizmos.matrix = rotationMatrix;
-
-            Gizmos.color = Color.green;
-
-            foreach (TriggerableObject target in targets)
+            if (!isInitialized)
             {
-                Gizmos.DrawLine(Vector3.zero, transform.InverseTransformPoint(target.transform.position));
+                return;
+            }
+
+            if (_triggerState == triggerState) //if the value does not change we don't do anything
+            {
+                return;
+            }
+            else
+            {
+                _triggerState = triggerState;
+
+                if (!isCopy)
+                {
+                    if (persistentTrigger != null)
+                    {
+                        persistentTrigger.TriggerState = _triggerState;
+                    }
+
+                    EventManager.SendTriggerUpdatedEvent(this, new EventManager.TriggerUpdatedEventArgs(this));
+                }
             }
         }
 
-#endif
-
-        #endregion editor methods
+        #endregion public methods
 
         //###########################################################
 
@@ -193,10 +185,7 @@ namespace Game.LevelElements
             }
 #endif
 
-            if (!isCopy)
-            {
-                persistentTrigger.TriggerState = _triggerState;
-            }
+            OnUnloaded();
         }
 
         private void OnDisable()
@@ -208,44 +197,69 @@ namespace Game.LevelElements
             }
 #endif
 
-            if (!isCopy)
+            OnUnloaded();
+        }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            //register trigger
+            foreach (var target in targets)
             {
-                OnDestroy();
+                if (target && !target.ContainsTrigger(this))
+                {
+                    target.AddTrigger(this);
+                }
+            }
+
+            //unregister trigger
+            foreach (var target in targetsOld)
+            {
+                if (target && !targets.Contains(target) && target.ContainsTrigger(this))
+                {
+                    target.RemoveTrigger(this);
+                }
+            }
+
+            targetsOld = new List<TriggerableObject>(targets);
+        }
+#endif
+
+#if UNITY_EDITOR
+        protected virtual void OnDrawGizmos()
+        {
+            Matrix4x4 rotationMatrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.lossyScale);
+            Gizmos.matrix = rotationMatrix;
+
+            Gizmos.color = Color.green;
+
+            foreach (TriggerableObject target in targets)
+            {
+                Gizmos.DrawLine(Vector3.zero, transform.InverseTransformPoint(target.transform.position));
             }
         }
+#endif
 
         #endregion monobehaviour methods
 
         //###########################################################
 
-        #region public methods
+        #region private methods
 
-        /// <summary>
-        /// Initializes the Trigger. Implemented from IWorldObjectInitialization.
-        /// </summary>
-        /// <param name="worldController"></param>
-        /// <param name="isCopy"></param>
-        public virtual void Initialize(GameControl.IGameControllerBase gameController, bool isCopy)
+        private void OnUnloaded()
         {
-            //Debug.Log("trigger " + gameObject.activeInHierarchy);
-
-            model = gameController.PlayerModel;
-            this.isCopy = isCopy;
-
-            persistentTrigger = model.GetPersistentTrigger(id);
-
-            if (persistentTrigger == null)
+            if (!isInitialized)
             {
-                persistentTrigger = new PersistentTrigger(this);
-                model.AddPersistentTrigger(persistentTrigger);
+                return;
             }
-            else
+
+            if (!isCopy && persistentTrigger != null)
             {
-                _triggerState = persistentTrigger.TriggerState;
+                persistentTrigger.TriggerState = _triggerState;
             }
         }
 
-        #endregion public methods
+        #endregion private methods
 
         //###########################################################
     }

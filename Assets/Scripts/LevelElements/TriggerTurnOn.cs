@@ -40,7 +40,7 @@ namespace Game.LevelElements
                     TriggerState ^= true;
                 else*/
                 //print ("yo");
-                TriggerState = true;
+                SetTriggerState(true);
 
                 if (changeMaterial)
                 {

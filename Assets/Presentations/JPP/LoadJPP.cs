@@ -6,12 +6,12 @@ using UnityEngine.SceneManagement;
 public class LoadJPP : MonoBehaviour {
 
 	public bool loadScene;
-	Game.World.ChunkSystem.WorldController worldController;
+	//Game.World.New.WorldController worldController;
 	//public Game.World.ChunkSystem.WorldController WorldController { get { return this.worldController; } }
 	Camera mainCam;
 	// Use this for initialization
 	void Awake () {
-		this.worldController = FindObjectOfType<Game.World.ChunkSystem.WorldController>();
+		//this.worldController = FindObjectOfType<Game.World.New.WorldController>();
 		if (loadScene)
 			SceneManager.LoadScene ("JPP", LoadSceneMode.Additive);
 

@@ -1,4 +1,4 @@
-﻿namespace Game.World.New
+﻿namespace Game.World
 {
     /// <summary>
     /// The mode of a SubScene (normal, intact, destroyed, ...).

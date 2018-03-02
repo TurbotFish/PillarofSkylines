@@ -7,7 +7,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Game.World.New
+namespace Game.World
 {
     public class WorldController : MonoBehaviour, IWorldEventHandler
     {
@@ -91,7 +91,6 @@ namespace Game.World.New
         {
             if (!isInitialized)
             {
-                Debug.Log("d");
                 return;
             }
 

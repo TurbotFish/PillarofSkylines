@@ -1,4 +1,4 @@
-﻿namespace Game.World.New
+﻿namespace Game.World
 {
     public enum eSubSceneJobType
     {

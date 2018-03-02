@@ -1,4 +1,4 @@
-﻿namespace Game.World.New
+﻿namespace Game.World
 {
     /// <summary>
     /// The type of a SubScene, determining its visibility.

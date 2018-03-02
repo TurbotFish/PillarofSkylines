@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using Game.GameControl;
 using Game.Model;
-using Game.World.ChunkSystem;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -23,7 +22,6 @@ namespace Game.World.Interaction
 
         bool favourPickedUp = false;
         IGameControllerBase gameController;
-        WorldController worldController;
         
         BoxCollider myCollider;
         bool isCopy;      
@@ -107,11 +105,10 @@ namespace Game.World.Interaction
             }
 
             this.gameController = gameController;
-            worldController = gameController.WorldController;
             myCollider = GetComponent<BoxCollider>();
             this.isCopy = isCopy;
 
-            if (worldController.GameController.PlayerModel.CheckIfPickUpCollected(pickUpId))
+            if (gameController.PlayerModel.CheckIfPickUpCollected(pickUpId))
             {
                 PickUp();
 

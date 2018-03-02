@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game.World.New
+namespace Game.World
 {
     [ExecuteInEditMode]
     public class SubScene : MonoBehaviour

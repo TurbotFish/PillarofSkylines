@@ -47,7 +47,7 @@ namespace Game.LevelElements
             base.Initialize(gameController, isCopy);
 
             rend = GetComponent<Renderer>();
-            TriggerState = false;
+            SetTriggerState(false);
             rend.sharedMaterial = off;
         }
 
@@ -59,7 +59,7 @@ namespace Game.LevelElements
         public void SetToggle(bool newState, bool inverse)
         {
             Debug.LogFormat("LightReceptor: SetToggle: newState={0}", newState);
-            TriggerState = newState;
+            SetTriggerState(newState);
 
             if (TriggerState == inverse)
             {

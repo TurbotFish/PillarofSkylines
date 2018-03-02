@@ -39,7 +39,7 @@ namespace Game.LevelElements
                 /*if (Toggle)
                     TriggerState ^= true;
                 else*/
-                TriggerState = false;
+                SetTriggerState(false);
 
                 if (changeMaterial)
                 {

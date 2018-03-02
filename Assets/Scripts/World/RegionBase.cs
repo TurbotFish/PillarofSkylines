@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Game.World.New
+namespace Game.World
 {
     [RequireComponent(typeof(UniqueId))]
     public abstract class RegionBase : MonoBehaviour, IRegionEventHandler
@@ -58,7 +58,7 @@ namespace Game.World.New
         Color boundsColour = Color.green;
 #endif
 
-#endregion member variables
+        #endregion member variables
 
         //========================================================================================
 
@@ -533,6 +533,13 @@ namespace Game.World.New
                 if (subSceneStates[index] == eSubSceneState.Loading)
                 {
                     subSceneStates[index] = eSubSceneState.Loaded;
+                }
+
+                //initializing all WorldObjects
+                var worldObjects = GetComponentsInChildren<IWorldObject>(true);
+                for (int i = 0; i < worldObjects.Length; i++)
+                {
+                    worldObjects[i].Initialize(superRegion.World.GameController, superRegion.Type != eSuperRegionType.Centre);
                 }
             }
             else if (subSceneJob.JobType == eSubSceneJobType.Unload)

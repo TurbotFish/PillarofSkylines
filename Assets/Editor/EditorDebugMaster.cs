@@ -62,7 +62,7 @@ public class EditorDebugMaster : EditorWindow
     {
         Debug.Log("get scene view !");
         Transform viewPos = SceneView.lastActiveSceneView.camera.transform;
-        Game.World.ChunkSystem.WorldController worldController = FindObjectOfType<Game.World.ChunkSystem.WorldController>();
+        Game.World.WorldController worldController = FindObjectOfType<Game.World.WorldController>();
 
 
         Debug.Log("world : " + worldController.name);

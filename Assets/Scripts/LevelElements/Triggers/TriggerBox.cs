@@ -61,9 +61,9 @@ namespace Game.LevelElements
             if (other.tag == tagToActivate && Mathf.Abs(Vector3.Dot(other.transform.up, transform.up)) > 0.9f)
             {
                 if (Toggle)
-                    TriggerState ^= true;
+                    SetTriggerState(TriggerState ^ true);
                 else
-                    TriggerState = true;
+                    SetTriggerState(true);
 
                 if (changeMaterial)
                 {
@@ -80,7 +80,7 @@ namespace Game.LevelElements
             if (other.tag == tagToActivate)
             {
                 yield return new WaitForSeconds(delayBeforeDeactivation);
-                TriggerState = false;
+                SetTriggerState(false);
             }
         }
 

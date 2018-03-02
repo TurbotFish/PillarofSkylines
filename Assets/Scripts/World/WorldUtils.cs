@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Game.World.New
+namespace Game.World
 {
     public static class WorldUtility
     {

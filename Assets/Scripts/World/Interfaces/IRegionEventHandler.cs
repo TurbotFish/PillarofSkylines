@@ -1,6 +1,6 @@
 ﻿using UnityEngine.EventSystems;
 
-namespace Game.World.New
+namespace Game.World
 {
     public interface IRegionEventHandler : IEventSystemHandler
     {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Game.World.New
+namespace Game.World
 {
     public class Region : RegionBase
     {

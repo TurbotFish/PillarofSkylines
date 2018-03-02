@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System;
 using Game.World;
-using Game.World.ChunkSystem;
-using Game.LevelElements;
 using System.Collections;
 using Game.Model;
 
@@ -189,7 +187,7 @@ namespace Game.LevelElements
             }
 #endif
 
-            if (!isCopy)
+            if (!isCopy && persistentTriggerable != null)
             {
                 persistentTriggerable.Triggered = triggered;
             }

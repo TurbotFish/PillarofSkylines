@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game.World.New
+namespace Game.World
 {
     public class SubSceneJob
     {
