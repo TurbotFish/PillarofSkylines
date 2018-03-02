@@ -119,7 +119,7 @@ namespace Game.GameControl
             SceneManager.SetActiveScene(this.openWorldSceneInfo.Scene);
 
             this.openWorldSceneInfo.WorldController = SearchForScriptInScene<WorldController>(this.openWorldSceneInfo.Scene);
-            this.openWorldSceneInfo.SpawnPointManager = SearchForScriptInScene<World.SpawnPointSystem.SpawnPointManager>(this.openWorldSceneInfo.Scene);
+            this.openWorldSceneInfo.SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(this.openWorldSceneInfo.Scene);
 
             yield return null;
             //***********************
@@ -148,7 +148,7 @@ namespace Game.GameControl
                 {
                     Scene = pillarScene,
                     PillarId = pillarId,
-                    SpawnPointManager = SearchForScriptInScene<World.SpawnPointSystem.SpawnPointManager>(pillarScene)
+                    SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(pillarScene)
                 };
 
                 this.pillarSceneDictionary.Add(pillarId, pillarInfo);

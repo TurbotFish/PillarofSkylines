@@ -39,10 +39,11 @@ namespace Game.World
         private UniqueId uniqueId;
 
         private bool isInitialized;
-        protected eSubSceneState[] subSceneStates = new eSubSceneState[Enum.GetValues(typeof(eSubSceneType)).Length];
+        protected eSubSceneState[] subSceneStates = new eSubSceneState[Enum.GetValues(typeof(eSubSceneLayer)).Length];
         private eRegionMode currentRegionMode = eRegionMode.Inactive;
         private eSubSceneMode currentSubSceneMode;
         private bool hasSubSceneModeChanged = false;
+        private float cameraDistance;
 
         private List<Vector3> boundsCorners;
 
@@ -75,6 +76,8 @@ namespace Game.World
         public float RenderDistanceInactive { get { return overrideRenderDistances ? localRenderDistanceInactive : superRegion.World.RenderDistanceInactive; } }
 
         public eSubSceneMode CurrentSubSceneMode { get { return currentSubSceneMode; } }
+
+        public float CameraDistance { get { return cameraDistance; } }
 
         #endregion properties
 
@@ -180,16 +183,10 @@ namespace Game.World
             currentSubSceneMode = InitialSubSceneMode;
 
             //initializing SubScene states array
-            var subScenes = GetAllSubScenes();
-            foreach (var subSceneType in Enum.GetValues(typeof(eSubSceneType)).Cast<eSubSceneType>())
+            foreach (var subSceneLayer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
             {
-                int index = (int)subSceneType;
+                int index = (int)subSceneLayer;
                 subSceneStates[index] = eSubSceneState.Unloaded;
-
-                //if (subScenes.FirstOrDefault(item => item.SubSceneType == subSceneType && item.SubSceneMode == currentSubSceneMode))
-                //{
-                //    subSceneStates[index] = eSubSceneState.Loaded;
-                //}
             }
 
             //computing corner positions
@@ -230,7 +227,7 @@ namespace Game.World
                 {
                     if (subScene.SubSceneMode != currentSubSceneMode)
                     {
-                        result.Add(CreateUnloadSubSceneJob(subScene.SubSceneMode, subScene.SubSceneType));
+                        result.Add(CreateUnloadSubSceneJob(subScene.SubSceneMode, subScene.SubSceneLayer));
                     }
                 }
 
@@ -240,7 +237,7 @@ namespace Game.World
                     {
                         foreach (var value in Enum.GetValues(typeof(eSubSceneMode)).Cast<eSubSceneMode>())
                         {
-                            result.Add(CreateUnloadSubSceneJob(value, (eSubSceneType)i));
+                            result.Add(CreateUnloadSubSceneJob(value, (eSubSceneLayer)i));
                         }
                     }
                 }
@@ -265,6 +262,37 @@ namespace Game.World
                 }
             }
 
+            //compute distance
+            cameraDistance = float.MaxValue;
+
+            if (bounds.Contains(cameraPosition))
+            {
+                cameraDistance = 0;
+            }
+            else
+            {
+                cameraDistance = (bounds.ClosestPoint(cameraPosition) - cameraPosition).magnitude;
+
+                foreach (var teleportPosition in teleportPositions)
+                {
+                    if (bounds.Contains(teleportPosition))
+                    {
+                        cameraDistance = 0;
+                        break;
+                    }
+                    else
+                    {
+                        float dist = (bounds.ClosestPoint(teleportPosition) - teleportPosition).magnitude;
+                        dist *= superRegion.World.SecondaryPositionDistanceModifier;
+
+                        if (dist < cameraDistance)
+                        {
+                            cameraDistance = dist;
+                        }
+                    }
+                }
+            }
+
             //compute distance and switch mode
             if (!isVisible)
             {
@@ -276,64 +304,34 @@ namespace Game.World
             }
             else
             {
-                float distance = float.MaxValue;
-
-                if (bounds.Contains(cameraPosition))
-                {
-                    distance = 0;
-                }
-                else
-                {
-                    distance = (bounds.ClosestPoint(cameraPosition) - cameraPosition).magnitude;
-
-                    foreach (var teleportPosition in teleportPositions)
-                    {
-                        if (bounds.Contains(teleportPosition))
-                        {
-                            distance = 0;
-                            break;
-                        }
-                        else
-                        {
-                            float dist = (bounds.ClosestPoint(teleportPosition) - teleportPosition).magnitude;
-                            dist *= superRegion.World.SecondaryPositionDistanceModifier;
-
-                            if (dist < distance)
-                            {
-                                distance = dist;
-                            }
-                        }
-                    }
-                }
-
                 switch (currentRegionMode)
                 {
                     case eRegionMode.Near:
-                        if (distance > RenderDistanceInactive * 1.1f)
+                        if (cameraDistance > RenderDistanceInactive * 1.1f)
                         {
                             result = SwitchMode(eRegionMode.Inactive);
                         }
-                        else if (distance > RenderDistanceFar * 1.1f)
+                        else if (cameraDistance > RenderDistanceFar * 1.1f)
                         {
                             result = SwitchMode(eRegionMode.Far);
                         }
                         break;
                     case eRegionMode.Far:
-                        if (distance > RenderDistanceInactive * 1.1f)
+                        if (cameraDistance > RenderDistanceInactive * 1.1f)
                         {
                             result = SwitchMode(eRegionMode.Inactive);
                         }
-                        else if (distance < RenderDistanceFar)
+                        else if (cameraDistance < RenderDistanceFar)
                         {
                             result = SwitchMode(eRegionMode.Near);
                         }
                         break;
                     case eRegionMode.Inactive:
-                        if (distance < RenderDistanceFar)
+                        if (cameraDistance < RenderDistanceFar)
                         {
                             result = SwitchMode(eRegionMode.Near);
                         }
-                        else if (distance < RenderDistanceInactive)
+                        else if (cameraDistance < RenderDistanceInactive)
                         {
                             result = SwitchMode(eRegionMode.Far);
                         }
@@ -386,10 +384,10 @@ namespace Game.World
         /// <summary>
         /// Returns the Transform of the SubScene of current mode and chosen type.
         /// </summary>
-        /// <param name="subSceneType"></param>
+        /// <param name="subSceneLayer"></param>
         /// <param name="subSceneList"></param>
         /// <returns></returns>
-        public Transform GetSubSceneRoot(eSubSceneType subSceneType, List<SubScene> subSceneList = null)
+        public Transform GetSubSceneRoot(eSubSceneLayer subSceneLayer, List<SubScene> subSceneList = null)
         {
             if (subSceneList == null)
             {
@@ -398,7 +396,7 @@ namespace Game.World
 
             foreach (var subScene in subSceneList)
             {
-                if (subScene.SubSceneMode == currentSubSceneMode && subScene.SubSceneType == subSceneType)
+                if (subScene.SubSceneMode == currentSubSceneMode && subScene.SubSceneLayer == subSceneLayer)
                 {
                     return subScene.transform;
                 }
@@ -410,11 +408,11 @@ namespace Game.World
         /// <summary>
         /// Returns the Transform of the SubScene of chosen mode and type.
         /// </summary>
-        /// <param name="subSceneType"></param>
+        /// <param name="subSceneLayer"></param>
         /// <param name="subSceneMode"></param>
         /// <param name="subSceneList"></param>
         /// <returns></returns>
-        public Transform GetSubSceneRoot(eSubSceneType subSceneType, eSubSceneMode subSceneMode, List<SubScene> subSceneList = null)
+        public Transform GetSubSceneRoot(eSubSceneLayer subSceneLayer, eSubSceneMode subSceneMode, List<SubScene> subSceneList = null)
         {
             if (subSceneList == null)
             {
@@ -423,7 +421,7 @@ namespace Game.World
 
             foreach (var subScene in subSceneList)
             {
-                if (subScene.SubSceneMode == subSceneMode && subScene.SubSceneType == subSceneType)
+                if (subScene.SubSceneMode == subSceneMode && subScene.SubSceneLayer == subSceneLayer)
                 {
                     return subScene.transform;
                 }
@@ -457,27 +455,27 @@ namespace Game.World
             {
                 case eRegionMode.Near:
                     //load
-                    result.Add(CreateLoadSubSceneJob(currentSubSceneMode, eSubSceneType.Always));
-                    result.Add(CreateLoadSubSceneJob(currentSubSceneMode, eSubSceneType.Near));
+                    result.Add(CreateLoadSubSceneJob(currentSubSceneMode, eSubSceneLayer.Always));
+                    result.Add(CreateLoadSubSceneJob(currentSubSceneMode, eSubSceneLayer.Near));
 
                     //unload
-                    result.Add(CreateUnloadSubSceneJob(currentSubSceneMode, eSubSceneType.Far));
+                    result.Add(CreateUnloadSubSceneJob(currentSubSceneMode, eSubSceneLayer.Far));
 
                     break;
                 case eRegionMode.Far:
                     //load
-                    result.Add(CreateLoadSubSceneJob(currentSubSceneMode, eSubSceneType.Always));
-                    result.Add(CreateLoadSubSceneJob(currentSubSceneMode, eSubSceneType.Far));
+                    result.Add(CreateLoadSubSceneJob(currentSubSceneMode, eSubSceneLayer.Always));
+                    result.Add(CreateLoadSubSceneJob(currentSubSceneMode, eSubSceneLayer.Far));
 
                     //unload
-                    result.Add(CreateUnloadSubSceneJob(currentSubSceneMode, eSubSceneType.Near));
+                    result.Add(CreateUnloadSubSceneJob(currentSubSceneMode, eSubSceneLayer.Near));
 
                     break;
                 case eRegionMode.Inactive:
                     //unload
-                    result.Add(CreateUnloadSubSceneJob(currentSubSceneMode, eSubSceneType.Always));
-                    result.Add(CreateUnloadSubSceneJob(currentSubSceneMode, eSubSceneType.Far));
-                    result.Add(CreateUnloadSubSceneJob(currentSubSceneMode, eSubSceneType.Near));
+                    result.Add(CreateUnloadSubSceneJob(currentSubSceneMode, eSubSceneLayer.Always));
+                    result.Add(CreateUnloadSubSceneJob(currentSubSceneMode, eSubSceneLayer.Far));
+                    result.Add(CreateUnloadSubSceneJob(currentSubSceneMode, eSubSceneLayer.Near));
                     break;
             }
 
@@ -487,36 +485,38 @@ namespace Game.World
             return result;
         }
 
-        private SubSceneJob CreateLoadSubSceneJob(eSubSceneMode subSceneMode, eSubSceneType subSceneType)
+        private SubSceneJob CreateLoadSubSceneJob(eSubSceneMode subSceneMode, eSubSceneLayer subSceneLayer)
         {
-            int index = (int)subSceneMode;
+            int index = (int)subSceneLayer;
             eSubSceneState state = subSceneStates[index];
 
-            //if (state == eSubSceneState.Loaded || state == eSubSceneState.Loading)
-            //{
-            //    return null;
-            //}
-            //else
-            //{
-            subSceneStates[index] = eSubSceneState.Loading;
-            return new SubSceneJob(this, subSceneMode, subSceneType, eSubSceneJobType.Load, OnSubSceneJobDone);
-            //}
+            //Debug.LogWarningFormat("RegionBase \"{0}\": CreateSubSceneLoadJob: mode={1}; type={2}; currentState={3}", name, subSceneMode, subSceneType, state);
+
+            if (state == eSubSceneState.Loaded || state == eSubSceneState.Loading)
+            {
+                return null;
+            }
+            else
+            {
+                subSceneStates[index] = eSubSceneState.Loading;
+                return new SubSceneJob(this, subSceneMode, subSceneLayer, eSubSceneJobType.Load, OnSubSceneJobDone);
+            }
         }
 
-        private SubSceneJob CreateUnloadSubSceneJob(eSubSceneMode subSceneMode, eSubSceneType subSceneType)
+        private SubSceneJob CreateUnloadSubSceneJob(eSubSceneMode subSceneMode, eSubSceneLayer subSceneLayer)
         {
-            int index = (int)subSceneMode;
+            int index = (int)subSceneLayer;
             eSubSceneState state = subSceneStates[index];
 
-            //if (state == eSubSceneState.Unloaded || state == eSubSceneState.Unloading)
-            //{
-            //    return null;
-            //}
-            //else
-            //{
-            subSceneStates[index] = eSubSceneState.Unloading;
-            return new SubSceneJob(this, subSceneMode, subSceneType, eSubSceneJobType.Unload, OnSubSceneJobDone);
-            //}
+            if (state == eSubSceneState.Unloaded || state == eSubSceneState.Unloading)
+            {
+                return null;
+            }
+            else
+            {
+                subSceneStates[index] = eSubSceneState.Unloading;
+                return new SubSceneJob(this, subSceneMode, subSceneLayer, eSubSceneJobType.Unload, OnSubSceneJobDone);
+            }
         }
 
         private void OnSubSceneJobDone(SubSceneJob subSceneJob)
@@ -526,13 +526,17 @@ namespace Game.World
                 return;
             }
 
-            int index = (int)subSceneJob.SubSceneMode;
+            int index = (int)subSceneJob.SubSceneLayer;
 
             if (subSceneJob.JobType == eSubSceneJobType.Load)
             {
                 if (subSceneStates[index] == eSubSceneState.Loading)
                 {
                     subSceneStates[index] = eSubSceneState.Loaded;
+                }
+                else
+                {
+                    Debug.LogWarningFormat("SubScene \"{0} {1} {2}\" was loaded but should be unloading ({3})", name, subSceneJob.SubSceneMode, subSceneJob.SubSceneLayer, subSceneStates[index]);
                 }
 
                 //initializing all WorldObjects
@@ -548,16 +552,20 @@ namespace Game.World
                 {
                     subSceneStates[index] = eSubSceneState.Unloaded;
                 }
+                else
+                {
+                    Debug.LogWarningFormat("SubScene \"{0} {1} {2}\" was unloaded but should be loading ({3})", name, subSceneJob.SubSceneMode, subSceneJob.SubSceneLayer, subSceneStates[index]);
+                }
             }
         }
 
 #if UNITY_EDITOR
-        void IRegionEventHandler.CreateSubScene(eSubSceneMode subSceneMode, eSubSceneType subSceneType)
+        void IRegionEventHandler.CreateSubScene(eSubSceneMode subSceneMode, eSubSceneLayer subSceneLayer)
         {
-            string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, Id, subSceneMode, subSceneType);
+            string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, Id, subSceneMode, subSceneLayer);
             string subScenePathFull = WorldUtility.GetFullPath(subScenePath);
 
-            if (GetSubSceneRoot(subSceneType) != null)
+            if (GetSubSceneRoot(subSceneLayer) != null)
             {
                 return;
             }
@@ -568,8 +576,8 @@ namespace Game.World
             }
             else
             {
-                var rootGO = new GameObject(WorldUtility.GetSubSceneRootName(subSceneMode, subSceneType), typeof(SubScene));
-                rootGO.GetComponent<SubScene>().Initialize(subSceneMode, subSceneType);
+                var rootGO = new GameObject(WorldUtility.GetSubSceneRootName(subSceneMode, subSceneLayer), typeof(SubScene));
+                rootGO.GetComponent<SubScene>().Initialize(subSceneMode, subSceneLayer);
 
                 var root = rootGO.transform;
                 root.SetParent(transform, false);

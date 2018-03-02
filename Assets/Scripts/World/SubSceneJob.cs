@@ -9,20 +9,22 @@ namespace Game.World
     {
         public RegionBase Region { get; private set; }
         public eSubSceneMode SubSceneMode { get; private set; }
-        public eSubSceneType SubSceneType { get; private set; }
+        public eSubSceneLayer SubSceneLayer { get; private set; }
         public eSubSceneJobType JobType { get; private set; }
         public Action<SubSceneJob> Callback { get; private set; }
 
         public Transform SubSceneRoot { get; set; }
         public bool IsJobSuccessful { get; set; }
 
-        public SubSceneJob(RegionBase region, eSubSceneMode subSceneMode, eSubSceneType subSceneType, eSubSceneJobType jobType, Action<SubSceneJob> callback)
+        public SubSceneJob(RegionBase region, eSubSceneMode subSceneMode, eSubSceneLayer subSceneLayer, eSubSceneJobType jobType, Action<SubSceneJob> callback)
         {
             Region = region;
             SubSceneMode = subSceneMode;
-            SubSceneType = subSceneType;
+            SubSceneLayer = subSceneLayer;
             JobType = jobType;
             Callback = callback;
         }
+
+        public float Priority { get { return Region.CameraDistance; } }
     }
-}
+} //end of namespace

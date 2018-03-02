@@ -55,7 +55,6 @@ namespace Game.World
         bool isJobRunning = false;
 
         int currentSuperRegionIndex;
-        private Transform myTransform;
         IGameControllerBase gameController;
 
 #if UNITY_EDITOR
@@ -133,25 +132,28 @@ namespace Game.World
             //cleaning and updating the list of SubSceneJobs
             foreach (var job in newJobs)
             {
-                eSubSceneJobType oppositeJobType = job.JobType == eSubSceneJobType.Load ? eSubSceneJobType.Unload : eSubSceneJobType.Load;
+                eSubSceneJobType oppositeJobType = (job.JobType == eSubSceneJobType.Load) ? eSubSceneJobType.Unload : eSubSceneJobType.Load;
 
                 int indexOfOppositeJob = subSceneJobsList.FindIndex(
                     item => item.Region.Id == job.Region.Id
                     && item.JobType == oppositeJobType
                     && item.SubSceneMode == job.SubSceneMode
-                    && item.SubSceneType == job.SubSceneType
+                    && item.SubSceneLayer == job.SubSceneLayer
                 );
 
                 if (indexOfOppositeJob >= 0)
                 {
                     subSceneJobsList.RemoveAt(indexOfOppositeJob);
+                    Debug.LogWarningFormat("WorldController: Update: {0} job removed!", oppositeJobType.ToString());
                 }
             }
 
-            foreach (var job in newJobs) //this is temporarily in its own loop, will change when/if priorities are added
+            foreach (var job in newJobs)
             {
                 subSceneJobsList.Add(job);
             }
+
+            subSceneJobsList.OrderBy(item => item.Priority);
 
             //***********************************************
             //executing jobs
@@ -221,7 +223,6 @@ namespace Game.World
 
         public void Initialize(IGameControllerBase gameController)
         {
-            myTransform = transform;
             this.gameController = gameController;
 
             //find all the initial regions
@@ -239,12 +240,9 @@ namespace Game.World
                     region.transform.SetParent(superRegion.transform, true);
 
                     //deactivating all subScenes
-                    foreach (Transform child in region.transform)
+                    foreach (var child in region.GetAllSubSceneRoots())
                     {
-                        if (child.GetComponent<SubScene>())
-                        {
-                            child.gameObject.SetActive(false);
-                        }
+                        child.gameObject.SetActive(false);
                     }
                 }
 
@@ -308,8 +306,8 @@ namespace Game.World
             isJobRunning = true;
             //Debug.LogFormat("Load Job started: {0} {1} {2}", job.Region.SuperRegion.Type, job.Region.name, job.SceneType);
 
-            string sceneName = WorldUtility.GetSubSceneName(job.Region.Id, job.SubSceneMode, job.SubSceneType);
-            var subSceneRoot = job.Region.GetSubSceneRoot(job.SubSceneType);
+            string sceneName = WorldUtility.GetSubSceneName(job.Region.Id, job.SubSceneMode, job.SubSceneLayer);
+            var subSceneRoot = job.Region.GetSubSceneRoot(job.SubSceneLayer);
 
             //editor subScenes are loaded (no streaming)
             if (editorSubScenesLoaded)
@@ -390,7 +388,7 @@ namespace Game.World
             isJobRunning = true;
             //Debug.LogFormat("Unload Job started: {0} {1} {2}", job.Region.SuperRegion.Type, job.Region.name, job.SceneType);
 
-            var subSceneRoot = job.Region.GetSubSceneRoot(job.SubSceneType, job.SubSceneMode);
+            var subSceneRoot = job.Region.GetSubSceneRoot(job.SubSceneLayer, job.SubSceneMode);
 
             //editor subScenes are loaded (no streaming)
             if (editorSubScenesLoaded)
@@ -458,18 +456,18 @@ namespace Game.World
 
             foreach (var region in regions)
             {
-                foreach (var subSceneType in Enum.GetValues(typeof(eSubSceneType)).Cast<eSubSceneType>())
+                foreach (var subSceneLayer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
                 {
                     foreach (var subSceneMode in region.AvailableSubSceneModes)
                     {
-                        if (region.GetSubSceneRoot(subSceneType, subSceneMode) != null)
+                        if (region.GetSubSceneRoot(subSceneLayer, subSceneMode) != null)
                         {
-                            Debug.LogErrorFormat("The \"{0}\" of Region \"{1}\" is already loaded!", WorldUtility.GetSubSceneRootName(subSceneMode, subSceneType), region.name);
+                            Debug.LogErrorFormat("The \"{0}\" of Region \"{1}\" is already loaded!", WorldUtility.GetSubSceneRootName(subSceneMode, subSceneLayer), region.name);
                             continue;
                         }
 
                         //paths
-                        string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.Id, subSceneMode, subSceneType);
+                        string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.Id, subSceneMode, subSceneLayer);
                         string subScenePathFull = WorldUtility.GetFullPath(subScenePath);
 
                         Scene subScene = new Scene();
@@ -540,11 +538,11 @@ namespace Game.World
 
             foreach (var region in regions)
             {
-                foreach (var subSceneType in Enum.GetValues(typeof(eSubSceneType)).Cast<eSubSceneType>())
+                foreach (var subSceneLayer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
                 {
                     foreach (var subSceneMode in region.AvailableSubSceneModes)
                     {
-                        var root = region.GetSubSceneRoot(subSceneType, subSceneMode);
+                        var root = region.GetSubSceneRoot(subSceneLayer, subSceneMode);
 
                         if (!root || root.childCount == 0) //if root is null or empty there is no need to create a subScene
                         {
@@ -552,7 +550,7 @@ namespace Game.World
                         }
 
                         //paths
-                        string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.Id, subSceneMode, subSceneType);
+                        string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.Id, subSceneMode, subSceneLayer);
                         //string subScenePathFull = WorldUtility.GetFullPath(subScenePath);
 
                         //moving copy to subScene

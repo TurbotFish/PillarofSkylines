@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Game.World
 {
@@ -15,17 +16,18 @@ namespace Game.World
 
         [SerializeField]
         [HideInInspector]
-        eSubSceneType subSceneType;
+        [FormerlySerializedAs("subSceneType")]
+        eSubSceneLayer subSceneLayer;
 
         //========================================================================================
 
         public eSubSceneMode SubSceneMode { get { return subSceneMode; } }
-        public eSubSceneType SubSceneType { get { return subSceneType; } }
+        public eSubSceneLayer SubSceneLayer { get { return subSceneLayer; } }
 
-        public void Initialize(eSubSceneMode subSceneMode, eSubSceneType subSceneType)
+        public void Initialize(eSubSceneMode subSceneMode, eSubSceneLayer subSceneLayer)
         {
             this.subSceneMode = subSceneMode;
-            this.subSceneType = subSceneType;
+            this.subSceneLayer = subSceneLayer;
         }
 
         //========================================================================================
@@ -38,7 +40,7 @@ namespace Game.World
                 return;
             }
 
-            string subSceneName = WorldUtility.GetSubSceneRootName(subSceneMode, subSceneType);
+            string subSceneName = WorldUtility.GetSubSceneRootName(subSceneMode, subSceneLayer);
             if (name != subSceneName)
             {
                 name = subSceneName;

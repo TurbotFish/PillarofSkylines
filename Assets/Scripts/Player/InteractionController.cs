@@ -1,4 +1,5 @@
-﻿using Game.Model;
+﻿using Game.GameControl;
+using Game.Model;
 using UnityEngine;
 
 namespace Game.Player {
@@ -29,7 +30,7 @@ namespace Game.Player {
         bool eyeInRange = false;
 
         EchoSystem.EchoManager echoManager;
-        World.SpawnPointSystem.SpawnPointManager spawnPointManager;
+        SpawnPointManager spawnPointManager;
         Transform airParticle, airOrigin;
 
         Beacon beacon;
@@ -51,7 +52,7 @@ namespace Game.Player {
 			myPlayer = player;
             this.echoManager = echoManager;
 
-            spawnPointManager = FindObjectOfType<World.SpawnPointSystem.SpawnPointManager>(); //TODO: Fix that
+            spawnPointManager = FindObjectOfType<SpawnPointManager>(); //TODO: Fix that
 
             camera = player.myCameraTransform.GetComponent<PoS_Camera>();
 

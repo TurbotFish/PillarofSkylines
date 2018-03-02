@@ -10,6 +10,6 @@ namespace Game.GameControl
     {
         public Scene Scene { get; set; }
         public WorldController WorldController { get; set; }
-        public World.SpawnPointSystem.SpawnPointManager SpawnPointManager { get; set; }
+        public SpawnPointManager SpawnPointManager { get; set; }
     }
 }
