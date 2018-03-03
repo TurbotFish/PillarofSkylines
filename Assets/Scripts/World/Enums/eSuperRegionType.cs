@@ -3,13 +3,13 @@
     public enum eSuperRegionType
     {
         Centre,
-        North,      //y+
-        NorthEast,
-        East,       //z+
-        SouthEast,
-        South,      //y-
-        SouthWest,
-        West,       //z-
-        NorthWest
+        North,      //z+
+        NorthUp,
+        Up,       //y+
+        SouthUp,
+        South,      //z-
+        SouthDown,
+        Down,       //y-
+        NorthDown
     }
-}
+} //end of namespace

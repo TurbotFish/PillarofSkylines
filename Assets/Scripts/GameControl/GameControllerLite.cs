@@ -119,15 +119,16 @@ namespace Game.GameControl
             if (worldController != null)
             {
                 worldController.Initialize(this);
+                yield return new WaitForSeconds(5f);
             }
             else //this is a Pillar
             {
                 var worldObjects = FindObjectsOfType<MonoBehaviour>();
                 foreach(var obj in worldObjects)
                 {
-                    if (obj is World.IWorldObject)
+                    if (obj is IWorldObject)
                     {
-                        (obj as World.IWorldObject).Initialize(this, false);
+                        (obj as IWorldObject).Initialize(this, false);
                     }
                 }
             }

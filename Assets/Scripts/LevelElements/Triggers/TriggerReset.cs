@@ -66,27 +66,5 @@ namespace Game.LevelElements
         #endregion public methods
 
         //###########################################################
-
-        /*private IEnumerator OnTriggerExit(Collider other) {
-            if (definitiveActivation || Toggle) yield break;
-            if (other.tag == tagToActivate) {
-                yield return new WaitForSeconds(delayBeforeDeactivation);
-                TriggerState = false;
-            }
-        }*/
-
-        /*protected override void OnDrawGizmos() {
-            base.OnDrawGizmos();
-            BoxCollider box = GetComponent<BoxCollider>();
-            box.isTrigger = true;
-
-            if (Targets == null || Targets.Count == 0)
-                Gizmos.color = Color.red;
-            else
-                Gizmos.color = Color.green;
-
-            Gizmos.DrawWireCube(box.center, box.size);
-        }*/
-
     }
 } //end of namespace

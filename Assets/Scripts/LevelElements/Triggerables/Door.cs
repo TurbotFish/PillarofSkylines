@@ -31,7 +31,7 @@ namespace Game.LevelElements
             my = transform;
             platform = GetComponent<MovingPlatform>();
 
-            if (triggered)
+            if (Triggered)
             {
                 localPositionWhenOpen = my.localPosition;
                 elapsed = 0;

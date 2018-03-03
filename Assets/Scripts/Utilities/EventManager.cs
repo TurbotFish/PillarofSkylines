@@ -480,7 +480,7 @@ namespace Game.Utilities
 
             public TriggerUpdatedEventArgs(LevelElements.Trigger trigger)
             {
-                TriggerId = trigger.Id;
+                TriggerId = trigger.UniqueId;
                 Trigger = trigger;
             }
         }

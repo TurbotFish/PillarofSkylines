@@ -621,47 +621,16 @@ namespace Game.World
         }
 #endif
 
-        #endregion private methods
+#if UNITY_EDITOR
+        void IRegionEventHandler.SetDrawBounds(bool drawBounds)
+        {
+            this.drawBounds = drawBounds;
 
-        //========================================================================================
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+        }
+#endif
 
-        //         #region editor methods
-
-        // #if UNITY_EDITOR
-
-        //         /// <summary>
-        //         /// Helper methods that checks whether the id of the region is unique or not.
-        //         /// </summary>
-        //         /// <returns></returns>
-        //         public bool IsRegionIdUnique()
-        //         {
-        //             Transform parentTransform = transform.parent;
-        //             string regionId = GetComponent<RegionBase>().UniqueId;
-        //             int occurences = 0;
-
-        //             for (int i = 0; i < parentTransform.childCount; i++)
-        //             {
-        //                 var child = parentTransform.GetChild(i).GetComponent<RegionBase>();
-
-        //                 if (child != null && child.UniqueId == regionId)
-        //                 {
-        //                     occurences++;
-        //                 }
-        //             }
-
-        //             if (occurences > 1)
-        //             {
-        //                 return false;
-        //             }
-        //             else
-        //             {
-        //                 return true;
-        //             }
-        //         }
-
-        // #endif
-
-        //         #endregion editor methods
+#endregion private methods
 
         //========================================================================================
     }

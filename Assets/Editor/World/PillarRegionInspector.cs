@@ -16,14 +16,15 @@ namespace Game.World
 
         public override void OnInspectorGUI()
         {
+            //
+            base.OnInspectorGUI();
+
+            //
             EditorGUILayout.LabelField("--Pillar--");
 
             pillarIdProperty.enumValueIndex = (int)(ePillarId)EditorGUILayout.EnumPopup("Pillar Id", (ePillarId)pillarIdProperty.enumValueIndex);
 
             serializedObject.ApplyModifiedProperties();
-
-            //
-            base.OnInspectorGUI();
         }
     }
 }

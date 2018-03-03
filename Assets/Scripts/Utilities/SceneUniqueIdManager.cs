@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace Game.Utilities
 {
+    [ExecuteInEditMode]
     public class SceneUniqueIdManager : MonoBehaviour
     {
         //========================================================================================
@@ -87,6 +88,21 @@ namespace Game.Utilities
                 }
 #endif
             }
+        }
+
+        //========================================================================================
+
+        /// <summary>
+        /// [ExecuteInEditMode] Cleaning up the list of unique id's.
+        /// </summary>
+        private void Update()
+        {
+            if (Application.isPlaying)
+            {
+                return;
+            }
+
+            idList.RemoveAll(item => item == null);
         }
 
         //========================================================================================

@@ -7,20 +7,10 @@ using Game.Model;
 
 namespace Game.LevelElements
 {
-    [ExecuteInEditMode]
+    [RequireComponent(typeof(UniqueId))]
     public abstract class Trigger : MonoBehaviour, IWorldObject
     {
         //###########################################################
-
-#if UNITY_EDITOR
-        [SerializeField]
-        [HideInInspector]
-        private int instanceId = 0; //used in editor to detect duplication
-#endif
-
-        [SerializeField]
-        [HideInInspector]
-        private string id;
 
         //DO NOT RENAME
         [SerializeField]
@@ -33,7 +23,7 @@ namespace Game.LevelElements
 #if UNITY_EDITOR
         //DO NOT RENAME
         [SerializeField]
-        private List<TriggerableObject> targets; //list of triggerable objects
+        private List<TriggerableObject> targets = new List<TriggerableObject>(); //list of triggerable objects
 #endif
 
 #if UNITY_EDITOR
@@ -43,7 +33,10 @@ namespace Game.LevelElements
 #endif
 
         private PlayerModel model;
+
+        private UniqueId uniqueId;
         private PersistentTrigger persistentTrigger;
+
         private bool isCopy;
         private bool isInitialized;
 
@@ -51,7 +44,7 @@ namespace Game.LevelElements
 
         #region properties
 
-        public string Id { get { return id; } }
+        public string UniqueId { get { if (!uniqueId) { uniqueId = GetComponent<UniqueId>(); } return uniqueId.Id; } }
 
         public bool TriggerState { get { return _triggerState; } }
 
@@ -74,17 +67,15 @@ namespace Game.LevelElements
         /// <param name="isCopy"></param>
         public virtual void Initialize(GameControl.IGameControllerBase gameController, bool isCopy)
         {
-            //Debug.Log("trigger " + gameObject.activeInHierarchy);
-
             model = gameController.PlayerModel;
             this.isCopy = isCopy;
 
-            persistentTrigger = model.GetPersistentTrigger(id);
+            persistentTrigger = model.GetPersistentDataObject<PersistentTrigger>(UniqueId);
 
             if (persistentTrigger == null)
             {
-                persistentTrigger = new PersistentTrigger(this);
-                model.AddPersistentTrigger(persistentTrigger);
+                persistentTrigger = new PersistentTrigger(UniqueId, _triggerState);
+                model.AddPersistentDataObject(persistentTrigger);
             }
             else
             {
@@ -131,78 +122,15 @@ namespace Game.LevelElements
 
         #region monobehaviour methods
 
-        /// <summary>
-        /// EDITOR: sets or resets the id of the Trigger.
-        /// </summary>
-        private void Awake()
-        {
 #if UNITY_EDITOR
-
-            if (Application.isPlaying)
-            {
-                return;
-            }
-            else if (instanceId == 0)
-            {
-                instanceId = GetInstanceID();
-
-                if (string.IsNullOrEmpty(id))
-                {
-                    id = Guid.NewGuid().ToString();
-                }
-
-                //"save" changes
-                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
-            }
-            else if (instanceId != GetInstanceID() && GetInstanceID() < 0) //the script has been duplicated
-            {
-                instanceId = GetInstanceID();
-
-                id = Guid.NewGuid().ToString();
-
-                //resetting things
-                targets.Clear();
-                targetsOld.Clear();
-
-                //"save" changes
-                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
-            }
-
-#endif //UNITY_EDITOR
-        }
-
-        protected virtual void OnDestroy()
+        protected virtual void OnValidate()
         {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
+            //add UniqueId component (this is for updating existing gameObjects)
+            if (uniqueId == null && GetComponent<UniqueId>() == null)
             {
-                foreach (var triggerable in targets)
-                {
-                    triggerable.RemoveTrigger(this);
-                }
-
-                return;
+                uniqueId = gameObject.AddComponent<UniqueId>();
             }
-#endif
 
-            OnUnloaded();
-        }
-
-        private void OnDisable()
-        {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-#endif
-
-            OnUnloaded();
-        }
-
-#if UNITY_EDITOR
-        private void OnValidate()
-        {
             //register trigger
             foreach (var target in targets)
             {
@@ -233,6 +161,7 @@ namespace Game.LevelElements
 
             Gizmos.color = Color.green;
 
+            targets.RemoveAll(item => item == null); //this helps keeping the target list clean (for example when target objects get deleted)
             foreach (TriggerableObject target in targets)
             {
                 Gizmos.DrawLine(Vector3.zero, transform.InverseTransformPoint(target.transform.position));
@@ -241,25 +170,6 @@ namespace Game.LevelElements
 #endif
 
         #endregion monobehaviour methods
-
-        //###########################################################
-
-        #region private methods
-
-        private void OnUnloaded()
-        {
-            if (!isInitialized)
-            {
-                return;
-            }
-
-            if (!isCopy && persistentTrigger != null)
-            {
-                persistentTrigger.TriggerState = _triggerState;
-            }
-        }
-
-        #endregion private methods
 
         //###########################################################
     }

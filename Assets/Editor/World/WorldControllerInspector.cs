@@ -16,6 +16,7 @@ namespace Game.World
         private SerializedProperty secondaryPositionDistanceModifierProperty;
 
         private SerializedProperty drawBoundsProperty;
+        private SerializedProperty drawRegionBoundsProperty;
         private SerializedProperty subScenesLoaded;
 
         private void OnEnable()
@@ -30,12 +31,13 @@ namespace Game.World
             secondaryPositionDistanceModifierProperty = serializedObject.FindProperty("secondaryPositionDistanceModifier");
 
             drawBoundsProperty = serializedObject.FindProperty("drawBounds");
+            drawRegionBoundsProperty = serializedObject.FindProperty("drawRegionBounds");
             subScenesLoaded = serializedObject.FindProperty("editorSubScenesLoaded");
         }
 
         public override void OnInspectorGUI()
         {
-            //base.OnInspectorGUI();
+            base.OnInspectorGUI();
 
             EditorGUILayout.LabelField("----");
 
@@ -51,6 +53,21 @@ namespace Game.World
             EditorGUILayout.LabelField("----");
 
             drawBoundsProperty.boolValue = EditorGUILayout.Toggle("Draw Bounds", drawBoundsProperty.boolValue);
+
+            bool drawRegion = drawRegionBoundsProperty.boolValue;
+            drawRegionBoundsProperty.boolValue = EditorGUILayout.Toggle("Draw Region Bounds", drawRegionBoundsProperty.boolValue);
+            if(drawRegion != drawRegionBoundsProperty.boolValue)
+            {
+                foreach(Transform child in self.transform)
+                {
+                    var region = child.GetComponent<RegionBase>();
+
+                    if (region)
+                    {
+                        UnityEngine.EventSystems.ExecuteEvents.Execute<IRegionEventHandler>(region.gameObject, null, (x, y) => x.SetDrawBounds(drawRegionBoundsProperty.boolValue));
+                    }
+                }
+            }
 
             if (!Application.isPlaying)
             {
@@ -75,8 +92,6 @@ namespace Game.World
                         UnityEngine.EventSystems.ExecuteEvents.Execute<IWorldEventHandler>(self.gameObject, null, (x, y) => x.ImportSubScenes());
                     }
                 }
-
-                GUILayout.Label("");
             }
 
             serializedObject.ApplyModifiedProperties();
