@@ -7,7 +7,6 @@ using Game.Model;
 
 namespace Game.LevelElements
 {
-    [RequireComponent(typeof(UniqueId))]
     public abstract class Trigger : UniqueIdOwner, IWorldObject
     {
         //###########################################################

@@ -11,7 +11,6 @@ namespace Game.LevelElements
     /// <summary>
     /// Use this class for objects that can be activated by triggers.
     /// </summary>
-    [RequireComponent(typeof(UniqueId))]
     public abstract class TriggerableObject : UniqueIdOwner, IWorldObject
     {
         //###########################################################

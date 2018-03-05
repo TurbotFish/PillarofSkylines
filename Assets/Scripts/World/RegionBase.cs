@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Game.World
 {
     [RequireComponent(typeof(UniqueId))]
-    public abstract class RegionBase : MonoBehaviour, IRegionEventHandler
+    public abstract class RegionBase : UniqueIdOwner, IRegionEventHandler
     {
         //========================================================================================
 
@@ -36,7 +36,7 @@ namespace Game.World
 
         private Transform myTransform;
         private SuperRegion superRegion;
-        private UniqueId uniqueId;
+        //private UniqueId uniqueId;
 
         private bool isInitialized;
         protected eSubSceneState[] subSceneStates = new eSubSceneState[Enum.GetValues(typeof(eSubSceneLayer)).Length];
@@ -67,7 +67,7 @@ namespace Game.World
 
         public Bounds BoundingBox { get { return new Bounds(boundsCentre + transform.position, boundsSize); } }
 
-        public string Id { get { if (!uniqueId) { uniqueId = GetComponent<UniqueId>(); } return uniqueId.Id; } }
+        //public string UniqueId { get { if (!uniqueId) { uniqueId = GetComponent<UniqueId>(); } return uniqueId.Id; } }
 
         public SuperRegion SuperRegion { get { return superRegion; } }
 
@@ -373,8 +373,10 @@ namespace Game.World
         #region monobehaviour methods
 
 #if UNITY_EDITOR
-        protected virtual void OnValidate()
+        protected override void OnValidate()
         {
+            base.OnValidate();
+
             float part = localRenderDistanceFar * 0.2f;
             if (part < 1)
             {
@@ -536,7 +538,7 @@ namespace Game.World
 #if UNITY_EDITOR
         void IRegionEventHandler.CreateSubScene(eSubSceneMode subSceneMode, eSubSceneLayer subSceneLayer)
         {
-            string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, Id, subSceneMode, subSceneLayer);
+            string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, UniqueId, subSceneMode, subSceneLayer);
             string subScenePathFull = WorldUtility.GetFullPath(subScenePath);
 
             if (GetSubSceneRoot(subSceneLayer) != null)

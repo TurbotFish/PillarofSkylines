@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Game.Utilities
 {
+    //[RequireComponent(typeof(UniqueId))]
     public abstract class UniqueIdOwner : MonoBehaviour
     {
         [SerializeField]
@@ -16,6 +17,14 @@ namespace Game.Utilities
         {
             //add UniqueId component (this is for updating existing gameObjects)
             if (uniqueId == null)
+            {
+                SetUniqueId();
+            }
+        }
+
+        protected virtual void Reset()
+        {
+            if(uniqueId == null)
             {
                 SetUniqueId();
             }
