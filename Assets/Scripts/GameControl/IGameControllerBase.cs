@@ -1,4 +1,5 @@
 ﻿using Game.Model;
+using Game.World;
 
 namespace Game.GameControl
 {
@@ -12,7 +13,7 @@ namespace Game.GameControl
         CameraControl.CameraController CameraController { get; }        
         UI.UiController UiController { get; }
 
-        World.ChunkSystem.WorldController WorldController { get; }
+        WorldController WorldController { get; }
 
         //temp
         void StartGame();
