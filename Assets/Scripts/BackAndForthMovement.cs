@@ -16,8 +16,10 @@ public class BackAndForthMovement : MovingPlatform {
 
     eMovingState currState = eMovingState.forth;
 
-    void Start()
+    protected override void Start()
     {
+        base.Start();
+
         movementProgression = 0.01f;
         currWaitTime = waitTime;
         initialPosition = transform.position;

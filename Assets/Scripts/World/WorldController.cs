@@ -211,18 +211,12 @@ namespace Game.World
 
             //***********************************************
             //updating one super region, getting a list of new jobs
-            var superRegion = superRegionsList[currentSuperRegionIndex];
             var newJobs = superRegionsList[currentSuperRegionIndex].UpdateSuperRegion(cameraTransform, teleportPositions);
 
             currentSuperRegionIndex++;
             if (currentSuperRegionIndex == superRegionsList.Count)
             {
                 currentSuperRegionIndex = 0;
-            }
-
-            if (superRegion.Type != eSuperRegionType.Centre)
-            {
-                newJobs.Clear();
             }
 
             //***********************************************

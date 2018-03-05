@@ -7,16 +7,22 @@ namespace Game.Utilities
     //[RequireComponent(typeof(UniqueId))]
     public abstract class UniqueIdOwner : MonoBehaviour
     {
+        //========================================================================================
+
         [SerializeField]
         [HideInInspector]
         private UniqueId uniqueId;
 
+        //========================================================================================
+
         public string UniqueId { get { if (!uniqueId) { SetUniqueId(); } return uniqueId.Id; } }
+
+        //========================================================================================
 
         protected virtual void OnValidate()
         {
             //add UniqueId component (this is for updating existing gameObjects)
-            if (uniqueId == null)
+            if (uniqueId == null || uniqueId.Owner != this)
             {
                 SetUniqueId();
             }
@@ -24,37 +30,45 @@ namespace Game.Utilities
 
         protected virtual void Reset()
         {
-            if(uniqueId == null)
+            if (uniqueId == null || uniqueId.Owner != this)
             {
                 SetUniqueId();
             }
         }
+
+        //========================================================================================
 
         private void SetUniqueId()
         {
             var uniqueIds = GetComponents<UniqueId>();
             UniqueId myUniqueId = null;
 
-            foreach(var uniqueId in uniqueIds)
+            //checking if an owned id already exists (owned by this object)
+            foreach (var uniqueId in uniqueIds)
             {
-                if(uniqueId.Owner == this)
+                if (uniqueId.Owner == this)
                 {
-                    myUniqueId = uniqueId;
-                    break;
-                }
-                else if(uniqueId.Owner == null)
-                {
-                    uniqueId.Owner = this;
-                    myUniqueId = uniqueId;
-                    break;
+                    this.uniqueId = uniqueId;
+                    return;
                 }
             }
 
-            if(myUniqueId != null)
+            //checking if an unowned id exists and appropriate it
+            if (this.uniqueId == null)
             {
-                uniqueId = myUniqueId;
+                foreach (var uniqueId in uniqueIds)
+                {
+                    if (uniqueId.Owner == null)
+                    {
+                        uniqueId.Owner = this;
+                        this.uniqueId = uniqueId;
+                        return;
+                    }
+                }
             }
-            else
+
+            //creating a new UniqueId component
+            if (this.uniqueId == null)
             {
                 uniqueId = gameObject.AddComponent<UniqueId>();
                 uniqueId.Owner = this;
@@ -67,5 +81,7 @@ namespace Game.Utilities
 #endif
             }
         }
+
+        //========================================================================================
     }
 } //end of namespace
