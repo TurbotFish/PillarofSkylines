@@ -14,8 +14,10 @@ public class WheelCurve: MovingPlatform {
     Quaternion startRotation;
     Quaternion lastFrameRotation;
 
-    void Start()
+    protected override void Start()
     {
+        base.Start();
+
         startRotation = transform.rotation;
         timerMax = speedOverTime.keys[speedOverTime.length-1].time;
     }
