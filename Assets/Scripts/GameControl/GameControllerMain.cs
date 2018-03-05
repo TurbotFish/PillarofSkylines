@@ -1,4 +1,5 @@
 ﻿using Game.Model;
+using Game.World;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -38,7 +39,7 @@ namespace Game.GameControl
         public EchoSystem.EchoManager EchoManager { get { return echoManager; } }
         public EclipseManager EclipseManager { get { return eclipseManager; } }
 
-        public World.ChunkSystem.WorldController WorldController { get { return openWorldSceneInfo.WorldController; } }
+        public WorldController WorldController { get { return openWorldSceneInfo.WorldController; } }
 
         public Player.PlayerController PlayerController { get { return playerController; } }
         public CameraControl.CameraController CameraController { get { return cameraController; } }
@@ -117,8 +118,8 @@ namespace Game.GameControl
             this.openWorldSceneInfo.Scene = SceneManager.GetSceneByName(this.sceneNames.GetOpenWorldSceneName());
             SceneManager.SetActiveScene(this.openWorldSceneInfo.Scene);
 
-            this.openWorldSceneInfo.WorldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(this.openWorldSceneInfo.Scene);
-            this.openWorldSceneInfo.SpawnPointManager = SearchForScriptInScene<World.SpawnPointSystem.SpawnPointManager>(this.openWorldSceneInfo.Scene);
+            this.openWorldSceneInfo.WorldController = SearchForScriptInScene<WorldController>(this.openWorldSceneInfo.Scene);
+            this.openWorldSceneInfo.SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(this.openWorldSceneInfo.Scene);
 
             yield return null;
             //***********************
@@ -147,13 +148,13 @@ namespace Game.GameControl
                 {
                     Scene = pillarScene,
                     PillarId = pillarId,
-                    SpawnPointManager = SearchForScriptInScene<World.SpawnPointSystem.SpawnPointManager>(pillarScene)
+                    SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(pillarScene)
                 };
 
                 this.pillarSceneDictionary.Add(pillarId, pillarInfo);
 
                 //initializing world objects in pillar
-                var worldObjects = SearchForScriptsInScene<World.IWorldObjectInitialization>(pillarScene);
+                var worldObjects = SearchForScriptsInScene<World.IWorldObject>(pillarScene);
 
                 foreach(var worldObject in worldObjects)
                 {
@@ -174,7 +175,7 @@ namespace Game.GameControl
             this.playerController.InitializePlayerController(this);
             this.CameraController.InitializeCameraController(this);
 
-            openWorldSceneInfo.WorldController.InitializeWorldController(this);
+            openWorldSceneInfo.WorldController.Initialize(this);
 
             this.EchoManager.InitializeEchoManager(this, openWorldSceneInfo.SpawnPointManager);
             this.EclipseManager.InitializeEclipseManager(this);

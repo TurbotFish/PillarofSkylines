@@ -1,4 +1,5 @@
 ﻿using Game.Model;
+using Game.World;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,36 +11,38 @@ namespace Game.GameControl
     {
         public const string UI_SCENE_NAME = "UiScene";
 
+        //###############################################################
+
         [SerializeField]
-        bool showIntroMenu = false;
+        private bool showIntroMenu = false;
 
         [SerializeField]
         private GameObject uiPrefab;
 
         //
-        PlayerModel playerModel;
+        private PlayerModel playerModel;
+        private EchoSystem.EchoManager echoManager;
+        private EclipseManager eclipseManager;
+
+        //
+        private UI.UiController uiController;
+
+        //
+        private Player.PlayerController playerController;
+        private WorldController worldController;
+        
+
+        //###############################################################
+
         public PlayerModel PlayerModel { get { return playerModel; } }
-
-        EchoSystem.EchoManager echoManager;
         public EchoSystem.EchoManager EchoManager { get { return echoManager; } }
-
-        EclipseManager eclipseManager;
         public EclipseManager EclipseManager { get { return eclipseManager; } }
 
-
-        //
-        UI.UiController uiController;
         public UI.UiController UiController { get { return uiController; } }
 
-
-        //
-        Player.PlayerController playerController;
         public Player.PlayerController PlayerController { get { return playerController; } }
-
         public CameraControl.CameraController CameraController { get; private set; }
-
-        World.ChunkSystem.WorldController worldController;
-        public World.ChunkSystem.WorldController WorldController { get { return worldController; } }
+        public WorldController WorldController { get { return worldController; } }
 
         //###############################################################
         //###############################################################
@@ -101,7 +104,7 @@ namespace Game.GameControl
             //getting references in local scene
             playerController = FindObjectOfType<Player.PlayerController>();
             CameraController = FindObjectOfType<CameraControl.CameraController>();
-            worldController = FindObjectOfType<World.ChunkSystem.WorldController>();
+            worldController = FindObjectOfType<WorldController>();
 
             //initializing the ui
             uiController.InitializeUi(this, UI.eUiState.LoadingScreen);
@@ -115,16 +118,17 @@ namespace Game.GameControl
 
             if (worldController != null)
             {
-                worldController.InitializeWorldController(this);
+                worldController.Initialize(this);
+                yield return new WaitForSeconds(5f);
             }
             else //this is a Pillar
             {
                 var worldObjects = FindObjectsOfType<MonoBehaviour>();
                 foreach(var obj in worldObjects)
                 {
-                    if (obj is World.IWorldObjectInitialization)
+                    if (obj is IWorldObject)
                     {
-                        (obj as World.IWorldObjectInitialization).Initialize(this, false);
+                        (obj as IWorldObject).Initialize(this, false);
                     }
                 }
             }

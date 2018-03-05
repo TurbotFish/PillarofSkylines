@@ -1,4 +1,6 @@
-﻿using Game.Model;
+﻿using Game.GameControl;
+using Game.LevelElements;
+using Game.Model;
 using UnityEngine;
 
 namespace Game.Player {
@@ -29,7 +31,7 @@ namespace Game.Player {
         bool eyeInRange = false;
 
         EchoSystem.EchoManager echoManager;
-        World.SpawnPointSystem.SpawnPointManager spawnPointManager;
+        SpawnPointManager spawnPointManager;
         Transform airParticle, airOrigin;
 
         Beacon beacon;
@@ -51,7 +53,7 @@ namespace Game.Player {
 			myPlayer = player;
             this.echoManager = echoManager;
 
-            spawnPointManager = FindObjectOfType<World.SpawnPointSystem.SpawnPointManager>(); //TODO: Fix that
+            spawnPointManager = FindObjectOfType<SpawnPointManager>(); //TODO: Fix that
 
             camera = player.myCameraTransform.GetComponent<PoS_Camera>();
 
@@ -342,7 +344,7 @@ namespace Game.Player {
                         break;
                     // Trigger Activator
                     case "TriggerActivator":
-                        other.GetComponent<TriggerSystem.TimedActivator>().manager.Activate();
+                        other.GetComponent<TimedActivator>().manager.Activate();
                         break;
                     // Tutorial Message
                     case "TutoBox":
@@ -436,7 +438,7 @@ namespace Game.Player {
                         break;
                     // Trigger Activator
                     case "TriggerActivator":
-                        other.GetComponent<TriggerSystem.TimedActivator>().manager.StartTimer();
+                        other.GetComponent<TimedActivator>().manager.StartTimer();
                         break;
                     // Tutorial Message
                     case "TutoBox":

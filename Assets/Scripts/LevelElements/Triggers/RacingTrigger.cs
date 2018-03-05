@@ -34,8 +34,10 @@ namespace Game.LevelElements
 
 #if UNITY_EDITOR
 
-        private void OnValidate()
+        protected override void OnValidate()
         {
+            base.OnValidate();
+
             if (!racer)
             {
                 racer = transform;
@@ -100,11 +102,11 @@ namespace Game.LevelElements
                 yield return null;
             }
 
-            TriggerState = true;
+            SetTriggerState(true);
 
             yield return new WaitForSeconds(timeActive);
 
-            TriggerState = false;
+            SetTriggerState(false);
             racer.position = startPosition;
             racing = false;
         }

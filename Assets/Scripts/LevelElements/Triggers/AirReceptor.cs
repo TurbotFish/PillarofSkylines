@@ -4,7 +4,7 @@
     {
         public void Activate()
         {
-            TriggerState = true;
+            SetTriggerState(true);
         }
     }
 } //end of namespace

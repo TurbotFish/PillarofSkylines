@@ -80,7 +80,7 @@ namespace Game.World.ChunkSystem
                 distance = Vector3.Distance(playerPos, closestPoint);
 
                 //check if chunk is behind player
-                var corners = Utilities.PillarMath.GetBoxColliderCorners(chunkBounds);
+                var corners = Game.Utilities.PillarMath.GetBoxColliderCorners(chunkBounds);
                 corners.Add(closestPoint); //in case the corners are outside the screen but the collider is in front of the player
 
                 for (int i = 0; i < corners.Count; i++)

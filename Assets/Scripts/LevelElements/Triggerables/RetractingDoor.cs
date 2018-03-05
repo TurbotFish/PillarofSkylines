@@ -26,7 +26,7 @@ namespace Game.LevelElements
 
             my = transform;
             startScale = my.localScale;
-            triggered = false;
+            SetTriggered(false);
 
             if (startOpen)
             {
