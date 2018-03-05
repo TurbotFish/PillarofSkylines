@@ -37,7 +37,7 @@ namespace Game.Player.CharacterController.States
 
 		bool initializing;
 		bool firstUpdate;
-
+        
 		#endregion member variables
 
 		//#############################################################################
@@ -122,7 +122,7 @@ namespace Game.Player.CharacterController.States
 		}
 
 		public void Exit() {
-			//Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
+            //Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
 
 			Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
 		}
@@ -154,7 +154,12 @@ namespace Game.Player.CharacterController.States
 
 					stateMachine.ChangeState(state);
 				}
-			}
+            }
+            //dash
+            else if (movementInfo.velocity.y < 0 && mode != eAirStateMode.fall)
+            {
+                stateMachine.ChangeState(new AirState(charController, stateMachine, eAirStateMode.fall));
+            }
             //dash
             else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash)) {
 				stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
@@ -170,7 +175,7 @@ namespace Game.Player.CharacterController.States
 			}
             //landing
             else if (collisionInfo.below) {
-				stateMachine.ChangeState(new StandState(charController, stateMachine));
+				stateMachine.ChangeState(new MoveState(charController, stateMachine));
                 if (!collisionInfo.SlippySlope)
                     charController.SetVelocity(Vector3.Project(movementInfo.velocity, inputInfo.leftStickToSlope), false);
 			}
@@ -187,7 +192,7 @@ namespace Game.Player.CharacterController.States
 		public StateReturnContainer Update(float dt) {
 			PlayerInputInfo inputInfo = charController.InputInfo;
 			PlayerMovementInfo movementInfo = charController.MovementInfo;
-
+            
             if (jumpTimer > 0)
             {
                 jumpTimer -= dt;
@@ -199,11 +204,12 @@ namespace Game.Player.CharacterController.States
 
             var result = new StateReturnContainer()
 			{
-				//keepVerticalMovement = true
-			};
+                //keepVerticalMovement = true
+        };
 
-			//set wether the player can turn the character
-			result.CanTurnPlayer = timerAirControl <= 0 ? true : false;
+            //set wether the player can turn the character
+            result.GravityMultiplier = Mathf.Lerp(1, 1.5f, ((Mathf.Clamp(-movementInfo.velocity.y, -10,10)/10)+1)/2);
+            result.CanTurnPlayer = timerAirControl <= 0 ? true : false;
 
 			//first update for jump (initial force)
 			if (firstUpdate && (mode == eAirStateMode.jump || mode == eAirStateMode.aerialJump)) {
@@ -243,8 +249,9 @@ namespace Game.Player.CharacterController.States
 
 				if (!inputInfo.jumpButton && movementInfo.velocity.y > minJumpStrength) {
 					charController.SetVelocity(new Vector3(movementInfo.velocity.x, minJumpStrength, movementInfo.velocity.z), false);
-					//result.Acceleration += Vector3.down * (movementInfo.velocity.y - minJumpStrength) * (0.1f / dt);
-				}
+                    //result.Acceleration += Vector3.down * (movementInfo.velocity.y - minJumpStrength) * (0.1f / dt);
+                }
+                //result.keepVerticalMovement = true;
 
                 result.TransitionSpeed = jumpData.TransitionSpeed;
 			}
