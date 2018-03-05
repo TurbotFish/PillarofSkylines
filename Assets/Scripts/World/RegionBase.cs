@@ -65,7 +65,7 @@ namespace Game.World
 
         #region properties
 
-        public Bounds BoundingBox { get { return new Bounds(boundsCentre, boundsSize); } }
+        public Bounds BoundingBox { get { return new Bounds(boundsCentre + transform.position, boundsSize); } }
 
         public string Id { get { if (!uniqueId) { uniqueId = GetComponent<UniqueId>(); } return uniqueId.Id; } }
 
@@ -89,71 +89,7 @@ namespace Game.World
 
         protected abstract eSubSceneMode InitialSubSceneMode { get; }
 
-        #endregion abstract
-
-        //========================================================================================
-
-        #region monobehaviour methods
-
-        // #if UNITY_EDITOR
-        //         private void Awake()
-        //         {
-        //             if(instanceId == 0)
-        //             {
-        //                 instanceId = GetInstanceID();
-
-        //                 if (string.IsNullOrEmpty(id))
-        //                 {
-        //                     id = Guid.NewGuid().ToString();
-        //                 }
-
-        //                 //"save" changes
-        //                 UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
-        //             }
-        //             else if(!Application.isPlaying && instanceId != GetInstanceID())
-        //             {
-        //                 instanceId = GetInstanceID();
-        //                 id = Guid.NewGuid().ToString();
-
-        //                 //"save" changes
-        //                 UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
-        //             }
-        //         }
-        // #endif
-
-#if UNITY_EDITOR
-        protected virtual void OnValidate()
-        {
-            float part = localRenderDistanceFar * 0.2f;
-            if (part < 1)
-            {
-                part = 1;
-            }
-            else if (part - (int)part > 0)
-            {
-                part = (int)part + 1;
-            }
-
-            if (localRenderDistanceInactive < localRenderDistanceFar + part)
-            {
-                localRenderDistanceInactive = localRenderDistanceFar + part;
-            }
-        }
-#endif
-
-#if UNITY_EDITOR
-        private void OnDrawGizmos()
-        {
-            if (drawBounds && Application.isEditor)
-            {
-                Gizmos.color = boundsColour;
-                var bounds = BoundingBox;
-                Gizmos.DrawWireCube(bounds.center, bounds.size);
-            }
-        }
-#endif
-
-        #endregion monobehaviour methods
+        #endregion abstract        
 
         //========================================================================================
 
@@ -431,6 +367,44 @@ namespace Game.World
         }
 
         #endregion public methods       
+
+        //========================================================================================
+
+        #region monobehaviour methods
+
+#if UNITY_EDITOR
+        protected virtual void OnValidate()
+        {
+            float part = localRenderDistanceFar * 0.2f;
+            if (part < 1)
+            {
+                part = 1;
+            }
+            else if (part - (int)part > 0)
+            {
+                part = (int)part + 1;
+            }
+
+            if (localRenderDistanceInactive < localRenderDistanceFar + part)
+            {
+                localRenderDistanceInactive = localRenderDistanceFar + part;
+            }
+        }
+#endif
+
+#if UNITY_EDITOR
+        private void OnDrawGizmos()
+        {
+            if (drawBounds && Application.isEditor)
+            {
+                Gizmos.color = boundsColour;
+                var bounds = BoundingBox;
+                Gizmos.DrawWireCube(bounds.center, bounds.size);
+            }
+        }
+#endif
+
+        #endregion monobehaviour methods
 
         //========================================================================================
 

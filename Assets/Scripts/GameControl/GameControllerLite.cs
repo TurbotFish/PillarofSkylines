@@ -116,6 +116,9 @@ namespace Game.GameControl
             playerController.InitializePlayerController(this);
             CameraController.InitializeCameraController(this);
 
+            //pausing game until world has loaded a bit
+            Utilities.EventManager.SendGamePausedEvent(this, new Utilities.EventManager.GamePausedEventArgs(true));
+
             if (worldController != null)
             {
                 worldController.Initialize(this);
@@ -131,6 +134,7 @@ namespace Game.GameControl
                         (obj as IWorldObject).Initialize(this, false);
                     }
                 }
+                yield return null;
             }
 
             echoManager.InitializeEchoManager(this);
@@ -141,6 +145,7 @@ namespace Game.GameControl
 
             //starting game
             Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());
+            Utilities.EventManager.SendGamePausedEvent(this, new Utilities.EventManager.GamePausedEventArgs(false));
 
             if (showIntroMenu)
             {
@@ -150,6 +155,8 @@ namespace Game.GameControl
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.HUD));
             }
+
+            
         }
 
         //###############################################################
