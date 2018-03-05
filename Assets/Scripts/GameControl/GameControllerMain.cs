@@ -175,7 +175,11 @@ namespace Game.GameControl
             this.playerController.InitializePlayerController(this);
             this.CameraController.InitializeCameraController(this);
 
+            //pausing game until world has loaded a bit
+            Utilities.EventManager.SendGamePausedEvent(this, new Utilities.EventManager.GamePausedEventArgs(true));
+
             openWorldSceneInfo.WorldController.Initialize(this);
+            yield return new WaitForSeconds(5f);
 
             this.EchoManager.InitializeEchoManager(this, openWorldSceneInfo.SpawnPointManager);
             this.EclipseManager.InitializeEclipseManager(this);
@@ -190,6 +194,7 @@ namespace Game.GameControl
             Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
             Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());
+            Utilities.EventManager.SendGamePausedEvent(this, new Utilities.EventManager.GamePausedEventArgs(false));
             Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.Intro));
         }
 

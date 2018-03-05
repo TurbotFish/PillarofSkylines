@@ -232,7 +232,7 @@ namespace Game.World
                 eSubSceneJobType oppositeJobType = (job.JobType == eSubSceneJobType.Load) ? eSubSceneJobType.Unload : eSubSceneJobType.Load;
 
                 int indexOfOppositeJob = subSceneJobsList.FindIndex(
-                    item => item.Region.Id == job.Region.Id
+                    item => item.Region.UniqueId == job.Region.UniqueId
                     && item.JobType == oppositeJobType
                     && item.SubSceneMode == job.SubSceneMode
                     && item.SubSceneLayer == job.SubSceneLayer
@@ -328,7 +328,7 @@ namespace Game.World
             isJobRunning = true;
             //Debug.LogFormat("Load Job started: {0} {1} {2}", job.Region.SuperRegion.Type, job.Region.name, job.SceneType);
 
-            string sceneName = WorldUtility.GetSubSceneName(job.Region.Id, job.SubSceneMode, job.SubSceneLayer);
+            string sceneName = WorldUtility.GetSubSceneName(job.Region.UniqueId, job.SubSceneMode, job.SubSceneLayer);
             var subSceneRoot = job.Region.GetSubSceneRoot(job.SubSceneLayer);
 
             //editor subScenes are loaded (no streaming)
@@ -348,7 +348,7 @@ namespace Game.World
                 }
                 else if (!Application.CanStreamedLevelBeLoaded(sceneName))
                 {
-                    Debug.LogWarningFormat("scene {0} cannot be streamed", sceneName);
+                    //Debug.LogWarningFormat("scene {0} cannot be streamed", sceneName);
                     var root = new GameObject("empty").transform;
                     root.SetParent(job.Region.transform);
                     job.SubSceneRoot = root;
@@ -412,42 +412,22 @@ namespace Game.World
 
             var subSceneRoot = job.Region.GetSubSceneRoot(job.SubSceneLayer, job.SubSceneMode);
 
-            //editor subScenes are loaded (no streaming)
-            if (editorSubScenesLoaded)
+            if (subSceneRoot)
             {
-                if (subSceneRoot)
-                {
-                    subSceneRoot.gameObject.SetActive(false);
-                }
-            }
-            //streaming
-            else
-            {
-                if (subSceneRoot)
+                subSceneRoot.gameObject.SetActive(false);
+                yield return null;
+
+#if UNITY_EDITOR
+                if (!editorSubScenesLoaded)
                 {
                     Destroy(subSceneRoot.gameObject);
                 }
+#else
+                Destroy(subSceneRoot.gameObject);
+#endif
             }
 
-            //if (job.SubSceneRoot != null)
-            //{
-            //Destroy(job.SubSceneRoot.gameObject);
-
-            //UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.CreateScene("destroyer");
-            //var root = job.SubSceneRoot;
-            //root.SetParent(null, true);
-            //UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(root.gameObject, scene);
-
-            //AsyncOperation async = UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(scene);
-
-            //while (!async.isDone)
-            //{
-            //    yield return null;
-            //}                
-            //}
-
             yield return null;
-            //Resources.UnloadUnusedAssets();
 
             job.IsJobSuccessful = true;
             job.Callback(job);
@@ -492,7 +472,7 @@ namespace Game.World
                         }
 
                         //paths
-                        string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.Id, subSceneMode, subSceneLayer);
+                        string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.UniqueId, subSceneMode, subSceneLayer);
                         string subScenePathFull = WorldUtility.GetFullPath(subScenePath);
 
                         Scene subScene = new Scene();
@@ -578,7 +558,7 @@ namespace Game.World
                         }
 
                         //paths
-                        string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.Id, subSceneMode, subSceneLayer);
+                        string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.UniqueId, subSceneMode, subSceneLayer);
 
                         //moving rott to subScene
                         root.SetParent(null, false);

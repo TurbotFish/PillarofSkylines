@@ -14,6 +14,10 @@ namespace Game.Utilities
         [HideInInspector]
         private string uniqueId;
 
+        [SerializeField]
+        [HideInInspector]
+        private UniqueIdOwner owner;
+
         //========================================================================================
 
         public string Id
@@ -28,7 +32,30 @@ namespace Game.Utilities
             }
         }
 
+        public UniqueIdOwner Owner
+        {
+            get { return owner; }
+            set
+            {
+                if (owner == null)
+                {
+                    owner = value;
+                }
+                else
+                {
+                    Debug.LogError("UniqueId: SetOwner: owner is already set!");
+                }
+            }
+        }
+
         //========================================================================================
+
+#if UNITY_EDITOR
+        private void Awake()
+        {
+
+        }
+#endif
 
 #if UNITY_EDITOR
         private void Update()
@@ -91,7 +118,7 @@ namespace Game.Utilities
 #if UNITY_EDITOR
                 if (!Application.isPlaying)
                 {
-                    UnityEditor.EditorUtility.SetDirty(this);
+                    //UnityEditor.EditorUtility.SetDirty(this);
                     UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
                 }
 #endif

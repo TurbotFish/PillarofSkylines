@@ -50,7 +50,7 @@ namespace Game.Utilities
             public string Description { get; private set; }
             public float Time { get; private set; }
             public UI.eMessageType MessageType { get; private set; }
-            
+
             public OnShowHudMessageEventArgs(bool show, string message = null, UI.eMessageType messageType = 0, string description = "", float time = 2)
             {
                 Show = show;
@@ -213,6 +213,31 @@ namespace Game.Utilities
         //###########################################################
 
         #region gameplay events
+
+        //***********************************************************
+
+        #region game paused event
+
+        public class GamePausedEventArgs : EventArgs
+        {
+            public bool PauseActive { get; private set; }
+
+            public GamePausedEventArgs(bool pauseActive)
+            {
+                PauseActive = pauseActive;
+            }
+        }
+
+        public delegate void GamePausedEventHandler(object sender, GamePausedEventArgs args);
+
+        public static event GamePausedEventHandler GamePausedEvent;
+
+        public static void SendGamePausedEvent(object sender, GamePausedEventArgs args)
+        {
+            GamePausedEvent?.Invoke(sender, args);
+        }
+
+        #endregion game paused event
 
         //***********************************************************
 
