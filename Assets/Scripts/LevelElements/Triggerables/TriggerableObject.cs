@@ -11,8 +11,7 @@ namespace Game.LevelElements
     /// <summary>
     /// Use this class for objects that can be activated by triggers.
     /// </summary>
-    [RequireComponent(typeof(UniqueId))]
-    public abstract class TriggerableObject : MonoBehaviour, IWorldObject
+    public abstract class TriggerableObject : UniqueIdOwner, IWorldObject
     {
         //###########################################################
 
@@ -44,7 +43,6 @@ namespace Game.LevelElements
 
         private PlayerModel model;
 
-        private UniqueId uniqueId;
         private PersistentTriggerable persistentTriggerable;
 
         private bool isCopy;
@@ -52,8 +50,6 @@ namespace Game.LevelElements
         //###########################################################
 
         #region properties
-
-        public string UniqueId { get { if (!uniqueId) { uniqueId = GetComponent<UniqueId>(); } return uniqueId.Id; } }
 
         public bool Triggered { get { return triggered; } }
 
@@ -157,13 +153,9 @@ namespace Game.LevelElements
         #region monobehaviour methods
 
 #if UNITY_EDITOR
-        private void OnValidate()
+        protected override void OnValidate()
         {
-            //add UniqueId component (this is for updating existing gameObjects)
-            if (uniqueId == null && GetComponent<UniqueId>() == null)
-            {
-                uniqueId = gameObject.AddComponent<UniqueId>();
-            }
+            base.OnValidate();
 
             //rebuild trigger id list
             triggerIds.Clear();

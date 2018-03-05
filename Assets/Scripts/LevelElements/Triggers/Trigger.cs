@@ -7,8 +7,7 @@ using Game.Model;
 
 namespace Game.LevelElements
 {
-    [RequireComponent(typeof(UniqueId))]
-    public abstract class Trigger : MonoBehaviour, IWorldObject
+    public abstract class Trigger : UniqueIdOwner, IWorldObject
     {
         //###########################################################
 
@@ -34,7 +33,6 @@ namespace Game.LevelElements
 
         private PlayerModel model;
 
-        private UniqueId uniqueId;
         private PersistentTrigger persistentTrigger;
 
         private bool isCopy;
@@ -43,8 +41,6 @@ namespace Game.LevelElements
         //###########################################################
 
         #region properties
-
-        public string UniqueId { get { if (!uniqueId) { uniqueId = GetComponent<UniqueId>(); } return uniqueId.Id; } }
 
         public bool TriggerState { get { return _triggerState; } }
 
@@ -123,13 +119,9 @@ namespace Game.LevelElements
         #region monobehaviour methods
 
 #if UNITY_EDITOR
-        protected virtual void OnValidate()
+        protected override void OnValidate()
         {
-            //add UniqueId component (this is for updating existing gameObjects)
-            if (uniqueId == null && GetComponent<UniqueId>() == null)
-            {
-                uniqueId = gameObject.AddComponent<UniqueId>();
-            }
+            base.OnValidate();
 
             //register trigger
             foreach (var target in targets)
