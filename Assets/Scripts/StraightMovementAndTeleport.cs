@@ -34,9 +34,10 @@ public class StraightMovementAndTeleport : MovingPlatform {
 		}
 		if (moving) {
 			transform.position += movement * 1 / timeMoving * Time.deltaTime;
+            
 
             if (currPlayer != null) {
-				currPlayer.ImmediateMovement(movement * 1 / timeMoving * Time.deltaTime, true);
+				currPlayer.ImmediateMovement(movement * 1 / timeMoving * Time.deltaTime, true, false);
             }
 			movementProgression += 1 / timeMoving * Time.deltaTime;
 

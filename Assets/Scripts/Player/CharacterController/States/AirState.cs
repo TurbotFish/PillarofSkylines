@@ -213,6 +213,7 @@ namespace Game.Player.CharacterController.States
             result.CanTurnPlayer = timerAirControl <= 0 ? true : false;
 
             result.GravityMultiplier = Mathf.Lerp(1, generalData.GravityFallingMultiplier, ((Mathf.Clamp(-movementInfo.velocity.y, -10, 10) / 10) + 1) / 2);
+            Debug.Log("velocity : " + movementInfo.velocity.y + " multiplier : " + result.GravityMultiplier);
 
             //first update for jump (initial force)
             if (firstUpdate && (mode == eAirStateMode.jump || mode == eAirStateMode.aerialJump)) {

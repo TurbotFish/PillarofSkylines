@@ -517,7 +517,7 @@ namespace Game.Player.CharacterController
             }
         }
 
-        public void ImmediateMovement(Vector3 newVelocity, bool worldSpace, bool addToVelocity = true)
+        public void ImmediateMovement(Vector3 newVelocity, bool worldSpace, bool addToVelocity = false)
         {
             newVelocity = tempPhysicsHandler.Move((worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity));
             print("immediate velocity : " + newVelocity);
