@@ -1,33 +1,20 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace Game.LevelElements
+﻿namespace Game.Model
 {
-    [Serializable]
-    public class PersistentTriggerable
+    public class PersistentTriggerable : PersistentData
     {
         //###########################################################
 
-        [SerializeField]
-        private string id;
-
-        [SerializeField]
         private bool triggered;
 
         //###########################################################
-
-        public string Id { get { return id; } }
 
         public bool Triggered { get { return triggered; } set { triggered = value; } }
 
         //###########################################################
 
-        public PersistentTriggerable(TriggerableObject triggerable)
+        public PersistentTriggerable(string uniqueId, bool triggered) : base(uniqueId)
         {
-            id = triggerable.Id;
-            triggered = triggerable.Triggered;
+            this.triggered = triggered;
         }
 
         //###########################################################

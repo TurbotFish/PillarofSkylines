@@ -27,7 +27,7 @@ namespace Game.LevelElements
 
             my = transform;
 
-            if (triggered)
+            if (Triggered)
             {
                 localPositionWhenOpen = my.localPosition;
                 elapsed = 0;

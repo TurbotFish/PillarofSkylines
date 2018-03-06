@@ -94,9 +94,8 @@ namespace Game.Player.CharacterController
             timeRemaining = grRiseData.Duration;
         }
 
-        public override void Start()
-        {
-            
+        protected override void Start()
+        {            
             base.Start();
         }
 

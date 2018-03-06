@@ -71,6 +71,7 @@ namespace Game.Player.CharacterController
         }
 
         bool isInitialized;
+        bool gamePaused = true;
 
         /// <summary>
         /// This is set to false if the player has opened a menu, true otherwise.
@@ -146,6 +147,7 @@ namespace Game.Player.CharacterController
             Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
             Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
             Utilities.EventManager.WindTunnelExitedEvent += OnWindTunnelPartExitedEventHandler;
+            Utilities.EventManager.GamePausedEvent += OnGamePausedEventHandler;
 
             isInitialized = true;
             isHandlingInput = true;
@@ -168,6 +170,7 @@ namespace Game.Player.CharacterController
             Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayerEventHandler;
             Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
             Utilities.EventManager.WindTunnelExitedEvent -= OnWindTunnelPartExitedEventHandler;
+            Utilities.EventManager.GamePausedEvent -= OnGamePausedEventHandler;
         }
 
         #endregion monobehaviour methods
@@ -179,7 +182,7 @@ namespace Game.Player.CharacterController
         // Update is called once per frame
         void Update()
         {
-            if (!isInitialized)
+            if (!isInitialized || gamePaused)
             {
                 return;
             }
@@ -461,6 +464,11 @@ namespace Game.Player.CharacterController
         {
             print("partremoved");
             windTunnelPartList.Remove(args.WindTunnelPart);
+        }
+
+        private void OnGamePausedEventHandler(object sender, Utilities.EventManager.GamePausedEventArgs args)
+        {
+            gamePaused = args.PauseActive;
         }
 
         #endregion event handlers

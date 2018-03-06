@@ -29,7 +29,7 @@ namespace Game.LevelElements
 
             my = transform;
 
-            if (triggered)
+            if (Triggered)
             {
                 localPositionWhenOpen = my.localEulerAngles;
                 elapsed = 0;

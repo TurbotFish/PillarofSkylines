@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using Game.World;
 
 namespace Game.Player
 {
@@ -9,7 +10,7 @@ namespace Game.Player
         [SerializeField]
         List<Transform> followers;
 
-        World.ChunkSystem.WorldController worldController;
+        WorldController worldController;
         Transform myTransform;
 
         AxisInfo xAxisInfo;
@@ -21,7 +22,7 @@ namespace Game.Player
 
         //#####################################################
 
-        public void InitializeWrappableObject(World.ChunkSystem.WorldController worldController)
+        public void InitializeWrappableObject(WorldController worldController)
         {
             this.worldController = worldController;
             this.myTransform = this.transform;
@@ -61,22 +62,22 @@ namespace Game.Player
             Vector3 playerPos = this.myTransform.position;
             Vector3 teleportOffset = Vector3.zero;
 
-            if (this.worldController.RepeatAxes.x)
-            {
-                if (playerPos.x < this.xAxisInfo.minPos)
-                {
-                    teleportOffset.x = this.xAxisInfo.worldSize;
-                    teleporting = true;
-                }
-                else if (playerPos.x > this.xAxisInfo.maxPos)
-                {
-                    teleportOffset.x = -this.xAxisInfo.worldSize;
-                    teleporting = true;
-                }
-            }
+            //if (this.worldController.RepeatAxes.x)
+            //{
+            //    if (playerPos.x < this.xAxisInfo.minPos)
+            //    {
+            //        teleportOffset.x = this.xAxisInfo.worldSize;
+            //        teleporting = true;
+            //    }
+            //    else if (playerPos.x > this.xAxisInfo.maxPos)
+            //    {
+            //        teleportOffset.x = -this.xAxisInfo.worldSize;
+            //        teleporting = true;
+            //    }
+            //}
 
-            if (this.worldController.RepeatAxes.y)
-            {
+            //if (this.worldController.RepeatAxes.y)
+            //{
                 if (playerPos.y < this.yAxisInfo.minPos)
                 {
                     teleportOffset.y = this.yAxisInfo.worldSize;
@@ -87,10 +88,10 @@ namespace Game.Player
                     teleportOffset.y = -this.yAxisInfo.worldSize;
                     teleporting = true;
                 }
-            }
+            //}
 
-            if (this.worldController.RepeatAxes.z)
-            {
+            //if (this.worldController.RepeatAxes.z)
+            //{
                 if (playerPos.z < this.zAxisInfo.minPos)
                 {
                     teleportOffset.z = this.zAxisInfo.worldSize;
@@ -101,7 +102,7 @@ namespace Game.Player
                     teleportOffset.z = -this.zAxisInfo.worldSize;
                     teleporting = true;
                 }
-            }
+            //}
 
             if (teleporting)
             {

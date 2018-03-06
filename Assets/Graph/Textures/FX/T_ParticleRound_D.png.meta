@@ -56,6 +56,9 @@ TextureImporter:
   textureFormatSet: 0
   platformSettings:
   - buildTarget: DefaultTexturePlatform
+<<<<<<< HEAD
+    maxTextureSize: 2048
+=======
     maxTextureSize: 128
     textureFormat: -1
     textureCompression: 1
@@ -65,6 +68,7 @@ TextureImporter:
     overridden: 0
   - buildTarget: Standalone
     maxTextureSize: 128
+>>>>>>> grr
     textureFormat: -1
     textureCompression: 1
     compressionQuality: 50

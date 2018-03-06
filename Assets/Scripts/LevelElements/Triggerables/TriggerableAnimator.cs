@@ -17,8 +17,10 @@ namespace Game.LevelElements
 
 #if UNITY_EDITOR
 
-        private void OnValidate()
+        protected override void OnValidate()
         {
+            base.OnValidate();
+
             if (!animator && GetComponent<Animator>())
                 animator = GetComponent<Animator>();
         }
