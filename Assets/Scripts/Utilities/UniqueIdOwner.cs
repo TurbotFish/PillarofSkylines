@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Game.Utilities
 {
@@ -41,20 +39,19 @@ namespace Game.Utilities
         private void SetUniqueId()
         {
             var uniqueIds = GetComponents<UniqueId>();
-            UniqueId myUniqueId = null;
 
             //checking if an owned id already exists (owned by this object)
-            foreach (var uniqueId in uniqueIds)
+            foreach (var uniqueIdComponent in uniqueIds)
             {
-                if (uniqueId.Owner == this)
+                if (uniqueIdComponent.Owner == this)
                 {
-                    this.uniqueId = uniqueId;
+                    uniqueId = uniqueIdComponent;
                     return;
                 }
             }
 
             //checking if an unowned id exists and appropriate it
-            if (this.uniqueId == null)
+            if (uniqueId == null)
             {
                 foreach (var uniqueId in uniqueIds)
                 {
@@ -68,7 +65,7 @@ namespace Game.Utilities
             }
 
             //creating a new UniqueId component
-            if (this.uniqueId == null)
+            if (uniqueId == null)
             {
                 uniqueId = gameObject.AddComponent<UniqueId>();
                 uniqueId.Owner = this;
