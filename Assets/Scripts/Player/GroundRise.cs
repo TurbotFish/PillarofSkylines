@@ -118,6 +118,17 @@ namespace Game.Player.CharacterController
                 }
                 else
                 {
+                    Collider[] cols = Physics.OverlapBox(goUp.transform.position, new Vector3(goUp.transform.lossyScale.x / 2, goUp.transform.lossyScale.y / 2, goUp.transform.lossyScale.z / 2), Quaternion.identity);
+                    foreach (Collider col in cols)
+                    {
+                        print("col : " + col.name + " tag : " + col.tag);
+                        if (col.CompareTag("Player"))
+                        {
+                            Debug.Log("there's a player in me :O");
+                            col.transform.parent.position = new Vector3(col.transform.position.x, transform.position.y, col.transform.position.z);
+                        }
+                    }
+                    
                     currHeight += strength * Time.deltaTime;
                     if (currHeight > height)
                     {
