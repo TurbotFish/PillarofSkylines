@@ -305,6 +305,7 @@ public class PoS_Camera : MonoBehaviour {
 		idealDistance = 1 + zoomValue * distanceFromAngle + additionalDistance;
 
 		if (canZoom) Zoom(Input.GetAxis("Mouse ScrollWheel"));
+		//ZoomFromCeiling();
 
 		offset.x = Mathf.Lerp(offsetClose.x, offsetFar.x, currentDistance / maxDistance);
 		offset.y = Mathf.Lerp(offsetClose.y, offsetFar.y, currentDistance / maxDistance);
@@ -348,14 +349,18 @@ public class PoS_Camera : MonoBehaviour {
         Vector3 f = pastPosition - pastTargetPosition + v;
         return targetPosition - v + f * Mathf.Exp(-t);
     }
-    #endregion
+	#endregion
 
-    #region Inputs and States
-
+	#region Inputs and States
+	
     void GetInputsAndStates() {
+		playerState = player.CurrentState;
+		playerVelocity = target.InverseTransformVector((Quaternion.AngleAxis(Vector3.Angle(worldUp, target.up), Vector3.Cross(worldUp, target.up))) * player.MovementInfo.velocity);
+		// TODO: ask someone to make the player velocity ACTUALLY local and not just rotated from the up vector
+		
 		input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
 		input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
-
+		
         if (state == eCameraState.HomeDoor) {
             HomeDoorState();
             return; // Dans ce cas, osef de tout le reste
@@ -363,10 +368,7 @@ public class PoS_Camera : MonoBehaviour {
 
         if (eclipseFX)
             eclipseFX.camSpeed = input;
-
-		playerState = player.CurrentState;
-		playerVelocity = player.MovementInfo.velocity;
-        
+		
         bool isGrounded = (playerState & (ePlayerState.move | ePlayerState.stand | ePlayerState.slide | ePlayerState.wallRun | ePlayerState.hover )) != 0;
         float slopeValue = CheckGroundAndReturnSlopeValue();
 
@@ -412,7 +414,7 @@ public class PoS_Camera : MonoBehaviour {
             if (isGrounded)
                 GroundStateCamera(slopeValue);
             else
-                AirStateCamera();
+                AirStateCamera(slopeValue);
 
             if (playerState == ePlayerState.wallRun)
                 WallRunCamera();
@@ -457,7 +459,7 @@ public class PoS_Camera : MonoBehaviour {
 
         if (state == eCameraState.Air) { // Si on était dans les airs avant
             if (!onEdgeOfCliff)
-                manualPitch = defaultPitch; // On reset le pitch si on n'est pas au bord d'une falaise
+                manualPitch = slopeValue + defaultPitch; // On reset le pitch si on n'est pas au bord d'une falaise
             AllowAutoReset(true, true);
         }
         
@@ -475,7 +477,7 @@ public class PoS_Camera : MonoBehaviour {
         }
     }
 
-	void AirStateCamera() {
+	void AirStateCamera(float slopeValue) {
         if (state >= eCameraState.Overriden)
             return;
 
@@ -495,8 +497,8 @@ public class PoS_Camera : MonoBehaviour {
 		} else { // je suis en train de sauter
 			additionalDistance = 0;
 
-			if (manualPitch <= defaultPitch) // ma caméra a manuellement été pointée vers le haut donc je la replace à son pitch par défaut
-				manualPitch = targetPitch = defaultPitch;
+			if (manualPitch <= defaultPitch + slopeValue) // ma caméra a manuellement été pointée vers le haut donc je la replace à son pitch par défaut
+				manualPitch = targetPitch = defaultPitch + slopeValue;
 		}
 	}
 
@@ -536,7 +538,7 @@ public class PoS_Camera : MonoBehaviour {
 
 		float clampedX = Mathf.Clamp(input.x * (idealDistance / currentDistance), -mouseSpeedLimit.x, mouseSpeedLimit.x); // Avoid going too fast (makes weird lerp)
 		if (invertAxis.x) clampedX = -clampedX;
-		yaw += clampedX * rotationSpeed.x * deltaTime;
+		yaw += (clampedX + VelocityInfluence()) * rotationSpeed.x * deltaTime;
 
 		float clampedY = Mathf.Clamp(input.y * (idealDistance / currentDistance), -mouseSpeedLimit.y, mouseSpeedLimit.y); // Avoid going too fast (makes weird lerp)
 		if (invertAxis.y) clampedY = -clampedY;
@@ -611,28 +613,10 @@ public class PoS_Camera : MonoBehaviour {
 
 		RaycastHit hit;
 		blockedByAWall = Physics.SphereCast(rayStart, rayRadius, rayEnd - rayStart, out hit, idealDistance, blockingLayer);
-        Debug.DrawLine(rayStart, rayEnd, Color.yellow);
+        //Debug.DrawLine(rayStart, rayEnd, Color.yellow);
 
-        if (blockedByAWall && hit.distance > 0) {// If we hit something, hitDistance cannot be 0, nor higher than idealDistance
+        if (blockedByAWall && hit.distance > 0) // If we hit something, hitDistance cannot be 0, nor higher than idealDistance
 			lastHitDistance = Mathf.Min(hit.distance - rayRadius, idealDistance);
-            
-			// Les angles on fera ça plus tard
-			if (state <= eCameraState.AroundCorner && currentDistance >= hit.distance) { // auto move around corners
-				float tempYaw = GetYawBehindPlayer();
-				float newYaw = Mathf.LerpAngle(yaw, tempYaw, deltaTime / slideDamp);
-				float delta = Mathf.Abs(Mathf.DeltaAngle(newYaw, tempYaw));
-
-				//Debug.DrawLine(hit.point, hit.point + hit.normal, Color.magenta);
-
-				Vector3 centerOfSphereCast = rayStart + (rayEnd - rayStart).normalized * hit.distance;
-				Vector3 hitDirection = (hit.point - centerOfSphereCast).normalized;
-
-				if (delta > 1 && delta < 100) {
-					SetTargetRotation(null, GetYawBehindPlayer(), slideDamp);
-					state = eCameraState.AroundCorner;
-				}
-			}
-		}
 		float fixedDistance = blockedByAWall ? lastHitDistance : idealDistance;
 
 		// If collide, use collisionDamp to quickly get in position and not be blocked by a wall
@@ -641,12 +625,105 @@ public class PoS_Camera : MonoBehaviour {
 	}
     #endregion
 
-    #region Slopes and Cliffs
+    #region Additional Rotation Factors
+
+    [Header("Additional Factors")]
+    public float playerVelocityInfluence = 0.1f;
+    public float velocityInfluenceDelay = 2f;
+	public float minimumPlayerVelocity = 3f;
+	public float uTurnInfluence = 2f;
+	public float cornerInfluence = 2f;
+    public float wallDistanceCheck = 4;
+    public AnimationCurve velocityInfluenceCurve;
+
+    float lastVelocityX;
+    Vector3 turnDirection;
+    float velocityInfluenceTimer, cornerInfluenceTimer;
 
     /// <summary>
-    /// Checks whether we're on a cliff or on a slope and returns the value of that slope
+    /// Calculates additional camera movement based on player's movements
     /// </summary>
-    float CheckGroundAndReturnSlopeValue() {
+    float VelocityInfluence() {
+
+        if (Physics.Raycast(target.position, target.parent.forward, wallDistanceCheck, blockingLayer))
+            return 0;
+
+		bool uTurn = playerVelocity.z < -minimumPlayerVelocity;
+		bool turn = Mathf.Abs(playerVelocity.x) > minimumPlayerVelocity;
+
+		if (velocityInfluenceTimer > 0 && !uTurn && (!turn || Sign(playerVelocity.x) != Sign(lastVelocityX)))
+			velocityInfluenceTimer = 0;
+		else if (velocityInfluenceTimer < velocityInfluenceDelay)
+			velocityInfluenceTimer += deltaTime;
+
+		float resolvedInfluence = lastVelocityX = playerVelocity.x;
+
+		if (uTurn)
+			resolvedInfluence += uTurnInfluence * Sign(lastVelocityX);
+
+        resolvedInfluence *= playerVelocityInfluence * velocityInfluenceCurve.Evaluate(velocityInfluenceTimer / velocityInfluenceDelay);
+        
+        /*if (turn && !uTurn) // Corner Influence
+        {
+            if (cornerInfluenceTimer < 1)
+                cornerInfluenceTimer += deltaTime;
+            resolvedInfluence += CornerInfluence() * cornerInfluenceTimer;
+        } else if (cornerInfluenceTimer > 0)
+            cornerInfluenceTimer -= deltaTime;*/
+
+		return resolvedInfluence;
+	}
+
+	float CornerInfluence() {
+		float cornerInfluence = 0;
+		Quaternion fromTo = Quaternion.FromToRotation(target.forward, target.parent.forward);
+
+		turnDirection.x = playerVelocity.x;
+		Vector3 rotation = fromTo * turnDirection;
+		Vector3 offset = worldForward * Mathf.Abs(turnDirection.x);
+		
+		Vector3 forward = target.TransformVector(fromTo * worldForward);
+
+		//Vector3 transformedAnticipated = target.TransformVector(rotation + offset);
+		Vector3 transformedDirection = target.TransformVector(rotation);
+		Vector3 transformedDelayed = target.TransformVector(rotation - offset);
+
+		//Ray anticipatedCheck = new Ray(target.position, transformedAnticipated);
+		Ray cornerCheck = new Ray(target.position + forward + characterUp, transformedDirection);
+		Ray delayedCheck = new Ray(target.position + forward + characterUp, transformedDelayed);
+
+		RaycastHit hit;
+
+        //if (Physics.Raycast(anticipatedCheck, wallDistanceCheck, blockingLayer))
+        //	resolvedInfluence += cornerInfluence * Sign(lastVelocityX);
+        if (Physics.Raycast(delayedCheck, out hit, wallDistanceCheck, blockingLayer))
+			cornerInfluence += this.cornerInfluence * Sign(lastVelocityX);
+		if (Physics.Raycast(cornerCheck, out hit, wallDistanceCheck,  blockingLayer))
+			cornerInfluence += this.cornerInfluence * Sign(lastVelocityX);
+
+        // TODO: check for wall in the opposite direction
+        // if there are walls on both sides, reset camera and return 0 ?
+
+		/*if (hit.normal.sqrMagnitude != 0) {
+			print("playerVelocity: " + playerVelocity + " wallNormal: " + hit.normal);
+			SetTargetRotation(null, GetRotationTowardsDirection(Vector3.Cross(target.up, hit.normal)).y, resetDamp);
+		}*/
+
+		return cornerInfluence;
+	}
+
+	float Sign(float v) {
+		return v >= 0 ? 1 : -1;
+	}
+
+	#endregion
+
+	#region Slopes and Cliffs
+
+	/// <summary>
+	/// Checks whether we're on a cliff or on a slope and returns the value of that slope
+	/// </summary>
+	float CheckGroundAndReturnSlopeValue() {
         float limitVertical = 0.7f; // TODO: softcode
         float slopeSameAngleBuffer = 10; // TODO: softcode
         float minSlopeLength = 1; // TODO: softcode
@@ -735,6 +812,18 @@ public class PoS_Camera : MonoBehaviour {
 		if (value != 0) zoomValue = zoomDistance.Clamp(currentDistance - value * zoomSpeed);
 	}
 
+	void ZoomFromCeiling() {
+		RaycastHit hit;
+		if (Physics.Raycast(target.position, target.up, out hit, maxDistance, blockingLayer)) {
+
+			zoomValue = hit.distance;
+			SetTargetRotation(defaultPitch, null, autoResetDamp);
+			AllowAutoReset(true);
+
+		} else if (zoomValue != distance)
+			zoomValue = distance;
+	}
+
     IEnumerator _ZoomAt(float value, float damp) {
         while(Mathf.Abs(zoomValue - value) > 0.01f) {
             zoomValue = Mathf.Lerp(zoomValue, value, deltaTime / damp);
@@ -748,7 +837,7 @@ public class PoS_Camera : MonoBehaviour {
 	public void ZoomAt(float value, float damp) {
         zoomRoutine = StartCoroutine(_ZoomAt(value, damp));
 	}
-
+	
 	public void ResetZoom() {
         if (zoomRoutine != null)
             StopCoroutine(zoomRoutine);
@@ -791,22 +880,21 @@ public class PoS_Camera : MonoBehaviour {
     }
 
     Vector3 GetContextualOffset(Vector3 potentialPosition) {
-        Vector3 offset = new Vector3(0, 0, 0);
-        // multiplier l'offset contextuel par un modifier qui dépend de la distance actuelle
-        // si on est à zéro distance alors pas d'offset
+        //Vector3 offset = new Vector3(0, 0, 0);
 
         if (onEdgeOfCliff) { // Appliquer l'offset contextuel sur le bord des falaises
             float cliffOffsetDistance = Mathf.Max(0, pitch) / cliffOffsetDivision.Lerp(currentDistance / maxDistance);
             //Debug.DrawLine(potentialPosition, potentialPosition + player.transform.forward * cliffOffsetDistance, Color.white);
 
-            RaycastHit hit;
-            if (Physics.Linecast(potentialPosition, potentialPosition + player.transform.forward * cliffOffsetDistance, out hit, blockingLayer))
+            RaycastHit hit; // tirer un rayon pour voir s'il y a un mur en travers de l'offset prévu, réduire l'offset si c'est le cas
+			if (Physics.Linecast(potentialPosition, potentialPosition + player.transform.forward * cliffOffsetDistance, out hit, blockingLayer))
                 cliffOffsetDistance = Mathf.Min(cliffOffsetDistance, hit.distance - rayRadius);
 
             contextualOffset = Vector3.Lerp(contextualOffset, player.transform.forward * cliffOffsetDistance, deltaTime / autoResetDamp);
-            // tirer un rayon pour voir s'il y a un mur en travers de l'offset prévu, réduire l'offset si c'est le cas
-        }
-        if (cameraBounce) {
+        } else
+			contextualOffset = Vector3.Lerp(contextualOffset, Vector3.zero, deltaTime / autoResetDamp);
+		return contextualOffset;
+        /*if (cameraBounce) {
             offset += contextualOffset.y * target.up * recoilIntensity;
             contextualOffset.y = Mathf.Lerp(contextualOffset.y, 0, deltaTime / smoothDamp);
 
@@ -816,8 +904,8 @@ public class PoS_Camera : MonoBehaviour {
                 cameraBounce = false;
         }
         else
-            contextualOffset = Vector3.Lerp(contextualOffset, Vector3.zero, deltaTime / autoResetDamp);
-        return offset + contextualOffset;
+            contextualOffset = Vector3.Lerp(contextualOffset, Vector3.zero, deltaTime / autoResetDamp);*/
+        //return offset + contextualOffset;
     }
     #endregion
     
