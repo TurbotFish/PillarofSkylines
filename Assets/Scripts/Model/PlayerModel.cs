@@ -43,8 +43,6 @@ namespace Game.Model
         List<ePillarId> unlockedPillars = new List<ePillarId>();
 
         //persistent data
-        List<PersistentTrigger> persistentTriggers = new List<PersistentTrigger>();
-        List<PersistentTriggerable> persistentTriggerables = new List<PersistentTriggerable>();
         Dictionary<string, PersistentData> persistentDataDict = new Dictionary<string, PersistentData>();
 
         //###########################################################
@@ -569,50 +567,6 @@ namespace Game.Model
                 return null;
             }
         }
-
-        ///// <summary>
-        ///// Adds a PersistentTrigger to the model if it does not yet contain one with same Id.
-        ///// </summary>
-        ///// <param name="trigger"></param>
-        //public void AddPersistentTrigger(PersistentTrigger trigger)
-        //{
-        //    if (GetPersistentTrigger(trigger.Id) == null)
-        //    {
-        //        persistentTriggers.Add(trigger);
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Returns the PersistentTrigger with the given Id if it exists, nul otherwise.
-        ///// </summary>
-        ///// <param name="id"></param>
-        ///// <returns></returns>
-        //public PersistentTrigger GetPersistentTrigger(string id)
-        //{
-        //    return persistentTriggers.FirstOrDefault(item => item.Id == id);
-        //}
-
-        ///// <summary>
-        ///// Adds a PersistentTriggerable to the model if it does not yet contain one with same Id.
-        ///// </summary>
-        ///// <param name="triggerable"></param>
-        //public void AddPersistentTriggerable(PersistentTriggerable triggerable)
-        //{
-        //    if (GetPersistentTriggerable(triggerable.Id) == null)
-        //    {
-        //        persistentTriggerables.Add(triggerable);
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Returns the PersistentTriggerable with the given Id if it exists, nul otherwise.
-        ///// </summary>
-        ///// <param name="id"></param>
-        ///// <returns></returns>
-        //public PersistentTriggerable GetPersistentTriggerable(string id)
-        //{
-        //    return persistentTriggerables.FirstOrDefault(item => item.Id == id);
-        //}
 
         #endregion persistent data methods
 
