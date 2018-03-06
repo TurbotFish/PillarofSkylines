@@ -82,6 +82,7 @@ namespace Game.Player.CharacterController.States
             {
                 CanTurnPlayer = true,
                 IgnoreGravity = true,
+                keepVerticalMovement = true,
 
                 Acceleration = Vector3.zero,
                 TransitionSpeed = standData.TransitionSpeed
