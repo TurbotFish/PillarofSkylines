@@ -195,20 +195,28 @@ namespace Game.World
             //identifying teleport positions
             if (cameraPos.y > halfSize.y - preTeleportOffset)
             {
-                teleportPositions.Add(cameraPos + new Vector3(0, -worldSize.y, 0));
+                var telePos = cameraPos;
+                telePos.y = -halfSize.y;
+                teleportPositions.Add(telePos);
             }
             else if (cameraPos.y < -halfSize.y + preTeleportOffset)
             {
-                teleportPositions.Add(cameraPos + new Vector3(0, worldSize.y, 0));
+                var telePos = cameraPos;
+                telePos.y = halfSize.y;
+                teleportPositions.Add(telePos);
             }
 
             if (cameraPos.z > halfSize.z - preTeleportOffset)
             {
-                teleportPositions.Add(cameraPos + new Vector3(0, 0, -worldSize.z));
+                var telePos = cameraPos;
+                telePos.y = -halfSize.z;
+                teleportPositions.Add(telePos);
             }
             else if (cameraPos.z < -halfSize.z + preTeleportOffset)
             {
-                teleportPositions.Add(cameraPos + new Vector3(0, 0, worldSize.z));
+                var telePos = cameraPos;
+                telePos.y = halfSize.z;
+                teleportPositions.Add(telePos);
             }
 
             //***********************************************
@@ -226,18 +234,18 @@ namespace Game.World
             var deprecatedJobs = new List<SubSceneJob>();
             foreach (var job in newJobs)
             {
-                //deprecatedJobs.AddRange(subSceneJobsList.Where(item =>
-                //    item.Region.UniqueId == job.Region.UniqueId &&
-                //    item.SubSceneMode == job.SubSceneMode &&
-                //    item.SubSceneLayer == job.SubSceneLayer
-                //));
+                deprecatedJobs.AddRange(subSceneJobsList.Where(item =>
+                    item.Region.UniqueId == job.Region.UniqueId &&
+                    item.SubSceneMode == job.SubSceneMode &&
+                    item.SubSceneLayer == job.SubSceneLayer
+                ));
             }
 
-            //foreach (var deprecatedJob in deprecatedJobs)
-            //{
-            //    subSceneJobsList.Remove(deprecatedJob);
-            //    deprecatedJob.Callback(deprecatedJob, false);
-            //}
+            foreach (var deprecatedJob in deprecatedJobs)
+            {
+                subSceneJobsList.Remove(deprecatedJob);
+                deprecatedJob.Callback(deprecatedJob, false);
+            }
 
             foreach (var job in newJobs)
             {
@@ -492,10 +500,11 @@ namespace Game.World
                     }
                 }
             }
-
-
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+            
             editorSubScenesLoaded = true;
+
+            UnityEditor.EditorUtility.SetDirty(this);
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
         }
 #endif
 
@@ -573,9 +582,11 @@ namespace Game.World
                 buildSettingsScenes.Add(new UnityEditor.EditorBuildSettingsScene(gameObject.scene.path, true));
             }
             UnityEditor.EditorBuildSettings.scenes = buildSettingsScenes.ToArray();
-
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+            
             editorSubScenesLoaded = false;
+
+            UnityEditor.EditorUtility.SetDirty(this);
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
         }
 #endif
 

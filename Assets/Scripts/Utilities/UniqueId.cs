@@ -106,19 +106,28 @@ namespace Game.Utilities
 
             if (!hasSceneNameAtBeginning || anotherComponentAlreadyHasThisID)
             {
+                //if (!hasSceneNameAtBeginning)
+                //{
+                //    Debug.Log("aaaa");
+                //}
+                //else
+                //{
+                //    Debug.Log("bbbb");
+                //}
+
                 string oldId = uniqueId;
                 uniqueId = sceneName + Guid.NewGuid();
 
-                if (!string.IsNullOrEmpty(uniqueId))
-                {
-                    Debug.LogWarningFormat("UniqueId: id changed from \"{0}\" to \"{1}\"", oldId, uniqueId);
-                }
+                //if (!string.IsNullOrEmpty(uniqueId) /*&& !string.IsNullOrEmpty(oldId)*/)
+                //{
+                Debug.LogWarningFormat("UniqueId: id changed from \"{0}\" to \"{1}\"", oldId, uniqueId);
+                //}
 
 
 #if UNITY_EDITOR
                 if (!Application.isPlaying)
                 {
-                    //UnityEditor.EditorUtility.SetDirty(this);
+                    UnityEditor.EditorUtility.SetDirty(this);
                     UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
                 }
 #endif

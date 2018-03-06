@@ -544,26 +544,23 @@ namespace Game.World
         }
 
         private void OnSubSceneJobDone(SubSceneJob subSceneJob, bool jobDone)
-        {            
+        {
             currentJobs--;
-            firstJobDone = true;
             //Debug.LogErrorFormat("{0}: job done! remaining={1}", name, currentJobs);
 
             if (subSceneJob.SubSceneMode != currentSubSceneMode)
             {
                 return;
-            }            
+            }
 
             if (jobDone)
             {
+                firstJobDone = true;
                 int index = (int)subSceneJob.SubSceneLayer;
 
                 if (subSceneJob.JobType == eSubSceneJobType.Load)
                 {
-                    //if (subSceneStates[index] == eSubSceneState.Loading)
-                    //{
                     subSceneStates[index] = eSubSceneState.Loaded;
-                    //}
 
                     //initializing all WorldObjects
                     var root = GetSubSceneRoot(subSceneJob.SubSceneLayer);
@@ -578,14 +575,7 @@ namespace Game.World
                 }
                 else if (subSceneJob.JobType == eSubSceneJobType.Unload)
                 {
-                    //if (subSceneStates[index] == eSubSceneState.Unloading)
-                    //{
                     subSceneStates[index] = eSubSceneState.Unloaded;
-                    //}
-                    //else
-                    //{
-                    //    Debug.LogWarningFormat("SubScene \"{0} {1} {2}\" was unloaded but should be loading ({3})", name, subSceneJob.SubSceneMode, subSceneJob.SubSceneLayer, subSceneStates[index]);
-                    //}
                 }
             }
         }
@@ -648,6 +638,7 @@ namespace Game.World
             boundsCentre = bounds.center;
             boundsSize = bounds.size;
 
+            UnityEditor.EditorUtility.SetDirty(this);
             UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
         }
 #endif
