@@ -184,7 +184,6 @@ namespace Game.Player.CharacterController
                 return;
             }
 
-
             if (Input.GetKeyDown(KeyCode.F6))
             {
                 this.ChangeGravityDirection(Vector3.left);
@@ -200,14 +199,12 @@ namespace Game.Player.CharacterController
 
             //*******************************************
             //handling input
-           
-
+            
+            inputInfo.Reset();
             if (isHandlingInput)
             {
                 bool sprintDownLastFrame = inputInfo.sprintButton;
-
-                inputInfo.Reset();
-
+                
                 float stickH = Input.GetAxisRaw("Horizontal");
                 float stickV = Input.GetAxisRaw("Vertical");
 
