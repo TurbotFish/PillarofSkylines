@@ -15,7 +15,7 @@ public class StraightMovementAndTeleport : MovingPlatform {
 
 	bool waiting = false, moving = false;
 
-	public override void Start() {
+	protected override void Start() {
 		waiting = true;
 		currWaitTime = waitTime + initialWaitTime;
 		initialPosition = transform.position;
