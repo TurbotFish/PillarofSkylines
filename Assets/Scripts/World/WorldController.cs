@@ -235,7 +235,7 @@ namespace Game.World
                 if (indexOfOppositeJob >= 0)
                 {
                     subSceneJobsList.RemoveAt(indexOfOppositeJob);
-                    Debug.LogWarningFormat("WorldController: Update: {0} job removed!", oppositeJobType.ToString());
+                    //Debug.LogWarningFormat("WorldController: Update: {0} job removed!", oppositeJobType.ToString());
                 }
             }
 
