@@ -113,6 +113,10 @@ namespace Game.Player.CharacterController
             public float GravityStrength { get { return gravityStrength; } }
 
             [SerializeField]
+            float gravityFallingMultiplier;
+            public float GravityFallingMultiplier { get { return gravityFallingMultiplier; } }
+
+            [SerializeField]
             float turnSpeed;
             public float TurnSpeed { get { return turnSpeed; } }
 
