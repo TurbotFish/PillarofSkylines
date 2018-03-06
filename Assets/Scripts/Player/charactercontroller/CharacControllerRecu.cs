@@ -273,14 +273,14 @@ namespace Game.Player.CharacterController
                 currentPFs = null;
             }
             // EN TEST POUR BIEN RESTER AU SOL, à voir ce que ça vaut
+            /*
             if (myPlayer.CurrentState == ePlayerState.stand || myPlayer.CurrentState == ePlayerState.move)
             {
                 if (Physics.SphereCast(myTransform.position + myTransform.up * (radius + skinWidth), radius, -myTransform.up, out hit2, myPlayer.CharData.Physics.MaxStepHeight, collisionMask))
                 {
                     transform.position += -myTransform.up * (hit2.distance - skinWidth);
-                    //									print("adjusted position on ground by : " + hit2.distance);
                 }
-            }
+            }*/
 
             //Send casts to check if there's stuff around the player and set bools depending on the results
             collisions.below = Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask) || climbingStep;
