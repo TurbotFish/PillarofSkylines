@@ -7,7 +7,7 @@ public class EditorDebugMaster : EditorWindow
     [MenuItem("PoS Debug/Debug Replacement Shader Mode _F1", false)]
     public static void ChangeDebugShaderMode()
     {
-        var shaderScript = Camera.main.GetComponent<DebugReplacementShading>();
+        var shaderScript = FindObjectOfType<DebugReplacementShading>();
 
         if (!shaderScript.enabled)
         {

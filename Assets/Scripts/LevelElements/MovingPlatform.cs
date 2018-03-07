@@ -37,7 +37,7 @@ public class MovingPlatform : MonoBehaviour {
     {
         transform.localPosition += movement;
         if(currPlayer!= null)
-            currPlayer.ImmediateMovement(movement, false);
+            currPlayer.ImmediateMovement(movement, false, false);
     }
 
 	virtual public void AddPlayer(CharController player, Vector3 playerImpactPoint) {
