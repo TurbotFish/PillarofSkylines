@@ -100,7 +100,7 @@ namespace Game.LevelElements
         /// Sets the state of the triggerable object. Has no effect if the state does not change.
         /// </summary>
         /// <param name="triggered"></param>
-        public void SetTriggered(bool triggered)
+        public virtual void SetTriggered(bool triggered)
         {
             if (triggered == this.triggered)
             {
