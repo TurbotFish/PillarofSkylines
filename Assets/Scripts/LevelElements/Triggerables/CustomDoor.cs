@@ -31,7 +31,7 @@ public class CustomDoor : TriggerableObject {
 		//myTransform = transform;
 		platform = GetComponent<MovingPlatform>();
 		positionOff = transform.position;
-		positionOn = transform.position + transform.localToWorldMatrix.MultiplyPoint (offsetWhenActivated);
+		positionOn = transform.position + transform.worldToLocalMatrix.MultiplyVector (offsetWhenActivated);
 		vectorToMove = positionOn - positionOff;
 
 //		if (Triggered)
