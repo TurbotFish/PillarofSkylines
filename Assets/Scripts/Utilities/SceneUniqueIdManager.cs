@@ -21,10 +21,6 @@ namespace Game.Utilities
                     instance = FindObjectOfType<SceneUniqueIdManager>();
                 }
 
-                // if(!instance){
-                // 	Debug.LogError("Could not find instance of SceneUniqueIdManager!");
-                // }
-
                 return instance;
             }
         }
@@ -105,7 +101,26 @@ namespace Game.Utilities
                 return;
             }
 
-            idList.RemoveAll(item => item == null);
+            int r = idList.RemoveAll(item => item == null);
+
+#if UNITY_EDITOR
+            bool d = false;
+            foreach (var uniqueIdComp in idList)
+            {
+                if (uniqueIdComp.Owner == null)
+                {
+                    RemoveUniqueId(uniqueIdComp);
+                    Destroy(uniqueIdComp);
+                    d = true;
+                }
+            }
+
+            if (!Application.isPlaying && (r > 0 || d))
+            {
+                UnityEditor.EditorUtility.SetDirty(this);
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+            }
+#endif
         }
 
         //========================================================================================
