@@ -36,16 +36,17 @@ namespace Game.World
 
         private Transform myTransform;
         private SuperRegion superRegion;
-        //private UniqueId uniqueId;
+
+        private List<Vector3> boundsCorners;
 
         private bool isInitialized;
         protected eSubSceneState[] subSceneStates = new eSubSceneState[Enum.GetValues(typeof(eSubSceneLayer)).Length];
         private eRegionMode currentRegionMode = eRegionMode.Inactive;
         private eSubSceneMode currentSubSceneMode;
-        private bool hasSubSceneModeChanged = false;
+        private bool hasSubSceneModeChanged;
         private float cameraDistance;
-
-        private List<Vector3> boundsCorners;
+        private int currentJobs;
+        private bool firstJobDone;
 
 #if UNITY_EDITOR
         [SerializeField]
@@ -66,8 +67,6 @@ namespace Game.World
         #region properties
 
         public Bounds BoundingBox { get { return new Bounds(boundsCentre + transform.position, boundsSize); } }
-
-        //public string UniqueId { get { if (!uniqueId) { uniqueId = GetComponent<UniqueId>(); } return uniqueId.Id; } }
 
         public SuperRegion SuperRegion { get { return superRegion; } }
 
@@ -200,7 +199,6 @@ namespace Game.World
 
             //compute distance
             cameraDistance = float.MaxValue;
-
             if (bounds.Contains(cameraPosition))
             {
                 cameraDistance = 0;
@@ -230,50 +228,93 @@ namespace Game.World
             }
 
             //compute distance and switch mode
-            if (!isVisible)
+            if (currentRegionMode != eRegionMode.Near && cameraDistance == 0) //when the player is inside a region it is always active, this is important to keep teleport destinations loaded
             {
-                //Debug.Log("Region \"" + name + "\": is not visible!");
-                if (currentRegionMode != eRegionMode.Inactive)
+                result.AddRange(SwitchMode(eRegionMode.Near));
+            }
+            else if (currentRegionMode != eRegionMode.Near && isVisible && cameraDistance < RenderDistanceFar)
+            {
+                result.AddRange(SwitchMode(eRegionMode.Near));
+            }
+            else if (currentRegionMode != eRegionMode.Far && isVisible && cameraDistance > RenderDistanceFar * 1.1f && cameraDistance < RenderDistanceInactive)
+            {
+                result.AddRange(SwitchMode(eRegionMode.Far));
+            }
+            else if (currentRegionMode != eRegionMode.Inactive && (!isVisible || cameraDistance > RenderDistanceInactive * 1.1f))
+            {
+                result.AddRange(SwitchMode(eRegionMode.Inactive));
+            }
+
+            //if (!isVisible)
+            //{
+            //    //Debug.Log("Region \"" + name + "\": is not visible!");
+            //    if (currentRegionMode != eRegionMode.Inactive)
+            //    {
+            //        result = SwitchMode(eRegionMode.Inactive);
+            //    }
+            //}
+            //else
+            //{
+            //    switch (currentRegionMode)
+            //    {
+            //        case eRegionMode.Near:
+            //            if (cameraDistance > RenderDistanceInactive * 1.1f)
+            //            {
+            //                result = SwitchMode(eRegionMode.Inactive);
+            //            }
+            //            else if (cameraDistance > RenderDistanceFar * 1.1f)
+            //            {
+            //                result = SwitchMode(eRegionMode.Far);
+            //            }
+            //            break;
+            //        case eRegionMode.Far:
+            //            if (cameraDistance > RenderDistanceInactive * 1.1f)
+            //            {
+            //                result = SwitchMode(eRegionMode.Inactive);
+            //            }
+            //            else if (cameraDistance < RenderDistanceFar)
+            //            {
+            //                result = SwitchMode(eRegionMode.Near);
+            //            }
+            //            break;
+            //        case eRegionMode.Inactive:
+            //            if (cameraDistance < RenderDistanceFar)
+            //            {
+            //                result = SwitchMode(eRegionMode.Near);
+            //            }
+            //            else if (cameraDistance < RenderDistanceInactive)
+            //            {
+            //                result = SwitchMode(eRegionMode.Far);
+            //            }
+            //            break;
+            //    }
+            //}
+
+            //checks if all the SubScenes are loaded
+            if (firstJobDone && currentJobs == 0)
+            {
+                //var subScenes = GetAllSubScenes();
+
+                if (currentRegionMode == eRegionMode.Near && subSceneStates[(int)eSubSceneLayer.Near] != eSubSceneState.Loaded)
                 {
-                    result = SwitchMode(eRegionMode.Inactive);
+                    Debug.LogWarningFormat("Region {0}: SubScene Near should be loaded but isn't!", name);
+                    result.Add(CreateLoadSubSceneJob(currentSubSceneMode, eSubSceneLayer.Near));
+                }
+
+                if (currentRegionMode == eRegionMode.Far && subSceneStates[(int)eSubSceneLayer.Far] != eSubSceneState.Loaded)
+                {
+                    Debug.LogWarningFormat("Region {0}: SubScene Far should be loaded but isn't!", name);
+                    result.Add(CreateLoadSubSceneJob(currentSubSceneMode, eSubSceneLayer.Far));
+                }
+
+                if (currentRegionMode != eRegionMode.Inactive && subSceneStates[(int)eSubSceneLayer.Always] != eSubSceneState.Loaded)
+                {
+                    Debug.LogWarningFormat("Region {0}: SubScene Always should be loaded but isn't!", name);
+                    result.Add(CreateLoadSubSceneJob(currentSubSceneMode, eSubSceneLayer.Always));
                 }
             }
-            else
-            {
-                switch (currentRegionMode)
-                {
-                    case eRegionMode.Near:
-                        if (cameraDistance > RenderDistanceInactive * 1.1f)
-                        {
-                            result = SwitchMode(eRegionMode.Inactive);
-                        }
-                        else if (cameraDistance > RenderDistanceFar * 1.1f)
-                        {
-                            result = SwitchMode(eRegionMode.Far);
-                        }
-                        break;
-                    case eRegionMode.Far:
-                        if (cameraDistance > RenderDistanceInactive * 1.1f)
-                        {
-                            result = SwitchMode(eRegionMode.Inactive);
-                        }
-                        else if (cameraDistance < RenderDistanceFar)
-                        {
-                            result = SwitchMode(eRegionMode.Near);
-                        }
-                        break;
-                    case eRegionMode.Inactive:
-                        if (cameraDistance < RenderDistanceFar)
-                        {
-                            result = SwitchMode(eRegionMode.Near);
-                        }
-                        else if (cameraDistance < RenderDistanceInactive)
-                        {
-                            result = SwitchMode(eRegionMode.Far);
-                        }
-                        break;
-                }
-            }
+
+            //Debug.LogFormat("{0}: jobCount={1}", name, currentJobs);
 
             return result;
         }
@@ -427,6 +468,11 @@ namespace Game.World
         {
             var result = new List<SubSceneJob>();
 
+            if (currentRegionMode == newMode)
+            {
+                return result;
+            }
+
             switch (newMode)
             {
                 case eRegionMode.Near:
@@ -475,6 +521,7 @@ namespace Game.World
             else
             {
                 subSceneStates[index] = eSubSceneState.Loading;
+                currentJobs++;
                 return new SubSceneJob(this, subSceneMode, subSceneLayer, eSubSceneJobType.Load, OnSubSceneJobDone);
             }
         }
@@ -491,46 +538,44 @@ namespace Game.World
             else
             {
                 subSceneStates[index] = eSubSceneState.Unloading;
+                currentJobs++;
                 return new SubSceneJob(this, subSceneMode, subSceneLayer, eSubSceneJobType.Unload, OnSubSceneJobDone);
             }
         }
 
-        private void OnSubSceneJobDone(SubSceneJob subSceneJob)
+        private void OnSubSceneJobDone(SubSceneJob subSceneJob, bool jobDone)
         {
+            currentJobs--;
+            //Debug.LogErrorFormat("{0}: job done! remaining={1}", name, currentJobs);
+
             if (subSceneJob.SubSceneMode != currentSubSceneMode)
             {
                 return;
             }
 
-            int index = (int)subSceneJob.SubSceneLayer;
-
-            if (subSceneJob.JobType == eSubSceneJobType.Load)
+            if (jobDone)
             {
-                if (subSceneStates[index] == eSubSceneState.Loading)
+                firstJobDone = true;
+                int index = (int)subSceneJob.SubSceneLayer;
+
+                if (subSceneJob.JobType == eSubSceneJobType.Load)
                 {
                     subSceneStates[index] = eSubSceneState.Loaded;
-                }
-                else
-                {
-                    Debug.LogWarningFormat("SubScene \"{0} {1} {2}\" was loaded but should be unloading ({3})", name, subSceneJob.SubSceneMode, subSceneJob.SubSceneLayer, subSceneStates[index]);
-                }
 
-                //initializing all WorldObjects
-                var worldObjects = GetComponentsInChildren<IWorldObject>(true);
-                for (int i = 0; i < worldObjects.Length; i++)
-                {
-                    worldObjects[i].Initialize(superRegion.World.GameController, superRegion.Type != eSuperRegionType.Centre);
+                    //initializing all WorldObjects
+                    var root = GetSubSceneRoot(subSceneJob.SubSceneLayer);
+                    if (root != null)
+                    {
+                        var worldObjects = GetComponentsInChildren<IWorldObject>();
+                        for (int i = 0; i < worldObjects.Length; i++)
+                        {
+                            worldObjects[i].Initialize(superRegion.World.GameController, superRegion.Type != eSuperRegionType.Centre);
+                        }
+                    }
                 }
-            }
-            else if (subSceneJob.JobType == eSubSceneJobType.Unload)
-            {
-                if (subSceneStates[index] == eSubSceneState.Unloading)
+                else if (subSceneJob.JobType == eSubSceneJobType.Unload)
                 {
                     subSceneStates[index] = eSubSceneState.Unloaded;
-                }
-                else
-                {
-                    Debug.LogWarningFormat("SubScene \"{0} {1} {2}\" was unloaded but should be loading ({3})", name, subSceneJob.SubSceneMode, subSceneJob.SubSceneLayer, subSceneStates[index]);
                 }
             }
         }
@@ -593,6 +638,7 @@ namespace Game.World
             boundsCentre = bounds.center;
             boundsSize = bounds.size;
 
+            UnityEditor.EditorUtility.SetDirty(this);
             UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
         }
 #endif
@@ -606,7 +652,7 @@ namespace Game.World
         }
 #endif
 
-#endregion private methods
+        #endregion private methods
 
         //========================================================================================
     }

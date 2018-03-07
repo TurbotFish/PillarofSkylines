@@ -52,12 +52,14 @@ namespace Game.Utilities
             if (!Application.isPlaying)
             {
                 UnityEditor.EditorUtility.SetDirty(this);
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
             }
 #endif
         }
 
         public bool ContainsKey(string id)
         {
+            idList.RemoveAll(item => item == null);
             foreach (var uniqueId in idList)
             {
                 if (uniqueId.Id == id)
@@ -85,6 +87,7 @@ namespace Game.Utilities
                 if (!Application.isPlaying)
                 {
                     UnityEditor.EditorUtility.SetDirty(this);
+                    UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
                 }
 #endif
             }

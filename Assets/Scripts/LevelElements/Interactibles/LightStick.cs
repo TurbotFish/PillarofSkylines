@@ -9,7 +9,8 @@ public class LightStick : Interactible
     [SerializeField] Light pointLight;
     [SerializeField] float maxLightIntensity = 4;
     [SerializeField] float timeToLightUp = 1;
-    float lightIntensity = 0;
+
+    bool lit;
 
     private void Start()
     {
@@ -18,9 +19,13 @@ public class LightStick : Interactible
     
     public override void EnterTrigger()
     {
-        cube.sharedMaterial = litMaterial;
-        sparkParticle.SetActive(true);
-        StartCoroutine(LightUp());
+        if (!lit)
+        {
+            lit = true;
+            cube.sharedMaterial = litMaterial;
+            sparkParticle.SetActive(true);
+            StartCoroutine(LightUp());
+        }
     }
 
     IEnumerator LightUp()

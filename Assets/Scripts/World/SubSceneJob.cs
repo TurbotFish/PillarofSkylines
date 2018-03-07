@@ -11,12 +11,9 @@ namespace Game.World
         public eSubSceneMode SubSceneMode { get; private set; }
         public eSubSceneLayer SubSceneLayer { get; private set; }
         public eSubSceneJobType JobType { get; private set; }
-        public Action<SubSceneJob> Callback { get; private set; }
+        public Action<SubSceneJob, bool> Callback { get; private set; }
 
-        public Transform SubSceneRoot { get; set; }
-        public bool IsJobSuccessful { get; set; }
-
-        public SubSceneJob(RegionBase region, eSubSceneMode subSceneMode, eSubSceneLayer subSceneLayer, eSubSceneJobType jobType, Action<SubSceneJob> callback)
+        public SubSceneJob(RegionBase region, eSubSceneMode subSceneMode, eSubSceneLayer subSceneLayer, eSubSceneJobType jobType, Action<SubSceneJob, bool> callback)
         {
             Region = region;
             SubSceneMode = subSceneMode;
