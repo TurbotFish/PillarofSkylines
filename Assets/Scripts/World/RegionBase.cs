@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Game.World
 {
@@ -28,11 +29,15 @@ namespace Game.World
 
         [SerializeField]
         [HideInInspector]
-        private float localRenderDistanceFar;
+        private float localRenderDistanceNear;
 
         [SerializeField]
         [HideInInspector]
-        private float localRenderDistanceInactive;
+        private float localRenderDistanceAlways;
+
+        [SerializeField]
+        [HideInInspector]
+        private float localRenderDistanceFar;
 
         private Transform myTransform;
         private SuperRegion superRegion;
@@ -73,9 +78,11 @@ namespace Game.World
 
         public SuperRegion SuperRegion { get { return superRegion; } }
 
-        public float RenderDistanceFar { get { return overrideRenderDistances ? localRenderDistanceFar : superRegion.World.RenderDistanceFar; } }
+        public float RenderDistanceNear { get { return overrideRenderDistances ? localRenderDistanceNear : superRegion.World.RenderDistanceNear; } }
 
-        public float RenderDistanceInactive { get { return overrideRenderDistances ? localRenderDistanceInactive : superRegion.World.RenderDistanceInactive; } }
+        public float RenderDistanceAlways { get { return overrideRenderDistances ? localRenderDistanceAlways : superRegion.World.RenderDistanceAlways; } }
+
+        public float RenderDistanceFar { get { return overrideRenderDistances ? localRenderDistanceFar : superRegion.World.RenderDistanceFar; } }
 
         public eSubSceneVariant CurrentSubSceneVariant { get { return currentSubSceneVariant; } }
 
@@ -234,15 +241,19 @@ namespace Game.World
             {
                 result.AddRange(SwitchRegionMode(eRegionMode.Near));
             }
-            else if (currentRegionMode != eRegionMode.Near && isVisible && playerDistance < RenderDistanceFar)
+            else if (currentRegionMode != eRegionMode.Near && isVisible && playerDistance < RenderDistanceNear)
             {
                 result.AddRange(SwitchRegionMode(eRegionMode.Near));
             }
-            else if (currentRegionMode != eRegionMode.Far && isVisible && playerDistance > RenderDistanceFar * 1.1f && playerDistance < RenderDistanceInactive)
+            else if(currentRegionMode != eRegionMode.Always && isVisible && playerDistance > RenderDistanceNear * 1.1f && playerDistance < RenderDistanceAlways)
+            {
+                result.AddRange(SwitchRegionMode(eRegionMode.Always));
+            }
+            else if (currentRegionMode != eRegionMode.Far && isVisible && playerDistance > RenderDistanceAlways * 1.1f && playerDistance < RenderDistanceFar)
             {
                 result.AddRange(SwitchRegionMode(eRegionMode.Far));
             }
-            else if (currentRegionMode != eRegionMode.Inactive && (!isVisible || playerDistance > RenderDistanceInactive * 1.1f))
+            else if (currentRegionMode != eRegionMode.Inactive && (!isVisible || playerDistance > RenderDistanceFar * 1.1f))
             {
                 result.AddRange(SwitchRegionMode(eRegionMode.Inactive));
             }
@@ -254,7 +265,7 @@ namespace Game.World
                 {
                     if (subSceneStates[currentSubSceneVariant][eSubSceneLayer.Near] != eSubSceneState.Loaded)
                     {
-                        Debug.LogWarningFormat("{0} {1}: SubScene Near should be loaded but isn't! currentState={2}", 
+                        Debug.LogWarningFormat("{0} {1}: SubScene Near should be loaded but isn't! currentState={2}",
                             superRegion.Type,
                             name,
                             subSceneStates[currentSubSceneVariant][eSubSceneLayer.Near]
@@ -394,7 +405,14 @@ namespace Game.World
         {
             base.OnValidate();
 
-            float part = localRenderDistanceFar * 0.2f;
+            //validate render distance near
+            if(localRenderDistanceNear < 10)
+            {
+                localRenderDistanceNear = 10;
+            }
+
+            //validate render distance always
+            float part = localRenderDistanceNear * 0.2f;
             if (part < 1)
             {
                 part = 1;
@@ -404,9 +422,25 @@ namespace Game.World
                 part = (int)part + 1;
             }
 
-            if (localRenderDistanceInactive < localRenderDistanceFar + part)
+            if (localRenderDistanceAlways < localRenderDistanceNear + part)
             {
-                localRenderDistanceInactive = localRenderDistanceFar + part;
+                localRenderDistanceAlways = localRenderDistanceNear + part;
+            }
+
+            //validate render distance far
+            part = localRenderDistanceAlways * 0.2f;
+            if(part < 1)
+            {
+                part = 1;
+            }
+            else if(part - (int)part > 0)
+            {
+                part = (int)part + 1;
+            }
+
+            if(localRenderDistanceFar < localRenderDistanceAlways + part)
+            {
+                localRenderDistanceFar = localRenderDistanceAlways + part;
             }
         }
 #endif
@@ -460,14 +494,21 @@ namespace Game.World
                     result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Far));
 
                     break;
-                case eRegionMode.Far:
+                case eRegionMode.Always:
                     //load
                     result.Add(CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Always));
+
+                    //unload
+                    result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Far));
+                    result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Near));
+                    break;
+                case eRegionMode.Far:
+                    //load
                     result.Add(CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Far));
 
                     //unload
                     result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Near));
-
+                    result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Always));
                     break;
                 case eRegionMode.Inactive:
                     //unload

@@ -34,11 +34,15 @@ namespace Game.World
 
         [SerializeField]
         [HideInInspector]
-        private float renderDistanceFar;
+        private float renderDistanceNear;
 
         [SerializeField]
         [HideInInspector]
-        private float renderDistanceInactive;
+        private float renderDistanceAlways;
+
+        [SerializeField]
+        [HideInInspector]
+        private float renderDistanceFar;
 
         [SerializeField]
         [HideInInspector]
@@ -83,9 +87,11 @@ namespace Game.World
 
         public Vector3 WorldSize { get { return worldSize; } }
 
-        public float RenderDistanceFar { get { return renderDistanceFar; } }
+        public float RenderDistanceNear { get { return renderDistanceNear; } }
 
-        public float RenderDistanceInactive { get { return renderDistanceInactive; } }
+        public float RenderDistanceAlways { get { return renderDistanceAlways; } }
+
+        public float RenderDistanceFar { get { return renderDistanceFar; } }
 
         public bool EditorSubScenesLoaded { get { return editorSubScenesLoaded; } }
 
@@ -280,7 +286,14 @@ namespace Game.World
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            float part = renderDistanceFar * 0.5f;
+            //validate render distance near
+            if (renderDistanceNear < 10)
+            {
+                renderDistanceNear = 10;
+            }
+
+            //validate render distance always
+            float part = renderDistanceNear * 0.2f;
             if (part < 1)
             {
                 part = 1;
@@ -290,16 +303,34 @@ namespace Game.World
                 part = (int)part + 1;
             }
 
-            if (renderDistanceInactive < renderDistanceFar + part)
+            if (renderDistanceAlways < renderDistanceNear + part)
             {
-                renderDistanceInactive = renderDistanceFar + part;
+                renderDistanceAlways = renderDistanceNear + part;
             }
 
+            //validate render distance far
+            part = renderDistanceAlways * 0.2f;
+            if (part < 1)
+            {
+                part = 1;
+            }
+            else if (part - (int)part > 0)
+            {
+                part = (int)part + 1;
+            }
+
+            if (renderDistanceFar < renderDistanceAlways + part)
+            {
+                renderDistanceFar = renderDistanceAlways + part;
+            }
+
+            //
             if (preTeleportOffset < 1)
             {
                 preTeleportOffset = 1;
             }
 
+            //
             if (secondaryPositionDistanceModifier < 0)
             {
                 secondaryPositionDistanceModifier = 0;
