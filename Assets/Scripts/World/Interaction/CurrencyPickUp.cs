@@ -1,12 +1,12 @@
 ﻿using System.Collections;
+using Game.GameControl;
 using Game.Model;
-using Game.World.ChunkSystem;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace Game.World.Interaction
 {
-    public class CurrencyPickUp : MonoBehaviour, IWorldObjectInitialization
+    public class CurrencyPickUp : MonoBehaviour, IWorldObject
     {
         //##################################################################
 
@@ -21,7 +21,8 @@ namespace Game.World.Interaction
         private eCurrencyType currencyType;
 
         bool favourPickedUp = false;
-        WorldController worldController;
+        IGameControllerBase gameController;
+        
         BoxCollider myCollider;
         bool isCopy;      
 
@@ -80,10 +81,6 @@ namespace Game.World.Interaction
 
         private void OnDestroy()
         {
-            if (worldController != null)
-            {
-                worldController.UnregisterFavour(this);
-            }
         }
 
         #endregion monobehaviour methods
@@ -92,7 +89,7 @@ namespace Game.World.Interaction
 
         #region public methods
 
-        void IWorldObjectInitialization.Initialize(GameControl.IGameControllerBase gameController, bool isCopy)
+        void IWorldObject.Initialize(IGameControllerBase gameController, bool isCopy)
         {
             MyTransform = transform;
 
@@ -107,11 +104,11 @@ namespace Game.World.Interaction
                 }
             }
 
-            worldController = gameController.WorldController;
+            this.gameController = gameController;
             myCollider = GetComponent<BoxCollider>();
             this.isCopy = isCopy;
 
-            if (worldController.GameController.PlayerModel.CheckIfPickUpCollected(pickUpId))
+            if (gameController.PlayerModel.CheckIfPickUpCollected(pickUpId))
             {
                 PickUp();
 
@@ -120,7 +117,6 @@ namespace Game.World.Interaction
             else
             {
                 Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
-                worldController.RegisterFavour(this);
             }
         }
 

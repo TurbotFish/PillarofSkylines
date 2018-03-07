@@ -7,7 +7,7 @@ public class EditorDebugMaster : EditorWindow
     [MenuItem("PoS Debug/Debug Replacement Shader Mode _F1", false)]
     public static void ChangeDebugShaderMode()
     {
-        var shaderScript = Camera.main.GetComponent<DebugReplacementShading>();
+        var shaderScript = FindObjectOfType<DebugReplacementShading>();
 
         if (!shaderScript.enabled)
         {
@@ -62,7 +62,7 @@ public class EditorDebugMaster : EditorWindow
     {
         Debug.Log("get scene view !");
         Transform viewPos = SceneView.lastActiveSceneView.camera.transform;
-        Game.World.ChunkSystem.WorldController worldController = FindObjectOfType<Game.World.ChunkSystem.WorldController>();
+        Game.World.WorldController worldController = FindObjectOfType<Game.World.WorldController>();
 
 
         Debug.Log("world : " + worldController.name);

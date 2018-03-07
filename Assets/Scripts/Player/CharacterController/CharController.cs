@@ -71,6 +71,7 @@ namespace Game.Player.CharacterController
         }
 
         bool isInitialized;
+        bool gamePaused = true;
 
         /// <summary>
         /// This is set to false if the player has opened a menu, true otherwise.
@@ -146,6 +147,7 @@ namespace Game.Player.CharacterController
             Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
             Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
             Utilities.EventManager.WindTunnelExitedEvent += OnWindTunnelPartExitedEventHandler;
+            Utilities.EventManager.GamePausedEvent += OnGamePausedEventHandler;
 
             isInitialized = true;
             isHandlingInput = true;
@@ -168,6 +170,7 @@ namespace Game.Player.CharacterController
             Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayerEventHandler;
             Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
             Utilities.EventManager.WindTunnelExitedEvent -= OnWindTunnelPartExitedEventHandler;
+            Utilities.EventManager.GamePausedEvent -= OnGamePausedEventHandler;
         }
 
         #endregion monobehaviour methods
@@ -179,11 +182,10 @@ namespace Game.Player.CharacterController
         // Update is called once per frame
         void Update()
         {
-            if (!isInitialized)
+            if (!isInitialized || gamePaused)
             {
                 return;
             }
-
 
             if (Input.GetKeyDown(KeyCode.F6))
             {
@@ -200,14 +202,12 @@ namespace Game.Player.CharacterController
 
             //*******************************************
             //handling input
-           
-
+            
+            inputInfo.Reset();
             if (isHandlingInput)
             {
                 bool sprintDownLastFrame = inputInfo.sprintButton;
-
-                inputInfo.Reset();
-
+                
                 float stickH = Input.GetAxisRaw("Horizontal");
                 float stickV = Input.GetAxisRaw("Vertical");
 
@@ -466,6 +466,11 @@ namespace Game.Player.CharacterController
             windTunnelPartList.Remove(args.WindTunnelPart);
         }
 
+        private void OnGamePausedEventHandler(object sender, Utilities.EventManager.GamePausedEventArgs args)
+        {
+            gamePaused = args.PauseActive;
+        }
+
         #endregion event handlers
 
         //#############################################################################
@@ -517,11 +522,12 @@ namespace Game.Player.CharacterController
             }
         }
 
-        public void ImmediateMovement(Vector3 newVelocity, bool worldSpace)
+        public void ImmediateMovement(Vector3 newVelocity, bool worldSpace, bool addToVelocity = false)
         {
             newVelocity = tempPhysicsHandler.Move((worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity));
             print("immediate velocity : " + newVelocity);
-            velocity += newVelocity/Time.deltaTime;
+            if (addToVelocity)
+                velocity += newVelocity/Time.deltaTime;
         }
      
         public void SetVelocity(Vector3 newVelocity, bool worldSpace)

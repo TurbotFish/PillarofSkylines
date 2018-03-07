@@ -11,7 +11,7 @@ public class MovingPlatform : MonoBehaviour {
 	[HideInInspector]
 	public Vector3 impactPoint;
 
-	public virtual void Start () {
+	protected virtual void Start () {
         if (active)
         {
             if (transform.tag == "Untagged")
@@ -37,7 +37,7 @@ public class MovingPlatform : MonoBehaviour {
     {
         transform.localPosition += movement;
         if(currPlayer!= null)
-            currPlayer.ImmediateMovement(movement, false);
+            currPlayer.ImmediateMovement(movement, false, false);
     }
 
 	virtual public void AddPlayer(CharController player, Vector3 playerImpactPoint) {

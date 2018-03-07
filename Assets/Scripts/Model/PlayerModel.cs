@@ -42,9 +42,8 @@ namespace Game.Model
         List<ePillarId> destoyedPillars = new List<ePillarId>();
         List<ePillarId> unlockedPillars = new List<ePillarId>();
 
-        //level element data
-        List<PersistentTrigger> persistentTriggers = new List<PersistentTrigger>();
-        List<PersistentTriggerable> persistentTriggerables = new List<PersistentTriggerable>();
+        //persistent data
+        Dictionary<string, PersistentData> persistentDataDict = new Dictionary<string, PersistentData>();
 
         //###########################################################
 
@@ -499,53 +498,77 @@ namespace Game.Model
 
         //###########################################################
 
-        #region level element methods
+        #region persistent data methods
 
         /// <summary>
-        /// Adds a PersistentTrigger to the model if it does not yet contain one with same Id.
+        /// Registers a new persistent data object. Returns true if the registration was successfull, false otherwise.
         /// </summary>
-        /// <param name="trigger"></param>
-        public void AddPersistentTrigger(PersistentTrigger trigger)
+        /// <param name="dataObject"></param>
+        /// <returns></returns>
+        public bool AddPersistentDataObject(PersistentData dataObject)
         {
-            if (GetPersistentTrigger(trigger.Id) == null)
+            if (persistentDataDict.ContainsKey(dataObject.UniqueId))
             {
-                persistentTriggers.Add(trigger);
+                if (persistentDataDict[dataObject.UniqueId] == dataObject)
+                {
+                    return true;
+                }
+                else
+                {
+                    Debug.LogErrorFormat("Model: AddPersistentDataObject: An object with the id \"{0}\" already exists! currentObjectType={1}; newObjectType={2}",
+                        dataObject.UniqueId,
+                        persistentDataDict[dataObject.UniqueId].GetType(),
+                        dataObject.GetType()
+                    );
+
+                    return false;
+                }
+            }
+            else
+            {
+                persistentDataDict.Add(dataObject.UniqueId, dataObject);
+                return true;
             }
         }
 
         /// <summary>
-        /// Returns the PersistentTrigger with the given Id if it exists, nul otherwise.
+        /// Gets the persistent data object with the id if it exists, null otherwise.
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="uniqueId"></param>
         /// <returns></returns>
-        public PersistentTrigger GetPersistentTrigger(string id)
+        public PersistentData GetPersistentDataObject(string uniqueId)
         {
-            return persistentTriggers.FirstOrDefault(item => item.Id == id);
-        }
-
-        /// <summary>
-        /// Adds a PersistentTriggerable to the model if it does not yet contain one with same Id.
-        /// </summary>
-        /// <param name="triggerable"></param>
-        public void AddPersistentTriggerable(PersistentTriggerable triggerable)
-        {
-            if (GetPersistentTriggerable(triggerable.Id) == null)
+            if (persistentDataDict.ContainsKey(uniqueId))
             {
-                persistentTriggerables.Add(triggerable);
+                return persistentDataDict[uniqueId];
+            }
+            else
+            {
+                return null;
             }
         }
 
         /// <summary>
-        /// Returns the PersistentTriggerable with the given Id if it exists, nul otherwise.
+        /// Gets the persistent data object with the id if it exists and can be cast to T, null otherwise.
         /// </summary>
-        /// <param name="id"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="uniqueId"></param>
         /// <returns></returns>
-        public PersistentTriggerable GetPersistentTriggerable(string id)
+        public T GetPersistentDataObject<T>(string uniqueId) where T : PersistentData
         {
-            return persistentTriggerables.FirstOrDefault(item => item.Id == id);
+            if (persistentDataDict.ContainsKey(uniqueId))
+            {
+                var dataObject = GetPersistentDataObject(uniqueId);
+
+                return dataObject as T;
+            }
+            else
+            {
+                return null;
+            }
         }
 
-        #endregion level element methods
+        #endregion persistent data methods
 
         //###########################################################
 

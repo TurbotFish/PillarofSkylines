@@ -2,18 +2,16 @@
 using System.Collections.Generic;
 using System;
 using Game.World;
-using Game.World.ChunkSystem;
-using Game.LevelElements;
 using System.Collections;
 using Game.Model;
+using Game.Utilities;
 
 namespace Game.LevelElements
 {
     /// <summary>
     /// Use this class for objects that can be activated by triggers.
     /// </summary>
-    [ExecuteInEditMode]
-    public abstract class TriggerableObject : MonoBehaviour, IWorldObjectInitialization
+    public abstract class TriggerableObject : UniqueIdOwner, IWorldObject
     {
         //###########################################################
 
@@ -24,23 +22,13 @@ namespace Game.LevelElements
 
         //###########################################################
 
-#if UNITY_EDITOR
-        [HideInInspector]
-        [SerializeField]
-        private int instanceId; //used in editor to detect duplication
-#endif
-
-        [HideInInspector]
-        [SerializeField]
-        private string id;
-
         [Header("Triggerable Object")]
         [SerializeField]
         protected bool triggered;
 
 #if UNITY_EDITOR
         [SerializeField]
-        private List<Trigger> triggers; //list of Trigger objects
+        private List<Trigger> triggers = new List<Trigger>(); //list of Trigger objects
 #endif
 
         [SerializeField]
@@ -53,164 +41,28 @@ namespace Game.LevelElements
         [SerializeField]
         private List<string> triggerIds = new List<string>(); //list with the Id's of the Trigger objects
 
-        private PersistentTriggerable persistentTriggerable;
-        private bool isCopy;
         private PlayerModel model;
 
+        private PersistentTriggerable persistentTriggerable;
+
+        private bool isCopy;
+
         //###########################################################
 
-        public string Id { get { return id; } }
+        #region properties
+
         public bool Triggered { get { return triggered; } }
 
+        #endregion properties
+
         //###########################################################
+
+        #region abstract
 
         protected abstract void Activate();
         protected abstract void Deactivate();
 
-        //###########################################################
-
-        #region editor methods
-
-#if UNITY_EDITOR
-
-        public bool ContainsTrigger(Trigger trigger)
-        {
-            return triggers.Contains(trigger);
-        }
-
-        public void AddTrigger(Trigger trigger)
-        {
-            if (!triggers.Contains(trigger))
-            {
-                triggers.Add(trigger);
-                triggerIds.Add(trigger.Id);
-            }
-        }
-
-        public void RemoveTrigger(Trigger trigger)
-        {
-            triggers.Remove(trigger);
-            triggerIds.Remove(trigger.Id);
-        }
-
-#endif
-
-        #endregion editor methods
-
-        //###########################################################
-
-        #region monobehaviour methods
-
-#if UNITY_EDITOR
-        private void OnValidate()
-        {
-            triggerIds.Clear();
-            triggers.RemoveAll(item => item == null);
-
-            foreach (var trigger in triggers)
-            {
-                triggerIds.Add(trigger.Id);
-            }
-        }
-#endif
-
-        protected virtual void Awake()
-        {
-
-        }
-
-        /// <summary>
-        /// EDITOR: sets or resets the id of the TriggerableObject.
-        /// </summary>
-        private void Update()
-        {
-#if UNITY_EDITOR
-
-            if (Application.isPlaying)
-            {
-                return;
-            }
-            else if (instanceId == 0) //first time
-            {
-                //Debug.Log("triggerable: awake: instanceId == 0!");
-                instanceId = GetInstanceID();
-
-                if (string.IsNullOrEmpty(id))
-                {
-                    id = Guid.NewGuid().ToString();
-                }
-
-                //filling the list of trigger Id's
-                if (triggerIds.Count != triggers.Count)
-                {
-                    triggerIds.Clear();
-                    triggers.RemoveAll(item => item == null);
-
-                    foreach (var trigger in triggers)
-                    {
-                        if (trigger == null)
-                        {
-                            Debug.LogWarning("Triggerable: \"" + gameObject.name + "\" contains null triggers.");
-                        }
-                        else if (!triggerIds.Contains(trigger.Id))
-                        {
-                            triggerIds.Add(trigger.Id);
-                        }
-                    }
-                }
-
-                //"save" changes
-                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
-            }
-            else if (instanceId != GetInstanceID() /*&& GetInstanceID() < 0*/) //the script has been duplicated
-            {
-                //Debug.Log("triggerable: awake: instanceId changed!");
-                instanceId = GetInstanceID();
-
-                id = Guid.NewGuid().ToString();
-
-                //resetting things
-                triggers.Clear();
-                triggerIds.Clear();
-
-                //"save" changes
-                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
-            }
-
-#endif //UNITY_EDITOR
-        }
-
-        protected virtual void OnDestroy()
-        {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-#endif
-
-            if (!isCopy)
-            {
-                persistentTriggerable.Triggered = triggered;
-            }
-        }
-
-        private void OnDisable()
-        {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                return;
-            }
-#endif
-
-            if (!isCopy)
-            {
-                OnDestroy();
-            }
-        }
-
-        #endregion monobehaviour methods
+        #endregion abstract
 
         //###########################################################
 
@@ -223,54 +75,126 @@ namespace Game.LevelElements
         /// <param name="isCopy"></param>
         public virtual void Initialize(GameControl.IGameControllerBase gameController, bool isCopy)
         {
-            //Debug.Log("triggerable " + gameObject.activeInHierarchy);
-
             //
             this.isCopy = isCopy;
             model = gameController.PlayerModel;
 
             //
-            persistentTriggerable = model.GetPersistentTriggerable(id);
+            persistentTriggerable = model.GetPersistentDataObject<PersistentTriggerable>(UniqueId);
 
             if (persistentTriggerable == null)
             {
-                persistentTriggerable = new PersistentTriggerable(this);
-                model.AddPersistentTriggerable(persistentTriggerable);
+                persistentTriggerable = new PersistentTriggerable(UniqueId, triggered);
+                model.AddPersistentDataObject(persistentTriggerable);
             }
             else
             {
-                triggered = persistentTriggerable.Triggered;
+                SetTriggered(persistentTriggerable.Triggered);
             }
 
             //
-            Game.Utilities.EventManager.TriggerUpdatedEvent += OnTriggerUpdated;
+            EventManager.TriggerUpdatedEvent += OnTriggerUpdated;
         }
+
+        /// <summary>
+        /// Sets the state of the triggerable object. Has no effect if the state does not change.
+        /// </summary>
+        /// <param name="triggered"></param>
+        public void SetTriggered(bool triggered)
+        {
+            if (triggered == this.triggered)
+            {
+                return;
+            }
+
+            this.triggered = triggered;
+            persistentTriggerable.Triggered = triggered;
+
+            if (triggered)
+            {
+                Activate();
+            }
+            else if (!definitiveActivation)
+            {
+                Deactivate();
+            }
+        }
+
+#if UNITY_EDITOR
+        public bool ContainsTrigger(Trigger trigger)
+        {
+            return triggers.Contains(trigger);
+        }
+#endif
+
+#if UNITY_EDITOR
+        public void AddTrigger(Trigger trigger)
+        {
+            if (!triggers.Contains(trigger))
+            {
+                triggers.Add(trigger);
+                triggerIds.Add(trigger.UniqueId);
+            }
+        }
+#endif
+
+#if UNITY_EDITOR
+        public void RemoveTrigger(Trigger trigger)
+        {
+            triggers.Remove(trigger);
+            triggerIds.Remove(trigger.UniqueId);
+        }
+#endif
 
         #endregion public methods
 
         //###########################################################
 
+        #region monobehaviour methods
+
+#if UNITY_EDITOR
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+
+            //rebuild trigger id list
+            triggerIds.Clear();
+            triggers.RemoveAll(item => item == null);
+            var invalidTriggers = new List<Trigger>();
+
+            foreach (var trigger in triggers)
+            {
+                if (!trigger.Targets.Contains(this))
+                {
+                    invalidTriggers.Add(trigger);
+                }
+            }
+
+            foreach (var trigger in triggers)
+            {
+                if (!triggerIds.Contains(trigger.UniqueId))
+                {
+                    triggerIds.Add(trigger.UniqueId);
+                }
+            }
+        }
+#endif
+
+        #endregion monobehaviour methods
+
+        //###########################################################
+
         #region private methods
 
-        // Have a ToggleState() to toggle without needing to check states and all since toggle is immediate
         private void UpdateState(bool toggle = false)
         {
             if (toggle)
             {
-                triggered ^= true;
-
-                OnTriggeredChanged();
+                SetTriggered(triggered ^ true);
             }
             else
             {
-                bool needsUpdate = triggered; //get previous state
-                triggered = CheckTriggers();  //check triggers
-                needsUpdate ^= triggered;     //see if state has changed
-
-                if (needsUpdate)
-                {
-                    OnTriggeredChanged();
-                }
+                SetTriggered(CheckTriggers());
             }
         }
 
@@ -279,7 +203,7 @@ namespace Game.LevelElements
             var persistentTriggers = new List<PersistentTrigger>();
             foreach (var triggerId in triggerIds)
             {
-                persistentTriggers.Add(model.GetPersistentTrigger(triggerId));
+                persistentTriggers.Add(model.GetPersistentDataObject<PersistentTrigger>(triggerId));
             }
 
             switch (triggerWith)
@@ -322,21 +246,6 @@ namespace Game.LevelElements
         }
 
         /// <summary>
-        /// This should be called when the value of "triggered" is changed.
-        /// </summary>
-        private void OnTriggeredChanged()
-        {
-            if (triggered)
-            {
-                Activate();
-            }
-            else if (!definitiveActivation)
-            {
-                Deactivate();
-            }
-        }
-
-        /// <summary>
         /// Event handler that is called when a Trigger is toggled.
         /// </summary>
         /// <param name="sender"></param>
@@ -350,14 +259,6 @@ namespace Game.LevelElements
                 UpdateState(args.Trigger.Toggle);
             }
         }
-
-        //private IEnumerator OnTriggeredChangedCR()
-        //{
-        //    yield return null;
-        //    yield return null;
-
-        //    OnTriggeredChanged();
-        //}
 
         #endregion private methods
 
