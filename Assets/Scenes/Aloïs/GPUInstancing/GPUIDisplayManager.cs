@@ -56,6 +56,7 @@ public class GPUIDisplayManager : MonoBehaviour {
 		transformsID.Add (_id, _mat);
 		indices.Add (_id);
 		updatedThisFrame = true;
+		//Debug.Log (_id);
 	}
 
 	public void RemoveStuffToDraw(List<Matrix4x4> _mat, int _id){

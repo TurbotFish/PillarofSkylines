@@ -538,7 +538,10 @@ public class PoS_Camera : MonoBehaviour {
 
 		float clampedX = Mathf.Clamp(input.x * (idealDistance / currentDistance), -mouseSpeedLimit.x, mouseSpeedLimit.x); // Avoid going too fast (makes weird lerp)
 		if (invertAxis.x) clampedX = -clampedX;
-		yaw += (clampedX + VelocityInfluence()) * rotationSpeed.x * deltaTime;
+		yaw += clampedX * rotationSpeed.x * deltaTime;
+
+        if (input.x == 0)
+            yaw += VelocityInfluence() * rotationSpeed.x * deltaTime;
 
 		float clampedY = Mathf.Clamp(input.y * (idealDistance / currentDistance), -mouseSpeedLimit.y, mouseSpeedLimit.y); // Avoid going too fast (makes weird lerp)
 		if (invertAxis.y) clampedY = -clampedY;
