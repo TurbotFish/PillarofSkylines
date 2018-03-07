@@ -22,6 +22,17 @@ public class CustomDoor : TriggerableObject {
 	bool isActivated;
 	Vector3 moveVector;
 
+	public bool dirtyOverrideMaterialSwap;
+
+	[ConditionalHideAttribute("dirtyOverrideMaterialSwap", false)]
+	public Material matOn;
+
+	[ConditionalHideAttribute("dirtyOverrideMaterialSwap", false)]
+	public Material matOff;
+
+	[ConditionalHideAttribute("dirtyOverrideMaterialSwap", false)]
+	public Renderer _renderer;
+
 	#region public methods
 
 	public override void Initialize(IGameControllerBase gameController, bool isCopy)
@@ -31,8 +42,13 @@ public class CustomDoor : TriggerableObject {
 		//myTransform = transform;
 		platform = GetComponent<MovingPlatform>();
 		positionOff = transform.position;
-		positionOn = transform.position + transform.worldToLocalMatrix.MultiplyVector (offsetWhenActivated);
+		//positionOn = transform.position + transform.localToWorldMatrix.MultiplyVector (offsetWhenActivated);
+		positionOn = transform.position + transform.forward * offsetWhenActivated.z + transform.right * offsetWhenActivated.x + transform.up * offsetWhenActivated.y;
+
+
 		vectorToMove = positionOn - positionOff;
+
+		_renderer.material = matOff;
 
 //		if (Triggered)
 //		{
@@ -56,6 +72,7 @@ public class CustomDoor : TriggerableObject {
 		Debug.LogFormat("Door \"{0}\": Activate called!", name);
 
 		isActivated = true;
+		_renderer.material = matOn;
 	}
 
 	protected override void Deactivate()
@@ -91,6 +108,7 @@ public class CustomDoor : TriggerableObject {
 		if (timer >= activationLength + deactivationLength) {
 			timer = 0;
 			isActivated = false;
+			_renderer.material = matOff;
 		}
 	}
 }
