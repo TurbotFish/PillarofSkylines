@@ -1,9 +1,9 @@
 ﻿namespace Game.World
 {
     /// <summary>
-    /// The mode of a SubScene (normal, intact, destroyed, ...).
+    /// The variant of a SubScene (normal, intact, destroyed, ...).
     /// </summary>
-    public enum eSubSceneMode
+    public enum eSubSceneVariant
     {
         Normal,
         IntactPillar,

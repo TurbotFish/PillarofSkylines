@@ -84,7 +84,7 @@ namespace Game.World
 
             if (!Application.isPlaying && self.transform.parent.GetComponent<WorldController>().EditorSubScenesLoaded)
             {
-                foreach (var subSceneMode in self.AvailableSubSceneModes)
+                foreach (var subSceneMode in self.AvailableSubSceneVariants)
                 {
                     foreach (var subSceneLayer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
                     {

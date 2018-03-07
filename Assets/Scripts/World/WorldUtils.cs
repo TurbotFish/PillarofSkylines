@@ -7,24 +7,24 @@ namespace Game.World
         /// <summary>
         /// Returns the name for a SubScene root game object.
         /// </summary>
-        /// <param name="subSceneMode"></param>
+        /// <param name="subSceneVariant"></param>
         /// <param name="subSceneLayer"></param>
         /// <returns></returns>
-        public static string GetSubSceneRootName(eSubSceneMode subSceneMode, eSubSceneLayer subSceneLayer)
+        public static string GetSubSceneRootName(eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer)
         {
-            return string.Concat("SubScene_", subSceneMode.ToString(), "_", subSceneLayer.ToString());
+            return string.Concat("SubScene_", subSceneVariant.ToString(), "_", subSceneLayer.ToString());
         }
 
         /// <summary>
         /// Returns the name for a SubScene scene object.
         /// </summary>
         /// <param name="regionId"></param>
-        /// <param name="subSceneMode"></param>
+        /// <param name="subSceneVariant"></param>
         /// <param name="subSceneLayer"></param>
         /// <returns></returns>
-        public static string GetSubSceneName(string regionId, eSubSceneMode subSceneMode, eSubSceneLayer subSceneLayer)
+        public static string GetSubSceneName(string regionId, eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer)
         {
-            return string.Concat(GetSubSceneRootName(subSceneMode, subSceneLayer), "_", regionId, "_", subSceneMode.ToString());
+            return string.Concat(GetSubSceneRootName(subSceneVariant, subSceneLayer), "_", regionId, "_", subSceneVariant.ToString());
         }
 
         /// <summary>
@@ -32,13 +32,13 @@ namespace Game.World
         /// </summary>
         /// <param name="worldScenePath"></param>
         /// <param name="regionId"></param>
-        /// <param name="subSceneMode"></param>
+        /// <param name="subSceneVariant"></param>
         /// <param name="subSceneLayer"></param>
         /// <returns></returns>
-        public static string GetSubScenePath(string worldScenePath, string regionId, eSubSceneMode subSceneMode, eSubSceneLayer subSceneLayer)
+        public static string GetSubScenePath(string worldScenePath, string regionId, eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer)
         {
             string worldScenePathCleaned = worldScenePath.Remove(worldScenePath.LastIndexOf('.'));
-            return string.Concat(worldScenePathCleaned, "/", GetSubSceneName(regionId, subSceneMode, subSceneLayer), ".unity");
+            return string.Concat(worldScenePathCleaned, "/", GetSubSceneName(regionId, subSceneVariant, subSceneLayer), ".unity");
         }
 
         /// <summary>
