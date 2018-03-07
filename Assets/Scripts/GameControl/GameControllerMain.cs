@@ -179,7 +179,12 @@ namespace Game.GameControl
             Utilities.EventManager.SendGamePausedEvent(this, new Utilities.EventManager.GamePausedEventArgs(true));
 
             openWorldSceneInfo.WorldController.Initialize(this);
-            yield return new WaitForSeconds(5f);
+
+            yield return null;
+            while (openWorldSceneInfo.WorldController.CurrentJobCount > 0)
+            {
+                yield return null;
+            }
 
             this.EchoManager.InitializeEchoManager(this, openWorldSceneInfo.SpawnPointManager);
             this.EclipseManager.InitializeEclipseManager(this);

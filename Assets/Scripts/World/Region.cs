@@ -4,21 +4,21 @@ namespace Game.World
 {
     public class Region : RegionBase
     {
-        public override List<eSubSceneMode> AvailableSubSceneModes
+        public override List<eSubSceneVariant> AvailableSubSceneVariants
         {
             get
             {
-                return new List<eSubSceneMode>() {
-                    eSubSceneMode.Normal
+                return new List<eSubSceneVariant>() {
+                    eSubSceneVariant.Normal
                 };
             }
         }
 
-        protected override eSubSceneMode InitialSubSceneMode
+        protected override eSubSceneVariant InitialSubSceneVariant
         {
             get
             {
-                return eSubSceneMode.Normal;
+                return eSubSceneVariant.Normal;
             }
         }
     }

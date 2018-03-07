@@ -2,61 +2,49 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StraightMovementAndTeleport : MovingPlatform
-{
+public class StraightMovementAndTeleport : MovingPlatform {
 
-    public float waitTime;
-    public float initialWaitTime;
-    public float timeMoving;
-    public Vector3 movement;
+	public float waitTime;
+	public float initialWaitTime;
+	public float timeMoving;
+	public Vector3 movement;
 
-    float currWaitTime;
-    Vector3 initialPosition;
-    float movementProgression;
+	float currWaitTime;
+	Vector3 initialPosition;
+	float movementProgression;
 
-    bool waiting = false, moving = false;
+	bool waiting = false, moving = false;
 
-    protected override void Start()
-    {
-        waiting = true;
-        currWaitTime = waitTime + initialWaitTime;
-        initialPosition = transform.position;
+	protected override void Start() {
+		waiting = true;
+		currWaitTime = waitTime + initialWaitTime;
+		initialPosition = transform.position;
         base.Start();
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (waiting)
-        {
-            currWaitTime -= Time.deltaTime;
-            if (currWaitTime < 0)
-            {
-                waiting = false;
-                moving = true;
-                currWaitTime = waitTime;
-            }
-        }
-        if (moving)
-        {
-            transform.position += movement * 1 / timeMoving * Time.deltaTime;
-
+    
+	void Update () {
+		if (waiting) {
+			currWaitTime -= Time.deltaTime;
+			if (currWaitTime < 0) {
+				waiting = false;
+				moving = true;
+				currWaitTime = waitTime;
+			}
+		}
+		if (moving) {
+			transform.position += movement * 1 / timeMoving * Time.deltaTime;
+            
             if (currPlayer != null)
-            {
-                currPlayer.ImmediateMovement(movement * 1 / timeMoving * Time.deltaTime, true);
-            }
-            movementProgression += 1 / timeMoving * Time.deltaTime;
+				currPlayer.ImmediateMovement(movement * 1 / timeMoving * Time.deltaTime, true, false);
+			movementProgression += 1 / timeMoving * Time.deltaTime;
 
-            if (movementProgression >= 1f)
-            {
-                moving = false;
-                waiting = true;
-                movementProgression = 0f;
-                transform.position = initialPosition;
-            }
-
-        }
-    }
-
-
+			if (movementProgression >= 1f) {
+				moving = false;
+				waiting = true;
+				movementProgression = 0f;
+				transform.position = initialPosition;
+			}
+		}
+	}
+    
 }

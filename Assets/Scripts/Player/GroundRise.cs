@@ -118,6 +118,17 @@ namespace Game.Player.CharacterController
                 }
                 else
                 {
+                    Collider[] cols = Physics.OverlapBox(goUp.transform.position, new Vector3(goUp.transform.lossyScale.x / 2, goUp.transform.lossyScale.y / 2, goUp.transform.lossyScale.z / 2), Quaternion.identity);
+                    foreach (Collider col in cols)
+                    {
+                        print("col : " + col.name + " tag : " + col.tag);
+                        if (col.CompareTag("Player"))
+                        {
+                            Debug.Log("there's a player in me :O");
+                            col.transform.parent.position = new Vector3(col.transform.position.x, transform.position.y, col.transform.position.z);
+                        }
+                    }
+                    
                     currHeight += strength * Time.deltaTime;
                     if (currHeight > height)
                     {
@@ -125,7 +136,10 @@ namespace Game.Player.CharacterController
                         finishedMoving = true;
 
                         if (currPlayer)
-                            currPlayer.ImmediateMovement(playerUp * (height - (currHeight - (strength * Time.deltaTime))), true);
+                        {
+                            if (currPlayer.MovementInfo.velocity.y * Time.deltaTime < strength * Time.deltaTime)
+                                currPlayer.SetVelocity(new Vector3(currPlayer.MovementInfo.velocity.x, strength, currPlayer.MovementInfo.velocity.z), true);
+                        }
                     }
                     else
                     {
@@ -146,11 +160,22 @@ namespace Game.Player.CharacterController
                         }
                         transform.Translate(Vector3.up * strength * Time.deltaTime, Space.Self);
 
+
+                        if (currPlayer)
+                        {
+                            Debug.Log("there's a player on me :o");
+                            if (currPlayer.MovementInfo.velocity.y < strength + 0.1f)
+                            {
+                                Debug.Log("Go up player");
+                                currPlayer.SetVelocity(new Vector3(currPlayer.MovementInfo.velocity.x, strength + 0.1f, currPlayer.MovementInfo.velocity.z), true);
+                            }
+                        }
+                        /*
                         if (currPlayer)
                         {
                             currPlayer.ResetVerticalVelocity(true);
                             currPlayer.ImmediateMovement(playerUp * strength * Time.deltaTime, true);
-                        }
+                        }*/
                     }
                 }
             }

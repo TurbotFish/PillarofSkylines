@@ -10,14 +10,14 @@ namespace Game.World
     {
         private SubScene self;
 
-        private SerializedProperty subSceneModeProperty;
+        private SerializedProperty subSceneVariantProperty;
         private SerializedProperty subSceneLayerProperty;
 
         private void OnEnable()
         {
             self = target as SubScene;
 
-            subSceneModeProperty = serializedObject.FindProperty("subSceneMode");
+            subSceneVariantProperty = serializedObject.FindProperty("subSceneVariant");
             subSceneLayerProperty = serializedObject.FindProperty("subSceneLayer");
         }
 
@@ -25,7 +25,7 @@ namespace Game.World
         {
             base.OnInspectorGUI();
 
-            EditorGUILayout.LabelField("Mode", subSceneModeProperty.enumDisplayNames[subSceneModeProperty.enumValueIndex]);
+            EditorGUILayout.LabelField("Variant", subSceneVariantProperty.enumDisplayNames[subSceneVariantProperty.enumValueIndex]);
             EditorGUILayout.LabelField("Layer", subSceneLayerProperty.enumDisplayNames[subSceneLayerProperty.enumValueIndex]);
 
             EditorGUILayout.LabelField("");

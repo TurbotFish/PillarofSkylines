@@ -3,6 +3,7 @@
     public enum eRegionMode
     {
         Near,
+        Always,
         Far,
         Inactive
     }
