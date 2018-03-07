@@ -1,7 +1,7 @@
 ﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
-Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
-
+Shader "Alo/PBR/CustomPBR(Hubert) - No Batching" {
+//no LLPV support
 	Properties {
 		_Color ("Tint", Color) = (1.0,1.0,1.0,1.0)
 		_MainTex ("Albedo", 2D) = "white"{}
@@ -30,7 +30,7 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 
 		[NoScaleOffset] _DetailMask ("Detail Mask", 2D) = "white"{}
 
-		_AlphaCutoff ("Alpha Cutoff", Range(0,1)) = 0.5
+		_Cutoff ("Alpha Cutoff", Range(0,1)) = 0.5
 
 		_ThicknessMap ("Thickness", 2D) = "black" {}
 		_DistortionSSS ("Distortion", Range(0,1)) = 1
@@ -43,7 +43,7 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 		[HideInspector] _SrcBlend ("_SrcBlend", Float) = 1
 		[HideInspector] _DstBlend ("_DstBlend", Float) = 0
 		[HideInspector] _ZWrite ("_ZWrite", Float) = 1
-		[HideInspector] _Cull ("_Cull", Float) = 0
+		[HideInspector] _Cull ("_Cull", Float) = 2
 
 		_NormalDistFull ("Normal Distance Full", Float) = 1.2
 		_NormalDistCulled ("Normal Distance Culled", Float) = 1.4
@@ -70,6 +70,7 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 		_WallTintCol ("Tint", Color) = (1,1,1,1)
 		_GroundTintPow ("Power", Float) = 1
 		_GroundTintCol ("Tint", Color) = (1,1,1,1)
+
 
 		_RimPow ("Rim Power", Float) = 1
 		_RimScale ("Rim Scale", Float) = 1
@@ -132,17 +133,19 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 			#pragma shader_feature _ _PLAYER_SHADER
 			#pragma shader_feature _ _SSS_DIFFUSE_MAP
 			#pragma shader_feature _ALBEDO_VERTEX_MASK
-
 			#pragma shader_feature _WALL_TINT
 			#pragma shader_feature _GROUND_TINT
 			#pragma shader_feature _RIMLIT
 
-			#pragma multi_compile _ _VERTEX_WIND
-			#pragma multi_compile _ _VERTEX_BEND
-			#pragma multi_compile _ SHADOWS_SCREEN
-			#pragma multi_compile _ VERTEXLIGHT_ON
+			#pragma shader_feature _ _VERTEX_WIND
+			#pragma shader_feature _ _VERTEX_BEND
+
 			#pragma multi_compile_fog
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
+			#pragma multi_compile_instancing
+			#pragma instancing_options lodfade
+			#pragma multi_compile_fwdbase
+			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
@@ -191,15 +194,17 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 			#pragma shader_feature _ _PLAYER_SHADER
 			#pragma shader_feature _ _SSS_DIFFUSE_MAP
 			#pragma shader_feature _ALBEDO_VERTEX_MASK
-
 			#pragma shader_feature _WALL_TINT
 			#pragma shader_feature _GROUND_TINT
 
-			#pragma multi_compile _ _VERTEX_WIND
-			#pragma multi_compile _ _VERTEX_BEND
+			#pragma shader_feature _ _VERTEX_WIND
+			#pragma shader_feature _ _VERTEX_BEND
+
 			#pragma multi_compile_fwdadd_fullshadows
 			#pragma multi_compile_fog
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
+			#pragma multi_compile _ LOD_FADE_CROSSFADE
+
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
@@ -243,21 +248,23 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 			#pragma shader_feature _ _PLAYER_SHADER
 			#pragma shader_feature _ _SSS_DIFFUSE_MAP
 
-			#pragma shader_feature _WALL_TINT
-			#pragma shader_feature _GROUND_TINT
-			#pragma shader_feature _RIMLIT
-
-			//JPP
-			#pragma shader_feature _WIND_ROT_Y
-
 			#pragma shader_feature _ _CELSHADED
 			#pragma shader_feature _ _REFRACTION
 			#pragma shader_feature _ALBEDO_VERTEX_MASK
+			#pragma shader_feature _WALL_TINT
+			#pragma shader_feature _GROUND_TINT
+			#pragma shader_feature _RIMLIT
+			#pragma shader_feature _ALBEDO_WORLDPOS
 
-			#pragma multi_compile _ _VERTEX_WIND
-			#pragma multi_compile _ _VERTEX_BEND
-			#pragma multi_compile _ UNITY_HDR_ON
+			#pragma shader_feature _ _VERTEX_WIND
+			#pragma shader_feature _ _VERTEX_BEND
+
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
+			#pragma multi_compile_instancing
+			#pragma instancing_options lodfade
+			#pragma multi_compile_prepassfinal
+			#pragma multi_compile _ LOD_FADE_CROSSFADE
+			#pragma multi_compile _ _GPUI_EAST
 
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
@@ -287,10 +294,41 @@ Shader "Alo/PBR/CustomPBR(Hubert) - No batching" {
 			#pragma shader_feature _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
 			#pragma shader_feature _SMOOTHNESS_ALBEDO
 			#pragma shader_feature _SEMITRANSPARENT_SHADOWS
+			#pragma multi_compile_instancing
+			#pragma instancing_options lodfade
+			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
 			#include "ShadowsCustomPBR.cginc"
 
 			ENDCG
+		}
+
+		Pass {
+			Tags {
+				"LightMode" = "Meta"
+			}
+
+			Cull Off
+
+			CGPROGRAM
+
+			#pragma vertex LightmappingVertexProgram
+			#pragma fragment LightmappingFragmentProgram
+
+			#pragma shader_feature _METALLIC_MAP
+			#pragma shader_feature _ _SMOOTHNESS_ALBEDO _SMOOTHNESS_METALLIC
+			#pragma shader_feature _EMISSION_MAP
+			#pragma shader_feature _DETAIL_MASK
+			#pragma shader_feature _DETAIL_ALBEDO_MAP
+
+			#pragma shader_feature _ALBEDO_VERTEX_MASK
+			#pragma shader_feature _WALL_TINT
+			#pragma shader_feature _GROUND_TINT
+
+			#include"AloLightmapping.cginc"
+
+			ENDCG
+
 		}
 	}
 	CustomEditor "CustomPBR_GUI"

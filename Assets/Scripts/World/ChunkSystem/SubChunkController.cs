@@ -25,7 +25,7 @@ namespace Game.World.ChunkSystem
         public bool IsCopy { get; private set; }
 
         List<Renderer> rendererList = new List<Renderer>();
-        List<IWorldObjectActivation> worldObjectActivationList = new List<IWorldObjectActivation>();
+        //List<IWorldObjectActivation> worldObjectActivationList = new List<IWorldObjectActivation>();
 
         //##################################################################
 
@@ -51,12 +51,12 @@ namespace Game.World.ChunkSystem
             RebuildIndexes();
 
             //initialize world objects
-            var worldObjects = GetComponentsInChildren<IWorldObjectInitialization>();
+            var worldObjects = GetComponentsInChildren<IWorldObject>();
             for (int i = 0; i < worldObjects.Length; i++)
             {
                 var worldObject = worldObjects[i];
 
-                worldObject.Initialize(worldController, IsCopy);
+                worldObject.Initialize(worldController.GameController, IsCopy);
             }            
 
             //
@@ -153,20 +153,20 @@ namespace Game.World.ChunkSystem
             }
 
             //handle world objects
-            if (active)
-            {
-                for (int i = 0; i < worldObjectActivationList.Count; i++)
-                {
-                    worldObjectActivationList[i].OnSubChunkActivated();
-                }
-            }
-            else
-            {
-                for (int i = 0; i < worldObjectActivationList.Count; i++)
-                {
-                    worldObjectActivationList[i].OnSubChunkDeactivated();
-                }
-            }
+            //if (active)
+            //{
+            //    for (int i = 0; i < worldObjectActivationList.Count; i++)
+            //    {
+            //        worldObjectActivationList[i].OnSubChunkActivated();
+            //    }
+            //}
+            //else
+            //{
+            //    for (int i = 0; i < worldObjectActivationList.Count; i++)
+            //    {
+            //        worldObjectActivationList[i].OnSubChunkDeactivated();
+            //    }
+            //}
 
             //
             IsActive = active;
@@ -180,8 +180,8 @@ namespace Game.World.ChunkSystem
             rendererList.Clear();
             rendererList.AddRange(GetComponentsInChildren<Renderer>());
 
-            worldObjectActivationList.Clear();
-            worldObjectActivationList.AddRange(GetComponentsInChildren<IWorldObjectActivation>());
+            //worldObjectActivationList.Clear();
+            //worldObjectActivationList.AddRange(GetComponentsInChildren<IWorldObjectActivation>());
 
             //var candidateStack = new Stack<Transform>();
             //for (int i = 0; i < myTransform.childCount; i++)

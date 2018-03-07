@@ -6,14 +6,18 @@ using UnityEngine;
 public class MovingPlatform : MonoBehaviour {
 
 	public CharController currPlayer;
+    public bool active = true;
 
 	[HideInInspector]
 	public Vector3 impactPoint;
 
-	void Start () {
-        if (transform.tag == "Untagged")
-            transform.tag = "MovingPlatform";
-        TestChildren(transform);
+	protected virtual void Start () {
+        if (active)
+        {
+            if (transform.tag == "Untagged")
+                transform.tag = "MovingPlatform";
+            TestChildren(transform);
+        }
 	}
 
     void TestChildren(Transform trans)
@@ -33,7 +37,7 @@ public class MovingPlatform : MonoBehaviour {
     {
         transform.localPosition += movement;
         if(currPlayer!= null)
-            currPlayer.ImmediateMovement(movement, false);
+            currPlayer.ImmediateMovement(movement, false, false);
     }
 
 	virtual public void AddPlayer(CharController player, Vector3 playerImpactPoint) {

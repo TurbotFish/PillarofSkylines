@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Game.GameControl;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.EchoSystem
@@ -13,15 +14,16 @@ namespace Game.EchoSystem
         public BreakEchoParticles breakEchoParticles;
         [SerializeField] int maxEchoes = 3;
         [SerializeField] float driftInputIntensity = 0.5f;
-
+        /*
         [Header("Home")]
         [SerializeField] GameObject homeDoor;
         [SerializeField, Tooltip("Only for GameControllerLite")] Transform homePoint;
         [SerializeField] float timeToHoldForDoor = 1.5f;
-
-		[Header("ShellFX")]
-		[SerializeField] GameObject shell;
-		Animator playerAnimator;
+        */
+        [Header("ShellFX")]
+        [SerializeField]
+        GameObject shell;
+        Animator playerAnimator;
 
         /// <summary>
         /// Number of echoes placed by the player.
@@ -40,7 +42,7 @@ namespace Game.EchoSystem
         float driftInputDown;
 
         Transform MyTransform { get; set; }
-        World.SpawnPointSystem.SpawnPointManager spawnPointManager;
+        SpawnPointManager spawnPointManager;
 
         GameControl.GameControllerMain gameController;
 
@@ -48,41 +50,46 @@ namespace Game.EchoSystem
 
         #region initialization
 
-        public void InitializeEchoManager(GameControl.IGameControllerBase gameController, World.SpawnPointSystem.SpawnPointManager spawnPointManager = null) {
+        public void InitializeEchoManager(GameControl.IGameControllerBase gameController, SpawnPointManager spawnPointManager = null)
+        {
 
-            #if !UNITY_EDITOR
+#if !UNITY_EDITOR
             this.gameController = (GameControl.GameControllerMain)gameController;
-            #endif
+#endif
             camera = gameController.CameraController.PoS_Camera;
             echoCamera = gameController.CameraController.EchoCameraEffect;
             playerTransform = gameController.PlayerController.PlayerTransform;
             echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();
 
             MyTransform = transform;
-            
+            /*
             this.spawnPointManager = spawnPointManager;
             if (spawnPointManager)
                 homePoint = spawnPointManager.GetHomeSpawnTransform();
             homeDoor = Instantiate(homeDoor);
             homeDoor.GetComponentInChildren<HomePortalCamera>().anchorPoint = homePoint;
             homeDoor.SetActive(false);
-
-			playerAnimator = gameController.PlayerController.CharController.animator;
+            */
+            playerAnimator = gameController.PlayerController.CharController.animator;
 
             Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
         }
 
-#endregion initialization
+        #endregion initialization
 
         //##################################################################
 
-        void Update() {
-            if (!isEclipseActive) {
+        void Update()
+        {
+            if (!isEclipseActive)
+            {
                 float driftInput = Input.GetAxis("Drift") + (Input.GetButtonUp("Drift") ? 1 : 0);
 
-                if (driftInput > driftInputIntensity) {
+                if (driftInput > driftInputIntensity)
+                {
                     driftInputDown += Time.deltaTime;
+                    /*
                     if (driftInputDown >= timeToHoldForDoor && !isDoorActive && (!gameController || (gameController && !gameController.isPillarActive))) {
                         // do the door thing!
                         isDoorActive = true;
@@ -121,15 +128,19 @@ namespace Game.EchoSystem
                             print("Assign HomePoint to the EchoManager if you want it to work with the GameControllerLite");
                         }
                     }
+                    */
 
-                } else if (driftInput < 0.4f) {
-                    if (isDoorActive) {
+                }
+                else if (driftInput < 0.4f)
+                {
+                    /*if (isDoorActive) {
                         isDoorActive = false;
                         homeDoor.SetActive(false);
                         if (!atHome)
                             camera.StopLookingAtHomeDoor();
                     }
-                    else if (driftInputDown > 0)
+                    else */
+                    if (driftInputDown > 0)
                         Drift();
                     driftInputDown = 0;
                 }
@@ -141,11 +152,13 @@ namespace Game.EchoSystem
 
         //##################################################################
 
-#region private methods
+        #region private methods
 
-        void Drift() {
-            if (echoList.Count > 0) {
-				CreateShell ();
+        void Drift()
+        {
+            if (echoList.Count > 0)
+            {
+                CreateShell();
 
                 echoCamera.SetFov(70, 0.15f, true);
 
@@ -159,12 +172,15 @@ namespace Game.EchoSystem
                 Break(targetEcho);
             }
         }
-        
-        public void Break(Echo target) {
-            if (echoList.Contains(target)) {
+
+        public void Break(Echo target)
+        {
+            if (echoList.Contains(target))
+            {
                 echoList.Remove(target);
             }
-            if (target.playerEcho) {
+            if (target.playerEcho)
+            {
                 placedEchoes--;
                 echoParticles.SetEchoNumber(maxEchoes - placedEchoes);
             }
@@ -172,21 +188,25 @@ namespace Game.EchoSystem
             Destroy(target.gameObject);
         }
 
-        public void BreakAll() {
+        public void BreakAll()
+        {
             Echo[] killList = echoList.ToArray();
             for (int i = 0; i < killList.Length; i++)
                 Break(killList[i]);
         }
 
-        public void CreateEcho(bool isPlayerEcho) {
+        public void CreateEcho(bool isPlayerEcho)
+        {
             if (isEclipseActive)
                 return;
 
-            if (placedEchoes == maxEchoes) {
+            if (placedEchoes == maxEchoes)
+            {
                 int i = 0;
                 var oldestEcho = echoList[i];
 
-                while(!oldestEcho.playerEcho) {
+                while (!oldestEcho.playerEcho)
+                {
                     i++;
                     oldestEcho = echoList[i];
                 }
@@ -198,39 +218,46 @@ namespace Game.EchoSystem
             newEcho.echoManager = this;
             echoList.Add(newEcho);
 
-            if (isPlayerEcho) {
+            if (isPlayerEcho)
+            {
                 placedEchoes++;
                 echoParticles.SetEchoNumber(maxEchoes - placedEchoes);
             }
         }
 
-        void FreezeAll() {
+        void FreezeAll()
+        {
             for (int i = 0; i < echoList.Count; i++)
                 echoList[i].Freeze();
         }
 
-        void UnfreezeAll() {
+        void UnfreezeAll()
+        {
             for (int i = 0; i < echoList.Count; i++)
                 echoList[i].Unfreeze();
         }
 
-		void CreateShell()
-		{
-			GameObject _shell;
-			_shell = Instantiate (shell, playerTransform.position - new Vector3 (0,-0.2f,0), playerTransform.rotation) as GameObject;
-			//_shell.GetComponent<Animator> ().runtimeAnimatorController = playerAnimator.runtimeAnimatorController;
-			Animator _anim = _shell.GetComponent<Animator> ();
-			_anim.Play ("Start Run", 0, 0.5f);
-			_anim.SetFloat ("Speed", 1);
-			_anim.speed = 0;
-		}
+        void CreateShell()
+        {
+            GameObject _shell;
+            _shell = Instantiate(shell, playerTransform.position - new Vector3(0, -0.2f, 0), playerTransform.rotation) as GameObject;
+            //_shell.GetComponent<Animator> ().runtimeAnimatorController = playerAnimator.runtimeAnimatorController;
+            Animator _anim = _shell.GetComponent<Animator>();
+            _anim.Play(playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash);
+            int i = 0;
+            foreach (var param in playerAnimator.parameters)
+            {
+                _anim.parameters[i] = playerAnimator.parameters[i];
+            }
+            _anim.speed = 0;
+        }
 
 
-#endregion private methods
+        #endregion private methods
 
         //##################################################################
 
-#region event handlers
+        #region event handlers
 
         void OnEclipseEventHandler(object sender, Utilities.EventManager.EclipseEventArgs args)
         {
@@ -264,7 +291,7 @@ namespace Game.EchoSystem
             echoList.Clear();
         }
 
-#endregion event handlers
+        #endregion event handlers
 
         //##################################################################
     }

@@ -605,14 +605,12 @@ namespace DynamicShadowProjector {
 		void Update()
 		{
 #if UNITY_EDITOR
-			if (!Application.isPlaying
-				&& (!m_shadowTextureValid
+			if (!Application.isPlaying && (!m_shadowTextureValid
 					|| m_camera.orthographic != m_projector.orthographic
 					|| m_camera.orthographicSize != m_projector.orthographicSize
 					|| m_camera.fieldOfView != m_projector.fieldOfView
-					|| m_camera.aspect != m_projector.aspectRatio)
-					|| m_camera.farClipPlane != m_projector.farClipPlane
-			) {
+					|| m_camera.aspect != m_projector.aspectRatio
+					|| m_camera.farClipPlane != m_projector.farClipPlane)) {
 				ForceRenderTexture();
 			}
 #endif

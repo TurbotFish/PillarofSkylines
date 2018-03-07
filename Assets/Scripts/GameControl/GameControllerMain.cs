@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Game.Model;
+using Game.World;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +17,7 @@ namespace Game.GameControl
 
         private SceneNamesData sceneNames;
 
-        private Player.PlayerModel playerModel;
+        private PlayerModel playerModel;
         private EchoSystem.EchoManager echoManager;
         private EclipseManager eclipseManager;
 
@@ -33,11 +35,11 @@ namespace Game.GameControl
 
         //###############################################################
 
-        public Player.PlayerModel PlayerModel { get { return playerModel; } }
+        public PlayerModel PlayerModel { get { return playerModel; } }
         public EchoSystem.EchoManager EchoManager { get { return echoManager; } }
         public EclipseManager EclipseManager { get { return eclipseManager; } }
 
-        public World.ChunkSystem.WorldController WorldController { get { return openWorldSceneInfo.WorldController; } }
+        public WorldController WorldController { get { return openWorldSceneInfo.WorldController; } }
 
         public Player.PlayerController PlayerController { get { return playerController; } }
         public CameraControl.CameraController CameraController { get { return cameraController; } }
@@ -52,7 +54,7 @@ namespace Game.GameControl
             sceneNames = Resources.Load<SceneNamesData>("ScriptableObjects/SceneNamesData");
 
             //getting references in game controller
-            playerModel = GetComponentInChildren<Player.PlayerModel>();
+            playerModel = GetComponentInChildren<PlayerModel>();
             echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
             eclipseManager = GetComponentInChildren<EclipseManager>();
 
@@ -116,8 +118,8 @@ namespace Game.GameControl
             this.openWorldSceneInfo.Scene = SceneManager.GetSceneByName(this.sceneNames.GetOpenWorldSceneName());
             SceneManager.SetActiveScene(this.openWorldSceneInfo.Scene);
 
-            this.openWorldSceneInfo.WorldController = SearchForScriptInScene<World.ChunkSystem.WorldController>(this.openWorldSceneInfo.Scene);
-            this.openWorldSceneInfo.SpawnPointManager = SearchForScriptInScene<World.SpawnPointSystem.SpawnPointManager>(this.openWorldSceneInfo.Scene);
+            this.openWorldSceneInfo.WorldController = SearchForScriptInScene<WorldController>(this.openWorldSceneInfo.Scene);
+            this.openWorldSceneInfo.SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(this.openWorldSceneInfo.Scene);
 
             yield return null;
             //***********************
@@ -146,10 +148,18 @@ namespace Game.GameControl
                 {
                     Scene = pillarScene,
                     PillarId = pillarId,
-                    SpawnPointManager = SearchForScriptInScene<World.SpawnPointSystem.SpawnPointManager>(pillarScene)
+                    SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(pillarScene)
                 };
 
                 this.pillarSceneDictionary.Add(pillarId, pillarInfo);
+
+                //initializing world objects in pillar
+                var worldObjects = SearchForScriptsInScene<World.IWorldObject>(pillarScene);
+
+                foreach(var worldObject in worldObjects)
+                {
+                    worldObject.Initialize(this, false);
+                }
 
                 //deactivating scene
                 foreach (var go in pillarScene.GetRootGameObjects())
@@ -165,7 +175,11 @@ namespace Game.GameControl
             this.playerController.InitializePlayerController(this);
             this.CameraController.InitializeCameraController(this);
 
-            openWorldSceneInfo.WorldController.InitializeWorldController(this);
+            //pausing game until world has loaded a bit
+            Utilities.EventManager.SendGamePausedEvent(this, new Utilities.EventManager.GamePausedEventArgs(true));
+
+            openWorldSceneInfo.WorldController.Initialize(this);
+            yield return new WaitForSeconds(5f);
 
             this.EchoManager.InitializeEchoManager(this, openWorldSceneInfo.SpawnPointManager);
             this.EclipseManager.InitializeEclipseManager(this);
@@ -180,6 +194,7 @@ namespace Game.GameControl
             Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
             Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());
+            Utilities.EventManager.SendGamePausedEvent(this, new Utilities.EventManager.GamePausedEventArgs(false));
             Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.Intro));
         }
 
@@ -264,35 +279,39 @@ namespace Game.GameControl
             yield return null;
 
             //deactivate pillar scene
-            var pillarScene = this.pillarSceneDictionary[this.activePillarId].Scene;
+            var pillarScene = pillarSceneDictionary[activePillarId].Scene;
             foreach (var go in pillarScene.GetRootGameObjects())
             {
                 go.SetActive(false);
             }
 
-            this.isPillarActive = false;
+            isPillarActive = false;
 
             yield return null;
 
             //activate open world scene
-            foreach (var go in this.openWorldSceneInfo.Scene.GetRootGameObjects())
+            foreach (var go in openWorldSceneInfo.Scene.GetRootGameObjects())
             {
                 go.SetActive(true);
             }
-            SceneManager.SetActiveScene(this.openWorldSceneInfo.Scene);
+            SceneManager.SetActiveScene(openWorldSceneInfo.Scene);
 
             yield return null;
 
             //switch pillar to destroyed state
             if (pillarDestroyed)
             {
-                this.playerModel.DestroyPillar(this.activePillarId);
+                playerModel.DestroyPillar(activePillarId);
             }
 
             yield return null;
 
             //
-            var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetPillarExitPoint(this.activePillarId), this.openWorldSceneInfo.SpawnPointManager.GetPillarExitOrientation(this.activePillarId), true);
+            World.ePillarState pillarState = pillarDestroyed ? World.ePillarState.Destroyed : World.ePillarState.Intact;
+            Vector3 position = openWorldSceneInfo.SpawnPointManager.GetPillarExitPoint(activePillarId, pillarState);
+            Quaternion rotation = openWorldSceneInfo.SpawnPointManager.GetPillarExitOrientation(activePillarId, pillarState);
+
+            var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(position, rotation, true);
             Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
             Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());

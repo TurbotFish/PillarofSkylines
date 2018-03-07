@@ -29,7 +29,7 @@ namespace Game.World.ChunkSystem
 
         List<GameObject> worldCopies = new List<GameObject>();
 
-        List<Interaction.Favour> favourList = new List<Interaction.Favour>();
+        List<Interaction.CurrencyPickUp> favourList = new List<Interaction.CurrencyPickUp>();
 
         bool isInitialized = false;
 
@@ -71,9 +71,6 @@ namespace Game.World.ChunkSystem
                     region.InitializeRegion(this);
                 }
             }
-
-            //
-            Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
 
             //copying
             CreateCopies();
@@ -203,73 +200,6 @@ namespace Game.World.ChunkSystem
         }
 
         #endregion copying
-
-        //##################################################################
-
-        #region favour methods
-
-        public void RegisterFavour(Interaction.Favour favour)
-        {
-            if (!favourList.Contains(favour))
-            {
-                favourList.Add(favour);
-            }
-        }
-
-        public void UnregisterFavour(Interaction.Favour favour)
-        {
-            favourList.Remove(favour);
-        }
-
-        public Interaction.Favour FindNearestFavour(Vector3 position)
-        {
-            if (favourList.Count == 0)
-            {
-                return null;
-            }
-
-            var nearestFavour = favourList[0];
-            float shortestDistance = Vector3.Distance(position, nearestFavour.FinderTarget);
-
-            for (int i = 1; i < favourList.Count; i++)
-            {
-                var favour = favourList[i];
-                float distance = Vector3.Distance(position, favour.FinderTarget);
-
-                if (distance < shortestDistance)
-                {
-                    nearestFavour = favour;
-                    shortestDistance = distance;
-                }
-            }
-
-            return nearestFavour;
-        }
-
-        #endregion favour methods
-
-        //##################################################################
-
-        #region event handlers
-
-        void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
-        {
-            var favoursToRemove = new List<Interaction.Favour>();
-            foreach (var favour in favourList)
-            {
-                if (favour.FavourId == args.FavourId)
-                {
-                    favoursToRemove.Add(favour);
-                }
-            }
-
-            foreach (var favour in favoursToRemove)
-            {
-                favourList.Remove(favour);
-            }
-        }
-
-        #endregion event handlers
 
         //##################################################################
 

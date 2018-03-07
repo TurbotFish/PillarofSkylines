@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using Game.GameControl;
+using Game.LevelElements;
+using Game.Model;
+using UnityEngine;
 
 namespace Game.Player {
     /// <summary>
@@ -15,7 +18,7 @@ namespace Game.Player {
 
         //
         bool favourPickUpInRange = false;
-        World.Interaction.Favour favour;
+        World.Interaction.CurrencyPickUp favour;
 
         PillarEntranceInfo pillarEntranceInfo = new PillarEntranceInfo();
         bool pillarExitInRange = false;
@@ -28,7 +31,7 @@ namespace Game.Player {
         bool eyeInRange = false;
 
         EchoSystem.EchoManager echoManager;
-        World.SpawnPointSystem.SpawnPointManager spawnPointManager;
+        SpawnPointManager spawnPointManager;
         Transform airParticle, airOrigin;
 
         Beacon beacon;
@@ -50,7 +53,7 @@ namespace Game.Player {
 			myPlayer = player;
             this.echoManager = echoManager;
 
-            spawnPointManager = FindObjectOfType<World.SpawnPointSystem.SpawnPointManager>(); //TODO: Fix that
+            spawnPointManager = FindObjectOfType<SpawnPointManager>(); //TODO: Fix that
 
             camera = player.myCameraTransform.GetComponent<PoS_Camera>();
 
@@ -76,9 +79,9 @@ namespace Game.Player {
                 //favour
                 if (favourPickUpInRange)
                 {
-                    if (!playerModel.CheckIsFavourPickedUp(favour.FavourId))
+                    if (!playerModel.CheckIfPickUpCollected(favour.PickUpId))
                     {
-                        playerModel.PickupFavour(favour.FavourId);
+                        playerModel.CollectPickUp(favour);
                     }
 
                     //clean up
@@ -192,9 +195,9 @@ namespace Game.Player {
                     case "Favour":
                         if (!favourPickUpInRange)
                         {
-                            favour = other.GetComponent<World.Interaction.Favour>();
+                            favour = other.GetComponent<World.Interaction.CurrencyPickUp>();
 
-                            if (!playerModel.CheckIsFavourPickedUp(favour.FavourId))
+                            if (!playerModel.CheckIfPickUpCollected(favour.PickUpId))
                             {
                                 favourPickUpInRange = true;
 
@@ -286,7 +289,7 @@ namespace Game.Player {
                     // air particle
                     case "AirReceptor":
                         if (airParticle) {
-                            other.GetComponent<AirReceptor>().Activate();
+                            other.GetComponent<LevelElements.AirReceptor>().Activate();
                             Destroy(airParticle.gameObject);
                             Destroy(airOrigin.gameObject);
                             airParticle = null;
@@ -341,11 +344,23 @@ namespace Game.Player {
                         break;
                     // Trigger Activator
                     case "TriggerActivator":
-                        other.GetComponent<TriggerSystem.TimedActivator>().manager.Activate();
+                        other.GetComponent<TimedActivator>().manager.Activate();
                         break;
                     // Tutorial Message
                     case "TutoBox":
-                        ShowUiMessage(other.GetComponent<UI.TutoBox>().message, other.tag);
+                        UI.TutoBox tutoBox = other.GetComponent<UI.TutoBox>();
+                        if (tutoBox.messageType == UI.eMessageType.Important)
+                        {
+                            ShowImportantMessage(tutoBox.message, tutoBox.description);
+                            Destroy(other.gameObject);
+                        }
+                        else if (tutoBox.messageType == UI.eMessageType.Announcement)
+                        {
+                            ShowAnnounceMessage(tutoBox.message, tutoBox.time);
+                            Destroy(other.gameObject);
+                        }
+                        else
+                            ShowUiMessage(tutoBox.message, other.tag);
                         break;
                     // Home
                     case "Home":
@@ -354,6 +369,10 @@ namespace Game.Player {
                     // CameraControlTrigger
                     case "CameraControlTrigger":
                         camera.EnterTrigger(other.GetComponent<CameraControlTrigger>());
+                        break;
+                    // Miscelanous Interactive Elements
+                    case "Interactible":
+                        other.GetComponent<Interactible>().EnterTrigger();
                         break;
                     //other
                     default:
@@ -419,7 +438,7 @@ namespace Game.Player {
                         break;
                     // Trigger Activator
                     case "TriggerActivator":
-                        other.GetComponent<TriggerSystem.TimedActivator>().manager.StartTimer();
+                        other.GetComponent<TimedActivator>().manager.StartTimer();
                         break;
                     // Tutorial Message
                     case "TutoBox":
@@ -432,6 +451,10 @@ namespace Game.Player {
                     // CameraControlTrigger
                     case "CameraControlTrigger":
                         camera.ExitTrigger(other.GetComponent<CameraControlTrigger>());
+                        break;
+                    // Miscelanous Interactive Elements
+                    case "Interactible":
+                        other.GetComponent<Interactible>().ExitTrigger();
                         break;
                     //other
                     default:
@@ -457,6 +480,16 @@ namespace Game.Player {
         {
             lastTag = tag;
             Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message));
+        }
+
+        void ShowAnnounceMessage(string message, float time)
+        {
+            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, UI.eMessageType.Announcement, "", time));
+        }
+
+        void ShowImportantMessage(string message, string description)
+        {
+            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, UI.eMessageType.Important, description));
         }
 
         void HideUiMessage()

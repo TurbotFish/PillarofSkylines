@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using Game.Model;
 
 namespace Game.Utilities
 {
@@ -22,8 +23,8 @@ namespace Game.Utilities
 
             public OnMenuSwitchedEventArgs(UI.eUiState newUiState, UI.eUiState previousUiState)
             {
-                this.NewUiState = newUiState;
-                this.PreviousUiState = previousUiState;
+                NewUiState = newUiState;
+                PreviousUiState = previousUiState;
             }
         }
 
@@ -46,11 +47,17 @@ namespace Game.Utilities
         {
             public bool Show { get; private set; }
             public string Message { get; private set; }
+            public string Description { get; private set; }
+            public float Time { get; private set; }
+            public UI.eMessageType MessageType { get; private set; }
 
-            public OnShowHudMessageEventArgs(bool show, string message = null)
+            public OnShowHudMessageEventArgs(bool show, string message = null, UI.eMessageType messageType = 0, string description = "", float time = 2)
             {
-                this.Show = show;
-                this.Message = message;
+                Show = show;
+                Message = message;
+                MessageType = messageType;
+                Description = description;
+                Time = time;
             }
         }
 
@@ -114,31 +121,6 @@ namespace Game.Utilities
 
         //***********************************************************
 
-        //#region ability menu events
-
-        //public static class AbilityMenuEvents
-        //{
-
-        //    #region on pointer enter slot event
-
-        //    public class PointerEnterSlotEventArgs : EventArgs
-        //    {
-
-        //    }
-
-        //    public static void SendPointerEnterSlotEvent()
-        //    {
-
-        //    }
-
-        //    #endregion on pointer enter slot event
-
-        //}
-
-        //#endregion ability menu events
-
-        //***********************************************************
-
         #endregion ui events
 
         //###########################################################
@@ -147,28 +129,30 @@ namespace Game.Utilities
 
         //***********************************************************
 
-        #region favour amount changed event
+        #region currency amount changed event
 
-        public class FavourAmountChangedEventArgs : EventArgs
+        public class CurrencyAmountChangedEventArgs : EventArgs
         {
-            public int FavourAmount { get; private set; }
+            public Model.eCurrencyType CurrencyType { get; private set; }
+            public int CurrencyAmount { get; private set; }
 
-            public FavourAmountChangedEventArgs(int favourAmount)
+            public CurrencyAmountChangedEventArgs(Model.eCurrencyType currencyType, int currencyAmount)
             {
-                this.FavourAmount = favourAmount;
+                CurrencyType = currencyType;
+                CurrencyAmount = currencyAmount;
             }
         }
 
-        public delegate void FavourAmountChangedEventHandler(object sender, FavourAmountChangedEventArgs args);
+        public delegate void CurrencyAmountChangedEventHandler(object sender, CurrencyAmountChangedEventArgs args);
 
-        public static event FavourAmountChangedEventHandler FavourAmountChangedEvent;
+        public static event CurrencyAmountChangedEventHandler CurrencyAmountChangedEvent;
 
-        public static void SendFavourAmountChangedEvent(object sender, FavourAmountChangedEventArgs args)
+        public static void SendCurrencyAmountChangedEvent(object sender, CurrencyAmountChangedEventArgs args)
         {
-            FavourAmountChangedEvent?.Invoke(sender, args);
+            CurrencyAmountChangedEvent?.Invoke(sender, args);
         }
 
-        #endregion favour amount changed event
+        #endregion currency amount changed event
 
         //***********************************************************
 
@@ -201,10 +185,10 @@ namespace Game.Utilities
 
         public class AbilityStateChangedEventArgs : EventArgs
         {
-            public Player.eAbilityType AbilityType { get; private set; }
-            public Player.eAbilityState AbilityState { get; private set; }
+            public eAbilityType AbilityType { get; private set; }
+            public eAbilityState AbilityState { get; private set; }
 
-            public AbilityStateChangedEventArgs(Player.eAbilityType abilityType, Player.eAbilityState abilityState)
+            public AbilityStateChangedEventArgs(eAbilityType abilityType, eAbilityState abilityState)
             {
                 AbilityType = abilityType;
                 AbilityState = abilityState;
@@ -229,6 +213,31 @@ namespace Game.Utilities
         //###########################################################
 
         #region gameplay events
+
+        //***********************************************************
+
+        #region game paused event
+
+        public class GamePausedEventArgs : EventArgs
+        {
+            public bool PauseActive { get; private set; }
+
+            public GamePausedEventArgs(bool pauseActive)
+            {
+                PauseActive = pauseActive;
+            }
+        }
+
+        public delegate void GamePausedEventHandler(object sender, GamePausedEventArgs args);
+
+        public static event GamePausedEventHandler GamePausedEvent;
+
+        public static void SendGamePausedEvent(object sender, GamePausedEventArgs args)
+        {
+            GamePausedEvent?.Invoke(sender, args);
+        }
+
+        #endregion game paused event
 
         //***********************************************************
 
@@ -401,7 +410,7 @@ namespace Game.Utilities
 
         //***********************************************************
 
-        #region favour picked up event
+        #region pick-up collected event
 
         public class FavourPickedUpEventArgs : EventArgs
         {
@@ -422,7 +431,7 @@ namespace Game.Utilities
             FavourPickedUpEvent?.Invoke(sender, args);
         }
 
-        #endregion favour picked up event
+        #endregion pick-up collected event
 
         //***********************************************************
 
@@ -492,11 +501,11 @@ namespace Game.Utilities
         public class TriggerUpdatedEventArgs : EventArgs
         {
             public string TriggerId { get; private set; }
-            public Trigger Trigger { get; private set; }
+            public LevelElements.Trigger Trigger { get; private set; }
 
-            public TriggerUpdatedEventArgs(Trigger trigger)
+            public TriggerUpdatedEventArgs(LevelElements.Trigger trigger)
             {
-                TriggerId = trigger.Id;
+                TriggerId = trigger.UniqueId;
                 Trigger = trigger;
             }
         }

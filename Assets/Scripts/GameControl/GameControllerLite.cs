@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using Game.Model;
+using Game.World;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -9,36 +11,38 @@ namespace Game.GameControl
     {
         public const string UI_SCENE_NAME = "UiScene";
 
+        //###############################################################
+
         [SerializeField]
-        bool showIntroMenu = false;
+        private bool showIntroMenu = false;
 
         [SerializeField]
         private GameObject uiPrefab;
 
         //
-        Player.PlayerModel playerModel;
-        public Player.PlayerModel PlayerModel { get { return playerModel; } }
+        private PlayerModel playerModel;
+        private EchoSystem.EchoManager echoManager;
+        private EclipseManager eclipseManager;
 
-        EchoSystem.EchoManager echoManager;
+        //
+        private UI.UiController uiController;
+
+        //
+        private Player.PlayerController playerController;
+        private WorldController worldController;
+        
+
+        //###############################################################
+
+        public PlayerModel PlayerModel { get { return playerModel; } }
         public EchoSystem.EchoManager EchoManager { get { return echoManager; } }
-
-        EclipseManager eclipseManager;
         public EclipseManager EclipseManager { get { return eclipseManager; } }
 
-
-        //
-        UI.UiController uiController;
         public UI.UiController UiController { get { return uiController; } }
 
-
-        //
-        Player.PlayerController playerController;
         public Player.PlayerController PlayerController { get { return playerController; } }
-
         public CameraControl.CameraController CameraController { get; private set; }
-
-        World.ChunkSystem.WorldController worldController;
-        public World.ChunkSystem.WorldController WorldController { get { return worldController; } }
+        public WorldController WorldController { get { return worldController; } }
 
         //###############################################################
         //###############################################################
@@ -71,7 +75,7 @@ namespace Game.GameControl
             //***********************
 
             //getting references in game controller
-            playerModel = GetComponentInChildren<Player.PlayerModel>();
+            playerModel = GetComponentInChildren<PlayerModel>();
             echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
             eclipseManager = GetComponentInChildren<EclipseManager>();
 
@@ -100,7 +104,7 @@ namespace Game.GameControl
             //getting references in local scene
             playerController = FindObjectOfType<Player.PlayerController>();
             CameraController = FindObjectOfType<CameraControl.CameraController>();
-            worldController = FindObjectOfType<World.ChunkSystem.WorldController>();
+            worldController = FindObjectOfType<WorldController>();
 
             //initializing the ui
             uiController.InitializeUi(this, UI.eUiState.LoadingScreen);
@@ -112,9 +116,25 @@ namespace Game.GameControl
             playerController.InitializePlayerController(this);
             CameraController.InitializeCameraController(this);
 
+            //pausing game until world has loaded a bit
+            Utilities.EventManager.SendGamePausedEvent(this, new Utilities.EventManager.GamePausedEventArgs(true));
+
             if (worldController != null)
             {
-                worldController.InitializeWorldController(this);
+                worldController.Initialize(this);
+                yield return new WaitForSeconds(5f);
+            }
+            else //this is a Pillar
+            {
+                var worldObjects = FindObjectsOfType<MonoBehaviour>();
+                foreach(var obj in worldObjects)
+                {
+                    if (obj is IWorldObject)
+                    {
+                        (obj as IWorldObject).Initialize(this, false);
+                    }
+                }
+                yield return null;
             }
 
             echoManager.InitializeEchoManager(this);
@@ -125,6 +145,7 @@ namespace Game.GameControl
 
             //starting game
             Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());
+            Utilities.EventManager.SendGamePausedEvent(this, new Utilities.EventManager.GamePausedEventArgs(false));
 
             if (showIntroMenu)
             {
@@ -134,6 +155,8 @@ namespace Game.GameControl
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.HUD));
             }
+
+            
         }
 
         //###############################################################

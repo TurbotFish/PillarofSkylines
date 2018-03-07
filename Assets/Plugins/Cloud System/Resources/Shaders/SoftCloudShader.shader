@@ -90,7 +90,10 @@ Shader "Cloud/Soft Cloud" {
 					float sceneZ = LinearEyeDepth (tex2Dproj (_CameraDepthTexture, UNITY_PROJ_COORD (i.projPos)).r);
 					float partZ = i.projPos.z;
 					float fade = saturate (_InvFade * (sceneZ-partZ));
-					i.color.a *= fade;
+
+					float depth = clamp(partZ * 0.2, 0, 1);
+
+					i.color.a *= fade * depth;
 					#endif
 					
 					return i.color * tex2D(_MainTex, i.texcoord);

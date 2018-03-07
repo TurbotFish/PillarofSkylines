@@ -1,4 +1,5 @@
-﻿using Game.Player.CharacterController.Containers;
+﻿using Game.Model;
+using Game.Player.CharacterController.Containers;
 using Game.Player.CharacterController.States;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,6 +21,8 @@ namespace Game.Player.CharacterController
         [SerializeField]
         public PoS_Camera myCamera;
 
+        //public float gameSpeed = 10f;
+
         /// <summary>
         /// The controller checking if there's collisions on the way.
         /// </summary>
@@ -28,6 +31,12 @@ namespace Game.Player.CharacterController
         CharacControllerRecu.CollisionInfo tempCollisionInfo;
 
         public CharacControllerRecu.CollisionInfo CollisionInfo { get { return tempCollisionInfo; } }
+
+
+        [Space(10)]
+        [Header("Prefabs")]
+        public GroundRise groundRisePrefab;
+
 
         /// <summary>
         /// The animator of the character.
@@ -62,6 +71,7 @@ namespace Game.Player.CharacterController
         }
 
         bool isInitialized;
+        bool gamePaused = true;
 
         /// <summary>
         /// This is set to false if the player has opened a menu, true otherwise.
@@ -96,6 +106,7 @@ namespace Game.Player.CharacterController
         public ParticlesManager windParticles;
         public ParticlesManager glideParticles;
         public ParticleSystem aerialJumpFX;
+        public ParticleSystem hoverFX;
 
         //#############################################################################
 
@@ -136,6 +147,7 @@ namespace Game.Player.CharacterController
             Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
             Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
             Utilities.EventManager.WindTunnelExitedEvent += OnWindTunnelPartExitedEventHandler;
+            Utilities.EventManager.GamePausedEvent += OnGamePausedEventHandler;
 
             isInitialized = true;
             isHandlingInput = true;
@@ -158,6 +170,7 @@ namespace Game.Player.CharacterController
             Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayerEventHandler;
             Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
             Utilities.EventManager.WindTunnelExitedEvent -= OnWindTunnelPartExitedEventHandler;
+            Utilities.EventManager.GamePausedEvent -= OnGamePausedEventHandler;
         }
 
         #endregion monobehaviour methods
@@ -169,11 +182,10 @@ namespace Game.Player.CharacterController
         // Update is called once per frame
         void Update()
         {
-            if (!isInitialized)
+            if (!isInitialized || gamePaused)
             {
                 return;
             }
-
 
             if (Input.GetKeyDown(KeyCode.F6))
             {
@@ -190,13 +202,12 @@ namespace Game.Player.CharacterController
 
             //*******************************************
             //handling input
-           
+            
             inputInfo.Reset();
-
             if (isHandlingInput)
             {
                 bool sprintDownLastFrame = inputInfo.sprintButton;
-
+                
                 float stickH = Input.GetAxisRaw("Horizontal");
                 float stickV = Input.GetAxisRaw("Vertical");
 
@@ -231,10 +242,13 @@ namespace Game.Player.CharacterController
                 inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint");
                 inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint");
 
-
                 inputInfo.rightStickButtonDown = Input.GetButtonDown("RightStickClick");
 
-                //
+                if (Input.GetButtonDown("GroundRise"))
+                {
+                    CreateGroundRise();
+                }
+                
                 stateMachine.HandleInput();
             }
 
@@ -266,18 +280,18 @@ namespace Game.Player.CharacterController
             //var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
             if (stateReturn.resetVerticalVelocity)
             {
-                velocity.y = 0;
+                ResetVerticalVelocity();
             }
 
-            Vector3 tempVertical = new Vector3();
+            float tempVertical;
             Vector3 newVelocity = new Vector3();
 
 
             if (stateReturn.keepVerticalMovement)
             {
-                tempVertical = new Vector3(0, velocity.y, 0);
+                tempVertical = velocity.y;
                 newVelocity = Vector3.Lerp(Vector3.ProjectOnPlane(velocity, Vector3.up), acceleration, Time.deltaTime * transitionSpeed);
-                newVelocity += tempVertical;
+                newVelocity = new Vector3(newVelocity.x, tempVertical, newVelocity.z);
             }
             else
             {
@@ -298,7 +312,7 @@ namespace Game.Player.CharacterController
                 //Debug.LogFormat("clamped velocity: {0}", newVelocity);
             }
 
-            //
+            
             newVelocity += externalVelocity;
 
             //*******************************************
@@ -452,6 +466,11 @@ namespace Game.Player.CharacterController
             windTunnelPartList.Remove(args.WindTunnelPart);
         }
 
+        private void OnGamePausedEventHandler(object sender, Utilities.EventManager.GamePausedEventArgs args)
+        {
+            gamePaused = args.PauseActive;
+        }
+
         #endregion event handlers
 
         //#############################################################################
@@ -473,6 +492,21 @@ namespace Game.Player.CharacterController
         //#############################################################################
 
         #region cancer
+        
+        void CreateGroundRise()
+        {
+            if (PlayerModel.CheckAbilityActive(eAbilityType.GroundRise))
+            {
+                GroundRise grRise = Instantiate(groundRisePrefab);
+                grRise.Initialize(MyTransform.position, MyTransform.up, this, velocity);
+            }
+        }
+
+        public void ResetVerticalVelocity(bool onlyDownVelocity = false)
+        {
+            if (!onlyDownVelocity || velocity.y <= 0f)
+                velocity.y = 0;
+        }
 
         public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool lerped)
         {
@@ -482,13 +516,18 @@ namespace Game.Player.CharacterController
             }
             else
             {
-                externalVelocity += (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
+                newVelocity = (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
+                print("external velocity added : " + newVelocity);
+                externalVelocity += newVelocity;
             }
         }
 
-        public void ImmediateMovement(Vector3 newVelocity, bool worldSpace)
+        public void ImmediateMovement(Vector3 newVelocity, bool worldSpace, bool addToVelocity = false)
         {
-            tempPhysicsHandler.Move((worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity));
+            newVelocity = tempPhysicsHandler.Move((worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity));
+            print("immediate velocity : " + newVelocity);
+            if (addToVelocity)
+                velocity += newVelocity/Time.deltaTime;
         }
      
         public void SetVelocity(Vector3 newVelocity, bool worldSpace)
@@ -499,11 +538,13 @@ namespace Game.Player.CharacterController
         public void ChangeGravityDirection(Vector3 newGravity)
         {
             MyTransform.Rotate(Vector3.Cross(MyTransform.up, -newGravity), Vector3.SignedAngle(MyTransform.up, -newGravity, Vector3.Cross(MyTransform.up, -newGravity)), Space.World);
+            myCamera.UpdateGravity();
         }
 
         public void ChangeGravityDirection(Vector3 newGravity, Vector3 point)
         {
             MyTransform.RotateAround(point, Vector3.Cross(MyTransform.up, -newGravity), Vector3.SignedAngle(MyTransform.up, -newGravity, Vector3.Cross(MyTransform.up, -newGravity)));
+            myCamera.UpdateGravity();
         }
 
         #endregion cancer
