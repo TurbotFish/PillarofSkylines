@@ -21,15 +21,12 @@
 	uniform float _Threshold;
     uniform float _Intensity;
 	
-    half4 frag(v2f_img i) : SV_Target {
-        half4 src = tex2D(_MainTex, i.uv);
-		
-        #if UNITY_UV_STARTS_AT_TOP
-            float grabSign = -_ProjectionParams.x;
-        #else
-            float grabSign = _ProjectionParams.x;
-        #endif
+	// Vignette
+    uniform float _Falloff;
+    uniform float _Power;
 
+    float4 frag(v2f_img i) : SV_Target {
+        half4 src = tex2D(_MainTex, i.uv);
 		float4 timer = (_Time + _TimeEditor) * _Speed;
 
 		float2 noiseUV = (i.uv + timer.g * _Direction);
@@ -40,15 +37,27 @@
 
 		float4 final = src;
 
+		// VIGNETTE
+        float2 coord = (i.uv - 0.5) * 2; // multiply by screenSize if adjusting needed
+        float rf = sqrt(dot(coord, coord)) * _Falloff;
+
+		float rf2_1 = pow(rf, _Power) + 1.0;
+        float e = 1.0 / (rf2_1 * rf2_1);
+		// END Vignette
+
+		// ITERATIONS
 		for(int j = 0; j < _Iterations; j++) {
-			float3 deformedUV = lerp(float3((i.uv), 0.0), _Noise_var.rgb, j * _Deformation/float(_Iterations));
+			float3 deformedUV = lerp(float3((i.uv), 1), _Noise_var.rgb, (j+1) * _Deformation/float(_Iterations) * e);
 			float4 newIteration = tex2D(_MainTex, deformedUV);
 
-			float a = (newIteration.r + newIteration.g + newIteration.b)/3;
-			float t = saturate((a+_Threshold) * (1.0 - float(j)/float(_Iterations)));
-			final = lerp(final, saturate(1-(1-final)*(1-newIteration)), t);
+			float a = (newIteration.r + newIteration.g + newIteration.b)/3 + _Threshold;
+			float b = (final.r + final.g + final.b)/3;
+
+			float t = saturate((a) * (1.0 - float(j)/float(_Iterations)));
+			final = lerp(final, newIteration, t*(1-e));
 		}
-		
+		// END Iterations
+
 		final = float4(final.b, final.g, final.r, final.a);
 		final = lerp(src, final, _Intensity);
 

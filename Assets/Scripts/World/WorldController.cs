@@ -34,11 +34,15 @@ namespace Game.World
 
         [SerializeField]
         [HideInInspector]
-        private float renderDistanceFar;
+        private float renderDistanceNear;
 
         [SerializeField]
         [HideInInspector]
-        private float renderDistanceInactive;
+        private float renderDistanceAlways;
+
+        [SerializeField]
+        [HideInInspector]
+        private float renderDistanceFar;
 
         [SerializeField]
         [HideInInspector]
@@ -48,6 +52,9 @@ namespace Game.World
         [HideInInspector]
         private float secondaryPositionDistanceModifier;
 
+        private IGameControllerBase gameController;
+        private Transform myTransform;
+
         private List<SuperRegion> superRegionsList = new List<SuperRegion>();
         private List<SubSceneJob> subSceneJobsList = new List<SubSceneJob>();
 
@@ -55,7 +62,6 @@ namespace Game.World
         private bool isJobRunning = false;
 
         private int currentSuperRegionIndex;
-        private IGameControllerBase gameController;
 
 #if UNITY_EDITOR
         [SerializeField]
@@ -81,9 +87,11 @@ namespace Game.World
 
         public Vector3 WorldSize { get { return worldSize; } }
 
-        public float RenderDistanceFar { get { return renderDistanceFar; } }
+        public float RenderDistanceNear { get { return renderDistanceNear; } }
 
-        public float RenderDistanceInactive { get { return renderDistanceInactive; } }
+        public float RenderDistanceAlways { get { return renderDistanceAlways; } }
+
+        public float RenderDistanceFar { get { return renderDistanceFar; } }
 
         public bool EditorSubScenesLoaded { get { return editorSubScenesLoaded; } }
 
@@ -104,6 +112,7 @@ namespace Game.World
         public void Initialize(IGameControllerBase gameController)
         {
             this.gameController = gameController;
+            myTransform = transform;
 
             //find all the initial regions
             var initialRegions = GetComponentsInChildren<RegionBase>().ToList();
@@ -187,33 +196,41 @@ namespace Game.World
             }
 
             var cameraTransform = gameController.CameraController.transform;
-            var cameraPos = cameraTransform.position;
+            var playerPosition = myTransform.position;
             var teleportPositions = new List<Vector3>();
             var halfSize = worldSize * 0.5f;
 
             //***********************************************
             //identifying teleport positions
-            if (cameraPos.y > halfSize.y - preTeleportOffset)
+            if (playerPosition.y > halfSize.y - preTeleportOffset)
             {
-                teleportPositions.Add(cameraPos + new Vector3(0, -worldSize.y, 0));
+                var telePos = playerPosition;
+                telePos.y = -halfSize.y;
+                teleportPositions.Add(telePos);
             }
-            else if (cameraPos.y < -halfSize.y + preTeleportOffset)
+            else if (playerPosition.y < -halfSize.y + preTeleportOffset)
             {
-                teleportPositions.Add(cameraPos + new Vector3(0, worldSize.y, 0));
+                var telePos = playerPosition;
+                telePos.y = halfSize.y;
+                teleportPositions.Add(telePos);
             }
 
-            if (cameraPos.z > halfSize.z - preTeleportOffset)
+            if (playerPosition.z > halfSize.z - preTeleportOffset)
             {
-                teleportPositions.Add(cameraPos + new Vector3(0, 0, -worldSize.z));
+                var telePos = playerPosition;
+                telePos.y = -halfSize.z;
+                teleportPositions.Add(telePos);
             }
-            else if (cameraPos.z < -halfSize.z + preTeleportOffset)
+            else if (playerPosition.z < -halfSize.z + preTeleportOffset)
             {
-                teleportPositions.Add(cameraPos + new Vector3(0, 0, worldSize.z));
+                var telePos = playerPosition;
+                telePos.y = halfSize.z;
+                teleportPositions.Add(telePos);
             }
 
             //***********************************************
             //updating one super region, getting a list of new jobs
-            var newJobs = superRegionsList[currentSuperRegionIndex].UpdateSuperRegion(cameraTransform, teleportPositions);
+            var newJobs = superRegionsList[currentSuperRegionIndex].UpdateSuperRegion(cameraTransform, playerPosition, teleportPositions);
 
             currentSuperRegionIndex++;
             if (currentSuperRegionIndex == superRegionsList.Count)
@@ -226,18 +243,19 @@ namespace Game.World
             var deprecatedJobs = new List<SubSceneJob>();
             foreach (var job in newJobs)
             {
-                //deprecatedJobs.AddRange(subSceneJobsList.Where(item =>
-                //    item.Region.UniqueId == job.Region.UniqueId &&
-                //    item.SubSceneMode == job.SubSceneMode &&
-                //    item.SubSceneLayer == job.SubSceneLayer
-                //));
+                deprecatedJobs.AddRange(subSceneJobsList.Where(item =>
+                    item.Region.SuperRegion.Type == job.Region.SuperRegion.Type &&
+                    item.Region.UniqueId == job.Region.UniqueId &&
+                    item.SubSceneVariant == job.SubSceneVariant &&
+                    item.SubSceneLayer == job.SubSceneLayer
+                ));
             }
 
-            //foreach (var deprecatedJob in deprecatedJobs)
-            //{
-            //    subSceneJobsList.Remove(deprecatedJob);
-            //    deprecatedJob.Callback(deprecatedJob, false);
-            //}
+            foreach (var deprecatedJob in deprecatedJobs)
+            {
+                subSceneJobsList.Remove(deprecatedJob);
+                deprecatedJob.Callback(deprecatedJob, false);
+            }
 
             foreach (var job in newJobs)
             {
@@ -268,7 +286,14 @@ namespace Game.World
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            float part = renderDistanceFar * 0.5f;
+            //validate render distance near
+            if (renderDistanceNear < 10)
+            {
+                renderDistanceNear = 10;
+            }
+
+            //validate render distance always
+            float part = renderDistanceNear * 0.2f;
             if (part < 1)
             {
                 part = 1;
@@ -278,16 +303,34 @@ namespace Game.World
                 part = (int)part + 1;
             }
 
-            if (renderDistanceInactive < renderDistanceFar + part)
+            if (renderDistanceAlways < renderDistanceNear + part)
             {
-                renderDistanceInactive = renderDistanceFar + part;
+                renderDistanceAlways = renderDistanceNear + part;
             }
 
+            //validate render distance far
+            part = renderDistanceAlways * 0.2f;
+            if (part < 1)
+            {
+                part = 1;
+            }
+            else if (part - (int)part > 0)
+            {
+                part = (int)part + 1;
+            }
+
+            if (renderDistanceFar < renderDistanceAlways + part)
+            {
+                renderDistanceFar = renderDistanceAlways + part;
+            }
+
+            //
             if (preTeleportOffset < 1)
             {
                 preTeleportOffset = 1;
             }
 
+            //
             if (secondaryPositionDistanceModifier < 0)
             {
                 secondaryPositionDistanceModifier = 0;
@@ -322,7 +365,7 @@ namespace Game.World
             isJobRunning = true;
             //Debug.LogFormat("Load Job started: {0} {1} {2} {3}", job.Region.SuperRegion.Type, job.Region.name, job.SubSceneMode, job.SubSceneLayer);
 
-            string sceneName = WorldUtility.GetSubSceneName(job.Region.UniqueId, job.SubSceneMode, job.SubSceneLayer);
+            string sceneName = WorldUtility.GetSubSceneName(job.Region.UniqueId, job.SubSceneVariant, job.SubSceneLayer);
             var subSceneRoot = job.Region.GetSubSceneRoot(job.SubSceneLayer);
 
             //editor subScenes are loaded (no streaming)
@@ -338,13 +381,13 @@ namespace Game.World
             {
                 if (subSceneRoot)
                 {
-                    Debug.LogWarningFormat("Load Job for existing subScene started! region=\"{0}\", subScene=\"{1}\"", job.Region.name, job.SubSceneLayer.ToString());
+                    Debug.LogWarningFormat("Load Job for existing subScene started! {0} {1} {2} {3}", job.Region.SuperRegion.Type, job.Region.name, job.SubSceneVariant, job.SubSceneLayer);
                 }
                 else if (!Application.CanStreamedLevelBeLoaded(sceneName))
                 {
                     //Debug.LogWarningFormat("scene {0} cannot be streamed", sceneName);
-                    var root = new GameObject("empty").transform;
-                    root.SetParent(job.Region.transform);
+                    //var root = new GameObject("empty").transform;
+                    //root.SetParent(job.Region.transform);
                 }
                 else
                 {
@@ -371,6 +414,20 @@ namespace Game.World
                             DestroyImmediate(tag.gameObject);
                         }
                     }
+                    yield return null;
+
+                    //initializing all WorldObjects
+                    int initCount = 0;
+                    var worldObjects = GetComponentsInChildren<IWorldObject>();
+                    for (int i = 0; i < worldObjects.Length; i++)
+                    {
+                        worldObjects[i].Initialize(gameController, job.Region.SuperRegion.Type != eSuperRegionType.Centre);
+                        if (++initCount % 30 == 0)
+                        {
+                            yield return null;
+                        }
+                    }
+                    yield return null;
 
                     //attach the SubScene to its Region
                     root.SetParent(job.Region.transform, false);
@@ -401,7 +458,7 @@ namespace Game.World
             isJobRunning = true;
             //Debug.LogFormat("Unload Job started: {0} {1} {2}", job.Region.SuperRegion.Type, job.Region.name, job.SceneType);
 
-            var subSceneRoot = job.Region.GetSubSceneRoot(job.SubSceneLayer, job.SubSceneMode);
+            var subSceneRoot = job.Region.GetSubSceneRoot(job.SubSceneLayer, job.SubSceneVariant);
 
             if (subSceneRoot)
             {
@@ -453,7 +510,7 @@ namespace Game.World
             {
                 foreach (var subSceneLayer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
                 {
-                    foreach (var subSceneMode in region.AvailableSubSceneModes)
+                    foreach (var subSceneMode in region.AvailableSubSceneVariants)
                     {
                         if (region.GetSubSceneRoot(subSceneLayer, subSceneMode) != null)
                         {
@@ -493,9 +550,10 @@ namespace Game.World
                 }
             }
 
-
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
             editorSubScenesLoaded = true;
+
+            UnityEditor.EditorUtility.SetDirty(this);
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
         }
 #endif
 
@@ -540,7 +598,7 @@ namespace Game.World
             {
                 foreach (var subSceneLayer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
                 {
-                    foreach (var subSceneMode in region.AvailableSubSceneModes)
+                    foreach (var subSceneMode in region.AvailableSubSceneVariants)
                     {
                         var root = region.GetSubSceneRoot(subSceneLayer, subSceneMode);
 
@@ -574,8 +632,10 @@ namespace Game.World
             }
             UnityEditor.EditorBuildSettings.scenes = buildSettingsScenes.ToArray();
 
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
             editorSubScenesLoaded = false;
+
+            UnityEditor.EditorUtility.SetDirty(this);
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
         }
 #endif
 
@@ -596,7 +656,7 @@ namespace Game.World
             //cleaning build settings
             var scenes = UnityEditor.EditorBuildSettings.scenes.ToList();
             var scenesToRemove = new List<UnityEditor.EditorBuildSettingsScene>();
-            string pathPart = "/SubScene_"; //string.Concat(worldSceneFolderPath, "/SubScene_");
+            string pathPart = worldSceneFolderPath + "/SubScene_"; //string.Concat(worldSceneFolderPath, "/SubScene_");
 
             foreach (var sceneEntry in scenes)
             {

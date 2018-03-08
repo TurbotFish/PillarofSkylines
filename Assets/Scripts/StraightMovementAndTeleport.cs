@@ -20,9 +20,8 @@ public class StraightMovementAndTeleport : MovingPlatform {
 		currWaitTime = waitTime + initialWaitTime;
 		initialPosition = transform.position;
         base.Start();
-	}
-
-	// Update is called once per frame
+    }
+    
 	void Update () {
 		if (waiting) {
 			currWaitTime -= Time.deltaTime;
@@ -35,10 +34,8 @@ public class StraightMovementAndTeleport : MovingPlatform {
 		if (moving) {
 			transform.position += movement * 1 / timeMoving * Time.deltaTime;
             
-
-            if (currPlayer != null) {
+            if (currPlayer != null)
 				currPlayer.ImmediateMovement(movement * 1 / timeMoving * Time.deltaTime, true, false);
-            }
 			movementProgression += 1 / timeMoving * Time.deltaTime;
 
 			if (movementProgression >= 1f) {
@@ -47,9 +44,7 @@ public class StraightMovementAndTeleport : MovingPlatform {
 				movementProgression = 0f;
 				transform.position = initialPosition;
 			}
-
 		}
 	}
-
-
+    
 }

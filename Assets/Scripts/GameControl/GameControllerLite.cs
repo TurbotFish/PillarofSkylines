@@ -129,8 +129,9 @@ namespace Game.GameControl
             {
                 worldController.Initialize(this);
                 yield return null;
+                yield return null;
 
-                while(worldController.CurrentJobCount > 0)
+                while (worldController.CurrentJobCount > 0)
                 {
                     yield return null;
                 }

@@ -13,22 +13,22 @@ namespace Game.World
 
         //========================================================================================
 
-        public override List<eSubSceneMode> AvailableSubSceneModes
+        public override List<eSubSceneVariant> AvailableSubSceneVariants
         {
             get
             {
-                return new List<eSubSceneMode>() {
-                    eSubSceneMode.IntactPillar,
-                    eSubSceneMode.DestroyedPillar
+                return new List<eSubSceneVariant>() {
+                    eSubSceneVariant.IntactPillar,
+                    eSubSceneVariant.DestroyedPillar
                 };
             }
         }
 
-        protected override eSubSceneMode InitialSubSceneMode
+        protected override eSubSceneVariant InitialSubSceneVariant
         {
             get
             {
-                return eSubSceneMode.IntactPillar;
+                return eSubSceneVariant.IntactPillar;
             }
         }
 

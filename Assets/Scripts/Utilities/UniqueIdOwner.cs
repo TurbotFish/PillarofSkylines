@@ -73,6 +73,7 @@ namespace Game.Utilities
 #if UNITY_EDITOR
                 if (!Application.isPlaying)
                 {
+                    UnityEditor.EditorUtility.SetDirty(this);
                     UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
                 }
 #endif
