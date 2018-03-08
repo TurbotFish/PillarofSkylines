@@ -14,8 +14,9 @@ namespace Game.World
         private SerializedProperty boundsSizeProperty;
 
         private SerializedProperty overrideRenderDistancesProperty;
-        private SerializedProperty localRenderDistanceFarProperty;
-        private SerializedProperty localRenderDistanceInactiveProperty;
+        private SerializedProperty localRenderDistanceNearProperty;
+        private SerializedProperty localRenderDistanceAlwaysProperty;
+        private SerializedProperty localRenderDistanceFarProperty;        
 
         private SerializedProperty drawBoundsProperty;
         private SerializedProperty boundsColourProperty;
@@ -28,8 +29,9 @@ namespace Game.World
             boundsSizeProperty = serializedObject.FindProperty("boundsSize");
 
             overrideRenderDistancesProperty = serializedObject.FindProperty("overrideRenderDistances");
-            localRenderDistanceFarProperty = serializedObject.FindProperty("localRenderDistanceFar");
-            localRenderDistanceInactiveProperty = serializedObject.FindProperty("localRenderDistanceInactive");
+            localRenderDistanceNearProperty = serializedObject.FindProperty("localRenderDistanceNear");
+            localRenderDistanceAlwaysProperty = serializedObject.FindProperty("localRenderDistanceAlways");
+            localRenderDistanceFarProperty = serializedObject.FindProperty("localRenderDistanceFar");            
 
             drawBoundsProperty = serializedObject.FindProperty("drawBounds");
             boundsColourProperty = serializedObject.FindProperty("boundsColour");
@@ -63,8 +65,9 @@ namespace Game.World
 
             if (overrideRenderDistancesProperty.boolValue)
             {
+                localRenderDistanceNearProperty.floatValue = EditorGUILayout.FloatField("Near", localRenderDistanceNearProperty.floatValue);
+                localRenderDistanceAlwaysProperty.floatValue = EditorGUILayout.FloatField("Always", localRenderDistanceAlwaysProperty.floatValue);
                 localRenderDistanceFarProperty.floatValue = EditorGUILayout.FloatField("Far", localRenderDistanceFarProperty.floatValue);
-                localRenderDistanceInactiveProperty.floatValue = EditorGUILayout.FloatField("Inactive", localRenderDistanceInactiveProperty.floatValue);
             }
 
             //###########################################
@@ -84,7 +87,7 @@ namespace Game.World
 
             if (!Application.isPlaying && self.transform.parent.GetComponent<WorldController>().EditorSubScenesLoaded)
             {
-                foreach (var subSceneMode in self.AvailableSubSceneModes)
+                foreach (var subSceneMode in self.AvailableSubSceneVariants)
                 {
                     foreach (var subSceneLayer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
                     {

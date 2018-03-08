@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using Game.GameControl;
 
 namespace Game.LevelElements
@@ -11,22 +10,9 @@ namespace Game.LevelElements
 
         [SerializeField]
         string tagToActivate = "Player";
-        [SerializeField]
-        bool definitiveActivation;
-        [SerializeField]
-        float delayBeforeDeactivation;
 
         [SerializeField]
-        bool changeMaterial;
-
-        [ConditionalHide("changeMaterial"), SerializeField]
-        int materialID = 0;
-
-        [ConditionalHide("changeMaterial"), SerializeField]
-        Material on, off;
-
-        [ConditionalHide("changeMaterial"), SerializeField]
-        new Renderer renderer;
+        bool setState = true;
 
         //###########################################################
 
@@ -42,20 +28,7 @@ namespace Game.LevelElements
         private void OnTriggerEnter(Collider other)
         {
             if (other.tag == tagToActivate)
-            {
-                /*if (Toggle)
-                    TriggerState ^= true;
-                else*/
-                //print ("yo");
-                SetTriggerState(true);
-
-                if (changeMaterial)
-                {
-                    Material[] sharedMaterialsCopy = renderer.sharedMaterials;
-                    sharedMaterialsCopy[materialID] = TriggerState ? on : off;
-                    renderer.sharedMaterials = sharedMaterialsCopy;
-                }
-            }
+                SetTriggerState(setState);
         }
 
         //###########################################################

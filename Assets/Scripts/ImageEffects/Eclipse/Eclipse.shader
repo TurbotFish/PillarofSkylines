@@ -38,10 +38,7 @@
 		float4 final = src;
 
 		// VIGNETTE
-		_Power = 2;
-		_Falloff = 0.4;
-
-        float2 coord = (i.uv - 0.5) * 2;
+        float2 coord = (i.uv - 0.5) * 2; // multiply by screenSize if adjusting needed
         float rf = sqrt(dot(coord, coord)) * _Falloff;
 
 		float rf2_1 = pow(rf, _Power) + 1.0;
@@ -56,17 +53,12 @@
 			float a = (newIteration.r + newIteration.g + newIteration.b)/3 + _Threshold;
 			float b = (final.r + final.g + final.b)/3;
 
-			if (abs(a-b) > 0) {
-				float t = saturate((a) * (1.0 - float(j)/float(_Iterations)));
-				final = lerp(final, saturate(1-(1-final)*(1-newIteration)), t*(1-e));
-			}
+			float t = saturate((a) * (1.0 - float(j)/float(_Iterations)));
+			final = lerp(final, newIteration, t*(1-e));
 		}
 		// END Iterations
 
-
-		//final = (src - final) * e + final;
-		
-		final = float4(final.g, final.b, saturate(final.r+0.1), final.a);
+		final = float4(final.b, final.g, final.r, final.a);
 		final = lerp(src, final, _Intensity);
 
 		return final;

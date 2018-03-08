@@ -10,8 +10,10 @@ namespace Game.World
 
         private SerializedProperty worldSizeProperty;
 
+        private SerializedProperty renderDistanceNearProperty;
+        private SerializedProperty renderDistanceAlwaysProperty;
         private SerializedProperty renderDistanceFarProperty;
-        private SerializedProperty renderDistanceInactiveProperty;
+        
         private SerializedProperty preTeleportOffsetProperty;
         private SerializedProperty secondaryPositionDistanceModifierProperty;
 
@@ -25,8 +27,10 @@ namespace Game.World
 
             worldSizeProperty = serializedObject.FindProperty("worldSize");
 
+            renderDistanceNearProperty = serializedObject.FindProperty("renderDistanceNear");
+            renderDistanceAlwaysProperty = serializedObject.FindProperty("renderDistanceAlways");
             renderDistanceFarProperty = serializedObject.FindProperty("renderDistanceFar");
-            renderDistanceInactiveProperty = serializedObject.FindProperty("renderDistanceInactive");
+            
             preTeleportOffsetProperty = serializedObject.FindProperty("preTeleportOffset");
             secondaryPositionDistanceModifierProperty = serializedObject.FindProperty("secondaryPositionDistanceModifier");
 
@@ -45,8 +49,10 @@ namespace Game.World
 
             EditorGUILayout.LabelField("Render Distances");
 
+            renderDistanceNearProperty.floatValue = EditorGUILayout.FloatField("Near", renderDistanceNearProperty.floatValue);
+            renderDistanceAlwaysProperty.floatValue = EditorGUILayout.FloatField("Always", renderDistanceAlwaysProperty.floatValue);
             renderDistanceFarProperty.floatValue = EditorGUILayout.FloatField("Far", renderDistanceFarProperty.floatValue);
-            renderDistanceInactiveProperty.floatValue = EditorGUILayout.FloatField("Inactive", renderDistanceInactiveProperty.floatValue);
+            
             preTeleportOffsetProperty.floatValue = EditorGUILayout.FloatField("PreTeleportOffset", preTeleportOffsetProperty.floatValue);
             secondaryPositionDistanceModifierProperty.floatValue = EditorGUILayout.FloatField("SecondaryPositionDistanceModifier", secondaryPositionDistanceModifierProperty.floatValue);
 

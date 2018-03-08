@@ -12,7 +12,8 @@ namespace Game.World
 
         [SerializeField]
         [HideInInspector]
-        eSubSceneMode subSceneMode;
+        [FormerlySerializedAs("subSceneMode")]
+        eSubSceneVariant subSceneVariant;
 
         [SerializeField]
         [HideInInspector]
@@ -21,12 +22,12 @@ namespace Game.World
 
         //========================================================================================
 
-        public eSubSceneMode SubSceneMode { get { return subSceneMode; } }
+        public eSubSceneVariant SubSceneVariant { get { return subSceneVariant; } }
         public eSubSceneLayer SubSceneLayer { get { return subSceneLayer; } }
 
-        public void Initialize(eSubSceneMode subSceneMode, eSubSceneLayer subSceneLayer)
+        public void Initialize(eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer)
         {
-            this.subSceneMode = subSceneMode;
+            this.subSceneVariant = subSceneVariant;
             this.subSceneLayer = subSceneLayer;
         }
 
@@ -40,7 +41,7 @@ namespace Game.World
                 return;
             }
 
-            string subSceneName = WorldUtility.GetSubSceneRootName(subSceneMode, subSceneLayer);
+            string subSceneName = WorldUtility.GetSubSceneRootName(subSceneVariant, subSceneLayer);
             if (name != subSceneName)
             {
                 name = subSceneName;

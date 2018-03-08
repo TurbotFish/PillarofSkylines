@@ -31,12 +31,12 @@ namespace Game.World
             }
         }
 
-        public List<SubSceneJob> UpdateSuperRegion(Transform cameraTransform, List<Vector3> teleportPositions)
+        public List<SubSceneJob> UpdateSuperRegion(Transform cameraTransform, Vector3 playerPosition, List<Vector3> teleportPositions)
         {
             var result = new List<SubSceneJob>();
             foreach (var region in regions)
             {
-                result.AddRange(region.UpdateRegion(cameraTransform, teleportPositions));
+                result.AddRange(region.UpdateRegion(cameraTransform, playerPosition, teleportPositions));
             }
 
             result.RemoveAll(item => item == null);
