@@ -41,7 +41,7 @@ namespace Game.LevelElements
 
         public override void SetTriggered(bool triggered)
         {
-            print("ami trigered : " + name + " state : " + currentState);
+            print("am trigered : " + name + " state : " + currentState);
             if (triggered)
             {
                 Activate();
