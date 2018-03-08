@@ -36,7 +36,7 @@ namespace Game.World
         {
             get
             {
-                return eSubSceneVariant.IntactPillar;
+                return SuperRegion.World.GameController.PlayerModel.CheckIsPillarDestroyed(pillarId) ? eSubSceneVariant.DestroyedPillar : eSubSceneVariant.IntactPillar;
             }
         }
 
