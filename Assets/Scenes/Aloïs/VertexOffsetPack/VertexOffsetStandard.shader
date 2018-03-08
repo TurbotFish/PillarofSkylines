@@ -7,6 +7,7 @@
 		_MaxBendAngle ("Bend Angle Max", Float) = 60
 		_BendingDistMin ("Bending Full Effect Dist.", Float) = 2
 		_BendingDistMax ("Bending No Effect Dist.", Float) = 5
+		_WindDirection ("Wind Direction", Vector) = (0,0,1,0)
 	}
 	SubShader {
 		Tags { "RenderType"="Opaque" }
@@ -32,6 +33,9 @@
 		float _BendingDistMin;
 		float _BendingDistMax;
 		float _MaxBendAngle;
+		float _WindIntensity;
+		sampler2D _WindTex;
+		float3 _WindDirection;
 
 		float3 RotationMatXYZ(float3 _vertex, float3 rotation){
 		float3x3 mat;
@@ -71,7 +75,25 @@
 			v.vertex.xyz = ApplyWind(v.vertex.xyz, _bendRotation);
 			v.normal = ApplyWind(v.normal.xyz, _bendRotation);
 
+			//wind
+			//float3 windDir = float3(0.0,0,1.0);//global in the future
 
+			float3 windDir = saturate(_WindDirection.xyz);
+
+			float windSpeed = 3;
+			float _offset = (pivotWS.x * (2.9) * -sign(windDir.x) + pivotWS.z * (2.9) * -sign(windDir.z) + pivotWS.y * 0.8) * 0.5;
+
+			windDir = mul(unity_WorldToObject, windDir);
+			windDir = normalize(windDir);
+
+			float windIntensity = tex2Dlod(_WindTex, float4(_Time.x,_Time.x, 0,0)).r;
+			windIntensity = saturate(windIntensity + 0.0);//not necessary with a good wind map
+
+			float angle = windIntensity * (sin(_Time.y * windSpeed + _offset) * 0.65+0.35) * (_MaxBendAngle) * rotationMask;
+			float3 _windRotation = float3( windDir.z, 0, -windDir.x) * angle;
+
+			v.vertex.xyz = ApplyWind(v.vertex.xyz, _windRotation);
+			v.normal = ApplyWind(v.normal.xyz, _windRotation);
 		}
 
 		// Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
