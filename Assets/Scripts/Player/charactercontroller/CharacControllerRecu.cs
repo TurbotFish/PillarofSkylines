@@ -254,7 +254,6 @@ namespace Game.Player.CharacterController
                                             skinWidth * 2,
                                             collisionMask) && security > 0)
                 {
-                    print("déplacement !");
                     security--;
                     myTransform.Translate(-collisions.lastWallNormal * skinWidth * 2, Space.World);
                 }
