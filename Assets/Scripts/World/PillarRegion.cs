@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Game.Utilities;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.World
@@ -12,6 +13,13 @@ namespace Game.World
         private ePillarId pillarId;
 
         //========================================================================================
+
+        public override void Initialize(SuperRegion superRegion)
+        {
+            base.Initialize(superRegion);
+
+            EventManager.PillarDestroyedEvent += OnPillarDestroyedEventHandler;
+        }
 
         public override List<eSubSceneVariant> AvailableSubSceneVariants
         {
@@ -33,5 +41,16 @@ namespace Game.World
         }
 
         //========================================================================================
+
+        void OnPillarDestroyedEventHandler(object sender, EventManager.PillarDestroyedEventArgs args)
+        {
+            if (args.PillarId != pillarId)
+            {
+                return;
+            }
+
+            ChangeSubSceneMode(eSubSceneVariant.DestroyedPillar);
+        }
+
     }
 } //end of namespace

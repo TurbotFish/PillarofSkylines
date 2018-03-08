@@ -390,7 +390,7 @@ namespace Game.World
         private IEnumerator LoadSubSceneCR(SubSceneJob job)
         {
             isJobRunning = true;
-            Debug.LogFormat("Load Job started: {0} {1} {2} {3}", job.Region.SuperRegion.Type, job.Region.name, job.SubSceneVariant, job.SubSceneLayer);
+            //Debug.LogFormat("Load Job started: {0} {1} {2} {3}", job.Region.SuperRegion.Type, job.Region.name, job.SubSceneVariant, job.SubSceneLayer);
 
             string sceneName = WorldUtility.GetSubSceneName(job.Region.UniqueId, job.SubSceneVariant, job.SubSceneLayer);
             var subSceneRoot = job.Region.GetSubSceneRoot(job.SubSceneLayer);
@@ -401,6 +401,15 @@ namespace Game.World
                 if (subSceneRoot)
                 {
                     subSceneRoot.gameObject.SetActive(true);
+                    yield return null;
+
+                    //initializing all WorldObjects
+                    var worldObjects = subSceneRoot.GetComponentsInChildren<IWorldObject>();
+                    for (int i = 0; i < worldObjects.Length; i++)
+                    {
+                        worldObjects[i].Initialize(gameController, job.Region.SuperRegion.Type != eSuperRegionType.Centre);
+                    }
+                    yield return null;
                 }
             }
             //streaming
@@ -410,13 +419,7 @@ namespace Game.World
                 {
                     Debug.LogWarningFormat("Load Job for existing subScene started! {0} {1} {2} {3}", job.Region.SuperRegion.Type, job.Region.name, job.SubSceneVariant, job.SubSceneLayer);
                 }
-                else if (!Application.CanStreamedLevelBeLoaded(sceneName))
-                {
-                    //Debug.LogWarningFormat("scene {0} cannot be streamed", sceneName);
-                    //var root = new GameObject("empty").transform;
-                    //root.SetParent(job.Region.transform);
-                }
-                else
+                else if (Application.CanStreamedLevelBeLoaded(sceneName))
                 {
                     AsyncOperation async = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
 
@@ -431,33 +434,29 @@ namespace Game.World
                     SceneManager.MoveGameObjectToScene(root.gameObject, gameObject.scene);
 
                     //remove "do not repeat" objects
-                    //if (job.Region.SuperRegion.Type != eSuperRegionType.Centre)
-                    //{
-                    //    List<DoNotRepeatTag> doNotRepeatTags = root.GetComponentsInChildren<DoNotRepeatTag>(true).ToList();
-                    //    while (doNotRepeatTags.Count > 0)
-                    //    {
-                    //        var tag = doNotRepeatTags[0];
-                    //        doNotRepeatTags.RemoveAt(0);
-                    //        DestroyImmediate(tag.gameObject);
-                    //    }
-                    //}
-                    yield return null;
-
-                    //initializing all WorldObjects
-                    int initCount = 0;
-                    var worldObjects = GetComponentsInChildren<IWorldObject>();
-                    for (int i = 0; i < worldObjects.Length; i++)
+                    if (job.Region.SuperRegion.Type != eSuperRegionType.Centre)
                     {
-                        worldObjects[i].Initialize(gameController, job.Region.SuperRegion.Type != eSuperRegionType.Centre);
-                        if (++initCount % 30 == 0)
+                        List<DoNotRepeatTag> doNotRepeatTags = root.GetComponentsInChildren<DoNotRepeatTag>(true).ToList();
+                        while (doNotRepeatTags.Count > 0)
                         {
-                            yield return null;
+                            var tag = doNotRepeatTags[0];
+                            doNotRepeatTags.RemoveAt(0);
+                            DestroyImmediate(tag.gameObject);
                         }
                     }
                     yield return null;
 
                     //attach the SubScene to its Region
                     root.SetParent(job.Region.transform, false);
+                    yield return null;
+
+                    //initializing all WorldObjects
+                    var worldObjects = root.GetComponentsInChildren<IWorldObject>();
+                    for (int i = 0; i < worldObjects.Length; i++)
+                    {
+                        worldObjects[i].Initialize(gameController, job.Region.SuperRegion.Type != eSuperRegionType.Centre);
+                    }
+                    yield return null;
 
                     //unload the SubScene Scene
                     async = SceneManager.UnloadSceneAsync(sceneName);
@@ -471,7 +470,7 @@ namespace Game.World
 
             job.Callback(job, true);
 
-            Debug.Log("Load Job done");
+            //Debug.Log("Load Job done");
             isJobRunning = false;
         }
 
@@ -483,7 +482,7 @@ namespace Game.World
         private IEnumerator UnloadSubSceneCR(SubSceneJob job)
         {
             isJobRunning = true;
-            Debug.LogFormat("Unload Job started: {0} {1} {2} {3}", job.Region.SuperRegion.Type, job.Region.name, job.SubSceneVariant, job.SubSceneLayer);
+            //Debug.LogFormat("Unload Job started: {0} {1} {2} {3}", job.Region.SuperRegion.Type, job.Region.name, job.SubSceneVariant, job.SubSceneLayer);
 
             var subSceneRoot = job.Region.GetSubSceneRoot(job.SubSceneLayer, job.SubSceneVariant);
 
@@ -506,7 +505,7 @@ namespace Game.World
 
             job.Callback(job, true);
 
-            Debug.Log("Unload Job done");
+            //Debug.Log("Unload Job done");
             isJobRunning = false;
         }
 
