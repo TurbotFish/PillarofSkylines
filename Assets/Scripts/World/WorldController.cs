@@ -452,7 +452,6 @@ namespace Game.World
 
                     //initializing all WorldObjects
                     var worldObjects = root.GetComponentsInChildren<IWorldObject>();
-                    Debug.LogFormat("IWorldObjects in SubScene = {0}", worldObjects.Count());
                     for (int i = 0; i < worldObjects.Length; i++)
                     {
                         worldObjects[i].Initialize(gameController, job.Region.SuperRegion.Type != eSuperRegionType.Centre);
