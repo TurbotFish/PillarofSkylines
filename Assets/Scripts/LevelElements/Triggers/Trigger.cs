@@ -126,7 +126,7 @@ namespace Game.LevelElements
             //register trigger
             foreach (var target in targets)
             {
-                if (target && !target.ContainsTrigger(this))
+                if (target != null && !target.ContainsTrigger(this))
                 {
                     target.AddTrigger(this);
                 }
@@ -135,7 +135,7 @@ namespace Game.LevelElements
             //unregister trigger
             foreach (var target in targetsOld)
             {
-                if (target && !targets.Contains(target) && target.ContainsTrigger(this))
+                if (target != null && !targets.Contains(target) && target.ContainsTrigger(this))
                 {
                     target.RemoveTrigger(this);
                 }
@@ -153,7 +153,7 @@ namespace Game.LevelElements
 
             Gizmos.color = Color.green;
 
-            targets.RemoveAll(item => item == null); //this helps keeping the target list clean (for example when target objects get deleted)
+            //targets.RemoveAll(item => item == null); //this helps keeping the target list clean (for example when target objects get deleted)
             foreach (TriggerableObject target in targets)
             {
                 Gizmos.DrawLine(Vector3.zero, transform.InverseTransformPoint(target.transform.position));
