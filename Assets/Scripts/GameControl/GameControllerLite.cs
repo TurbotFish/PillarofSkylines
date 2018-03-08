@@ -116,10 +116,6 @@ namespace Game.GameControl
             playerController.InitializePlayerController(this);
             CameraController.InitializeCameraController(this);
 
-            //teleporting: this puts the camera in the correct position which makes the WorldController preload the right part of the world
-            var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(playerController.transform.position, playerController.transform.rotation, true);
-            Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
-
             //pausing game until world has loaded a bit
             Utilities.EventManager.SendGamePausedEvent(this, new Utilities.EventManager.GamePausedEventArgs(true));
 
