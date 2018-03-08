@@ -235,6 +235,7 @@ namespace Game.World
             foreach (var job in newJobs)
             {
                 deprecatedJobs.AddRange(subSceneJobsList.Where(item =>
+                    item.Region.SuperRegion.Type == job.Region.SuperRegion.Type &&
                     item.Region.UniqueId == job.Region.UniqueId &&
                     item.SubSceneMode == job.SubSceneMode &&
                     item.SubSceneLayer == job.SubSceneLayer
@@ -346,13 +347,13 @@ namespace Game.World
             {
                 if (subSceneRoot)
                 {
-                    Debug.LogWarningFormat("Load Job for existing subScene started! region=\"{0}\", subScene=\"{1}\"", job.Region.name, job.SubSceneLayer.ToString());
+                    Debug.LogWarningFormat("Load Job for existing subScene started! {0} {1} {2} {3}", job.Region.SuperRegion.Type, job.Region.name, job.SubSceneMode, job.SubSceneLayer);
                 }
                 else if (!Application.CanStreamedLevelBeLoaded(sceneName))
                 {
                     //Debug.LogWarningFormat("scene {0} cannot be streamed", sceneName);
-                    var root = new GameObject("empty").transform;
-                    root.SetParent(job.Region.transform);
+                    //var root = new GameObject("empty").transform;
+                    //root.SetParent(job.Region.transform);
                 }
                 else
                 {
@@ -500,7 +501,7 @@ namespace Game.World
                     }
                 }
             }
-            
+
             editorSubScenesLoaded = true;
 
             UnityEditor.EditorUtility.SetDirty(this);
@@ -582,7 +583,7 @@ namespace Game.World
                 buildSettingsScenes.Add(new UnityEditor.EditorBuildSettingsScene(gameObject.scene.path, true));
             }
             UnityEditor.EditorBuildSettings.scenes = buildSettingsScenes.ToArray();
-            
+
             editorSubScenesLoaded = false;
 
             UnityEditor.EditorUtility.SetDirty(this);
@@ -607,7 +608,7 @@ namespace Game.World
             //cleaning build settings
             var scenes = UnityEditor.EditorBuildSettings.scenes.ToList();
             var scenesToRemove = new List<UnityEditor.EditorBuildSettingsScene>();
-            string pathPart = "/SubScene_"; //string.Concat(worldSceneFolderPath, "/SubScene_");
+            string pathPart = worldSceneFolderPath + "/SubScene_"; //string.Concat(worldSceneFolderPath, "/SubScene_");
 
             foreach (var sceneEntry in scenes)
             {

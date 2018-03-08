@@ -34,6 +34,8 @@ namespace Game.World
         [HideInInspector]
         private float localRenderDistanceInactive;
 
+
+
         private Transform myTransform;
         private SuperRegion superRegion;
 
@@ -45,7 +47,7 @@ namespace Game.World
         private eSubSceneMode currentSubSceneMode;
         private bool hasSubSceneModeChanged;
         private float cameraDistance;
-        private int currentJobs;
+        private List<SubSceneJob> currentJobs = new List<SubSceneJob>();
         private bool firstJobDone;
 
 #if UNITY_EDITOR
@@ -291,25 +293,25 @@ namespace Game.World
             //}
 
             //checks if all the SubScenes are loaded
-            if (firstJobDone && currentJobs == 0)
+            if (firstJobDone && currentJobs.Count == 0)
             {
                 //var subScenes = GetAllSubScenes();
 
                 if (currentRegionMode == eRegionMode.Near && subSceneStates[(int)eSubSceneLayer.Near] != eSubSceneState.Loaded)
                 {
-                    Debug.LogWarningFormat("Region {0}: SubScene Near should be loaded but isn't!", name);
+                    Debug.LogWarningFormat("{0} {1}: SubScene Near should be loaded but isn't! currentState={2}", superRegion.Type, name, subSceneStates[(int)eSubSceneLayer.Near]);
                     result.Add(CreateLoadSubSceneJob(currentSubSceneMode, eSubSceneLayer.Near));
                 }
 
                 if (currentRegionMode == eRegionMode.Far && subSceneStates[(int)eSubSceneLayer.Far] != eSubSceneState.Loaded)
                 {
-                    Debug.LogWarningFormat("Region {0}: SubScene Far should be loaded but isn't!", name);
+                    Debug.LogWarningFormat("{0} {1}: SubScene Far should be loaded but isn't! currentState={2}", superRegion.Type, name, subSceneStates[(int)eSubSceneLayer.Far]);
                     result.Add(CreateLoadSubSceneJob(currentSubSceneMode, eSubSceneLayer.Far));
                 }
 
                 if (currentRegionMode != eRegionMode.Inactive && subSceneStates[(int)eSubSceneLayer.Always] != eSubSceneState.Loaded)
                 {
-                    Debug.LogWarningFormat("Region {0}: SubScene Always should be loaded but isn't!", name);
+                    Debug.LogWarningFormat("{0} {1}: SubScene Always should be loaded but isn't! currentState={2}", superRegion.Type, name, subSceneStates[(int)eSubSceneLayer.Always]);
                     result.Add(CreateLoadSubSceneJob(currentSubSceneMode, eSubSceneLayer.Always));
                 }
             }
@@ -521,8 +523,9 @@ namespace Game.World
             else
             {
                 subSceneStates[index] = eSubSceneState.Loading;
-                currentJobs++;
-                return new SubSceneJob(this, subSceneMode, subSceneLayer, eSubSceneJobType.Load, OnSubSceneJobDone);
+                var newJob = new SubSceneJob(this, subSceneMode, subSceneLayer, eSubSceneJobType.Load, OnSubSceneJobFinished);
+                currentJobs.Add(newJob);
+                return newJob;
             }
         }
 
@@ -538,15 +541,21 @@ namespace Game.World
             else
             {
                 subSceneStates[index] = eSubSceneState.Unloading;
-                currentJobs++;
-                return new SubSceneJob(this, subSceneMode, subSceneLayer, eSubSceneJobType.Unload, OnSubSceneJobDone);
+                var newJob = new SubSceneJob(this, subSceneMode, subSceneLayer, eSubSceneJobType.Unload, OnSubSceneJobFinished);
+                currentJobs.Add(newJob);
+                return newJob;
             }
         }
 
-        private void OnSubSceneJobDone(SubSceneJob subSceneJob, bool jobDone)
+        /// <summary>
+        /// Callback called by the WorldController when a job is done or discarded.
+        /// </summary>
+        /// <param name="subSceneJob"></param>
+        /// <param name="jobDone"></param>
+        private void OnSubSceneJobFinished(SubSceneJob subSceneJob, bool jobDone)
         {
-            currentJobs--;
-            //Debug.LogErrorFormat("{0}: job done! remaining={1}", name, currentJobs);
+            currentJobs.Remove(subSceneJob);
+            //Debug.LogFormat("{0} {1}: job done! remaining={2}", superRegion.Type, name, currentJobs.Count);
 
             if (subSceneJob.SubSceneMode != currentSubSceneMode)
             {
@@ -578,6 +587,15 @@ namespace Game.World
                     subSceneStates[index] = eSubSceneState.Unloaded;
                 }
             }
+            //else
+            //{
+            //    int index = (int)subSceneJob.SubSceneLayer;
+
+            //    if (subSceneJob.JobType == eSubSceneJobType.Load && subSceneStates[index] == eSubSceneState.Loading)
+            //    {
+
+            //    }
+            //}
         }
 
 #if UNITY_EDITOR
