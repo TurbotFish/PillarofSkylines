@@ -94,6 +94,7 @@ namespace Game.Utilities
         /// <summary>
         /// [ExecuteInEditMode] Cleaning up the list of unique id's.
         /// </summary>
+#if UNITY_EDITOR
         private void Update()
         {
             if (Application.isPlaying)
@@ -102,8 +103,6 @@ namespace Game.Utilities
             }
 
             int r = idList.RemoveAll(item => item == null);
-
-#if UNITY_EDITOR
             bool d = false;
 
             var componentsToDestroy = new List<UniqueId>();
@@ -116,7 +115,7 @@ namespace Game.Utilities
                 }
             }
 
-            foreach(var comp in componentsToDestroy)
+            foreach (var comp in componentsToDestroy)
             {
                 RemoveUniqueId(comp);
                 DestroyImmediate(comp);
@@ -127,8 +126,8 @@ namespace Game.Utilities
                 UnityEditor.EditorUtility.SetDirty(this);
                 UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
             }
-#endif
         }
+#endif
 
         //========================================================================================
     }
