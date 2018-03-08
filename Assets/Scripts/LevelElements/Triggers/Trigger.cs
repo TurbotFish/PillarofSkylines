@@ -85,15 +85,15 @@ namespace Game.LevelElements
         /// Sets the state of the Trigger. Will send an event to inform all the attached triggerables.
         /// </summary>
         /// <param name="triggerState"></param>
-        protected void SetTriggerState(bool triggerState)
+        protected void SetTriggerState(bool triggerState, bool alwaysExecute = false)
         {
             if (!isInitialized)
             {
                 return;
             }
-
-            if (_triggerState == triggerState) //if the value does not change we don't do anything
-            {
+            
+            if (_triggerState == triggerState && !alwaysExecute) //if the value does not change we don't do anything
+            { // "alwaysExecute" skips this check and always executes the trigger even if the value did not change
                 return;
             }
             else
