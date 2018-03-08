@@ -191,6 +191,8 @@ namespace Game.World
                     }
                 }
 
+                result.AddRange(SwitchRegionMode(currentRegionMode));
+
                 hasSubSceneModeChanged = false;
             }
 
@@ -524,7 +526,8 @@ namespace Game.World
 
             if (currentRegionMode == newRegionMode)
             {
-                return result;
+                Debug.Log("AAAAAAAAAAAAAAAAAAAAAAAA");
+                //return result;
             }
 
             switch (newRegionMode)

@@ -58,7 +58,7 @@
 		}
 		// END Iterations
 
-		final = float4(final.b, final.g, final.r, final.a);
+		final = float4(final.r, saturate(final.g + final.r), saturate(final.b + final.r), final.a);
 		final = lerp(src, final, _Intensity);
 
 		return final;
