@@ -36,8 +36,6 @@ namespace Game.Player.CharacterController.States
 
         public void Enter()
         {
-            Debug.Log("Enter State: Wall Run");
-
 
             //if the player should not be able to walldrift he starts falling again
             if (!CheckCanEnterWallRun(charController))
@@ -49,7 +47,6 @@ namespace Game.Player.CharacterController.States
 
         public void Exit()
         {
-            Debug.Log("Exit State: Wall Run");
             charController.animator.SetBool("WallRunning", false);
         }
 
@@ -138,9 +135,21 @@ namespace Game.Player.CharacterController.States
             //the direction along the wall
             Vector3 wallRunDir = Vector3.zero;
             if (firstFrame)
+            {
                 wallRunDir = Vector3.ProjectOnPlane(movementInfo.velocity * wallRunData.SpeedMultiplier, lastWallNormal);
-            
 
+                /*
+                charController.SetVelocity(Quaternion.AngleAxis(Vector3.SignedAngle(-lastWallNormal, Vector3.ProjectOnPlane(movementInfo.velocity, charController.MyTransform.up), charController.MyTransform.up)*.8f, lastWallNormal) 
+                    * charController.MyTransform.up * movementInfo.velocity.magnitude, false);
+
+                Debug.Log("wallrun angle : " + Vector3.Angle(-lastWallNormal, Vector3.ProjectOnPlane(movementInfo.velocity, charController.MyTransform.up)));
+                
+                if (Vector3.Angle(lastWallNormal, Vector3.ProjectOnPlane(movementInfo.velocity, charController.MyTransform.up)) < 100f && movementInfo.velocity.sqrMagnitude > wallRunData.SpeedRequiredForHorizontalWallRun){
+                    Debug.Log("hori wall run");
+                }*/
+            }
+            
+            
             //translate the direction to local space
             Vector3 localWallRunDir = charController.MyTransform.worldToLocalMatrix.MultiplyVector(wallRunDir);
 
