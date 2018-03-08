@@ -31,13 +31,13 @@ namespace Game.World
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("Child Count", (self.GetComponentsInChildren<Transform>(true).Length - 1).ToString());
 
-            //EditorGUILayout.LabelField("");
-            //EditorGUILayout.LabelField("Use at your own risk - Save Scene before using!");
-            //if (GUILayout.Button("Clean Up Scales"))
-            //{
-            //    CleanUpScales();
-            //    UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(self.gameObject.scene);
-            //}
+            EditorGUILayout.LabelField("");
+            EditorGUILayout.LabelField("Use at your own risk - Save Scene before using!");
+            if (GUILayout.Button("Clean Up Scales"))
+            {
+                CleanUpScales();
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(self.gameObject.scene);
+            }
         }
 
         private void CleanUpScales()
