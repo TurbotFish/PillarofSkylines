@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class MovingPlatform : MonoBehaviour {
 
-	public CharController currPlayer;
+    [HideInInspector]
+    public CharController currPlayer;
     public bool active = true;
 
 	[HideInInspector]

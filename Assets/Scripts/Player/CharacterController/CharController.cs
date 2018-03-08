@@ -517,7 +517,6 @@ namespace Game.Player.CharacterController
             else
             {
                 newVelocity = (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
-                print("external velocity added : " + newVelocity);
                 externalVelocity += newVelocity;
             }
         }
@@ -525,7 +524,6 @@ namespace Game.Player.CharacterController
         public void ImmediateMovement(Vector3 newVelocity, bool worldSpace, bool addToVelocity = false)
         {
             newVelocity = tempPhysicsHandler.Move((worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity));
-            print("immediate velocity : " + newVelocity);
             if (addToVelocity)
                 velocity += newVelocity/Time.deltaTime;
         }
