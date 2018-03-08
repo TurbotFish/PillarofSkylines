@@ -159,12 +159,11 @@ namespace Game.LevelElements
 
             //rebuild trigger id list
             triggerIds.Clear();
-            triggers.RemoveAll(item => item == null);
             var invalidTriggers = new List<Trigger>();
 
             foreach (var trigger in triggers)
             {
-                if (!trigger.Targets.Contains(this))
+                if (trigger != null && !trigger.Targets.Contains(this))
                 {
                     invalidTriggers.Add(trigger);
                 }
@@ -172,7 +171,7 @@ namespace Game.LevelElements
 
             foreach (var trigger in triggers)
             {
-                if (!triggerIds.Contains(trigger.UniqueId))
+                if (trigger != null && !triggerIds.Contains(trigger.UniqueId))
                 {
                     triggerIds.Add(trigger.UniqueId);
                 }
