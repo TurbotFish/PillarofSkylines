@@ -91,12 +91,12 @@ namespace Game.Player.CharacterController.States
                 if (!ledgeGrab)
                 {
                     jumpDirection = Vector3.ProjectOnPlane(lastWallNormal + (parallelDir.sqrMagnitude > .25f ? parallelDir : Vector3.zero), charController.MyTransform.up).normalized;
+                    state.SetJumpDirection(charController.TurnSpaceToLocal(jumpDirection));
                 } else
                 {
                     state.SetJumpStrengthModifierFromState(wallRunData.JumpStrengthModifierLedgeGrab);
                 }
                 charController.MyTransform.rotation = Quaternion.LookRotation(jumpDirection, charController.MyTransform.up);
-                state.SetJumpDirection(charController.TurnSpaceToLocal(jumpDirection));
                 state.SetTimerAirControl(wallRunData.TimerBeforeAirControl);
 
                 stateMachine.ChangeState(state);
