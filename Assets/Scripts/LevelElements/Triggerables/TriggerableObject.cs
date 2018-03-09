@@ -53,6 +53,8 @@ namespace Game.LevelElements
 
         public bool Triggered { get { return triggered; } }
 
+        protected PersistentTriggerable PersistentDataObject { get { return persistentTriggerable; } }
+
         #endregion properties
 
         //###########################################################
@@ -84,7 +86,7 @@ namespace Game.LevelElements
 
             if (persistentTriggerable == null)
             {
-                persistentTriggerable = new PersistentTriggerable(UniqueId, triggered);
+                persistentTriggerable = CreatePersistentObject();
                 model.AddPersistentDataObject(persistentTriggerable);
             }
             else
@@ -180,6 +182,21 @@ namespace Game.LevelElements
 #endif
 
         #endregion monobehaviour methods
+
+        //###########################################################
+
+        #region protected methods
+
+        /// <summary>
+        /// Creates the object containing persitent data for the triggerable object. Allows inherited classes to create their own version.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual PersistentTriggerable CreatePersistentObject()
+        {
+            return new PersistentTriggerable(this);
+        }
+
+        #endregion protected methods
 
         //###########################################################
 

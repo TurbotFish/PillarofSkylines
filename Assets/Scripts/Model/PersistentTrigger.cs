@@ -1,20 +1,18 @@
-﻿namespace Game.Model
+﻿using Game.LevelElements;
+
+namespace Game.Model
 {
     public class PersistentTrigger : PersistentData
     {
         //###########################################################
 
-        private bool triggerState;
+        public bool TriggerState { get; set; }
 
         //###########################################################
 
-        public bool TriggerState { get { return triggerState; } set { triggerState = value; } }
-
-        //###########################################################
-
-        public PersistentTrigger(string uniqueId, bool triggerState) : base(uniqueId)
+        public PersistentTrigger(Trigger trigger) : base(trigger.UniqueId)
         {
-            this.triggerState = triggerState;
+            TriggerState = trigger.TriggerState;
         }
 
         //###########################################################
