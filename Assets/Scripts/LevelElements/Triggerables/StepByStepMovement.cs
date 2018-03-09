@@ -2,6 +2,7 @@
 using Game.GameControl;
 using UnityEngine;
 using System.Collections.Generic;
+using Game.Model;
 
 namespace Game.LevelElements
 {
@@ -18,7 +19,8 @@ namespace Game.LevelElements
 
         public float timeToMove = 1;
 
-        int currentState = 0;
+        [HideInInspector]
+        public int currentState = 0;
         Transform my;
         MovingPlatform platform;
         float elapsed;
@@ -31,6 +33,8 @@ namespace Game.LevelElements
         {
             base.Initialize(gameController, isCopy);
 
+            (PersistentDataObject as PersistentStepByStepTriggerable).State = currentState;
+
             my = transform;
             platform = GetComponent<MovingPlatform>();
 
@@ -39,18 +43,20 @@ namespace Game.LevelElements
 
         }
 
-        public override void SetTriggered(bool triggered)
+        public override void SetTriggered(bool triggered, bool initializing)
         {
             print("am trigered : " + name + " state : " + currentState);
-            if (triggered)
+            
+            if (initializing)
             {
-                Activate();
+                print("hey i do nothing i'm being initialized lol");
+                currentState = (PersistentDataObject as PersistentStepByStepTriggerable).State;
+                transform.localPosition = startPosition + offsets[currentState];
             }
             else
             {
-                Deactivate();
+                ChangeLevel(triggered);
             }
-
         }
 
         #endregion public methods
@@ -62,28 +68,34 @@ namespace Game.LevelElements
         protected override void Activate()
         {
             Debug.LogFormat("Door \"{0}\": Activate called!", name);
-
+            /*
             if (currentState < offsets.Count - 1)
             {
                 beforeLocalPosition = startPosition + offsets[currentState];
                 currentState++;
+                (PersistentDataObject as PersistentStepByStepTriggerable).State++;
                 afterLocalPosition = startPosition + offsets[currentState];
                 Move(beforeLocalPosition, afterLocalPosition);
-            }
-
+            }*/
         }
 
         protected override void Deactivate()
         {
             Debug.LogFormat("Door \"{0}\": Deactivate called!", name);
-
+            /*
             if (currentState > 0)
             {
                 beforeLocalPosition = startPosition + offsets[currentState];
                 currentState--;
+                (PersistentDataObject as PersistentStepByStepTriggerable).State--;
                 afterLocalPosition = startPosition + offsets[currentState];
                 Move(beforeLocalPosition, afterLocalPosition);
-            }
+            }*/
+        }
+
+        protected override PersistentTriggerable CreatePersistentObject()
+        {
+            return new PersistentStepByStepTriggerable(this);
         }
 
         #endregion protected methods
@@ -91,6 +103,27 @@ namespace Game.LevelElements
         //###########################################################
 
         #region private methods
+
+        private void ChangeLevel (bool up)
+        {
+            beforeLocalPosition = startPosition + offsets[currentState];
+            if (up && currentState < offsets.Count - 1)
+            {
+                currentState++;
+                (PersistentDataObject as PersistentStepByStepTriggerable).State++;
+            }
+            else if (!up && currentState > 0)
+            {
+                currentState--;
+                (PersistentDataObject as PersistentStepByStepTriggerable).State--;
+            }
+            else
+            {
+                return;
+            }
+            afterLocalPosition = startPosition + offsets[currentState];
+            Move(beforeLocalPosition, afterLocalPosition);
+        }
 
         private void Move(Vector3 startPos, Vector3 endPos)
         {
