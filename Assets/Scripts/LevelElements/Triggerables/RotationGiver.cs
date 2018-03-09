@@ -21,13 +21,20 @@ namespace Game.LevelElements
 
         //###########################################################
 
+        public Transform MyTransform { get { if (my == null) { my = transform; } return my; } }
+
+        //###########################################################
+
         #region public methods
 
         public override void Initialize(IGameControllerBase gameController, bool isCopy)
         {
             base.Initialize(gameController, isCopy);
 
-            my = transform;
+            if (my == null)
+            {
+                my = transform;
+            }
 
             if (Triggered)
             {
@@ -49,7 +56,6 @@ namespace Game.LevelElements
 
         protected override void Activate()
         {
-
             localPositionWhenOpen = localPositionWhenClosed + offsetWhenOpen;
             Move(localPositionWhenClosed, localPositionWhenOpen);
         }
@@ -74,14 +80,13 @@ namespace Game.LevelElements
 
         private IEnumerator _Move(Vector3 startPos, Vector3 endPos)
         {
-
             for (elapsed = timeToMove - elapsed; elapsed < timeToMove; elapsed += Time.deltaTime)
             {
                 float t = elapsed / timeToMove;
-                my.localEulerAngles = Vector3.Lerp(startPos, endPos, t);
+                MyTransform.localEulerAngles = Vector3.Lerp(startPos, endPos, t);
                 yield return null;
             }
-            my.localEulerAngles = endPos;
+            MyTransform.localEulerAngles = endPos;
         }
 
         #endregion private methods
