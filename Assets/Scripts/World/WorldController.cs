@@ -38,7 +38,7 @@ namespace Game.World
 
         [SerializeField]
         [HideInInspector]
-        private float renderDistanceAlways;
+        private float renderDistanceMedium;
 
         [SerializeField]
         [HideInInspector]
@@ -63,7 +63,6 @@ namespace Game.World
 
         private int currentSuperRegionIndex;
 
-//#if UNITY_EDITOR
         [SerializeField]
         [HideInInspector]
         private bool drawBounds;
@@ -82,12 +81,11 @@ namespace Game.World
 
         [SerializeField]
         [HideInInspector]
-        private Color modeAlwaysColor = Color.yellow;
+        private Color modeMediumColor = Color.yellow;
 
         [SerializeField]
         [HideInInspector]
         private Color modeFarColor = Color.green;
-//#endif
 
         [SerializeField]
         [HideInInspector]
@@ -105,7 +103,7 @@ namespace Game.World
 
         public float RenderDistanceNear { get { return renderDistanceNear; } }
 
-        public float RenderDistanceAlways { get { return renderDistanceAlways; } }
+        public float RenderDistanceMedium { get { return renderDistanceMedium; } }
 
         public float RenderDistanceFar { get { return renderDistanceFar; } }
 
@@ -119,7 +117,7 @@ namespace Game.World
 
         public Color ModeNearColor { get { return modeNearColor; } }
 
-        public Color ModeAlwaysColor { get { return modeAlwaysColor; } }
+        public Color ModeMediumColor { get { return modeMediumColor; } }
 
         public Color ModeFarColor { get { return modeFarColor; } }
 
@@ -330,13 +328,13 @@ namespace Game.World
                 part = (int)part + 1;
             }
 
-            if (renderDistanceAlways < renderDistanceNear + part)
+            if (renderDistanceMedium < renderDistanceNear + part)
             {
-                renderDistanceAlways = renderDistanceNear + part;
+                renderDistanceMedium = renderDistanceNear + part;
             }
 
             //validate render distance far
-            part = renderDistanceAlways * 0.2f;
+            part = renderDistanceMedium * 0.2f;
             if (part < 1)
             {
                 part = 1;
@@ -346,9 +344,9 @@ namespace Game.World
                 part = (int)part + 1;
             }
 
-            if (renderDistanceFar < renderDistanceAlways + part)
+            if (renderDistanceFar < renderDistanceMedium + part)
             {
-                renderDistanceFar = renderDistanceAlways + part;
+                renderDistanceFar = renderDistanceMedium + part;
             }
 
             //
@@ -392,7 +390,7 @@ namespace Game.World
             isJobRunning = true;
             //Debug.LogFormat("Load Job started: {0} {1} {2} {3}", job.Region.SuperRegion.Type, job.Region.name, job.SubSceneVariant, job.SubSceneLayer);
 
-            string sceneName = WorldUtility.GetSubSceneName(job.Region.UniqueId, job.SubSceneVariant, job.SubSceneLayer);
+            string sceneName = WorldUtility.GetSubSceneName(job.Region.UniqueId, job.SubSceneVariant, job.SubSceneLayer, job.Region.SuperRegion.Type);
             var subSceneRoot = job.Region.GetSubSceneRoot(job.SubSceneLayer);
 
             //editor subScenes are loaded (no streaming)
@@ -447,7 +445,7 @@ namespace Game.World
                     yield return null;
 
                     //attach the SubScene to its Region
-                    root.SetParent(job.Region.transform, false);
+                    root.SetParent(job.Region.transform, true);
                     yield return null;
 
                     //initializing all WorldObjects
@@ -545,7 +543,7 @@ namespace Game.World
                         }
 
                         //paths
-                        string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.UniqueId, subSceneMode, subSceneLayer);
+                        string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.UniqueId, subSceneMode, subSceneLayer, eSuperRegionType.Centre);
                         string subScenePathFull = WorldUtility.GetFullPath(subScenePath);
 
                         Scene subScene = new Scene();
@@ -562,7 +560,7 @@ namespace Game.World
                             UnityEditor.SceneManagement.EditorSceneManager.MoveGameObjectToScene(rootGO, this.gameObject.scene);
 
                             var root = rootGO.transform;
-                            root.SetParent(region.transform, false);
+                            root.SetParent(region.transform, true);
 
                             if (!root.gameObject.activeSelf)
                             {
@@ -598,13 +596,13 @@ namespace Game.World
             ((IWorldEventHandler)this).ClearSubSceneFolder();
 
             //create folder, in case it does not exist
-            string scenePath = gameObject.scene.path;
-            string folderPath = scenePath.Remove(scenePath.LastIndexOf('.'));
-            string parentFolderPath = folderPath.Remove(folderPath.LastIndexOf('/'));
-            if (!UnityEditor.AssetDatabase.IsValidFolder(folderPath))
-            {
-                UnityEditor.AssetDatabase.CreateFolder(parentFolderPath, gameObject.scene.name);
-            }
+            //string subSceneFolderPath = WorldUtility.GetSubSceneFolderPath(gameObject.scene.path);
+
+            //if (!UnityEditor.AssetDatabase.IsValidFolder(subSceneFolderPath))
+            //{
+            //    string parentFolderPath = subSceneFolderPath.Remove(subSceneFolderPath.LastIndexOf('/'));
+            //    UnityEditor.AssetDatabase.CreateFolder(parentFolderPath, gameObject.scene.name);
+            //}
 
             //finding all the regions
             var regions = new List<RegionBase>();
@@ -633,20 +631,31 @@ namespace Game.World
                             continue;
                         }
 
-                        //paths
-                        string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.UniqueId, subSceneMode, subSceneLayer);
+                        foreach (var superRegionType in Enum.GetValues(typeof(eSuperRegionType)).Cast<eSuperRegionType>())
+                        {
+                            //paths
+                            string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.UniqueId, subSceneMode, subSceneLayer, superRegionType);
 
-                        //moving rott to subScene
-                        root.SetParent(null, false);
-                        var subScene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene, UnityEditor.SceneManagement.NewSceneMode.Additive);
-                        UnityEditor.SceneManagement.EditorSceneManager.MoveGameObjectToScene(root.gameObject, subScene);
+                            //creating copy
+                            var rootCopy = Instantiate(root.gameObject).transform;
+                            rootCopy.SetParent(null, true);
+                            var offset = SUPERREGION_OFFSETS[superRegionType];
+                            var translate = new Vector3(offset.x * worldSize.x, offset.y * worldSize.y, offset.z * worldSize.z);
+                            rootCopy.Translate(translate);
 
-                        //saving and closing the sub scene
-                        UnityEditor.SceneManagement.EditorSceneManager.SaveScene(subScene, subScenePath);
-                        UnityEditor.SceneManagement.EditorSceneManager.CloseScene(subScene, true);
+                            //moving root to subScene
+                            var subScene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene, UnityEditor.SceneManagement.NewSceneMode.Additive);
+                            UnityEditor.SceneManagement.EditorSceneManager.MoveGameObjectToScene(rootCopy.gameObject, subScene);
 
-                        //add subScene to buildsettings
-                        buildSettingsScenes.Add(new UnityEditor.EditorBuildSettingsScene(subScenePath, true));
+                            //saving and closing the sub scene
+                            UnityEditor.SceneManagement.EditorSceneManager.SaveScene(subScene, subScenePath);
+                            UnityEditor.SceneManagement.EditorSceneManager.CloseScene(subScene, true);
+
+                            //add subScene to buildsettings
+                            buildSettingsScenes.Add(new UnityEditor.EditorBuildSettingsScene(subScenePath, true));
+                        }
+
+                        DestroyImmediate(root.gameObject);
                     }
                 }
             }
@@ -658,6 +667,7 @@ namespace Game.World
             }
             UnityEditor.EditorBuildSettings.scenes = buildSettingsScenes.ToArray();
 
+            //
             editorSubScenesLoaded = false;
 
             UnityEditor.EditorUtility.SetDirty(this);
@@ -676,17 +686,15 @@ namespace Game.World
                 return;
             }
 
-            string worldScenePath = gameObject.scene.path;
-            string worldSceneFolderPath = worldScenePath.Remove(worldScenePath.LastIndexOf('.'));
+            string SubSceneFolderPath = WorldUtility.GetSubSceneFolderPath(gameObject.scene.path);
 
             //cleaning build settings
             var scenes = UnityEditor.EditorBuildSettings.scenes.ToList();
             var scenesToRemove = new List<UnityEditor.EditorBuildSettingsScene>();
-            string pathPart = worldSceneFolderPath + "/SubScene_"; //string.Concat(worldSceneFolderPath, "/SubScene_");
 
             foreach (var sceneEntry in scenes)
             {
-                if (sceneEntry.path.Contains(pathPart) || string.IsNullOrEmpty(sceneEntry.path))
+                if (sceneEntry.path.Contains(SubSceneFolderPath) || string.IsNullOrEmpty(sceneEntry.path))
                 {
                     scenesToRemove.Add(sceneEntry);
                 }
@@ -700,7 +708,7 @@ namespace Game.World
             UnityEditor.EditorBuildSettings.scenes = scenes.ToArray();
 
             //deleting subScene folder (of the current scene only)
-            UnityEditor.FileUtil.DeleteFileOrDirectory(worldSceneFolderPath);
+            UnityEditor.FileUtil.DeleteFileOrDirectory(SubSceneFolderPath);
             UnityEditor.AssetDatabase.Refresh();
         }
 #endif
