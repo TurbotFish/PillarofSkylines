@@ -50,6 +50,8 @@ namespace Game.LevelElements
         public List<TriggerableObject> Targets { get { return new List<TriggerableObject>(targets); } }
 #endif
 
+        protected PersistentTrigger PersistentDataObject { get { return persistentTrigger; } }
+
         #endregion properties
 
         //###########################################################
@@ -70,7 +72,7 @@ namespace Game.LevelElements
 
             if (persistentTrigger == null)
             {
-                persistentTrigger = new PersistentTrigger(UniqueId, _triggerState);
+                persistentTrigger = CreatePersistableObject();
                 model.AddPersistentDataObject(persistentTrigger);
             }
             else
@@ -85,15 +87,15 @@ namespace Game.LevelElements
         /// Sets the state of the Trigger. Will send an event to inform all the attached triggerables.
         /// </summary>
         /// <param name="triggerState"></param>
-        protected void SetTriggerState(bool triggerState)
+        protected void SetTriggerState(bool triggerState, bool alwaysExecute = false)
         {
             if (!isInitialized)
             {
                 return;
             }
-
-            if (_triggerState == triggerState) //if the value does not change we don't do anything
-            {
+            
+            if (_triggerState == triggerState && !alwaysExecute) //if the value does not change we don't do anything
+            { // "alwaysExecute" skips this check and always executes the trigger even if the value did not change
                 return;
             }
             else
@@ -162,6 +164,21 @@ namespace Game.LevelElements
 #endif
 
         #endregion monobehaviour methods
+
+        //###########################################################
+
+        #region protected methods
+
+        /// <summary>
+        /// Creates the object containing persitent data for the trigger object. Allows inherited classes to create their own version.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual PersistentTrigger CreatePersistableObject()
+        {
+            return new PersistentTrigger(this);
+        }
+
+        #endregion protected methods
 
         //###########################################################
     }

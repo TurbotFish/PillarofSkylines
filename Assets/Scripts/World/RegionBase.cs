@@ -191,6 +191,8 @@ namespace Game.World
                     }
                 }
 
+                result.AddRange(SwitchRegionMode(currentRegionMode));
+
                 hasSubSceneModeChanged = false;
             }
 
@@ -236,27 +238,48 @@ namespace Game.World
                 }
             }
 
-            //compute distance and switch mode
-            if (currentRegionMode != eRegionMode.Near && playerDistance == 0) //when the player is inside a region it is always active, this is important to keep teleport destinations loaded
+            //****************************************
+            //switch mode
+            //****************************************
+            //MODE NEAR
+            //when the player is inside a region it is always active, this is important to keep teleport destinations loaded
+            if (currentRegionMode != eRegionMode.Near && playerDistance == 0)
             {
+                //Debug.LogFormat("{0} {1}: mode switch AAA! dist={2}",superRegion.Type, name, playerDistance);
                 result.AddRange(SwitchRegionMode(eRegionMode.Near));
             }
             else if (currentRegionMode != eRegionMode.Near && isVisible && playerDistance < RenderDistanceNear)
             {
+                //Debug.LogFormat("{0} {1}: mode switch BBB! dist={2}", superRegion.Type, name, playerDistance);
                 result.AddRange(SwitchRegionMode(eRegionMode.Near));
             }
-            else if(currentRegionMode != eRegionMode.Always && isVisible && playerDistance > RenderDistanceNear * 1.1f && playerDistance < RenderDistanceAlways)
+            //****************************************
+            //MODE ALWAYS
+            else if (currentRegionMode != eRegionMode.Always && isVisible && playerDistance > RenderDistanceNear * 1.1f && playerDistance < RenderDistanceAlways)
             {
+                //Debug.LogFormat("{0} {1}: mode switch CCC! dist={2}", superRegion.Type, name, playerDistance);
                 result.AddRange(SwitchRegionMode(eRegionMode.Always));
             }
+            //****************************************
+            // MODE FAR
             else if (currentRegionMode != eRegionMode.Far && isVisible && playerDistance > RenderDistanceAlways * 1.1f && playerDistance < RenderDistanceFar)
             {
+                //Debug.LogFormat("{0} {1}: mode switch DDD! dist={2}", superRegion.Type, name, playerDistance);
                 result.AddRange(SwitchRegionMode(eRegionMode.Far));
             }
-            else if (currentRegionMode != eRegionMode.Inactive && (!isVisible || playerDistance > RenderDistanceFar * 1.1f))
+            //****************************************
+            // MODE INACTIVE
+            else if (currentRegionMode != eRegionMode.Inactive && !isVisible && playerDistance > 0)
             {
+                //Debug.LogFormat("{0} {1}: mode switch EEE! dist={2}", superRegion.Type, name, playerDistance);
                 result.AddRange(SwitchRegionMode(eRegionMode.Inactive));
             }
+            else if (currentRegionMode != eRegionMode.Inactive && playerDistance > RenderDistanceFar * 1.1f)
+            {
+                //Debug.LogFormat("{0} {1}: mode switch FFF! dist={2}", superRegion.Type, name, playerDistance);
+                result.AddRange(SwitchRegionMode(eRegionMode.Inactive));
+            }
+            //****************************************
 
             //checks if all the SubScenes are loaded
             if (validateSubScenes && firstJobDone && currentJobs.Count == 0)
@@ -406,7 +429,7 @@ namespace Game.World
             base.OnValidate();
 
             //validate render distance near
-            if(localRenderDistanceNear < 10)
+            if (localRenderDistanceNear < 10)
             {
                 localRenderDistanceNear = 10;
             }
@@ -429,16 +452,16 @@ namespace Game.World
 
             //validate render distance far
             part = localRenderDistanceAlways * 0.2f;
-            if(part < 1)
+            if (part < 1)
             {
                 part = 1;
             }
-            else if(part - (int)part > 0)
+            else if (part - (int)part > 0)
             {
                 part = (int)part + 1;
             }
 
-            if(localRenderDistanceFar < localRenderDistanceAlways + part)
+            if (localRenderDistanceFar < localRenderDistanceAlways + part)
             {
                 localRenderDistanceFar = localRenderDistanceAlways + part;
             }
@@ -448,7 +471,30 @@ namespace Game.World
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
-            if (drawBounds && Application.isEditor)
+            if ( Application.isPlaying && isInitialized && superRegion.World.ShowRegionMode)
+            {
+                var bounds = BoundingBox;
+                Color colour = new Color(0, 0, 0, 0);
+
+                switch (currentRegionMode)
+                {
+                    case eRegionMode.Near:
+                        colour = superRegion.World.ModeNearColor;
+                        break;
+                    case eRegionMode.Always:
+                        colour = superRegion.World.ModeAlwaysColor;
+                        break;
+                    case eRegionMode.Far:
+                        colour = superRegion.World.ModeFarColor;
+                        break;
+                    case eRegionMode.Inactive:
+                        break;
+                }
+
+                Gizmos.color = colour;
+                Gizmos.DrawCube(bounds.center, bounds.size);
+            }
+            else if (!Application.isPlaying && drawBounds)
             {
                 Gizmos.color = boundsColour;
                 var bounds = BoundingBox;
@@ -480,7 +526,8 @@ namespace Game.World
 
             if (currentRegionMode == newRegionMode)
             {
-                return result;
+                Debug.Log("AAAAAAAAAAAAAAAAAAAAAAAA");
+                //return result;
             }
 
             switch (newRegionMode)

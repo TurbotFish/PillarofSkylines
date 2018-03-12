@@ -28,7 +28,10 @@ namespace Game.LevelElements
         private void OnTriggerEnter(Collider other)
         {
             if (other.tag == tagToActivate)
-                SetTriggerState(setState);
+            {
+                SetTriggerState(setState, true);
+
+            }
         }
 
         //###########################################################
