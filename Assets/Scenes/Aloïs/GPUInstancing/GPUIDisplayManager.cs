@@ -94,6 +94,7 @@ public class GPUIDisplayManager : MonoBehaviour {
 		}
 
 		numberOfCalls = matrices.Count / 1024 + 1;
+		numberOfCalls = Mathf.Min (numberOfCalls, matrices1023.Length);
 		//Debug.Log ("calls : "+numberOfCalls+"    vertices : "+matrices.Count);
 
 		for (int i = 0; i < numberOfCalls; i++) {
