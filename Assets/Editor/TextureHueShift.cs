@@ -97,7 +97,7 @@ class HueShiftPostProcessor : AssetPostprocessor
 {
 
     public static string texturePath;
-    public static FilterMode filterMode;
+   /* public static FilterMode filterMode;
 
     void OnPreprocessTexture()
     {
@@ -105,5 +105,5 @@ class HueShiftPostProcessor : AssetPostprocessor
         {
 
         }
-    }
+    }*/
 }
