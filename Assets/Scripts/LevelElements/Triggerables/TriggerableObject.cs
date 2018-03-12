@@ -91,7 +91,7 @@ namespace Game.LevelElements
             }
             else
             {
-                SetTriggered(persistentTriggerable.Triggered);
+                SetTriggered(persistentTriggerable.Triggered, true);
             }
 
             //
@@ -102,7 +102,7 @@ namespace Game.LevelElements
         /// Sets the state of the triggerable object. Has no effect if the state does not change.
         /// </summary>
         /// <param name="triggered"></param>
-        public virtual void SetTriggered(bool triggered)
+        public virtual void SetTriggered(bool triggered, bool initializing = false)
         {
             if (triggered == this.triggered)
             {
@@ -256,6 +256,8 @@ namespace Game.LevelElements
                     }
 
                     return true;
+
+                
 
                 default: throw new ArgumentOutOfRangeException();
             }
