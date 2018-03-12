@@ -306,11 +306,9 @@ namespace Game.Player.CharacterController
                 }
                 if (hit.collider.CompareTag("Gravifloor") && (currentGravifloor == null || currentGravifloor != hit.collider.GetComponent<Gravifloor>()))
                 {
-                    if (Vector3.Dot(hit.transform.up, myTransform.up) > 0.7f)
-                    {
-                        currentGravifloor = hit.collider.GetComponent<Gravifloor>();
+                    currentGravifloor = hit.collider.GetComponent<Gravifloor>();
+                    if (Vector3.Dot(-currentGravifloor.gravityDirection, myTransform.up) > 0.6f)
                         currentGravifloor.AddPlayer(myPlayer, -hit.normal);
-                    }
                 }
 				if (hit.collider.CompareTag("SlipperySlope")) {
 					collisions.SlippySlope = true;
