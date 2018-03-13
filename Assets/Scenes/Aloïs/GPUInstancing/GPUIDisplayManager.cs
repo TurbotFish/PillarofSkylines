@@ -94,6 +94,7 @@ public class GPUIDisplayManager : MonoBehaviour {
 		}
 
 		numberOfCalls = matrices.Count / 1024 + 1;
+		//Debug.Log (numberOfCalls);
 		if (numberOfCalls > matrices1023.Length) {
 			numberOfCalls = Mathf.Min (numberOfCalls, matrices1023.Length);
 			Debug.LogError ("Trying to draw too many instances of " + meshToDraw.name);
