@@ -26,7 +26,7 @@ namespace Game.World
         /// <returns></returns>
         public static string GetSubSceneName(string regionId, eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer, eSuperRegionType superRegionType)
         {
-            return string.Concat(GetSubSceneRootName(subSceneVariant, subSceneLayer), "_", superRegionType, "_", regionId);
+            return string.Concat("SubScene_", superRegionType, "_", subSceneVariant, "_", subSceneLayer, "_", regionId);
         }
 
         /// <summary>
