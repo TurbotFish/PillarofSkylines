@@ -103,8 +103,10 @@ namespace Game.GameControl
         /// </summary>
         public void StartGame()
         {
+            Debug.Log("GameControllerMain: StartGame");
             if (isGameStarted)
             {
+                Debug.LogError("GameControllerMain: StartGame: game already started!");
                 return;
             }
 
@@ -390,12 +392,14 @@ namespace Game.GameControl
 
             var teleportPlayerEventArgs = new EventManager.TeleportPlayerEventArgs(position, rotation, true);
             EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
+            yield return null;
 
             //informing everyone!
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());
 
             while (worldController.CurrentJobCount > 0)
             {
+                yield return null;
                 yield return null;
             }
 

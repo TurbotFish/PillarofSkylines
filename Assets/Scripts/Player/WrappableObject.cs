@@ -26,17 +26,14 @@ namespace Game.Player
 
         public void InitializeWrappableObject(IGameControllerBase gameController)
         {
+            Debug.Log("WrappableObject: Initialize");
+
             this.gameController = gameController;
             myTransform = transform;
 
-
-            
-
-            
-
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
 
-            this.isInitialized = true;
+            isInitialized = true;           
         }
 
         //#####################################################
