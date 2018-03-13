@@ -53,6 +53,8 @@ namespace Game.LevelElements
 
         public bool Triggered { get { return triggered; } }
 
+        protected PersistentTriggerable PersistentDataObject { get { return persistentTriggerable; } }
+
         #endregion properties
 
         //###########################################################
@@ -84,12 +86,12 @@ namespace Game.LevelElements
 
             if (persistentTriggerable == null)
             {
-                persistentTriggerable = new PersistentTriggerable(UniqueId, triggered);
+                persistentTriggerable = CreatePersistentObject();
                 model.AddPersistentDataObject(persistentTriggerable);
             }
             else
             {
-                SetTriggered(persistentTriggerable.Triggered);
+                SetTriggered(persistentTriggerable.Triggered, true);
             }
 
             //
@@ -100,7 +102,7 @@ namespace Game.LevelElements
         /// Sets the state of the triggerable object. Has no effect if the state does not change.
         /// </summary>
         /// <param name="triggered"></param>
-        public void SetTriggered(bool triggered)
+        public virtual void SetTriggered(bool triggered, bool initializing = false)
         {
             if (triggered == this.triggered)
             {
@@ -183,6 +185,21 @@ namespace Game.LevelElements
 
         //###########################################################
 
+        #region protected methods
+
+        /// <summary>
+        /// Creates the object containing persitent data for the triggerable object. Allows inherited classes to create their own version.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual PersistentTriggerable CreatePersistentObject()
+        {
+            return new PersistentTriggerable(this);
+        }
+
+        #endregion protected methods
+
+        //###########################################################
+
         #region private methods
 
         private void UpdateState(bool toggle = false)
@@ -239,6 +256,8 @@ namespace Game.LevelElements
                     }
 
                     return true;
+
+                
 
                 default: throw new ArgumentOutOfRangeException();
             }

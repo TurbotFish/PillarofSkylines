@@ -2,14 +2,12 @@
 
 public class PillarEye : MonoBehaviour {
 
-    [SerializeField] Material defaultMaterial;
-    [SerializeField] Material eclipseMaterial;
-    Renderer rend;
+    [SerializeField] GameObject defaultEye;
+    [SerializeField] GameObject eclipseEye;
     Transform target;
     [SerializeField] float lookAtDamp = 0.5f;
 
     private void OnEnable() {
-        rend = GetComponent<Renderer>();
         target = FindObjectOfType<Game.Player.CharacterController.CharController>().transform; // TODO: fix that
         Game.Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
     }
@@ -27,17 +25,16 @@ public class PillarEye : MonoBehaviour {
     }
 
     void OnEclipseEventHandler(object sender, Game.Utilities.EventManager.EclipseEventArgs args) {
-
-        if (!rend)
-            return;
-
+        
         if (args.EclipseOn) {
             //eclipse on
-            rend.sharedMaterial = eclipseMaterial;
+            defaultEye.SetActive(false);
+            eclipseEye.SetActive(true);
 
         } else {
             //eclipse off
-            rend.sharedMaterial = defaultMaterial;
+            defaultEye.SetActive(true);
+            eclipseEye.SetActive(false);
 
         }
     }

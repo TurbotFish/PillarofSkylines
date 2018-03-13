@@ -16,9 +16,13 @@ namespace Game.LevelElements
 
         public float timeToMove = 1;
 
-        Transform my;
+        Transform my; //use the property "MyTransform" instead of this! The property is guranteed to be initialized!
         MovingPlatform platform;
         float elapsed;
+
+        //###########################################################
+
+        public Transform MyTransform { get { if (my == null) { my = transform; } return my; } }
 
         //###########################################################
 
@@ -28,7 +32,11 @@ namespace Game.LevelElements
         {
             base.Initialize(gameController, isCopy);
 
-            my = transform;
+            if (my == null)
+            {
+                my = transform;
+            }
+
             platform = GetComponent<MovingPlatform>();
 
             if (Triggered)
@@ -84,12 +92,12 @@ namespace Game.LevelElements
                 float t = elapsed / timeToMove;
 
 
-                Vector3 movement = Vector3.Lerp(startPos, endPos, t) - my.localPosition;
+                Vector3 movement = Vector3.Lerp(startPos, endPos, t) - MyTransform.localPosition;
                 platform.Move(movement);
                 yield return null;
             }
 
-            my.localPosition = endPos;
+            MyTransform.localPosition = endPos;
         }
 
         #endregion private methods
