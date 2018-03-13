@@ -576,6 +576,10 @@ namespace Game.World
 
             editorSubScenesLoaded = true;
 
+            //clear subScene folder
+            ((IWorldEventHandler)this).ClearSubSceneFolder();
+
+            //mark dirty
             UnityEditor.EditorUtility.SetDirty(this);
             UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
         }

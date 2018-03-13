@@ -200,8 +200,9 @@ namespace Game.World
             foreach (var corner in boundsCorners)
             {
                 Vector3 vectorToCorner = corner - cameraPosition;
+                float angle = Vector3.Angle(vectorToCorner, cameraTransform.forward);
 
-                if (Vector3.Angle(vectorToCorner, cameraTransform.forward) < 90)
+                if (Mathf.Approximately(angle, 90) || angle < 90)
                 {
                     isVisible = true;
                     break;
@@ -471,7 +472,7 @@ namespace Game.World
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
-            if ( Application.isPlaying && isInitialized && superRegion.World.ShowRegionMode)
+            if (Application.isPlaying && isInitialized && superRegion.World.ShowRegionMode)
             {
                 var bounds = BoundingBox;
                 Color colour = new Color(0, 0, 0, 0);
@@ -550,7 +551,7 @@ namespace Game.World
                     //unload
                     result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Near));
                     result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Far));
-                    
+
                     break;
                 case eRegionMode.Far:
                     //load
