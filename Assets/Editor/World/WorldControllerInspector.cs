@@ -11,7 +11,7 @@ namespace Game.World
         private SerializedProperty worldSizeProperty;
 
         private SerializedProperty renderDistanceNearProperty;
-        private SerializedProperty renderDistanceAlwaysProperty;
+        private SerializedProperty renderDistanceMediumProperty;
         private SerializedProperty renderDistanceFarProperty;
 
         private SerializedProperty preTeleportOffsetProperty;
@@ -33,7 +33,7 @@ namespace Game.World
             worldSizeProperty = serializedObject.FindProperty("worldSize");
 
             renderDistanceNearProperty = serializedObject.FindProperty("renderDistanceNear");
-            renderDistanceAlwaysProperty = serializedObject.FindProperty("renderDistanceAlways");
+            renderDistanceMediumProperty = serializedObject.FindProperty("renderDistanceMedium");
             renderDistanceFarProperty = serializedObject.FindProperty("renderDistanceFar");
 
             preTeleportOffsetProperty = serializedObject.FindProperty("preTeleportOffset");
@@ -57,15 +57,17 @@ namespace Game.World
 
             worldSizeProperty.vector3Value = EditorGUILayout.Vector3Field("World Size", worldSizeProperty.vector3Value);
 
+            EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("--Render Distances--");
 
             renderDistanceNearProperty.floatValue = EditorGUILayout.FloatField("Near", renderDistanceNearProperty.floatValue);
-            renderDistanceAlwaysProperty.floatValue = EditorGUILayout.FloatField("Always", renderDistanceAlwaysProperty.floatValue);
+            renderDistanceMediumProperty.floatValue = EditorGUILayout.FloatField("Medium", renderDistanceMediumProperty.floatValue);
             renderDistanceFarProperty.floatValue = EditorGUILayout.FloatField("Far", renderDistanceFarProperty.floatValue);
 
             preTeleportOffsetProperty.floatValue = EditorGUILayout.FloatField("PreTeleportOffset", preTeleportOffsetProperty.floatValue);
             secondaryPositionDistanceModifierProperty.floatValue = EditorGUILayout.FloatField("SecondaryPositionDistanceModifier", secondaryPositionDistanceModifierProperty.floatValue);
 
+            EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("--Bounds - Editor--");
 
             drawBoundsProperty.boolValue = EditorGUILayout.Toggle("Draw Bounds", drawBoundsProperty.boolValue);
@@ -85,6 +87,7 @@ namespace Game.World
                 }
             }
 
+            EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("--Bounds - Play--");
             EditorGUILayout.LabelField("  [playmode - scene window]");
             EditorGUILayout.LabelField("  Colors the regions according to their current mode.");
@@ -100,6 +103,7 @@ namespace Game.World
 
             if (!Application.isPlaying)
             {
+                EditorGUILayout.LabelField("");
                 GUILayout.Label("--Tools--");
 
                 if (subScenesLoaded.boolValue)

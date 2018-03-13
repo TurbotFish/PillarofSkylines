@@ -47,7 +47,7 @@ namespace Game.Player
 
             if (gameController.WorldController != null)
             {
-                wrappableObject.InitializeWrappableObject(gameController.WorldController);
+                wrappableObject.InitializeWrappableObject(gameController);
             }
 
             //TombFinderController.InitializeTombFinderController(gameController);

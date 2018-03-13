@@ -33,7 +33,7 @@ namespace Game.World
 
         [SerializeField]
         [HideInInspector]
-        private float localRenderDistanceAlways;
+        private float localRenderDistanceMedium;
 
         [SerializeField]
         [HideInInspector]
@@ -80,7 +80,7 @@ namespace Game.World
 
         public float RenderDistanceNear { get { return overrideRenderDistances ? localRenderDistanceNear : superRegion.World.RenderDistanceNear; } }
 
-        public float RenderDistanceAlways { get { return overrideRenderDistances ? localRenderDistanceAlways : superRegion.World.RenderDistanceAlways; } }
+        public float RenderDistanceMedium { get { return overrideRenderDistances ? localRenderDistanceMedium : superRegion.World.RenderDistanceMedium; } }
 
         public float RenderDistanceFar { get { return overrideRenderDistances ? localRenderDistanceFar : superRegion.World.RenderDistanceFar; } }
 
@@ -200,8 +200,9 @@ namespace Game.World
             foreach (var corner in boundsCorners)
             {
                 Vector3 vectorToCorner = corner - cameraPosition;
+                float angle = Vector3.Angle(vectorToCorner, cameraTransform.forward);
 
-                if (Vector3.Angle(vectorToCorner, cameraTransform.forward) < 90)
+                if (Mathf.Approximately(angle, 90) || angle < 90)
                 {
                     isVisible = true;
                     break;
@@ -254,15 +255,15 @@ namespace Game.World
                 result.AddRange(SwitchRegionMode(eRegionMode.Near));
             }
             //****************************************
-            //MODE ALWAYS
-            else if (currentRegionMode != eRegionMode.Always && isVisible && playerDistance > RenderDistanceNear * 1.1f && playerDistance < RenderDistanceAlways)
+            //MODE MEDIUM
+            else if (currentRegionMode != eRegionMode.Medium && isVisible && playerDistance > RenderDistanceNear * 1.1f && playerDistance < RenderDistanceMedium)
             {
                 //Debug.LogFormat("{0} {1}: mode switch CCC! dist={2}", superRegion.Type, name, playerDistance);
-                result.AddRange(SwitchRegionMode(eRegionMode.Always));
+                result.AddRange(SwitchRegionMode(eRegionMode.Medium));
             }
             //****************************************
             // MODE FAR
-            else if (currentRegionMode != eRegionMode.Far && isVisible && playerDistance > RenderDistanceAlways * 1.1f && playerDistance < RenderDistanceFar)
+            else if (currentRegionMode != eRegionMode.Far && isVisible && playerDistance > RenderDistanceMedium * 1.1f && playerDistance < RenderDistanceFar)
             {
                 //Debug.LogFormat("{0} {1}: mode switch DDD! dist={2}", superRegion.Type, name, playerDistance);
                 result.AddRange(SwitchRegionMode(eRegionMode.Far));
@@ -445,13 +446,13 @@ namespace Game.World
                 part = (int)part + 1;
             }
 
-            if (localRenderDistanceAlways < localRenderDistanceNear + part)
+            if (localRenderDistanceMedium < localRenderDistanceNear + part)
             {
-                localRenderDistanceAlways = localRenderDistanceNear + part;
+                localRenderDistanceMedium = localRenderDistanceNear + part;
             }
 
             //validate render distance far
-            part = localRenderDistanceAlways * 0.2f;
+            part = localRenderDistanceMedium * 0.2f;
             if (part < 1)
             {
                 part = 1;
@@ -461,9 +462,9 @@ namespace Game.World
                 part = (int)part + 1;
             }
 
-            if (localRenderDistanceFar < localRenderDistanceAlways + part)
+            if (localRenderDistanceFar < localRenderDistanceMedium + part)
             {
-                localRenderDistanceFar = localRenderDistanceAlways + part;
+                localRenderDistanceFar = localRenderDistanceMedium + part;
             }
         }
 #endif
@@ -471,7 +472,7 @@ namespace Game.World
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
-            if ( Application.isPlaying && isInitialized && superRegion.World.ShowRegionMode)
+            if (Application.isPlaying && isInitialized && superRegion.World.ShowRegionMode)
             {
                 var bounds = BoundingBox;
                 Color colour = new Color(0, 0, 0, 0);
@@ -481,8 +482,8 @@ namespace Game.World
                     case eRegionMode.Near:
                         colour = superRegion.World.ModeNearColor;
                         break;
-                    case eRegionMode.Always:
-                        colour = superRegion.World.ModeAlwaysColor;
+                    case eRegionMode.Medium:
+                        colour = superRegion.World.ModeMediumColor;
                         break;
                     case eRegionMode.Far:
                         colour = superRegion.World.ModeFarColor;
@@ -535,33 +536,40 @@ namespace Game.World
                 case eRegionMode.Near:
                     //load
                     result.Add(CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Always));
+                    result.Add(CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Medium));
                     result.Add(CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Near));
 
                     //unload
                     result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Far));
 
                     break;
-                case eRegionMode.Always:
+                case eRegionMode.Medium:
                     //load
                     result.Add(CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Always));
+                    result.Add(CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Medium));
 
                     //unload
-                    result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Far));
                     result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Near));
+                    result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Far));
+
                     break;
                 case eRegionMode.Far:
                     //load
+                    result.Add(CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Always));
                     result.Add(CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Far));
 
                     //unload
                     result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Near));
-                    result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Always));
+                    result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Medium));
+
                     break;
                 case eRegionMode.Inactive:
                     //unload
-                    result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Always));
-                    result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Far));
                     result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Near));
+                    result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Medium));
+                    result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Far));
+                    result.Add(CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Always));
+
                     break;
             }
 
@@ -666,7 +674,7 @@ namespace Game.World
         /// <param name="subSceneLayer"></param>
         void IRegionEventHandler.CreateSubScene(eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer)
         {
-            string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, UniqueId, subSceneVariant, subSceneLayer);
+            string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, UniqueId, subSceneVariant, subSceneLayer, eSuperRegionType.Centre);
             string subScenePathFull = WorldUtility.GetFullPath(subScenePath);
 
             if (GetSubSceneRoot(subSceneLayer) != null)

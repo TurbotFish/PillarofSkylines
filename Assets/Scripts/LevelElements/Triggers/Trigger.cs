@@ -72,7 +72,7 @@ namespace Game.LevelElements
 
             if (persistentTrigger == null)
             {
-                persistentTrigger = CreatePersistableObject();
+                persistentTrigger = CreatePersistentDataObject();
                 model.AddPersistentDataObject(persistentTrigger);
             }
             else
@@ -173,7 +173,7 @@ namespace Game.LevelElements
         /// Creates the object containing persitent data for the trigger object. Allows inherited classes to create their own version.
         /// </summary>
         /// <returns></returns>
-        protected virtual PersistentTrigger CreatePersistableObject()
+        protected virtual PersistentTrigger CreatePersistentDataObject()
         {
             return new PersistentTrigger(this);
         }

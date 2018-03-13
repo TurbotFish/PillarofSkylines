@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using Game.World;
+using Game.GameControl;
 
 namespace Game.Player
 {
@@ -10,38 +11,28 @@ namespace Game.Player
         [SerializeField]
         List<Transform> followers;
 
-        WorldController worldController;
+        IGameControllerBase gameController;
         Transform myTransform;
 
         AxisInfo xAxisInfo;
         AxisInfo yAxisInfo;
         AxisInfo zAxisInfo;
 
-        bool isInitialized = false;
-        bool isActive = false;
+        private bool isInitialized;
+        private bool isAxisInfoInitialized;
+        private bool isActive;
 
         //#####################################################
 
-        public void InitializeWrappableObject(WorldController worldController)
+        public void InitializeWrappableObject(IGameControllerBase gameController)
         {
-            this.worldController = worldController;
-            this.myTransform = this.transform;
+            this.gameController = gameController;
+            myTransform = transform;
 
 
-            Vector3 worldPos = this.worldController.transform.position;
-            Vector3 worldSize = this.worldController.WorldSize;
+            
 
-            this.xAxisInfo.worldSize = worldSize.x;
-            this.xAxisInfo.minPos = worldPos.x - worldSize.x / 2f;
-            this.xAxisInfo.maxPos = worldPos.x + worldSize.x / 2f;
-
-            this.yAxisInfo.worldSize = worldSize.y;
-            this.yAxisInfo.minPos = worldPos.y - worldSize.y / 2f;
-            this.yAxisInfo.maxPos = worldPos.y + worldSize.y / 2f;
-
-            this.zAxisInfo.worldSize = worldSize.z;
-            this.zAxisInfo.minPos = worldPos.z - worldSize.z / 2f;
-            this.zAxisInfo.maxPos = worldPos.z + worldSize.z / 2f;
+            
 
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
 
@@ -53,9 +44,18 @@ namespace Game.Player
 
         void Update()
         {
-            if (!this.isInitialized || !this.isActive)
+            if (!isInitialized || !isActive)
             {
                 return;
+            }
+            else if(gameController.WorldController == null)
+            {
+                Debug.LogWarning("WrappableObject: WorldController is null!");
+                return;
+            }
+            else if (!isAxisInfoInitialized)
+            {
+                InitAxisInfo();
             }
 
             bool teleporting = false;
@@ -78,30 +78,30 @@ namespace Game.Player
 
             //if (this.worldController.RepeatAxes.y)
             //{
-                if (playerPos.y < this.yAxisInfo.minPos)
-                {
-                    teleportOffset.y = this.yAxisInfo.worldSize;
-                    teleporting = true;
-                }
-                else if (playerPos.y > this.yAxisInfo.maxPos)
-                {
-                    teleportOffset.y = -this.yAxisInfo.worldSize;
-                    teleporting = true;
-                }
+            if (playerPos.y < this.yAxisInfo.minPos)
+            {
+                teleportOffset.y = this.yAxisInfo.worldSize;
+                teleporting = true;
+            }
+            else if (playerPos.y > this.yAxisInfo.maxPos)
+            {
+                teleportOffset.y = -this.yAxisInfo.worldSize;
+                teleporting = true;
+            }
             //}
 
             //if (this.worldController.RepeatAxes.z)
             //{
-                if (playerPos.z < this.zAxisInfo.minPos)
-                {
-                    teleportOffset.z = this.zAxisInfo.worldSize;
-                    teleporting = true;
-                }
-                else if (playerPos.z > this.zAxisInfo.maxPos)
-                {
-                    teleportOffset.z = -this.zAxisInfo.worldSize;
-                    teleporting = true;
-                }
+            if (playerPos.z < this.zAxisInfo.minPos)
+            {
+                teleportOffset.z = this.zAxisInfo.worldSize;
+                teleporting = true;
+            }
+            else if (playerPos.z > this.zAxisInfo.maxPos)
+            {
+                teleportOffset.z = -this.zAxisInfo.worldSize;
+                teleporting = true;
+            }
             //}
 
             if (teleporting)
@@ -128,15 +128,35 @@ namespace Game.Player
         {
             if (args.HasChangedToPillar)
             {
-                this.isActive = false;
+                isActive = false;
             }
             else
             {
-                this.isActive = true;
+                isActive = true;
             }
         }
 
         //#####################################################
+
+        private void InitAxisInfo()
+        {
+            Vector3 worldPos = gameController.WorldController.transform.position;
+            Vector3 worldSize = gameController.WorldController.WorldSize;
+
+            xAxisInfo.worldSize = worldSize.x;
+            xAxisInfo.minPos = worldPos.x - worldSize.x / 2f;
+            xAxisInfo.maxPos = worldPos.x + worldSize.x / 2f;
+
+            yAxisInfo.worldSize = worldSize.y;
+            yAxisInfo.minPos = worldPos.y - worldSize.y / 2f;
+            yAxisInfo.maxPos = worldPos.y + worldSize.y / 2f;
+
+            zAxisInfo.worldSize = worldSize.z;
+            zAxisInfo.minPos = worldPos.z - worldSize.z / 2f;
+            zAxisInfo.maxPos = worldPos.z + worldSize.z / 2f;
+
+            isAxisInfoInitialized = true;
+        }
 
         struct AxisInfo
         {
