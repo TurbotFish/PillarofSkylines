@@ -47,7 +47,7 @@ namespace Game.Player
             }
             else if(gameController.WorldController == null)
             {
-                Debug.LogWarning("WrappableObject: WorldController is null!");
+                //Debug.LogWarning("WrappableObject: WorldController is null!");
                 return;
             }
             else if (!isAxisInfoInitialized)
