@@ -379,9 +379,9 @@
 				float sqrDist = dot(player2Vert3D, player2Vert3D); 
 				float bendPercent = 1 - saturate((sqrDist - _BendingDistMin)/(_BendingDistMax - _BendingDistMin));
 				float bendAmount = bendPercent * _MaxBendAngle * rotationMask;
-				float3 _bendRotation = normalize(float3(player2Vert2D.y,0, -player2Vert2D.x)) * bendAmount;
+				float3 _bendRotation = -normalize(float3(player2Vert2D.y,0, -player2Vert2D.x)) * bendAmount;
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _bendRotation);
-				i.normal = ApplyWind(i.normal.xyz, _bendRotation);
+				i.normal = ApplyWind(i.normal.xyz, -_bendRotation);
 
 			#endif
 
