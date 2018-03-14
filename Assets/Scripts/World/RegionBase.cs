@@ -197,16 +197,23 @@ namespace Game.World
             }
 
             //check if visible
-            foreach (var corner in boundsCorners)
+            if (superRegion.World.UnloadInvisibleRegions)
             {
-                Vector3 vectorToCorner = corner - cameraPosition;
-                float angle = Vector3.Angle(vectorToCorner, cameraTransform.forward);
-
-                if (Mathf.Approximately(angle, 90) || angle < 90)
+                foreach (var corner in boundsCorners)
                 {
-                    isVisible = true;
-                    break;
+                    Vector3 vectorToCorner = corner - cameraPosition;
+                    float angle = Vector3.Angle(vectorToCorner, cameraTransform.forward);
+
+                    if (Mathf.Approximately(angle, superRegion.World.InvisibilityAngle) || angle < superRegion.World.InvisibilityAngle)
+                    {
+                        isVisible = true;
+                        break;
+                    }
                 }
+            }
+            else
+            {
+                isVisible = true;
             }
 
             //compute distance
