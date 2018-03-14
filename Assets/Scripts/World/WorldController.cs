@@ -91,6 +91,9 @@ namespace Game.World
         [HideInInspector]
         private bool editorSubScenesLoaded;
 
+        [SerializeField, HideInInspector] private bool unloadInvisibleRegions; //should the regions behind the player be unloaded?
+        [SerializeField, HideInInspector] private float invisibilityAngle = 90; //if the angle between camera forward and a region is higher than this, the region is invisible.
+
         #endregion member variables 
 
         //========================================================================================
@@ -120,6 +123,10 @@ namespace Game.World
         public Color ModeMediumColor { get { return modeMediumColor; } }
 
         public Color ModeFarColor { get { return modeFarColor; } }
+
+        public bool UnloadInvisibleRegions { get { return unloadInvisibleRegions; } }
+
+        public float InvisibilityAngle { get { return invisibilityAngle; } }
 
         #endregion properties
 
@@ -360,6 +367,9 @@ namespace Game.World
             {
                 secondaryPositionDistanceModifier = 0;
             }
+
+            //
+            invisibilityAngle = Mathf.Clamp(invisibilityAngle, 0, 360);
         }
 #endif
 
