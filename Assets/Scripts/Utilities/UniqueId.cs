@@ -88,7 +88,7 @@ namespace Game.Utilities
             string sceneName = gameObject.scene.name + "_";
 
             // if we are not part of a scene then we are a prefab so do not attempt to set the id
-            if (sceneName == null) return;
+            if (sceneName == null || SceneUniqueIdManager.Instance == null) return;
 
             // Test if we need to make a new id
             bool hasSceneNameAtBeginning = (
