@@ -357,6 +357,12 @@
 		UNITY_SETUP_INSTANCE_ID(v);
 		UNITY_TRANSFER_INSTANCE_ID(v,i);
 
+		#if defined(_LOCAL_NORMAL_DEBUG)
+			i.normal = v.normal;
+		#else
+			i.normal = UnityObjectToWorldNormal(v.normal);
+		#endif
+
 		#if defined(_VERTEX_BEND) || defined(_VERTEX_WIND)
 
 			#if defined(_VERTEX_MASK_COLOUR)
@@ -375,17 +381,17 @@
 				float bendAmount = bendPercent * _MaxBendAngle * rotationMask;
 				float3 _bendRotation = normalize(float3(player2Vert2D.y,0, -player2Vert2D.x)) * bendAmount;
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _bendRotation);
-				v.normal = ApplyWind(v.normal.xyz, _bendRotation);
+				i.normal = ApplyWind(i.normal.xyz, _bendRotation);
 
 			#endif
 
 			#if defined(_VERTEX_WIND)
-				float3 windDir = float3(0.0,0,1.0);//global in the future
+				float3 windDir = float3(0.0,1.0,1.0);//global in the future
 
 				float windSpeed = 3;
 				float _offset = (pivotWS.x * (2.9) * -sign(windDir.x) + pivotWS.z * (2.9) * -sign(windDir.z) + pivotWS.y * 0.8) * 0.5;
 
-				windDir = mul(unity_WorldToObject, windDir);
+				//windDir = mul(unity_WorldToObject, windDir);
 				windDir = normalize(windDir);
 
 				float windIntensity = tex2Dlod(_WindTex, float4(_Time.x,_Time.x, 0,0)).r;
@@ -401,7 +407,7 @@
 				#endif
 
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _windRotation);
-				v.normal = ApplyWind(v.normal.xyz, _windRotation);
+				i.normal = ApplyWind(i.normal.xyz, _windRotation);
 			#endif
 		#endif
 
@@ -433,11 +439,7 @@
 			i.dynamicLightmapUV = v.uv2 * unity_DynamicLightmapST.xy + unity_DynamicLightmapST.zw;
 		#endif
 
-		#if defined(_LOCAL_NORMAL_DEBUG)
-			i.normal = v.normal;
-		#else
-			i.normal = UnityObjectToWorldNormal(v.normal);
-		#endif
+
 
 		#if defined(_ALBEDO_VERTEX_MASK)
 			i.color = v.color;
