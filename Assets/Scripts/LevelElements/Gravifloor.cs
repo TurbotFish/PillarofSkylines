@@ -6,8 +6,8 @@ public class Gravifloor : MonoBehaviour {
 
     [SerializeField] bool customGavityDirection;
 
-    [ConditionalHide("customGavityDirection"), SerializeField]
-    Vector3 gravityDirection;
+    [ConditionalHide("customGavityDirection")]
+    public Vector3 gravityDirection;
     
     static Gravifloor currentActive;
 
@@ -40,7 +40,6 @@ public class Gravifloor : MonoBehaviour {
             currentActive.StopAllCoroutines();
         currentActive = this;
         currPlayer = player;
-
         StartCoroutine(_ChangeGravity(gravityDirection));
     }
     

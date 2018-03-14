@@ -62,7 +62,7 @@ namespace Game.Player.CharacterController.States
                 state.SetJumpTimer(charController.CharData.Move.CanStillJumpTimer);
                 stateMachine.ChangeState(state);
 			}
-			else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f)
+			else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MinWallAngle && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f)
 			{
 				stateMachine.ChangeState(new SlideState(charController, stateMachine));
             }

@@ -26,6 +26,9 @@ namespace Game.World
         private SerializedProperty modeAlwaysColorProperty;
         private SerializedProperty modeFarColorProperty;
 
+        private SerializedProperty unloadInvisibleRegionsProperty;
+        private SerializedProperty invisibilityAngleProperty;
+
         private void OnEnable()
         {
             self = target as WorldController;
@@ -47,6 +50,9 @@ namespace Game.World
             modeNearColorProperty = serializedObject.FindProperty("modeNearColor");
             modeAlwaysColorProperty = serializedObject.FindProperty("modeAlwaysColor");
             modeFarColorProperty = serializedObject.FindProperty("modeFarColor");
+
+            unloadInvisibleRegionsProperty = serializedObject.FindProperty("unloadInvisibleRegions");
+            invisibilityAngleProperty = serializedObject.FindProperty("invisibilityAngle");
         }
 
         public override void OnInspectorGUI()
@@ -100,6 +106,14 @@ namespace Game.World
                 modeAlwaysColorProperty.colorValue = EditorGUILayout.ColorField("Mode Always", modeAlwaysColorProperty.colorValue);
                 modeFarColorProperty.colorValue = EditorGUILayout.ColorField("Mode Far", modeFarColorProperty.colorValue);
             }
+
+            EditorGUILayout.LabelField("");
+            EditorGUILayout.LabelField("-- Culling");
+
+            //EditorGUILayout.BeginVertical();
+            unloadInvisibleRegionsProperty.boolValue = EditorGUILayout.Toggle("Unload Regions?", unloadInvisibleRegionsProperty.boolValue);
+            invisibilityAngleProperty.floatValue = EditorGUILayout.FloatField("Angle", invisibilityAngleProperty.floatValue);
+            //EditorGUILayout.EndVertical();
 
             if (!Application.isPlaying)
             {
