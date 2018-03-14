@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Game.World.Interaction
+namespace Game.LevelElements
 {
     public class EnableWhenPickingFavour : MonoBehaviour
     {
@@ -23,4 +23,4 @@ namespace Game.World.Interaction
             }
         }
     }
-}
+} //end of namespace

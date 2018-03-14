@@ -1,18 +1,13 @@
 ﻿using UnityEngine;
 
-namespace Game.World.Interaction
+namespace Game.LevelElements
 {
-    public class FavourStatue : MonoBehaviour
+    public class DestroyWhenPickingFavour : MonoBehaviour
     {
         public string favourID;
 
-        [SerializeField] Material matWhenActive;
-
-        Renderer rend;
-
         private void Awake()
         {
-            rend = GetComponent<Renderer>();
             Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
         }
 
@@ -20,9 +15,8 @@ namespace Game.World.Interaction
         {
             if (args.FavourId == favourID)
             {
-                rend.sharedMaterial = matWhenActive;
+                Destroy(gameObject);
             }
         }
-        
     }
-}
+} //end of namespace

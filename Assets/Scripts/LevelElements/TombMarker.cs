@@ -1,13 +1,18 @@
 ﻿using UnityEngine;
 
-namespace Game.World.Interaction
+namespace Game.LevelElements
 {
-    public class DestroyWhenPickingFavour : MonoBehaviour
+    public class TombMarker : MonoBehaviour
     {
         public string favourID;
-        
+
+        [SerializeField] GameObject toDisable;
+
+        Renderer rend;
+
         private void Awake()
         {
+            rend = GetComponent<Renderer>();
             Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
         }
 
@@ -15,8 +20,8 @@ namespace Game.World.Interaction
         {
             if (args.FavourId == favourID)
             {
-                Destroy(gameObject);
+                toDisable.SetActive(false);
             }
         }
     }
-}
+} //end of namespace

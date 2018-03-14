@@ -17,7 +17,7 @@ namespace Game.Player {
 
         //
         bool favourPickUpInRange = false;
-        World.Interaction.CurrencyPickUp favour;
+        CurrencyPickUp favour;
         PillarEntranceInfo pillarEntranceInfo = new PillarEntranceInfo();
         bool pillarExitInRange = false;
         bool needleInRange = false;
@@ -25,7 +25,7 @@ namespace Game.Player {
         bool needleSlotInRange = false;
         bool eyeInRange = false;
         Transform airParticle, airOrigin;
-        Beacon beacon;
+        //Beacon beacon;
 
         //
         bool isActive = false;
@@ -107,11 +107,11 @@ namespace Game.Player {
 
                     HideUiMessage("Eye");
                 }
-                //home beacon
-                else if (beacon && beacon.activated) {
-                    var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(beacon.destination.position, Quaternion.identity, false);
-                    Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
-                }
+                ////home beacon
+                //else if (beacon && beacon.activated) {
+                //    var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(beacon.destination.position, Quaternion.identity, false);
+                //    Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                //}
 
             }
             else if (!Input.GetButton("Interact") && isInteractButtonDown)
@@ -179,7 +179,7 @@ namespace Game.Player {
                     case "Favour":
                         if (!favourPickUpInRange)
                         {
-                            favour = other.GetComponent<World.Interaction.CurrencyPickUp>();
+                            favour = other.GetComponent<CurrencyPickUp>();
 
                             if (!gameController.PlayerModel.CheckIfPickUpCollected(favour.PickUpId))
                             {
@@ -193,7 +193,7 @@ namespace Game.Player {
                         break;
                     //pillar entrance
                     case "Pillar":
-                        var pillarEntrance = other.GetComponent<World.Interaction.PillarEntrance>();
+                        var pillarEntrance = other.GetComponent<PillarEntrance>();
                         if (pillarEntrance != null)
                         {
                             if (!gameController.PlayerModel.CheckIsPillarDestroyed(pillarEntrance.PillarId))
@@ -206,7 +206,7 @@ namespace Game.Player {
                             break;
                         }
 
-                        var pillarExit = other.GetComponent<World.Interaction.PillarExit>();
+                        var pillarExit = other.GetComponent<PillarExit>();
                         if(pillarExit != null)
                         {
                             pillarExitInRange = true;
@@ -543,7 +543,7 @@ namespace Game.Player {
 
         class PillarEntranceInfo {
             public bool IsPillarEntranceInRange = false;
-            public World.Interaction.PillarEntrance CurrentPillarEntrance = null;
+            public PillarEntrance CurrentPillarEntrance = null;
         }
 
         //########################################################################
