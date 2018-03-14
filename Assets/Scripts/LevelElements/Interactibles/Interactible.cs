@@ -2,7 +2,7 @@
 
 public abstract class Interactible : MonoBehaviour {
 
-    public abstract void EnterTrigger();
-    public abstract void ExitTrigger();
+    public abstract void EnterTrigger(Transform player);
+    public abstract void ExitTrigger(Transform player);
     
 }

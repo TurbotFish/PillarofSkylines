@@ -372,7 +372,7 @@ namespace Game.Player {
                         break;
                     // Miscelanous Interactive Elements
                     case "Interactible":
-                        other.GetComponent<Interactible>().EnterTrigger();
+                        other.GetComponent<Interactible>().EnterTrigger(transform);
                         break;
                     //other
                     default:
@@ -454,7 +454,7 @@ namespace Game.Player {
                         break;
                     // Miscelanous Interactive Elements
                     case "Interactible":
-                        other.GetComponent<Interactible>().ExitTrigger();
+                        other.GetComponent<Interactible>().ExitTrigger(transform);
                         break;
                     //other
                     default:
