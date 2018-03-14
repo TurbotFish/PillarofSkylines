@@ -37,7 +37,7 @@ namespace Game.Player
 
             //initializing all the things
             CharController.Initialize(gameController);
-            InteractionController.Initialize(gameController.PlayerModel, CharController, gameController.EchoManager);
+            InteractionController.Initialize(gameController);
             wrappableObject.InitializeWrappableObject(gameController);
         }
     }

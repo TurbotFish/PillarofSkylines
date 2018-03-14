@@ -16,9 +16,8 @@ namespace Game.Player.CharacterController
         /// </summary>
         [SerializeField]
         Transform rotator;
-        [SerializeField]
+
         public Transform myCameraTransform;
-        [SerializeField]
         public PoS_Camera myCamera;
 
         //public float gameSpeed = 10f;
