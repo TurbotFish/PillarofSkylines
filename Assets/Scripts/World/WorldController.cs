@@ -171,6 +171,7 @@ namespace Game.World
                 }
             }
 
+            EventManager.PreSceneChangeEvent += OnPreSceneChangeEvent;
             isInitialized = true;
         }
 
@@ -480,6 +481,12 @@ namespace Game.World
             isJobRunning = false;
         }
 
+        private void OnPreSceneChangeEvent(object sender, EventManager.PreSceneChangeEventArgs args)
+        {
+            isInitialized = false;
+            subSceneJobsList.Clear();
+        }
+
 #if UNITY_EDITOR
         /// <summary>
         /// Editor methods for loading all the SubScenes.
@@ -689,7 +696,7 @@ namespace Game.World
             UnityEditor.AssetDatabase.Refresh();
         }
 #endif
-        #endregion editor methods
+        #endregion private methods
 
         //========================================================================================
     }

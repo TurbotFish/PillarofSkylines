@@ -325,6 +325,7 @@ namespace Game.GameControl
 
             //*****************************************
             //pausing game
+            EventManager.SendPreSceneChangeEvent(this, new EventManager.PreSceneChangeEventArgs(true));
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(true));
             EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.LoadingScreen));
             yield return null;
@@ -427,9 +428,16 @@ namespace Game.GameControl
 
             //*****************************************
             //pausing game
+            EventManager.SendPreSceneChangeEvent(this, new EventManager.PreSceneChangeEventArgs(false));
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(true));
             EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.LoadingScreen));
             yield return null;
+
+            //wait for WorldController to stop
+            while(WorldController.CurrentJobCount > 0)
+            {
+                yield return null;
+            }
 
             //*****************************************
             //unloading open world scene

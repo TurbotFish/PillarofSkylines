@@ -1,4 +1,5 @@
 ﻿using Game.GameControl;
+using Game.Utilities;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,8 +17,8 @@ namespace Game.EchoSystem
         [SerializeField] float driftInputIntensity = 0.5f;
 
         [Header("ShellFX")]
-        [SerializeField]
-        GameObject shell;
+        [SerializeField] GameObject shell;
+
         Animator playerAnimator;
 
         /// <summary>
@@ -35,9 +36,9 @@ namespace Game.EchoSystem
         bool isEclipseActive;
         bool isDoorActive;
         float driftInputDown;
+        private bool isActive; //set to true when a scene is loaded, false otherwise. This helps avoid errors ;)
 
         Transform MyTransform { get; set; }
-        SpawnPointManager spawnPointManager;
 
         //##################################################################
 
@@ -53,9 +54,12 @@ namespace Game.EchoSystem
             playerAnimator = gameController.PlayerController.CharController.animator;
             echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();           
 
-            Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
-            Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
+            EventManager.EclipseEvent += OnEclipseEventHandler;
+            EventManager.PreSceneChangeEvent += OnPreSceneChangeEvent;
+            EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
         }
+
+        
 
         #endregion initialization
 
@@ -63,7 +67,7 @@ namespace Game.EchoSystem
 
         void Update()
         {
-            if (!isEclipseActive)
+            if (isActive && !isEclipseActive)
             {
                 float driftInput = Input.GetAxis("Drift") + (Input.GetButtonUp("Drift") ? 1 : 0);
 
@@ -146,10 +150,10 @@ namespace Game.EchoSystem
                 int lastIndex = echoList.Count - 1;
                 var targetEcho = echoList[lastIndex];
 
-                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, false);
-                Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                var eventArgs = new EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, false);
+                EventManager.SendTeleportPlayerEvent(this, eventArgs);
 
-                Utilities.EventManager.SendEchoDestroyedEvent(this);
+                EventManager.SendEchoDestroyedEvent(this);
                 Break(targetEcho);
             }
         }
@@ -240,7 +244,7 @@ namespace Game.EchoSystem
 
         #region event handlers
 
-        void OnEclipseEventHandler(object sender, Utilities.EventManager.EclipseEventArgs args)
+        void OnEclipseEventHandler(object sender, EventManager.EclipseEventArgs args)
         {
             if (args.EclipseOn)
             {
@@ -256,8 +260,15 @@ namespace Game.EchoSystem
             }
         }
 
-        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
+        private void OnPreSceneChangeEvent(object sender, EventManager.PreSceneChangeEventArgs args)
         {
+            isActive = false;
+        }
+
+        void OnSceneChangedEventHandler(object sender, EventManager.SceneChangedEventArgs args)
+        {
+            isActive = true;
+
             //Debug.LogErrorFormat("EchoManager: OnSceneChangedEventHandler: echo count = {0}", echoList.Count);
 
             isEclipseActive = false;
