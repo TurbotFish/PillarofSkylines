@@ -14,7 +14,7 @@ Shader "ASESampleShaders/Outline"
 	SubShader
 	{
 		Tags{ }
-		Cull Front
+		Cull Back
 		CGPROGRAM
 		#pragma target 3.0
 		#pragma surface outlineSurf Standard keepalpha noshadow noambient novertexlights nolightmap nodynlightmap nodirlightmap nofog nometa noforwardadd vertex:outlineVertexDataFunc

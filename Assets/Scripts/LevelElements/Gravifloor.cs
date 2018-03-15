@@ -65,8 +65,6 @@ public class Gravifloor : MonoBehaviour {
         float angle = Vector3.Angle(currentGravity, gravityGoal);
         float rotationDuration = angle / rotationSpeed;
 
-        print("ANGLE: " + angle + " DURATION: " + rotationDuration);
-
         for (float elapsed = 0; elapsed < rotationDuration; elapsed += Time.deltaTime)
         {
             player.ChangeGravityDirection(Vector3.Slerp(currentGravity, gravityGoal, elapsed / rotationDuration), player.MyTransform.position + player.MyTransform.up);
@@ -84,8 +82,6 @@ public class Gravifloor : MonoBehaviour {
 
         float angle = Vector3.Angle(gravityDirection, regularGravity);
         float rotationDuration = angle / rotationSpeed;
-
-        print("ANGLE: " + angle + " DURATION: " + rotationDuration);
 
         for (float elapsed = 0; elapsed < rotationDuration; elapsed+=Time.deltaTime)
         {
