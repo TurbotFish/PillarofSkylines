@@ -28,32 +28,16 @@ namespace Game.World
 
         #region member variables
 
-        [SerializeField]
-        [HideInInspector]
-        private Vector3 worldSize;
+        [SerializeField, HideInInspector] private Vector3 worldSize;
 
-        [SerializeField]
-        [HideInInspector]
-        private float renderDistanceNear;
+        [SerializeField, HideInInspector] private float renderDistanceNear;
+        [SerializeField, HideInInspector] private float renderDistanceMedium;
+        [SerializeField, HideInInspector] private float renderDistanceFar;
 
-        [SerializeField]
-        [HideInInspector]
-        private float renderDistanceMedium;
-
-        [SerializeField]
-        [HideInInspector]
-        private float renderDistanceFar;
-
-        [SerializeField]
-        [HideInInspector]
-        private float preTeleportOffset;
-
-        [SerializeField]
-        [HideInInspector]
-        private float secondaryPositionDistanceModifier;
+        [SerializeField, HideInInspector] private float preTeleportOffset;
+        [SerializeField, HideInInspector] private float secondaryPositionDistanceModifier;
 
         private IGameControllerBase gameController;
-        private Transform myTransform;
 
         private List<SuperRegion> superRegionsList = new List<SuperRegion>();
         private List<SubSceneJob> subSceneJobsList = new List<SubSceneJob>();
@@ -63,35 +47,18 @@ namespace Game.World
 
         private int currentSuperRegionIndex;
 
-        [SerializeField]
-        [HideInInspector]
-        private bool drawBounds;
+        [SerializeField, HideInInspector] private bool drawBounds;
+        [SerializeField, HideInInspector] private bool drawRegionBounds;
 
-        [SerializeField]
-        [HideInInspector]
-        private bool drawRegionBounds;
 
-        [SerializeField]
-        [HideInInspector]
-        private bool showRegionMode;
+        [SerializeField, HideInInspector] private bool showRegionMode;
+        [SerializeField, HideInInspector] private Color modeNearColor = Color.red;
+        [SerializeField, HideInInspector] private Color modeMediumColor = Color.yellow;
+        [SerializeField, HideInInspector] private Color modeFarColor = Color.green;
 
-        [SerializeField]
-        [HideInInspector]
-        private Color modeNearColor = Color.red;
+        [SerializeField, HideInInspector] private bool editorSubScenesLoaded;
 
-        [SerializeField]
-        [HideInInspector]
-        private Color modeMediumColor = Color.yellow;
-
-        [SerializeField]
-        [HideInInspector]
-        private Color modeFarColor = Color.green;
-
-        [SerializeField]
-        [HideInInspector]
-        private bool editorSubScenesLoaded;
-
-        [SerializeField, HideInInspector] private bool unloadInvisibleRegions; //should the regions behind the player be unloaded?
+        [SerializeField, HideInInspector] private bool unloadInvisibleRegions = true; //should the regions behind the player be unloaded?
         [SerializeField, HideInInspector] private float invisibilityAngle = 90; //if the angle between camera forward and a region is higher than this, the region is invisible.
 
         #endregion member variables 
@@ -141,7 +108,6 @@ namespace Game.World
         public void Initialize(IGameControllerBase gameController)
         {
             this.gameController = gameController;
-            myTransform = transform;
 
             //find all the initial regions
             var initialRegions = GetComponentsInChildren<RegionBase>().ToList();
@@ -260,10 +226,7 @@ namespace Game.World
             //***********************************************
             //updating one super region, getting a list of new jobs
             var newJobs = superRegionsList[currentSuperRegionIndex].UpdateSuperRegion(cameraTransform, playerPosition, teleportPositions);
-            //if(newJobs.Count > 0)
-            //{
-            //    Debug.LogFormat("SuperRegion {0}: {1} new jobs!", superRegionsList[currentSuperRegionIndex].Type, newJobs.Count);
-            //}
+
             currentSuperRegionIndex++;
             if (currentSuperRegionIndex == superRegionsList.Count)
             {
