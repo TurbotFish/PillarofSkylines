@@ -28,19 +28,17 @@
     float4 frag(v2f_img i) : SV_Target {
         half4 src = tex2D(_MainTex, i.uv);
 		float4 timer = (_Time + _TimeEditor) * _Speed;
+		float4 final = src;
 
+		// DEFORMATION
 		float2 noiseUV = (i.uv + timer.g * _Direction);
 		float4 _Noise_var = tex2D(_Noise, TRANSFORM_TEX(noiseUV, _Noise) );
 
 		_Noise_var.x = lerp(_Noise_var.x, (_CameraSpeed.x + 1)/2, abs(_CameraSpeed.x));
 		_Noise_var.y = lerp(_Noise_var.y, (_CameraSpeed.y + 1)/2, abs(_CameraSpeed.y));
-
-		float4 final = src;
+		//END Deformation
 
 		// VIGNETTE
-		_Power = 2;
-		_Falloff = 0.4;
-
         float2 coord = (i.uv - 0.5) * 2;
         float rf = sqrt(dot(coord, coord)) * _Falloff;
 
@@ -50,23 +48,19 @@
 
 		// ITERATIONS
 		for(int j = 0; j < _Iterations; j++) {
-			float3 deformedUV = lerp(float3((i.uv), 1), _Noise_var.rgb, (j+1) * _Deformation/float(_Iterations) * e);
+			float3 deformedUV = lerp(float3((i.uv), 1), _Noise_var.rgb, /*(1-e) */ (j+1) * _Deformation/float(_Iterations));
 			float4 newIteration = tex2D(_MainTex, deformedUV);
 
 			float a = (newIteration.r + newIteration.g + newIteration.b)/3 + _Threshold;
-			float b = (final.r + final.g + final.b)/3;
 
-			if (abs(a-b) > 0) {
-				float t = saturate((a) * (1.0 - float(j)/float(_Iterations)));
-				final = lerp(final, saturate(1-(1-final)*(1-newIteration)), t*(1-e));
-			}
+			float t = saturate((a) * (1.0 - float(j)/float(_Iterations)));
+
+			final = lerp(final, newIteration, t*(1-e));
+			//final = newIteration; // for a cleaner look (but looks less "phantomatic" I guess)
 		}
 		// END Iterations
 
-
-		//final = (src - final) * e + final;
-		
-		final = float4(final.g, final.b, saturate(final.r+0.1), final.a);
+		final = float4(final.r, saturate(final.g + final.r), saturate(final.b + final.r), final.a);
 		final = lerp(src, final, _Intensity);
 
 		return final;

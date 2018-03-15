@@ -363,6 +363,10 @@ namespace Game.Player.CharacterController
             public float MinimalSpeed { get { return minimalSpeed; } }
 
             [SerializeField]
+            float waitBeforeJump;
+            public float WaitBeforeJump { get { return waitBeforeJump; } }
+
+            [SerializeField]
             float control;
             public float Control { get { return control; } }
 
@@ -370,6 +374,7 @@ namespace Game.Player.CharacterController
             {
                 transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
                 minimalSpeed = Mathf.Clamp(minimalSpeed, 0, float.MaxValue);
+                waitBeforeJump = Mathf.Clamp(waitBeforeJump, 0, float.MaxValue);
                 control = Mathf.Clamp(control, 0, float.MaxValue);
             }
         }
@@ -484,6 +489,10 @@ namespace Game.Player.CharacterController
             [SerializeField]
             float speed;
             public float Speed { get { return speed; } }
+
+            [SerializeField]
+            float speedRequiredForHirizontalWallRun;
+            public float SpeedRequiredForHorizontalWallRun { get { return speedRequiredForHirizontalWallRun; } }
 
             [SerializeField]
             float timeToUnstick;

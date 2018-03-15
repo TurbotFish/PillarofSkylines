@@ -10,8 +10,10 @@ namespace Game.World
 
         private SerializedProperty worldSizeProperty;
 
+        private SerializedProperty renderDistanceNearProperty;
+        private SerializedProperty renderDistanceMediumProperty;
         private SerializedProperty renderDistanceFarProperty;
-        private SerializedProperty renderDistanceInactiveProperty;
+
         private SerializedProperty preTeleportOffsetProperty;
         private SerializedProperty secondaryPositionDistanceModifierProperty;
 
@@ -19,20 +21,32 @@ namespace Game.World
         private SerializedProperty drawRegionBoundsProperty;
         private SerializedProperty subScenesLoaded;
 
+        private SerializedProperty showRegionModeProperty;
+        private SerializedProperty modeNearColorProperty;
+        private SerializedProperty modeAlwaysColorProperty;
+        private SerializedProperty modeFarColorProperty;
+
         private void OnEnable()
         {
             self = target as WorldController;
 
             worldSizeProperty = serializedObject.FindProperty("worldSize");
 
+            renderDistanceNearProperty = serializedObject.FindProperty("renderDistanceNear");
+            renderDistanceMediumProperty = serializedObject.FindProperty("renderDistanceMedium");
             renderDistanceFarProperty = serializedObject.FindProperty("renderDistanceFar");
-            renderDistanceInactiveProperty = serializedObject.FindProperty("renderDistanceInactive");
+
             preTeleportOffsetProperty = serializedObject.FindProperty("preTeleportOffset");
             secondaryPositionDistanceModifierProperty = serializedObject.FindProperty("secondaryPositionDistanceModifier");
 
             drawBoundsProperty = serializedObject.FindProperty("drawBounds");
             drawRegionBoundsProperty = serializedObject.FindProperty("drawRegionBounds");
             subScenesLoaded = serializedObject.FindProperty("editorSubScenesLoaded");
+
+            showRegionModeProperty = serializedObject.FindProperty("showRegionMode");
+            modeNearColorProperty = serializedObject.FindProperty("modeNearColor");
+            modeAlwaysColorProperty = serializedObject.FindProperty("modeAlwaysColor");
+            modeFarColorProperty = serializedObject.FindProperty("modeFarColor");
         }
 
         public override void OnInspectorGUI()
@@ -43,22 +57,26 @@ namespace Game.World
 
             worldSizeProperty.vector3Value = EditorGUILayout.Vector3Field("World Size", worldSizeProperty.vector3Value);
 
-            EditorGUILayout.LabelField("Render Distances");
+            EditorGUILayout.LabelField("");
+            EditorGUILayout.LabelField("--Render Distances--");
 
+            renderDistanceNearProperty.floatValue = EditorGUILayout.FloatField("Near", renderDistanceNearProperty.floatValue);
+            renderDistanceMediumProperty.floatValue = EditorGUILayout.FloatField("Medium", renderDistanceMediumProperty.floatValue);
             renderDistanceFarProperty.floatValue = EditorGUILayout.FloatField("Far", renderDistanceFarProperty.floatValue);
-            renderDistanceInactiveProperty.floatValue = EditorGUILayout.FloatField("Inactive", renderDistanceInactiveProperty.floatValue);
+
             preTeleportOffsetProperty.floatValue = EditorGUILayout.FloatField("PreTeleportOffset", preTeleportOffsetProperty.floatValue);
             secondaryPositionDistanceModifierProperty.floatValue = EditorGUILayout.FloatField("SecondaryPositionDistanceModifier", secondaryPositionDistanceModifierProperty.floatValue);
 
-            EditorGUILayout.LabelField("----");
+            EditorGUILayout.LabelField("");
+            EditorGUILayout.LabelField("--Bounds - Editor--");
 
             drawBoundsProperty.boolValue = EditorGUILayout.Toggle("Draw Bounds", drawBoundsProperty.boolValue);
 
             bool drawRegion = drawRegionBoundsProperty.boolValue;
             drawRegionBoundsProperty.boolValue = EditorGUILayout.Toggle("Draw Region Bounds", drawRegionBoundsProperty.boolValue);
-            if(drawRegion != drawRegionBoundsProperty.boolValue)
+            if (drawRegion != drawRegionBoundsProperty.boolValue)
             {
-                foreach(Transform child in self.transform)
+                foreach (Transform child in self.transform)
                 {
                     var region = child.GetComponent<RegionBase>();
 
@@ -69,9 +87,24 @@ namespace Game.World
                 }
             }
 
+            EditorGUILayout.LabelField("");
+            EditorGUILayout.LabelField("--Bounds - Play--");
+            EditorGUILayout.LabelField("  [playmode - scene window]");
+            EditorGUILayout.LabelField("  Colors the regions according to their current mode.");
+
+            showRegionModeProperty.boolValue = EditorGUILayout.Toggle("Show Region Modes", showRegionModeProperty.boolValue);
+
+            if (showRegionModeProperty.boolValue)
+            {
+                modeNearColorProperty.colorValue = EditorGUILayout.ColorField("Mode Near", modeNearColorProperty.colorValue);
+                modeAlwaysColorProperty.colorValue = EditorGUILayout.ColorField("Mode Always", modeAlwaysColorProperty.colorValue);
+                modeFarColorProperty.colorValue = EditorGUILayout.ColorField("Mode Far", modeFarColorProperty.colorValue);
+            }
+
             if (!Application.isPlaying)
             {
-                GUILayout.Label("");
+                EditorGUILayout.LabelField("");
+                GUILayout.Label("--Tools--");
 
                 if (subScenesLoaded.boolValue)
                 {

@@ -7,6 +7,7 @@
     {
         Always,
         Near,
-        Far
+        Far,
+        Medium
     }
 } //end of namespace

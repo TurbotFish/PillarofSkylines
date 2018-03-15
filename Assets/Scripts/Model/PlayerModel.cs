@@ -69,7 +69,10 @@ namespace Game.Model
         {
             if (Input.GetKeyUp(KeyCode.F2))
             {
-                ChangeCurrencyAmount(eCurrencyType.Favour, 1);
+                if (Input.GetKey(KeyCode.LeftShift))
+                    ChangeCurrencyAmount(eCurrencyType.PillarKey, 1);
+                else
+                    ChangeCurrencyAmount(eCurrencyType.Favour, 1);
             }
             else if (Input.GetKeyUp(KeyCode.F5))
             {

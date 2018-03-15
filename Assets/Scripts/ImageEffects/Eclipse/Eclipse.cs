@@ -6,7 +6,7 @@
 public class Eclipse : MonoBehaviour {
 	#region Public Properties
 
-	[SerializeField, Range(-1.0f, 1.0f)]
+	[SerializeField]
 	float _threshold = 0f;
 	public float Threshold {
 		get { return _threshold; }
@@ -48,7 +48,21 @@ public class Eclipse : MonoBehaviour {
 		set { _iterations = value; }
 	}
 
-	[SerializeField]
+    [SerializeField, Header("Vignetting")]
+    float _power = 2;
+    public float Power {
+        get { return _power; }
+        set { _power = value; }
+    }
+
+    [SerializeField]
+    float _fallOff = 0.4f;
+    public float FallOff {
+        get { return _fallOff; }
+        set { _fallOff = value; }
+    }
+
+    [SerializeField, Header("Sources")]
 	Texture _noise;
 	public Texture Noise {
 		get { return _noise; }
@@ -83,8 +97,8 @@ public class Eclipse : MonoBehaviour {
 			_material.hideFlags = HideFlags.DontSave;
 		}
         
-        camSpeed.x = Mathf.Clamp(camSpeed.x, -1, 1);
-        camSpeed.y = Mathf.Clamp(camSpeed.y, -1, 1);
+        camSpeed.x = Mathf.Clamp(-camSpeed.x, -1, 1);
+        camSpeed.y = Mathf.Clamp(-camSpeed.y, -1, 1);
 
         camSpeed = Vector2.Lerp(lastCamSpeed, camSpeed, Time.deltaTime * 10);
 
@@ -96,8 +110,10 @@ public class Eclipse : MonoBehaviour {
         _material.SetFloat("_Speed", _speed);
 		_material.SetInt("_Iterations", _iterations);
 		_material.SetTexture("_Noise", _noise);
+        _material.SetFloat("_Falloff", _fallOff);
+        _material.SetFloat("_Power", _power);
 
-		Graphics.Blit(source, destination, _material, 0);
+        Graphics.Blit(source, destination, _material, 0);
 
         lastCamSpeed = camSpeed;
     }

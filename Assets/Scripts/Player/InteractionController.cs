@@ -515,15 +515,15 @@ namespace Game.Player {
         /// </summary>
         void OnMenuSwitchedEventHandler(object sender, Utilities.EventManager.OnMenuSwitchedEventArgs args)
         {
-            if (!this.isActive && args.NewUiState == UI.eUiState.HUD)
+            if (!isActive && args.NewUiState == UI.eUiState.HUD)
             {
-                this.isActive = true;
-                Debug.Log("InteractionController activated!");
+                isActive = true;
+                //Debug.Log("InteractionController activated!");
             }
-            else if (this.isActive && args.PreviousUiState == UI.eUiState.HUD)
+            else if (isActive && args.PreviousUiState == UI.eUiState.HUD)
             {
-                this.isActive = false;
-                Debug.Log("InteractionController deactivated!");
+                isActive = false;
+                //Debug.Log("InteractionController deactivated!");
             }
         }
 
