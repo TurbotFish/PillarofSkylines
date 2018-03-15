@@ -656,6 +656,8 @@ namespace Game.World
                 return;
             }
 
+            UnityEditor.EditorUtility.DisplayProgressBar("Importing SubScenes", "", 0);
+
             var regions = new List<RegionBase>();
 
             for (int i = 0; i < transform.childCount; i++)
@@ -720,6 +722,8 @@ namespace Game.World
             //mark dirty
             UnityEditor.EditorUtility.SetDirty(this);
             UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+
+            UnityEditor.EditorUtility.ClearProgressBar();
         }
 #endif
 
@@ -733,6 +737,8 @@ namespace Game.World
             {
                 return;
             }
+
+            UnityEditor.EditorUtility.DisplayProgressBar("Exporting SubScenes", "", 0);
 
             //clear subScene folder
             ((IWorldEventHandler)this).ClearSubSceneFolder();
@@ -785,6 +791,13 @@ namespace Game.World
                             var translate = new Vector3(offset.x * worldSize.x, offset.y * worldSize.y, offset.z * worldSize.z);
                             rootCopy.Translate(translate);
 
+                            //informing world objects
+                            var worldObjects = rootCopy.GetComponentsInChildren<IWorldObjectDuplication>();
+                            for (int i = 0; i < worldObjects.Length; i++)
+                            {
+                                worldObjects[i].OnDuplication();
+                            }
+
                             //moving root to subScene
                             var subScene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene, UnityEditor.SceneManagement.NewSceneMode.Additive);
                             UnityEditor.SceneManagement.EditorSceneManager.MoveGameObjectToScene(rootCopy.gameObject, subScene);
@@ -814,6 +827,8 @@ namespace Game.World
 
             UnityEditor.EditorUtility.SetDirty(this);
             UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+
+            UnityEditor.EditorUtility.ClearProgressBar();
         }
 #endif
 
