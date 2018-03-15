@@ -53,9 +53,13 @@ public class GPUIDisplayManager : MonoBehaviour {
 	}
 
 	public void AddStuffToDraw(List<Matrix4x4> _mat, int _id){
-		transformsID.Add (_id, _mat);
-		indices.Add (_id);
-		updatedThisFrame = true;
+        if (!indices.Contains(_id) && _mat.Count > 0)
+        {
+            transformsID.Add(_id, _mat);
+            indices.Add(_id);
+            updatedThisFrame = true;
+            //Debug.LogFormat("GPUIDisplayManager: AddStuffToDraw: added {0} matrices!", _mat.Count);
+        }
 		//Debug.Log (_id);
 	}
 
@@ -63,7 +67,8 @@ public class GPUIDisplayManager : MonoBehaviour {
 		transformsID.Remove (_id);
 		indices.Remove (_id);
 		updatedThisFrame = true;
-	}
+        //Debug.LogFormat("GPUIDisplayManager: RemoveStuffToDraw: removed {0} matrices!", _mat.Count);
+    }
 
 	void LateUpdate(){
 		if (updatedThisFrame)
