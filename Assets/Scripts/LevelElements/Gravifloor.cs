@@ -78,7 +78,7 @@ public class Gravifloor : MonoBehaviour {
     {
         CharController player = currPlayer;
 
-        //yield return new WaitForSeconds(resetDelay);
+        yield return new WaitForSeconds(resetDelay);
 
         float angle = Vector3.Angle(gravityDirection, regularGravity);
         float rotationDuration = angle / rotationSpeed;
