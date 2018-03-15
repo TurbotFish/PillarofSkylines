@@ -61,6 +61,10 @@ namespace Game.World
         [SerializeField, HideInInspector] private bool unloadInvisibleRegions = true; //should the regions behind the player be unloaded?
         [SerializeField, HideInInspector] private float invisibilityAngle = 90; //if the angle between camera forward and a region is higher than this, the region is invisible.
 
+        [SerializeField, HideInInspector] private bool measureTimes = true;
+        [SerializeField, HideInInspector] private int debugResultCount = 10;
+        private List<LoadingMeasurement> loadingDebug = new List<LoadingMeasurement>();
+
         #endregion member variables 
 
         //========================================================================================
@@ -236,10 +240,36 @@ namespace Game.World
 
             //***********************************************
             //cleaning and updating the list of SubSceneJobs
+
+            //removing jobs that are already in the queue
+            var unnecessaryNewJobs = new List<SubSceneJob>();
+            foreach (var job in newJobs)
+            {
+                var existingJob = subSceneJobsList.Where(i =>
+                    i.JobType == job.JobType &&
+                    i.Region.SuperRegion.Type == job.Region.SuperRegion.Type &&
+                    i.Region.UniqueId == job.Region.UniqueId &&
+                    i.SubSceneLayer == job.SubSceneLayer &&
+                    i.SubSceneVariant == job.SubSceneVariant
+                ).FirstOrDefault();
+
+                if (existingJob != null)
+                {
+                    unnecessaryNewJobs.Add(job);
+                }
+            }
+
+            foreach (var unnecessaryJob in unnecessaryNewJobs)
+            {
+                newJobs.Remove(unnecessaryJob);
+            }
+
+            //removing different jobs for same SubScene
             var deprecatedJobs = new List<SubSceneJob>();
             foreach (var job in newJobs)
             {
                 deprecatedJobs.AddRange(subSceneJobsList.Where(item =>
+                    item.JobType != job.JobType &&
                     item.Region.SuperRegion.Type == job.Region.SuperRegion.Type &&
                     item.Region.UniqueId == job.Region.UniqueId &&
                     item.SubSceneVariant == job.SubSceneVariant &&
@@ -253,12 +283,14 @@ namespace Game.World
                 deprecatedJob.Callback(deprecatedJob, false);
             }
 
+            //adding new jobs to queue
             foreach (var job in newJobs)
             {
                 subSceneJobsList.Add(job);
             }
 
-            subSceneJobsList.OrderBy(item => item.Priority);
+            //ordering queue
+            subSceneJobsList = subSceneJobsList.OrderBy(item => item.Priority).ToList();
 
             //***********************************************
             //executing jobs
@@ -348,6 +380,66 @@ namespace Game.World
         }
 #endif
 
+        private void OnDestroy()
+        {
+            if (!measureTimes || loadingDebug.Count == 0)
+            {
+                return;
+            }
+
+            Debug.Log("#######################################################");
+            Debug.Log("SubScenes - average loading times");
+
+            loadingDebug = loadingDebug.OrderBy(i => i.AverageLoadingTime).ToList();
+
+            for (int i = 0; i < Mathf.Min(debugResultCount, loadingDebug.Count); i++)
+            {
+                var mes = loadingDebug[i];
+                Debug.LogFormat("{0}.  {1}  {2}  {3}  {4}", i, mes.regionName, mes.subSceneLayer, mes.subSceneVariant, mes.AverageLoadingTime);
+            }
+
+            Debug.Log("#######################################################");
+
+            Debug.Log("#######################################################");
+            Debug.Log("SubScenes - average initialization times");
+
+            loadingDebug = loadingDebug.OrderBy(i => i.AverageInitializationTime).ToList();
+
+            for (int i = 0; i < Mathf.Min(debugResultCount, loadingDebug.Count); i++)
+            {
+                var mes = loadingDebug[i];
+                Debug.LogFormat("{0}.  {1}  {2}  {3}  {4}", i, mes.regionName, mes.subSceneLayer, mes.subSceneVariant, mes.AverageInitializationTime);
+            }
+
+            Debug.Log("#######################################################");
+
+            Debug.Log("#######################################################");
+            Debug.Log("SubScenes - highest loading times");
+
+            loadingDebug = loadingDebug.OrderBy(i => i.highestLoadingTime).ToList();
+
+            for (int i = 0; i < Mathf.Min(debugResultCount, loadingDebug.Count); i++)
+            {
+                var mes = loadingDebug[i];
+                Debug.LogFormat("{0}.  {1}  {2}  {3}  {4}", i, mes.regionName, mes.subSceneLayer, mes.subSceneVariant, mes.highestLoadingTime);
+            }
+
+            Debug.Log("#######################################################");
+
+            Debug.Log("#######################################################");
+            Debug.Log("SubScenes - highest initialization times");
+
+            loadingDebug = loadingDebug.OrderBy(i => i.highestInitializationTime).ToList();
+
+            for (int i = 0; i < Mathf.Min(debugResultCount, loadingDebug.Count); i++)
+            {
+                var mes = loadingDebug[i];
+                Debug.LogFormat("{0}.  {1}  {2}  {3}  {4}", i, mes.regionName, mes.subSceneLayer, mes.subSceneVariant, mes.highestInitializationTime);
+            }
+
+            Debug.Log("#######################################################");
+        }
+
         #endregion monobehaviour methods
 
         //========================================================================================
@@ -393,12 +485,78 @@ namespace Game.World
                 }
                 else if (Application.CanStreamedLevelBeLoaded(sceneName))
                 {
-                    AsyncOperation async = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+                    //########
+                    float time = 0;
+                    float duration;
+                    LoadingMeasurement measurement = null;
+                    if (measureTimes)
+                    {
+                        measurement = loadingDebug.Where(i =>
+                            i.regionName == job.Region.name &&
+                            i.subSceneLayer == job.SubSceneLayer &&
+                            i.subSceneVariant == job.SubSceneVariant
+                        ).FirstOrDefault();
 
+                        if (measurement == null)
+                        {
+                            measurement = new LoadingMeasurement();
+                            measurement.regionName = job.Region.name;
+                            measurement.subSceneLayer = job.SubSceneLayer;
+                            measurement.subSceneVariant = job.SubSceneVariant;
+                            loadingDebug.Add(measurement);
+                        }
+
+                        time = Time.time;
+                    }
+                    //Debug.Log("aaaa");
+                    //########
+
+                    AsyncOperation async = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+                    async.allowSceneActivation = false;
+
+                    while (async.progress < 0.9f)
+                    {
+                        yield return null;
+                    }
+                    yield return null;
+
+                    //########
+                    //Debug.Log("bbbb");
+                    if (measureTimes)
+                    {
+                        duration = Time.time - time;
+                        measurement.loadingTimeSum += duration;
+                        if (duration > measurement.highestLoadingTime)
+                        {
+                            measurement.highestLoadingTime = duration;
+                        }
+
+                        time = Time.time;
+                    }
+                    //Debug.Log("cccc");
+                    //########
+
+                    async.allowSceneActivation = true;
                     while (!async.isDone)
                     {
                         yield return null;
                     }
+                    yield return null;
+
+                    //########
+                    //Debug.Log("dddd");
+                    if (measureTimes)
+                    {
+                        duration = Time.time - time;
+                        measurement.initializationTimeSum += duration;
+                        measurement.loadCount++;
+                        if (duration > measurement.highestInitializationTime)
+                        {
+                            measurement.highestInitializationTime = duration;
+                        }
+                    }
+                    //Debug.Log("eeee");
+                    //########
 
                     //move root to open world scene
                     Scene scene = SceneManager.GetSceneByName(sceneName);
@@ -699,5 +857,22 @@ namespace Game.World
         #endregion private methods
 
         //========================================================================================
+
+        private class LoadingMeasurement
+        {
+            public string regionName;
+            public eSubSceneLayer subSceneLayer;
+            public eSubSceneVariant subSceneVariant;
+
+            public int loadCount;
+            public float loadingTimeSum;
+            public float initializationTimeSum;
+
+            public float highestLoadingTime;
+            public float highestInitializationTime;
+
+            public float AverageLoadingTime { get { return loadingTimeSum / loadCount; } }
+            public float AverageInitializationTime { get { return initializationTimeSum / loadCount; } }
+        }
     }
 } //end of namespace
