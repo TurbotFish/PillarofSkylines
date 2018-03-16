@@ -44,9 +44,9 @@ public class CustomDoor : TriggerableObject {
 
 		//myTransform = transform;
 		platform = GetComponent<MovingPlatform>();
-		positionOff = transform.position;
+		positionOff = transform.localPosition;
 		//positionOn = transform.position + transform.localToWorldMatrix.MultiplyVector (offsetWhenActivated);
-		positionOn = transform.position + transform.forward * offsetWhenActivated.z + transform.right * offsetWhenActivated.x + transform.up * offsetWhenActivated.y;
+		positionOn = transform.localPosition + transform.forward * offsetWhenActivated.z + transform.right * offsetWhenActivated.x + transform.up * offsetWhenActivated.y;
 
 
 		vectorToMove = positionOn - positionOff;
@@ -113,8 +113,10 @@ public class CustomDoor : TriggerableObject {
 			moveAmount = deactivationCurve.Evaluate (percent);
 		}
 
-		moveVector = (positionOff + vectorToMove * moveAmount) - transform.position;
+		moveVector = (positionOff + vectorToMove * moveAmount) - transform.localPosition;
 		platform.Move (moveVector);
+
+		Debug.Log ("move amount : " + moveVector);
 
 		if (timer >= activationLength + deactivationLength) {
 			timer = 0;
