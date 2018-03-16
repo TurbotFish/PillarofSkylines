@@ -399,7 +399,7 @@
 
 				_bendRotation *=  bendAmount;
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _bendRotation);
-				i.normal = abs(ApplyWind(i.normal.xyz, _bendRotation));
+				//i.normal = abs(ApplyWind(i.normal.xyz, _bendRotation));
 
 
 
@@ -441,7 +441,7 @@
 				_windRotation *= _MaxBendAngle * rotationMask * _windIntensity;
 
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _windRotation);
-				i.normal = abs(ApplyWind(i.normal.xyz, _windRotation));
+				//i.normal = abs(ApplyWind(i.normal.xyz, _windRotation));
 
 
 
