@@ -151,7 +151,7 @@ namespace Game.Player.CharacterController.States
             
             
             //translate the direction to local space
-            Vector3 localWallRunDir = charController.MyTransform.worldToLocalMatrix.MultiplyVector(wallRunDir);
+            Vector3 localWallRunDir = charController.TurnSpaceToLocal(wallRunDir);
 
             localWallRunDir += Vector3.ProjectOnPlane(inputInfo.leftStickToCamera, lastWallNormal) * wallRunData.Speed;
             Vector3 acceleration = localWallRunDir;
@@ -181,7 +181,7 @@ namespace Game.Player.CharacterController.States
             else
             {
                 if (localWallRunDir != Vector3.zero)
-                    result.PlayerForward = charController.TurnLocalToSpace(localWallRunDir.normalized);
+                    result.PlayerForward = (localWallRunDir.normalized);
             }
 
             if (firstFrame) firstFrame = false;
