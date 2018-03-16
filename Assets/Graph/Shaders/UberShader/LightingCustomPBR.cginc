@@ -399,9 +399,10 @@
 
 				_bendRotation *=  bendAmount;
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _bendRotation);
-				i.normal = abs(ApplyWind(i.normal.xyz, _bendRotation));
-
-
+				i.normal = (ApplyWind(i.normal.xyz, _bendRotation));
+				i.normal.y = abs(i.normal.y);
+				//v.normal *= sign(v.normal);
+				i.normal.z = abs(i.normal.z);
 
 			#endif
 
@@ -441,8 +442,9 @@
 				_windRotation *= _MaxBendAngle * rotationMask * _windIntensity;
 
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _windRotation);
-				i.normal = abs(ApplyWind(i.normal.xyz, _windRotation));
-
+				i.normal = (ApplyWind(i.normal.xyz, _windRotation));
+				i.normal.y = abs(i.normal.y);
+				i.normal.z = abs(i.normal.z);
 
 
 			#endif
@@ -450,6 +452,9 @@
 
 
 		#endif
+
+
+
 
 		i.pos = UnityObjectToClipPos(v.vertex);
 		i.worldPos.xyz = mul(unity_ObjectToWorld, v.vertex);
