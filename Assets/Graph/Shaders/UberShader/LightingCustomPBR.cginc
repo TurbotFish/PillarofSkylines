@@ -374,14 +374,34 @@
 
 
 			#if defined(_VERTEX_BEND)
-				float2 player2Vert2D = pivotWS.xz - _PlayerPos.xz;
+
+				float _instanceID = 0;
+				#if defined (UNITY_INSTANCING_ENABLED)
+				_instanceID = unity_InstanceID;
+				#endif
+
+
+				_PlayerPos = float3(_PlayerPos.x, _PlayerPos.y - fmod(_instanceID * 0.1, 1.5), _PlayerPos.z);
+				//object space playerpos
+				float3 _OS_PlayerPos = mul(unity_WorldToObject, float4(_PlayerPos, 1));
+
+				float2 player2Vert2D = normalize(- _OS_PlayerPos.xz);
+
+
 				float3 player2Vert3D = pivotWS.xyz - _PlayerPos.xyz;
 				float sqrDist = dot(player2Vert3D, player2Vert3D); 
 				float bendPercent = 1 - saturate((sqrDist - _BendingDistMin)/(_BendingDistMax - _BendingDistMin));
 				float bendAmount = bendPercent * _MaxBendAngle * rotationMask;
-				float3 _bendRotation = normalize(float3(player2Vert2D.y,0, -player2Vert2D.x)) * bendAmount;
+
+
+				float3 _bendRotation = float3(player2Vert2D.y,0, -player2Vert2D.x);
+
+
+				_bendRotation *=  bendAmount;
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _bendRotation);
-				i.normal = ApplyWind(i.normal.xyz, _bendRotation);
+				i.normal = abs(ApplyWind(i.normal.xyz, _bendRotation));
+
+
 
 			#endif
 
@@ -409,6 +429,20 @@
 //			#endif
 
 			#if defined(_VERTEX_WIND)
+				float3 _windDir = normalize(float3(0,1,1));
+				float3 _OSWindDir = mul(unity_WorldToObject,_windDir);
+				float _windSpeed = 0.004;
+
+				float2 surfaceUV = float2(((pivotWS.z + 250)/500) + _windDir.z * _Time.y * _windSpeed, (pivotWS.y + 250)/500) + _windDir.y * _Time.y * _windSpeed;
+				//float2 surfaceUV = float2(((pivotWS.z + 250)/500), (pivotWS.y + 250)/500);
+				float _windIntensity = tex2Dlod(_WindTex, float4(surfaceUV, 0,0)).r;
+
+				float3 _windRotation = float3(_OSWindDir.z, 0, -_OSWindDir.x);
+				_windRotation *= _MaxBendAngle * rotationMask * _windIntensity;
+
+				v.vertex.xyz = ApplyWind(v.vertex.xyz, _windRotation);
+				i.normal = abs(ApplyWind(i.normal.xyz, _windRotation));
+
 
 
 			#endif
