@@ -433,11 +433,12 @@
 				float3 _OSWindDir = mul(unity_WorldToObject,_windDir);
 				float _windSpeed = 0.01;
 
-				float2 surfaceUV = float2(((pivotWS.z + 250)/500) + _windDir.z * _Time.y * _windSpeed, (pivotWS.y + 250)/500) + _windDir.y * _Time.y * _windSpeed;
+				//float2 surfaceUV = float2(((pivotWS.z + 250)/500) + _windDir.z * _Time.y * _windSpeed, (pivotWS.y + 250)/500) + _windDir.y * _Time.y * _windSpeed;
+				float2 surfaceUV = float2(((pivotWS.z + 250)/500), (pivotWS.y + 250)/500);
 				float _windIntensity = tex2Dlod(_WindTex, float4(surfaceUV, 0,0)).r;
 
 				float3 _windRotation = float3(_OSWindDir.z, 0, -_OSWindDir.x);
-				_windRotation *= _MaxBendAngle * rotationMask * _windIntensity * 1;//not intense enough ?
+				_windRotation *= _MaxBendAngle * rotationMask * 0 * 1;//not intense enough ?
 
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _windRotation);
 				i.normal = abs(ApplyWind(i.normal.xyz, _windRotation));
