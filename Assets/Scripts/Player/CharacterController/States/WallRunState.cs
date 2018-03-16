@@ -88,12 +88,12 @@ namespace Game.Player.CharacterController.States
                 if (!ledgeGrab)
                 {
                     jumpDirection = Vector3.ProjectOnPlane(lastWallNormal + (parallelDir.sqrMagnitude > .25f ? parallelDir : Vector3.zero), charController.MyTransform.up).normalized;
+                    charController.MyTransform.rotation = Quaternion.LookRotation(jumpDirection, charController.MyTransform.up);
                     state.SetJumpDirection(charController.TurnSpaceToLocal(jumpDirection));
                 } else
                 {
                     state.SetJumpStrengthModifierFromState(wallRunData.JumpStrengthModifierLedgeGrab);
                 }
-                charController.MyTransform.rotation = Quaternion.LookRotation(jumpDirection, charController.MyTransform.up);
                 state.SetTimerAirControl(wallRunData.TimerBeforeAirControl);
 
                 stateMachine.ChangeState(state);
@@ -176,12 +176,16 @@ namespace Game.Player.CharacterController.States
 
             if (ledgeGrab)
             {
-                result.PlayerForward = charController.TurnLocalToSpace(-lastWallNormal);
+                result.PlayerForward = -lastWallNormal;
+                //Debug.Log("LEFFDGE GRAOBING!!! new forward is  : " + result.PlayerForward);
             }
             else
             {
                 if (localWallRunDir != Vector3.zero)
-                    result.PlayerForward = (localWallRunDir.normalized);
+                {
+                    result.PlayerForward = Vector3.Project(charController.TurnLocalToSpace(localWallRunDir), Vector3.Cross(lastWallNormal, charController.MyTransform.up));
+                    //Debug.Log("new player forward is : " + result.PlayerForward);
+                }
             }
 
             if (firstFrame) firstFrame = false;
