@@ -14,12 +14,7 @@ namespace Game.EchoSystem
         public BreakEchoParticles breakEchoParticles;
         [SerializeField] int maxEchoes = 3;
         [SerializeField] float driftInputIntensity = 0.5f;
-        /*
-        [Header("Home")]
-        [SerializeField] GameObject homeDoor;
-        [SerializeField, Tooltip("Only for GameControllerLite")] Transform homePoint;
-        [SerializeField] float timeToHoldForDoor = 1.5f;
-        */
+
         [Header("ShellFX")]
         [SerializeField]
         GameObject shell;
@@ -44,33 +39,19 @@ namespace Game.EchoSystem
         Transform MyTransform { get; set; }
         SpawnPointManager spawnPointManager;
 
-        GameControl.GameControllerMain gameController;
-
         //##################################################################
 
         #region initialization
 
-        public void InitializeEchoManager(GameControl.IGameControllerBase gameController, SpawnPointManager spawnPointManager = null)
+        public void Initialize(IGameControllerBase gameController)
         {
+            MyTransform = transform;
 
-#if !UNITY_EDITOR
-            this.gameController = (GameControl.GameControllerMain)gameController;
-#endif
             camera = gameController.CameraController.PoS_Camera;
             echoCamera = gameController.CameraController.EchoCameraEffect;
             playerTransform = gameController.PlayerController.PlayerTransform;
-            echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();
-
-            MyTransform = transform;
-            /*
-            this.spawnPointManager = spawnPointManager;
-            if (spawnPointManager)
-                homePoint = spawnPointManager.GetHomeSpawnTransform();
-            homeDoor = Instantiate(homeDoor);
-            homeDoor.GetComponentInChildren<HomePortalCamera>().anchorPoint = homePoint;
-            homeDoor.SetActive(false);
-            */
             playerAnimator = gameController.PlayerController.CharController.animator;
+            echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();           
 
             Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;

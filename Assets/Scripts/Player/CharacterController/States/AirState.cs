@@ -171,12 +171,13 @@ namespace Game.Player.CharacterController.States
 				stateMachine.ChangeState(new GlideState(charController, stateMachine));
 			}
             //landing on slope
-            else if (collisionInfo.below && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > generalData.MaxSlopeAngle 
+            else if (collisionInfo.below && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < generalData.MinWallAngle && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > generalData.MaxSlopeAngle 
                 || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f)) {
 				stateMachine.ChangeState(new SlideState(charController, stateMachine));
 			}
             //landing
-            else if (collisionInfo.below) {
+            else if (collisionInfo.below && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < generalData.MinWallAngle)
+            {
 				stateMachine.ChangeState(new MoveState(charController, stateMachine));
                 if (!collisionInfo.SlippySlope)
                     charController.SetVelocity(Vector3.Project(movementInfo.velocity, inputInfo.leftStickToSlope), false);
@@ -212,7 +213,7 @@ namespace Game.Player.CharacterController.States
             //set wether the player can turn the character
             result.CanTurnPlayer = timerAirControl <= 0 ? true : false;
 
-            result.GravityMultiplier = Mathf.Lerp(1, generalData.GravityFallingMultiplier, ((Mathf.Clamp(-movementInfo.velocity.y, -10, 10) / 10) + 1) / 2);
+            result.GravityMultiplier = Mathf.Lerp(1, generalData.GravityFallingMultiplier, ((Mathf.Clamp(-movementInfo.velocity.y, -10, 10) / 10) + 1f) / 2);
 
             //first update for jump (initial force)
             if (firstUpdate && (mode == eAirStateMode.jump || mode == eAirStateMode.aerialJump)) {

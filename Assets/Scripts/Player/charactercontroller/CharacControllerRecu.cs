@@ -306,11 +306,9 @@ namespace Game.Player.CharacterController
                 }
                 if (hit.collider.CompareTag("Gravifloor") && (currentGravifloor == null || currentGravifloor != hit.collider.GetComponent<Gravifloor>()))
                 {
-                    if (Vector3.Dot(hit.transform.up, myTransform.up) > 0.7f)
-                    {
-                        currentGravifloor = hit.collider.GetComponent<Gravifloor>();
+                    currentGravifloor = hit.collider.GetComponent<Gravifloor>();
+                    if (currentGravifloor && Vector3.Dot(-currentGravifloor.gravityDirection, myTransform.up) > 0.6f)
                         currentGravifloor.AddPlayer(myPlayer, -hit.normal);
-                    }
                 }
 				if (hit.collider.CompareTag("SlipperySlope")) {
 					collisions.SlippySlope = true;
@@ -339,7 +337,6 @@ namespace Game.Player.CharacterController
                 }
                 if (currentPFs == null && hit.collider.CompareTag("MovingPlatform"))
                 {
-                    Debug.Log("adding platform above");
                     currentPFs = hit.collider.GetComponentsInParent<MovingPlatform>();
                     foreach (MovingPlatform PF in currentPFs)
                     {
@@ -419,7 +416,6 @@ namespace Game.Player.CharacterController
             { //register with moving platforms
                 if (currentPFs == null && sideHit.collider.CompareTag("MovingPlatform"))
                 {
-                    Debug.Log("adding platform side");
                     currentPFs = sideHit.collider.GetComponentsInParent<MovingPlatform>();
                     foreach (MovingPlatform PF in currentPFs)
                     {

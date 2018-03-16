@@ -11,7 +11,7 @@ namespace Game.World
         private SerializedProperty worldSizeProperty;
 
         private SerializedProperty renderDistanceNearProperty;
-        private SerializedProperty renderDistanceAlwaysProperty;
+        private SerializedProperty renderDistanceMediumProperty;
         private SerializedProperty renderDistanceFarProperty;
 
         private SerializedProperty preTeleportOffsetProperty;
@@ -26,6 +26,9 @@ namespace Game.World
         private SerializedProperty modeAlwaysColorProperty;
         private SerializedProperty modeFarColorProperty;
 
+        private SerializedProperty unloadInvisibleRegionsProperty;
+        private SerializedProperty invisibilityAngleProperty;
+
         private void OnEnable()
         {
             self = target as WorldController;
@@ -33,7 +36,7 @@ namespace Game.World
             worldSizeProperty = serializedObject.FindProperty("worldSize");
 
             renderDistanceNearProperty = serializedObject.FindProperty("renderDistanceNear");
-            renderDistanceAlwaysProperty = serializedObject.FindProperty("renderDistanceAlways");
+            renderDistanceMediumProperty = serializedObject.FindProperty("renderDistanceMedium");
             renderDistanceFarProperty = serializedObject.FindProperty("renderDistanceFar");
 
             preTeleportOffsetProperty = serializedObject.FindProperty("preTeleportOffset");
@@ -47,6 +50,9 @@ namespace Game.World
             modeNearColorProperty = serializedObject.FindProperty("modeNearColor");
             modeAlwaysColorProperty = serializedObject.FindProperty("modeAlwaysColor");
             modeFarColorProperty = serializedObject.FindProperty("modeFarColor");
+
+            unloadInvisibleRegionsProperty = serializedObject.FindProperty("unloadInvisibleRegions");
+            invisibilityAngleProperty = serializedObject.FindProperty("invisibilityAngle");
         }
 
         public override void OnInspectorGUI()
@@ -57,15 +63,17 @@ namespace Game.World
 
             worldSizeProperty.vector3Value = EditorGUILayout.Vector3Field("World Size", worldSizeProperty.vector3Value);
 
+            EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("--Render Distances--");
 
             renderDistanceNearProperty.floatValue = EditorGUILayout.FloatField("Near", renderDistanceNearProperty.floatValue);
-            renderDistanceAlwaysProperty.floatValue = EditorGUILayout.FloatField("Always", renderDistanceAlwaysProperty.floatValue);
+            renderDistanceMediumProperty.floatValue = EditorGUILayout.FloatField("Medium", renderDistanceMediumProperty.floatValue);
             renderDistanceFarProperty.floatValue = EditorGUILayout.FloatField("Far", renderDistanceFarProperty.floatValue);
 
             preTeleportOffsetProperty.floatValue = EditorGUILayout.FloatField("PreTeleportOffset", preTeleportOffsetProperty.floatValue);
             secondaryPositionDistanceModifierProperty.floatValue = EditorGUILayout.FloatField("SecondaryPositionDistanceModifier", secondaryPositionDistanceModifierProperty.floatValue);
 
+            EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("--Bounds - Editor--");
 
             drawBoundsProperty.boolValue = EditorGUILayout.Toggle("Draw Bounds", drawBoundsProperty.boolValue);
@@ -85,6 +93,7 @@ namespace Game.World
                 }
             }
 
+            EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("--Bounds - Play--");
             EditorGUILayout.LabelField("  [playmode - scene window]");
             EditorGUILayout.LabelField("  Colors the regions according to their current mode.");
@@ -98,8 +107,17 @@ namespace Game.World
                 modeFarColorProperty.colorValue = EditorGUILayout.ColorField("Mode Far", modeFarColorProperty.colorValue);
             }
 
+            EditorGUILayout.LabelField("");
+            EditorGUILayout.LabelField("-- Culling");
+
+            //EditorGUILayout.BeginVertical();
+            unloadInvisibleRegionsProperty.boolValue = EditorGUILayout.Toggle("Unload Regions?", unloadInvisibleRegionsProperty.boolValue);
+            invisibilityAngleProperty.floatValue = EditorGUILayout.FloatField("Angle", invisibilityAngleProperty.floatValue);
+            //EditorGUILayout.EndVertical();
+
             if (!Application.isPlaying)
             {
+                EditorGUILayout.LabelField("");
                 GUILayout.Label("--Tools--");
 
                 if (subScenesLoaded.boolValue)

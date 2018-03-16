@@ -26,11 +26,15 @@ namespace Game.GameControl
 
         //
         private UI.UiController uiController;
+        private Player.PlayerController playerController;
 
         //
-        private Player.PlayerController playerController;
+        private bool isOpenWorldLoaded;
         private WorldController worldController;
-        
+
+        //
+        private bool isPillarLoaded;
+        private ePillarId pillarId;
 
         //###############################################################
 
@@ -39,10 +43,16 @@ namespace Game.GameControl
         public EclipseManager EclipseManager { get { return eclipseManager; } }
 
         public UI.UiController UiController { get { return uiController; } }
-
         public Player.PlayerController PlayerController { get { return playerController; } }
         public CameraControl.CameraController CameraController { get; private set; }
+
+        public bool IsOpenWorldLoaded { get { return isOpenWorldLoaded; } }
         public WorldController WorldController { get { return worldController; } }
+
+        public bool IsPillarLoaded { get { return isPillarLoaded; } }
+        public ePillarId ActivePillarId { get { return pillarId; } }
+
+        public SpawnPointManager SpawnPointManager { get; private set; }
 
         //###############################################################
         //###############################################################
@@ -145,8 +155,9 @@ namespace Game.GameControl
                 yield return null;
             }
 
-            echoManager.InitializeEchoManager(this);
+            echoManager.Initialize(this);
             EclipseManager.InitializeEclipseManager(this);
+            SpawnPointManager = FindObjectOfType<SpawnPointManager>();
 
             yield return null;
             //***********************

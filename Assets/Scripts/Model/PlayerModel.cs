@@ -1,6 +1,5 @@
 ﻿using Game.LevelElements;
 using Game.World;
-using Game.World.Interaction;
 using System;
 using System.Collections.Generic;
 using System.Linq;
