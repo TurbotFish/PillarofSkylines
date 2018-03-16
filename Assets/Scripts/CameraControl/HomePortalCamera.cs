@@ -40,7 +40,7 @@ public class HomePortalCamera : MonoBehaviour {
 
         cam.fieldOfView = trueCam.fieldOfView;
         
-        float angularDifferenceBetweenPortalRotations = Quaternion.Angle(anchorPoint.rotation, worldAnchorPoint.rotation);
+        //float angularDifferenceBetweenPortalRotations = Quaternion.Angle(anchorPoint.rotation, worldAnchorPoint.rotation);
 
         //Quaternion portalRotationalDifference = Quaternion.AngleAxis(angularDifferenceBetweenPortalRotations, Vector3.up);
         //Vector3 newCameraDirection = portalRotationalDifference * worldCamera.forward;

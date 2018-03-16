@@ -14,6 +14,8 @@ public class CustomDoor : TriggerableObject {
 	public Vector3 offsetWhenActivated;
 	Vector3 positionOn, positionOff;
 
+	public float executionDelay;
+
 	MovingPlatform platform;
 	float timer;
 	float percent;
@@ -21,6 +23,7 @@ public class CustomDoor : TriggerableObject {
 	float moveAmount;
 	bool isActivated;
 	Vector3 moveVector;
+	float delayTimer;
 
 	public bool dirtyOverrideMaterialSwap;
 
@@ -48,7 +51,8 @@ public class CustomDoor : TriggerableObject {
 
 		vectorToMove = positionOn - positionOff;
 
-		_renderer.material = matOff;
+		if(dirtyOverrideMaterialSwap)
+			_renderer.material = matOff;
 
 //		if (Triggered)
 //		{
@@ -72,7 +76,8 @@ public class CustomDoor : TriggerableObject {
 		Debug.LogFormat("Door \"{0}\": Activate called!", name);
 
 		isActivated = true;
-		_renderer.material = matOn;
+		if(dirtyOverrideMaterialSwap)
+			_renderer.material = matOn;
 	}
 
 	protected override void Deactivate()
@@ -89,6 +94,12 @@ public class CustomDoor : TriggerableObject {
 	}
 
 	void Move(){
+		
+		if (delayTimer < executionDelay) {
+			delayTimer += Time.deltaTime;
+			return;
+		}
+			
 
 		if (timer < activationLength) {
 			timer += Time.deltaTime;
@@ -108,7 +119,9 @@ public class CustomDoor : TriggerableObject {
 		if (timer >= activationLength + deactivationLength) {
 			timer = 0;
 			isActivated = false;
-			_renderer.material = matOff;
+			delayTimer = 0;
+			if(dirtyOverrideMaterialSwap)
+				_renderer.material = matOff;
 		}
 	}
 }

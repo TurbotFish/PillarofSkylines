@@ -15,6 +15,8 @@ namespace Game.Player.CharacterController.States
         StateMachine stateMachine;
         CharData.SlideData slideData;
 
+        float timerBeforeJump;
+
         public SlideState(CharController charController, StateMachine stateMachine)
         {
             this.charController = charController;
@@ -27,7 +29,8 @@ namespace Game.Player.CharacterController.States
         public void Enter()
         {
             //Debug.Log("Enter State: Slide");
-			charController.animator.SetBool("Sliding", true); 
+			charController.animator.SetBool("Sliding", true);
+            timerBeforeJump = slideData.WaitBeforeJump;
         }
 
         public void Exit()
@@ -45,11 +48,12 @@ namespace Game.Player.CharacterController.States
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
             //jump
-            if (inputInfo.jumpButtonDown)
+            if (inputInfo.jumpButtonDown && timerBeforeJump<0f)
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
-				state.SetJumpDirection(Vector3.ProjectOnPlane(collisionInfo.currentGroundNormal, charController.MyTransform.up));
+				state.SetJumpDirection(Vector3.Lerp(charController.MyTransform.up, Vector3.ProjectOnPlane(collisionInfo.currentGroundNormal, charController.MyTransform.up)
+                    , (Quaternion.AngleAxis(Vector3.Angle(charController.MyTransform.up, collisionInfo.currentGroundNormal), Vector3.Cross(charController.MyTransform.up, collisionInfo.currentGroundNormal)) * movementInfo.velocity).y/-12));
                 stateMachine.ChangeState(state);
             }
             //fall
@@ -58,7 +62,7 @@ namespace Game.Player.CharacterController.States
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
                 stateMachine.ChangeState(state);
-            } 
+            }
             //dash
             else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
             {
@@ -73,6 +77,7 @@ namespace Game.Player.CharacterController.States
 
         public StateReturnContainer Update(float dt)
         {
+            timerBeforeJump -= Time.deltaTime;
 			var result = new StateReturnContainer 
 				{ 
 					CanTurnPlayer = false, 

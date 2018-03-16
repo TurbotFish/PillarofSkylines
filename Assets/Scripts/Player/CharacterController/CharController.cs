@@ -16,9 +16,8 @@ namespace Game.Player.CharacterController
         /// </summary>
         [SerializeField]
         Transform rotator;
-        [SerializeField]
+
         public Transform myCameraTransform;
-        [SerializeField]
         public PoS_Camera myCamera;
 
         //public float gameSpeed = 10f;
@@ -202,11 +201,11 @@ namespace Game.Player.CharacterController
 
             //*******************************************
             //handling input
-            
+
+            bool sprintDownLastFrame = inputInfo.sprintButton;
             inputInfo.Reset();
             if (isHandlingInput)
             {
-                bool sprintDownLastFrame = inputInfo.sprintButton;
                 
                 float stickH = Input.GetAxisRaw("Horizontal");
                 float stickV = Input.GetAxisRaw("Vertical");

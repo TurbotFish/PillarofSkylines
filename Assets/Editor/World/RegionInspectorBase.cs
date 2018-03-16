@@ -15,7 +15,7 @@ namespace Game.World
 
         private SerializedProperty overrideRenderDistancesProperty;
         private SerializedProperty localRenderDistanceNearProperty;
-        private SerializedProperty localRenderDistanceAlwaysProperty;
+        private SerializedProperty localRenderDistanceMediumProperty;
         private SerializedProperty localRenderDistanceFarProperty;        
 
         private SerializedProperty drawBoundsProperty;
@@ -30,7 +30,7 @@ namespace Game.World
 
             overrideRenderDistancesProperty = serializedObject.FindProperty("overrideRenderDistances");
             localRenderDistanceNearProperty = serializedObject.FindProperty("localRenderDistanceNear");
-            localRenderDistanceAlwaysProperty = serializedObject.FindProperty("localRenderDistanceAlways");
+            localRenderDistanceMediumProperty = serializedObject.FindProperty("localRenderDistanceMedium");
             localRenderDistanceFarProperty = serializedObject.FindProperty("localRenderDistanceFar");            
 
             drawBoundsProperty = serializedObject.FindProperty("drawBounds");
@@ -66,7 +66,7 @@ namespace Game.World
             if (overrideRenderDistancesProperty.boolValue)
             {
                 localRenderDistanceNearProperty.floatValue = EditorGUILayout.FloatField("Near", localRenderDistanceNearProperty.floatValue);
-                localRenderDistanceAlwaysProperty.floatValue = EditorGUILayout.FloatField("Always", localRenderDistanceAlwaysProperty.floatValue);
+                localRenderDistanceMediumProperty.floatValue = EditorGUILayout.FloatField("Medium", localRenderDistanceMediumProperty.floatValue);
                 localRenderDistanceFarProperty.floatValue = EditorGUILayout.FloatField("Far", localRenderDistanceFarProperty.floatValue);
             }
 
