@@ -266,7 +266,15 @@ namespace Game.Player.CharacterController
             if (stateReturn.PlayerForwardSet)
             {
                 //Debug.Log("forward is : " + stateReturn.PlayerForward);
-                MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up), MyTransform.up);
+                if (stateReturn.PlayerForward != Vector3.zero)
+                {
+                    MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up), MyTransform.up);
+                }
+                else
+                {
+                    print("Trying to apply zero as player forward >:c");
+                    MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(MyTransform.forward, MyTransform.up), MyTransform.up);
+                }
             }
 
             if (stateReturn.PlayerUpSet)
