@@ -88,12 +88,12 @@ namespace Game.Player.CharacterController.States
                 if (!ledgeGrab)
                 {
                     jumpDirection = Vector3.ProjectOnPlane(lastWallNormal + (parallelDir.sqrMagnitude > .25f ? parallelDir : Vector3.zero), charController.MyTransform.up).normalized;
+                    charController.MyTransform.rotation = Quaternion.LookRotation(jumpDirection, charController.MyTransform.up);
                     state.SetJumpDirection(charController.TurnSpaceToLocal(jumpDirection));
                 } else
                 {
                     state.SetJumpStrengthModifierFromState(wallRunData.JumpStrengthModifierLedgeGrab);
                 }
-                charController.MyTransform.rotation = Quaternion.LookRotation(jumpDirection, charController.MyTransform.up);
                 state.SetTimerAirControl(wallRunData.TimerBeforeAirControl);
 
                 stateMachine.ChangeState(state);
@@ -151,7 +151,7 @@ namespace Game.Player.CharacterController.States
             
             
             //translate the direction to local space
-            Vector3 localWallRunDir = charController.MyTransform.worldToLocalMatrix.MultiplyVector(wallRunDir);
+            Vector3 localWallRunDir = charController.TurnSpaceToLocal(wallRunDir);
 
             localWallRunDir += Vector3.ProjectOnPlane(inputInfo.leftStickToCamera, lastWallNormal) * wallRunData.Speed;
             Vector3 acceleration = localWallRunDir;
@@ -176,12 +176,16 @@ namespace Game.Player.CharacterController.States
 
             if (ledgeGrab)
             {
-                result.PlayerForward = charController.TurnLocalToSpace(-lastWallNormal);
+                result.PlayerForward = -lastWallNormal;
+                //Debug.Log("LEFFDGE GRAOBING!!! new forward is  : " + result.PlayerForward);
             }
             else
             {
                 if (localWallRunDir != Vector3.zero)
-                    result.PlayerForward = charController.TurnLocalToSpace(localWallRunDir.normalized);
+                {
+                    result.PlayerForward = Vector3.Project(charController.TurnLocalToSpace(localWallRunDir), Vector3.Cross(lastWallNormal, charController.MyTransform.up));
+                    //Debug.Log("new player forward is : " + result.PlayerForward);
+                }
             }
 
             if (firstFrame) firstFrame = false;
