@@ -45,11 +45,11 @@ namespace Game.LevelElements
 
         public override void SetTriggered(bool triggered, bool initializing)
         {
-            print("am trigered : " + name + " state : " + currentState);
+            //print("am trigered : " + name + " state : " + currentState);
             
             if (initializing)
             {
-                print("hey i do nothing i'm being initialized lol");
+                //print("hey i do nothing i'm being initialized lol");
                 currentState = (PersistentDataObject as PersistentStepByStepTriggerable).State;
                 transform.localPosition = startPosition + offsets[currentState];
             }

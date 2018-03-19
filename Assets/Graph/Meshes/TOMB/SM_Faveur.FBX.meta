@@ -194,7 +194,7 @@ ModelImporter:
     normalImportMode: 0
     tangentImportMode: 1
     normalCalculationMode: 4
-  importAnimation: 0
+  importAnimation: 1
   copyAvatar: 0
   humanDescription:
     serializedVersion: 2
