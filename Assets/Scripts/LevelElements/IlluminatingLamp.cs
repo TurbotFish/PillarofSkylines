@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-public class LightStick : Interactible
+public class IlluminatingLamp : Interactible
 {
+    [SerializeField] public float damp = 0.2f;
     [SerializeField] Renderer cube;
     [SerializeField] Material litMaterial;
     [SerializeField] GameObject sparkParticle;
@@ -12,13 +13,19 @@ public class LightStick : Interactible
 
     bool lit;
 
-    private void Start()
+
+    bool here;
+    Transform player;
+
+    void Start()
     {
         tag = "Interactible";
     }
-    
+
     public override void EnterTrigger(Transform player)
     {
+        //here = true;
+        //this.player = player;
         if (!lit)
         {
             lit = true;
@@ -26,19 +33,22 @@ public class LightStick : Interactible
             sparkParticle.SetActive(true);
             StartCoroutine(LightUp());
         }
-    }
 
-    IEnumerator LightUp()
-    {
-        for(float elapsed = 0; elapsed < timeToLightUp; elapsed+=Time.deltaTime)
-        {
-            pointLight.intensity = elapsed * maxLightIntensity;
-            yield return null;
-        }
     }
 
     public override void ExitTrigger(Transform player)
     {
         return;
     }
+
+    IEnumerator LightUp()
+    {
+        for (float elapsed = 0; elapsed < timeToLightUp; elapsed += Time.deltaTime)
+        {
+            pointLight.intensity = elapsed * maxLightIntensity;
+            yield return null;
+        }
+    }
+
+
 }
