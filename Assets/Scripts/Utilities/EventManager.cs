@@ -295,7 +295,28 @@ namespace Game.Utilities
 
         //***********************************************************
 
-        #region scene changed event
+        #region scene change events
+
+        public class PreSceneChangeEventArgs : EventArgs
+        {
+            public bool ChangingToOpenWorld { get; private set; }
+            public bool ChangingToPillar { get; private set; }
+
+            public PreSceneChangeEventArgs(bool changingToOpenWorld)
+            {
+                ChangingToOpenWorld = changingToOpenWorld;
+                ChangingToPillar = !changingToOpenWorld;
+            }
+        }
+
+        public delegate void PreSceneChangeEventHandler(object sender, PreSceneChangeEventArgs args);
+
+        public static event PreSceneChangeEventHandler PreSceneChangeEvent;
+
+        public static void SendPreSceneChangeEvent(object sender, PreSceneChangeEventArgs args)
+        {
+            PreSceneChangeEvent?.Invoke(sender, args);
+        }
 
         public class SceneChangedEventArgs : EventArgs
         {
@@ -328,10 +349,10 @@ namespace Game.Utilities
         public static void SendSceneChangedEvent(object sender, SceneChangedEventArgs args)
         {
             SceneChangedEvent?.Invoke(sender, args);
-            Debug.Log("Event sent: SceneChanged");
+            //Debug.Log("Event sent: SceneChanged");
         }
 
-        #endregion scene changed event
+        #endregion scene change events
 
         //***********************************************************
 

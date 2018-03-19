@@ -20,7 +20,7 @@ namespace Game.World
             base.OnInspectorGUI();
 
             //
-            EditorGUILayout.LabelField("--Pillar--");
+            EditorGUILayout.LabelField("-- Pillar");
 
             pillarIdProperty.enumValueIndex = (int)(ePillarId)EditorGUILayout.EnumPopup("Pillar Id", (ePillarId)pillarIdProperty.enumValueIndex);
 

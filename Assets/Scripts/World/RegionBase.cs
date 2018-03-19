@@ -15,29 +15,23 @@ namespace Game.World
 
         #region member variables
 
-        [SerializeField]
-        [HideInInspector]
-        private Vector3 boundsCentre;
+        [SerializeField, HideInInspector] private Vector3 boundsCentre;
 
-        [SerializeField]
-        [HideInInspector]
-        private Vector3 boundsSize;
+        [SerializeField, HideInInspector] private Vector3 boundsSize;
 
-        [SerializeField]
-        [HideInInspector]
-        private bool overrideRenderDistances;
+        [SerializeField, HideInInspector] private bool overrideRenderDistances;
 
-        [SerializeField]
-        [HideInInspector]
-        private float localRenderDistanceNear;
+        [SerializeField, HideInInspector] private float localRenderDistanceNear;
 
-        [SerializeField]
-        [HideInInspector]
-        private float localRenderDistanceMedium;
+        [SerializeField, HideInInspector] private float localRenderDistanceMedium;
 
-        [SerializeField]
-        [HideInInspector]
-        private float localRenderDistanceFar;
+        [SerializeField, HideInInspector] private float localRenderDistanceFar;
+
+        [SerializeField, HideInInspector] bool drawBounds;
+
+        [SerializeField, HideInInspector] Color boundsColour = Color.green;
+
+        [SerializeField, HideInInspector] private bool doNotDuplicate;
 
         private Transform myTransform;
         private SuperRegion superRegion;
@@ -54,19 +48,7 @@ namespace Game.World
         private bool isInitialized;
         private bool hasSubSceneModeChanged;
         private bool firstJobDone;
-        private bool validateSubScenes;
-
-#if UNITY_EDITOR
-        [SerializeField]
-        [HideInInspector]
-        bool drawBounds;
-#endif
-
-#if UNITY_EDITOR
-        [SerializeField]
-        [HideInInspector]
-        Color boundsColour = Color.green;
-#endif
+        private bool validateSubScenes;        
 
         #endregion member variables
 
@@ -87,6 +69,8 @@ namespace Game.World
         public eSubSceneVariant CurrentSubSceneVariant { get { return currentSubSceneVariant; } }
 
         public float CameraDistance { get { return playerDistance; } }
+
+        public bool DoNotDuplicate { get { return doNotDuplicate; } }
 
         #endregion properties
 
@@ -166,7 +150,6 @@ namespace Game.World
 
             Bounds bounds = BoundingBox;
             Vector3 cameraPosition = cameraTransform.position;
-            var SubScenes = GetAllSubScenes();
 
             bool isVisible = false;
             var result = new List<SubSceneJob>();
@@ -594,7 +577,6 @@ namespace Game.World
         /// <returns></returns>
         private SubSceneJob CreateLoadSubSceneJob(eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer)
         {
-            int index = (int)subSceneLayer;
             eSubSceneState subSceneState = subSceneStates[subSceneVariant][subSceneLayer];
 
             //Debug.LogWarningFormat("RegionBase \"{0}\": CreateSubSceneLoadJob: mode={1}; type={2}; currentState={3}", name, subSceneMode, subSceneType, state);
@@ -620,7 +602,6 @@ namespace Game.World
         /// <returns></returns>
         private SubSceneJob CreateUnloadSubSceneJob(eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer)
         {
-            int index = (int)subSceneLayer;
             eSubSceneState state = subSceneStates[subSceneVariant][subSceneLayer];
 
             if (state == eSubSceneState.Unloaded || state == eSubSceneState.Unloading)
