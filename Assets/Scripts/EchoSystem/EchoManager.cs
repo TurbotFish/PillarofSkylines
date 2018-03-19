@@ -263,6 +263,23 @@ namespace Game.EchoSystem
         private void OnPreSceneChangeEvent(object sender, EventManager.PreSceneChangeEventArgs args)
         {
             isActive = false;
+
+            Debug.LogFormat("EchoManager: OnPreSceneChangedEventHandler: echo count = {0}", echoList.Count);
+
+            isEclipseActive = false;
+
+            for (int i = 0; i < echoList.Count; i++)
+            {
+                if (echoList[i] == null)
+                {
+                    Debug.Log("echo is null");
+                }
+                Destroy(echoList[i].gameObject);
+            }
+
+            placedEchoes = 0;
+            echoParticles.SetEchoNumber(maxEchoes);
+            echoList.Clear();
         }
 
         void OnSceneChangedEventHandler(object sender, EventManager.SceneChangedEventArgs args)
@@ -271,16 +288,20 @@ namespace Game.EchoSystem
 
             //Debug.LogErrorFormat("EchoManager: OnSceneChangedEventHandler: echo count = {0}", echoList.Count);
 
-            isEclipseActive = false;
+            //isEclipseActive = false;
 
-            for (int i = 0; i < echoList.Count; i++)
-            {
-                Destroy(echoList[i].gameObject);
-            }
+            //for (int i = 0; i < echoList.Count; i++)
+            //{
+            //    if(echoList[i] == null)
+            //    {
+            //        Debug.Log("echo is null");
+            //    }
+            //    Destroy(echoList[i].gameObject);
+            //}
 
-            placedEchoes = 0;
-            echoParticles.SetEchoNumber(maxEchoes);
-            echoList.Clear();
+            //placedEchoes = 0;
+            //echoParticles.SetEchoNumber(maxEchoes);
+            //echoList.Clear();
         }
 
         #endregion event handlers
