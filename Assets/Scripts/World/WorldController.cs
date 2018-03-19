@@ -158,6 +158,11 @@ namespace Game.World
                     var clonedRegions = new List<RegionBase>();
                     foreach (var initialRegion in initialRegions)
                     {
+                        if(superRegionType != eSuperRegionType.Centre && initialRegion.DoNotDuplicate)
+                        {
+                            continue;
+                        }
+
                         var regionClone = Instantiate(initialRegion.gameObject, superRegion.transform, false);
                         regionClone.name = initialRegion.name;
 
@@ -781,6 +786,11 @@ namespace Game.World
 
                         foreach (var superRegionType in Enum.GetValues(typeof(eSuperRegionType)).Cast<eSuperRegionType>())
                         {
+                            if(superRegionType != eSuperRegionType.Centre && region.DoNotDuplicate)
+                            {
+                                continue;
+                            }
+
                             //paths
                             string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.UniqueId, subSceneMode, subSceneLayer, superRegionType);
 

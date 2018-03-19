@@ -16,10 +16,12 @@ namespace Game.World
         private SerializedProperty overrideRenderDistancesProperty;
         private SerializedProperty localRenderDistanceNearProperty;
         private SerializedProperty localRenderDistanceMediumProperty;
-        private SerializedProperty localRenderDistanceFarProperty;        
+        private SerializedProperty localRenderDistanceFarProperty;
 
         private SerializedProperty drawBoundsProperty;
         private SerializedProperty boundsColourProperty;
+
+        private SerializedProperty doNotDuplicateProperty;
 
         protected virtual void OnEnable()
         {
@@ -31,10 +33,12 @@ namespace Game.World
             overrideRenderDistancesProperty = serializedObject.FindProperty("overrideRenderDistances");
             localRenderDistanceNearProperty = serializedObject.FindProperty("localRenderDistanceNear");
             localRenderDistanceMediumProperty = serializedObject.FindProperty("localRenderDistanceMedium");
-            localRenderDistanceFarProperty = serializedObject.FindProperty("localRenderDistanceFar");            
+            localRenderDistanceFarProperty = serializedObject.FindProperty("localRenderDistanceFar");
 
             drawBoundsProperty = serializedObject.FindProperty("drawBounds");
             boundsColourProperty = serializedObject.FindProperty("boundsColour");
+
+            doNotDuplicateProperty = serializedObject.FindProperty("doNotDuplicate");
         }
 
         public override void OnInspectorGUI()
@@ -45,21 +49,19 @@ namespace Game.World
             //
             base.OnInspectorGUI();
 
+            doNotDuplicateProperty.boolValue = EditorGUILayout.Toggle("Do Not Repeat", doNotDuplicateProperty.boolValue);
+
             //###########################################
-            EditorGUILayout.LabelField("--Bounds--");
+            EditorGUILayout.LabelField("-- Bounds");
 
             boundsCentreProperty.vector3Value = EditorGUILayout.Vector3Field("Centre", boundsCentreProperty.vector3Value);
             boundsSizeProperty.vector3Value = EditorGUILayout.Vector3Field("Size", boundsSizeProperty.vector3Value);
 
             drawBoundsProperty.boolValue = EditorGUILayout.Toggle("Draw Bounds", drawBoundsProperty.boolValue);
-
-            if (drawBoundsProperty.boolValue)
-            {
-                boundsColourProperty.colorValue = EditorGUILayout.ColorField("Colour", boundsColourProperty.colorValue);
-            }
+            boundsColourProperty.colorValue = EditorGUILayout.ColorField("Colour", boundsColourProperty.colorValue);
 
             //###########################################
-            EditorGUILayout.LabelField("--Render Distances--");
+            EditorGUILayout.LabelField("-- Render Distances");
 
             overrideRenderDistancesProperty.boolValue = EditorGUILayout.Toggle("Override", overrideRenderDistancesProperty.boolValue);
 
@@ -71,18 +73,18 @@ namespace Game.World
             }
 
             //###########################################
-            GUILayout.Label("--Tools--");
+            GUILayout.Label("-- Tools");
 
             if (!Application.isPlaying && self.transform.parent.GetComponent<WorldController>().EditorSubScenesLoaded)
             {
-                if(GUILayout.Button("Auto-adjust Bounds"))
+                if (GUILayout.Button("Auto-adjust Bounds"))
                 {
                     UnityEngine.EventSystems.ExecuteEvents.Execute<IRegionEventHandler>(self.gameObject, null, (x, y) => x.AdjustBounds());
                 }
             }
 
             //###########################################
-            GUILayout.Label("--SubScenes--");
+            GUILayout.Label("-- SubScenes");
             EditorGUILayout.LabelField("Child Count", (self.GetComponentsInChildren<Transform>(true).Length - 1 - loadedSubScenes.Count).ToString());
 
             if (!Application.isPlaying && self.transform.parent.GetComponent<WorldController>().EditorSubScenesLoaded)
