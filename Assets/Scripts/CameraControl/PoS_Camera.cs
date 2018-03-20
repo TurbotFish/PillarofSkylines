@@ -361,6 +361,11 @@ public class PoS_Camera : MonoBehaviour {
 		input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
 		input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
 		
+        if (Time.time < ignoreInputEnd) {
+            input.x *= 0;
+            input.y *= 0;
+        }
+
         if (state == eCameraState.HomeDoor) {
             HomeDoorState();
             return; // Dans ce cas, osef de tout le reste
@@ -1019,6 +1024,7 @@ public class PoS_Camera : MonoBehaviour {
             default: break;
         }
         enablePanoramaMode = !trigger.disablePanoramaMode;
+        ignoreInputEnd = Time.time + trigger.ignoreInput;
     }
 
     public void ExitTrigger(CameraControlTrigger trigger)
@@ -1043,11 +1049,13 @@ public class PoS_Camera : MonoBehaviour {
         }
         enablePanoramaMode = true;
         currentTrigger = null;
+        ignoreInputEnd = 0;
     }
     
     bool startFacingDirection, currentFacingDirection, inverseFacingDirection;
     float maxInverseFacingTime = 0.5f; // TODO: softcode that
     float facingTime = -1;
+    float ignoreInputEnd;
 
     bool FacingDirection(Vector3 direction)
     {

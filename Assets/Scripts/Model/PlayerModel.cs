@@ -398,7 +398,7 @@ namespace Game.Model
         }
 
         /// <summary>
-        /// Checks if a pillar has been destroyed.
+        /// Checks if a pillar has been unlocked. This means that the player can enter the pillar.
         /// </summary>
         /// <param name="pillarId">The Id of the pillar to check.</param>
         /// <returns></returns>

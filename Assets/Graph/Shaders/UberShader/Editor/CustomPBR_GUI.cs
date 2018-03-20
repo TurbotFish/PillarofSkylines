@@ -646,6 +646,9 @@ public class CustomPBR_GUI : ShaderGUI {
 		}
 		DoWind ();
 		DoBending ();
+
+		RecalculateNormals ();
+
 	}
 
 	void DoWind(){
@@ -673,6 +676,15 @@ public class CustomPBR_GUI : ShaderGUI {
 		if (bendingOn) {
 			editor.ShaderProperty (minDist, MakeLabel ("Full Effect Dist"));
 			editor.ShaderProperty (maxDist, MakeLabel ("No Effect Dist"));
+		}
+	}
+
+	void RecalculateNormals(){
+		EditorGUI.BeginChangeCheck ();
+		bool recalcOn = EditorGUILayout.Toggle ("Recalculate Normals", IsKeywordEnabled ("_RECALCULATE_NORMALS"));
+
+		if (EditorGUI.EndChangeCheck ()) {
+			SetKeyword ("_RECALCULATE_NORMALS", recalcOn);
 		}
 	}
 

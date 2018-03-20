@@ -258,6 +258,7 @@ Shader "Alo/PBR/CustomPBR(Hubert)" {
 
 			#pragma shader_feature _ _VERTEX_WIND
 			#pragma shader_feature _ _VERTEX_BEND
+			#pragma shader_feature _RECALCULATE_NORMALS
 
 			#pragma multi_compile _ _DITHER_OBSTRUCTION
 			#pragma multi_compile_instancing
