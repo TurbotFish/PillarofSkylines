@@ -399,10 +399,14 @@
 
 				_bendRotation *=  bendAmount;
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _bendRotation);
+
+
+				#if defined(_RECALCULATE_NORMALS)
 				i.normal = (ApplyWind(i.normal.xyz, _bendRotation));
 				i.normal.y = abs(i.normal.y);
 				//v.normal *= sign(v.normal);
 				i.normal.z = abs(i.normal.z);
+				#endif
 
 			#endif
 
@@ -442,10 +446,12 @@
 				_windRotation *= _MaxBendAngle * rotationMask * _windIntensity;
 
 				v.vertex.xyz = ApplyWind(v.vertex.xyz, _windRotation);
+
+				#if defined(_RECALCULATE_NORMALS)
 				i.normal = (ApplyWind(i.normal.xyz, _windRotation));
 				i.normal.y = abs(i.normal.y);
 				i.normal.z = abs(i.normal.z);
-
+				#endif
 
 			#endif
 
