@@ -88,7 +88,7 @@ namespace Game.Utilities
             /// </summary>
             public OnShowMenuEventArgs(UI.eUiState menu)
             {
-                this.Menu = menu;
+                Menu = menu;
             }
         }
 
@@ -104,7 +104,22 @@ namespace Game.Utilities
             /// </summary>
             public OnShowPillarEntranceMenuEventArgs(World.ePillarId pillarId) : base(UI.eUiState.PillarEntrance)
             {
-                this.PillarId = pillarId;
+                PillarId = pillarId;
+            }
+        }
+
+        public class OnShowLoadingScreenEventArgs : OnShowMenuEventArgs
+        {
+            public int Id { get; private set; }
+
+            public OnShowLoadingScreenEventArgs() : base(UI.eUiState.LoadingScreen)
+            {
+                Id = -1;
+            }
+
+            public OnShowLoadingScreenEventArgs(World.ePillarId pillarId) : base(UI.eUiState.LoadingScreen)
+            {
+                Id = (int)pillarId;
             }
         }
 
