@@ -43,42 +43,16 @@ namespace Game.World
             return result;
         }
 
-        //========================================================================================
+        public List<SubSceneJob> UnloadAll()
+        {
+            var result = new List<SubSceneJob>();
+            foreach (var region in regions)
+            {
+                result.AddRange(region.UnloadAll());
+            }
 
-        //        #region editor methods
-
-        //#if UNITY_EDITOR
-
-        //        [ExecuteInEditMode]
-        //        public bool IsRegionNameUnique(string regionName)
-        //        {
-        //            Transform myTransform = transform;
-        //            int occurences = 0;
-
-        //            for (int i = 0; i < myTransform.childCount; i++)
-        //            {
-        //                var child = myTransform.GetChild(i);
-
-        //                if (child.GetComponent<RegionBase>() != null && child.name == regionName)
-        //                {
-        //                    occurences++;
-        //                }
-        //            }
-
-        //            if (occurences > 1)
-        //            {
-        //                return false;
-        //            }
-        //            else
-        //            {
-        //                return true;
-        //            }
-        //        }
-
-        //#endif
-
-        //        #endregion editor methods
-
-        //========================================================================================
+            result.RemoveAll(item => item == null);
+            return result;
+        }
     }
-}
+} //end of namespace
