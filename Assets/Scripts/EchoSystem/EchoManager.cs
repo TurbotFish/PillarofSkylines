@@ -69,66 +69,91 @@ namespace Game.EchoSystem
         {
             if (isActive && !isEclipseActive)
             {
-                float driftInput = Input.GetAxis("Drift") + (Input.GetButtonUp("Drift") ? 1 : 0);
+
+
+                // v TELEPORT WHEN BUTTON IS PRESSED v
+
+                float driftInput = Input.GetAxis("Drift") + (Input.GetButtonDown("Drift") ? 1 : 0);
 
                 if (driftInput > driftInputIntensity)
                 {
-                    driftInputDown += Time.deltaTime;
-                    /*
-                    if (driftInputDown >= timeToHoldForDoor && !isDoorActive && (!gameController || (gameController && !gameController.isPillarActive))) {
-                        // do the door thing!
-                        isDoorActive = true;
-
-                        if (homePoint) {
-                            
-                            Vector3 homeDoorPos = new Vector3(0, 0, 0);
-
-                            float minDistance = 1.5f, maxDistance = 4f;
-
-                            RaycastHit hit;
-                            if (Physics.Raycast(playerTransform.position, playerTransform.forward * maxDistance, out hit, maxDistance))
-                            {
-                                homeDoorPos = playerTransform.position + playerTransform.forward * (hit.distance - 0.2f);
-                                homeDoor.transform.rotation = playerTransform.rotation;
-                            } else
-                            {
-                                homeDoorPos = playerTransform.position + playerTransform.forward * maxDistance;
-                                homeDoor.transform.rotation = playerTransform.rotation;
-                            }
-
-                            homeDoor.transform.position = homeDoorPos;
-                            homeDoor.transform.rotation = playerTransform.rotation;
-
-                            homeDoor.SetActive(true);
-
-                            HomePortalCamera portal = homeDoor.GetComponentInChildren<HomePortalCamera>();
-                            portal.worldAnchorPoint.gameObject.SetActive(!atHome);
-                            portal.portalRenderer.gameObject.SetActive(!atHome);
-                            portal.otherPortal.gameObject.SetActive(!atHome);
-
-                            if (!atHome)
-                                camera.LookAtHomeDoor(homeDoor.transform.position, homeDoor.transform.forward, homePoint.position);
-
-                        } else {
-                            print("Assign HomePoint to the EchoManager if you want it to work with the GameControllerLite");
-                        }
-                    }
-                    */
-
-                }
-                else if (driftInput < 0.4f)
-                {
-                    /*if (isDoorActive) {
-                        isDoorActive = false;
-                        homeDoor.SetActive(false);
-                        if (!atHome)
-                            camera.StopLookingAtHomeDoor();
-                    }
-                    else */
-                    if (driftInputDown > 0)
+                    if (driftInputDown == 0)
+                    {
                         Drift();
+                    }
+                    driftInputDown += Time.deltaTime;
+                }
+                else if (driftInput < driftInputIntensity - 0.1f)
+                {
+                    if (driftInputDown > 0)
                     driftInputDown = 0;
                 }
+
+
+
+
+                // v TELEPORT WHEN BUTTON IS RELEASED v
+
+                //float driftInput = Input.GetAxis("Drift") + (Input.GetButtonUp("Drift") ? 1 : 0);
+
+                //if (driftInput > driftInputIntensity)
+                //{
+                //    driftInputDown += Time.deltaTime;
+                //    /*
+                //    if (driftInputDown >= timeToHoldForDoor && !isDoorActive && (!gameController || (gameController && !gameController.isPillarActive))) {
+                //        // do the door thing!
+                //        isDoorActive = true;
+
+                //        if (homePoint) {
+
+                //            Vector3 homeDoorPos = new Vector3(0, 0, 0);
+
+                //            float minDistance = 1.5f, maxDistance = 4f;
+
+                //            RaycastHit hit;
+                //            if (Physics.Raycast(playerTransform.position, playerTransform.forward * maxDistance, out hit, maxDistance))
+                //            {
+                //                homeDoorPos = playerTransform.position + playerTransform.forward * (hit.distance - 0.2f);
+                //                homeDoor.transform.rotation = playerTransform.rotation;
+                //            } else
+                //            {
+                //                homeDoorPos = playerTransform.position + playerTransform.forward * maxDistance;
+                //                homeDoor.transform.rotation = playerTransform.rotation;
+                //            }
+
+                //            homeDoor.transform.position = homeDoorPos;
+                //            homeDoor.transform.rotation = playerTransform.rotation;
+
+                //            homeDoor.SetActive(true);
+
+                //            HomePortalCamera portal = homeDoor.GetComponentInChildren<HomePortalCamera>();
+                //            portal.worldAnchorPoint.gameObject.SetActive(!atHome);
+                //            portal.portalRenderer.gameObject.SetActive(!atHome);
+                //            portal.otherPortal.gameObject.SetActive(!atHome);
+
+                //            if (!atHome)
+                //                camera.LookAtHomeDoor(homeDoor.transform.position, homeDoor.transform.forward, homePoint.position);
+
+                //        } else {
+                //            print("Assign HomePoint to the EchoManager if you want it to work with the GameControllerLite");
+                //        }
+                //    }
+                //    */
+
+                //}
+                //else if (driftInput < 0.4f)
+                //{
+                //    /*if (isDoorActive) {
+                //        isDoorActive = false;
+                //        homeDoor.SetActive(false);
+                //        if (!atHome)
+                //            camera.StopLookingAtHomeDoor();
+                //    }
+                //    else */
+                //    if (driftInputDown > 0)
+                //        Drift();
+                //    driftInputDown = 0;
+                //}
 
                 if (Input.GetButtonDown("Echo"))
                     CreateEcho(true);
