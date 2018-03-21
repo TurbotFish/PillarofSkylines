@@ -1049,6 +1049,7 @@ public class PoS_Camera : MonoBehaviour {
         }
         enablePanoramaMode = true;
         currentTrigger = null;
+        ignoreInputEnd = 0;
     }
     
     bool startFacingDirection, currentFacingDirection, inverseFacingDirection;

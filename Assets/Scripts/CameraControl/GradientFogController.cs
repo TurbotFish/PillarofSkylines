@@ -28,7 +28,7 @@ public class GradientFogController : Interactible {
         defaultEnd = fog.endDistance;
     }
 
-    public override void EnterTrigger()
+    public override void EnterTrigger(Transform player)
     {
         if (currentControl && currentControl.over)
             currentControl.Stop();
@@ -39,7 +39,7 @@ public class GradientFogController : Interactible {
 		StartCoroutine(LerpGradientFog(fog.gradient, gradient, fog.startDistance, fog.endDistance, startDistance, endDistance));
     }
 
-    public override void ExitTrigger()
+    public override void ExitTrigger(Transform player)
     {
         if (!over)
             StopAllCoroutines();

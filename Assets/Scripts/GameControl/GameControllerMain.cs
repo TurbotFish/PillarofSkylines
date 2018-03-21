@@ -21,7 +21,7 @@ namespace Game.GameControl
 
         private SceneNamesData sceneNamesData;
 
-        private string currentSceneName;
+        //private string currentSceneName;
 
         private bool isInitialized = false;
         private bool isGameStarted = false;
@@ -72,17 +72,20 @@ namespace Game.GameControl
 
             //initializing
             PlayerModel.InitializePlayerModel();
-            UiController.InitializeUi(this, eUiState.MainMenu);
+            UiController.InitializeUi(this, eUiState.LoadingScreen, new EventManager.OnShowLoadingScreenEventArgs());
 
             PlayerController.InitializePlayerController(this);
             CameraController.InitializeCameraController(this);
 
             EchoManager.Initialize(this);
-            EclipseManager.InitializeEclipseManager(this);           
+            EclipseManager.InitializeEclipseManager(this);
 
             //register to events
             EventManager.LeavePillarEvent += OnLeavePillarEventHandler;
             EventManager.EnterPillarEvent += OnEnterPillarEventHandler;
+
+            //load open world scene
+            StartCoroutine(LoadOpenWorldSceneCR());
         }
 
         #endregion monobehaviour methods
@@ -91,6 +94,40 @@ namespace Game.GameControl
         //###############################################################
 
         #region initialization methods
+
+        private IEnumerator LoadOpenWorldSceneCR()
+        {
+            AsyncOperation async;
+            SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
+
+            string sceneName = sceneNamesData.GetOpenWorldSceneName();
+
+            async = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+            async.allowSceneActivation = false;
+
+            while (!async.isDone)
+            {
+                if (async.progress >= 0.9f)
+                {
+                    async.allowSceneActivation = true;
+                }
+                yield return null;
+            }
+
+            Scene scene = SceneManager.GetSceneByName(sceneName);
+
+            WorldController = SearchForScriptInScene<WorldController>(scene);
+            yield return null;
+
+            WorldController.Initialize(this);
+
+            yield return null;
+
+            SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
+            isInitialized = true;
+
+            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.MainMenu));
+        }
 
         /// <summary>
         /// Starts the game.
@@ -102,10 +139,17 @@ namespace Game.GameControl
             {
                 Debug.LogError("GameControllerMain: StartGame: game already started!");
                 return;
-            }           
+            }
+            else if (!isInitialized)
+            {
+                Debug.LogError("GameControllerMain: StartGame: game not initialized!");
+                return;
+            }
 
-            //loading open world scene
-            StartCoroutine(LoadOpenWorldSceneCR(true));
+            isGameStarted = true;
+
+            //activate open world
+            StartCoroutine(ActivateOpenWorldCR(true));
         }
 
         //IEnumerator StartGameCR()
@@ -318,62 +362,54 @@ namespace Game.GameControl
         /// </summary>
         /// <param name="useInitialSpawnPoint"></param>
         /// <returns></returns>
-        private IEnumerator LoadOpenWorldSceneCR(bool useInitialSpawnPoint)
+        private IEnumerator ActivateOpenWorldCR(bool useInitialSpawnPoint)
         {
             AsyncOperation async;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
             //*****************************************
             //pausing game
+            EventManager.SendPreSceneChangeEvent(this, new EventManager.PreSceneChangeEventArgs(true));
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(true));
-            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.LoadingScreen));
+            EventManager.SendShowMenuEvent(this, new EventManager.OnShowLoadingScreenEventArgs());
             yield return null;
 
             //*****************************************
-            //unloading pillar scene
-            IsPillarLoaded = false;
-            SpawnPointManager = null;
+            //unloading pillar scene   
+            string pillarSceneName = sceneNamesData.GetPillarSceneName(ActivePillarId);
 
-            if (!string.IsNullOrEmpty(currentSceneName))
+            if (IsPillarLoaded && !string.IsNullOrEmpty(pillarSceneName))
             {
-                async = SceneManager.UnloadSceneAsync(currentSceneName);
+                async = SceneManager.UnloadSceneAsync(pillarSceneName);
 
                 while (!async.isDone)
                 {
                     yield return null;
                 }
 
-                currentSceneName = null;
                 yield return null;
             }
 
+            IsPillarLoaded = false;
+            SpawnPointManager = null;
+
             //*****************************************
-            //loading open world scene
-            currentSceneName = sceneNamesData.GetOpenWorldSceneName();
+            //"activating" open world scene
+            string worldSceneName = sceneNamesData.GetOpenWorldSceneName();
+            Scene scene = SceneManager.GetSceneByName(worldSceneName);            
 
-            async = SceneManager.LoadSceneAsync(currentSceneName, LoadSceneMode.Additive);
-            async.allowSceneActivation = false;
-
-            while (!async.isDone)
+            foreach (var obj in scene.GetRootGameObjects())
             {
-                if (async.progress >= 0.9f)
-                {
-                    async.allowSceneActivation = true;
-                }
-                yield return null;
+                obj.SetActive(true);
             }
 
-            Scene scene = SceneManager.GetSceneByName(currentSceneName);
             SceneManager.SetActiveScene(scene);
-
             IsOpenWorldLoaded = true;
-            WorldController = SearchForScriptInScene<WorldController>(scene);
-            SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(scene);
-            yield return null;
 
-            //*****************************************
-            //initializing world controller
-            WorldController.Initialize(this);
+            WorldController = SearchForScriptInScene<WorldController>(scene);
+            SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(scene);            
+
+            yield return null;
 
             //*****************************************
             //teleporting player
@@ -397,14 +433,17 @@ namespace Game.GameControl
             yield return null;
 
             //*****************************************
-            //informing everyone!
-            EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());
+            //activating world controller
+            WorldController.Activate();
 
-            while (WorldController.CurrentJobCount > 0)
+            while (!WorldController.ActivationDone)
             {
                 yield return null;
-                yield return null;
             }
+
+            //*****************************************
+            //informing everyone!
+            EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());           
 
             //*****************************************
             //unpausing game
@@ -427,34 +466,37 @@ namespace Game.GameControl
 
             //*****************************************
             //pausing game
+            EventManager.SendPreSceneChangeEvent(this, new EventManager.PreSceneChangeEventArgs(false));
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(true));
-            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.LoadingScreen));
+            EventManager.SendShowMenuEvent(this, new EventManager.OnShowLoadingScreenEventArgs(pillarId));
             yield return null;
 
             //*****************************************
-            //unloading open world scene
+            //deactivating open world scene
+            string worldSceneName = sceneNamesData.GetOpenWorldSceneName();
+            Scene scene = SceneManager.GetSceneByName(worldSceneName);
+
+            WorldController.Deactivate();
+
+            while (!WorldController.DeactivationDone)
+            {
+                yield return null;
+            }
+
             IsOpenWorldLoaded = false;
             WorldController = null;
             SpawnPointManager = null;
 
-            if (!string.IsNullOrEmpty(currentSceneName))
+            foreach(var obj in scene.GetRootGameObjects())
             {
-                async = SceneManager.UnloadSceneAsync(currentSceneName);
-
-                while (!async.isDone)
-                {
-                    yield return null;
-                }
-
-                currentSceneName = null;
-                yield return null;
+                obj.SetActive(false);
             }
 
             //*****************************************
             //loading pillar scene
-            currentSceneName = sceneNamesData.GetPillarSceneName(pillarId);
+            string pillarSceneName = sceneNamesData.GetPillarSceneName(pillarId);
 
-            async = SceneManager.LoadSceneAsync(currentSceneName, LoadSceneMode.Additive);
+            async = SceneManager.LoadSceneAsync(pillarSceneName, LoadSceneMode.Additive);
             async.allowSceneActivation = false;
 
             while (!async.isDone)
@@ -467,7 +509,7 @@ namespace Game.GameControl
                 yield return null;
             }
 
-            Scene scene = SceneManager.GetSceneByName(currentSceneName);
+            scene = SceneManager.GetSceneByName(pillarSceneName);
             SceneManager.SetActiveScene(scene);
 
             IsPillarLoaded = true;
@@ -541,7 +583,7 @@ namespace Game.GameControl
                 PlayerModel.DestroyPillar(ActivePillarId);
             }
 
-            StartCoroutine(LoadOpenWorldSceneCR(false));
+            StartCoroutine(ActivateOpenWorldCR(false));
         }
 
         #endregion event methods

@@ -88,7 +88,7 @@ namespace Game.Utilities
             /// </summary>
             public OnShowMenuEventArgs(UI.eUiState menu)
             {
-                this.Menu = menu;
+                Menu = menu;
             }
         }
 
@@ -104,7 +104,22 @@ namespace Game.Utilities
             /// </summary>
             public OnShowPillarEntranceMenuEventArgs(World.ePillarId pillarId) : base(UI.eUiState.PillarEntrance)
             {
-                this.PillarId = pillarId;
+                PillarId = pillarId;
+            }
+        }
+
+        public class OnShowLoadingScreenEventArgs : OnShowMenuEventArgs
+        {
+            public int Id { get; private set; }
+
+            public OnShowLoadingScreenEventArgs() : base(UI.eUiState.LoadingScreen)
+            {
+                Id = -1;
+            }
+
+            public OnShowLoadingScreenEventArgs(World.ePillarId pillarId) : base(UI.eUiState.LoadingScreen)
+            {
+                Id = (int)pillarId;
             }
         }
 
@@ -295,7 +310,28 @@ namespace Game.Utilities
 
         //***********************************************************
 
-        #region scene changed event
+        #region scene change events
+
+        public class PreSceneChangeEventArgs : EventArgs
+        {
+            public bool ChangingToOpenWorld { get; private set; }
+            public bool ChangingToPillar { get; private set; }
+
+            public PreSceneChangeEventArgs(bool changingToOpenWorld)
+            {
+                ChangingToOpenWorld = changingToOpenWorld;
+                ChangingToPillar = !changingToOpenWorld;
+            }
+        }
+
+        public delegate void PreSceneChangeEventHandler(object sender, PreSceneChangeEventArgs args);
+
+        public static event PreSceneChangeEventHandler PreSceneChangeEvent;
+
+        public static void SendPreSceneChangeEvent(object sender, PreSceneChangeEventArgs args)
+        {
+            PreSceneChangeEvent?.Invoke(sender, args);
+        }
 
         public class SceneChangedEventArgs : EventArgs
         {
@@ -328,10 +364,10 @@ namespace Game.Utilities
         public static void SendSceneChangedEvent(object sender, SceneChangedEventArgs args)
         {
             SceneChangedEvent?.Invoke(sender, args);
-            Debug.Log("Event sent: SceneChanged");
+            //Debug.Log("Event sent: SceneChanged");
         }
 
-        #endregion scene changed event
+        #endregion scene change events
 
         //***********************************************************
 

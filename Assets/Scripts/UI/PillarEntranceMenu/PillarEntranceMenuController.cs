@@ -47,14 +47,10 @@ namespace Game.UI.PillarEntranceMenu
             }
             else if (canEnterPillar && Input.GetButtonDown("Interact"))
             {
-                if (playerModel.CheckIsPillarUnlocked(pillarId))
+                if (playerModel.UnlockPillar(pillarId))
                 {
-                    Utilities.EventManager.SendEnterPillarEvent(this, new Utilities.EventManager.EnterPillarEventArgs(this.pillarId));
-                }
-                else
-                {
-                    playerModel.UnlockPillar(pillarId);
-                }                
+                    Utilities.EventManager.SendEnterPillarEvent(this, new Utilities.EventManager.EnterPillarEventArgs(pillarId));
+                }             
             }
         }
 
