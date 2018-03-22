@@ -2,46 +2,51 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EchoParticleSystem : MonoBehaviour {
+namespace Game.EchoSystem
+{
+    public class EchoParticleSystem : MonoBehaviour
+    {
+        ParticleSystem system;
+        ParticleSystem.Particle[] particles;
 
-	ParticleSystem system;
-	ParticleSystem.Particle[] particles;
+        int numParticlesAlive;
 
-	int numParticlesAlive;
+        public int numEchoes = 3;
 
-	public int numEchoes = 3;
+        void Update()
+        {
+            InitializeIfNeeded();
 
-	void Update () {
-		InitializeIfNeeded();
+            system = GetComponent<ParticleSystem>();
+            numParticlesAlive = system.GetParticles(particles);
 
-		system = GetComponent<ParticleSystem>();
-		numParticlesAlive = system.GetParticles(particles);
+            //		print("there is currently " + numParticlesAlive + " particles, and we have " + numEchoes + " echoes available.");
 
+            if (numParticlesAlive > numEchoes)
+            {
+                particles[numParticlesAlive].remainingLifetime = 0f;
+                //			print("destroyed one particle");
+                system.SetParticles(particles, numParticlesAlive - 1);
+            }
+            else if (numParticlesAlive < numEchoes)
+            {
+                system.Emit(numEchoes - numParticlesAlive);
+                //			print("added " + (numEchoes - numParticlesAlive) + " particle");
+            }
+        }
 
-//		print("there is currently " + numParticlesAlive + " particles, and we have " + numEchoes + " echoes available.");
+        public void SetEchoNumber(int echoesAvailable)
+        {
+            numEchoes = echoesAvailable;
+        }
 
-		if (numParticlesAlive > numEchoes) {
-			particles[numParticlesAlive].remainingLifetime = 0f;
-//			print("destroyed one particle");
-			system.SetParticles(particles, numParticlesAlive-1);
-		} else if (numParticlesAlive < numEchoes) {
-			system.Emit(numEchoes - numParticlesAlive);
-//			print("added " + (numEchoes - numParticlesAlive) + " particle");
-		}
+        void InitializeIfNeeded()
+        {
+            if (system == null)
+                system = GetComponent<ParticleSystem>();
 
-	}
-
-	public void SetEchoNumber(int echoesAvailable){
-		numEchoes = echoesAvailable;
-	}
-
-	void InitializeIfNeeded()
-	{
-		if (system == null)
-			system = GetComponent<ParticleSystem>();
-
-		if (particles == null || particles.Length < system.maxParticles)
-			particles = new ParticleSystem.Particle[system.maxParticles];
-	}
-
-}
+            if (particles == null || particles.Length < system.maxParticles)
+                particles = new ParticleSystem.Particle[system.maxParticles];
+        }
+    }
+} //end of namespace

@@ -1,4 +1,5 @@
 ﻿using Game.GameControl;
+using Game.Utilities;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,8 +17,8 @@ namespace Game.EchoSystem
         [SerializeField] float driftInputIntensity = 0.5f;
 
         [Header("ShellFX")]
-        [SerializeField]
-        GameObject shell;
+        [SerializeField] GameObject shell;
+
         Animator playerAnimator;
 
         /// <summary>
@@ -35,9 +36,9 @@ namespace Game.EchoSystem
         bool isEclipseActive;
         bool isDoorActive;
         float driftInputDown;
+        private bool isActive; //set to true when a scene is loaded, false otherwise. This helps avoid errors ;)
 
         Transform MyTransform { get; set; }
-        SpawnPointManager spawnPointManager;
 
         //##################################################################
 
@@ -53,9 +54,12 @@ namespace Game.EchoSystem
             playerAnimator = gameController.PlayerController.CharController.animator;
             echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();           
 
-            Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
-            Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
+            EventManager.EclipseEvent += OnEclipseEventHandler;
+            EventManager.PreSceneChangeEvent += OnPreSceneChangeEvent;
+            EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
         }
+
+        
 
         #endregion initialization
 
@@ -63,68 +67,93 @@ namespace Game.EchoSystem
 
         void Update()
         {
-            if (!isEclipseActive)
+            if (isActive && !isEclipseActive)
             {
-                float driftInput = Input.GetAxis("Drift") + (Input.GetButtonUp("Drift") ? 1 : 0);
+
+
+                // v TELEPORT WHEN BUTTON IS PRESSED v
+
+                float driftInput = Input.GetAxis("Drift") + (Input.GetButtonDown("Drift") ? 1 : 0);
 
                 if (driftInput > driftInputIntensity)
                 {
-                    driftInputDown += Time.deltaTime;
-                    /*
-                    if (driftInputDown >= timeToHoldForDoor && !isDoorActive && (!gameController || (gameController && !gameController.isPillarActive))) {
-                        // do the door thing!
-                        isDoorActive = true;
-
-                        if (homePoint) {
-                            
-                            Vector3 homeDoorPos = new Vector3(0, 0, 0);
-
-                            float minDistance = 1.5f, maxDistance = 4f;
-
-                            RaycastHit hit;
-                            if (Physics.Raycast(playerTransform.position, playerTransform.forward * maxDistance, out hit, maxDistance))
-                            {
-                                homeDoorPos = playerTransform.position + playerTransform.forward * (hit.distance - 0.2f);
-                                homeDoor.transform.rotation = playerTransform.rotation;
-                            } else
-                            {
-                                homeDoorPos = playerTransform.position + playerTransform.forward * maxDistance;
-                                homeDoor.transform.rotation = playerTransform.rotation;
-                            }
-
-                            homeDoor.transform.position = homeDoorPos;
-                            homeDoor.transform.rotation = playerTransform.rotation;
-
-                            homeDoor.SetActive(true);
-
-                            HomePortalCamera portal = homeDoor.GetComponentInChildren<HomePortalCamera>();
-                            portal.worldAnchorPoint.gameObject.SetActive(!atHome);
-                            portal.portalRenderer.gameObject.SetActive(!atHome);
-                            portal.otherPortal.gameObject.SetActive(!atHome);
-
-                            if (!atHome)
-                                camera.LookAtHomeDoor(homeDoor.transform.position, homeDoor.transform.forward, homePoint.position);
-
-                        } else {
-                            print("Assign HomePoint to the EchoManager if you want it to work with the GameControllerLite");
-                        }
-                    }
-                    */
-
-                }
-                else if (driftInput < 0.4f)
-                {
-                    /*if (isDoorActive) {
-                        isDoorActive = false;
-                        homeDoor.SetActive(false);
-                        if (!atHome)
-                            camera.StopLookingAtHomeDoor();
-                    }
-                    else */
-                    if (driftInputDown > 0)
+                    if (driftInputDown == 0)
+                    {
                         Drift();
+                    }
+                    driftInputDown += Time.deltaTime;
+                }
+                else if (driftInput < driftInputIntensity - 0.1f)
+                {
+                    if (driftInputDown > 0)
                     driftInputDown = 0;
                 }
+
+
+
+
+                // v TELEPORT WHEN BUTTON IS RELEASED v
+
+                //float driftInput = Input.GetAxis("Drift") + (Input.GetButtonUp("Drift") ? 1 : 0);
+
+                //if (driftInput > driftInputIntensity)
+                //{
+                //    driftInputDown += Time.deltaTime;
+                //    /*
+                //    if (driftInputDown >= timeToHoldForDoor && !isDoorActive && (!gameController || (gameController && !gameController.isPillarActive))) {
+                //        // do the door thing!
+                //        isDoorActive = true;
+
+                //        if (homePoint) {
+
+                //            Vector3 homeDoorPos = new Vector3(0, 0, 0);
+
+                //            float minDistance = 1.5f, maxDistance = 4f;
+
+                //            RaycastHit hit;
+                //            if (Physics.Raycast(playerTransform.position, playerTransform.forward * maxDistance, out hit, maxDistance))
+                //            {
+                //                homeDoorPos = playerTransform.position + playerTransform.forward * (hit.distance - 0.2f);
+                //                homeDoor.transform.rotation = playerTransform.rotation;
+                //            } else
+                //            {
+                //                homeDoorPos = playerTransform.position + playerTransform.forward * maxDistance;
+                //                homeDoor.transform.rotation = playerTransform.rotation;
+                //            }
+
+                //            homeDoor.transform.position = homeDoorPos;
+                //            homeDoor.transform.rotation = playerTransform.rotation;
+
+                //            homeDoor.SetActive(true);
+
+                //            HomePortalCamera portal = homeDoor.GetComponentInChildren<HomePortalCamera>();
+                //            portal.worldAnchorPoint.gameObject.SetActive(!atHome);
+                //            portal.portalRenderer.gameObject.SetActive(!atHome);
+                //            portal.otherPortal.gameObject.SetActive(!atHome);
+
+                //            if (!atHome)
+                //                camera.LookAtHomeDoor(homeDoor.transform.position, homeDoor.transform.forward, homePoint.position);
+
+                //        } else {
+                //            print("Assign HomePoint to the EchoManager if you want it to work with the GameControllerLite");
+                //        }
+                //    }
+                //    */
+
+                //}
+                //else if (driftInput < 0.4f)
+                //{
+                //    /*if (isDoorActive) {
+                //        isDoorActive = false;
+                //        homeDoor.SetActive(false);
+                //        if (!atHome)
+                //            camera.StopLookingAtHomeDoor();
+                //    }
+                //    else */
+                //    if (driftInputDown > 0)
+                //        Drift();
+                //    driftInputDown = 0;
+                //}
 
                 if (Input.GetButtonDown("Echo"))
                     CreateEcho(true);
@@ -146,10 +175,10 @@ namespace Game.EchoSystem
                 int lastIndex = echoList.Count - 1;
                 var targetEcho = echoList[lastIndex];
 
-                var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, false);
-                Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                var eventArgs = new EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, false);
+                EventManager.SendTeleportPlayerEvent(this, eventArgs);
 
-                Utilities.EventManager.SendEchoDestroyedEvent(this);
+                EventManager.SendEchoDestroyedEvent(this);
                 Break(targetEcho);
             }
         }
@@ -240,7 +269,7 @@ namespace Game.EchoSystem
 
         #region event handlers
 
-        void OnEclipseEventHandler(object sender, Utilities.EventManager.EclipseEventArgs args)
+        void OnEclipseEventHandler(object sender, EventManager.EclipseEventArgs args)
         {
             if (args.EclipseOn)
             {
@@ -256,20 +285,48 @@ namespace Game.EchoSystem
             }
         }
 
-        void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
+        private void OnPreSceneChangeEvent(object sender, EventManager.PreSceneChangeEventArgs args)
         {
-            //Debug.LogErrorFormat("EchoManager: OnSceneChangedEventHandler: echo count = {0}", echoList.Count);
+            isActive = false;
+
+            Debug.LogFormat("EchoManager: OnPreSceneChangedEventHandler: echo count = {0}", echoList.Count);
 
             isEclipseActive = false;
 
             for (int i = 0; i < echoList.Count; i++)
             {
+                if (echoList[i] == null)
+                {
+                    Debug.Log("echo is null");
+                }
                 Destroy(echoList[i].gameObject);
             }
 
             placedEchoes = 0;
             echoParticles.SetEchoNumber(maxEchoes);
             echoList.Clear();
+        }
+
+        void OnSceneChangedEventHandler(object sender, EventManager.SceneChangedEventArgs args)
+        {
+            isActive = true;
+
+            //Debug.LogErrorFormat("EchoManager: OnSceneChangedEventHandler: echo count = {0}", echoList.Count);
+
+            //isEclipseActive = false;
+
+            //for (int i = 0; i < echoList.Count; i++)
+            //{
+            //    if(echoList[i] == null)
+            //    {
+            //        Debug.Log("echo is null");
+            //    }
+            //    Destroy(echoList[i].gameObject);
+            //}
+
+            //placedEchoes = 0;
+            //echoParticles.SetEchoNumber(maxEchoes);
+            //echoList.Clear();
         }
 
         #endregion event handlers
