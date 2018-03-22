@@ -17,7 +17,7 @@ public class LightStick : Interactible
         tag = "Interactible";
     }
     
-    public override void EnterTrigger()
+    public override void EnterTrigger(Transform player)
     {
         if (!lit)
         {
@@ -37,7 +37,7 @@ public class LightStick : Interactible
         }
     }
 
-    public override void ExitTrigger()
+    public override void ExitTrigger(Transform player)
     {
         return;
     }

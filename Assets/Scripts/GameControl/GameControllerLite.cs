@@ -1,4 +1,5 @@
 ﻿using Game.Model;
+using Game.Utilities;
 using Game.World;
 using System.Collections;
 using System.Collections.Generic;
@@ -117,7 +118,7 @@ namespace Game.GameControl
             worldController = FindObjectOfType<WorldController>();
 
             //initializing the ui
-            uiController.InitializeUi(this, UI.eUiState.LoadingScreen);
+            uiController.InitializeUi(this, UI.eUiState.LoadingScreen, new EventManager.OnShowLoadingScreenEventArgs());
 
             yield return null;
             //***********************
@@ -135,9 +136,10 @@ namespace Game.GameControl
             {
                 worldController.Initialize(this);
                 yield return null;
+                worldController.Activate();
                 yield return null;
 
-                while (worldController.CurrentJobCount > 0)
+                while (!worldController.ActivationDone)
                 {
                     yield return null;
                 }

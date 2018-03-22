@@ -26,9 +26,17 @@ namespace Game.LevelElements
 
             rend = GetComponent<Renderer>();
 
-            foreach (GameObject go in objects)
+            for(int i = 0;i < objects.Length; i++)
             {
-                go.SetActive(!disabledByDefault);
+                var go = objects[i];
+                if (go == null)
+                {
+                    Debug.LogErrorFormat("TriggerableDisabler: Initialize: element {0} of objects array is null!", i);
+                }
+                else
+                {
+                    go.SetActive(!disabledByDefault);
+                }
             }
         }
 

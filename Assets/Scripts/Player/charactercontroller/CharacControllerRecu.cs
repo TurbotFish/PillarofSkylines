@@ -285,7 +285,7 @@ namespace Game.Player.CharacterController
 
             //Send casts to check if there's stuff around the player and set bools depending on the results
             collisions.below = Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask) || climbingStep;
-
+            Debug.DrawRay(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, -myTransform.up * skinWidth * 4, Color.green);
 
             if (Physics.Raycast(myTransform.position, hit.point - myTransform.position, out hit2, height*2, collisionMask))
             {

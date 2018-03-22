@@ -33,6 +33,8 @@ public class CameraControlTrigger : MonoBehaviour
 
     [Space]
     public bool disablePanoramaMode = false;
+    [Tooltip("Ignore user input for this amount of seconds")]
+    public float ignoreInput = 0;
 
     new PoS_Camera camera;
 
@@ -53,29 +55,17 @@ public class CameraControlTrigger : MonoBehaviour
         //gameObject.layer = LayerMask.NameToLayer("PickUps");
     }
 
-    private void Update()
-    {
-        if (Application.isPlaying)
-        {
-            return;
-        }
-
-        if(tag != "CameraControlTrigger")
-        {
-            tag = "CameraControlTrigger";
-        }
-
-        if (gameObject.layer != LayerMask.NameToLayer("PickUps"))
-        {
-            gameObject.layer = LayerMask.NameToLayer("PickUps");
-        }
-    }
-
     /// <summary>
     /// Use to set what shows in the inspector
     /// </summary>
     void SetDisplay()
     {
         displayTarget = mode == CameraControl.PointOfInterest || mode == CameraControl.OverrideCameraTransform;
+
+        if (tag != "CameraControlTrigger")
+            tag = "CameraControlTrigger";
+
+        if (gameObject.layer != LayerMask.NameToLayer("PickUps"))
+            gameObject.layer = LayerMask.NameToLayer("PickUps");
     }
 }

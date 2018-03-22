@@ -11,18 +11,13 @@ namespace Game.EchoSystem
         public float colliderSizeWhenSolid = 2;
         Vector3 defaultColliderSize;
 
-        [SerializeField]
-        Material solidMaterial;
-        Material defaultMaterial;
-
-        ParticleSystem myParticleSystem;
-        Renderer myRenderer;
-
+        [SerializeField] GameObject fluidEcho, solidEcho;
+        
         [HideInInspector] public EchoManager echoManager;
         int pickUpLayer;
 
         public Transform MyTransform { get; private set; }
-        Transform fxTransform;
+        Transform echoTransform;
 
         [Header("Animation")]
         [SerializeField] float speed = 1;
@@ -34,24 +29,23 @@ namespace Game.EchoSystem
 
         void Start() {
             MyTransform = transform;
-
-            myParticleSystem = GetComponentInChildren<ParticleSystem>();
-            myRenderer = myParticleSystem.GetComponent<Renderer>();
-            defaultMaterial = myRenderer.sharedMaterial;
-
-            fxTransform = myParticleSystem.transform;
-
+            
             collider = GetComponent<BoxCollider>();
             collider.isTrigger = true;
+            fluidEcho.SetActive(true);
+            solidEcho.SetActive(false);
             defaultColliderSize = collider.size;
+
+            echoTransform = fluidEcho.transform;
 
             pickUpLayer = gameObject.layer;
         }
 
-        private void Update()
-        {
-            fxPosition.y = Mathf.Sin(Time.time * speed) * intensity + height;
-            fxTransform.localPosition = fxPosition;
+        private void Update() {
+            if (!isFrozen) {
+                fxPosition.y = Mathf.Sin(Time.time * speed) * intensity + height;
+                echoTransform.localPosition = fxPosition;
+            }
         }
 
         //##################################################################
@@ -76,15 +70,9 @@ namespace Game.EchoSystem
             }
         }
 
-        public void Freeze()
-        {
-            if (!myParticleSystem)
-                Start();
-
-            myParticleSystem.Pause();
-
-            myRenderer.sharedMaterial = solidMaterial;
-            myRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+        public void Freeze() {
+            fluidEcho.SetActive(false);
+            solidEcho.SetActive(true);
 
             gameObject.layer = 0;
 
@@ -96,16 +84,9 @@ namespace Game.EchoSystem
             MyTransform.rotation = Quaternion.identity;
         }
 
-        public void Unfreeze()
-        {
-            if (!myParticleSystem)
-                Start();
-
-            myParticleSystem.Play();
-
-            myRenderer.sharedMaterial = defaultMaterial;
-            myRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-
+        public void Unfreeze() {
+            fluidEcho.SetActive(true);
+            solidEcho.SetActive(false);
             gameObject.layer = pickUpLayer;
 
             isFrozen = false;

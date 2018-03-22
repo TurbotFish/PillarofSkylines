@@ -23,11 +23,14 @@ namespace Game.World
 
         private SerializedProperty showRegionModeProperty;
         private SerializedProperty modeNearColorProperty;
-        private SerializedProperty modeAlwaysColorProperty;
+        private SerializedProperty modeMediumColorProperty;
         private SerializedProperty modeFarColorProperty;
 
         private SerializedProperty unloadInvisibleRegionsProperty;
         private SerializedProperty invisibilityAngleProperty;
+
+        private SerializedProperty measureTimesProperty;
+        private SerializedProperty debugResultCountProperty;
 
         private void OnEnable()
         {
@@ -48,11 +51,14 @@ namespace Game.World
 
             showRegionModeProperty = serializedObject.FindProperty("showRegionMode");
             modeNearColorProperty = serializedObject.FindProperty("modeNearColor");
-            modeAlwaysColorProperty = serializedObject.FindProperty("modeAlwaysColor");
+            modeMediumColorProperty = serializedObject.FindProperty("modeMediumColor");
             modeFarColorProperty = serializedObject.FindProperty("modeFarColor");
 
             unloadInvisibleRegionsProperty = serializedObject.FindProperty("unloadInvisibleRegions");
             invisibilityAngleProperty = serializedObject.FindProperty("invisibilityAngle");
+
+            measureTimesProperty = serializedObject.FindProperty("measureTimes");
+            debugResultCountProperty = serializedObject.FindProperty("debugResultCount");
         }
 
         public override void OnInspectorGUI()
@@ -100,20 +106,21 @@ namespace Game.World
 
             showRegionModeProperty.boolValue = EditorGUILayout.Toggle("Show Region Modes", showRegionModeProperty.boolValue);
 
-            if (showRegionModeProperty.boolValue)
-            {
-                modeNearColorProperty.colorValue = EditorGUILayout.ColorField("Mode Near", modeNearColorProperty.colorValue);
-                modeAlwaysColorProperty.colorValue = EditorGUILayout.ColorField("Mode Always", modeAlwaysColorProperty.colorValue);
-                modeFarColorProperty.colorValue = EditorGUILayout.ColorField("Mode Far", modeFarColorProperty.colorValue);
-            }
+            modeNearColorProperty.colorValue = EditorGUILayout.ColorField("Mode Near", modeNearColorProperty.colorValue);
+            modeMediumColorProperty.colorValue = EditorGUILayout.ColorField("Mode Medium", modeMediumColorProperty.colorValue);
+            modeFarColorProperty.colorValue = EditorGUILayout.ColorField("Mode Far", modeFarColorProperty.colorValue);
 
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("-- Culling");
 
-            //EditorGUILayout.BeginVertical();
             unloadInvisibleRegionsProperty.boolValue = EditorGUILayout.Toggle("Unload Regions?", unloadInvisibleRegionsProperty.boolValue);
             invisibilityAngleProperty.floatValue = EditorGUILayout.FloatField("Angle", invisibilityAngleProperty.floatValue);
-            //EditorGUILayout.EndVertical();
+
+            EditorGUILayout.LabelField("");
+            EditorGUILayout.LabelField("-- Debug");
+
+            measureTimesProperty.boolValue = EditorGUILayout.Toggle("Measure Times", measureTimesProperty.boolValue);
+            debugResultCountProperty.intValue = EditorGUILayout.IntField("Result Count", debugResultCountProperty.intValue);
 
             if (!Application.isPlaying)
             {

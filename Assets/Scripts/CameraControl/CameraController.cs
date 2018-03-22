@@ -7,12 +7,14 @@ namespace Game.CameraControl
         public PoS_Camera PoS_Camera { get; private set; }
         public EchoSystem.EchoCameraEffect EchoCameraEffect { get; private set; }
         public Eclipse EclipseEffect { get; private set; }
+        public GPUIDisplayManager GPUIDisplayManager { get; private set; }
 
         public void InitializeCameraController(GameControl.IGameControllerBase gameController)
         {
-            this.PoS_Camera = GetComponent<PoS_Camera>();
-            this.EchoCameraEffect = GetComponent<EchoSystem.EchoCameraEffect>();
-            this.EclipseEffect = GetComponent<Eclipse>();
+            PoS_Camera = GetComponent<PoS_Camera>();
+            EchoCameraEffect = GetComponent<EchoSystem.EchoCameraEffect>();
+            EclipseEffect = GetComponent<Eclipse>();
+            GPUIDisplayManager = GetComponentInChildren<GPUIDisplayManager>();
             
             //this.PoS_Camera.InitializePoS_Camera();
             //this.EchoCameraEffect.InitializeEchoCameraEffect();
