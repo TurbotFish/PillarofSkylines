@@ -45,8 +45,11 @@ namespace Game.EchoSystem
             if (system == null)
                 system = GetComponent<ParticleSystem>();
 
-            if (particles == null || particles.Length < system.maxParticles)
-                particles = new ParticleSystem.Particle[system.maxParticles];
+            ParticleSystem.MainModule main = system.main;
+
+            if (particles == null || particles.Length < main.maxParticles)
+                particles = new ParticleSystem.Particle[main.maxParticles];
+
         }
     }
 } //end of namespace

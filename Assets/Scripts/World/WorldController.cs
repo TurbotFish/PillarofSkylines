@@ -502,7 +502,7 @@ namespace Game.World
         {
             yield return null;
 
-            while (subSceneJobsList.Count > 0 && subSceneJobsList[0].Priority <= renderDistanceMedium)
+            while (subSceneJobsList.Count > 0 /*&& subSceneJobsList[0].Priority <= renderDistanceMedium*/)
             {
                 yield return null;
             }
