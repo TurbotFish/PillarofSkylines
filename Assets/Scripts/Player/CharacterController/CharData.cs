@@ -60,6 +60,10 @@ namespace Game.Player.CharacterController
         public HoverData Hover { get { return hover; } }
 
         [SerializeField]
+        JetpackData jetpack = new JetpackData();
+        public JetpackData Jetpack { get { return jetpack; } }
+
+        [SerializeField]
         GroundRiseData groundRise = new GroundRiseData();
         public GroundRiseData GroundRise { get { return groundRise; } }
 
@@ -81,6 +85,7 @@ namespace Game.Player.CharacterController
             slide.OnValidate();
             glide.OnValidate();
             wallRun.OnValidate();
+            jetpack.OnValidate();
         }
 
         #endregion on validate
@@ -570,7 +575,7 @@ namespace Game.Player.CharacterController
         #endregion hover
 
         //*******************************************
-        
+
         #region ground rise
 
         [System.Serializable]
@@ -615,6 +620,52 @@ namespace Game.Player.CharacterController
                 velocityToFlat = Mathf.Clamp(velocityToFlat, 0, float.MaxValue);
                 flatLength = Mathf.Clamp(flatLength, 0, float.MaxValue);
                 flatAngle = Mathf.Clamp(flatAngle, 0, 90);
+            }
+        }
+
+        #endregion ground rise
+
+        //*******************************************
+
+        #region jetpack
+
+        [System.Serializable]
+        public class JetpackData
+        {
+
+            [SerializeField]
+            float maxFuel;
+            public float MaxFuel { get { return maxFuel; } }
+
+            [SerializeField]
+            float strength;
+            public float Strength { get { return strength; } }
+
+            [SerializeField]
+            float rechargeSpeed;
+            public float RechargeSpeed { get { return rechargeSpeed; } }
+
+            [SerializeField]
+            float maxSpeed;
+            public float MaxSpeed { get { return maxSpeed; } }
+
+            [SerializeField]
+            float horizontalSpeed;
+            public float HorizontalSpeed { get { return horizontalSpeed; } }
+
+            [SerializeField]
+            float fallingCoeff;
+            public float FallingCoeff { get { return fallingCoeff; } }
+
+
+            public void OnValidate()
+            {
+                maxFuel = Mathf.Clamp(maxFuel, 0, float.MaxValue);
+                strength = Mathf.Clamp(strength, 0, float.MaxValue);
+                rechargeSpeed = Mathf.Clamp(rechargeSpeed, 0, float.MaxValue);
+                maxSpeed = Mathf.Clamp(maxSpeed, 0, float.MaxValue);
+                horizontalSpeed = Mathf.Clamp(horizontalSpeed, 0, float.MaxValue);
+                fallingCoeff = Mathf.Clamp(fallingCoeff, 0, float.MaxValue);
             }
         }
 
