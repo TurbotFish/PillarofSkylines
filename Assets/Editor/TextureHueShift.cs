@@ -8,6 +8,7 @@ public class TextureHueShift : EditorWindow
     string texName = "Graph/Textures/HueShift";
 
     [SerializeField, Range(0, 1)] float hueShift = 0;
+    [SerializeField, Range(0, 1)] float luminosityShift = 0.5f;
 
     [MenuItem("Tools/HueShift")]
     public static void ShowWindow()
@@ -44,10 +45,12 @@ public class TextureHueShift : EditorWindow
 
         SerializedObject sO = new SerializedObject(this);
         SerializedProperty _hueShift = sO.FindProperty("hueShift");
+        SerializedProperty _luminosityShift = sO.FindProperty("luminosityShift");
 
         EditorGUI.BeginChangeCheck();
 
         EditorGUILayout.PropertyField(_hueShift);
+        EditorGUILayout.PropertyField(_luminosityShift);
 
         if (EditorGUI.EndChangeCheck())
             sO.ApplyModifiedProperties();
@@ -55,13 +58,13 @@ public class TextureHueShift : EditorWindow
         EditorGUILayout.Space();
         if (GUILayout.Button("Create Texture Copy"))
         {
-            CreateTextureCopy(texture, hueShift);
+            CreateTextureCopy(texture, hueShift, luminosityShift);
             Close();
         }
         Repaint();
     }
 
-    void CreateTextureCopy(Texture texture, float angle)
+    void CreateTextureCopy(Texture texture, float angle, float luminosity)
     {
         Texture2D srcTexture = texture as Texture2D;
         Texture2D newTexture = new Texture2D(texture.width, texture.height);
@@ -76,7 +79,7 @@ public class TextureHueShift : EditorWindow
                 float h = 0, s = 0, v = 0;
                 Color.RGBToHSV(src[(i*texture.width)+j], out h, out s, out v);
                 h += angle;
-                pix[i] = Color.HSVToRGB(h, s, v);
+                pix[i] = Color.HSVToRGB(h, s, v * luminosity * 2) ;
                 newTexture.SetPixel(j, i, pix[i]);
             }
         }
