@@ -320,6 +320,13 @@ namespace Game.World
             return result;
         }
 
+        public List<SubSceneJob> UnloadAll()
+        {
+            var result = SwitchRegionMode(eRegionMode.Inactive);
+
+            return result;
+        }
+
         /// <summary>
         /// Returns a list with the Transforms of all the SubScenes.
         /// </summary>
