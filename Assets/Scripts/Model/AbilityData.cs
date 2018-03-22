@@ -42,6 +42,11 @@ namespace Game.Model
         Ability dash = new Ability(eAbilityType.Dash);
         public Ability Dash { get { return dash; } }
 
+        //dash
+        [SerializeField]
+        Ability jetpack = new Ability(eAbilityType.Jetpack);
+        public Ability Jetpack { get { return jetpack; } }
+
         //hover
         [SerializeField]
         Ability hover = new Ability(eAbilityType.Hover);
@@ -65,6 +70,8 @@ namespace Game.Model
                     return wallRun;
                 case eAbilityType.GroundRise:
                     return groundRise;
+                case eAbilityType.Jetpack:
+                    return jetpack;
                 case eAbilityType.EchoBoost:
                     return echoBoost;
                 case eAbilityType.EchoDistance:
@@ -86,6 +93,7 @@ namespace Game.Model
                 echoDistance,
                 glide,
                 wallRun,
+                jetpack,
                 dash,
                 hover
             };

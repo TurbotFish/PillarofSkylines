@@ -6,50 +6,81 @@ namespace Game.EchoSystem
 {
     public class EchoParticleSystem : MonoBehaviour
     {
-        ParticleSystem system;
-        ParticleSystem.Particle[] particles;
-
-        int numParticlesAlive;
-
+        
+        public EchoParticle particlePrefab;
+        public float particleSpeed = 10f;
+        [HideInInspector]
         public int numEchoes = 3;
+        
+
+        List<EchoParticle> activeEchoParticles = new List<EchoParticle>();
+        List<Vector3> targets = new List<Vector3>();
+        
+        List<EchoParticle> disabledEchoParticles = new List<EchoParticle>();
+
+        void Start()
+        {
+            for (int i = 0; i < numEchoes; i++)
+            {
+                disabledEchoParticles.Add(Instantiate(particlePrefab, transform.position + new Vector3(0f, 1f, 0f), Quaternion.identity));
+                disabledEchoParticles[i].target = transform.position;
+                disabledEchoParticles[i].speed = particleSpeed;
+                disabledEchoParticles[i].gameObject.SetActive(false);
+            }
+        }
 
         void Update()
         {
-            InitializeIfNeeded();
-
-            system = GetComponent<ParticleSystem>();
-            numParticlesAlive = system.GetParticles(particles);
-
-            //		print("there is currently " + numParticlesAlive + " particles, and we have " + numEchoes + " echoes available.");
-
-            if (numParticlesAlive > numEchoes)
+            int i = 0;
+            foreach (EchoParticle ep in activeEchoParticles)
             {
-                particles[numParticlesAlive].remainingLifetime = 0f;
-                //			print("destroyed one particle");
-                system.SetParticles(particles, numParticlesAlive - 1);
-            }
-            else if (numParticlesAlive < numEchoes)
-            {
-                system.Emit(numEchoes - numParticlesAlive);
-                //			print("added " + (numEchoes - numParticlesAlive) + " particle");
+                Quaternion lookEcho = Quaternion.identity;
+                if (targets[i] - transform.position != Vector3.zero)
+                    lookEcho = Quaternion.LookRotation(targets[i] - transform.position);
+                
+                ep.target = transform.position + new Vector3(0f, 1f, 0f) + lookEcho * Vector3.forward;
+                ep.transform.rotation = lookEcho;
+                i++;
             }
         }
 
-        public void SetEchoNumber(int echoesAvailable)
+        public void AddEcho(Vector3 echoPosition)
         {
-            numEchoes = echoesAvailable;
+            activeEchoParticles.Add(disabledEchoParticles[0]);
+            disabledEchoParticles.RemoveAt(0);
+            activeEchoParticles[activeEchoParticles.Count - 1].gameObject.SetActive(true);
+            activeEchoParticles[activeEchoParticles.Count - 1].transform.position = transform.position + new Vector3(0f, 1f, 0f);
+            targets.Add(echoPosition);
+        }
+        
+        public void RemoveAllEcho()
+        {
+            foreach (EchoParticle ep in activeEchoParticles)
+            {
+                disabledEchoParticles.Add(ep);
+                ep.gameObject.SetActive(false);
+            }
+            activeEchoParticles.Clear();
+            targets.Clear();
         }
 
-        void InitializeIfNeeded()
+        public void RemoveEcho(Vector3 echoPosition)
         {
-            if (system == null)
-                system = GetComponent<ParticleSystem>();
-
-            ParticleSystem.MainModule main = system.main;
-
-            if (particles == null || particles.Length < main.maxParticles)
-                particles = new ParticleSystem.Particle[main.maxParticles];
-
+            disabledEchoParticles.Add(activeEchoParticles[0]);
+            activeEchoParticles.RemoveAt(0);
+            disabledEchoParticles[disabledEchoParticles.Count - 1].gameObject.SetActive(false);
+            targets.Remove(echoPosition);
         }
+
+        /*
+        int EchoIndexFromPosition(Vector3 position)
+        {
+            for (int i = 0; i < numActiveEchoes; i++)
+            {
+                if (targets[i] == position)
+                    return i;
+            }
+            return 1000;
+        }*/
     }
 } //end of namespace
