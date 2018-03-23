@@ -17,6 +17,8 @@ namespace Game.Model
         WallRun,
         Dash,
         Hover,
-        Graviswap
+        Jetpack,
+        Graviswap,
+        Echo
     }
 } //end of namespace

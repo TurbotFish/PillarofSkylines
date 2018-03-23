@@ -57,6 +57,11 @@ namespace Game.Player.CharacterController.States
             } else if (inputInfo.leftStickAtZero) {
 				stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
+            //jetpack
+            else if (inputInfo.jetpackButtonDown && !stateMachine.CheckStateLocked(ePlayerState.jetpack))
+            {
+                stateMachine.ChangeState(new JetpackState(charController, stateMachine));
+            }
             else if (!collisionInfo.below)
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);

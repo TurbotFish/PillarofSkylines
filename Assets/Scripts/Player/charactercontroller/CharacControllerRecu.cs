@@ -231,7 +231,7 @@ namespace Game.Player.CharacterController
 				result = ConfirmMovement(velocity);
             }
 
-            if (belowLastFrame && !insideWallOnThisFrame)
+            if (belowLastFrame && !insideWallOnThisFrame && myPlayer.CurrentState != ePlayerState.jetpack)
 			{
 				print("must be below");
 				int security = 5;
