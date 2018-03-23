@@ -501,9 +501,11 @@ namespace Game.World
         private IEnumerator ActivationCR()
         {
             yield return null;
-
-            while (subSceneJobsList.Count > 0 /*&& subSceneJobsList[0].Priority <= renderDistanceMedium*/)
+            // arbitrary number, tests in progress
+            while (subSceneJobsList.Count > 0 && subSceneJobsList[0].Priority <= 500 /* renderDistanceMedium*/)
             {
+                print("loading subscenes... job list: " + subSceneJobsList.Count + " | Current priority: " + subSceneJobsList[0].Priority);
+
                 yield return null;
             }
 
