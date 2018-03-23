@@ -32,6 +32,9 @@ namespace Game.Player.CharacterController
         public float glideMultiplier = 1;
         float boostTimer;
 
+        [HideInInspector]
+        public float jetpackFuel;
+
 
         //#############################################################################
 
@@ -39,6 +42,7 @@ namespace Game.Player.CharacterController
         {
             this.character = character;
             model = character.PlayerModel;
+
 
             Utilities.EventManager.EchoDestroyedEvent += EchoDestroyedEventHandler;
         }
@@ -168,8 +172,20 @@ namespace Game.Player.CharacterController
                 {
                     cooldownDict.Remove(cooldown.StateId);
                 }
+                
             }
 
+            if (CurrentState != ePlayerState.jetpack)
+            {
+                jetpackFuel += Time.deltaTime * character.CharData.Jetpack.RechargeSpeed;
+
+                if (jetpackFuel > character.CharData.Jetpack.MaxFuel)
+                    jetpackFuel = character.CharData.Jetpack.MaxFuel;
+            }
+            else
+            {
+                jetpackFuel -= Time.deltaTime;
+            }
 
             if (boostTimer < 0)
             {

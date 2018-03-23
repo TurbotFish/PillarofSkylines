@@ -66,6 +66,11 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             }
+            //jetpack
+            else if (inputInfo.jetpackButtonDown && !stateMachine.CheckStateLocked(ePlayerState.jetpack))
+            {
+                stateMachine.ChangeState(new JetpackState(charController, stateMachine));
+            }
             else if (collisionInfo.below)
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));

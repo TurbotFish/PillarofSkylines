@@ -16,7 +16,8 @@ namespace Game.Player.CharacterController
         wallRun = 128,
         wallClimb = 256,
         hover = 512,
-        graviswap = 1024
+        jetpack = 1024,
+        graviswap = 2048
 
         //exterminate!
         //inAir,

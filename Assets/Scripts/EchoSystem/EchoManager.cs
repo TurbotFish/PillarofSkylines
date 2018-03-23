@@ -52,11 +52,14 @@ namespace Game.EchoSystem
             echoCamera = gameController.CameraController.EchoCameraEffect;
             playerTransform = gameController.PlayerController.PlayerTransform;
             playerAnimator = gameController.PlayerController.CharController.animator;
-            echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();           
+            echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();
+            echoParticles.numEchoes = 3;
 
             EventManager.EclipseEvent += OnEclipseEventHandler;
             EventManager.PreSceneChangeEvent += OnPreSceneChangeEvent;
             EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
+
+
         }
 
         
@@ -192,7 +195,7 @@ namespace Game.EchoSystem
             if (target.playerEcho)
             {
                 placedEchoes--;
-                echoParticles.SetEchoNumber(maxEchoes - placedEchoes);
+                echoParticles.RemoveEcho(target.MyTransform.position);
             }
             Instantiate(breakEchoParticles, target.MyTransform.position, target.MyTransform.rotation);
             Destroy(target.gameObject);
@@ -231,7 +234,7 @@ namespace Game.EchoSystem
             if (isPlayerEcho)
             {
                 placedEchoes++;
-                echoParticles.SetEchoNumber(maxEchoes - placedEchoes);
+                echoParticles.AddEcho(newEcho.transform.position);
             }
         }
 
@@ -303,7 +306,7 @@ namespace Game.EchoSystem
             }
 
             placedEchoes = 0;
-            echoParticles.SetEchoNumber(maxEchoes);
+            echoParticles.RemoveAllEcho();
             echoList.Clear();
         }
 

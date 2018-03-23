@@ -136,7 +136,10 @@ namespace Game.Player.CharacterController
             stateMachine.RegisterAbility(ePlayerState.wallClimb, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.hover, eAbilityType.Hover);
+            stateMachine.RegisterAbility(ePlayerState.jetpack, eAbilityType.Jetpack);
             stateMachine.RegisterAbility(ePlayerState.graviswap, eAbilityType.Graviswap);
+
+            stateMachine.jetpackFuel = CharData.Jetpack.MaxFuel;
 
             stateMachine.ChangeState(new AirState(this, stateMachine, AirState.eAirStateMode.fall));
 
@@ -241,12 +244,17 @@ namespace Game.Player.CharacterController
                 inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint");
                 inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint");
 
+                inputInfo.jetpackButton = Input.GetButton("Jetpack");
+                inputInfo.jetpackButtonDown = Input.GetButtonDown("Jetpack");
+                inputInfo.jetpackButtonUp = Input.GetButtonUp("Jetpack");
+
                 inputInfo.rightStickButtonDown = Input.GetButtonDown("RightStickClick");
 
+                /*
                 if (Input.GetButtonDown("GroundRise"))
                 {
                     CreateGroundRise();
-                }
+                }*/
                 
                 stateMachine.HandleInput();
             }
