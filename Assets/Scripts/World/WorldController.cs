@@ -921,6 +921,7 @@ namespace Game.World
                             UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,
                             UnityEditor.SceneManagement.NewSceneMode.Additive
                         );
+                        root.SetParent(null, true);
                         UnityEditor.SceneManagement.EditorSceneManager.MoveGameObjectToScene(root.gameObject, centreSubScene);
 
                         //saving and closing the sub scene
