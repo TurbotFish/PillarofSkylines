@@ -8,54 +8,51 @@ namespace Game.UI.AbilityMenu
 {
     public class AbilityMenuController : MonoBehaviour, IUiState
     {
-        //##################################################################
-
         const float CIRCLE_INTERVAL = 360f / 8f;
 
+        //##################################################################
+
         [Tooltip("If the total value of the 2 axes of the left stick is less than this value, no slot is selected.")]
-        [SerializeField]
-        float stickDeadWeight;
+        [SerializeField] float stickDeadWeight;
 
         [Header("")]
-        [SerializeField]
-        CenterView centerView;
+        [SerializeField] private CenterView centerView;
 
-        [SerializeField]
-        List<SlotView> abilityViews = new List<SlotView>();
+        [SerializeField] private List<SlotView> abilityViews = new List<SlotView>();
         
-        [Space, SerializeField]
-        TMPro.TextMeshProUGUI helpMessage;
+        [Space, SerializeField] TMPro.TextMeshProUGUI helpMessage;
 
-        [Space, SerializeField]
-        TMPro.TextMeshProUGUI descriptionHelpMessage;
+        [Space, SerializeField] TMPro.TextMeshProUGUI descriptionHelpMessage;
 
-        public Cursor cursor;
+        [SerializeField] private Cursor cursor;
+
+        [Header("Colours")]
+        [SerializeField] private Color lockedAbilityColour;
+        
+        [SerializeField] private Color availableAbilityColour;
+        
+        [SerializeField] private Color activeAbilityColour;
+        
+        [SerializeField] private Color pillarLockedAbilityColour;
+        
 
         PlayerModel playerModel;
 
+        bool isEchoAbilityActive;
+        int selectedSlotIndex = -1;
+
+        bool activationButtonDown = false;
+        Vector2 previousStickPos = Vector2.zero;
+
+        //##################################################################
+
         public bool IsActive { get; private set; }
 
-
-        [Header("Colours")]
-        [SerializeField]
-        Color lockedAbilityColour;
         public Color LockedAbilityColour { get { return lockedAbilityColour; } }
-
-        [SerializeField]
-        Color availableAbilityColour;
         public Color AvailableAbilityColour { get { return availableAbilityColour; } }
-
-        [SerializeField]
-        Color activeAbilityColour;
         public Color ActiveAbilityColour { get { return activeAbilityColour; } }
-
-        [SerializeField]
-        Color pillarLockedAbilityColour;
         public Color PillarLockedAbilityColour { get { return pillarLockedAbilityColour; } }
 
-
-        //List<SlotView> slotList = new List<SlotView>();
-        int selectedSlotIndex = -1;
         SlotView SelectedSlot
         {
             get
@@ -66,19 +63,11 @@ namespace Game.UI.AbilityMenu
             }
         }
 
-        bool activationButtonDown = false;
-        Vector2 previousStickPos = Vector2.zero;
-
         //##################################################################
 
         void IUiState.Initialize(IGameControllerBase gameController)
         {
             playerModel = gameController.PlayerModel;
-
-            //slotList.AddRange(orangeGroup.Slots);
-            //slotList.AddRange(yellowGroup.Slots);
-            //slotList.AddRange(blueGroup.Slots);
-            //slotList.AddRange(greenGroup.Slots);
 
             for (int i = 0; i < abilityViews.Count; i++)
             {
@@ -98,6 +87,25 @@ namespace Game.UI.AbilityMenu
 
             IsActive = true;
             gameObject.SetActive(true);
+
+            isEchoAbilityActive = playerModel.CheckAbilityActive(eAbilityType.Echo);
+
+            //not tutorial
+            if (isEchoAbilityActive)
+            {
+                foreach(var slot in abilityViews)
+                {
+                    slot.gameObject.SetActive(true);
+                }
+            }
+            //tutorial
+            else
+            {
+                foreach (var slot in abilityViews)
+                {
+                    slot.gameObject.SetActive(false);
+                }
+            }
         }
 
         void IUiState.Deactivate()
@@ -113,7 +121,9 @@ namespace Game.UI.AbilityMenu
         void Update()
         {
             if (!IsActive)
+            {
                 return;
+            }
 
             //exit ability menu
             if (Input.GetButtonDown("MenuButton") || Input.GetButtonDown("Cancel"))
@@ -121,6 +131,7 @@ namespace Game.UI.AbilityMenu
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HUD));
                 return;
             }
+            //show help menu
             else if (Input.GetButtonDown("Back"))
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HelpMenu));
@@ -130,15 +141,24 @@ namespace Game.UI.AbilityMenu
             //**********************************************
             //handle ability activation
 
-            if (Input.GetButton("Jump") && !activationButtonDown && SelectedSlot != null)
+            //not tutorial
+            if (isEchoAbilityActive)
             {
-                ActivateSelectedAbility();
+                if (Input.GetButtonDown("Jump") && !activationButtonDown && SelectedSlot != null)
+                {
+                    ActivateSelectedAbility();
 
-                activationButtonDown = true;
+                    activationButtonDown = true;
+                }
+                else if (!Input.GetButton("Jump"))
+                {
+                    activationButtonDown = false;
+                }
             }
-            else if (!Input.GetButton("Jump"))
+            //tutorial
+            else
             {
-                activationButtonDown = false;
+
             }
 
             //**********************************************
