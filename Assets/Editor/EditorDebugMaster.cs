@@ -38,8 +38,6 @@ public class EditorDebugMaster : EditorWindow {
 
     [MenuItem("GameObject/Select Children %<", false)]
     public static void SelectChildren() {
-        
-
         if (Selection.gameObjects.Length > 0) {
             List<GameObject> children = new List<GameObject>();
             foreach (GameObject go in Selection.gameObjects) {
@@ -49,8 +47,6 @@ public class EditorDebugMaster : EditorWindow {
             }
             Selection.objects = children.ToArray();
         }
-
-        
     }
 
     [MenuItem("PoS Debug/Bring Player &F", false)]
