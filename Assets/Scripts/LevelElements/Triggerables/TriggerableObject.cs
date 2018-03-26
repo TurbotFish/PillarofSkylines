@@ -154,6 +154,11 @@ namespace Game.LevelElements
 
         #region monobehaviour methods
 
+        private void OnDestroy()
+        {
+            EventManager.TriggerUpdatedEvent -= OnTriggerUpdated;
+        }
+
 #if UNITY_EDITOR
         protected override void OnValidate()
         {

@@ -6,9 +6,14 @@ namespace Game.LevelElements
     {
         public string favourID;
 
-        private void Awake()
+        private void OnEnable()
         {
             Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
+        }
+
+        private void OnDisable()
+        {
+            Utilities.EventManager.FavourPickedUpEvent -= OnFavourPickedUpEventHandler;
         }
 
         void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
