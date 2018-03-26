@@ -10,10 +10,15 @@ namespace Game.LevelElements
 
         Renderer rend;
 
-        private void Awake()
+        private void Start()
         {
             rend = GetComponent<Renderer>();
             Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
+        }
+
+        private void OnDestroy()
+        {
+            Utilities.EventManager.FavourPickedUpEvent -= OnFavourPickedUpEventHandler;
         }
 
         void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
