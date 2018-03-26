@@ -4,24 +4,27 @@ using UnityEngine;
 
 public class BackAndForthMovement : MovingPlatform {
 
-    public float waitTime;
+    public float waitTimeBack;
+	public float waitTimeForth;
     public float speed;
     public float slowingRatio;
     public Vector3 movement;
+	public float initialWaitTime;
 
     float currWaitTime;
     Vector3 initialPosition;
     float movementProgression;
     Vector3 startOfFramePosition;
 
-    eMovingState currState = eMovingState.forth;
+
+	eMovingState currState = eMovingState.waitingAfterBack;
 
     protected override void Start()
     {
         base.Start();
 
         movementProgression = 0.01f;
-        currWaitTime = waitTime;
+		currWaitTime = waitTimeForth + initialWaitTime;
         initialPosition = transform.position;
         gameObject.tag = "MovingPlatform";
     }
@@ -51,7 +54,7 @@ public class BackAndForthMovement : MovingPlatform {
                 currWaitTime -= Time.deltaTime;
                 if (currWaitTime < 0f)
                 {
-                    currWaitTime = waitTime;
+					currWaitTime = waitTimeBack;
                     currState = eMovingState.forth;
                 }
                 break;
@@ -59,7 +62,7 @@ public class BackAndForthMovement : MovingPlatform {
                 currWaitTime -= Time.deltaTime;
                 if (currWaitTime < 0f)
                 {
-                    currWaitTime = waitTime;
+					currWaitTime = waitTimeForth;
                     currState = eMovingState.back;
                 }
                 break;
