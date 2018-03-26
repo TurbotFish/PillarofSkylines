@@ -26,6 +26,11 @@ namespace Game.LevelElements
         [SerializeField]
         protected bool triggered;
 
+        private void OnDestroy()
+        {
+            EventManager.TriggerUpdatedEvent -= OnTriggerUpdated;
+        }
+
 #if UNITY_EDITOR
         [SerializeField]
         private List<Trigger> triggers = new List<Trigger>(); //list of Trigger objects
