@@ -501,8 +501,8 @@ namespace Game.World
         private IEnumerator ActivationCR()
         {
             yield return null;
-
-            while (subSceneJobsList.Count > 0 /*&& subSceneJobsList[0].Priority <= renderDistanceMedium*/)
+            // arbitrary number, tests in progress
+            while (subSceneJobsList.Count > 0 && subSceneJobsList[0].Priority <= 500 /* renderDistanceMedium*/)
             {
                 yield return null;
             }
@@ -921,6 +921,7 @@ namespace Game.World
                             UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,
                             UnityEditor.SceneManagement.NewSceneMode.Additive
                         );
+                        root.SetParent(null, true);
                         UnityEditor.SceneManagement.EditorSceneManager.MoveGameObjectToScene(root.gameObject, centreSubScene);
 
                         //saving and closing the sub scene

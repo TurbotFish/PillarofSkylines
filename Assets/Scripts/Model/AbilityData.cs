@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.Model
@@ -6,51 +8,7 @@ namespace Game.Model
     [CreateAssetMenu(menuName = "ScriptableObjects/AbilityData", fileName = "AbilityData")]
     public class AbilityData : ScriptableObject
     {
-        [Header("Details")]
-        //double jump
-        [SerializeField]
-        Ability doubleJump = new Ability(eAbilityType.DoubleJump);
-        public Ability DoubleJump { get { return doubleJump; } }
-
-        //ground rise
-        [SerializeField]
-        Ability groundRise = new Ability(eAbilityType.GroundRise);
-        public Ability GroundRise { get { return groundRise; } }
-
-        //echo boost
-        [SerializeField]
-        Ability echoBoost = new Ability(eAbilityType.EchoBoost);
-        public Ability EchoBoost { get { return echoBoost; } }
-
-        //echo distance
-        [SerializeField]
-        Ability echoDistance = new Ability(eAbilityType.EchoDistance);
-        public Ability EchoDistance { get { return echoDistance; } }
-
-        //glide
-        [SerializeField]
-        Ability glide = new Ability(eAbilityType.Glide);
-        public Ability Glide { get { return glide; } }
-
-        //wall run
-        [SerializeField]
-        Ability wallRun = new Ability(eAbilityType.WallRun);
-        public Ability WallRun { get { return wallRun; } }
-
-        //dash
-        [SerializeField]
-        Ability dash = new Ability(eAbilityType.Dash);
-        public Ability Dash { get { return dash; } }
-
-        //dash
-        [SerializeField]
-        Ability jetpack = new Ability(eAbilityType.Jetpack);
-        public Ability Jetpack { get { return jetpack; } }
-
-        //hover
-        [SerializeField]
-        Ability hover = new Ability(eAbilityType.Hover);
-        public Ability Hover { get { return hover; } }
+        [SerializeField] private List<Ability> ab = new List<Ability>();
 
         //###########################################################
 
@@ -58,45 +16,13 @@ namespace Game.Model
 
         public Ability GetAbility(eAbilityType ability)
         {
-            switch (ability)
-            {
-                case eAbilityType.DoubleJump:
-                    return DoubleJump;
-                case eAbilityType.Dash:
-                    return Dash;
-                case eAbilityType.Glide:
-                    return Glide;
-                case eAbilityType.WallRun:
-                    return wallRun;
-                case eAbilityType.GroundRise:
-                    return groundRise;
-                case eAbilityType.Jetpack:
-                    return jetpack;
-                case eAbilityType.EchoBoost:
-                    return echoBoost;
-                case eAbilityType.EchoDistance:
-                    return echoDistance;
-                case eAbilityType.Hover:
-                    return hover;
-                default:
-                    return null;
-            }
+            var result = ab.FirstOrDefault(item => item.Type == ability);
+            return result;
         }
 
         public List<Ability> GetAllAbilities()
         {
-            return new List<Ability>()
-            {
-                doubleJump,
-                groundRise,
-                echoBoost,
-                echoDistance,
-                glide,
-                wallRun,
-                jetpack,
-                dash,
-                hover
-            };
+            return new List<Ability>(ab);
         }
 
         #endregion methods
@@ -105,7 +31,45 @@ namespace Game.Model
 
         void OnValidate()
         {
-            foreach(var ability in GetAllAbilities())
+            List<eAbilityType> wantedValues = Enum.GetValues(typeof(eAbilityType)).Cast<eAbilityType>().ToList();
+            List<eAbilityType> presentValues = new List<eAbilityType>();
+
+            List<Ability> elementsToRemove = new List<Ability>();
+            bool changedList = false;
+
+            foreach (var element in ab)
+            {
+                if (presentValues.Contains(element.Type))
+                {
+                    elementsToRemove.Add(element);
+                }
+                else
+                {
+                    presentValues.Add(element.Type);
+                }
+            }
+
+            foreach(var element in elementsToRemove) //removing unnecessary objects
+            {
+                ab.Remove(element);
+                changedList = true;
+            }
+
+            foreach(var type in wantedValues) //adding missing objects
+            {
+                if (!presentValues.Contains(type))
+                {
+                    ab.Add(new Ability(type));
+                    changedList = true;
+                }
+            }
+
+            if (changedList)
+            {
+                ab.Sort((x, y) => ((int)x.Type).CompareTo((int)y.Type));
+            }
+
+            foreach (var ability in ab)
             {
                 ability.OnValidate();
             }
