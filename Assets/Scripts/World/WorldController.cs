@@ -217,18 +217,18 @@ namespace Game.World
             isActive = false;
 
             var loadJobs = subSceneJobsList.Where(item => item.JobType == eSubSceneJobType.Load).ToList();
-            foreach(var loadJob in loadJobs)
+            foreach (var loadJob in loadJobs)
             {
                 loadJob.Callback(loadJob, false);
                 subSceneJobsList.Remove(loadJob);
             }
 
-            foreach(var superRegion in superRegionsList)
+            foreach (var superRegion in superRegionsList)
             {
                 subSceneJobsList.AddRange(superRegion.UnloadAll());
             }
 
-            StartCoroutine(DeactivationCR());           
+            StartCoroutine(DeactivationCR());
         }
 
         #endregion public regions
@@ -501,8 +501,8 @@ namespace Game.World
         private IEnumerator ActivationCR()
         {
             yield return null;
-
-            while (subSceneJobsList.Count > 0 /*&& subSceneJobsList[0].Priority <= renderDistanceMedium*/)
+            // arbitrary number, tests in progress
+            while (subSceneJobsList.Count > 0 && subSceneJobsList[0].Priority <= 500 /* renderDistanceMedium*/)
             {
                 yield return null;
             }
@@ -831,15 +831,6 @@ namespace Game.World
             //clear subScene folder
             ((IWorldEventHandler)this).ClearSubSceneFolder();
 
-            //create folder, in case it does not exist
-            //string subSceneFolderPath = WorldUtility.GetSubSceneFolderPath(gameObject.scene.path);
-
-            //if (!UnityEditor.AssetDatabase.IsValidFolder(subSceneFolderPath))
-            //{
-            //    string parentFolderPath = subSceneFolderPath.Remove(subSceneFolderPath.LastIndexOf('/'));
-            //    UnityEditor.AssetDatabase.CreateFolder(parentFolderPath, gameObject.scene.name);
-            //}
-
             //finding all the regions
             var regions = new List<RegionBase>();
             for (int i = 0; i < transform.childCount; i++)
@@ -854,6 +845,12 @@ namespace Game.World
 
             var buildSettingsScenes = UnityEditor.EditorBuildSettings.scenes.ToList();
 
+            //adding open world scene to build settings
+            if (!buildSettingsScenes.Exists(item => item.path == gameObject.scene.path))
+            {
+                buildSettingsScenes.Add(new UnityEditor.EditorBuildSettingsScene(gameObject.scene.path, true));
+            }
+
             foreach (var region in regions)
             {
                 foreach (var subSceneLayer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
@@ -867,9 +864,10 @@ namespace Game.World
                             continue;
                         }
 
+                        //handle duplications
                         foreach (var superRegionType in Enum.GetValues(typeof(eSuperRegionType)).Cast<eSuperRegionType>())
                         {
-                            if (superRegionType != eSuperRegionType.Centre && region.DoNotDuplicate)
+                            if (superRegionType == eSuperRegionType.Centre || region.DoNotDuplicate)
                             {
                                 continue;
                             }
@@ -892,7 +890,10 @@ namespace Game.World
                             }
 
                             //moving root to subScene
-                            var subScene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene, UnityEditor.SceneManagement.NewSceneMode.Additive);
+                            var subScene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(
+                                UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,
+                                UnityEditor.SceneManagement.NewSceneMode.Additive
+                            );
                             UnityEditor.SceneManagement.EditorSceneManager.MoveGameObjectToScene(rootCopy.gameObject, subScene);
 
                             //saving and closing the sub scene
@@ -903,16 +904,37 @@ namespace Game.World
                             buildSettingsScenes.Add(new UnityEditor.EditorBuildSettingsScene(subScenePath, true));
                         }
 
-                        DestroyImmediate(root.gameObject);
+                        //handle centre root (can't be duplicated because that breaks the prefabs)
+
+                        //path
+                        string centreSubScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.UniqueId, subSceneMode, subSceneLayer, eSuperRegionType.Centre);
+
+                        //informing world objects
+                        var centreWorldObjects = root.GetComponentsInChildren<IWorldObjectDuplication>();
+                        for (int i = 0; i < centreWorldObjects.Length; i++)
+                        {
+                            centreWorldObjects[i].OnDuplication();
+                        }
+
+                        //moving root to subScene
+                        var centreSubScene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(
+                            UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,
+                            UnityEditor.SceneManagement.NewSceneMode.Additive
+                        );
+                        root.SetParent(null, true);
+                        UnityEditor.SceneManagement.EditorSceneManager.MoveGameObjectToScene(root.gameObject, centreSubScene);
+
+                        //saving and closing the sub scene
+                        UnityEditor.SceneManagement.EditorSceneManager.SaveScene(centreSubScene, centreSubScenePath);
+                        UnityEditor.SceneManagement.EditorSceneManager.CloseScene(centreSubScene, true);
+
+                        //add subScene to buildsettings
+                        buildSettingsScenes.Add(new UnityEditor.EditorBuildSettingsScene(centreSubScenePath, true));
                     }
                 }
             }
 
-            //adding open world scene to build settings
-            if (!buildSettingsScenes.Exists(item => item.path == gameObject.scene.path))
-            {
-                buildSettingsScenes.Add(new UnityEditor.EditorBuildSettingsScene(gameObject.scene.path, true));
-            }
+            //
             UnityEditor.EditorBuildSettings.scenes = buildSettingsScenes.ToArray();
 
             //

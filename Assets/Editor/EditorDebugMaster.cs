@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
 
-public class EditorDebugMaster : EditorWindow
-{
+public class EditorDebugMaster : EditorWindow {
 
     [MenuItem("PoS Debug/Debug Replacement Shader Mode _F1", false)]
     public static void ChangeDebugShaderMode()
@@ -34,6 +34,19 @@ public class EditorDebugMaster : EditorWindow
 
         cam.position = viewPos.position;
         cam.rotation = viewPos.rotation;
+    }
+
+    [MenuItem("GameObject/Select Children %<", false)]
+    public static void SelectChildren() {
+        if (Selection.gameObjects.Length > 0) {
+            List<GameObject> children = new List<GameObject>();
+            foreach (GameObject go in Selection.gameObjects) {
+                foreach(Transform child in go.transform)
+                    children.Add(child.gameObject);
+
+            }
+            Selection.objects = children.ToArray();
+        }
     }
 
     [MenuItem("PoS Debug/Bring Player &F", false)]

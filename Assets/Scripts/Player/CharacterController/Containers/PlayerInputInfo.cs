@@ -23,6 +23,10 @@ namespace Game.Player.CharacterController.Containers
         public bool sprintButtonDown;
         public bool sprintButtonUp;
 
+        public bool jetpackButton;
+        public bool jetpackButtonDown;
+        public bool jetpackButtonUp;
+
         public bool rightStickButtonDown;
 
         public void Reset()
@@ -43,6 +47,10 @@ namespace Game.Player.CharacterController.Containers
             sprintButton = false;
             sprintButtonDown = false;
             sprintButtonUp = false;
+
+            jetpackButton = false;
+            jetpackButtonDown = false;
+            jetpackButtonUp = false;
 
             rightStickButtonDown = false;
         }

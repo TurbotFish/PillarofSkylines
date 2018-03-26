@@ -165,7 +165,12 @@ namespace Game.Player.CharacterController.States
             //dash
             else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash)) {
 				stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
-			}
+            }
+            //jetpack
+            else if (inputInfo.jetpackButtonDown && !stateMachine.CheckStateLocked(ePlayerState.jetpack))
+            {
+                stateMachine.ChangeState(new JetpackState(charController, stateMachine));
+            }
             //glide
             else if (inputInfo.sprintButtonDown && !stateMachine.CheckStateLocked(ePlayerState.glide)) {
 				stateMachine.ChangeState(new GlideState(charController, stateMachine));

@@ -8,8 +8,11 @@ namespace Game.Model
     {
         //###########################################################
 
+        [SerializeField, HideInInspector] public string title; //this is used by Unity to name the object in an inspector array!!!!
+
         //type
-        public eAbilityType Type { get; private set; }
+        [SerializeField, HideInInspector] private eAbilityType type; 
+        public eAbilityType Type { get { return type; } }
 
         //group
         [SerializeField]
@@ -42,7 +45,7 @@ namespace Game.Model
 
         public Ability(eAbilityType abilityType)
         {
-            Type = abilityType;
+            type = abilityType;
         }
 
         //###########################################################
@@ -53,6 +56,8 @@ namespace Game.Model
             {
                 activationPrice = 1;
             }
+
+            title = Type.ToString();
         }
 
         //###########################################################
