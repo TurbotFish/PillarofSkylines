@@ -75,7 +75,14 @@ namespace Game.Player {
                 //pillar entrance
                 else if (pillarEntranceInfo.IsPillarEntranceInRange)
                 {
-                    Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowPillarEntranceMenuEventArgs(pillarEntranceInfo.CurrentPillarEntrance.PillarId));
+                    if (gameController.PlayerModel.CheckIsPillarUnlocked(pillarEntranceInfo.CurrentPillarEntrance.PillarId))
+                    {
+                        Utilities.EventManager.SendEnterPillarEvent(this, new Utilities.EventManager.EnterPillarEventArgs(pillarEntranceInfo.CurrentPillarEntrance.PillarId));
+                    }
+                    else
+                    {
+                        Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowPillarEntranceMenuEventArgs(pillarEntranceInfo.CurrentPillarEntrance.PillarId));
+                    }
                 }
                 //pillar exit
                 else if (pillarExitInRange)
