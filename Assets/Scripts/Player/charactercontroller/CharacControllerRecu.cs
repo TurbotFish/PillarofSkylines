@@ -96,6 +96,7 @@ namespace Game.Player.CharacterController
             favourCollider.radius = radius;
             favourCollider.height = height + radius * 2;
             capsuleHeightModifier = new Vector3(0, height, 0);
+            collisions.collisionLayer = collisionMask;
         }
 
         //#############################################################################
@@ -577,6 +578,8 @@ namespace Game.Player.CharacterController
 
             public bool cornerNormal;
             public float stepHeight;
+
+            public LayerMask collisionLayer;
 
             public Vector3 initialVelocityOnThisFrame;
 

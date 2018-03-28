@@ -566,9 +566,14 @@ namespace Game.Player.CharacterController
             float duration;
             public float Duration { get { return duration; } }
 
+            [SerializeField]
+            float maxHeight;
+            public float MaxHeight { get { return maxHeight; } }
+
             public void OnValidate()
             {
                 duration = Mathf.Clamp(duration, 0, float.MaxValue);
+                maxHeight = Mathf.Clamp(maxHeight, 0, float.MaxValue);
             }
         }
 
@@ -669,7 +674,7 @@ namespace Game.Player.CharacterController
             }
         }
 
-        #endregion ground rise
+        #endregion jetpack
 
         //*******************************************
 
