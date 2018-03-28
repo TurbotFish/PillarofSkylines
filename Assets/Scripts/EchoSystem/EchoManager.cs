@@ -1,4 +1,5 @@
 ﻿using Game.GameControl;
+using Game.Model;
 using Game.Utilities;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,34 +12,28 @@ namespace Game.EchoSystem
 
         [HideInInspector] public bool atHome;
 
-        [SerializeField] Echo echoPrefab;
-        public BreakEchoParticles breakEchoParticles;
-        [SerializeField] int maxEchoes = 3;
-        [SerializeField] float driftInputIntensity = 0.5f;
+        [SerializeField] private Echo echoPrefab;
+        [SerializeField] public BreakEchoParticles breakEchoParticles; //why public?
+        [SerializeField] private int maxEchoes = 3;
+        [SerializeField] private float driftInputIntensity = 0.5f;
 
         [Header("ShellFX")]
-        [SerializeField] GameObject shell;
+        [SerializeField] private GameObject shell;
 
-        Animator playerAnimator;
+        private Animator playerAnimator;
 
-        /// <summary>
-        /// Number of echoes placed by the player.
-        /// </summary>
-        int placedEchoes;
+        private IGameControllerBase gameController;
+        private Transform playerTransform;
+        private new PoS_Camera camera;
+        private EchoCameraEffect echoCamera;
+        private EchoParticleSystem echoParticles;
 
-        Transform playerTransform;
-        new PoS_Camera camera;
-        EchoCameraEffect echoCamera;
-        EchoParticleSystem echoParticles;
-
-        List<Echo> echoList = new List<Echo>();
-
-        bool isEclipseActive;
-        bool isDoorActive;
-        float driftInputDown;
+        private List<Echo> echoList = new List<Echo>();
+        private int placedEchoes; // Number of echoes placed by the player
+        private bool isEclipseActive;
+        private bool isDoorActive;
+        private float driftInputDown;
         private bool isActive; //set to true when a scene is loaded, false otherwise. This helps avoid errors ;)
-
-        Transform MyTransform { get; set; }
 
         //##################################################################
 
@@ -46,8 +41,7 @@ namespace Game.EchoSystem
 
         public void Initialize(IGameControllerBase gameController)
         {
-            MyTransform = transform;
-
+            this.gameController = gameController;
             camera = gameController.CameraController.PoS_Camera;
             echoCamera = gameController.CameraController.EchoCameraEffect;
             playerTransform = gameController.PlayerController.PlayerTransform;
@@ -58,11 +52,7 @@ namespace Game.EchoSystem
             EventManager.EclipseEvent += OnEclipseEventHandler;
             EventManager.PreSceneChangeEvent += OnPreSceneChangeEvent;
             EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
-
-
-        }
-
-        
+        }       
 
         #endregion initialization
 
@@ -72,10 +62,7 @@ namespace Game.EchoSystem
         {
             if (isActive && !isEclipseActive)
             {
-
-
-                // v TELEPORT WHEN BUTTON IS PRESSED v
-
+                //drift stuff (???)
                 float driftInput = Input.GetAxis("Drift") + (Input.GetButtonDown("Drift") ? 1 : 0);
 
                 if (driftInput > driftInputIntensity)
@@ -92,74 +79,11 @@ namespace Game.EchoSystem
                     driftInputDown = 0;
                 }
 
-
-
-
-                // v TELEPORT WHEN BUTTON IS RELEASED v
-
-                //float driftInput = Input.GetAxis("Drift") + (Input.GetButtonUp("Drift") ? 1 : 0);
-
-                //if (driftInput > driftInputIntensity)
-                //{
-                //    driftInputDown += Time.deltaTime;
-                //    /*
-                //    if (driftInputDown >= timeToHoldForDoor && !isDoorActive && (!gameController || (gameController && !gameController.isPillarActive))) {
-                //        // do the door thing!
-                //        isDoorActive = true;
-
-                //        if (homePoint) {
-
-                //            Vector3 homeDoorPos = new Vector3(0, 0, 0);
-
-                //            float minDistance = 1.5f, maxDistance = 4f;
-
-                //            RaycastHit hit;
-                //            if (Physics.Raycast(playerTransform.position, playerTransform.forward * maxDistance, out hit, maxDistance))
-                //            {
-                //                homeDoorPos = playerTransform.position + playerTransform.forward * (hit.distance - 0.2f);
-                //                homeDoor.transform.rotation = playerTransform.rotation;
-                //            } else
-                //            {
-                //                homeDoorPos = playerTransform.position + playerTransform.forward * maxDistance;
-                //                homeDoor.transform.rotation = playerTransform.rotation;
-                //            }
-
-                //            homeDoor.transform.position = homeDoorPos;
-                //            homeDoor.transform.rotation = playerTransform.rotation;
-
-                //            homeDoor.SetActive(true);
-
-                //            HomePortalCamera portal = homeDoor.GetComponentInChildren<HomePortalCamera>();
-                //            portal.worldAnchorPoint.gameObject.SetActive(!atHome);
-                //            portal.portalRenderer.gameObject.SetActive(!atHome);
-                //            portal.otherPortal.gameObject.SetActive(!atHome);
-
-                //            if (!atHome)
-                //                camera.LookAtHomeDoor(homeDoor.transform.position, homeDoor.transform.forward, homePoint.position);
-
-                //        } else {
-                //            print("Assign HomePoint to the EchoManager if you want it to work with the GameControllerLite");
-                //        }
-                //    }
-                //    */
-
-                //}
-                //else if (driftInput < 0.4f)
-                //{
-                //    /*if (isDoorActive) {
-                //        isDoorActive = false;
-                //        homeDoor.SetActive(false);
-                //        if (!atHome)
-                //            camera.StopLookingAtHomeDoor();
-                //    }
-                //    else */
-                //    if (driftInputDown > 0)
-                //        Drift();
-                //    driftInputDown = 0;
-                //}
-
-                if (Input.GetButtonDown("Echo"))
+                //create new echo
+                if (Input.GetButtonDown("Echo") && gameController.PlayerModel.CheckAbilityActive(eAbilityType.Echo))
+                {
                     CreateEcho(true);
+                }
             }
         }
 
