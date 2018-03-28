@@ -10,8 +10,6 @@ namespace Game.EchoSystem
     {
         //##################################################################
 
-        [HideInInspector] public bool atHome;
-
         [SerializeField] private Echo echoPrefab;
         [SerializeField] public BreakEchoParticles breakEchoParticles; //why public?
         [SerializeField] private int maxEchoes = 3;
@@ -23,8 +21,6 @@ namespace Game.EchoSystem
         private Animator playerAnimator;
 
         private IGameControllerBase gameController;
-        private Transform playerTransform;
-        private new PoS_Camera camera;
         private EchoCameraEffect echoCamera;
         private EchoParticleSystem echoParticles;
 
@@ -42,11 +38,9 @@ namespace Game.EchoSystem
         public void Initialize(IGameControllerBase gameController)
         {
             this.gameController = gameController;
-            camera = gameController.CameraController.PoS_Camera;
             echoCamera = gameController.CameraController.EchoCameraEffect;
-            playerTransform = gameController.PlayerController.PlayerTransform;
             playerAnimator = gameController.PlayerController.CharController.animator;
-            echoParticles = playerTransform.GetComponentInChildren<EchoParticleSystem>();
+            echoParticles = gameController.PlayerController.PlayerTransform.GetComponentInChildren<EchoParticleSystem>();
             echoParticles.numEchoes = 3;
 
             EventManager.EclipseEvent += OnEclipseEventHandler;
@@ -150,7 +144,7 @@ namespace Game.EchoSystem
                 Break(oldestEcho);
             }
 
-            Echo newEcho = Instantiate(echoPrefab, playerTransform.position, playerTransform.rotation);
+            Echo newEcho = Instantiate(echoPrefab, gameController.PlayerController.PlayerTransform.position, gameController.PlayerController.PlayerTransform.rotation);
             newEcho.playerEcho = isPlayerEcho;
             newEcho.echoManager = this;
             echoList.Add(newEcho);
@@ -177,7 +171,7 @@ namespace Game.EchoSystem
         void CreateShell()
         {
             GameObject _shell;
-            _shell = Instantiate(shell, playerTransform.position - new Vector3(0, -0.2f, 0), playerTransform.rotation) as GameObject;
+            _shell = Instantiate(shell, gameController.PlayerController.PlayerTransform.position - new Vector3(0, -0.2f, 0), gameController.PlayerController.PlayerTransform.rotation) as GameObject;
             //_shell.GetComponent<Animator> ().runtimeAnimatorController = playerAnimator.runtimeAnimatorController;
             Animator _anim = _shell.GetComponent<Animator>();
             _anim.Play(playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash);
@@ -237,23 +231,6 @@ namespace Game.EchoSystem
         void OnSceneChangedEventHandler(object sender, EventManager.SceneChangedEventArgs args)
         {
             isActive = true;
-
-            //Debug.LogErrorFormat("EchoManager: OnSceneChangedEventHandler: echo count = {0}", echoList.Count);
-
-            //isEclipseActive = false;
-
-            //for (int i = 0; i < echoList.Count; i++)
-            //{
-            //    if(echoList[i] == null)
-            //    {
-            //        Debug.Log("echo is null");
-            //    }
-            //    Destroy(echoList[i].gameObject);
-            //}
-
-            //placedEchoes = 0;
-            //echoParticles.SetEchoNumber(maxEchoes);
-            //echoList.Clear();
         }
 
         #endregion event handlers
