@@ -17,9 +17,11 @@ namespace Game.Player.CharacterController.States
         CharData.MoveData moveData;
         CharData.HoverData hoverData;
 
+
+        Vector3 gravityToResetTo;
         int nbrOfBlocksFeedback = 10;
         float timer;
-        
+        bool shouldResetGravity = true;
 
         //#############################################################################
 
@@ -30,6 +32,17 @@ namespace Game.Player.CharacterController.States
             moveData = charController.CharData.Move;
             hoverData = charController.CharData.Hover;
             timer = hoverData.Duration;
+            gravityToResetTo = new Vector3(0f, -1f, 0f);
+        }
+
+        public HoverState(CharController charController, StateMachine stateMachine, Vector3 gravityReset)
+        {
+            this.charController = charController;
+            this.stateMachine = stateMachine;
+            moveData = charController.CharData.Move;
+            hoverData = charController.CharData.Hover;
+            timer = hoverData.Duration;
+            gravityToResetTo = gravityReset;
         }
 
         //#############################################################################
@@ -45,6 +58,16 @@ namespace Game.Player.CharacterController.States
         public void Exit()
         {
             Debug.Log("Exit State: Hover");
+            /*PlayerMovementInfo movementInfo = charController.MovementInfo;
+            CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
+            RaycastHit hit;
+            if (Physics.Raycast(movementInfo.position, -movementInfo.up, out hit, hoverData.MaxHeight, collisionInfo.collisionLayer))
+            {
+                if (hit.collider.CompareTag("Gravifloor"))
+                {
+                    charController.ChangeGravityDirection(gravityToResetTo);
+                }
+            }*/
             charController.hoverFX.Stop();
         }
 
@@ -74,9 +97,9 @@ namespace Game.Player.CharacterController.States
             }
             else if (collisionInfo.below)
             {
-                stateMachine.ChangeState(new StandState(charController, stateMachine));
+                stateMachine.ChangeState(new MoveState(charController, stateMachine));
             }
-            else if (inputInfo.leftStickAtZero || inputInfo.sprintButtonUp || Physics.Raycast(movementInfo.position, -movementInfo.up, hoverData.MaxHeight, collisionInfo.collisionLayer))
+            else if (Physics.Raycast(movementInfo.position, -movementInfo.up, hoverData.MaxHeight, collisionInfo.collisionLayer) || inputInfo.leftStickAtZero || inputInfo.sprintButtonUp)
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
@@ -121,5 +144,6 @@ namespace Game.Player.CharacterController.States
         }
 
         //#############################################################################
+        
     }
 }
