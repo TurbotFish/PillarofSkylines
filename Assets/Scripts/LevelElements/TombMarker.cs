@@ -1,32 +1,79 @@
-﻿using UnityEngine;
+﻿using Game.GameControl;
+using Game.World;
+using UnityEngine;
 
 namespace Game.LevelElements
 {
-    public class TombMarker : MonoBehaviour
+    public class TombMarker : MonoBehaviour, IWorldObject
     {
-        public string favourID;
+        //###########################################################
 
-        [SerializeField] GameObject toDisable;
+        [SerializeField] public string favourID; //why public?
 
-        Renderer rend;
+        [SerializeField] private GameObject toDisable;
 
-        private void Start()
+        IGameControllerBase gameController;
+        private bool isInitialized;
+        private bool favourPickedUp;
+
+        //###########################################################
+
+        public void Initialize(IGameControllerBase gameController, bool isCopy)
         {
-            rend = GetComponent<Renderer>();
-            Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
+            this.gameController = gameController;
+
+            if (gameController.PlayerModel.CheckIfPickUpCollected(favourID)) //the favour has already been picked up
+            {
+                OnFavourPickedUp();
+            }
+            else
+            {
+                Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
+            }
+
+            isInitialized = true;
         }
 
-        private void OnDestroy()
+        //###########################################################
+
+        private void OnEnable()
+        {
+            if (!isInitialized || favourPickedUp)
+            {
+                return;
+            }
+            else if (gameController.PlayerModel.CheckIfPickUpCollected(favourID)) //the favour has been picked up while the marker was disabled
+            {
+                OnFavourPickedUp();
+            }
+            else
+            {
+                Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
+            }
+        }
+
+        private void OnDisable()
         {
             Utilities.EventManager.FavourPickedUpEvent -= OnFavourPickedUpEventHandler;
         }
 
-        void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
+        //###########################################################
+
+        private void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
         {
             if (args.FavourId == favourID)
             {
-                toDisable.SetActive(false);
+                OnFavourPickedUp();
             }
         }
+
+        private void OnFavourPickedUp()
+        {
+            toDisable.SetActive(false);
+            favourPickedUp = true;
+            Utilities.EventManager.FavourPickedUpEvent -= OnFavourPickedUpEventHandler;
+        }
+
+        //###########################################################
     }
 } //end of namespace

@@ -154,6 +154,11 @@ namespace Game.LevelElements
 
         private void OnEnable()
         {
+            if(isInitialized && persistentTriggerable.Triggered != triggered)
+            {
+                SetTriggered(persistentTriggerable.Triggered);
+            }
+
             EventManager.TriggerUpdatedEvent += OnTriggerUpdated;
         }
 
