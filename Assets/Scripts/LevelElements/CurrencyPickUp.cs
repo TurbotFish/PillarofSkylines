@@ -62,7 +62,6 @@ namespace Game.LevelElements
         [SerializeField] float timeBeforeDissolve = 2;
         [SerializeField] float dissolveDuration = 2;
         [SerializeField] AnimationCurve dissolveCurve;
-        [SerializeField] GameObject[] disableRays;
 
         #endregion variables
 
@@ -237,10 +236,7 @@ namespace Game.LevelElements
         IEnumerator DissolveTomb()
         {
             yield return new WaitForSeconds(timeBeforeDissolve);
-
-            foreach (GameObject go in disableRays)
-                go.SetActive(false);
-
+            
             for (float elapsed = 0; elapsed < dissolveDuration; elapsed += Time.deltaTime)
             {
                 tombShell.material.SetFloat(dissolveVariableName, dissolveCurve.Evaluate(elapsed / dissolveDuration));
