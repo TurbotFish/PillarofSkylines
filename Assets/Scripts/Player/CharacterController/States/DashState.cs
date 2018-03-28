@@ -54,21 +54,30 @@ namespace Game.Player.CharacterController.States
 
         public StateReturnContainer Update(float dt)
         {
+            CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
             timer -= dt;
 
-            var result = new StateReturnContainer();
-
-            result.CanTurnPlayer = false;
-            result.IgnoreGravity = true;
-            result.PlayerForward = forward;
-            result.Acceleration = charController.TurnSpaceToLocal(forward * dashData.Speed * stateMachine.speedMultiplier);
+            var result = new StateReturnContainer
+            {
+                CanTurnPlayer = false,
+                IgnoreGravity = true,
+                PlayerForward = forward,
+                Acceleration = charController.TurnSpaceToLocal(forward * dashData.Speed * stateMachine.speedMultiplier)
+            };
             result.MaxSpeed = result.Acceleration.magnitude + 1; //+1 is just for security
             result.TransitionSpeed = dashData.TransitionSpeed;
-            result.keepVerticalMovement = true;
+            //result.keepVerticalMovement = true;
             result.resetVerticalVelocity = true;
             if (timer <= 0)
             {
-                stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
+                if (collisionInfo.below)
+                {
+                    Debug.Log("to move state");
+                    stateMachine.ChangeState(new MoveState(charController, stateMachine));
+                } else
+                {
+                    stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
+                }
             }
 
             return result;

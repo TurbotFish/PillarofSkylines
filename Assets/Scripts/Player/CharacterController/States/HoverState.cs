@@ -19,6 +19,7 @@ namespace Game.Player.CharacterController.States
 
         int nbrOfBlocksFeedback = 10;
         float timer;
+        
 
         //#############################################################################
 
@@ -75,7 +76,7 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
-            else if (inputInfo.leftStickAtZero || inputInfo.sprintButtonUp)
+            else if (inputInfo.leftStickAtZero || inputInfo.sprintButtonUp || Physics.Raycast(movementInfo.position, -movementInfo.up, hoverData.MaxHeight, collisionInfo.collisionLayer))
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
