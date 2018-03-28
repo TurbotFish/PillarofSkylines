@@ -192,7 +192,7 @@ namespace Game.Player {
                             {
                                 favourPickUpInRange = true;
 
-                                ShowUiMessage("[X]: Accept Favour", other.tag);
+                                ShowUiMessage("[X]: Accept "+ favour.CurrencyType.ToString(), other.tag);
                             }
                             else
                                 favour = null;
