@@ -310,9 +310,7 @@ namespace Game.Player.CharacterController
             }
             else
             {
-                print("before velocity : " + velocity + " lerped towards : " + acceleration + " by : " + Time.deltaTime * transitionSpeed);
                 newVelocity = Vector3.Lerp(velocity, acceleration, Time.deltaTime * transitionSpeed);
-                print("after velocity : " + newVelocity);
             }
 
             //adding gravity
