@@ -494,11 +494,7 @@ namespace Game.Player.CharacterController
             [SerializeField]
             float speed;
             public float Speed { get { return speed; } }
-
-            [SerializeField]
-            float speedRequiredForHirizontalWallRun;
-            public float SpeedRequiredForHorizontalWallRun { get { return speedRequiredForHirizontalWallRun; } }
-
+            
             [SerializeField]
             float timeToUnstick;
             public float TimeToUnstick { get { return timeToUnstick; } }
