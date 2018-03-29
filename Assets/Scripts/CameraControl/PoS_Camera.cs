@@ -5,7 +5,7 @@ using Game.Player.CharacterController;
 [AddComponentMenu("Camera/Third Person Camera")]
 [RequireComponent(typeof(Camera))]
 public class PoS_Camera : MonoBehaviour {
-
+    
 	#region Properties
 	public LayerMask blockingLayer;
 
@@ -125,6 +125,8 @@ public class PoS_Camera : MonoBehaviour {
 	float lastInput;
     float recoilIntensity;
 
+    bool gamePaused;
+
     bool autoAdjustYaw, autoAdjustPitch;
     bool canAutoReset;
 
@@ -162,9 +164,11 @@ public class PoS_Camera : MonoBehaviour {
 
     private void OnEnable() {
         Game.Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayer;
+        Game.Utilities.EventManager.GamePausedEvent += OnGamePaused;
     }
     private void OnDisable() {
         Game.Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayer;
+        Game.Utilities.EventManager.GamePausedEvent -= OnGamePaused;
     }
 
     void OnApplicationFocus(bool hasFocus) {
@@ -173,6 +177,9 @@ public class PoS_Camera : MonoBehaviour {
 	}
 
 	void LateUpdate() {
+        if (gamePaused)
+            return;
+
 		deltaTime = Time.deltaTime;
         
         GetInputsAndStates();
@@ -223,6 +230,10 @@ public class PoS_Camera : MonoBehaviour {
         if (args.IsNewScene) {
             my.position = camPosition;
         }
+    }
+
+    void OnGamePaused(object sender, Game.Utilities.EventManager.GamePausedEventArgs args) {
+        gamePaused = args.PauseActive;
     }
 
     Vector3 characterUp;
