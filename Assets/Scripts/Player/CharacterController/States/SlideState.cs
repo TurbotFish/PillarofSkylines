@@ -29,7 +29,6 @@ namespace Game.Player.CharacterController.States
         public void Enter()
         {
             //Debug.Log("Enter State: Slide");
-			charController.animator.SetBool("Sliding", true);
             timerBeforeJump = slideData.WaitBeforeJump;
         }
 
@@ -77,7 +76,6 @@ namespace Game.Player.CharacterController.States
 
         public StateReturnContainer Update(float dt)
         {
-            timerBeforeJump -= Time.deltaTime;
 			var result = new StateReturnContainer 
 				{ 
 					CanTurnPlayer = false, 
@@ -94,7 +92,20 @@ namespace Game.Player.CharacterController.States
                 result.Acceleration = charController.TurnSpaceToLocal(Vector3.ProjectOnPlane(-charController.MyTransform.up, charController.CollisionInfo.currentGroundNormal)).normalized * slideData.MinimalSpeed;
                 result.Acceleration += charController.InputInfo.leftStickToSlope * slideData.Control;
             }
-            result.PlayerForward = result.Acceleration.normalized;
+
+            if (timerBeforeJump <= 0f)
+            {
+                result.PlayerForward = result.Acceleration.normalized;
+                if (timerBeforeJump < 0f)
+                {
+                    timerBeforeJump = 0f;
+                    charController.animator.SetBool("Sliding", true);
+                }
+            }
+            else
+            {
+                timerBeforeJump -= Time.deltaTime;
+            }
 
             return result;
         }
