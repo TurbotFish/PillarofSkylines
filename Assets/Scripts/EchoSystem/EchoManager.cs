@@ -106,14 +106,16 @@ namespace Game.EchoSystem
 
         public void Break(Echo target)
         {
+            int index = 0;
             if (echoList.Contains(target))
             {
+                index = echoList.IndexOf(target);
                 echoList.Remove(target);
             }
             if (target.playerEcho)
             {
                 placedEchoes--;
-                echoParticles.RemoveEcho(target.MyTransform.position);
+                echoParticles.RemoveEcho(index);
             }
             Instantiate(breakEchoParticles, target.MyTransform.position, target.MyTransform.rotation);
             Destroy(target.gameObject);
