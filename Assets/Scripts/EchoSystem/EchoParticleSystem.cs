@@ -14,7 +14,7 @@ namespace Game.EchoSystem
         
 
         List<EchoParticle> activeEchoParticles = new List<EchoParticle>();
-        List<Vector3> targets = new List<Vector3>();
+        List<Vector3[]> targets = new List<Vector3[]>();
         
         List<EchoParticle> disabledEchoParticles = new List<EchoParticle>();
 
@@ -35,8 +35,16 @@ namespace Game.EchoSystem
             foreach (EchoParticle ep in activeEchoParticles)
             {
                 Quaternion lookEcho = Quaternion.identity;
-                if (targets[i] - transform.position != Vector3.zero)
-                    lookEcho = Quaternion.LookRotation(targets[i] - transform.position);
+                Vector3 target = Vector3.positiveInfinity;
+                foreach (Vector3 echoPos in targets[i])
+                {
+                    if ((target - transform.position).sqrMagnitude > (echoPos - transform.position).sqrMagnitude)
+                    {
+                        target = echoPos;
+                    }
+                }
+                if (target - transform.position != Vector3.zero)
+                    lookEcho = Quaternion.LookRotation(target - transform.position);
                 
                 ep.target = transform.position + new Vector3(0f, 1f, 0f) + lookEcho * Vector3.forward;
                 ep.transform.rotation = lookEcho;
@@ -50,7 +58,8 @@ namespace Game.EchoSystem
             disabledEchoParticles.RemoveAt(0);
             activeEchoParticles[activeEchoParticles.Count - 1].gameObject.SetActive(true);
             activeEchoParticles[activeEchoParticles.Count - 1].transform.position = transform.position + new Vector3(0f, 1f, 0f);
-            targets.Add(echoPosition);
+            targets.Add(new Vector3[] { echoPosition, echoPosition + new Vector3(0, 500, 500), echoPosition + new Vector3(0, 500, 0), echoPosition + new Vector3(0, 500, -500)
+            , echoPosition + new Vector3(0, 0, 500), echoPosition + new Vector3(0, 0, -500), echoPosition + new Vector3(0, -500, 500), echoPosition + new Vector3(0, -500, 00), echoPosition + new Vector3(0, -500, -500)});
         }
         
         public void RemoveAllEcho()
@@ -69,9 +78,9 @@ namespace Game.EchoSystem
             disabledEchoParticles.Add(activeEchoParticles[0]);
             activeEchoParticles.RemoveAt(0);
             disabledEchoParticles[disabledEchoParticles.Count - 1].gameObject.SetActive(false);
-            targets.Remove(echoPosition);
+            targets.Remove(new Vector3[] { echoPosition, echoPosition + new Vector3(0, 500, 500), echoPosition + new Vector3(0, 500, 0), echoPosition + new Vector3(0, 500, -500)
+            , echoPosition + new Vector3(0, 0, 500), echoPosition + new Vector3(0, 0, -500), echoPosition + new Vector3(0, -500, 500), echoPosition + new Vector3(0, -500, 00), echoPosition + new Vector3(0, -500, -500)});
         }
-
         /*
         int EchoIndexFromPosition(Vector3 position)
         {
