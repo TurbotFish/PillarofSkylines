@@ -85,6 +85,8 @@ namespace Game.Player.CharacterController
         RaycastHit hit2;
         RaycastHit hit3;
         Vector3 wallDir;
+        Vector3 velocityBeforeCollision = Vector3.zero;
+        float timerBeforeForgetVBC = 0f;
         RaycastHit sideHit;
 
         //#############################################################################
@@ -130,12 +132,16 @@ namespace Game.Player.CharacterController
             //Recursively check if the movement meets obstacles
             velocity = CollisionDetection(velocity, myTransform.position + playerAngle * center, new RaycastHit());
             //Debug.Log("col num : " + collisionNumber);
+
+            
+
+            /*
             if (rebordOffset != Vector3.zero)
             {
                 transform.position += rebordOffset;
                 print("rebord is : " + rebordOffset);
                 rebordOffset = Vector3.zero;
-            }
+            }*/
             if (climbingStep)
             {
                 transform.position += stepOffset;
@@ -155,6 +161,33 @@ namespace Game.Player.CharacterController
                 Debug.LogWarning("The player's inside " + wallsOverPlayer.Length + " wall(s) : " + wallsOverPlayer[0].name);
                 insideWallOnThisFrame = true;
                 finalVelocity = AdjustPlayerPosition(velocity);
+            }
+
+            if (timerBeforeForgetVBC > 0)
+            {
+                timerBeforeForgetVBC -= Time.deltaTime;
+                /*if (velocityBeforeCollision != Vector3.zero)
+                {
+                    Debug.Log("checking for velocity before collision : " + velocityBeforeCollision);
+                    Debug.DrawRay((myTransform.position + playerAngle * center), velocityBeforeCollision, Color.red);
+                }*/
+                if (velocityBeforeCollision != Vector3.zero && !Physics.CapsuleCast(
+                    (myTransform.position + playerAngle * center) - (playerAngle * capsuleHeightModifier / 2),
+                    (myTransform.position + playerAngle * center) + (playerAngle * capsuleHeightModifier / 2),
+                    radius,
+                    velocityBeforeCollision,
+                    out hit,
+                    velocityBeforeCollision.magnitude,
+                    ((velocityBeforeCollision.y > 0 || myPlayer.CurrentState == ePlayerState.glide) ? collisionMaskNoCloud : collisionMask)))
+                {
+                    //Debug.Log("managed to add velocity beofre collsion");
+                    finalVelocity = velocityBeforeCollision.normalized * finalVelocity.magnitude;
+                    velocityBeforeCollision = Vector3.zero;
+                }
+                if (timerBeforeForgetVBC < 0f)
+                {
+                    velocityBeforeCollision = Vector3.zero;
+                }
             }
 
             //Update collision informations
@@ -461,6 +494,12 @@ namespace Game.Player.CharacterController
                 )
             {
 
+                if (collisionNumber == 0 && velocityBeforeCollision == Vector3.zero)
+                {
+                    timerBeforeForgetVBC = 0.05f;
+                    velocityBeforeCollision = velocity;
+                }
+
                 //print("met smth ! name : " + hit.collider.name + " at : " + hit.point + " distance : " + hit.distance);
 
                 //When an obstacle is met, remember the amount of movement needed to get to the obstacle
@@ -470,109 +509,96 @@ namespace Game.Player.CharacterController
                 Vector3 extraVelocity = (velocity - movementVector);
 
                 collisionNumber++;
-                /*
-                print("vector length : " + (hit.distance * 1.5f + radius / Mathf.Abs(Mathf.Cos(Vector3.Angle(velocity, -hit.normal)))) + " normal : " + hit.normal + " cos : " + Mathf.Cos(Vector3.Angle(velocity, -hit.normal)));
+               
 
-                Debug.DrawRay(newOrigin - (playerAngle * capsuleHeightModifier / 2), velocity.normalized * (hit.distance * 1.5f + radius / Mathf.Abs(Mathf.Cos(Vector3.Angle(velocity, -hit.normal)))), Color.cyan);
-                Debug.DrawRay(newOrigin + (playerAngle * capsuleHeightModifier / 2), velocity.normalized * (hit.distance * 1.5f + radius / Mathf.Abs(Mathf.Cos(Vector3.Angle(velocity, -hit.normal)))), Color.cyan);
-                if (!Physics.Raycast(newOrigin - (playerAngle * capsuleHeightModifier / 2), velocity, out hit2, hit.distance * 1.5f + radius / Mathf.Abs(Mathf.Cos(Vector3.Angle(velocity, -hit.normal))), collisionMask)
-                    && !Physics.Raycast(newOrigin + (playerAngle * capsuleHeightModifier / 2), velocity, out hit3, hit.distance * 1.5f + radius / Mathf.Abs(Mathf.Cos(Vector3.Angle(velocity, -hit.normal))), collisionMask)
-                    && collisionNumber < 6)
+
+                #region step detection
+                //Detect the obstacle met from above to check if it's a step
+                //Debug.DrawRay(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up * (height + radius * 2), Color.red);
+                //Debug.DrawRay(myTransform.position + movementVector + myTransform.up * (height + radius * 2), Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), Color.red);
+
+                if (
+                    (myPlayer.CurrentState == ePlayerState.move || climbingStep) &&
+                    Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up, out hit2, height + radius * 2, collisionMask) &&
+                    !Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2), Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up), (radius + skinWidth), collisionMask))
                 {
-                    print("je me décale");
-                    rebordOffset += Vector3.ProjectOnPlane(hit.normal, veloNorm).normalized * .1f;
-                    CollisionDetection(extraVelocity, position + movementVector + rebordOffset, hit);
-                }
-                else
-                {*/
-                    
-                    #region step detection
-                    //Detect the obstacle met from above to check if it's a step
-                    //Debug.DrawRay(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up * (height + radius * 2), Color.red);
-                    //Debug.DrawRay(myTransform.position + movementVector + myTransform.up * (height + radius * 2), Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), Color.red);
-
-                    if (
-                        (myPlayer.CurrentState == ePlayerState.move || climbingStep) &&
-                        Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up, out hit2, height + radius * 2, collisionMask) &&
-                        !Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2), Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up), (radius + skinWidth), collisionMask))
+                    collisions.stepHeight = (height + radius * 2) - hit2.distance;
+                    // Once checked if it's a step, check if it's not too high, and if it's not a slope
+                    //					print("detected collision at " + hit2.point + ", new ground angle : " + Vector3.Angle(hit2.normal, myTransform.up) + ", step height : " + collisions.stepHeight + ", dot product : " + Vector3.Dot(hit.normal, hit2.normal));
+                    if (Vector3.Angle(hit2.normal, myTransform.up) < myPlayer.CharData.Physics.MaxSlopeAngle
+                        && collisions.stepHeight < myPlayer.CharData.Physics.MaxStepHeight
+                        && Vector3.Dot(hit.normal, hit2.normal) < .95f
+                        && Vector3.Dot(hit.normal, hit2.normal) >= -.01f
+                        )
                     {
-                        collisions.stepHeight = (height + radius * 2) - hit2.distance;
-                        // Once checked if it's a step, check if it's not too high, and if it's not a slope
-                        //					print("detected collision at " + hit2.point + ", new ground angle : " + Vector3.Angle(hit2.normal, myTransform.up) + ", step height : " + collisions.stepHeight + ", dot product : " + Vector3.Dot(hit.normal, hit2.normal));
-                        if (Vector3.Angle(hit2.normal, myTransform.up) < myPlayer.CharData.Physics.MaxSlopeAngle
-                            && collisions.stepHeight < myPlayer.CharData.Physics.MaxStepHeight
-                            && Vector3.Dot(hit.normal, hit2.normal) < .95f
-                            && Vector3.Dot(hit.normal, hit2.normal) >= -.01f
-                           )
-                        {
-                            stepOffset = myTransform.up * collisions.stepHeight;
-                            //print("step added : " + stepOffset.y);
-                            climbingStep = true;
-                        }
-                        else
-                        {
-                            //						print("stopped climbing 1");
-                            climbingStep = false;
-                        }
+                        stepOffset = myTransform.up * collisions.stepHeight;
+                        //print("step added : " + stepOffset.y);
+                        climbingStep = true;
                     }
                     else
                     {
-                        //					print("stopped climbing 2");
+                        //						print("stopped climbing 1");
                         climbingStep = false;
                     }
-                    #endregion step detection
+                }
+                else
+                {
+                    //					print("stopped climbing 2");
+                    climbingStep = false;
+                }
+                #endregion step detection
                     
-                    //Stop the process if the script detected a lot of collisions
-                    if (collisionNumber < (climbingStep ? 4 : 5))
+                //Stop the process if the script detected a lot of collisions
+                if (collisionNumber < (climbingStep ? 4 : 5))
+                {
+                    Vector3 reflection = new Vector3();
+                    //if it's the first obstacle met on this frame, project the extra velocity on the plane parallel to this obstacle
+                    //if it's not the first, project on the line parallel to both the current obstacle and the previous one
+                    //if the player is on the ground, count the ground as a first collision
+                    //once the extra velocity has been projected, Call the function once more to check if this new velocity meets obstacle and do everything again
+
+
+                    if (climbingStep)
                     {
-                        Vector3 reflection = new Vector3();
-                        //if it's the first obstacle met on this frame, project the extra velocity on the plane parallel to this obstacle
-                        //if it's not the first, project on the line parallel to both the current obstacle and the previous one
-                        //if the player is on the ground, count the ground as a first collision
-                        //once the extra velocity has been projected, Call the function once more to check if this new velocity meets obstacle and do everything again
-
-
-                        if (climbingStep)
+                        // If the controller detected the player is going up a step, send a new detection from above the step
+                        reflection = CollisionDetection(extraVelocity, position + movementVector + stepOffset, hit);
+                    }
+                    else
+                    {
+                        if (collisionNumber > 1)
                         {
-                            // If the controller detected the player is going up a step, send a new detection from above the step
-                            reflection = CollisionDetection(extraVelocity, position + movementVector + stepOffset, hit);
-                        }
-                        else
-                        {
-                            if (collisionNumber > 1)
+                            if (Vector3.Dot(hit.normal, oldHit.normal) < 0)
                             {
-                                if (Vector3.Dot(hit.normal, oldHit.normal) < 0)
-                                {
-                                    print("recu 1");
-                                    reflection = CollisionDetection(Vector3.Project(extraVelocity, Vector3.Cross(hit.normal, oldHit.normal)), position + movementVector, hit);
-                                }
-                                else
-                                {
-                                    print("recu 2");
-                                    reflection = CollisionDetection(Vector3.ProjectOnPlane(extraVelocity, hit.normal), position + movementVector, hit);
-                                }
+                                //print("recu 1");
+                                reflection = CollisionDetection(Vector3.Project(extraVelocity, Vector3.Cross(hit.normal, oldHit.normal)), position + movementVector, hit);
                             }
                             else
                             {
-                                if (collisions.below && Vector3.Dot(hit.normal, collisions.currentGroundNormal) < 0)
-                                {
-                                    print("recu 3");
-                                    reflection = CollisionDetection(Vector3.Project(extraVelocity, Vector3.Cross(hit.normal, collisions.currentGroundNormal)), position + movementVector, hit);
-                                }
-                                else
-                                {
-                                    print("recu 4");
-                                    reflection = CollisionDetection(Vector3.ProjectOnPlane(extraVelocity, hit.normal), position + movementVector, hit);
-                                }
+                                //print("recu 2");
+                                reflection = CollisionDetection(Vector3.ProjectOnPlane(extraVelocity, hit.normal), position + movementVector, hit);
                             }
                         }
-                        //Add all the reflections calculated together
-                        movementVector += reflection;
+                        else
+                        {
+                            if (collisions.below && Vector3.Dot(hit.normal, collisions.currentGroundNormal) < 0)
+                            {
+                                //print("recu 3");
+                                reflection = CollisionDetection(Vector3.Project(extraVelocity, Vector3.Cross(hit.normal, collisions.currentGroundNormal)), position + movementVector, hit);
+                            }
+                            else
+                            {
+                                //print("recu 4");
+                                reflection = CollisionDetection(Vector3.ProjectOnPlane(extraVelocity, hit.normal), position + movementVector, hit);
+                            }
+                        }
                     }
-                //}
+                    //Add all the reflections calculated together
+                    movementVector += reflection;
+                }
             }
             else
             {
+
                 if (collisionNumber == 0)
                 {
                     //print("stopped climbing 3");
@@ -588,9 +614,10 @@ namespace Game.Player.CharacterController
                 Debug.LogWarning("whoa that was a lot of collisions there (" + collisionNumber + ").");
             }
             //			print("coll nmber : " + collisionNumber);
-            Debug.DrawRay(newOrigin, movementVector, Color.red);
+            //Debug.DrawRay(newOrigin, movementVector, Color.red);
 
 
+            
             //return the movement vector calculated
             return movementVector;
         }
