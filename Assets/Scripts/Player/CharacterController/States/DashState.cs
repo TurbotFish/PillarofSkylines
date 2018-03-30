@@ -35,14 +35,13 @@ namespace Game.Player.CharacterController.States
         {
 			//Debug.Log("Enter State: Dash");
 			charController.animator.SetTrigger("DashTrigger");
-			charController.dashParticles.Play();
+            charController.fxManager.DashPlay();
             timer = dashData.Time;
         }
 
         public void Exit()
         {
             //Debug.Log("Exit State: Dash");
-
             stateMachine.SetStateCooldown(new StateCooldown(StateId, dashData.Cooldown));
         }
 

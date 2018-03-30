@@ -192,7 +192,11 @@ namespace Game.Player {
                             {
                                 favourPickUpInRange = true;
 
-                                ShowUiMessage("[X]: Accept "+ favour.CurrencyType.ToString(), other.tag);
+                                if (favour.CurrencyType == eCurrencyType.Favour)
+                                    ShowUiMessage("[X]: Accept Favour", other.tag);
+                                else if (favour.CurrencyType == eCurrencyType.PillarKey)
+                                    ShowUiMessage("[X]: Receive Mark", other.tag);
+
                             }
                             else
                                 favour = null;
