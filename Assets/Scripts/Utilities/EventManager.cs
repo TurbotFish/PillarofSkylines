@@ -582,6 +582,33 @@ namespace Game.Utilities
 
         //***********************************************************
 
+        #region set waypoint event
+
+        public class SetWaypointEventArgs : EventArgs
+        {
+            public string WaypointID { get; private set; }
+            public Vector3 Position { get; private set; }
+
+            public SetWaypointEventArgs(string wayPointID, Vector3 position)
+            {
+                WaypointID = wayPointID;
+                Position = position;
+            }
+        }
+
+        public delegate void SetWaypointEventHandler(object sender, SetWaypointEventArgs args);
+
+        public static event SetWaypointEventHandler SetWaypointEvent;
+
+        public static void SendSetWaypointEvent(object sender, SetWaypointEventArgs args)
+        {
+            SetWaypointEvent?.Invoke(sender, args);
+        }
+
+        #endregion set waypoint event
+
+        //***********************************************************
+
         #endregion gameplay events
 
         //###########################################################
