@@ -241,7 +241,7 @@ namespace Game.Player.CharacterController.States
             bool stickOK = CheckWallRunStick(charController.InputInfo, charController.CollisionInfo.currentWallNormal, charController.CharData.WallRun.MaxTriggerAngle) || charController.InputInfo.leftStickAtZero;
 
             //Debug.Log("act : " + isAbilityActive + " touch : " + isTouchingWall + " slope : " + isWallSlopeValid + " dir : " + directionOK + " stick : " + stickOK);
-
+            
             return (isAbilityActive && isTouchingWall && isWallSlopeValid && directionOK && stickOK);
         }
 
