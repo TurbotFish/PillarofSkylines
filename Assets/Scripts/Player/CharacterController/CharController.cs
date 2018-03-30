@@ -107,6 +107,8 @@ namespace Game.Player.CharacterController
         public ParticleSystem aerialJumpFX;
         public ParticleSystem hoverFX;
 
+		public FXManager fxManager;
+
         //#############################################################################
 
 
@@ -119,6 +121,7 @@ namespace Game.Player.CharacterController
             myCamera = FindObjectOfType<PoS_Camera>();
             myCameraTransform = myCamera.transform;
 
+            GetComponentInChildren<EchoSystem.EchoParticleSystem>().InitializeEchoParticleSystem(gameController);
 
             PlayerModel = gameController.PlayerModel;
             CharData = Resources.Load<CharData>("ScriptableObjects/CharData");

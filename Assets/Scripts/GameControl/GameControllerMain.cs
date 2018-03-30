@@ -436,7 +436,7 @@ namespace Game.GameControl
             //activating world controller
             WorldController.Activate();
 
-            while (!WorldController.ActivationDone)
+            while (WorldController.CurrentState == eWorldControllerState.Activating)
             {
                 yield return null;
             }
@@ -478,7 +478,7 @@ namespace Game.GameControl
 
             WorldController.Deactivate();
 
-            while (!WorldController.DeactivationDone)
+            while (WorldController.CurrentState == eWorldControllerState.Deactivating)
             {
                 yield return null;
             }
