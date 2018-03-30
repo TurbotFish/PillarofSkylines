@@ -107,6 +107,8 @@ namespace Game.Player.CharacterController
         public ParticleSystem aerialJumpFX;
         public ParticleSystem hoverFX;
 
+		public FXManager fxManager;
+
         //#############################################################################
 
 

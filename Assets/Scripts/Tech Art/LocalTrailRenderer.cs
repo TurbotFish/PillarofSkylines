@@ -33,6 +33,7 @@ public class LocalTrailRenderer : MonoBehaviour {
 	LineRenderer line;
 	Vector3[] positions;
 	Transform _transform;
+	public bool follow;
 
 	void SetPosition(int index, Vector3 position) {
 		positions[index] = position;
@@ -50,7 +51,7 @@ public class LocalTrailRenderer : MonoBehaviour {
 	}
 
 	void LateUpdate () {
-        if (target != null)
+		if (target != null && follow)
         {
             _transform.position = target.position;
 
