@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 
@@ -14,8 +15,51 @@ public class FXManager : MonoBehaviour {
             DontDestroyOnLoad(gameObject);
         } else if (instance != this)
             Destroy(gameObject);
+
     }
     #endregion
+
+	[Header ("Impact")]
+	public float speedThreshold;
+	public float impactTimeToDissolve;
+	public float impactTimeToAppear;
+	public float impactDelay;
+	public Ease impactEaseIn, impactEaseOut;
+	public List<Material> impactDissolveMats = new List<Material>();
+	public GameObject impactExplosion;
+	public List<ParticleSystem> impactParticles = new List<ParticleSystem>();
+	public GameObject shadowProjector;
+	public void ImpactPlay(float speed)
+	{
+		//Debug.Log (speed);
+		if (speed > speedThreshold) {
+			shadowProjector.SetActive (false);
+
+			foreach (ParticleSystem ps in impactParticles) {
+				ps.Play ();
+			}
+			foreach (Material mat in impactDissolveMats) {
+				mat.DOFloat (1, "_DissolveAmount", impactTimeToDissolve).SetEase(impactEaseIn);
+				mat.DOFloat (0, "_DissolveAmount", impactTimeToAppear).SetEase(impactEaseOut).SetDelay(impactDelay);
+			}
+
+
+			dashLight.DOIntensity (dashLightIntensity, impactTimeToDissolve).SetEase (impactEaseIn);
+			dashLight.DOIntensity (0, impactTimeToAppear).SetEase (impactEaseOut).SetDelay(impactDelay);
+
+			GameObject explo;
+			explo = Instantiate (impactExplosion, transform.position, transform.rotation) as GameObject;
+			Destroy (explo, 6);
+
+			StartCoroutine(EnableShadow(impactTimeToAppear*0.5f + impactDelay));
+
+		}
+	}
+	IEnumerator EnableShadow (float t)
+	{
+		yield return new WaitForSecondsRealtime (t);
+		shadowProjector.SetActive (true);
+	}
 
 
 	[Header ("Dust")]
@@ -36,6 +80,7 @@ public class FXManager : MonoBehaviour {
 	public Light dashLight;
 	public float dashLightIntensity;
 	public List<ParticleSystem> dashParticles = new List<ParticleSystem>();
+	public GameObject dashExplosion;
 	public List<Material> dashDissolveMats = new List<Material>();
 
 	public void DashPlay()
@@ -49,6 +94,10 @@ public class FXManager : MonoBehaviour {
 		}
 		dashLight.DOIntensity (dashLightIntensity, dashTimeToDissolve).SetEase (dashEaseIn);
 		dashLight.DOIntensity (0, dashTimeToAppear).SetEase (dashEaseOut).SetDelay(dashDelay);
+
+		GameObject explo;
+		explo = Instantiate (dashExplosion, transform.position + transform.forward*2 + transform.up, Quaternion.identity) as GameObject;
+		Destroy (explo, 6);
 	}
 		
 
@@ -80,15 +129,17 @@ public class FXManager : MonoBehaviour {
 	[Header ("Glide")]
 	//public float glideDissolveAmount;
 	//public float glideTimeToDissolve;
-	//public float glideTimeToAppear;
-	//public Ease glideEaseIn, glideEaseOut;
+	public float glideTimeToAppear;
+	public Ease glideEaseOut;
 	public List<ParticleSystem> glideParticles = new List<ParticleSystem>();
 	public List<Material> glideDissolveMats = new List<Material>();
 	public List<LocalTrailRenderer> glideTrails = new List<LocalTrailRenderer>();
+	public List<Cloth> glideClothes = new List<Cloth>();
 
 	public MinMax velocity;
 	public float receivedVelocity;
 	public MinMax glideDissolve;
+	public float clothMovement;
 
 	public void GlidePlay()
 	{
@@ -109,10 +160,14 @@ public class FXManager : MonoBehaviour {
 			ps.Stop ();
 		}
 		foreach (Material mat in glideDissolveMats) {
-			//mat.DOFloat (0, "_DissolveAmount", glideTimeToAppear).SetEase(glideEaseOut);
+			mat.DOFloat (0, "_DissolveAmount", glideTimeToAppear).SetEase(glideEaseOut);
 		}
 		foreach (LocalTrailRenderer tr in glideTrails) {
 			tr.follow = false;
+		}
+
+		foreach (Cloth cloth in glideClothes) {
+			cloth.randomAcceleration = Vector3.zero;
 		}
 	}
 
@@ -120,6 +175,10 @@ public class FXManager : MonoBehaviour {
 	{
 		foreach (Material mat in glideDissolveMats) {
 			mat.SetFloat ("_DissolveAmount", Mathf.Lerp(glideDissolve.min, glideDissolve.max, (receivedVelocity-velocity.min)/(velocity.max-velocity.min)));
+		}
+		foreach (Cloth cloth in glideClothes) {
+			float amount = clothMovement * (receivedVelocity - velocity.min) / (velocity.max - velocity.min)+50;
+			cloth.randomAcceleration = new Vector3 (amount*0.5f, amount*0.5f, amount);
 		}
 	}
 

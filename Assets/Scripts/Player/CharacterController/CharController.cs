@@ -423,7 +423,7 @@ namespace Game.Player.CharacterController
             animator.SetFloat("VerticalSpeed", velocity.y / animationJumpSpeed);
 
             windParticles.SetVelocity(velocity);
-            glideParticles.SetVelocity(velocity);
+            //glideParticles.SetVelocity(velocity);
 
             #endregion update animator
 

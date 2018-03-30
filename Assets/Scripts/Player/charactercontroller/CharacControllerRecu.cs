@@ -326,6 +326,7 @@ namespace Game.Player.CharacterController
             if (collisions.below && !belowLastFrame)
             {
                 myPlayer.myCamera.SetVerticalOffset(Vector3.Project(collisions.initialVelocityOnThisFrame, myTransform.up).magnitude);
+				myPlayer.fxManager.ImpactPlay (Vector3.Project (collisions.initialVelocityOnThisFrame/Time.deltaTime, myTransform.up).magnitude);
             }
 
             collisions.above = Physics.SphereCast(myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) - myTransform.up * skinWidth * 2, radius, myTransform.up, out hit, skinWidth * 4, collisionMask);
