@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Game.GameControl;
+using System.Collections;
 
 namespace Game.UI
 {
@@ -23,9 +24,14 @@ namespace Game.UI
         TMPro.TextMeshProUGUI importantDescription;
         GameObject importantPanel;
         
-        [SerializeField]
+        [Header("Announce"), SerializeField]
         TMPro.TextMeshProUGUI announcement;
+        [SerializeField]
+        TMPro.TextMeshProUGUI announcementDescription;
+        [SerializeField] float fadeTime = 0.5f;
+
         GameObject announcePanel;
+        CanvasGroup announceRenderer;
         float announceTime;
 
         public bool IsActive { get; private set; }
@@ -45,6 +51,7 @@ namespace Game.UI
 
             announcePanel = announcement.transform.parent.gameObject;
             announcePanel.SetActive(false);
+            announceRenderer = announcePanel.GetComponent<CanvasGroup>();
 
             Utilities.EventManager.OnShowHudMessageEvent += OnShowHudMessageEventHandler;
         }
@@ -58,7 +65,7 @@ namespace Game.UI
             {
                 announceTime -= Time.unscaledDeltaTime;
                 if (announceTime <= 0)
-                    announcePanel.SetActive(false);
+                    Display(announceRenderer, false);
             }
 
             if (Input.GetButtonDown("MenuButton"))
@@ -79,6 +86,37 @@ namespace Game.UI
         }
 
         #endregion monobehaviour methods
+
+        //###########################################################
+
+        bool flag;
+
+        void Display(CanvasGroup canvas, bool active) {
+            StartCoroutine(_Display(canvas, active));
+        }
+
+        IEnumerator _Display(CanvasGroup canvas, bool active)
+        {
+            if (flag) yield break;
+
+            flag = true;
+
+            if (active)
+                canvas.gameObject.SetActive(true);
+
+            for (float elapsed = 0; elapsed < fadeTime; elapsed += Time.unscaledDeltaTime)
+            {
+                float t = elapsed / fadeTime;
+                if (!active) t = 1 - t;
+                canvas.alpha = t;
+                yield return null;
+            }
+
+            flag = false;
+
+            if (!active)
+                canvas.gameObject.SetActive(false);
+        }
 
         //###########################################################
 
@@ -105,7 +143,7 @@ namespace Game.UI
 
         void OnShowHudMessageEventHandler(object sender, Utilities.EventManager.OnShowHudMessageEventArgs args)
         {
-            Debug.LogFormat("showHudMessageEvent: show={0}, message={1}", args.Show.ToString(), args.Message);
+            //Debug.LogFormat("showHudMessageEvent: show={0}, message={1}", args.Show.ToString(), args.Message);
 
             switch (args.MessageType)
             {
@@ -133,10 +171,11 @@ namespace Game.UI
                     break;
 
                 case eMessageType.Announcement:
-                    announcePanel.SetActive(args.Show);
+                    Display(announceRenderer, args.Show);
                     if (args.Show)
                     {
                         announcement.text = args.Message;
+                        announcementDescription.text = args.Description;
                         announceTime = args.Time;
                     }
                     else

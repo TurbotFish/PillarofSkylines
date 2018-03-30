@@ -18,6 +18,8 @@ namespace Game.Player.CharacterController.States
 
         bool firstFrame = true;
         bool ledgeGrab = false;
+        bool climbUp = false;
+        bool corner = false;
 
         float timerToUnstick;
         int noWallCounter = 0;
@@ -63,12 +65,18 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
-            //no wall or stick released => fall
-            else if (!collisionInfo.side && noWallCounter > 5)
+            else if (climbUp)
             {
-                stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
+                var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
+                stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
+
+                Vector3 jumpDirection = Vector3.zero;
+                state.SetJumpStrengthModifierFromState(wallRunData.JumpStrengthModifierLedgeGrab);
+
+                stateMachine.ChangeState(state);
             }
-            else if (timerToUnstick > wallRunData.TimeToUnstick)
+            //no wall or stick released => fall
+            else if ((!collisionInfo.side && noWallCounter > 5) || corner || timerToUnstick > wallRunData.TimeToUnstick)
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
@@ -111,7 +119,12 @@ namespace Game.Player.CharacterController.States
             {
                 noWallCounter = 0;
                 if (collisionInfo.currentWallNormal != Vector3.zero)
-                    lastWallNormal = collisionInfo.currentWallNormal;
+                {
+                    if (Vector3.Angle(lastWallNormal, collisionInfo.currentWallNormal) > 2f && lastWallNormal != Vector3.zero)
+                        corner = true;
+                    else 
+                        lastWallNormal = collisionInfo.currentWallNormal;
+                }
 
             }
             else
@@ -177,10 +190,20 @@ namespace Game.Player.CharacterController.States
             if (ledgeGrab)
             {
                 result.PlayerForward = -lastWallNormal;
+
+                Debug.DrawRay(charController.MyTransform.position + charController.tempPhysicsHandler.playerAngle * (charController.tempPhysicsHandler.center - charController.tempPhysicsHandler.capsuleHeightModifier / 2)
+                                                    - localWallRunDir.normalized * charController.tempPhysicsHandler.radius, -lastWallNormal, Color.black);
+
+                climbUp = !Physics.Raycast(charController.MyTransform.position + charController.tempPhysicsHandler.playerAngle * (charController.tempPhysicsHandler.center - charController.tempPhysicsHandler.capsuleHeightModifier / 2)
+                                                    - localWallRunDir.normalized * charController.tempPhysicsHandler.radius
+                                                    , -lastWallNormal, charController.tempPhysicsHandler.radius * 1.1f, charController.tempPhysicsHandler.collisionMask);
+                
+
                 //Debug.Log("LEFFDGE GRAOBING!!! new forward is  : " + result.PlayerForward);
             }
             else
             {
+                climbUp = false;
                 if (localWallRunDir != Vector3.zero)
                 {
                     result.PlayerForward = Vector3.Project(charController.TurnLocalToSpace(localWallRunDir), Vector3.Cross(lastWallNormal, charController.MyTransform.up));
@@ -218,7 +241,7 @@ namespace Game.Player.CharacterController.States
             bool stickOK = CheckWallRunStick(charController.InputInfo, charController.CollisionInfo.currentWallNormal, charController.CharData.WallRun.MaxTriggerAngle) || charController.InputInfo.leftStickAtZero;
 
             //Debug.Log("act : " + isAbilityActive + " touch : " + isTouchingWall + " slope : " + isWallSlopeValid + " dir : " + directionOK + " stick : " + stickOK);
-
+            
             return (isAbilityActive && isTouchingWall && isWallSlopeValid && directionOK && stickOK);
         }
 

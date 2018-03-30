@@ -139,7 +139,7 @@ namespace Game.GameControl
                 worldController.Activate();
                 yield return null;
 
-                while (!worldController.ActivationDone)
+                while (worldController.CurrentState == eWorldControllerState.Activating)
                 {
                     yield return null;
                 }

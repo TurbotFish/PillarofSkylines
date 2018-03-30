@@ -1,15 +1,60 @@
-﻿using UnityEngine;
+﻿using Game.GameControl;
+using Game.World;
+using UnityEngine;
 
 namespace Game.LevelElements
 {
-    public class DestroyWhenPickingFavour : MonoBehaviour
+    public class DestroyWhenPickingFavour : MonoBehaviour, IWorldObject
     {
-        public string favourID;
+        //###########################################################
 
-        private void Awake()
+        [SerializeField] public string favourID; //why public?
+
+        private IGameControllerBase gameController;
+        private bool isInitialized;
+
+        //###########################################################
+
+        public void Initialize(IGameControllerBase gameController, bool isCopy)
         {
-            Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
+            this.gameController = gameController;
+
+            if (gameController.PlayerModel.CheckIfPickUpCollected(favourID)) //the favour has already been picked up
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
+            }
+
+            isInitialized = true;
         }
+
+        //###########################################################
+
+        private void OnEnable()
+        {
+            if (!isInitialized)
+            {
+                return;
+            }
+            else if (gameController.PlayerModel.CheckIfPickUpCollected(favourID)) //the favour has been picked up while this was disabled
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
+            }
+        }
+
+        private void OnDisable()
+        {
+            Utilities.EventManager.FavourPickedUpEvent -= OnFavourPickedUpEventHandler;
+        }
+
+        //###########################################################
 
         void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
         {
@@ -17,6 +62,8 @@ namespace Game.LevelElements
             {
                 Destroy(gameObject);
             }
-        }
+        }       
+
+        //###########################################################
     }
 } //end of namespace
