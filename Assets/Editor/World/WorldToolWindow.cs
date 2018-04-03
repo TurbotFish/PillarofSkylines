@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -92,7 +93,7 @@ namespace Game.World
                 return;
             }
 
-            string SubSceneFolderPath = WorldUtility.GetSubSceneFolderPath(worldController.gameObject.scene.path);
+            string subSceneFolderPath = WorldUtility.GetSubSceneFolderPath(worldController.gameObject.scene.path);
 
             //cleaning build settings
             var scenes = EditorBuildSettings.scenes.ToList();
@@ -100,7 +101,7 @@ namespace Game.World
 
             foreach (var sceneEntry in scenes)
             {
-                if (sceneEntry.path.Contains(SubSceneFolderPath) || string.IsNullOrEmpty(sceneEntry.path))
+                if (sceneEntry.path.Contains(subSceneFolderPath) || string.IsNullOrEmpty(sceneEntry.path))
                 {
                     scenesToRemove.Add(sceneEntry);
                 }
@@ -114,7 +115,8 @@ namespace Game.World
             EditorBuildSettings.scenes = scenes.ToArray();
 
             //deleting subScene folder (of the current scene only)
-            FileUtil.DeleteFileOrDirectory(SubSceneFolderPath);
+            FileUtil.DeleteFileOrDirectory(subSceneFolderPath); //that's the folder with the subScenes
+            FileUtil.DeleteFileOrDirectory(subSceneFolderPath.Remove(subSceneFolderPath.LastIndexOf('_'))); //that's the folder Unity puts the occlusion data into
             AssetDatabase.Refresh();
         }
 
@@ -124,7 +126,7 @@ namespace Game.World
         /// <returns></returns>
         private void ImportSubScenes()
         {
-            Debug.Log("ImportSubScenes: called");
+            //Debug.Log("ImportSubScenes: called");
             if (worldController.EditorSubScenesLoaded)
             {
                 return;
@@ -142,7 +144,7 @@ namespace Game.World
                     regions.Add(region);
                 }
             }
-            Debug.LogFormat("ImportSubScenes: {0} regions found", regions.Count);
+            //Debug.LogFormat("ImportSubScenes: {0} regions found", regions.Count);
 
             foreach (var region in regions)
             {
@@ -152,10 +154,10 @@ namespace Game.World
                     {
                         if (region.GetSubSceneRoot(subSceneLayer, subSceneMode) != null)
                         {
-                            Debug.LogErrorFormat("The \"{0}\" of Region \"{1}\" is already loaded!", WorldUtility.GetSubSceneRootName(subSceneMode, subSceneLayer), region.name);
+                            //Debug.LogErrorFormat("The \"{0}\" of Region \"{1}\" is already loaded!", WorldUtility.GetSubSceneRootName(subSceneMode, subSceneLayer), region.name);
                             continue;
                         }
-                        Debug.Log("ImportSubScenes: starting to import subScene");
+                        //Debug.Log("ImportSubScenes: starting to import subScene");
 
                         //paths
                         string subScenePath = WorldUtility.GetSubScenePath(worldController.gameObject.scene.path, region.UniqueId, subSceneMode, subSceneLayer, eSuperRegionType.Centre);
@@ -165,18 +167,18 @@ namespace Game.World
 
                         if (System.IO.File.Exists(subScenePathFull))
                         {
-                            subScene = UnityEditor.SceneManagement.EditorSceneManager.OpenScene(subScenePath, UnityEditor.SceneManagement.OpenSceneMode.Additive);
+                            subScene = EditorSceneManager.OpenScene(subScenePath, UnityEditor.SceneManagement.OpenSceneMode.Additive);
                         }
                         else
                         {
-                            Debug.LogFormat("ImportSubScenes: SubScene does not exist: {0}", subScenePath);
+                            //Debug.LogFormat("ImportSubScenes: SubScene does not exist: {0}", subScenePath);
                         }
 
                         //move subScene content to open world scene
                         if (subScene.IsValid())
                         {
                             var rootGO = subScene.GetRootGameObjects()[0];
-                            UnityEditor.SceneManagement.EditorSceneManager.MoveGameObjectToScene(rootGO, worldController.gameObject.scene);
+                            EditorSceneManager.MoveGameObjectToScene(rootGO, worldController.gameObject.scene);
 
                             var root = rootGO.transform;
                             root.SetParent(region.transform, true);
@@ -188,14 +190,14 @@ namespace Game.World
                         }
 
                         //end: close subScene
-                        UnityEditor.SceneManagement.EditorSceneManager.CloseScene(subScene, true);
+                        EditorSceneManager.CloseScene(subScene, true);
 
-                        Debug.Log("ImportSubScenes: subScene import finished");
+                        //Debug.Log("ImportSubScenes: subScene import finished");
                     }
                 }
             }
 
-            Debug.Log("ImportSubScenes: aaaa");
+            //Debug.Log("ImportSubScenes: aaaa");
             subScenesLoaded.boolValue = true;
             serializedObject.ApplyModifiedProperties();
 
@@ -204,11 +206,11 @@ namespace Game.World
 
             //mark dirty
             EditorUtility.SetDirty(this);
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(worldController.gameObject.scene);
+            EditorSceneManager.MarkSceneDirty(worldController.gameObject.scene);
 
             EditorUtility.ClearProgressBar();
 
-            Debug.LogFormat("ImportSubScenes: all subScenes imported, loaded={0}", worldController.EditorSubScenesLoaded);
+            //Debug.LogFormat("ImportSubScenes: all subScenes imported, loaded={0}", worldController.EditorSubScenesLoaded);
         }
 
         /// <summary>
@@ -229,19 +231,23 @@ namespace Game.World
 
             //++++++++++++++++
             EditorUtility.DisplayProgressBar("Exporting SubScenes", "cleaning", 0);
+            var stopWatch = Stopwatch.StartNew();
             //++++++++++++++++
 
             //clear subScene folder
             CleanSubSceneFolder();
 
             //delete Occlusion folder
-            string occlusionFolderPath = Application.dataPath;
-            occlusionFolderPath = occlusionFolderPath.Remove(occlusionFolderPath.LastIndexOf('A')); //removes the "Assets" part at the end
-            occlusionFolderPath += "Library/Occlusion";
-            FileUtil.DeleteFileOrDirectory(occlusionFolderPath);
+            //string occlusionFolderPath = Application.dataPath;
+            //occlusionFolderPath = occlusionFolderPath.Remove(occlusionFolderPath.LastIndexOf('A')); //removes the "Assets" part at the end
+            //occlusionFolderPath += "Library/Occlusion";
+            //FileUtil.DeleteFileOrDirectory(occlusionFolderPath);
 
             //++++++++++++++++
+            stopWatch.Stop();
+            UnityEngine.Debug.LogFormat("Exporting SubScenes: cleaning: {0}", stopWatch.Elapsed.ToString());
             EditorUtility.DisplayProgressBar("Exporting SubScenes", "duplicating the world", 0);
+            stopWatch.Restart();
             //++++++++++++++++
 
             //initializing
@@ -301,14 +307,25 @@ namespace Game.World
             }
 
             //++++++++++++++++
+            stopWatch.Stop();
+            UnityEngine.Debug.LogFormat("Exporting SubScenes: duplicating: {0}", stopWatch.Elapsed.ToString());
             EditorUtility.DisplayProgressBar("Exporting SubScenes", "occlusion bake", 0);
+            stopWatch.Restart();
             //++++++++++++++++
 
             StaticOcclusionCulling.Compute();
 
             //++++++++++++++++
+            stopWatch.Stop();
+            UnityEngine.Debug.LogFormat("Exporting SubScenes: occlusion: {0}", stopWatch.Elapsed.ToString());
             EditorUtility.DisplayProgressBar("Exporting SubScenes", "creating scenes", 0);
+            stopWatch.Restart();
             //++++++++++++++++
+
+            if (!buildSettingsScenes.Exists(item => item.path == worldController.gameObject.scene.path))
+            {
+                buildSettingsScenes.Add(new EditorBuildSettingsScene(worldController.gameObject.scene.path, true));
+            }
 
             foreach (var superRegionType in Enum.GetValues(typeof(eSuperRegionType)).Cast<eSuperRegionType>())
             {
@@ -348,7 +365,9 @@ namespace Game.World
                 }
             }
 
-            //++++++++++++++++            
+            //++++++++++++++++
+            stopWatch.Stop();
+            UnityEngine.Debug.LogFormat("Exporting SubScenes: creating scenes: {0}", stopWatch.Elapsed.ToString());
             EditorUtility.DisplayProgressBar("Exporting SubScenes", "finishing", 0);
             //++++++++++++++++
 
