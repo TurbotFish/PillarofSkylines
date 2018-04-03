@@ -179,6 +179,8 @@ namespace Game.Player.CharacterController.States
             else if (collisionInfo.below && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < generalData.MinWallAngle && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > generalData.MaxSlopeAngle 
                 || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f)) {
 				stateMachine.ChangeState(new SlideState(charController, stateMachine));
+				charController.fxManager.FootDustPlay ();
+
 			}
             //landing
             else if (collisionInfo.below && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < generalData.MinWallAngle)
@@ -186,6 +188,8 @@ namespace Game.Player.CharacterController.States
 				stateMachine.ChangeState(new MoveState(charController, stateMachine));
                 if (!collisionInfo.SlippySlope)
                     charController.SetVelocity(Vector3.Project(movementInfo.velocity, inputInfo.leftStickToSlope), false);
+				charController.fxManager.FootDustPlay ();
+
 			}
             //wall- run/drift
             else if (collisionInfo.side && WallRunState.CheckCanEnterWallRun(charController)) {
@@ -226,7 +230,8 @@ namespace Game.Player.CharacterController.States
 
 				if (mode == eAirStateMode.aerialJump) {
 					jumpStrength *= jumpData.AerialJumpCoeff;
-					charController.aerialJumpFX.Play();
+					//charController.aerialJumpFX.Play();
+					charController.fxManager.DoubleJumpPlay();
 				}
 
 				Vector3 direction = (Vector3.up + jumpDirection).normalized;

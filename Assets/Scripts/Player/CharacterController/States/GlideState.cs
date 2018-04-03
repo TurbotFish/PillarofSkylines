@@ -27,18 +27,23 @@ namespace Game.Player.CharacterController.States
 		//#############################################################################
 
 		public void Enter() {
-			Debug.Log("Enter State: Glide");
+			//Debug.Log("Enter State: Glide");
 			charController.animator.SetBool("Gliding", true);
-			charController.glideParticles.Play();
+			//charController.glideParticles.Play();
 			verticalAngle = Vector3.Angle(Vector3.up, (charController.MovementInfo.velocity)) - 90f;
             Debug.Log("velocity entering : " + charController.MovementInfo.velocity + " vertical angle : " + verticalAngle);
             horizontalAngle = 0f;
+
+			charController.fxManager.GlidePlay ();
 		}
 
 		public void Exit() {
-			Debug.Log("Exit State: Glide");
-			charController.glideParticles.Stop();
+			//Debug.Log("Exit State: Glide");
+			//charController.glideParticles.Stop();
 			charController.animator.SetBool("Gliding", false);
+
+			charController.fxManager.GlideStop ();
+
 		}
 
 		//#############################################################################
@@ -154,6 +159,9 @@ namespace Game.Player.CharacterController.States
 			charController.animator.SetFloat("GlideHorizontal", horizontalAngle);
 			charController.animator.SetFloat("GlideVertical", (verticalAngle > 0 ? verticalAngle / glideData.MaxAngle : verticalAngle / -glideData.MinAngle));
 
+			//FX
+			charController.fxManager.receivedVelocity = charController.MovementInfo.velocity.magnitude;
+			charController.fxManager.GlideUpdate();
 
 			return result;
 		}

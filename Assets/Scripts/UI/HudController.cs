@@ -14,40 +14,55 @@ namespace Game.UI
 
     public class HudController : MonoBehaviour, IUiState
     {
-        [SerializeField]
-        TMPro.TextMeshProUGUI helpMessage;
-        GameObject helpPanel;
         
-        [SerializeField]
+        [Header("Help"), SerializeField]
+        TMPro.TextMeshProUGUI helpMessage;
+        [SerializeField] float helpFadeTime = 0.1f;
+
+        GameObject helpPanel;
+        CanvasGroup helpRenderer;
+
+
+        [Header("Important"), SerializeField]
         TMPro.TextMeshProUGUI importantTitle;
         [SerializeField]
         TMPro.TextMeshProUGUI importantDescription;
-        GameObject importantPanel;
+        [SerializeField] float importantFadeTime = 0.5f;
         
+        GameObject importantPanel;
+        CanvasGroup importantRenderer;
+
+
         [Header("Announce"), SerializeField]
         TMPro.TextMeshProUGUI announcement;
         [SerializeField]
         TMPro.TextMeshProUGUI announcementDescription;
-        [SerializeField] float fadeTime = 0.5f;
+        [SerializeField] float announceFadeTime = 0.5f;
 
         GameObject announcePanel;
         CanvasGroup announceRenderer;
         float announceTime;
+        bool announcePanelActive;
 
+
+        public CanvasGroup myRenderer;
         public bool IsActive { get; private set; }
-
-
+        
         //###########################################################
 
         #region monobehaviour methods
             
         void Start()
         {
+            //myRenderer = GetComponent<CanvasGroup>();
+
             helpPanel = helpMessage.transform.parent.gameObject;
             helpPanel.SetActive(false);
+            helpRenderer = helpPanel.GetComponent<CanvasGroup>();
 
             importantPanel = importantTitle.transform.parent.gameObject;
             importantPanel.SetActive(false);
+            importantRenderer = importantPanel.GetComponent<CanvasGroup>();
 
             announcePanel = announcement.transform.parent.gameObject;
             announcePanel.SetActive(false);
@@ -61,11 +76,13 @@ namespace Game.UI
             if (!IsActive)
                 return;
 
-            if (announcePanel.activeSelf && announceTime > 0)
+            if (announcePanelActive && announceTime > 0)
             {
                 announceTime -= Time.unscaledDeltaTime;
-                if (announceTime <= 0)
-                    Display(announceRenderer, false);
+                if (announceTime <= 0) {
+                    announcePanelActive = false;
+                    Display(announceRenderer, false, announceFadeTime);
+                }
             }
 
             if (Input.GetButtonDown("MenuButton"))
@@ -88,19 +105,13 @@ namespace Game.UI
         #endregion monobehaviour methods
 
         //###########################################################
-
-        bool flag;
-
-        void Display(CanvasGroup canvas, bool active) {
-            StartCoroutine(_Display(canvas, active));
+        
+        void Display(CanvasGroup canvas, bool active, float fadeTime) {
+            StartCoroutine(_Display(canvas, active, fadeTime));
         }
 
-        IEnumerator _Display(CanvasGroup canvas, bool active)
+        IEnumerator _Display(CanvasGroup canvas, bool active, float fadeTime)
         {
-            if (flag) yield break;
-
-            flag = true;
-
             if (active)
                 canvas.gameObject.SetActive(true);
 
@@ -112,10 +123,10 @@ namespace Game.UI
                 yield return null;
             }
 
-            flag = false;
-
             if (!active)
                 canvas.gameObject.SetActive(false);
+            else
+                canvas.alpha = 1;
         }
 
         //###########################################################
@@ -130,13 +141,18 @@ namespace Game.UI
             if (IsActive)
                 return;
             IsActive = true;
+            myRenderer.alpha = 1;
+            StopAllCoroutines();
             gameObject.SetActive(true);          
         }
 
         void IUiState.Deactivate()
         {
             IsActive = false;
-            gameObject.SetActive(false);
+            if (myRenderer)
+                Display(myRenderer, false, 0.5f);
+            else
+                gameObject.SetActive(false);
         }
 
         //###########################################################
@@ -145,33 +161,30 @@ namespace Game.UI
         {
             //Debug.LogFormat("showHudMessageEvent: show={0}, message={1}", args.Show.ToString(), args.Message);
 
+            if (!IsActive)
+                return;
+
             switch (args.MessageType)
             {
                 default:
                 case eMessageType.Help:
-                    helpPanel.SetActive(args.Show);
+                    Display(helpRenderer, args.Show, helpFadeTime);
                     if (args.Show)
                         helpMessage.text = args.Message;
-                    else
-                        helpMessage.text = "";
                     break;
 
                 case eMessageType.Important:
-                    importantPanel.SetActive(args.Show);
+                    Display(importantRenderer, args.Show, importantFadeTime);
                     if (args.Show)
                     {
                         importantTitle.text = args.Message;
                         importantDescription.text = args.Description;
                     }
-                    else
-                    {
-                        importantTitle.text = "";
-                        importantDescription.text = "";
-                    }
                     break;
 
                 case eMessageType.Announcement:
-                    Display(announceRenderer, args.Show);
+                    announcePanelActive = args.Show;
+                    Display(announceRenderer, args.Show, announceFadeTime);
                     if (args.Show)
                     {
                         announcement.text = args.Message;
@@ -179,10 +192,7 @@ namespace Game.UI
                         announceTime = args.Time;
                     }
                     else
-                    {
-                        announcement.text = "";
                         announceTime = 0;
-                    }
                     break;
             }
         }

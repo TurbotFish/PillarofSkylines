@@ -31,6 +31,9 @@ namespace Game.EchoSystem
         private float driftInputDown;
         private bool isActive; //set to true when a scene is loaded, false otherwise. This helps avoid errors ;)
 
+        private Vector3 wayPointPosition;
+        private bool hasWaypoint = false;
+
         //##################################################################
 
         #region initialization
@@ -46,6 +49,7 @@ namespace Game.EchoSystem
             EventManager.EclipseEvent += OnEclipseEventHandler;
             EventManager.PreSceneChangeEvent += OnPreSceneChangeEvent;
             EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
+            EventManager.SetWaypointEvent += OnSetWaypointEventHandler;
         }       
 
         #endregion initialization
@@ -62,9 +66,7 @@ namespace Game.EchoSystem
                 if (driftInput > driftInputIntensity)
                 {
                     if (driftInputDown == 0)
-                    {
                         Drift();
-                    }
                     driftInputDown += Time.deltaTime;
                 }
                 else if (driftInput < driftInputIntensity - 0.1f)
@@ -101,19 +103,30 @@ namespace Game.EchoSystem
 
                 EventManager.SendEchoDestroyedEvent(this);
                 Break(targetEcho);
+
+            } else if (hasWaypoint)
+            {
+                CreateShell();
+
+                echoCamera.SetFov(70, 0.15f, true);
+
+                var eventArgs = new EventManager.TeleportPlayerEventArgs(wayPointPosition, false);
+                EventManager.SendTeleportPlayerEvent(this, eventArgs);
             }
         }
 
         public void Break(Echo target)
         {
+            int index = 0;
             if (echoList.Contains(target))
             {
+                index = echoList.IndexOf(target);
                 echoList.Remove(target);
             }
             if (target.playerEcho)
             {
                 placedEchoes--;
-                echoParticles.RemoveEcho(target.MyTransform.position);
+                echoParticles.RemoveEcho(index);
             }
             Instantiate(breakEchoParticles, target.MyTransform.position, target.MyTransform.rotation);
             Destroy(target.gameObject);
@@ -231,6 +244,12 @@ namespace Game.EchoSystem
         void OnSceneChangedEventHandler(object sender, EventManager.SceneChangedEventArgs args)
         {
             isActive = true;
+        }
+
+        void OnSetWaypointEventHandler(object sender, EventManager.SetWaypointEventArgs args)
+        {
+            hasWaypoint = true;
+            wayPointPosition = args.Position;
         }
 
         #endregion event handlers

@@ -107,7 +107,7 @@ namespace Game.Player
 
                 //this.myTransform.position = newPlayerPos;
 
-                var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(newPlayerPos, false);
+                var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(playerPos, newPlayerPos, false);
                 Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
 
                 //foreach (var follower in this.followers)
