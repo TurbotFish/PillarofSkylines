@@ -187,6 +187,10 @@ namespace Game.Player.CharacterController
             public float Speed { get { return speed; } }
 
             [SerializeField]
+            float walkingSpeed;
+            public float WalkingSpeed { get { return walkingSpeed; } }
+
+            [SerializeField]
             float sprintCoefficient;
             public float SprintCoefficient { get { return sprintCoefficient; } }
 
@@ -209,6 +213,7 @@ namespace Game.Player.CharacterController
             public void OnValidate()
             {
                 speed = Mathf.Clamp(speed, 0, float.MaxValue);
+                walkingSpeed = Mathf.Clamp(walkingSpeed, 0, float.MaxValue);
                 sprintCoefficient = Mathf.Clamp(sprintCoefficient, 0, float.MaxValue);
                 maxSpeed = Mathf.Clamp(maxSpeed, 0, float.MaxValue);
                 transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
