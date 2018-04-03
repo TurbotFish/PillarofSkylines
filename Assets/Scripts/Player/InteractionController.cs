@@ -373,6 +373,10 @@ namespace Game.Player {
                     case "Interactible":
                         other.GetComponent<Interactible>().EnterTrigger(transform);
                         break;
+                    // Zones where the player can only walk
+                    case "NoRunZone":
+                        gameController.PlayerController.CharController.isInsideNoRunZone = true;
+                        break;
                     //other
                     default:
                         Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
@@ -454,6 +458,10 @@ namespace Game.Player {
                     // Miscelanous Interactive Elements
                     case "Interactible":
                         other.GetComponent<Interactible>().ExitTrigger(transform);
+                        break;
+                        // Zones where the player can only walk
+                    case "NoRunZone":
+                        gameController.PlayerController.CharController.isInsideNoRunZone = false;
                         break;
                     //other
                     default:

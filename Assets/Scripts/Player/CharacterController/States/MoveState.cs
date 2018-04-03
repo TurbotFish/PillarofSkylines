@@ -39,12 +39,12 @@ namespace Game.Player.CharacterController.States
 			PlayerInputInfo inputInfo = charController.InputInfo;
 			PlayerMovementInfo movementInfo = charController.MovementInfo;
 			CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
-            if (inputInfo.jumpButtonDown) {
+            if (inputInfo.jumpButtonDown && !charController.isInsideNoRunZone) {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
 				stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 
 				stateMachine.ChangeState(state);
-			} else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash)) {
+			} else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash) && !charController.isInsideNoRunZone) {
 				stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             } else if(inputInfo.sprintButton && (!collisionInfo.below || collisionInfo.cornerNormal) && !stateMachine.CheckStateLocked(ePlayerState.hover))
             {
@@ -58,7 +58,7 @@ namespace Game.Player.CharacterController.States
 				stateMachine.ChangeState(new StandState(charController, stateMachine));
             }
             //jetpack
-            else if (inputInfo.jetpackButtonDown && !stateMachine.CheckStateLocked(ePlayerState.jetpack))
+            else if (inputInfo.jetpackButtonDown && !stateMachine.CheckStateLocked(ePlayerState.jetpack) && !charController.isInsideNoRunZone)
             {
                 stateMachine.ChangeState(new JetpackState(charController, stateMachine));
             }
@@ -76,7 +76,7 @@ namespace Game.Player.CharacterController.States
 
                 stateMachine.ChangeState(state);
             }
-            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable)
+            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable && !charController.isInsideNoRunZone)
             {
                 stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
             }
@@ -85,11 +85,12 @@ namespace Game.Player.CharacterController.States
 		public StateReturnContainer Update(float dt) {
 			PlayerInputInfo inputInfo = charController.InputInfo;
 
+            //Debug.Log("inside zone ? " + charController.isInsideNoRunZone);
             var result = new StateReturnContainer
             {
                 CanTurnPlayer = true,
-
-                Acceleration = inputInfo.leftStickToSlope * moveData.Speed * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1) * stateMachine.speedMultiplier,
+                
+                Acceleration = inputInfo.leftStickToSlope * (charController.isInsideNoRunZone ? moveData.WalkingSpeed : moveData.Speed) * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1) * stateMachine.speedMultiplier,
 
                 IgnoreGravity = true,
 				MaxSpeed = moveData.MaxSpeed,

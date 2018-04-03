@@ -72,6 +72,9 @@ namespace Game.Player.CharacterController
         bool isInitialized;
         bool gamePaused = true;
 
+        [HideInInspector]
+        public bool isInsideNoRunZone;
+
         /// <summary>
         /// This is set to false if the player has opened a menu, true otherwise.
         /// </summary>
