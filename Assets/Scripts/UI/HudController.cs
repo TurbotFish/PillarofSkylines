@@ -45,7 +45,7 @@ namespace Game.UI
         bool announcePanelActive;
 
 
-        CanvasGroup myRenderer;
+        public CanvasGroup myRenderer;
         public bool IsActive { get; private set; }
         
         //###########################################################
@@ -54,7 +54,7 @@ namespace Game.UI
             
         void Start()
         {
-            myRenderer = GetComponent<CanvasGroup>();
+            //myRenderer = GetComponent<CanvasGroup>();
 
             helpPanel = helpMessage.transform.parent.gameObject;
             helpPanel.SetActive(false);
