@@ -39,7 +39,8 @@ namespace Game.LevelElements
         private PlayerModel model;
         private PersistentTriggerable persistentTriggerable;
         private bool isCopy;
-        private bool isInitialized;
+        [HideInInspector]
+        public bool isInitialized;
 
         //###########################################################
 

@@ -476,14 +476,12 @@ namespace Game.Player.CharacterController
         {
             if (!windTunnelPartList.Contains(args.WindTunnelPart))
             {
-                print("eventreceived");
                 windTunnelPartList.Add(args.WindTunnelPart);
             }
         }
 
         void OnWindTunnelPartExitedEventHandler(object sender, Utilities.EventManager.WindTunnelPartExitedEventArgs args)
         {
-            print("partremoved");
             windTunnelPartList.Remove(args.WindTunnelPart);
         }
 

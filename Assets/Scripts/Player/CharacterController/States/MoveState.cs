@@ -90,7 +90,7 @@ namespace Game.Player.CharacterController.States
             {
                 CanTurnPlayer = true,
                 
-                Acceleration = inputInfo.leftStickToSlope * (charController.isInsideNoRunZone ? moveData.WalkingSpeed : moveData.Speed) * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1) * stateMachine.speedMultiplier,
+                Acceleration = inputInfo.leftStickToSlope * (charController.isInsideNoRunZone ? moveData.WalkingSpeed : moveData.Speed) * (inputInfo.sprintButton && !charController.isInsideNoRunZone ? moveData.SprintCoefficient : 1) * stateMachine.speedMultiplier,
 
                 IgnoreGravity = true,
 				MaxSpeed = moveData.MaxSpeed,
