@@ -372,7 +372,8 @@ namespace Game.Model
                 if (GetCurrencyAmount(eCurrencyType.PillarKey) >= GetPillarEntryPrice(pillarId))
                 {
                     unlockedPillars.Add(pillarId);
-                    ChangeCurrencyAmount(eCurrencyType.PillarKey, -PillarData.GetPillarEntryPrice(pillarId));
+                    // on dépense pas les marques de Piliers
+                    //ChangeCurrencyAmount(eCurrencyType.PillarKey, -PillarData.GetPillarEntryPrice(pillarId));
                     return true;
                 }
             }
@@ -428,10 +429,7 @@ namespace Game.Model
                 //pick up favour
                 if (pickUp.CurrencyType == eCurrencyType.Favour)
                 {
-                    if (pickUp.PickUpId == "ECHO")
-                        ChangeCurrencyAmount(eCurrencyType.Favour, 0); // THIS IS TEMPORARY
-                    else
-                        ChangeCurrencyAmount(eCurrencyType.Favour, 1);
+                    ChangeCurrencyAmount(eCurrencyType.Favour, 1);
                 }
                 else if (pickUp.CurrencyType == eCurrencyType.PillarKey)
                 {
