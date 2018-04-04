@@ -250,17 +250,18 @@ namespace Game.Player.CharacterController
                 inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint");
                 inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint");
 
+                /*
                 inputInfo.jetpackButton = Input.GetButton("Jetpack");
                 inputInfo.jetpackButtonDown = Input.GetButtonDown("Jetpack");
-                inputInfo.jetpackButtonUp = Input.GetButtonUp("Jetpack");
+                inputInfo.jetpackButtonUp = Input.GetButtonUp("Jetpack");*/
 
                 inputInfo.rightStickButtonDown = Input.GetButtonDown("RightStickClick");
 
-                /*
+                
                 if (Input.GetButtonDown("GroundRise"))
                 {
                     CreateGroundRise();
-                }*/
+                }
                 
                 stateMachine.HandleInput();
             }
