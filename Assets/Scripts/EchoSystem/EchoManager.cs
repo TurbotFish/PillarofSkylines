@@ -21,6 +21,7 @@ namespace Game.EchoSystem
         private Animator playerAnimator;
 
         private IGameControllerBase gameController;
+        public Player.CharacterController.CharController charController;
         private EchoCameraEffect echoCamera;
         private EchoParticleSystem echoParticles;
 
@@ -45,6 +46,8 @@ namespace Game.EchoSystem
             playerAnimator = gameController.PlayerController.CharController.animator;
             echoParticles = gameController.PlayerController.PlayerTransform.GetComponentInChildren<EchoParticleSystem>();
             echoParticles.numEchoes = 3;
+
+            charController = gameController.PlayerController.CharController;
 
             EventManager.EclipseEvent += OnEclipseEventHandler;
             EventManager.PreSceneChangeEvent += OnPreSceneChangeEvent;
@@ -76,7 +79,7 @@ namespace Game.EchoSystem
                 }
 
                 //create new echo
-                if (Input.GetButtonDown("Echo") && gameController.PlayerModel.CheckAbilityActive(eAbilityType.Echo))
+                if (charController.InputInfo.echoButtonUp && charController.InputInfo.echoButtonTimePressed < 1f && gameController.PlayerModel.CheckAbilityActive(eAbilityType.Echo))
                 {
                     CreateEcho(true);
                 }

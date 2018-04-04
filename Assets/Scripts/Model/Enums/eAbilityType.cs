@@ -12,7 +12,7 @@ namespace Game.Model
         DoubleJump,
         GroundRise,
         EchoBoost,
-        EchoDistance,
+        Phantom,
         Glide,
         WallRun,
         Dash,
