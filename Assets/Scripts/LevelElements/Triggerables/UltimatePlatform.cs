@@ -14,17 +14,20 @@ namespace Game.LevelElements
         [Header("Step By Step Movement")]
 
         [HideInInspector]
-        public List<Vector3> localPositions;
+        public List<Vector3> waypoints;
+        public List<float> waitTime;
 
-        public float timeToMove = 1;
+        public List<float> timeToMove;
         public float easing = 1;
         public bool looping = true;
+        public bool finishMovement = true;
 
         [HideInInspector]
         public int currentPoint = 0;
         platformState currentState = platformState.newOrder;
         Transform my;
         bool goingForward = true;
+        bool finishingMovement;
         MovingPlatform platform;
         Vector3 initialPosition;
         float elapsed;
@@ -42,14 +45,32 @@ namespace Game.LevelElements
             my = transform;
             platform = GetComponent<MovingPlatform>();
 
-            localPositions.Add(Vector3.zero);
-            foreach (Transform child in transform)
+            waypoints.Add(Vector3.zero);
+            foreach (Transform child in transform.GetChild(0))
             {
-                localPositions.Add(new Vector3(child.localPosition.x * my.lossyScale.x, child.localPosition.y * my.lossyScale.y, child.localPosition.z * my.lossyScale.z));
+                waypoints.Add(new Vector3(child.localPosition.x * my.lossyScale.x, child.localPosition.y * my.lossyScale.y, child.localPosition.z * my.lossyScale.z));
+            }
+
+            if (waitTime.Count < waypoints.Count)
+            {
+                int size = waypoints.Count - waitTime.Count;
+                for (int i = 0; i < size; i++)
+                {
+                    waitTime.Add(0f);
+                }
+            }
+
+            if (timeToMove.Count < waypoints.Count)
+            {
+                int size = waypoints.Count - timeToMove.Count;
+                for (int i = 0; i < size; i++)
+                {
+                    timeToMove.Add(1f);
+                }
             }
 
             initialPosition = my.localPosition;
-            elapsed = timeToMove;
+            elapsed = timeToMove[0];
 
         }
 
@@ -61,14 +82,21 @@ namespace Game.LevelElements
 
         protected override void Activate()
         {
-            Debug.LogFormat("Door \"{0}\": Activate called!", name);
+            Debug.LogFormat("Platform \"{0}\": Activate called!", name);
             
         }
 
         protected override void Deactivate()
         {
-            Debug.LogFormat("Door \"{0}\": Deactivate called!", name);
-            
+            Debug.LogFormat("Platform \"{0}\": Deactivate called!", name);
+            if (finishMovement)
+            {
+                finishingMovement = true;
+            }
+            else
+            {
+                currentState = platformState.disabled;
+            }
         }
 
         /*protected override PersistentTriggerable CreatePersistentObject()
@@ -87,18 +115,19 @@ namespace Game.LevelElements
             if (!isInitialized)
                 return;
 
-            if (currentState == platformState.newOrder && Triggered)
+            if (currentState == platformState.newOrder && (Triggered || finishingMovement))
             {
-                Move(localPositions[currentPoint % (localPositions.Count)], localPositions[(currentPoint + (goingForward ? 1 : -1)) % (localPositions.Count)]);
 
-                print("moving order : " + localPositions[currentPoint % (localPositions.Count)] + " to " + localPositions[(currentPoint + (goingForward? 1:-1)) % (localPositions.Count)]);
+                Move(waypoints[currentPoint % (waypoints.Count)], waypoints[(currentPoint + (goingForward ? 1 : -1)) % (waypoints.Count)], timeToMove[currentPoint]);
+
+                print("moving order : " + waypoints[currentPoint % (waypoints.Count)] + " to " + waypoints[(currentPoint + (goingForward? 1:-1)) % (waypoints.Count)]);
                 
                 currentPoint += (goingForward?1:-1);
-                if (currentPoint == localPositions.Count && looping)
+                if (currentPoint == waypoints.Count && looping)
                 {
                     currentPoint = 0;
                 }
-                if (currentPoint == localPositions.Count-1 && !looping)
+                if (currentPoint == waypoints.Count-1 && !looping)
                 {
                     goingForward = false;
                 }
@@ -110,21 +139,23 @@ namespace Game.LevelElements
             }
         }
 
-        private void Move(Vector3 startPos, Vector3 endPos)
-        { 
+        private void Move(Vector3 startPos, Vector3 endPos, float timeMoving)
+        {
+            elapsed = timeMoving;
             StopAllCoroutines();
-            StartCoroutine(_Move(initialPosition + startPos, initialPosition + endPos));
+            StartCoroutine(_Move(initialPosition + startPos, initialPosition + endPos, timeMoving));
         }
 
-        private IEnumerator _Move(Vector3 startPos, Vector3 endPos)
+        private IEnumerator _Move(Vector3 startPos, Vector3 endPos, float timeMoving)
         {
-            elapsed = timeToMove - elapsed;
-            while ( elapsed < timeToMove)
+            elapsed = timeMoving - elapsed;
+            while (elapsed < timeMoving)
             {
-                if (Triggered)
+                if (Triggered || finishingMovement)
                 {
+                    currentState = platformState.moving;
                     elapsed += Time.deltaTime;
-                    float t = elapsed / timeToMove;
+                    float t = elapsed / timeMoving;
 
                     Vector3 movement = Vector3.Lerp(startPos, endPos, (Mathf.Pow(t, easing) / (Mathf.Pow(t, easing) + Mathf.Pow(1 - t, easing)))) - my.localPosition;
                     platform.Move(movement);
@@ -133,14 +164,25 @@ namespace Game.LevelElements
             }
 
             my.localPosition = endPos;
-            elapsed = timeToMove;
+
+            currentState = platformState.waiting;
+
+            if (waitTime.Count > currentPoint)
+                yield return new WaitForSeconds(waitTime[currentPoint]);
+
+            if (finishingMovement && currentPoint == 0)
+            {
+                finishingMovement = false;
+            }
+
             currentState = platformState.newOrder;
         }
 
         #endregion private methods
-
+        
         //###########################################################
     }
+
 
     enum platformState
     {

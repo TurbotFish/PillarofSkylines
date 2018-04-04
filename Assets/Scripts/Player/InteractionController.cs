@@ -267,7 +267,6 @@ namespace Game.Player {
                         break;
                     //wind
                     case "Wind":
-                        Debug.Log("coucou");
                         Utilities.EventManager.SendWindTunnelEnteredEvent(this, new Utilities.EventManager.WindTunnelPartEnteredEventArgs(other.GetComponent<WindTunnelPart>()));
                         if (gameController.PlayerController.CharController.stateMachine.CurrentState != CharacterController.ePlayerState.windTunnel)
                         {
