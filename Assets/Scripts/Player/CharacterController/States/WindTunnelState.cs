@@ -68,7 +68,7 @@ namespace Game.Player.CharacterController.States
                     wind = partUp * windTunnelPart.windStrength + (inputInfo.leftStickAtZero ? Vector3.ProjectOnPlane(partPos - movementInfo.position, partUp) * windTunnelPart.tunnelAttraction 
                         : (charController.myCameraTransform.right * inputInfo.leftStickRaw.x + charController.myCameraTransform.forward
                         * inputInfo.leftStickRaw.z)*10);
-                    Debug.Log("velocity added : " + (charController.myCameraTransform.right * inputInfo.leftStickRaw.x + charController.myCameraTransform.forward * inputInfo.leftStickRaw.z) * 10);
+                    //Debug.Log("velocity added : " + (charController.myCameraTransform.right * inputInfo.leftStickRaw.x + charController.myCameraTransform.forward * inputInfo.leftStickRaw.z) * 10);
                 }
                 wind /= windTunnelPartList.Count;
             }
