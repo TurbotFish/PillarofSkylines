@@ -61,7 +61,7 @@ namespace DynamicShadowProjector {
 		[SerializeField]
 		private bool m_singlePassMipmapBlur = false;
 		[SerializeField]
-		public Color m_shadowColor = new Color(0,0,0,1);
+		private Color m_shadowColor = new Color(0,0,0,1);
 		[SerializeField]
 		private Material m_blurShader;
 		[SerializeField]
