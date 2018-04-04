@@ -181,6 +181,14 @@ namespace Game.LevelElements
             }
         }
 
+        void OnFavourReceived()
+        {
+            string message = currencyType == eCurrencyType.Favour ? "You have been granted a Favour" : "The Eyes have marked you";
+            string desc = currencyType == eCurrencyType.Favour ? "Press Start to open the ability menu" : "Destroy the Pillars to free the world";
+
+            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, UI.eMessageType.Announcement, desc, 4));
+        }
+
         #endregion private methods
 
         //##################################################################
@@ -199,15 +207,7 @@ namespace Game.LevelElements
             StartCoroutine(FavourManager());
             StartCoroutine(DissolveTomb());
         }
-
-        void FavourReceived()
-        {
-            string message = currencyType == eCurrencyType.Favour ? "You have been granted a Favour" : "The Pillars have marked you";
-            string desc = currencyType == eCurrencyType.Favour ? "Press Start to open the ability menu" : "Destroy the Pillars to free the world";
-
-            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, UI.eMessageType.Announcement, desc, 4));
-        }
-
+        
         IEnumerator FaveurActivation()
         {
             float disparition = 0;
@@ -239,7 +239,7 @@ namespace Game.LevelElements
 
             Destroy(faveur.gameObject);
             Instantiate(favSparksBurst, faveur.position, Quaternion.identity);
-            FavourReceived();
+            OnFavourReceived();
         }
 
         IEnumerator ParticleManager()

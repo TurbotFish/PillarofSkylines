@@ -180,7 +180,7 @@ namespace Game.Player.CharacterController
                     velocityBeforeCollision.magnitude,
                     ((velocityBeforeCollision.y > 0 || myPlayer.CurrentState == ePlayerState.glide) ? collisionMaskNoCloud : collisionMask)))
                 {
-                    //Debug.Log("managed to add velocity beofre collsion");
+                    //Debug.Log("managed to add velocity from before collision");
                     finalVelocity = velocityBeforeCollision.normalized * finalVelocity.magnitude;
                     velocityBeforeCollision = Vector3.zero;
                 }
@@ -495,8 +495,9 @@ namespace Game.Player.CharacterController
                 )
             {
 
-                if (collisionNumber == 0 && velocityBeforeCollision == Vector3.zero)
+                if (collisionNumber == 0 && velocityBeforeCollision == Vector3.zero && (myPlayer.CurrentState != ePlayerState.slide || myPlayer.stateMachine.timeInCurrentState < 0.05f))
                 {
+                    //Debug.Log("hey the velocity before collision is : " + velocity);
                     timerBeforeForgetVBC = 0.05f;
                     velocityBeforeCollision = velocity;
                 }
