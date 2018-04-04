@@ -24,7 +24,7 @@ namespace Game.LevelElements
 
         [Header("Triggerable Object")]
 
-        [SerializeField] protected bool triggered;
+        [SerializeField] private bool triggered;
 
 #if UNITY_EDITOR
         [SerializeField] private List<Trigger> triggers = new List<Trigger>(); //list of Trigger objects
@@ -85,6 +85,11 @@ namespace Game.LevelElements
             }
             else
             {
+                if(this is Door && persistentTriggerable.Triggered != Triggered)
+                {
+                    Debug.LogWarningFormat("TriggerableObject {0}: Initialize: persistentTriggered={1} currentTriggered={2}", this.name, persistentTriggerable.Triggered, Triggered);
+                }
+
                 SetTriggered(persistentTriggerable.Triggered, true);
             }
 
@@ -100,9 +105,10 @@ namespace Game.LevelElements
         {
             if (!isInitialized)
             {
-                Debug.LogWarning("TriggerableObject: SetTriggered: called while not initialized!");
+                //Debug.Log("TriggerableObject: SetTriggered: called while not initialized!");
             }
-            else if (triggered == this.triggered)
+
+            if (triggered == this.triggered)
             {
                 return;
             }
