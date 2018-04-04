@@ -49,10 +49,13 @@ public class Gravifloor : MonoBehaviour {
         {
             currPlayer.AddExternalVelocity(-gravityDirection*10, false, false);
 
-            if (isJumping)
-                StartCoroutine(_ResetGravity());
-            else
-                StartCoroutine(_ChangeGravity(regularGravity));
+            if (currPlayer.CurrentState != ePlayerState.hover)
+            {
+                if (isJumping)
+                    StartCoroutine(_ResetGravity());
+                else
+                    StartCoroutine(_ChangeGravity(regularGravity));
+            }
         }
     }
     

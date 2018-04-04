@@ -44,14 +44,14 @@ namespace Game.Player.CharacterController.States
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
 
-            if (inputInfo.jumpButtonDown)
+            if (inputInfo.jumpButtonDown && !charController.isInsideNoRunZone)
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 
                 stateMachine.ChangeState(state);
             }
-            else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
+            else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash) && !charController.isInsideNoRunZone)
             {
                 stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             }
@@ -63,7 +63,7 @@ namespace Game.Player.CharacterController.States
                 stateMachine.ChangeState(state);
             }
             //jetpack
-            else if (inputInfo.jetpackButtonDown && !stateMachine.CheckStateLocked(ePlayerState.jetpack))
+            else if (inputInfo.jetpackButtonDown && !stateMachine.CheckStateLocked(ePlayerState.jetpack) && !charController.isInsideNoRunZone)
             {
                 stateMachine.ChangeState(new JetpackState(charController, stateMachine));
             }
@@ -75,7 +75,7 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new MoveState(charController, stateMachine));
             }
-            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable)
+            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable && !charController.isInsideNoRunZone)
             {
                 stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
             }

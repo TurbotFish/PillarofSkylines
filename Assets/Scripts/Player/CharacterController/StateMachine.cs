@@ -22,6 +22,7 @@ namespace Game.Player.CharacterController
 
         IState currentState;
         public ePlayerState CurrentState { get { return currentState.StateId; } }
+        public float timeInCurrentState;
 
         //Multipliers (echo boost)
         [HideInInspector]
@@ -115,7 +116,7 @@ namespace Game.Player.CharacterController
             }
 
             currentState.Enter();
-
+            timeInCurrentState = 0f;
             return true;
         }
 
@@ -174,6 +175,7 @@ namespace Game.Player.CharacterController
                 }
                 
             }
+            timeInCurrentState += Time.deltaTime;
 
             if (CurrentState != ePlayerState.jetpack)
             {

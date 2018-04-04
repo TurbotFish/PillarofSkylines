@@ -5,7 +5,7 @@ using Game.Player.CharacterController;
 [AddComponentMenu("Camera/Third Person Camera")]
 [RequireComponent(typeof(Camera))]
 public class PoS_Camera : MonoBehaviour {
-
+    
 	#region Properties
 	public LayerMask blockingLayer;
 
@@ -95,7 +95,11 @@ public class PoS_Camera : MonoBehaviour {
 
     [Header("FOV")]
     public float fovDamp = 4;
+
+    [Header("Dash")]
     public float dashFovSupplement = 15;
+    public float dashDistance = -1;
+    public float dashDamp = 0.1f;
 
 	new Camera camera;
 	Vector3 camPosition, negDistance;
@@ -120,6 +124,8 @@ public class PoS_Camera : MonoBehaviour {
 
 	float lastInput;
     float recoilIntensity;
+
+    bool gamePaused;
 
     bool autoAdjustYaw, autoAdjustPitch;
     bool canAutoReset;
@@ -158,9 +164,11 @@ public class PoS_Camera : MonoBehaviour {
 
     private void OnEnable() {
         Game.Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayer;
+        Game.Utilities.EventManager.GamePausedEvent += OnGamePaused;
     }
     private void OnDisable() {
         Game.Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayer;
+        Game.Utilities.EventManager.GamePausedEvent -= OnGamePaused;
     }
 
     void OnApplicationFocus(bool hasFocus) {
@@ -169,6 +177,9 @@ public class PoS_Camera : MonoBehaviour {
 	}
 
 	void LateUpdate() {
+        if (gamePaused)
+            return;
+
 		deltaTime = Time.deltaTime;
         
         GetInputsAndStates();
@@ -219,6 +230,10 @@ public class PoS_Camera : MonoBehaviour {
         if (args.IsNewScene) {
             my.position = camPosition;
         }
+    }
+
+    void OnGamePaused(object sender, Game.Utilities.EventManager.GamePausedEventArgs args) {
+        gamePaused = args.PauseActive;
     }
 
     Vector3 characterUp;
@@ -384,8 +399,8 @@ public class PoS_Camera : MonoBehaviour {
 
         if (playerState == ePlayerState.dash) { // DASH
             targetFov += dashFovSupplement;
-            ResetCamera(slopeValue);
-            additionalDistance = 3;
+            ResetCamera(slopeValue, dashDamp);
+            additionalDistance = dashDistance;
         }
         
         if (inverseFacingDirection && Input.GetAxis("Vertical") >= 0) {
@@ -434,9 +449,12 @@ public class PoS_Camera : MonoBehaviour {
             ResetCamera(slopeValue);
     }
 
-    void ResetCamera(float slopeValue = 0) {
+    void ResetCamera(float slopeValue = 0, float? damp = null) {
         manualPitch = defaultPitch;
         AllowAutoReset(true);
+
+        if (damp == null)
+            damp = resetDamp;
 
         facingTime = -1;
         state = eCameraState.Resetting;
@@ -446,11 +464,11 @@ public class PoS_Camera : MonoBehaviour {
         // dans les airs, la caméra pointe vers le bas
         if (isFalling) { // on n'utilise pas isGrounded ici car cet état est spécifique au fait de tomber
             resetType = eResetType.ManualAir;
-            SetTargetRotation(pitchRotationLimit.max, GetYawBehindPlayer(), resetDamp);
+            SetTargetRotation(pitchRotationLimit.max, GetYawBehindPlayer(), (float)damp);
         }
         else { // sinon, elle se met derrière le joueur
             resetType = eResetType.ManualGround;
-            SetTargetRotation(defaultPitch + slopeValue, GetYawBehindPlayer(), resetDamp);
+            SetTargetRotation(defaultPitch + slopeValue, GetYawBehindPlayer(), (float)damp);
         }
     }
 
@@ -464,10 +482,10 @@ public class PoS_Camera : MonoBehaviour {
 
         if (state == eCameraState.Air) { // Si on était dans les airs avant
             if (!onEdgeOfCliff)
-                manualPitch = slopeValue + defaultPitch; // On reset le pitch si on n'est pas au bord d'une falaise
+                manualPitch = defaultPitch; // On reset le pitch si on n'est pas au bord d'une falaise
             AllowAutoReset(true, true);
         }
-        
+
         if (state < eCameraState.Overriden) {
             if (playerVelocity != Vector3.zero) {
                 state = eCameraState.Default;
@@ -724,21 +742,22 @@ public class PoS_Camera : MonoBehaviour {
 		return v >= 0 ? 1 : -1;
 	}
 
-	#endregion
+    #endregion
 
-	#region Slopes and Cliffs
+    #region Slopes and Cliffs
+
+    [Header("Slopes")]
+    public float limitVertical = 0.7f;
+    public float minSlopeLength = 1;
 
 	/// <summary>
 	/// Checks whether we're on a cliff or on a slope and returns the value of that slope
 	/// </summary>
 	float CheckGroundAndReturnSlopeValue() {
-        float limitVertical = 0.7f; // TODO: softcode
-        float slopeSameAngleBuffer = 10; // TODO: softcode
-        float minSlopeLength = 1; // TODO: softcode
-
         Vector3 groundNormal = controller.collisions.currentGroundNormal;
         Vector3 targetUp = target.up;
         Vector3 targetPos = target.position;
+        Vector3 playerForward = player.transform.forward;
 
         if (groundNormal.y < limitVertical)
             groundNormal = targetUp; // Si on est quasi à la verticale, on considère qu'on est contre un mur, on repasse en caméra normale
@@ -747,46 +766,45 @@ public class PoS_Camera : MonoBehaviour {
         if ((playerState & (ePlayerState.move | ePlayerState.stand))!=0 && !Physics.Raycast(targetPos, player.transform.forward, 1, controller.collisionMask)) {
 
             RaycastHit groundInFront;
+            float yOffset = (1 - groundNormal.y) * 10;
+            float depth = cliffMinDepth + yOffset;
+            Vector3 rayStart = targetPos + playerForward * distanceToCheckGroundForward + targetUp * yOffset;
 
-            if (Physics.Raycast(targetPos + player.transform.forward * distanceToCheckGroundForward,
-                            -targetUp, out groundInFront, cliffMinDepth, controller.collisionMask)) {
+            if (Physics.Raycast(rayStart, -targetUp, out groundInFront, depth, controller.collisionMask)) {
 
-                Debug.DrawRay(targetPos + player.transform.forward * distanceToCheckGroundForward,
-                            -targetUp * cliffMinDepth, Color.red);
-
+                Debug.DrawRay(rayStart, -targetUp * depth, Color.red);
                 NotOnEdgeOfCliff(); // Y a du sol devant donc on n'est pas au bord d'une falaise
-
                 Vector3 groundInFrontNormal = Quaternion.Inverse(targetSpace) * groundInFront.normal;
+
+                RaycastHit groundFurther;
 
                 if (groundInFrontNormal.y > 0.999f)
                     groundNormal = targetUp; // Si devant c'est environ du sol plat, on reset slopeValue; pas besoin de calculs en plus
 
-                else {
-                    RaycastHit groundFurther;
+                else if (groundInFrontNormal.y > limitVertical) { // si la pente devant n'est pas quasi verticale (ie un mur) et a plus de x degrés
 
-                    // si la pente devant n'est pas quasi verticale (ie un mur) et a plus de x degrés
-                    if (groundInFrontNormal.y > limitVertical) {
+                    yOffset = (1 - groundInFrontNormal.y) * 10;
+                    depth = cliffMinDepth + yOffset;
+                    rayStart = targetPos + playerForward * (distanceToCheckGroundForward + minSlopeLength) + targetUp * yOffset;
 
-                        // on check entre le sol actuel et le sol devant pour voir la taille d'une pente
-                        if (Physics.Raycast(targetPos + player.transform.forward * (distanceToCheckGroundForward + minSlopeLength) + targetUp * (1 - groundInFrontNormal.y) * 10,
-                                    -targetUp, out groundFurther, cliffMinDepth, controller.collisionMask)) {
+                    // on check entre le sol actuel et le sol devant pour voir la taille d'une pente
+                    if (Physics.Raycast(rayStart, -targetUp, out groundFurther, depth, controller.collisionMask)) {
 
-                            Vector3 groundFurtherNormal = Quaternion.Inverse(targetSpace) * groundFurther.normal;
-
-                            Debug.DrawRay(targetPos + player.transform.forward * (distanceToCheckGroundForward + minSlopeLength) + targetUp * (1 - groundInFrontNormal.y) * 10,
-                                        -targetUp * cliffMinDepth, Color.red);
-
-                            if (Vector3.Angle(groundFurtherNormal, groundInFrontNormal) < slopeSameAngleBuffer) {// Si la pente devant et la pente plus loin sont environ la même
-                                groundNormal = groundInFront.normal; // On prend sa slopeValue (world space)
-                            } else {
-                                groundNormal += groundInFront.normal + groundFurther.normal;
-                                groundNormal.x /= 3;
-                                groundNormal.y /= 3;
-                                groundNormal.z /= 3;
-                            }
+                        Vector3 groundFurtherNormal = Quaternion.Inverse(targetSpace) * groundFurther.normal;
+                        Debug.DrawRay(rayStart, -targetUp * depth, Color.red);
+                        
+                        // si groundfurther ~= groundNormal, on ignore groundinfront, c'est un petit bump
+                        if (Vector3.Dot(groundNormal, groundFurtherNormal) < 0.999f) {
+                            // on fait la moyenne entre les pentes
+                            groundNormal += groundInFront.normal + groundFurther.normal;
+                            groundNormal.x /= 3;
+                            groundNormal.y /= 3;
+                            groundNormal.z /= 3;
                         }
-                    } // Sinon : ne rien faire, on garde le sol actuel
-                }
+                    }
+
+                } // Sinon : ne rien faire, on garde le sol actuel
+
             } else {// on est au sol, y a pas de mur devant, et y a pas de sol devant non plus, donc on est au bord d'une falaise
                 onEdgeOfCliff = true;
                 AllowAutoReset(false);

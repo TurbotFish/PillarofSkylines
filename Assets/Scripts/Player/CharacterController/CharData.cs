@@ -187,6 +187,10 @@ namespace Game.Player.CharacterController
             public float Speed { get { return speed; } }
 
             [SerializeField]
+            float walkingSpeed;
+            public float WalkingSpeed { get { return walkingSpeed; } }
+
+            [SerializeField]
             float sprintCoefficient;
             public float SprintCoefficient { get { return sprintCoefficient; } }
 
@@ -209,6 +213,7 @@ namespace Game.Player.CharacterController
             public void OnValidate()
             {
                 speed = Mathf.Clamp(speed, 0, float.MaxValue);
+                walkingSpeed = Mathf.Clamp(walkingSpeed, 0, float.MaxValue);
                 sprintCoefficient = Mathf.Clamp(sprintCoefficient, 0, float.MaxValue);
                 maxSpeed = Mathf.Clamp(maxSpeed, 0, float.MaxValue);
                 transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
@@ -494,11 +499,7 @@ namespace Game.Player.CharacterController
             [SerializeField]
             float speed;
             public float Speed { get { return speed; } }
-
-            [SerializeField]
-            float speedRequiredForHirizontalWallRun;
-            public float SpeedRequiredForHorizontalWallRun { get { return speedRequiredForHirizontalWallRun; } }
-
+            
             [SerializeField]
             float timeToUnstick;
             public float TimeToUnstick { get { return timeToUnstick; } }
@@ -566,9 +567,14 @@ namespace Game.Player.CharacterController
             float duration;
             public float Duration { get { return duration; } }
 
+            [SerializeField]
+            float maxHeight;
+            public float MaxHeight { get { return maxHeight; } }
+
             public void OnValidate()
             {
                 duration = Mathf.Clamp(duration, 0, float.MaxValue);
+                maxHeight = Mathf.Clamp(maxHeight, 0, float.MaxValue);
             }
         }
 
@@ -669,7 +675,7 @@ namespace Game.Player.CharacterController
             }
         }
 
-        #endregion ground rise
+        #endregion jetpack
 
         //*******************************************
 

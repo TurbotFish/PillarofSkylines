@@ -27,18 +27,23 @@ namespace Game.Player.CharacterController.States
 		//#############################################################################
 
 		public void Enter() {
-			Debug.Log("Enter State: Glide");
+			//Debug.Log("Enter State: Glide");
 			charController.animator.SetBool("Gliding", true);
-			charController.glideParticles.Play();
+			//charController.glideParticles.Play();
 			verticalAngle = Vector3.Angle(Vector3.up, (charController.MovementInfo.velocity)) - 90f;
             Debug.Log("velocity entering : " + charController.MovementInfo.velocity + " vertical angle : " + verticalAngle);
             horizontalAngle = 0f;
+
+			charController.fxManager.GlidePlay ();
 		}
 
 		public void Exit() {
-			Debug.Log("Exit State: Glide");
-			charController.glideParticles.Stop();
+			//Debug.Log("Exit State: Glide");
+			//charController.glideParticles.Stop();
 			charController.animator.SetBool("Gliding", false);
+
+			charController.fxManager.GlideStop ();
+
 		}
 
 		//#############################################################################
@@ -107,12 +112,12 @@ namespace Game.Player.CharacterController.States
 				);
 			}
 
-            Debug.Log("vertical angle : " + verticalAngle + "speed : " + currentSpeed);
+            //Debug.Log("vertical angle : " + verticalAngle + "speed : " + currentSpeed);
 
 			//Calculate the velocity of the player with his speed and vertical angle
 			Vector3 targetVelocity = Quaternion.AngleAxis(verticalAngle, charController.MyTransform.right) * charController.MyTransform.forward * currentSpeed;
 
-            Debug.Log("target velocity : " + targetVelocity + " forward : " + charController.MyTransform.forward);
+            //Debug.Log("target velocity : " + targetVelocity + " forward : " + charController.MyTransform.forward);
 
             //Stall when the player is too slow
             if (currentSpeed < glideData.StallSpeed) {
@@ -134,7 +139,7 @@ namespace Game.Player.CharacterController.States
             //Turn the player horizontally with the angle calculated above
 
             charController.MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(TurnLocalToSpace(movementInfo.velocity), charController.MyTransform.up), charController.MyTransform.up);
-            Debug.Log("velocity : " + movementInfo.velocity);
+            //Debug.Log("velocity : " + movementInfo.velocity);
 
             //Turn the player horizontally with the angle calculated above
             //charController.MyTransform.Rotate(Vector3.up, horizontalAngle, Space.Self);
@@ -154,6 +159,9 @@ namespace Game.Player.CharacterController.States
 			charController.animator.SetFloat("GlideHorizontal", horizontalAngle);
 			charController.animator.SetFloat("GlideVertical", (verticalAngle > 0 ? verticalAngle / glideData.MaxAngle : verticalAngle / -glideData.MinAngle));
 
+			//FX
+			charController.fxManager.receivedVelocity = charController.MovementInfo.velocity.magnitude;
+			charController.fxManager.GlideUpdate();
 
 			return result;
 		}

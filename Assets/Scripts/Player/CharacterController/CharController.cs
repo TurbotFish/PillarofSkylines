@@ -72,6 +72,9 @@ namespace Game.Player.CharacterController
         bool isInitialized;
         bool gamePaused = true;
 
+        [HideInInspector]
+        public bool isInsideNoRunZone;
+
         /// <summary>
         /// This is set to false if the player has opened a menu, true otherwise.
         /// </summary>
@@ -107,6 +110,8 @@ namespace Game.Player.CharacterController
         public ParticleSystem aerialJumpFX;
         public ParticleSystem hoverFX;
 
+		public FXManager fxManager;
+
         //#############################################################################
 
 
@@ -119,6 +124,7 @@ namespace Game.Player.CharacterController
             myCamera = FindObjectOfType<PoS_Camera>();
             myCameraTransform = myCamera.transform;
 
+            GetComponentInChildren<EchoSystem.EchoParticleSystem>().InitializeEchoParticleSystem(gameController);
 
             PlayerModel = gameController.PlayerModel;
             CharData = Resources.Load<CharData>("ScriptableObjects/CharData");
@@ -421,7 +427,7 @@ namespace Game.Player.CharacterController
             animator.SetFloat("VerticalSpeed", velocity.y / animationJumpSpeed);
 
             windParticles.SetVelocity(velocity);
-            glideParticles.SetVelocity(velocity);
+            //glideParticles.SetVelocity(velocity);
 
             #endregion update animator
 

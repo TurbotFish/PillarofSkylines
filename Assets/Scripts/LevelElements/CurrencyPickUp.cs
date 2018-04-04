@@ -14,54 +14,53 @@ namespace Game.LevelElements
         #region variables
 
         [Header("Pick Up")]
+
         [FormerlySerializedAs("favourId")]
-        [SerializeField]
-        string pickUpId = "replace this!";
+        [SerializeField] private string pickUpId = "replace this!";
+        [SerializeField] private eCurrencyType currencyType;
 
-        [SerializeField]
-        private eCurrencyType currencyType;
-
-        bool favourPickedUp = false;
-        IGameControllerBase gameController;
-        
-        BoxCollider myCollider;
-        bool isCopy;      
-
-        [HideInInspector]
-        public Vector3 FinderTarget;
+        [SerializeField, HideInInspector] public Vector3 FinderTarget; //what is this for?
 
         // FSM: FaveurManager
         [Header("FaveurManager")]
-        [SerializeField] Transform faveur;
-        float duration = 1.9f;
+        [SerializeField] private Transform faveur;
+        private float duration = 1.9f;
 
         // FSM: Faveur_activation
-        float animSpeed = 0.0005f;
-        float startDelay = 4;
-        float disparitionEnd = 10;
-        float disparitionSpeed = .03f;
+        private float animSpeed = 0.0005f;
+        private float startDelay = 4;
+        private float disparitionEnd = 10;
+        private float disparitionSpeed = .03f;
 
         [Header("Visuals")]
-        [SerializeField]
-        Animator animator;
-        [SerializeField] Renderer recept;
-        [SerializeField] GameObject favSparkUp;
+        [SerializeField] private Animator animator;
+        [SerializeField] private Renderer recept;
+        [SerializeField] private GameObject favSparkUp;
 
         // FSM: ParticleManager
-        float delay2 = 3f;
-        float delay3 = 0.2f;
+        private float delay2 = 3f;
+        private float delay3 = 0.2f;
 
-        [SerializeField] ParticleSystem favSparks;
-        [SerializeField] GameObject favSparksOpen;
-        [SerializeField] GameObject favSparksBurst;
+        [SerializeField] private ParticleSystem favSparks;
+        [SerializeField] private GameObject favSparksOpen;
+        [SerializeField] private GameObject favSparksBurst;
 
         // Dissolve Tomb
-        [Header("Tomb Dissolve"), SerializeField] Renderer tombShell;
-        [SerializeField] string dissolveVariableName = "_Dissolve";
-        [SerializeField] Material fullyDissolvedMaterial;
-        [SerializeField] float timeBeforeDissolve = 2;
-        [SerializeField] float dissolveDuration = 2;
-        [SerializeField] AnimationCurve dissolveCurve;
+        [Header("Tomb Dissolve")]
+        [SerializeField] private Renderer tombShell;
+        [SerializeField] private string dissolveVariableName = "_Dissolve";
+        [SerializeField] private Material fullyDissolvedMaterial;
+        [SerializeField] private float timeBeforeDissolve = 2;
+        [SerializeField] private float dissolveDuration = 2;
+        [SerializeField] private AnimationCurve dissolveCurve;
+
+        //
+
+        private IGameControllerBase gameController;
+        private BoxCollider myCollider;
+        private bool isInitialized;
+        private bool isCopy;
+        private bool favourPickedUp;
 
         #endregion variables
 
@@ -73,17 +72,7 @@ namespace Game.LevelElements
         public Transform MyTransform { get; private set; }
         public eCurrencyType CurrencyType { get { return currencyType; } }
 
-        #endregion properties
-
-        //##################################################################
-
-        #region monobehaviour methods
-
-        private void OnDestroy()
-        {
-        }
-
-        #endregion monobehaviour methods
+        #endregion properties      
 
         //##################################################################
 
@@ -92,7 +81,6 @@ namespace Game.LevelElements
         void IWorldObject.Initialize(IGameControllerBase gameController, bool isCopy)
         {
             MyTransform = transform;
-
             FinderTarget = MyTransform.position;
 
             foreach (Transform child in MyTransform)
@@ -110,7 +98,33 @@ namespace Game.LevelElements
 
             if (gameController.PlayerModel.CheckIfPickUpCollected(pickUpId))
             {
-                PickUp();
+                OnFavourPickedUp();
+
+                StartCoroutine(DissolveTomb());
+            }
+            else
+            {
+                Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
+            }
+
+            isInitialized = true;
+        }
+
+        #endregion public methods
+
+        //##################################################################
+
+        #region monobehaviour methods
+
+        private void OnEnable()
+        {
+            if (!isInitialized || favourPickedUp)
+            {
+                return;
+            }
+            else if (gameController.PlayerModel.CheckIfPickUpCollected(pickUpId))
+            {
+                OnFavourPickedUp();
 
                 StartCoroutine(DissolveTomb());
             }
@@ -120,7 +134,12 @@ namespace Game.LevelElements
             }
         }
 
-        #endregion public methods
+        private void OnDisable()
+        {
+            Utilities.EventManager.FavourPickedUpEvent -= OnFavourPickedUpEventHandler;
+        }
+
+        #endregion monobehaviour methods
 
         //##################################################################
 
@@ -133,9 +152,9 @@ namespace Game.LevelElements
         /// <param name="args"></param>
         private void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
         {
-            if (args.FavourId == pickUpId && !favourPickedUp)
+            if (args.FavourId == pickUpId)
             {
-                PickUp();
+                OnFavourPickedUp();
 
                 if (!isCopy)
                 {
@@ -151,12 +170,12 @@ namespace Game.LevelElements
         /// <summary>
         /// Sets the state of the Favour object to picked up.
         /// </summary>
-        private void PickUp()
+        private void OnFavourPickedUp()
         {
             favourPickedUp = true;
 
             //check because all colliders are removed in the duplicated worlds
-            if (myCollider != null || !myCollider.Equals(null))
+            if (myCollider != null)
             {
                 myCollider.enabled = false;
             }
@@ -181,6 +200,14 @@ namespace Game.LevelElements
             StartCoroutine(DissolveTomb());
         }
 
+        void FavourReceived()
+        {
+            string message = currencyType == eCurrencyType.Favour ? "You have been granted a Favour" : "The Pillars have marked you";
+            string desc = currencyType == eCurrencyType.Favour ? "Press Start to open the ability menu" : "Destroy the Pillars to free the world";
+
+            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, UI.eMessageType.Announcement, desc, 4));
+        }
+
         IEnumerator FaveurActivation()
         {
             float disparition = 0;
@@ -198,7 +225,6 @@ namespace Game.LevelElements
 
         IEnumerator FavourManager()
         {
-
             Transform player = FindObjectOfType<Player.CharacterController.CharController>().transform;
             yield return new WaitForSeconds(startDelay);
             faveur.parent = null;
@@ -213,6 +239,7 @@ namespace Game.LevelElements
 
             Destroy(faveur.gameObject);
             Instantiate(favSparksBurst, faveur.position, Quaternion.identity);
+            FavourReceived();
         }
 
         IEnumerator ParticleManager()
@@ -236,7 +263,7 @@ namespace Game.LevelElements
         IEnumerator DissolveTomb()
         {
             yield return new WaitForSeconds(timeBeforeDissolve);
-            
+
             for (float elapsed = 0; elapsed < dissolveDuration; elapsed += Time.deltaTime)
             {
                 tombShell.material.SetFloat(dissolveVariableName, dissolveCurve.Evaluate(elapsed / dissolveDuration));

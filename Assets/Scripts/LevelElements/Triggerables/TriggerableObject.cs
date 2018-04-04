@@ -23,34 +23,24 @@ namespace Game.LevelElements
         //###########################################################
 
         [Header("Triggerable Object")]
-        [SerializeField]
-        protected bool triggered;
 
-        private void OnDestroy()
-        {
-            EventManager.TriggerUpdatedEvent -= OnTriggerUpdated;
-        }
+        [SerializeField] protected bool triggered;
 
 #if UNITY_EDITOR
-        [SerializeField]
-        private List<Trigger> triggers = new List<Trigger>(); //list of Trigger objects
+        [SerializeField] private List<Trigger> triggers = new List<Trigger>(); //list of Trigger objects
 #endif
 
-        [SerializeField]
-        private TriggerOperator triggerWith = TriggerOperator.AllOfThem;
+        [SerializeField] private TriggerOperator triggerWith = TriggerOperator.AllOfThem;
 
-        [SerializeField]
-        private bool definitiveActivation;
+        [SerializeField] private bool definitiveActivation;
 
-        [HideInInspector]
-        [SerializeField]
-        private List<string> triggerIds = new List<string>(); //list with the Id's of the Trigger objects
+        [SerializeField, HideInInspector] private List<string> triggerIds = new List<string>(); //list with the Id's of the Trigger objects
 
         private PlayerModel model;
-
         private PersistentTriggerable persistentTriggerable;
-
         private bool isCopy;
+        [HideInInspector]
+        public bool isInitialized;
 
         //###########################################################
 
@@ -100,7 +90,7 @@ namespace Game.LevelElements
             }
 
             //
-            EventManager.TriggerUpdatedEvent += OnTriggerUpdated;
+            isInitialized = true;
         }
 
         /// <summary>
@@ -109,7 +99,11 @@ namespace Game.LevelElements
         /// <param name="triggered"></param>
         public virtual void SetTriggered(bool triggered, bool initializing = false)
         {
-            if (triggered == this.triggered)
+            if (!isInitialized)
+            {
+                Debug.LogWarning("TriggerableObject: SetTriggered: called while not initialized!");
+            }
+            else if (triggered == this.triggered)
             {
                 return;
             }
@@ -158,6 +152,21 @@ namespace Game.LevelElements
         //###########################################################
 
         #region monobehaviour methods
+
+        private void OnEnable()
+        {
+            if(isInitialized && persistentTriggerable.Triggered != triggered)
+            {
+                SetTriggered(persistentTriggerable.Triggered);
+            }
+
+            EventManager.TriggerUpdatedEvent += OnTriggerUpdated;
+        }
+
+        private void OnDisable()
+        {
+            EventManager.TriggerUpdatedEvent -= OnTriggerUpdated;
+        }
 
 #if UNITY_EDITOR
         protected override void OnValidate()
@@ -262,7 +271,7 @@ namespace Game.LevelElements
 
                     return true;
 
-                
+
 
                 default: throw new ArgumentOutOfRangeException();
             }
@@ -275,6 +284,11 @@ namespace Game.LevelElements
         /// <param name="args"></param>
         private void OnTriggerUpdated(object sender, Utilities.EventManager.TriggerUpdatedEventArgs args)
         {
+            if (!isInitialized)
+            {
+                return;
+            }
+
             if (triggerIds.Contains(args.TriggerId))
             {
                 Debug.Log("xxx: " + args.TriggerId);
