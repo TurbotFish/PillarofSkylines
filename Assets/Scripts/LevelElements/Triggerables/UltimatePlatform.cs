@@ -20,12 +20,14 @@ namespace Game.LevelElements
         public List<float> timeToMove;
         public float easing = 1;
         public bool looping = true;
+        public bool finishMovement = true;
 
         [HideInInspector]
         public int currentPoint = 0;
         platformState currentState = platformState.newOrder;
         Transform my;
         bool goingForward = true;
+        bool finishingMovement;
         MovingPlatform platform;
         Vector3 initialPosition;
         float elapsed;
@@ -80,14 +82,21 @@ namespace Game.LevelElements
 
         protected override void Activate()
         {
-            Debug.LogFormat("Door \"{0}\": Activate called!", name);
+            Debug.LogFormat("Platform \"{0}\": Activate called!", name);
             
         }
 
         protected override void Deactivate()
         {
-            Debug.LogFormat("Door \"{0}\": Deactivate called!", name);
-            currentState = platformState.disabled;
+            Debug.LogFormat("Platform \"{0}\": Deactivate called!", name);
+            if (finishMovement)
+            {
+                finishingMovement = true;
+            }
+            else
+            {
+                currentState = platformState.disabled;
+            }
         }
 
         /*protected override PersistentTriggerable CreatePersistentObject()
@@ -106,7 +115,7 @@ namespace Game.LevelElements
             if (!isInitialized)
                 return;
 
-            if (currentState == platformState.newOrder && Triggered)
+            if (currentState == platformState.newOrder && (Triggered || finishingMovement))
             {
 
                 Move(waypoints[currentPoint % (waypoints.Count)], waypoints[(currentPoint + (goingForward ? 1 : -1)) % (waypoints.Count)], timeToMove[currentPoint]);
@@ -140,10 +149,11 @@ namespace Game.LevelElements
         private IEnumerator _Move(Vector3 startPos, Vector3 endPos, float timeMoving)
         {
             elapsed = timeMoving - elapsed;
-            while ( elapsed < timeMoving)
+            while (elapsed < timeMoving)
             {
-                if (Triggered)
+                if (Triggered || finishingMovement)
                 {
+                    currentState = platformState.moving;
                     elapsed += Time.deltaTime;
                     float t = elapsed / timeMoving;
 
@@ -159,6 +169,11 @@ namespace Game.LevelElements
 
             if (waitTime.Count > currentPoint)
                 yield return new WaitForSeconds(waitTime[currentPoint]);
+
+            if (finishingMovement && currentPoint == 0)
+            {
+                finishingMovement = false;
+            }
 
             currentState = platformState.newOrder;
         }
