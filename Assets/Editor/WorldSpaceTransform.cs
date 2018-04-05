@@ -23,9 +23,14 @@ public class WorldSpaceTransform : DecoratorEditor {
 			worldRotation = target.eulerAngles;
 			lossyScale = target.lossyScale;
 
-			EditorGUI.BeginDisabledGroup(true);
 
-			EditorGUILayout.Vector3Field("World Position", worldPosition);
+			EditorGUI.BeginChangeCheck ();
+			worldPosition = EditorGUILayout.Vector3Field("World Position", worldPosition);
+			if (EditorGUI.EndChangeCheck ()) {
+				target.position = worldPosition;
+			}
+
+			EditorGUI.BeginDisabledGroup(true);
 			EditorGUILayout.Vector3Field("World Rotation", worldRotation);
 			EditorGUILayout.Vector3Field("Lossy Scale", lossyScale);
 			

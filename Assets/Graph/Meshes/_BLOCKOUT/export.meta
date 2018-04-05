@@ -1,6 +1,13 @@
 fileFormatVersion: 2
+<<<<<<< HEAD:Assets/Graph/Meshes/_BLOCKOUT/export.meta
 guid: 4e4db7a5f77a73c4cb72d8d4580f393b
 folderAsset: yes
+=======
+guid: a4438aec1cd6f3d448705a9dc5ca0a75
+folderAsset: yes
+timeCreated: 1522834446
+licenseType: Free
+>>>>>>> grr:Assets/Plugins/SabreCSG-master/Scripts/Tools.meta
 DefaultImporter:
   userData: 
   assetBundleName: 
