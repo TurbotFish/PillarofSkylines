@@ -13,7 +13,7 @@ namespace Game.LevelElements
 
         [Header("Step By Step Movement")]
 
-        [HideInInspector]
+       // [HideInInspector]
         public List<Vector3> waypoints;
         public List<float> waitTime;
 
@@ -149,6 +149,13 @@ namespace Game.LevelElements
         private IEnumerator _Move(Vector3 startPos, Vector3 endPos, float timeMoving)
         {
             elapsed = timeMoving - elapsed;
+
+			currentState = platformState.waiting;
+
+			if (waitTime.Count > currentPoint)
+				yield return new WaitForSeconds(waitTime[currentPoint]);
+
+
             while (elapsed < timeMoving)
             {
                 if (Triggered || finishingMovement)
@@ -165,10 +172,7 @@ namespace Game.LevelElements
 
             my.localPosition = endPos;
 
-            currentState = platformState.waiting;
-
-            if (waitTime.Count > currentPoint)
-                yield return new WaitForSeconds(waitTime[currentPoint]);
+           
 
             if (finishingMovement && currentPoint == 0)
             {
