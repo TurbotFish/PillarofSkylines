@@ -1,7 +1,13 @@
 fileFormatVersion: 2
+<<<<<<< HEAD:Assets/Plugins/PostProcessing.meta
+guid: 8113132a4ec3fca42b9261b512b63c2c
+folderAsset: yes
+timeCreated: 1522834446
+=======
 guid: 2337ca75da486e544a28b09404cee4aa
 folderAsset: yes
 timeCreated: 1519402916
+>>>>>>> origin/Antoine:Assets/Graph/Meshes/VEGETATION/low vegetation/SM_detail_grassM_D_LOD2.fbm.meta
 licenseType: Free
 DefaultImporter:
   userData: 

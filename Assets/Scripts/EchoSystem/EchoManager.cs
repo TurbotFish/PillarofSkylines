@@ -13,7 +13,6 @@ namespace Game.EchoSystem
         [SerializeField] private Echo echoPrefab;
         [SerializeField] public BreakEchoParticles breakEchoParticles; //why public?
         [SerializeField] private int maxEchoes = 3;
-        [SerializeField] private float driftInputIntensity = 0.5f;
 
         [Header("ShellFX")]
         [SerializeField] private GameObject shell;
@@ -61,25 +60,14 @@ namespace Game.EchoSystem
             if (isActive && !isEclipseActive)
             {
                 //drift stuff (???)
-                float driftInput = Input.GetAxis("Drift") + (Input.GetButtonDown("Drift") ? 1 : 0);
+                bool driftInput = Input.GetButtonDown("Drift");
 
-                if (driftInput > driftInputIntensity)
-                {
-                    if (driftInputDown == 0)
-                        Drift();
-                    driftInputDown += Time.deltaTime;
-                }
-                else if (driftInput < driftInputIntensity - 0.1f)
-                {
-                    if (driftInputDown > 0)
-                    driftInputDown = 0;
-                }
+                if (Input.GetButtonDown("Drift"))
+                    Drift();
 
                 //create new echo
                 if (Input.GetButtonDown("Echo") && gameController.PlayerModel.CheckAbilityActive(eAbilityType.Echo))
-                {
                     CreateEcho(true);
-                }
             }
         }
 
