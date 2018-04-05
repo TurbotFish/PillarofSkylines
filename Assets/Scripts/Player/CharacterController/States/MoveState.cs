@@ -80,6 +80,10 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
             }
+            else if (inputInfo.echoButtonTimePressed > 1f && !stateMachine.CheckStateLocked(ePlayerState.phantom))
+            {
+                stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
+            }
         }
 
 		public StateReturnContainer Update(float dt) {

@@ -14,7 +14,7 @@ namespace Game.Player.CharacterController.States
 		CharData.GlideData glideData;
         PhantomController phantomController;
 
-        float currentSpeed = 10f;
+        float currentSpeed = 7f;
 		float verticalAngle;
 		float horizontalAngle;
 
@@ -30,11 +30,11 @@ namespace Game.Player.CharacterController.States
 
 		public void Enter() {
 			Debug.Log("Enter State: Phantom");
-			//charController.glideParticles.Play();
-			verticalAngle = Vector3.Angle(Vector3.up, (charController.MovementInfo.velocity)) - 90f;
 
+            phantomController = charController.phantomController;
+            verticalAngle = 0f;
             horizontalAngle = 0f;
-
+            phantomController.gameObject.SetActive(true);
             charController.rotator.SetParent(charController.phantomController.transform);
 
             Time.timeScale = 0.05f;
@@ -42,13 +42,15 @@ namespace Game.Player.CharacterController.States
 
 		public void Exit() {
 			Debug.Log("Exit State: Phantom");
-            //charController.glideParticles.Stop();
+
+            phantomController.gameObject.SetActive(false);
+            charController.gameController.EchoManager.CreateEcho(true, phantomController.transform.position);
 
             charController.phantomController.myTransform.localPosition = new Vector3(0f, 1.45f, 0f);
             charController.rotator.SetParent(charController.MyTransform);
-            charController.phantomController.myTransform.rotation = Quaternion.identity;
+            charController.phantomController.myTransform.localRotation = Quaternion.identity;
 
-            
+            charController.ResetEchoInputTime();
 
             Time.timeScale = 1f;
         }
@@ -59,8 +61,9 @@ namespace Game.Player.CharacterController.States
 			PlayerInputInfo inputInfo = charController.InputInfo;
 			CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
-			//stop gliding
-			if (inputInfo.echoButtonUp) {
+			//stop phantoming
+			if (inputInfo.echoButtonUp)
+            {
                 AirState state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
                 stateMachine.ChangeState(state);
 			}
@@ -70,7 +73,6 @@ namespace Game.Player.CharacterController.States
         {
             dt = Time.unscaledDeltaTime;
             PlayerInputInfo inputInfo = charController.InputInfo;
-            phantomController = charController.phantomController;
 
 
             //---------VERTICAL

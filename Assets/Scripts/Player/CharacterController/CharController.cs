@@ -53,6 +53,8 @@ namespace Game.Player.CharacterController
 
         public PlayerController PlayerController { get; private set; }
 
+        public GameControl.IGameControllerBase gameController;
+
         public Transform MyTransform { get; private set; }
 
         public StateMachine stateMachine;
@@ -74,6 +76,8 @@ namespace Game.Player.CharacterController
 
         [HideInInspector]
         public bool isInsideNoRunZone;
+        [HideInInspector]
+        public bool createdEchoOnThisFrame;
 
         /// <summary>
         /// This is set to false if the player has opened a menu, true otherwise.
@@ -126,6 +130,7 @@ namespace Game.Player.CharacterController
 
             GetComponentInChildren<EchoSystem.EchoParticleSystem>().InitializeEchoParticleSystem(gameController);
 
+            this.gameController = gameController;
             PlayerModel = gameController.PlayerModel;
             CharData = Resources.Load<CharData>("ScriptableObjects/CharData");
             PlayerController = gameController.PlayerController;
@@ -210,6 +215,7 @@ namespace Game.Player.CharacterController
             //*******************************************
             //handling input
 
+            createdEchoOnThisFrame = false;
             bool sprintDownLastFrame = inputInfo.sprintButton;
             inputInfo.Reset();
             if (isHandlingInput)
@@ -260,9 +266,9 @@ namespace Game.Player.CharacterController
 
                 inputInfo.rightStickButtonDown = Input.GetButtonDown("RightStickClick");
 
-                if (inputInfo.echoButtonDown)
+                if (inputInfo.echoButtonUp)
                 {
-                    inputInfo.echoButtonTimePressed = 0f;
+                    inputInfo.ResetTimeEcho();
                 }
                 if (inputInfo.echoButton)
                 {
@@ -518,12 +524,17 @@ namespace Game.Player.CharacterController
             return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, MyTransform.up), Vector3.Cross(MyTransform.up, Vector3.up))) * vector;
         }
 
+        public void ResetEchoInputTime()
+        {
+            inputInfo.ResetTimeEcho();
+        }
+
         #endregion utility methods
 
         //#############################################################################
 
         #region cancer
-        
+
         void CreateGroundRise()
         {
             if (PlayerModel.CheckAbilityActive(eAbilityType.GroundRise))

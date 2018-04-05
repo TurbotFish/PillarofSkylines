@@ -144,7 +144,8 @@ namespace Game.EchoSystem
 
         public void CreateEcho(bool isPlayerEcho)
         {
-            if (isEclipseActive)
+            Debug.Log("IM CREATOING AN ECHO ON THE PLAYER : " + charController.createdEchoOnThisFrame);
+            if (isEclipseActive || charController.createdEchoOnThisFrame)
                 return;
 
             if (placedEchoes == maxEchoes)
@@ -170,6 +171,39 @@ namespace Game.EchoSystem
                 placedEchoes++;
                 echoParticles.AddEcho(newEcho.transform.position);
             }
+            charController.createdEchoOnThisFrame = true;
+        }
+
+        public void CreateEcho(bool isPlayerEcho, Vector3 position)
+        {
+            Debug.Log("IM CREATOING AN ECHO ERE : " + position + " : " + charController.createdEchoOnThisFrame);
+            if (isEclipseActive || charController.createdEchoOnThisFrame)
+                return;
+
+            if (placedEchoes == maxEchoes)
+            {
+                int i = 0;
+                var oldestEcho = echoList[i];
+
+                while (!oldestEcho.playerEcho)
+                {
+                    i++;
+                    oldestEcho = echoList[i];
+                }
+                Break(oldestEcho);
+            }
+
+            Echo newEcho = Instantiate(echoPrefab, position, gameController.PlayerController.PlayerTransform.rotation);
+            newEcho.playerEcho = isPlayerEcho;
+            newEcho.echoManager = this;
+            echoList.Add(newEcho);
+
+            if (isPlayerEcho)
+            {
+                placedEchoes++;
+                echoParticles.AddEcho(newEcho.transform.position);
+            }
+            charController.createdEchoOnThisFrame = true;
         }
 
         void FreezeAll()

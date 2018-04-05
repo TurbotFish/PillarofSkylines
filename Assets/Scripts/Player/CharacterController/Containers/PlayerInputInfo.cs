@@ -63,5 +63,10 @@ namespace Game.Player.CharacterController.Containers
 
             rightStickButtonDown = false;
         }
+
+        public void ResetTimeEcho()
+        {
+            echoButtonTimePressed = 0f;
+        }
     }
 }

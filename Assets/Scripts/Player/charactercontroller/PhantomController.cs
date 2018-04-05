@@ -77,7 +77,7 @@ namespace Game.Player.CharacterController
 
         //#############################################################################
 
-        void Start()
+        void Awake()
         {
             myTransform = transform;
             capsuleHeightModifier = new Vector3(0, height, 0);
@@ -159,7 +159,6 @@ namespace Game.Player.CharacterController
 
             var pos1 = myTransform.position;
             myTransform.Translate(velocity, Space.World);
-            print("moved : " + velocity);
             var pos2 = myTransform.position;
             
             /*
