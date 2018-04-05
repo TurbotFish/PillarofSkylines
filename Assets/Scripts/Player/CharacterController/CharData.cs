@@ -67,6 +67,10 @@ namespace Game.Player.CharacterController
         GroundRiseData groundRise = new GroundRiseData();
         public GroundRiseData GroundRise { get { return groundRise; } }
 
+        [SerializeField]
+        PhantomData phantom = new PhantomData();
+        public PhantomData Phantom { get { return phantom; } }
+
         #endregion inspector variables
 
         //#############################################################################
@@ -676,6 +680,64 @@ namespace Game.Player.CharacterController
         }
 
         #endregion jetpack
+
+        //*******************************************
+
+        #region phantom
+
+        [System.Serializable]
+        public class PhantomData
+        {
+            [SerializeField]
+            float minAngle;
+            public float MinAngle { get { return minAngle; } }
+
+            [SerializeField]
+            float baseAngle;
+            public float BaseAngle { get { return baseAngle; } }
+
+            [SerializeField]
+            float maxAngle;
+            public float MaxAngle { get { return maxAngle; } }
+
+            [SerializeField]
+            float minHorizAngle;
+            public float MinHorizAngle { get { return minHorizAngle; } }
+
+            [SerializeField]
+            float maxHorizAngle;
+            public float MaxHorizAngle { get { return maxHorizAngle; } }
+
+            [SerializeField]
+            float speed;
+            public float Speed { get { return speed; } }
+
+            [SerializeField]
+            float vertUpAngleCtrl;
+            public float VertUpAngleCtrl { get { return vertUpAngleCtrl; } }
+
+            [SerializeField]
+            float vertDownAngleCtrl;
+            public float VertDownAngleCtrl { get { return vertDownAngleCtrl; } }
+
+            [SerializeField]
+            float noInputImpactCoeff;
+            public float NoInputImpactCoeff { get { return noInputImpactCoeff; } }
+
+            [SerializeField]
+            float horizComingBack;
+            public float HorizComingBack { get { return horizComingBack; } }
+
+            [SerializeField]
+            float horizAngleCtrl;
+            public float HorizAngleCtrl { get { return horizAngleCtrl; } }
+
+            public void OnValidate()
+            {
+            }
+        }
+
+        #endregion phantom
 
         //*******************************************
 

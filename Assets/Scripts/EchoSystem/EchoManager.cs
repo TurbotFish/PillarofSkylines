@@ -20,6 +20,7 @@ namespace Game.EchoSystem
         private Animator playerAnimator;
 
         private IGameControllerBase gameController;
+        public Player.CharacterController.CharController charController;
         private EchoCameraEffect echoCamera;
         private EchoParticleSystem echoParticles;
 
@@ -45,6 +46,8 @@ namespace Game.EchoSystem
             echoParticles = gameController.PlayerController.PlayerTransform.GetComponentInChildren<EchoParticleSystem>();
             echoParticles.numEchoes = 3;
 
+            charController = gameController.PlayerController.CharController;
+
             EventManager.EclipseEvent += OnEclipseEventHandler;
             EventManager.PreSceneChangeEvent += OnPreSceneChangeEvent;
             EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
@@ -62,12 +65,14 @@ namespace Game.EchoSystem
                 //drift stuff (???)
                 bool driftInput = Input.GetButtonDown("Drift");
 
-                if (Input.GetButtonDown("Drift"))
+                if (driftInput)
                     Drift();
 
                 //create new echo
-                if (Input.GetButtonDown("Echo") && gameController.PlayerModel.CheckAbilityActive(eAbilityType.Echo))
+                if (charController.InputInfo.echoButtonUp && charController.InputInfo.echoButtonTimePressed < 1f && gameController.PlayerModel.CheckAbilityActive(eAbilityType.Echo))
+                {
                     CreateEcho(true);
+                }
             }
         }
 
@@ -129,7 +134,8 @@ namespace Game.EchoSystem
 
         public void CreateEcho(bool isPlayerEcho)
         {
-            if (isEclipseActive)
+            Debug.Log("IM CREATOING AN ECHO ON THE PLAYER : " + charController.createdEchoOnThisFrame);
+            if (isEclipseActive || charController.createdEchoOnThisFrame)
                 return;
 
             if (placedEchoes == maxEchoes)
@@ -155,6 +161,39 @@ namespace Game.EchoSystem
                 placedEchoes++;
                 echoParticles.AddEcho(newEcho.transform.position);
             }
+            charController.createdEchoOnThisFrame = true;
+        }
+
+        public void CreateEcho(bool isPlayerEcho, Vector3 position)
+        {
+            Debug.Log("IM CREATOING AN ECHO ERE : " + position + " : " + charController.createdEchoOnThisFrame);
+            if (isEclipseActive || charController.createdEchoOnThisFrame)
+                return;
+
+            if (placedEchoes == maxEchoes)
+            {
+                int i = 0;
+                var oldestEcho = echoList[i];
+
+                while (!oldestEcho.playerEcho)
+                {
+                    i++;
+                    oldestEcho = echoList[i];
+                }
+                Break(oldestEcho);
+            }
+
+            Echo newEcho = Instantiate(echoPrefab, position, gameController.PlayerController.PlayerTransform.rotation);
+            newEcho.playerEcho = isPlayerEcho;
+            newEcho.echoManager = this;
+            echoList.Add(newEcho);
+
+            if (isPlayerEcho)
+            {
+                placedEchoes++;
+                echoParticles.AddEcho(newEcho.transform.position);
+            }
+            charController.createdEchoOnThisFrame = true;
         }
 
         void FreezeAll()

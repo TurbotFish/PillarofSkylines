@@ -28,11 +28,12 @@ namespace Game.Player.CharacterController.States
 
         public void Enter()
         {
+            Debug.Log("am in stand state");
         }
 
         public void Exit()
         {
-
+            Debug.Log("am not in stand state anymore");
         }
 
         //#############################################################################
@@ -78,6 +79,10 @@ namespace Game.Player.CharacterController.States
             else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable && !charController.isInsideNoRunZone)
             {
                 stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
+            }
+            else if (inputInfo.echoButtonTimePressed > 1f && !stateMachine.CheckStateLocked(ePlayerState.phantom))
+            {
+                stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
             }
         }
 
