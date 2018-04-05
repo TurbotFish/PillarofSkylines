@@ -134,7 +134,6 @@ namespace Game.EchoSystem
 
         public void CreateEcho(bool isPlayerEcho)
         {
-            Debug.Log("IM CREATOING AN ECHO ON THE PLAYER : " + charController.createdEchoOnThisFrame);
             if (isEclipseActive || charController.createdEchoOnThisFrame)
                 return;
 
@@ -166,7 +165,6 @@ namespace Game.EchoSystem
 
         public void CreateEcho(bool isPlayerEcho, Vector3 position)
         {
-            Debug.Log("IM CREATOING AN ECHO ERE : " + position + " : " + charController.createdEchoOnThisFrame);
             if (isEclipseActive || charController.createdEchoOnThisFrame)
                 return;
 
