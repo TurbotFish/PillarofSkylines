@@ -95,13 +95,15 @@ public class PoS_Camera : MonoBehaviour {
 
     [Header("FOV")]
     public float fovDamp = 4;
+    public float resetCameraFovSupplement = -10;
 
     [Header("Dash")]
     public float dashFovSupplement = 15;
     public float dashDistance = -1;
     public float dashDamp = 0.1f;
+    public float dashDotLimit = 0.2f;
 
-	new Camera camera;
+    new Camera camera;
 	Vector3 camPosition, negDistance;
 	Vector3 playerVelocity;
 	Quaternion camRotation, targetSpace;
@@ -398,8 +400,12 @@ public class PoS_Camera : MonoBehaviour {
         targetFov = fovBasedOnPitch.Lerp(fovFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
 
         if (playerState == ePlayerState.dash) { // DASH
+
+            float dot = Vector3.Dot(target.forward, target.parent.forward);
+            if (dot < dashDotLimit)
+                ResetCamera(slopeValue, dashDamp);
+
             targetFov += dashFovSupplement;
-            ResetCamera(slopeValue, dashDamp);
             additionalDistance = dashDistance;
         }
         
@@ -445,8 +451,10 @@ public class PoS_Camera : MonoBehaviour {
             }
         }
 
-		if (Input.GetButton("ResetCamera"))
+        if (Input.GetButton("ResetCamera")) {
             ResetCamera(slopeValue);
+            targetFov += resetCameraFovSupplement;
+        }
     }
 
     void ResetCamera(float slopeValue = 0, float? damp = null) {
@@ -461,8 +469,9 @@ public class PoS_Camera : MonoBehaviour {
 
         bool isFalling = playerState == ePlayerState.air && playerVelocity.y < 0;
 
+        bool aboveGround = Physics.Raycast(target.position + (playerVelocity.z * Vector3.forward + playerVelocity.x * Vector3.right) / 4, -target.up, maxJumpHeight, controller.collisionMask);
         // dans les airs, la caméra pointe vers le bas
-        if (isFalling) { // on n'utilise pas isGrounded ici car cet état est spécifique au fait de tomber
+        if (isFalling && !aboveGround) { // on n'utilise pas isGrounded ici car cet état est spécifique au fait de tomber
             resetType = eResetType.ManualAir;
             SetTargetRotation(pitchRotationLimit.max, GetYawBehindPlayer(), (float)damp);
         }
