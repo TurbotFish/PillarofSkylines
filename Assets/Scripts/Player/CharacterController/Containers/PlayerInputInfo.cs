@@ -23,6 +23,10 @@ namespace Game.Player.CharacterController.Containers
         public bool sprintButtonDown;
         public bool sprintButtonUp;
 
+        public bool glideButton;
+        public bool glideButtonDown;
+        public bool glideButtonUp;
+
         public bool jetpackButton;
         public bool jetpackButtonDown;
         public bool jetpackButtonUp;
@@ -52,6 +56,10 @@ namespace Game.Player.CharacterController.Containers
             sprintButton = false;
             sprintButtonDown = false;
             sprintButtonUp = false;
+
+            glideButton = false;
+            glideButtonDown = false;
+            glideButtonUp = false;
 
             jetpackButton = false;
             jetpackButtonDown = false;

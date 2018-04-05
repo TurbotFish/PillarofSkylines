@@ -215,6 +215,7 @@ namespace Game.Player.CharacterController
             //*******************************************
             //handling input
             bool sprintDownLastFrame = inputInfo.sprintButton;
+            bool glideDownLastFrame = inputInfo.glideButton;
             bool echoUpLastFrame = inputInfo.echoButtonUp;
             inputInfo.Reset();
             if (isHandlingInput)
@@ -250,10 +251,14 @@ namespace Game.Player.CharacterController
                 inputInfo.jumpButtonDown = Input.GetButtonDown("Jump");
                 inputInfo.jumpButtonUp = Input.GetButtonUp("Jump");
 
-                inputInfo.sprintButton = (Input.GetAxis("Left Trigger") > .9f) || Input.GetButton("Sprint");
+                inputInfo.sprintButton = (Input.GetAxis("Right Trigger") > .9f) || Input.GetButton("Sprint");
                 inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint");
                 inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint");
-                
+
+                inputInfo.glideButton = (Input.GetAxis("Left Trigger") > .9f) || Input.GetButton("Sprint");
+                inputInfo.glideButtonDown = (inputInfo.glideButton && !glideDownLastFrame) || Input.GetButtonDown("Sprint");
+                inputInfo.glideButtonUp = (!inputInfo.glideButton && glideDownLastFrame) || Input.GetButtonUp("Sprint");
+
                 inputInfo.echoButton = Input.GetButton("Echo");
                 inputInfo.echoButtonDown = Input.GetButtonDown("Echo");
                 inputInfo.echoButtonUp = Input.GetButtonUp("Echo");
