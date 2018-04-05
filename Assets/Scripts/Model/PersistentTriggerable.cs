@@ -10,9 +10,9 @@ namespace Game.Model
 
         //###########################################################
 
-        public PersistentTriggerable(TriggerableObject triggerable) : base(triggerable.UniqueId)
+        public PersistentTriggerable(string uniqueId, bool triggered) : base(uniqueId)
         {
-            Triggered = triggerable.Triggered;
+            Triggered = triggered;
         }
 
         //###########################################################

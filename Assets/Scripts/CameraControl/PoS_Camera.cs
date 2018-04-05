@@ -139,9 +139,16 @@ public class PoS_Camera : MonoBehaviour {
     /// </summary>
     float autoDamp;
 
+    public Camera CameraComponent { get { return this.camera; } }
+
     #endregion
 
     #region MonoBehaviour
+
+    public void Initialize()
+    {
+        camera = GetComponent<Camera>();
+    }
 
     void Start() {
 		camera = GetComponent<Camera>();
