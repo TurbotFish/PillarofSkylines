@@ -10,7 +10,7 @@ namespace Game.Model
 
         //###########################################################
 
-        public PersistentStepByStepTriggerable(StepByStepMovement triggerable) : base(triggerable)
+        public PersistentStepByStepTriggerable(StepByStepMovement triggerable) : base(triggerable.UniqueId, triggerable.Triggered)
         {
             State = triggerable.currentState;
         }
