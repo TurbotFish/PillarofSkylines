@@ -144,7 +144,7 @@ namespace Game.EchoSystem
 
         public void CreateEcho(bool isPlayerEcho)
         {
-            if (isEclipseActive || charController.createdEchoOnThisFrame)
+            if (isEclipseActive || charController.createdEchoOnThisInput)
                 return;
 
             if (placedEchoes == maxEchoes)
@@ -170,12 +170,12 @@ namespace Game.EchoSystem
                 placedEchoes++;
                 echoParticles.AddEcho(newEcho.transform.position);
             }
-            charController.createdEchoOnThisFrame = true;
+            charController.createdEchoOnThisInput = true;
         }
 
         public void CreateEcho(bool isPlayerEcho, Vector3 position)
         {
-            if (isEclipseActive || charController.createdEchoOnThisFrame)
+            if (isEclipseActive || charController.createdEchoOnThisInput)
                 return;
 
             if (placedEchoes == maxEchoes)
@@ -201,7 +201,7 @@ namespace Game.EchoSystem
                 placedEchoes++;
                 echoParticles.AddEcho(newEcho.transform.position);
             }
-            charController.createdEchoOnThisFrame = true;
+            charController.createdEchoOnThisInput = true;
         }
 
         void FreezeAll()

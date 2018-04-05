@@ -77,7 +77,7 @@ namespace Game.Player.CharacterController
         [HideInInspector]
         public bool isInsideNoRunZone;
         [HideInInspector]
-        public bool createdEchoOnThisFrame;
+        public bool createdEchoOnThisInput;
 
         /// <summary>
         /// This is set to false if the player has opened a menu, true otherwise.
@@ -214,9 +214,8 @@ namespace Game.Player.CharacterController
 
             //*******************************************
             //handling input
-
-            createdEchoOnThisFrame = false;
             bool sprintDownLastFrame = inputInfo.sprintButton;
+            bool echoUpLastFrame = inputInfo.echoButtonUp;
             inputInfo.Reset();
             if (isHandlingInput)
             {
@@ -265,14 +264,15 @@ namespace Game.Player.CharacterController
                 inputInfo.jetpackButtonUp = Input.GetButtonUp("Jetpack");*/
 
                 inputInfo.rightStickButtonDown = Input.GetButtonDown("RightStickClick");
-
-                if (inputInfo.echoButtonUp)
-                {
-                    inputInfo.ResetTimeEcho();
-                }
+                
                 if (inputInfo.echoButton)
                 {
                     inputInfo.echoButtonTimePressed += Time.deltaTime;
+                }
+                if (echoUpLastFrame)
+                {
+                    inputInfo.ResetTimeEcho();
+                    createdEchoOnThisInput = false;
                 }
 
                 if (Input.GetButtonDown("GroundRise"))

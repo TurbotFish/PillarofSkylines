@@ -713,6 +713,10 @@ namespace Game.Player.CharacterController
             public float Speed { get { return speed; } }
 
             [SerializeField]
+            float maxDistance;
+            public float MaxDistance { get { return maxDistance; } }
+
+            [SerializeField]
             float vertUpAngleCtrl;
             public float VertUpAngleCtrl { get { return vertUpAngleCtrl; } }
 

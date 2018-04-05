@@ -60,8 +60,8 @@ namespace Game.Player.CharacterController.States
 			PlayerInputInfo inputInfo = charController.InputInfo;
 			CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
-			//stop phantoming
-			if (inputInfo.echoButtonUp)
+            //stop phantoming
+            if (inputInfo.echoButtonUp || (charController.MyTransform.position - phantomController.myTransform.position).sqrMagnitude > phantomData.MaxDistance * phantomData.MaxDistance)
             {
                 AirState state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
                 stateMachine.ChangeState(state);
@@ -70,6 +70,7 @@ namespace Game.Player.CharacterController.States
 
 		public StateReturnContainer Update(float dt)
         {
+
             dt = Time.unscaledDeltaTime;
             PlayerInputInfo inputInfo = charController.InputInfo;
 
@@ -77,7 +78,7 @@ namespace Game.Player.CharacterController.States
             //---------VERTICAL
 
 
-            //Turn the vertical input of the player into an angle between glideMinAngle and glideMaxAngl
+            //Turn the vertical input of the player into an angle between glideMinAngle and glideMaxAngle
             float targetVerticalAngle;
             if (inputInfo.leftStickRaw.z > 0)
             {
