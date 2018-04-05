@@ -97,6 +97,8 @@ namespace Game.GameControl
 
         private IEnumerator LoadOpenWorldSceneCR()
         {
+            CameraController.PoS_Camera.CameraComponent.enabled = false;
+
             AsyncOperation async;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
@@ -364,6 +366,8 @@ namespace Game.GameControl
         /// <returns></returns>
         private IEnumerator ActivateOpenWorldCR(bool useInitialSpawnPoint)
         {
+            CameraController.PoS_Camera.CameraComponent.enabled = false;
+
             AsyncOperation async;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
@@ -443,10 +447,13 @@ namespace Game.GameControl
 
             //*****************************************
             //informing everyone!
-            EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());           
+            EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());
 
             //*****************************************
             //unpausing game
+            CameraController.PoS_Camera.CameraComponent.enabled = true;
+            yield return new WaitForSeconds(0.5f);
+
             EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.HUD));
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
 
@@ -461,6 +468,8 @@ namespace Game.GameControl
         /// <returns></returns>
         private IEnumerator LoadPillarSceneCR(ePillarId pillarId)
         {
+            CameraController.PoS_Camera.CameraComponent.enabled = false;
+
             AsyncOperation async;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
@@ -539,6 +548,9 @@ namespace Game.GameControl
 
             //*****************************************
             //unpausing game
+            CameraController.PoS_Camera.CameraComponent.enabled = true;
+            yield return new WaitForSeconds(0.5f);
+
             EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.HUD));
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
 

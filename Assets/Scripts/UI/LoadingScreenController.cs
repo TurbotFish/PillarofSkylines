@@ -25,7 +25,7 @@ namespace Game.UI
         {
             if (IsActive)
             {
-                turningThing.Rotate(Vector3.forward * -turningSpeed);
+                turningThing.Rotate(Vector3.forward * -turningSpeed * Time.unscaledDeltaTime);
             }
         }
 

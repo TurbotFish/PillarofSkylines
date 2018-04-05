@@ -16,7 +16,7 @@ namespace Game.CameraControl
             EclipseEffect = GetComponent<Eclipse>();
             GPUIDisplayManager = GetComponentInChildren<GPUIDisplayManager>();
             
-            //this.PoS_Camera.InitializePoS_Camera();
+            this.PoS_Camera.Initialize();
             //this.EchoCameraEffect.InitializeEchoCameraEffect();
         }
     }
