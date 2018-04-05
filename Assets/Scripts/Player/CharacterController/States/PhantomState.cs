@@ -11,10 +11,9 @@ namespace Game.Player.CharacterController.States
 
 		CharController charController;
 		StateMachine stateMachine;
-		CharData.GlideData glideData;
+		CharData.PhantomData phantomData;
         PhantomController phantomController;
-
-        float currentSpeed = 7f;
+        
 		float verticalAngle;
 		float horizontalAngle;
 
@@ -23,7 +22,7 @@ namespace Game.Player.CharacterController.States
 		public PhantomState(CharController charController, StateMachine stateMachine) {
 			this.charController = charController;
 			this.stateMachine = stateMachine;
-			glideData = charController.CharData.Glide;
+			phantomData = charController.CharData.Phantom;
 		}
 
 		//#############################################################################
@@ -82,16 +81,16 @@ namespace Game.Player.CharacterController.States
             float targetVerticalAngle;
             if (inputInfo.leftStickRaw.z > 0)
             {
-                targetVerticalAngle = Mathf.Lerp(glideData.BaseAngle, glideData.MaxAngle, (inputInfo.leftStickRaw.z));
+                targetVerticalAngle = Mathf.Lerp(phantomData.BaseAngle, phantomData.MaxAngle, (inputInfo.leftStickRaw.z));
             } else
             {
-                targetVerticalAngle = Mathf.Lerp(glideData.MinAngle, glideData.BaseAngle, (inputInfo.leftStickRaw.z + 1f));
+                targetVerticalAngle = Mathf.Lerp(phantomData.MinAngle, phantomData.BaseAngle, (inputInfo.leftStickRaw.z + 1f));
             }
 
 
 			//Update the current vertical angle of the player depending on the angle calculated above
-			float a = (targetVerticalAngle > verticalAngle ? glideData.VertUpAngleCtrl : glideData.VertDownAngleCtrl);
-			float b = (inputInfo.leftStickAtZero ? glideData.NoInputImpactCoeff : 1f);
+			float a = (targetVerticalAngle > verticalAngle ? phantomData.VertUpAngleCtrl : phantomData.VertDownAngleCtrl);
+			float b = (inputInfo.leftStickAtZero ? phantomData.NoInputImpactCoeff : 1f);
 
             verticalAngle = Mathf.Lerp(verticalAngle, targetVerticalAngle, a * dt * b);
             
@@ -99,19 +98,19 @@ namespace Game.Player.CharacterController.States
             //Debug.Log("vertical angle : " + verticalAngle + "speed : " + currentSpeed);
 
 			//Calculate the velocity of the player with his speed and vertical angle
-			Vector3 targetVelocity = Quaternion.AngleAxis(verticalAngle, phantomController.myTransform.right) * phantomController.myTransform.forward * currentSpeed;
+			Vector3 targetVelocity = Quaternion.AngleAxis(verticalAngle, phantomController.myTransform.right) * phantomController.myTransform.forward * phantomData.Speed;
             
 
             //---------HORIZONTAL
 
             //Transform the horizontal input of the player into an angle between glideMinHorizontalAngle and glideMaxHorizontalAngle
-            float targetHorizontalAngle = Mathf.Lerp(glideData.MinHorizAngle, glideData.MaxHorizAngle, (inputInfo.leftStickRaw.x / 2) + .5f);
+            float targetHorizontalAngle = Mathf.Lerp(phantomData.MinHorizAngle, phantomData.MaxHorizAngle, (inputInfo.leftStickRaw.x / 2) + .5f);
 
 			//Update the current horizontal angle of the player depending on the angle calculated above
 			horizontalAngle = Mathf.Lerp(
 				horizontalAngle,
 				targetHorizontalAngle,
-				(Mathf.Abs(horizontalAngle) > Mathf.Abs(targetHorizontalAngle) ? glideData.HorizComingBack : glideData.HorizAngleCtrl) * dt
+				(Mathf.Abs(horizontalAngle) > Mathf.Abs(targetHorizontalAngle) ? phantomData.HorizComingBack : phantomData.HorizAngleCtrl) * dt
 			);
 
             //Turn the player horizontally with the angle calculated above
