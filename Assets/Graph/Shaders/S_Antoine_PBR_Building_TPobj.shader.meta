@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 63524c28b8a80f44dac55b6e34c870e1
+timeCreated: 1522919649
+licenseType: Free
+ShaderImporter:
+  defaultTextures:
+  - _FalloffNoise: {fileID: 2800000, guid: 9e151404905cead4fa3f4a0130011b9c, type: 3}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
