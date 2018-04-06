@@ -106,7 +106,7 @@ namespace Game.Player.CharacterController.States
 
                 stateMachine.ChangeState(state);
             }
-            else if (inputInfo.echoButtonTimePressed > 1f && !stateMachine.CheckStateLocked(ePlayerState.phantom))
+            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom) && !charController.createdEchoOnThisInput)
             {
                 stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
             }

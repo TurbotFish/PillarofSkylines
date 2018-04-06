@@ -132,10 +132,10 @@ namespace Game.EchoSystem
                 Break(killList[i]);
         }
 
-        public void CreateEcho(bool isPlayerEcho)
+        public Echo CreateEcho(bool isPlayerEcho)
         {
-            if (isEclipseActive || charController.createdEchoOnThisFrame)
-                return;
+            if (isEclipseActive || charController.createdEchoOnThisInput)
+                return null;
 
             if (placedEchoes == maxEchoes)
             {
@@ -160,13 +160,14 @@ namespace Game.EchoSystem
                 placedEchoes++;
                 echoParticles.AddEcho(newEcho.transform.position);
             }
-            charController.createdEchoOnThisFrame = true;
+            charController.createdEchoOnThisInput = true;
+            return newEcho;
         }
 
-        public void CreateEcho(bool isPlayerEcho, Vector3 position)
+        public Echo CreateEcho(bool isPlayerEcho, Vector3 position)
         {
-            if (isEclipseActive || charController.createdEchoOnThisFrame)
-                return;
+            if (isEclipseActive || charController.createdEchoOnThisInput)
+                return null;
 
             if (placedEchoes == maxEchoes)
             {
@@ -191,7 +192,8 @@ namespace Game.EchoSystem
                 placedEchoes++;
                 echoParticles.AddEcho(newEcho.transform.position);
             }
-            charController.createdEchoOnThisFrame = true;
+            charController.createdEchoOnThisInput = true;
+            return newEcho;
         }
 
         void FreezeAll()
@@ -209,10 +211,11 @@ namespace Game.EchoSystem
         void CreateShell()
         {
             GameObject _shell;
-            _shell = Instantiate(shell, gameController.PlayerController.PlayerTransform.position - new Vector3(0, -0.2f, 0), gameController.PlayerController.PlayerTransform.rotation) as GameObject;
+            _shell = Instantiate(shell, gameController.PlayerController.PlayerTransform.position, gameController.PlayerController.PlayerTransform.rotation) as GameObject;
             //_shell.GetComponent<Animator> ().runtimeAnimatorController = playerAnimator.runtimeAnimatorController;
             Animator _anim = _shell.GetComponent<Animator>();
-            _anim.Play(playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash);
+            Debug.Log("player animator : " + playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash);
+            _anim.Play(playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash, 0, playerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime);
             int i = 0;
             foreach (var param in playerAnimator.parameters)
             {

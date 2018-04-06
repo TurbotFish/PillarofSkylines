@@ -28,7 +28,6 @@ namespace Game.Player.CharacterController.States
 		//#############################################################################
 
 		public void Enter() {
-			Debug.Log("Enter State: Phantom");
 
             phantomController = charController.phantomController;
             verticalAngle = 0f;
@@ -40,10 +39,11 @@ namespace Game.Player.CharacterController.States
 		}
 
 		public void Exit() {
-			Debug.Log("Exit State: Phantom");
 
             phantomController.gameObject.SetActive(false);
-            charController.gameController.EchoManager.CreateEcho(true, phantomController.transform.position);
+            EchoSystem.Echo echo = charController.gameController.EchoManager.CreateEcho(true, phantomController.transform.position);
+            if ((charController.MyTransform.position - phantomController.myTransform.position).sqrMagnitude > 1.2f)
+                echo.isActive = true;
 
             charController.phantomController.myTransform.localPosition = new Vector3(0f, 1.45f, 0f);
             charController.rotator.SetParent(charController.MyTransform);
@@ -60,8 +60,8 @@ namespace Game.Player.CharacterController.States
 			PlayerInputInfo inputInfo = charController.InputInfo;
 			CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
-			//stop phantoming
-			if (inputInfo.echoButtonUp)
+            //stop phantoming
+            if (inputInfo.echoButtonUp || (charController.MyTransform.position - phantomController.myTransform.position).sqrMagnitude > phantomData.MaxDistance * phantomData.MaxDistance)
             {
                 AirState state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
                 stateMachine.ChangeState(state);
@@ -70,6 +70,7 @@ namespace Game.Player.CharacterController.States
 
 		public StateReturnContainer Update(float dt)
         {
+
             dt = Time.unscaledDeltaTime;
             PlayerInputInfo inputInfo = charController.InputInfo;
 
@@ -77,7 +78,7 @@ namespace Game.Player.CharacterController.States
             //---------VERTICAL
 
 
-            //Turn the vertical input of the player into an angle between glideMinAngle and glideMaxAngl
+            //Turn the vertical input of the player into an angle between glideMinAngle and glideMaxAngle
             float targetVerticalAngle;
             if (inputInfo.leftStickRaw.z > 0)
             {
