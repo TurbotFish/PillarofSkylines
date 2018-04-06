@@ -1,9 +1,8 @@
-﻿using System.Collections;
+﻿using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine;
 using DG.Tweening;
 
-public class GlypheFX : MonoBehaviour {
+public class GlyphFX_Toggle : GlyphFX {
 
 	[Header("General")]
 	public float timeToActivate;
@@ -24,8 +23,8 @@ public class GlypheFX : MonoBehaviour {
 	public ParticleSystem particlesIdleOn;
 	public List<ParticleSystem> particlesOff = new List<ParticleSystem>();
 
-	public void On()
-	{
+	public override void GlyphOn(){
+		base.GlyphOn ();
 		anim.SetBool ("activated",true);
 		light.DOIntensity (intensityOn, timeToActivate).SetEase (Ease.OutSine);
 		glypheOn.material.DOFloat (0, "_DissolveAmount", timeToActivate).SetEase (Ease.OutSine);
@@ -38,8 +37,8 @@ public class GlypheFX : MonoBehaviour {
 		particlesIdleOn.Play ();
 	}
 
-	public void Off()
-	{
+	public override void GlyphOff(){
+		base.GlyphOff ();
 		anim.SetBool ("activated",false);
 		light.DOIntensity (intensityOff, timeToActivate).SetEase (Ease.OutSine);
 		glypheOn.material.DOFloat (1, "_DissolveAmount", timeToActivate).SetEase (Ease.OutSine);
@@ -51,16 +50,4 @@ public class GlypheFX : MonoBehaviour {
 		}
 		particlesIdleOn.Stop ();
 	}
-
-	
-	///*
-	void Update () {
-		if (Input.GetKeyDown (KeyCode.H)) {
-			On ();
-		}
-		if (Input.GetKeyDown (KeyCode.J)) {
-			Off ();
-		}
-	}
-	//*/
 }

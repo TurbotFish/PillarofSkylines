@@ -1,10 +1,9 @@
-﻿using System.Collections;
+﻿using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Collections;
 using DG.Tweening;
 
-public class CrystalKeyFX : MonoBehaviour {
-
+public class GlyphFX_Once : GlyphFX {
 
 	public Animator anim;
 	public Animator smallCrystalsAnim;
@@ -30,7 +29,13 @@ public class CrystalKeyFX : MonoBehaviour {
 	public GameObject colOn;
 	public GameObject colOff;
 
-	public void On () {
+	bool alreadyActivated = false;
+
+	public override void GlyphOn(){
+		if (alreadyActivated)
+			return;
+
+		alreadyActivated = true;
 		anim.SetBool ("activated", true);
 		smallCrystalsAnim.SetBool ("activated", true);
 
@@ -40,7 +45,7 @@ public class CrystalKeyFX : MonoBehaviour {
 		colOn.SetActive (true);
 		colOff.SetActive (false);
 	}
-	
+
 
 	IEnumerator Sequence () {
 
@@ -58,12 +63,4 @@ public class CrystalKeyFX : MonoBehaviour {
 				lines[i].material = lineOn;
 		}
 	}
-
-
-	void Update () {
-		if (Input.GetKeyDown (KeyCode.H)) {
-			On ();
-		}
-	}
-
 }
