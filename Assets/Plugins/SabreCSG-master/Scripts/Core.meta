@@ -1,7 +1,11 @@
 fileFormatVersion: 2
 guid: 21349983c8accbf4eac3039d1ec5ec2e
 folderAsset: yes
+<<<<<<< HEAD
 timeCreated: 1522847234
+=======
+timeCreated: 1522847928
+>>>>>>> Insight
 licenseType: Free
 DefaultImporter:
   userData: 
