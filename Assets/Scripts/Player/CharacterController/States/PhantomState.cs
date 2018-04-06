@@ -28,7 +28,6 @@ namespace Game.Player.CharacterController.States
 		//#############################################################################
 
 		public void Enter() {
-			Debug.Log("Enter State: Phantom");
 
             phantomController = charController.phantomController;
             verticalAngle = 0f;
@@ -40,10 +39,11 @@ namespace Game.Player.CharacterController.States
 		}
 
 		public void Exit() {
-			Debug.Log("Exit State: Phantom");
 
             phantomController.gameObject.SetActive(false);
-            charController.gameController.EchoManager.CreateEcho(true, phantomController.transform.position);
+            EchoSystem.Echo echo = charController.gameController.EchoManager.CreateEcho(true, phantomController.transform.position);
+            if ((charController.MyTransform.position - phantomController.myTransform.position).sqrMagnitude > 1.2f)
+                echo.isActive = true;
 
             charController.phantomController.myTransform.localPosition = new Vector3(0f, 1.45f, 0f);
             charController.rotator.SetParent(charController.MyTransform);
