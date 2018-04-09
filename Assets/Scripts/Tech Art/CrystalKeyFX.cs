@@ -22,7 +22,7 @@ public class CrystalKeyFX : MonoBehaviour {
 	public List<MeshRenderer> lines = new List<MeshRenderer>();
 
 	[Header("Light")]
-	public Light light;
+	public Light lightGlyph;
 	public float intensityOn;
 	public float lightDelay;
 
@@ -34,7 +34,7 @@ public class CrystalKeyFX : MonoBehaviour {
 		anim.SetBool ("activated", true);
 		smallCrystalsAnim.SetBool ("activated", true);
 
-		light.DOIntensity (intensityOn, 0.2f).SetDelay (lightDelay).SetEase (Ease.OutSine); 
+		lightGlyph.DOIntensity (intensityOn, 0.2f).SetDelay (lightDelay).SetEase (Ease.OutSine); 
 		psIdle.Stop ();
 		StartCoroutine (Sequence ());
 		colOn.SetActive (true);

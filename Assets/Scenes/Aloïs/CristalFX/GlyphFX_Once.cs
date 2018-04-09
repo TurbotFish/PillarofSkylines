@@ -21,7 +21,7 @@ public class GlyphFX_Once : GlyphFX {
 	public List<MeshRenderer> lines = new List<MeshRenderer>();
 
 	[Header("Light")]
-	public Light light;
+	public Light lightGlyph;
 	public float intensityOn;
 	public float lightDelay;
 
@@ -39,7 +39,7 @@ public class GlyphFX_Once : GlyphFX {
 		anim.SetBool ("activated", true);
 		smallCrystalsAnim.SetBool ("activated", true);
 
-		light.DOIntensity (intensityOn, 0.2f).SetDelay (lightDelay).SetEase (Ease.OutSine); 
+		lightGlyph.DOIntensity (intensityOn, 0.2f).SetDelay (lightDelay).SetEase (Ease.OutSine); 
 		psIdle.Stop ();
 		StartCoroutine (Sequence ());
 		colOn.SetActive (true);

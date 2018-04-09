@@ -11,7 +11,7 @@ public class CullingTestEditor : ShaderGUI {
 
 	public override void OnGUI (MaterialEditor editor, MaterialProperty[] props){
 		this.target = editor.target as Material;
-		this.editor = editor;
+		//this.editor = editor;
 		this.properties = props;
 		//base.OnGUI (materialEditor, properties);
 
