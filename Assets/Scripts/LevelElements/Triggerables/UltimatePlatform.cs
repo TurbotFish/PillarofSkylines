@@ -153,7 +153,7 @@ namespace Game.LevelElements
 			currentState = eUltimatePlatformState.waiting;
 
 			if (waitTime.Count > currentPoint) {
-				Debug.Log ("GAGA   " +waitTime [currentPoint]);
+				//Debug.Log ("GAGA   " +waitTime [currentPoint]);
 				yield return new WaitForSeconds (waitTime [currentPoint]);
 			}
 
