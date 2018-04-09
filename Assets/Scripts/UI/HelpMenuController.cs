@@ -12,11 +12,13 @@ namespace Game.UI
         //##################################################################
 
         public bool IsActive { get; private set; }
+        private IGameControllerBase gameController;
 
         //##################################################################
 
         void IUiState.Initialize(IGameControllerBase gameController)
         {
+            this.gameController = gameController;
         }
 
         //##################################################################
@@ -50,8 +52,12 @@ namespace Game.UI
 
             if (Input.GetButtonDown("Back"))
             {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HUD));
+                EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.HUD));
                 return;
+            }
+            else if (Input.GetButtonDown("MenuButton"))
+            {
+                gameController.ExitGame();
             }
         }
     }
