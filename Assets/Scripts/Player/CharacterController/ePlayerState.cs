@@ -12,12 +12,11 @@ namespace Game.Player.CharacterController
         glide = 8,
         dash = 16,
         windTunnel = 32,
-        wallDrift = 64,
-        wallRun = 128,
-        wallClimb = 256,
-        hover = 512,
-        jetpack = 1024,
-        graviswap = 2048
+        wallRun = 64,
+        hover = 128,
+        jetpack = 256,
+        phantom = 512,
+        graviswap = 1024
 
         //exterminate!
         //inAir,

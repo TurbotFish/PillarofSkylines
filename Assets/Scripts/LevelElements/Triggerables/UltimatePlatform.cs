@@ -24,7 +24,7 @@ namespace Game.LevelElements
 
         [HideInInspector]
         public int currentPoint = 0;
-        platformState currentState = platformState.newOrder;
+        eUltimatePlatformState currentState = eUltimatePlatformState.newOrder;
         Transform my;
         bool goingForward = true;
         bool finishingMovement;
@@ -95,7 +95,7 @@ namespace Game.LevelElements
             }
             else
             {
-                currentState = platformState.disabled;
+                currentState = eUltimatePlatformState.disabled;
             }
         }
 
@@ -115,7 +115,7 @@ namespace Game.LevelElements
             if (!isInitialized)
                 return;
 
-            if (currentState == platformState.newOrder && (Triggered || finishingMovement))
+            if (currentState == eUltimatePlatformState.newOrder && (Triggered || finishingMovement))
             {
 
                 Move(waypoints[currentPoint % (waypoints.Count)], waypoints[(currentPoint + (goingForward ? 1 : -1)) % (waypoints.Count)], timeToMove[currentPoint]);
@@ -135,7 +135,7 @@ namespace Game.LevelElements
                 {
                     goingForward = true;
                 }
-                currentState = platformState.moving;
+                currentState = eUltimatePlatformState.moving;
             }
         }
 
@@ -150,7 +150,7 @@ namespace Game.LevelElements
         {
             elapsed = timeMoving - elapsed;
 
-			currentState = platformState.waiting;
+			currentState = eUltimatePlatformState.waiting;
 
 			if (waitTime.Count > currentPoint) {
 				//Debug.Log ("GAGA   " +waitTime [currentPoint]);
@@ -161,7 +161,7 @@ namespace Game.LevelElements
             {
                 if (Triggered || finishingMovement)
                 {
-                    currentState = platformState.moving;
+                    currentState = eUltimatePlatformState.moving;
                     elapsed += Time.deltaTime;
                     float t = elapsed / timeMoving;
 
@@ -180,7 +180,7 @@ namespace Game.LevelElements
                 finishingMovement = false;
             }
 
-            currentState = platformState.newOrder;
+            currentState = eUltimatePlatformState.newOrder;
         }
 
         #endregion private methods
@@ -189,7 +189,7 @@ namespace Game.LevelElements
     }
 
 
-    enum platformState
+    public enum eUltimatePlatformState
     {
         moving,
         newOrder,

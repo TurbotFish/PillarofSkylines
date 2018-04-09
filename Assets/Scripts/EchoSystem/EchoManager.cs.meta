@@ -1,7 +1,7 @@
 fileFormatVersion: 2
 guid: fea8ae02a70995d4795511941a4ab0b8
-timeCreated: 1490259289
-licenseType: Pro
+timeCreated: 1522941878
+licenseType: Free
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
@@ -10,7 +10,7 @@ MonoImporter:
   - breakEchoParticles: {fileID: 114877186217377050, guid: e20ad88a67c394244a11a2b8472a035b,
       type: 2}
   - pool: {instanceID: 0}
-  executionOrder: 0
+  executionOrder: -200
   icon: {instanceID: 0}
   userData: 
   assetBundleName: 
