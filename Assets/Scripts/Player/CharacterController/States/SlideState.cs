@@ -47,12 +47,12 @@ namespace Game.Player.CharacterController.States
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
             //jump
-            if (inputInfo.jumpButtonDown && timerBeforeJump<0f)
+            if (inputInfo.jumpButtonDown && timerBeforeJump<=0f)
             {
+                Debug.Log("hey : " + movementInfo.velocity.sqrMagnitude / 100);
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
-				state.SetJumpDirection(Vector3.Lerp(charController.MyTransform.up, Vector3.ProjectOnPlane(collisionInfo.currentGroundNormal, charController.MyTransform.up)
-                    , (Quaternion.AngleAxis(Vector3.Angle(charController.MyTransform.up, collisionInfo.currentGroundNormal), Vector3.Cross(charController.MyTransform.up, collisionInfo.currentGroundNormal)) * movementInfo.velocity).y/-12));
+                state.SetJumpDirection(Vector3.Lerp(charController.MyTransform.up, Vector3.ProjectOnPlane(collisionInfo.currentGroundNormal, charController.MyTransform.up), movementInfo.velocity.sqrMagnitude/100));
                 stateMachine.ChangeState(state);
             }
             //fall
@@ -71,6 +71,10 @@ namespace Game.Player.CharacterController.States
             else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle && !collisionInfo.SlippySlope || Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < 2f)
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
+            }
+            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom) && !charController.createdEchoOnThisInput)
+            {
+                stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
             }
         }
 

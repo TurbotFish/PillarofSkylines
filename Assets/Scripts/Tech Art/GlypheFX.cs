@@ -53,7 +53,7 @@ public class GlypheFX : MonoBehaviour {
 	}
 
 	
-	/*
+	///*
 	void Update () {
 		if (Input.GetKeyDown (KeyCode.H)) {
 			On ();
@@ -62,5 +62,5 @@ public class GlypheFX : MonoBehaviour {
 			Off ();
 		}
 	}
-	*/
+	//*/
 }

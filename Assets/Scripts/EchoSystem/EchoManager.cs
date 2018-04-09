@@ -13,7 +13,6 @@ namespace Game.EchoSystem
         [SerializeField] private Echo echoPrefab;
         [SerializeField] public BreakEchoParticles breakEchoParticles; //why public?
         [SerializeField] private int maxEchoes = 3;
-        [SerializeField] private float driftInputIntensity = 0.5f;
 
         [Header("ShellFX")]
         [SerializeField] private GameObject shell;
@@ -21,6 +20,7 @@ namespace Game.EchoSystem
         private Animator playerAnimator;
 
         private IGameControllerBase gameController;
+        public Player.CharacterController.CharController charController;
         private EchoCameraEffect echoCamera;
         private EchoParticleSystem echoParticles;
 
@@ -46,6 +46,8 @@ namespace Game.EchoSystem
             echoParticles = gameController.PlayerController.PlayerTransform.GetComponentInChildren<EchoParticleSystem>();
             echoParticles.numEchoes = 3;
 
+            charController = gameController.PlayerController.CharController;
+
             EventManager.EclipseEvent += OnEclipseEventHandler;
             EventManager.PreSceneChangeEvent += OnPreSceneChangeEvent;
             EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
@@ -61,22 +63,13 @@ namespace Game.EchoSystem
             if (isActive && !isEclipseActive)
             {
                 //drift stuff (???)
-                float driftInput = Input.GetAxis("Drift") + (Input.GetButtonDown("Drift") ? 1 : 0);
+                bool driftInput = Input.GetButtonDown("Drift");
 
-                if (driftInput > driftInputIntensity)
-                {
-                    if (driftInputDown == 0)
-                        Drift();
-                    driftInputDown += Time.deltaTime;
-                }
-                else if (driftInput < driftInputIntensity - 0.1f)
-                {
-                    if (driftInputDown > 0)
-                    driftInputDown = 0;
-                }
+                if (driftInput)
+                    Drift();
 
                 //create new echo
-                if (Input.GetButtonDown("Echo") && gameController.PlayerModel.CheckAbilityActive(eAbilityType.Echo))
+                if (charController.InputInfo.echoButtonUp && charController.InputInfo.echoButtonTimePressed < 1f && gameController.PlayerModel.CheckAbilityActive(eAbilityType.Echo))
                 {
                     CreateEcho(true);
                 }
@@ -139,10 +132,10 @@ namespace Game.EchoSystem
                 Break(killList[i]);
         }
 
-        public void CreateEcho(bool isPlayerEcho)
+        public Echo CreateEcho(bool isPlayerEcho)
         {
-            if (isEclipseActive)
-                return;
+            if (isEclipseActive || charController.createdEchoOnThisInput)
+                return null;
 
             if (placedEchoes == maxEchoes)
             {
@@ -167,6 +160,40 @@ namespace Game.EchoSystem
                 placedEchoes++;
                 echoParticles.AddEcho(newEcho.transform.position);
             }
+            charController.createdEchoOnThisInput = true;
+            return newEcho;
+        }
+
+        public Echo CreateEcho(bool isPlayerEcho, Vector3 position)
+        {
+            if (isEclipseActive || charController.createdEchoOnThisInput)
+                return null;
+
+            if (placedEchoes == maxEchoes)
+            {
+                int i = 0;
+                var oldestEcho = echoList[i];
+
+                while (!oldestEcho.playerEcho)
+                {
+                    i++;
+                    oldestEcho = echoList[i];
+                }
+                Break(oldestEcho);
+            }
+
+            Echo newEcho = Instantiate(echoPrefab, position, gameController.PlayerController.PlayerTransform.rotation);
+            newEcho.playerEcho = isPlayerEcho;
+            newEcho.echoManager = this;
+            echoList.Add(newEcho);
+
+            if (isPlayerEcho)
+            {
+                placedEchoes++;
+                echoParticles.AddEcho(newEcho.transform.position);
+            }
+            charController.createdEchoOnThisInput = true;
+            return newEcho;
         }
 
         void FreezeAll()
@@ -184,10 +211,11 @@ namespace Game.EchoSystem
         void CreateShell()
         {
             GameObject _shell;
-            _shell = Instantiate(shell, gameController.PlayerController.PlayerTransform.position - new Vector3(0, -0.2f, 0), gameController.PlayerController.PlayerTransform.rotation) as GameObject;
+            _shell = Instantiate(shell, gameController.PlayerController.PlayerTransform.position, gameController.PlayerController.PlayerTransform.rotation) as GameObject;
             //_shell.GetComponent<Animator> ().runtimeAnimatorController = playerAnimator.runtimeAnimatorController;
             Animator _anim = _shell.GetComponent<Animator>();
-            _anim.Play(playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash);
+            Debug.Log("player animator : " + playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash);
+            _anim.Play(playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash, 0, playerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime);
             int i = 0;
             foreach (var param in playerAnimator.parameters)
             {

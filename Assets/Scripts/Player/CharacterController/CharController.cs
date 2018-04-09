@@ -14,8 +14,7 @@ namespace Game.Player.CharacterController
         /// <summary>
         /// The rotator used to turn the camera.
         /// </summary>
-        [SerializeField]
-        Transform rotator;
+        public Transform rotator;
 
         public Transform myCameraTransform;
         public PoS_Camera myCamera;
@@ -27,6 +26,7 @@ namespace Game.Player.CharacterController
         /// </summary>
         [HideInInspector]
         public CharacControllerRecu tempPhysicsHandler;
+        public PhantomController phantomController;
         CharacControllerRecu.CollisionInfo tempCollisionInfo;
 
         public CharacControllerRecu.CollisionInfo CollisionInfo { get { return tempCollisionInfo; } }
@@ -53,6 +53,8 @@ namespace Game.Player.CharacterController
 
         public PlayerController PlayerController { get; private set; }
 
+        public GameControl.IGameControllerBase gameController;
+
         public Transform MyTransform { get; private set; }
 
         public StateMachine stateMachine;
@@ -74,6 +76,8 @@ namespace Game.Player.CharacterController
 
         [HideInInspector]
         public bool isInsideNoRunZone;
+        [HideInInspector]
+        public bool createdEchoOnThisInput;
 
         /// <summary>
         /// This is set to false if the player has opened a menu, true otherwise.
@@ -126,6 +130,7 @@ namespace Game.Player.CharacterController
 
             GetComponentInChildren<EchoSystem.EchoParticleSystem>().InitializeEchoParticleSystem(gameController);
 
+            this.gameController = gameController;
             PlayerModel = gameController.PlayerModel;
             CharData = Resources.Load<CharData>("ScriptableObjects/CharData");
             PlayerController = gameController.PlayerController;
@@ -138,12 +143,11 @@ namespace Game.Player.CharacterController
 
             stateMachine.RegisterAbility(ePlayerState.dash, eAbilityType.Dash);
             stateMachine.RegisterAbility(ePlayerState.glide, eAbilityType.Glide);
-            stateMachine.RegisterAbility(ePlayerState.wallDrift, eAbilityType.WallRun);
-            stateMachine.RegisterAbility(ePlayerState.wallClimb, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.hover, eAbilityType.Hover);
             stateMachine.RegisterAbility(ePlayerState.jetpack, eAbilityType.Jetpack);
             stateMachine.RegisterAbility(ePlayerState.graviswap, eAbilityType.Graviswap);
+            stateMachine.RegisterAbility(ePlayerState.phantom, eAbilityType.Phantom);
 
             stateMachine.jetpackFuel = CharData.Jetpack.MaxFuel;
 
@@ -210,8 +214,9 @@ namespace Game.Player.CharacterController
 
             //*******************************************
             //handling input
-
             bool sprintDownLastFrame = inputInfo.sprintButton;
+            bool glideDownLastFrame = inputInfo.glideButton;
+            bool echoUpLastFrame = inputInfo.echoButtonUp;
             inputInfo.Reset();
             if (isHandlingInput)
             {
@@ -246,21 +251,39 @@ namespace Game.Player.CharacterController
                 inputInfo.jumpButtonDown = Input.GetButtonDown("Jump");
                 inputInfo.jumpButtonUp = Input.GetButtonUp("Jump");
 
-                inputInfo.sprintButton = (Input.GetAxis("Left Trigger") > .9f) || Input.GetButton("Sprint");
+                inputInfo.sprintButton = (Input.GetAxis("Right Trigger") > .9f) || Input.GetButton("Sprint");
                 inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint");
                 inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint");
 
-                inputInfo.jetpackButton = Input.GetButton("Jetpack");
-                inputInfo.jetpackButtonDown = Input.GetButtonDown("Jetpack");
-                inputInfo.jetpackButtonUp = Input.GetButtonUp("Jetpack");
+                inputInfo.glideButton = (Input.GetAxis("Left Trigger") > .9f) || Input.GetButton("Sprint");
+                inputInfo.glideButtonDown = (inputInfo.glideButton && !glideDownLastFrame) || Input.GetButtonDown("Sprint");
+                inputInfo.glideButtonUp = (!inputInfo.glideButton && glideDownLastFrame) || Input.GetButtonUp("Sprint");
 
-                inputInfo.rightStickButtonDown = Input.GetButtonDown("RightStickClick");
+                inputInfo.echoButton = Input.GetButton("Echo");
+                inputInfo.echoButtonDown = Input.GetButtonDown("Echo");
+                inputInfo.echoButtonUp = Input.GetButtonUp("Echo");
 
                 /*
+                inputInfo.jetpackButton = Input.GetButton("Jetpack");
+                inputInfo.jetpackButtonDown = Input.GetButtonDown("Jetpack");
+                inputInfo.jetpackButtonUp = Input.GetButtonUp("Jetpack");*/
+
+                inputInfo.rightStickButtonDown = Input.GetButtonDown("RightStickClick");
+                
+                if (inputInfo.echoButton)
+                {
+                    inputInfo.echoButtonTimePressed += Time.deltaTime;
+                }
+                if (echoUpLastFrame)
+                {
+                    inputInfo.ResetTimeEcho();
+                    createdEchoOnThisInput = false;
+                }
+
                 if (Input.GetButtonDown("GroundRise"))
                 {
                     CreateGroundRise();
-                }*/
+                }
                 
                 stateMachine.HandleInput();
             }
@@ -476,14 +499,12 @@ namespace Game.Player.CharacterController
         {
             if (!windTunnelPartList.Contains(args.WindTunnelPart))
             {
-                print("eventreceived");
                 windTunnelPartList.Add(args.WindTunnelPart);
             }
         }
 
         void OnWindTunnelPartExitedEventHandler(object sender, Utilities.EventManager.WindTunnelPartExitedEventArgs args)
         {
-            print("partremoved");
             windTunnelPartList.Remove(args.WindTunnelPart);
         }
 
@@ -508,12 +529,17 @@ namespace Game.Player.CharacterController
             return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, MyTransform.up), Vector3.Cross(MyTransform.up, Vector3.up))) * vector;
         }
 
+        public void ResetEchoInputTime()
+        {
+            inputInfo.ResetTimeEcho();
+        }
+
         #endregion utility methods
 
         //#############################################################################
 
         #region cancer
-        
+
         void CreateGroundRise()
         {
             if (PlayerModel.CheckAbilityActive(eAbilityType.GroundRise))

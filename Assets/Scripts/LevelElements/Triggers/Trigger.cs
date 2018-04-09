@@ -93,7 +93,7 @@ namespace Game.LevelElements
             {
                 return;
             }
-            
+
             if (_triggerState == triggerState && !alwaysExecute) //if the value does not change we don't do anything
             { // "alwaysExecute" skips this check and always executes the trigger even if the value did not change
                 return;

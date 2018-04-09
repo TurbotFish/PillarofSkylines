@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace Game.Player.CharacterController
 {
+    [RequireComponent(typeof(MovingPlatform))]
     public class GroundRise : MovingPlatform
     {
 
@@ -14,6 +15,8 @@ namespace Game.Player.CharacterController
 
         GameObject goUp;
         GameObject goFlat;
+
+        MovingPlatform platform;
 
         float currHeight = 0f;
         bool finishedMoving = false;
@@ -26,29 +29,27 @@ namespace Game.Player.CharacterController
             strength = grRiseData.Strength;
             this.playerUp = playerUp;
 
+            platform = GetComponent<MovingPlatform>();
             goUp = transform.GetChild(0).gameObject;
             goFlat = transform.GetChild(1).gameObject;
 
             //print("test : " + Vector3.ProjectOnPlane(velocity, playerUp).magnitude + " > " + grRiseData.VelocityToFlat);
-            if (Vector3.ProjectOnPlane(velocity, playerUp).magnitude > grRiseData.VelocityToFlat)
+            /*if (Vector3.ProjectOnPlane(velocity, playerUp).magnitude > grRiseData.VelocityToFlat)
             {
                 flat = true;
                 active = false;
-            }
+            }*/
 
             if (Physics.Raycast(position + (playerUp*.01f), -playerUp, out hit, grRiseData.Range, player.tempPhysicsHandler.collisionMaskNoCloud))
             {
                 if (!hit.transform.CompareTag("MovingPlatform") && !hit.transform.CompareTag("GroundRise"))
                 {
-                    Debug.Log("oui groundrise !");
                     transform.position = hit.point;
-                    print("point : " + hit.point);
-                    if (player.CurrentState == ePlayerState.slide)
+                    /*if (player.CurrentState == ePlayerState.slide)
                     {
                         flat = true;
                         goFlat.tag = "SlipperySlope";
-                    }
-                    print("distance : " + Vector3.Distance(position, transform.position));
+                    }*/
                     if (player.CollisionInfo.below && !flat && Vector3.Distance(position, transform.position) < 0.2f)
                         currPlayer = player;
                     transform.rotation = player.MyTransform.rotation;
@@ -62,7 +63,7 @@ namespace Game.Player.CharacterController
                 return;
             }
 
-            if (flat)
+            /*if (flat)
             {
                 height = grRiseData.FlatLength;
                 goFlat.SetActive(true);
@@ -81,16 +82,15 @@ namespace Game.Player.CharacterController
                 }
             }
             else
-            {
+            {*/
                 height = grRiseData.Height;
-                transform.localScale = new Vector3(transform.localScale.x, height, transform.localScale.z);
                 goUp.SetActive(true);
                 float maxheight = height + player.tempPhysicsHandler.height * 2;
-                if (Physics.BoxCast(transform.position, new Vector3(goUp.transform.localScale.x / 2, 0.01f, goUp.transform.localScale.z / 2), playerUp, out hit, Quaternion.identity, maxheight, player.tempPhysicsHandler.collisionMask))
+                if (Physics.BoxCast(goUp.transform.position, new Vector3(goUp.transform.localScale.x / 2.5f, 0.01f, goUp.transform.localScale.z / 2.5f), playerUp, out hit, Quaternion.identity, maxheight, player.tempPhysicsHandler.collisionMask))
                 {
                     height -= maxheight - hit.distance;
                 }
-            }
+            //}
             timeRemaining = grRiseData.Duration;
         }
 
@@ -103,7 +103,7 @@ namespace Game.Player.CharacterController
         {
             if (!finishedMoving)
             {
-                if (flat)
+                /*if (flat)
                 {
                     currHeight += strength * Time.deltaTime;
                     if (currHeight > height)
@@ -117,14 +117,12 @@ namespace Game.Player.CharacterController
                     }
                 }
                 else
-                {
+                {*/
                     Collider[] cols = Physics.OverlapBox(goUp.transform.position, new Vector3(goUp.transform.lossyScale.x / 2, goUp.transform.lossyScale.y / 2, goUp.transform.lossyScale.z / 2), Quaternion.identity);
                     foreach (Collider col in cols)
                     {
-                        print("col : " + col.name + " tag : " + col.tag);
                         if (col.CompareTag("Player"))
                         {
-                            Debug.Log("there's a player in me :O");
                             col.transform.parent.position = new Vector3(col.transform.position.x, transform.position.y, col.transform.position.z);
                         }
                     }
@@ -135,11 +133,11 @@ namespace Game.Player.CharacterController
                         transform.Translate(Vector3.up * (height - (currHeight - (strength * Time.deltaTime))), Space.Self);
                         finishedMoving = true;
 
-                        if (currPlayer)
+                        /*if (currPlayer)
                         {
                             if (currPlayer.MovementInfo.velocity.y * Time.deltaTime < strength * Time.deltaTime)
                                 currPlayer.SetVelocity(new Vector3(currPlayer.MovementInfo.velocity.x, strength, currPlayer.MovementInfo.velocity.z), true);
-                        }
+                        }*/
                     }
                     else
                     {
@@ -149,7 +147,6 @@ namespace Game.Player.CharacterController
                             if (hit.transform.CompareTag("Player"))
                             {
                                 currPlayer = hit.transform.GetComponentInParent<CharController>();
-                                print("bip bip detected player : " + currPlayer);
                             } else
                             {
                                 currPlayer = null;
@@ -158,9 +155,12 @@ namespace Game.Player.CharacterController
                         {
                             currPlayer = null;
                         }
-                        transform.Translate(Vector3.up * strength * Time.deltaTime, Space.Self);
 
+                    platform.Move(Vector3.up * strength * Time.deltaTime);
 
+                        //transform.Translate(Vector3.up * strength * Time.deltaTime, Space.Self);
+
+                        /*
                         if (currPlayer)
                         {
                             Debug.Log("there's a player on me :o");
@@ -169,15 +169,9 @@ namespace Game.Player.CharacterController
                                 Debug.Log("Go up player");
                                 currPlayer.SetVelocity(new Vector3(currPlayer.MovementInfo.velocity.x, strength + 0.1f, currPlayer.MovementInfo.velocity.z), true);
                             }
-                        }
-                        /*
-                        if (currPlayer)
-                        {
-                            currPlayer.ResetVerticalVelocity(true);
-                            currPlayer.ImmediateMovement(playerUp * strength * Time.deltaTime, true);
                         }*/
                     }
-                }
+                //}
             }
             else
             {

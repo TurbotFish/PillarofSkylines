@@ -59,11 +59,11 @@ public class CrystalKeyFX : MonoBehaviour {
 		}
 	}
 
-	///*
+
 	void Update () {
 		if (Input.GetKeyDown (KeyCode.H)) {
 			On ();
 		}
 	}
-	//*/
+
 }

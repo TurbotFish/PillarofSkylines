@@ -1,5 +1,4 @@
 ﻿using Game.GameControl;
-using Game.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,7 +8,7 @@ using UnityEngine.SceneManagement;
 
 namespace Game.World
 {
-    public class WorldController : MonoBehaviour, IWorldEventHandler
+    public class WorldController : MonoBehaviour/*, IWorldEventHandler*/
     {
         public static readonly Dictionary<eSuperRegionType, Vector3> SUPERREGION_OFFSETS = new Dictionary<eSuperRegionType, Vector3>()
         {
@@ -59,7 +58,6 @@ namespace Game.World
         private bool isJobRunning = false;
         private int currentSuperRegionIndex;
 
-        [SerializeField, HideInInspector] private bool measureTimes = true;
         [SerializeField, HideInInspector] private int debugResultCount = 10;
         private List<LoadingMeasurement> loadingDebug = new List<LoadingMeasurement>();
 
@@ -215,7 +213,7 @@ namespace Game.World
             {
                 return;
             }
-            else if(CurrentState != eWorldControllerState.Activated)
+            else if (CurrentState != eWorldControllerState.Activated)
             {
                 return;
             }
@@ -386,6 +384,12 @@ namespace Game.World
 
             //
             invisibilityAngle = Mathf.Clamp(invisibilityAngle, 0, 360);
+
+            //
+            if (debugResultCount < 1)
+            {
+                debugResultCount = 1;
+            }
         }
 #endif
 
@@ -402,7 +406,7 @@ namespace Game.World
 
         private void OnDestroy()
         {
-            if (!measureTimes || loadingDebug.Count == 0)
+            if (loadingDebug.Count == 0)
             {
                 return;
             }
@@ -550,7 +554,7 @@ namespace Game.World
 
         //========================================================================================
 
-        #region job handling corutines
+        #region job handling coroutines
 
         /// <summary>
         /// Runtime Coroutine that loads a subScene
@@ -595,26 +599,24 @@ namespace Game.World
                     float time = 0;
                     float duration;
                     LoadingMeasurement measurement = null;
-                    if (measureTimes)
+
+                    measurement = loadingDebug.Where(i =>
+                        i.regionName == job.Region.name &&
+                        i.subSceneLayer == job.SubSceneLayer &&
+                        i.subSceneVariant == job.SubSceneVariant
+                    ).FirstOrDefault();
+
+                    if (measurement == null)
                     {
-                        measurement = loadingDebug.Where(i =>
-                            i.regionName == job.Region.name &&
-                            i.subSceneLayer == job.SubSceneLayer &&
-                            i.subSceneVariant == job.SubSceneVariant
-                        ).FirstOrDefault();
-
-                        if (measurement == null)
-                        {
-                            measurement = new LoadingMeasurement();
-                            measurement.regionName = job.Region.name;
-                            measurement.subSceneLayer = job.SubSceneLayer;
-                            measurement.subSceneVariant = job.SubSceneVariant;
-                            loadingDebug.Add(measurement);
-                        }
-
-                        measurement.loadCount++;
-                        time = Time.time;
+                        measurement = new LoadingMeasurement();
+                        measurement.regionName = job.Region.name;
+                        measurement.subSceneLayer = job.SubSceneLayer;
+                        measurement.subSceneVariant = job.SubSceneVariant;
+                        loadingDebug.Add(measurement);
                     }
+
+                    measurement.loadCount++;
+                    time = Time.time;
                     //########
 
                     AsyncOperation async = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
@@ -626,17 +628,14 @@ namespace Game.World
                     }
 
                     //########
-                    if (measureTimes)
+                    duration = Time.time - time;
+                    measurement.loadingTimeSum += duration;
+                    if (duration > measurement.highestLoadingTime)
                     {
-                        duration = Time.time - time;
-                        measurement.loadingTimeSum += duration;
-                        if (duration > measurement.highestLoadingTime)
-                        {
-                            measurement.highestLoadingTime = duration;
-                        }
-
-                        time = Time.time;
+                        measurement.highestLoadingTime = duration;
                     }
+
+                    time = Time.time;
                     //########
 
                     async.allowSceneActivation = true;
@@ -646,17 +645,14 @@ namespace Game.World
                     }
 
                     //########
-                    if (measureTimes)
+                    duration = Time.time - time;
+                    measurement.initializationTimeSum += duration;
+                    if (duration > measurement.highestInitializationTime)
                     {
-                        duration = Time.time - time;
-                        measurement.initializationTimeSum += duration;                       
-                        if (duration > measurement.highestInitializationTime)
-                        {
-                            measurement.highestInitializationTime = duration;
-                        }
-
-                        time = Time.time;
+                        measurement.highestInitializationTime = duration;
                     }
+
+                    time = Time.time;
                     //########
 
                     //move root to open world scene
@@ -668,11 +664,8 @@ namespace Game.World
                     root.SetParent(job.Region.transform, true);
 
                     //########
-                    if (measureTimes)
-                    {
-                        duration = Time.time - time;
-                        measurement.moveTimeSum += duration;
-                    }
+                    duration = Time.time - time;
+                    measurement.moveTimeSum += duration;
                     //########
 
                     yield return null;
@@ -737,276 +730,6 @@ namespace Game.World
         }
 
         #endregion job handling coroutines
-
-        //========================================================================================
-
-        #region subScene editor methods
-
-#if UNITY_EDITOR
-        /// <summary>
-        /// Editor methods for loading all the SubScenes.
-        /// </summary>
-        void IWorldEventHandler.ImportSubScenes()
-        {
-            if (editorSubScenesLoaded)
-            {
-                return;
-            }
-
-            UnityEditor.EditorUtility.DisplayProgressBar("Importing SubScenes", "", 0);
-
-            var regions = new List<RegionBase>();
-
-            for (int i = 0; i < transform.childCount; i++)
-            {
-                var region = transform.GetChild(i).GetComponent<RegionBase>();
-
-                if (region)
-                {
-                    regions.Add(region);
-                }
-            }
-
-            foreach (var region in regions)
-            {
-                foreach (var subSceneLayer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
-                {
-                    foreach (var subSceneMode in region.AvailableSubSceneVariants)
-                    {
-                        if (region.GetSubSceneRoot(subSceneLayer, subSceneMode) != null)
-                        {
-                            Debug.LogErrorFormat("The \"{0}\" of Region \"{1}\" is already loaded!", WorldUtility.GetSubSceneRootName(subSceneMode, subSceneLayer), region.name);
-                            continue;
-                        }
-
-                        //paths
-                        string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.UniqueId, subSceneMode, subSceneLayer, eSuperRegionType.Centre);
-                        string subScenePathFull = WorldUtility.GetFullPath(subScenePath);
-
-                        Scene subScene = new Scene();
-
-                        if (System.IO.File.Exists(subScenePathFull))
-                        {
-                            subScene = UnityEditor.SceneManagement.EditorSceneManager.OpenScene(subScenePath, UnityEditor.SceneManagement.OpenSceneMode.Additive);
-                        }
-
-                        //move subScene content to open world scene
-                        if (subScene.IsValid())
-                        {
-                            var rootGO = subScene.GetRootGameObjects()[0];
-                            UnityEditor.SceneManagement.EditorSceneManager.MoveGameObjectToScene(rootGO, this.gameObject.scene);
-
-                            var root = rootGO.transform;
-                            root.SetParent(region.transform, true);
-
-                            if (!root.gameObject.activeSelf)
-                            {
-                                root.gameObject.SetActive(true);
-                            }
-                        }
-
-                        //end: close subScene
-                        UnityEditor.SceneManagement.EditorSceneManager.CloseScene(subScene, true);
-                    }
-                }
-            }
-
-            editorSubScenesLoaded = true;
-
-            //clear subScene folder
-            ((IWorldEventHandler)this).ClearSubSceneFolder();
-
-            //mark dirty
-            UnityEditor.EditorUtility.SetDirty(this);
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
-
-            UnityEditor.EditorUtility.ClearProgressBar();
-        }
-#endif
-
-#if UNITY_EDITOR
-        /// <summary>
-        /// Editor methods for creating and unloading all the SubScenes.
-        /// </summary>
-        void IWorldEventHandler.ExportSubScenes()
-        {
-            if (!editorSubScenesLoaded)
-            {
-                return;
-            }
-
-            UnityEditor.EditorUtility.DisplayProgressBar("Exporting SubScenes", "", 0);
-
-            //clear subScene folder
-            ((IWorldEventHandler)this).ClearSubSceneFolder();
-
-            //finding all the regions
-            var regions = new List<RegionBase>();
-            for (int i = 0; i < transform.childCount; i++)
-            {
-                var region = transform.GetChild(i).GetComponent<RegionBase>();
-
-                if (region != null)
-                {
-                    regions.Add(region);
-                }
-            }
-
-            var buildSettingsScenes = UnityEditor.EditorBuildSettings.scenes.ToList();
-
-            //adding open world scene to build settings
-            if (!buildSettingsScenes.Exists(item => item.path == gameObject.scene.path))
-            {
-                buildSettingsScenes.Add(new UnityEditor.EditorBuildSettingsScene(gameObject.scene.path, true));
-            }
-
-            foreach (var region in regions)
-            {
-                foreach (var subSceneLayer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
-                {
-                    foreach (var subSceneMode in region.AvailableSubSceneVariants)
-                    {
-                        var root = region.GetSubSceneRoot(subSceneLayer, subSceneMode);
-
-                        if (!root || root.childCount == 0) //if root is null or empty there is no need to create a subScene
-                        {
-                            continue;
-                        }
-
-                        //handle duplications
-                        foreach (var superRegionType in Enum.GetValues(typeof(eSuperRegionType)).Cast<eSuperRegionType>())
-                        {
-                            if (superRegionType == eSuperRegionType.Centre || region.DoNotDuplicate)
-                            {
-                                continue;
-                            }
-
-                            //paths
-                            string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.UniqueId, subSceneMode, subSceneLayer, superRegionType);
-
-                            //creating copy
-                            var rootCopy = Instantiate(root.gameObject).transform;
-                            rootCopy.SetParent(null, true);
-                            var offset = SUPERREGION_OFFSETS[superRegionType];
-                            var translate = new Vector3(offset.x * worldSize.x, offset.y * worldSize.y, offset.z * worldSize.z);
-                            rootCopy.Translate(translate);
-
-                            //informing world objects
-                            var worldObjects = rootCopy.GetComponentsInChildren<IWorldObjectDuplication>();
-                            for (int i = 0; i < worldObjects.Length; i++)
-                            {
-                                worldObjects[i].OnDuplication();
-                            }
-
-                            //removing "do not repeat" objects
-                            if (superRegionType != eSuperRegionType.Centre)
-                            {
-                                List<DoNotRepeatTag> doNotRepeatTags = rootCopy.GetComponentsInChildren<DoNotRepeatTag>(true).ToList();
-                                while (doNotRepeatTags.Count > 0)
-                                {
-                                    var tag = doNotRepeatTags[0];
-                                    doNotRepeatTags.RemoveAt(0);
-                                    DestroyImmediate(tag.gameObject);
-                                }
-                            }
-
-                            //moving root to subScene
-                            var subScene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(
-                                UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,
-                                UnityEditor.SceneManagement.NewSceneMode.Additive
-                            );
-                            UnityEditor.SceneManagement.EditorSceneManager.MoveGameObjectToScene(rootCopy.gameObject, subScene);
-
-                            //saving and closing the sub scene
-                            UnityEditor.SceneManagement.EditorSceneManager.SaveScene(subScene, subScenePath);
-                            UnityEditor.SceneManagement.EditorSceneManager.CloseScene(subScene, true);
-
-                            //add subScene to buildsettings
-                            buildSettingsScenes.Add(new UnityEditor.EditorBuildSettingsScene(subScenePath, true));
-                        }
-
-                        //handle centre root (can't be duplicated because that breaks the prefabs)
-
-                        //path
-                        string centreSubScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, region.UniqueId, subSceneMode, subSceneLayer, eSuperRegionType.Centre);
-
-                        //informing world objects
-                        var centreWorldObjects = root.GetComponentsInChildren<IWorldObjectDuplication>();
-                        for (int i = 0; i < centreWorldObjects.Length; i++)
-                        {
-                            centreWorldObjects[i].OnDuplication();
-                        }
-
-                        //moving root to subScene
-                        var centreSubScene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(
-                            UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,
-                            UnityEditor.SceneManagement.NewSceneMode.Additive
-                        );
-                        root.SetParent(null, true);
-                        UnityEditor.SceneManagement.EditorSceneManager.MoveGameObjectToScene(root.gameObject, centreSubScene);
-
-                        //saving and closing the sub scene
-                        UnityEditor.SceneManagement.EditorSceneManager.SaveScene(centreSubScene, centreSubScenePath);
-                        UnityEditor.SceneManagement.EditorSceneManager.CloseScene(centreSubScene, true);
-
-                        //add subScene to buildsettings
-                        buildSettingsScenes.Add(new UnityEditor.EditorBuildSettingsScene(centreSubScenePath, true));
-                    }
-                }
-            }
-
-            //
-            UnityEditor.EditorBuildSettings.scenes = buildSettingsScenes.ToArray();
-
-            //
-            editorSubScenesLoaded = false;
-
-            UnityEditor.EditorUtility.SetDirty(this);
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
-
-            UnityEditor.EditorUtility.ClearProgressBar();
-        }
-#endif
-
-#if UNITY_EDITOR
-        /// <summary>
-        /// Deletes the SubScene folder and its content and removes the subScenes from the build settings, but only if the subScenes have been loaded first.
-        /// </summary>
-        void IWorldEventHandler.ClearSubSceneFolder()
-        {
-            if (!editorSubScenesLoaded)
-            {
-                return;
-            }
-
-            string SubSceneFolderPath = WorldUtility.GetSubSceneFolderPath(gameObject.scene.path);
-
-            //cleaning build settings
-            var scenes = UnityEditor.EditorBuildSettings.scenes.ToList();
-            var scenesToRemove = new List<UnityEditor.EditorBuildSettingsScene>();
-
-            foreach (var sceneEntry in scenes)
-            {
-                if (sceneEntry.path.Contains(SubSceneFolderPath) || string.IsNullOrEmpty(sceneEntry.path))
-                {
-                    scenesToRemove.Add(sceneEntry);
-                }
-            }
-
-            foreach (var sceneEntry in scenesToRemove)
-            {
-                scenes.Remove(sceneEntry);
-            }
-
-            UnityEditor.EditorBuildSettings.scenes = scenes.ToArray();
-
-            //deleting subScene folder (of the current scene only)
-            UnityEditor.FileUtil.DeleteFileOrDirectory(SubSceneFolderPath);
-            UnityEditor.AssetDatabase.Refresh();
-        }
-#endif
-
-        #endregion subScene editor methods
 
         //========================================================================================
         //========================================================================================

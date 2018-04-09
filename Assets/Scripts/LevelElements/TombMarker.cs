@@ -68,7 +68,14 @@ namespace Game.LevelElements
         }
 
         private void ActivateWaypoint(bool active) {
-            waypointFeedback.SetActive(active);
+            if (waypointFeedback != null)
+            {
+                waypointFeedback.SetActive(active);
+            }
+            else
+            {
+                Debug.LogErrorFormat("Tombmarker {0}: ActivateWaypoint: waypointFeedback is null!", this.name);
+            }
         }
 
         //###########################################################

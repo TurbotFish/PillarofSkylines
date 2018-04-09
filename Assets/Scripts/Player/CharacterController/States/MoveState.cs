@@ -80,6 +80,10 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
             }
+            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom) && !charController.createdEchoOnThisInput)
+            {
+                stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
+            }
         }
 
 		public StateReturnContainer Update(float dt) {
@@ -90,7 +94,7 @@ namespace Game.Player.CharacterController.States
             {
                 CanTurnPlayer = true,
                 
-                Acceleration = inputInfo.leftStickToSlope * (charController.isInsideNoRunZone ? moveData.WalkingSpeed : moveData.Speed) * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1) * stateMachine.speedMultiplier,
+                Acceleration = inputInfo.leftStickToSlope * (charController.isInsideNoRunZone ? moveData.WalkingSpeed : moveData.Speed) * (inputInfo.sprintButton && !charController.isInsideNoRunZone ? moveData.SprintCoefficient : 1) * stateMachine.speedMultiplier,
 
                 IgnoreGravity = true,
 				MaxSpeed = moveData.MaxSpeed,

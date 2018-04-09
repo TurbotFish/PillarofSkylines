@@ -53,7 +53,7 @@ namespace Game.Player.CharacterController.States
 			CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
 			//stop gliding
-			if (inputInfo.sprintButtonDown) {
+			if (inputInfo.glideButtonUp) {
                 AirState state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
                 state.SetTimerAirControl(glideData.ExitInertiaTime);
                 stateMachine.ChangeState(state);
@@ -112,12 +112,12 @@ namespace Game.Player.CharacterController.States
 				);
 			}
 
-            Debug.Log("vertical angle : " + verticalAngle + "speed : " + currentSpeed);
+            //Debug.Log("vertical angle : " + verticalAngle + "speed : " + currentSpeed);
 
 			//Calculate the velocity of the player with his speed and vertical angle
 			Vector3 targetVelocity = Quaternion.AngleAxis(verticalAngle, charController.MyTransform.right) * charController.MyTransform.forward * currentSpeed;
 
-            Debug.Log("target velocity : " + targetVelocity + " forward : " + charController.MyTransform.forward);
+            //Debug.Log("target velocity : " + targetVelocity + " forward : " + charController.MyTransform.forward);
 
             //Stall when the player is too slow
             if (currentSpeed < glideData.StallSpeed) {
@@ -139,7 +139,7 @@ namespace Game.Player.CharacterController.States
             //Turn the player horizontally with the angle calculated above
 
             charController.MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(TurnLocalToSpace(movementInfo.velocity), charController.MyTransform.up), charController.MyTransform.up);
-            Debug.Log("velocity : " + movementInfo.velocity);
+            //Debug.Log("velocity : " + movementInfo.velocity);
 
             //Turn the player horizontally with the angle calculated above
             //charController.MyTransform.Rotate(Vector3.up, horizontalAngle, Space.Self);
