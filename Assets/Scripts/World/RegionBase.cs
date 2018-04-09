@@ -16,19 +16,14 @@ namespace Game.World
         #region member variables
 
         [SerializeField, HideInInspector] private Vector3 boundsCentre;
-
         [SerializeField, HideInInspector] private Vector3 boundsSize;
 
         [SerializeField, HideInInspector] private bool overrideRenderDistances;
-
         [SerializeField, HideInInspector] private float localRenderDistanceNear;
-
         [SerializeField, HideInInspector] private float localRenderDistanceMedium;
-
         [SerializeField, HideInInspector] private float localRenderDistanceFar;
 
         [SerializeField, HideInInspector] bool drawBounds;
-
         [SerializeField, HideInInspector] Color boundsColour = Color.green;
 
         [SerializeField, HideInInspector] private bool doNotDuplicate;
@@ -690,44 +685,6 @@ namespace Game.World
                 root.SetParent(transform, false);
             }
 
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
-        }
-#endif
-
-#if UNITY_EDITOR
-        /// <summary>
-        /// Editor method that adjusts the size and centre of the region bounds to encompass all contained renderers.
-        /// </summary>
-        void IRegionEventHandler.AdjustBounds()
-        {
-            Bounds bounds = new Bounds();
-            var renderers = GetComponentsInChildren<Renderer>(true);
-            Vector3 position = Vector3.zero;
-
-            if (renderers.Count() == 0)
-            {
-                boundsCentre = transform.position;
-                boundsSize = Vector3.zero;
-            }
-            else
-            {
-                foreach (var renderer in renderers)
-                {
-                    position += renderer.bounds.center;
-                }
-
-                bounds.center = position / renderers.Count();
-
-                foreach (var renderer in renderers)
-                {
-                    bounds.Encapsulate(renderer.bounds);
-                }
-            }
-
-            boundsCentre = bounds.center;
-            boundsSize = bounds.size;
-
-            UnityEditor.EditorUtility.SetDirty(this);
             UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
         }
 #endif
