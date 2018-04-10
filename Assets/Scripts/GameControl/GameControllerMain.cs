@@ -154,108 +154,17 @@ namespace Game.GameControl
             StartCoroutine(ActivateOpenWorldCR(true));
         }
 
-        //IEnumerator StartGameCR()
-        //{
-        //    //switch to loading screen
-        //    Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.LoadingScreen));
-
-        //    //register to sceneLoaded event
-        //    SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
-
-        //    //loading open world scene
-        //    SceneManager.LoadScene(sceneNamesData.GetOpenWorldSceneName(), LoadSceneMode.Additive);
-
-        //    yield return null;
-        //    //***********************
-
-        //    //getting references in open world scene
-        //    this.openWorldSceneInfo.Scene = SceneManager.GetSceneByName(this.sceneNamesData.GetOpenWorldSceneName());
-        //    SceneManager.SetActiveScene(this.openWorldSceneInfo.Scene);
-
-        //    this.openWorldSceneInfo.WorldController = SearchForScriptInScene<WorldController>(this.openWorldSceneInfo.Scene);
-        //    this.openWorldSceneInfo.SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(this.openWorldSceneInfo.Scene);
-
-        //    yield return null;
-        //    //***********************
-
-        //    //pillar scenes
-        //    var pillarIdValues = Enum.GetValues(typeof(World.ePillarId)).Cast<World.ePillarId>();
-
-        //    foreach (var pillarId in pillarIdValues)
-        //    {
-        //        string name = this.sceneNamesData.GetPillarSceneName(pillarId);
-
-        //        if (string.IsNullOrEmpty(name))
-        //        {
-        //            continue;
-        //        }
-
-        //        //loading pillar scene
-        //        SceneManager.LoadScene(name, LoadSceneMode.Additive);
-
-        //        yield return null;
-        //        //***********************
-
-        //        //getting references in pillar scene
-        //        var pillarScene = SceneManager.GetSceneByName(name);
-        //        var pillarInfo = new PillarSceneInfo()
-        //        {
-        //            Scene = pillarScene,
-        //            PillarId = pillarId,
-        //            SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(pillarScene)
-        //        };
-
-        //        this.pillarSceneDictionary.Add(pillarId, pillarInfo);
-
-        //        //initializing world objects in pillar
-        //        var worldObjects = SearchForScriptsInScene<World.IWorldObject>(pillarScene);
-
-        //        foreach (var worldObject in worldObjects)
-        //        {
-        //            worldObject.Initialize(this, false);
-        //        }
-
-        //        //deactivating scene
-        //        foreach (var go in pillarScene.GetRootGameObjects())
-        //        {
-        //            go.SetActive(false);
-        //        }
-
-        //        yield return null;
-        //        //***********************
-        //    }
-
-        //    //initializing game
-        //    this.playerController.InitializePlayerController(this);
-        //    this.CameraController.InitializeCameraController(this);
-
-        //    //pausing game until world has loaded a bit
-        //    Utilities.EventManager.SendGamePausedEvent(this, new Utilities.EventManager.GamePausedEventArgs(true));
-
-        //    openWorldSceneInfo.WorldController.Initialize(this);
-
-        //    yield return null;
-        //    while (openWorldSceneInfo.WorldController.CurrentJobCount > 0)
-        //    {
-        //        yield return null;
-        //    }
-
-        //    this.EchoManager.InitializeEchoManager(this, openWorldSceneInfo.SpawnPointManager);
-        //    this.EclipseManager.InitializeEclipseManager(this);
-
-        //    yield return null;
-        //    //***********************
-
-        //    //starting the game
-        //    SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
-
-        //    var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnPoint(), this.openWorldSceneInfo.SpawnPointManager.GetInitialSpawnOrientation(), true);
-        //    Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
-
-        //    Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());
-        //    Utilities.EventManager.SendGamePausedEvent(this, new Utilities.EventManager.GamePausedEventArgs(false));
-        //    Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.Intro));
-        //}
+        /// <summary>
+        /// Closes the Application.
+        /// </summary>
+        public void ExitGame()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
 
         #endregion initialization methods
 
@@ -263,101 +172,6 @@ namespace Game.GameControl
         //###############################################################
 
         #region scene loading methods
-
-        //private IEnumerator ActivatePillarScene(ePillarId pillarId)
-        //{
-        //    //todo: pause game
-        //    EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.LoadingScreen));
-
-        //    yield return null;
-
-        //    //deactivate open world scene
-        //    foreach (var go in openWorldSceneInfo.Scene.GetRootGameObjects())
-        //    {
-        //        go.SetActive(false);
-        //    }
-
-        //    yield return null;
-
-        //    //activate pillar scene
-        //    isPillarActive = true;
-        //    activePillarId = pillarId;
-
-        //    var info = pillarSceneDictionary[activePillarId];
-        //    var pillarScene = info.Scene;
-
-        //    foreach (var go in pillarScene.GetRootGameObjects())
-        //    {
-        //        go.SetActive(true);
-        //    }
-        //    SceneManager.SetActiveScene(pillarScene);
-
-        //    yield return null;
-
-        //    //
-        //    var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(info.SpawnPointManager.GetInitialSpawnPoint(), info.SpawnPointManager.GetInitialSpawnOrientation(), true);
-        //    Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
-
-        //    Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs(pillarId));
-
-        //    yield return new WaitForSeconds(0.1f);
-
-        //    //
-        //    Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.HUD));
-        //    //todo: unpause game
-        //}        
-
-        //private IEnumerator ActivateOpenWorldScene(bool pillarDestroyed)
-        //{
-        //    //todo: pause game
-        //    Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.LoadingScreen));
-
-        //    yield return null;
-
-        //    //deactivate pillar scene
-        //    var pillarScene = pillarSceneDictionary[activePillarId].Scene;
-        //    foreach (var go in pillarScene.GetRootGameObjects())
-        //    {
-        //        go.SetActive(false);
-        //    }
-
-        //    isPillarActive = false;
-
-        //    yield return null;
-
-        //    //activate open world scene
-        //    foreach (var go in openWorldSceneInfo.Scene.GetRootGameObjects())
-        //    {
-        //        go.SetActive(true);
-        //    }
-        //    SceneManager.SetActiveScene(openWorldSceneInfo.Scene);
-
-        //    yield return null;
-
-        //    //switch pillar to destroyed state
-        //    if (pillarDestroyed)
-        //    {
-        //        playerModel.DestroyPillar(activePillarId);
-        //    }
-
-        //    yield return null;
-
-        //    //
-        //    World.ePillarState pillarState = pillarDestroyed ? World.ePillarState.Destroyed : World.ePillarState.Intact;
-        //    Vector3 position = openWorldSceneInfo.SpawnPointManager.GetPillarExitPoint(activePillarId, pillarState);
-        //    Quaternion rotation = openWorldSceneInfo.SpawnPointManager.GetPillarExitOrientation(activePillarId, pillarState);
-
-        //    var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(position, rotation, true);
-        //    Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
-
-        //    Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());
-
-        //    yield return new WaitForSeconds(0.1f);
-
-        //    //
-        //    Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.HUD));
-        //    //todo: unpause game
-        //}
 
         /// <summary>
         /// Coroutine for switching to the open world scene.
@@ -400,7 +214,7 @@ namespace Game.GameControl
             //*****************************************
             //"activating" open world scene
             string worldSceneName = sceneNamesData.GetOpenWorldSceneName();
-            Scene scene = SceneManager.GetSceneByName(worldSceneName);            
+            Scene scene = SceneManager.GetSceneByName(worldSceneName);
 
             foreach (var obj in scene.GetRootGameObjects())
             {
@@ -411,7 +225,7 @@ namespace Game.GameControl
             IsOpenWorldLoaded = true;
 
             WorldController = SearchForScriptInScene<WorldController>(scene);
-            SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(scene);            
+            SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(scene);
 
             yield return null;
 
@@ -496,7 +310,7 @@ namespace Game.GameControl
             WorldController = null;
             SpawnPointManager = null;
 
-            foreach(var obj in scene.GetRootGameObjects())
+            foreach (var obj in scene.GetRootGameObjects())
             {
                 obj.SetActive(false);
             }

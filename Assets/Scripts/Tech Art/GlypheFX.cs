@@ -16,7 +16,7 @@ public class GlypheFX : MonoBehaviour {
 
 
 	[Header("Light")]
-	public Light light;
+	public Light lightGlyph;
 	public float intensityOn,intensityOff;
 
 	[Header("Particles")]
@@ -27,7 +27,7 @@ public class GlypheFX : MonoBehaviour {
 	public void On()
 	{
 		anim.SetBool ("activated",true);
-		light.DOIntensity (intensityOn, timeToActivate).SetEase (Ease.OutSine);
+		lightGlyph.DOIntensity (intensityOn, timeToActivate).SetEase (Ease.OutSine);
 		glypheOn.material.DOFloat (0, "_DissolveAmount", timeToActivate).SetEase (Ease.OutSine);
 		foreach (MeshRenderer mr in crystalRenderers) {
 			mr.material = crystalOn;
@@ -41,7 +41,7 @@ public class GlypheFX : MonoBehaviour {
 	public void Off()
 	{
 		anim.SetBool ("activated",false);
-		light.DOIntensity (intensityOff, timeToActivate).SetEase (Ease.OutSine);
+		lightGlyph.DOIntensity (intensityOff, timeToActivate).SetEase (Ease.OutSine);
 		glypheOn.material.DOFloat (1, "_DissolveAmount", timeToActivate).SetEase (Ease.OutSine);
 		foreach (MeshRenderer mr in crystalRenderers) {
 			mr.material = crystalOff;
