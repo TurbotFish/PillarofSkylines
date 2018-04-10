@@ -13,7 +13,7 @@ namespace Game.LevelElements
 
         [Header("Step By Step Movement")]
 
-        [HideInInspector]
+       // [HideInInspector]
         public List<Vector3> waypoints;
         public List<float> waitTime;
 
@@ -24,7 +24,7 @@ namespace Game.LevelElements
 
         [HideInInspector]
         public int currentPoint = 0;
-        platformState currentState = platformState.newOrder;
+        eUltimatePlatformState currentState = eUltimatePlatformState.newOrder;
         Transform my;
         bool goingForward = true;
         bool finishingMovement;
@@ -95,7 +95,7 @@ namespace Game.LevelElements
             }
             else
             {
-                currentState = platformState.disabled;
+                currentState = eUltimatePlatformState.disabled;
             }
         }
 
@@ -115,7 +115,7 @@ namespace Game.LevelElements
             if (!isInitialized)
                 return;
 
-            if (currentState == platformState.newOrder && (Triggered || finishingMovement))
+            if (currentState == eUltimatePlatformState.newOrder && (Triggered || finishingMovement))
             {
 
                 Move(waypoints[currentPoint % (waypoints.Count)], waypoints[(currentPoint + (goingForward ? 1 : -1)) % (waypoints.Count)], timeToMove[currentPoint]);
@@ -135,7 +135,7 @@ namespace Game.LevelElements
                 {
                     goingForward = true;
                 }
-                currentState = platformState.moving;
+                currentState = eUltimatePlatformState.moving;
             }
         }
 
@@ -149,11 +149,19 @@ namespace Game.LevelElements
         private IEnumerator _Move(Vector3 startPos, Vector3 endPos, float timeMoving)
         {
             elapsed = timeMoving - elapsed;
+
+			currentState = eUltimatePlatformState.waiting;
+
+			if (waitTime.Count > currentPoint) {
+				//Debug.Log ("GAGA   " +waitTime [currentPoint]);
+				yield return new WaitForSeconds (waitTime [currentPoint]);
+			}
+
             while (elapsed < timeMoving)
             {
                 if (Triggered || finishingMovement)
                 {
-                    currentState = platformState.moving;
+                    currentState = eUltimatePlatformState.moving;
                     elapsed += Time.deltaTime;
                     float t = elapsed / timeMoving;
 
@@ -165,17 +173,14 @@ namespace Game.LevelElements
 
             my.localPosition = endPos;
 
-            currentState = platformState.waiting;
-
-            if (waitTime.Count > currentPoint)
-                yield return new WaitForSeconds(waitTime[currentPoint]);
+           
 
             if (finishingMovement && currentPoint == 0)
             {
                 finishingMovement = false;
             }
 
-            currentState = platformState.newOrder;
+            currentState = eUltimatePlatformState.newOrder;
         }
 
         #endregion private methods
@@ -184,7 +189,7 @@ namespace Game.LevelElements
     }
 
 
-    enum platformState
+    public enum eUltimatePlatformState
     {
         moving,
         newOrder,

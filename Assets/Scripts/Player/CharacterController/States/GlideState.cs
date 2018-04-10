@@ -53,7 +53,7 @@ namespace Game.Player.CharacterController.States
 			CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
 			//stop gliding
-			if (inputInfo.sprintButtonDown) {
+			if (inputInfo.glideButtonUp) {
                 AirState state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
                 state.SetTimerAirControl(glideData.ExitInertiaTime);
                 stateMachine.ChangeState(state);

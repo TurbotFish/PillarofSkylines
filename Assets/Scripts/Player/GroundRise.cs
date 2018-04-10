@@ -44,15 +44,12 @@ namespace Game.Player.CharacterController
             {
                 if (!hit.transform.CompareTag("MovingPlatform") && !hit.transform.CompareTag("GroundRise"))
                 {
-                    Debug.Log("oui groundrise !");
                     transform.position = hit.point;
-                    print("point : " + hit.point);
                     /*if (player.CurrentState == ePlayerState.slide)
                     {
                         flat = true;
                         goFlat.tag = "SlipperySlope";
                     }*/
-                    print("distance : " + Vector3.Distance(position, transform.position));
                     if (player.CollisionInfo.below && !flat && Vector3.Distance(position, transform.position) < 0.2f)
                         currPlayer = player;
                     transform.rotation = player.MyTransform.rotation;
@@ -87,10 +84,9 @@ namespace Game.Player.CharacterController
             else
             {*/
                 height = grRiseData.Height;
-                transform.localScale = new Vector3(transform.localScale.x, height, transform.localScale.z);
                 goUp.SetActive(true);
                 float maxheight = height + player.tempPhysicsHandler.height * 2;
-                if (Physics.BoxCast(transform.position, new Vector3(goUp.transform.localScale.x / 2, 0.01f, goUp.transform.localScale.z / 2), playerUp, out hit, Quaternion.identity, maxheight, player.tempPhysicsHandler.collisionMask))
+                if (Physics.BoxCast(goUp.transform.position, new Vector3(goUp.transform.localScale.x / 2.5f, 0.01f, goUp.transform.localScale.z / 2.5f), playerUp, out hit, Quaternion.identity, maxheight, player.tempPhysicsHandler.collisionMask))
                 {
                     height -= maxheight - hit.distance;
                 }
@@ -125,10 +121,8 @@ namespace Game.Player.CharacterController
                     Collider[] cols = Physics.OverlapBox(goUp.transform.position, new Vector3(goUp.transform.lossyScale.x / 2, goUp.transform.lossyScale.y / 2, goUp.transform.lossyScale.z / 2), Quaternion.identity);
                     foreach (Collider col in cols)
                     {
-                        print("col : " + col.name + " tag : " + col.tag);
                         if (col.CompareTag("Player"))
                         {
-                            Debug.Log("there's a player in me :O");
                             col.transform.parent.position = new Vector3(col.transform.position.x, transform.position.y, col.transform.position.z);
                         }
                     }
@@ -153,7 +147,6 @@ namespace Game.Player.CharacterController
                             if (hit.transform.CompareTag("Player"))
                             {
                                 currPlayer = hit.transform.GetComponentInParent<CharController>();
-                                print("bip bip detected player : " + currPlayer);
                             } else
                             {
                                 currPlayer = null;

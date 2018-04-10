@@ -213,7 +213,7 @@ namespace Game.LevelElements
         /// <returns></returns>
         protected virtual PersistentTriggerable CreatePersistentObject()
         {
-            return new PersistentTriggerable(this);
+            return new PersistentTriggerable(UniqueId, Triggered);
         }
 
         #endregion protected methods

@@ -60,6 +60,8 @@ namespace Game.LevelElements
         {
             if (other.tag == tagToActivate && Mathf.Abs(Vector3.Dot(other.transform.up, transform.up)) > 0.9f)
             {
+
+
                 if (Toggle)
                     SetTriggerState(!TriggerState);
                 else
@@ -71,6 +73,13 @@ namespace Game.LevelElements
                     sharedMaterialsCopy[materialID] = TriggerState ? on : off;
                     renderer.sharedMaterials = sharedMaterialsCopy;
                 }
+
+				GlyphFX _fx = GetComponent<GlyphFX> ();
+				if (_fx != null) {
+					_fx.GlyphOn ();
+				} else {
+					Debug.LogError ("whoopsie, " + transform.name + " isn't attached to a glyph, is it ?");
+				}
             }
         }
 
@@ -81,6 +90,12 @@ namespace Game.LevelElements
             {
                 yield return new WaitForSeconds(delayBeforeDeactivation);
                 SetTriggerState(false);
+				GlyphFX _fx = GetComponent<GlyphFX> ();
+				if (_fx != null) {
+					_fx.GlyphOff ();
+				} else {
+					Debug.LogError ("whoopsie, " + transform.name + " isn't attached to a glyph, is it ?");
+				}
             }
         }
 
@@ -93,7 +108,7 @@ namespace Game.LevelElements
         public override void Initialize(IGameControllerBase gameController, bool isCopy)
         {
             base.Initialize(gameController, isCopy);
-
+			//Debug.Log ("INITIALISE" + transform.name);
             GetComponent<BoxCollider>().isTrigger = true;
         }
 

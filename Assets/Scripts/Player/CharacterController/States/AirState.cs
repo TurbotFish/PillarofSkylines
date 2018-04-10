@@ -172,7 +172,7 @@ namespace Game.Player.CharacterController.States
                 stateMachine.ChangeState(new JetpackState(charController, stateMachine));
             }
             //glide
-            else if (inputInfo.sprintButtonDown && !stateMachine.CheckStateLocked(ePlayerState.glide)) {
+            else if (inputInfo.glideButtonDown && !stateMachine.CheckStateLocked(ePlayerState.glide)) {
 				stateMachine.ChangeState(new GlideState(charController, stateMachine));
 			}
             //landing on slope
@@ -198,6 +198,10 @@ namespace Game.Player.CharacterController.States
             else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable)
             {
                 stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
+            }
+            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom) && !charController.createdEchoOnThisInput)
+            {
+                stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
             }
         }
 
