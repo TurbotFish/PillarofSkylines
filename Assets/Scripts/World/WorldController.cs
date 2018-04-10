@@ -416,7 +416,7 @@ namespace Game.World
 
             loadingDebug = loadingDebug.OrderByDescending(i => i.AverageLoadingTime).ToList();
 
-            for (int i = 0; i < Mathf.Min(debugResultCount, loadingDebug.Count); i++)
+            for (int i = 0; i < loadingDebug.Count; i++)
             {
                 var mes = loadingDebug[i];
                 Debug.LogFormat("{0}.  {1}  {2}  {3}  {4}", i, mes.regionName, mes.subSceneLayer, mes.subSceneVariant, mes.AverageLoadingTime);
@@ -429,7 +429,7 @@ namespace Game.World
 
             loadingDebug = loadingDebug.OrderByDescending(i => i.AverageInitializationTime).ToList();
 
-            for (int i = 0; i < Mathf.Min(debugResultCount, loadingDebug.Count); i++)
+            for (int i = 0; i < loadingDebug.Count; i++)
             {
                 var mes = loadingDebug[i];
                 Debug.LogFormat("{0}.  {1}  {2}  {3}  {4}", i, mes.regionName, mes.subSceneLayer, mes.subSceneVariant, mes.AverageInitializationTime);
@@ -437,18 +437,18 @@ namespace Game.World
 
             Debug.Log("#######################################################");
 
-            Debug.Log("#######################################################");
-            Debug.Log("SubScenes - average move times");
+            //Debug.Log("#######################################################");
+            //Debug.Log("SubScenes - average move times");
 
-            loadingDebug = loadingDebug.OrderByDescending(i => i.AverageMoveTime).ToList();
+            //loadingDebug = loadingDebug.OrderByDescending(i => i.AverageMoveTime).ToList();
 
-            for (int i = 0; i < Mathf.Min(debugResultCount, loadingDebug.Count); i++)
-            {
-                var mes = loadingDebug[i];
-                Debug.LogFormat("{0}.  {1}  {2}  {3}  {4}", i, mes.regionName, mes.subSceneLayer, mes.subSceneVariant, mes.AverageMoveTime);
-            }
+            //for (int i = 0; i < Mathf.Min(debugResultCount, loadingDebug.Count); i++)
+            //{
+            //    var mes = loadingDebug[i];
+            //    Debug.LogFormat("{0}.  {1}  {2}  {3}  {4}", i, mes.regionName, mes.subSceneLayer, mes.subSceneVariant, mes.AverageMoveTime);
+            //}
 
-            Debug.Log("#######################################################");
+            //Debug.Log("#######################################################");
 
             //Debug.Log("#######################################################");
             //Debug.Log("SubScenes - highest loading times");
@@ -595,6 +595,8 @@ namespace Game.World
                 }
                 else if (Application.CanStreamedLevelBeLoaded(sceneName))
                 {
+                    AsyncOperation async = null;
+
                     //########
                     float time = 0;
                     float duration;
@@ -619,12 +621,20 @@ namespace Game.World
                     time = Time.time;
                     //########
 
-                    AsyncOperation async = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-                    async.allowSceneActivation = false;
-
-                    while (async.progress < 0.9f)
+                    if (CurrentState == eWorldControllerState.Activating)
                     {
+                        SceneManager.LoadScene(sceneName, LoadSceneMode.Additive);
                         yield return null;
+                    }
+                    else
+                    {
+                        async = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+                        async.allowSceneActivation = false;
+
+                        while (async.progress < 0.9f)
+                        {
+                            yield return null;
+                        }
                     }
 
                     //########
@@ -638,10 +648,13 @@ namespace Game.World
                     time = Time.time;
                     //########
 
-                    async.allowSceneActivation = true;
-                    while (!async.isDone)
+                    if (CurrentState != eWorldControllerState.Activating)
                     {
-                        yield return null;
+                        async.allowSceneActivation = true;
+                        while (!async.isDone)
+                        {
+                            yield return null;
+                        }
                     }
 
                     //########
