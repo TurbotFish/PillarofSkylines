@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using EditorCoroutines;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,12 +15,26 @@ namespace Game.World
         private SerializedProperty subSceneVariantProperty;
         private SerializedProperty subSceneLayerProperty;
 
+        private int childCount;
+        private int rendererCount;
+        private int meshColliderCount;
+        private int meshColliderAverageVertexCount;
+        private int meshColliderHighestVertexCount;
+        private string meshColliderLargestMeshName;
+
         private void OnEnable()
         {
             self = target as SubScene;
 
             subSceneVariantProperty = serializedObject.FindProperty("subSceneVariant");
             subSceneLayerProperty = serializedObject.FindProperty("subSceneLayer");
+
+            this.StartCoroutine(GetInfoCoroutine());
+        }
+
+        private void OnDisable()
+        {
+            this.StopAllCoroutines();
         }
 
         public override void OnInspectorGUI()
@@ -28,10 +44,17 @@ namespace Game.World
             EditorGUILayout.LabelField("Variant", subSceneVariantProperty.enumDisplayNames[subSceneVariantProperty.enumValueIndex]);
             EditorGUILayout.LabelField("Layer", subSceneLayerProperty.enumDisplayNames[subSceneLayerProperty.enumValueIndex]);
 
-            EditorGUILayout.LabelField("");
-            EditorGUILayout.LabelField("Child Count", (self.GetComponentsInChildren<Transform>(true).Length - 1).ToString());
+            EditorGUILayout.LabelField("-- Info", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+            EditorGUILayout.LabelField("Child Count", childCount.ToString());
+            EditorGUILayout.LabelField("Renderer Count", rendererCount.ToString());
+            EditorGUILayout.LabelField("Mesh Colliders");
+            EditorGUILayout.LabelField("Collider Count", meshColliderCount.ToString());
+            EditorGUILayout.LabelField("Average Vertex Count", meshColliderAverageVertexCount.ToString());
+            EditorGUILayout.LabelField("Highest Vertex Count", meshColliderHighestVertexCount.ToString() + " (" + meshColliderLargestMeshName + ")");
+            EditorGUI.indentLevel--;
 
-            EditorGUILayout.LabelField("");
+            EditorGUILayout.LabelField("-- Tools", EditorStyles.boldLabel);
             EditorGUILayout.LabelField("Use at your own risk - Save Scene before using!");
             if (GUILayout.Button("Clean Up Scales"))
             {
@@ -51,9 +74,9 @@ namespace Game.World
         private void CleanUpScale(Transform transform, float multiplicationX, float multiplicationY, float multiplicationZ)
         {
             var localScale = transform.localScale;
-            var localPosition = transform.localPosition;           
+            var localPosition = transform.localPosition;
 
-            transform.localPosition = new Vector3(localPosition.x * multiplicationX, localPosition.y * multiplicationY, localPosition.z * multiplicationZ);            
+            transform.localPosition = new Vector3(localPosition.x * multiplicationX, localPosition.y * multiplicationY, localPosition.z * multiplicationZ);
 
             multiplicationX *= localScale.x;
             multiplicationY *= localScale.y;
@@ -83,8 +106,38 @@ namespace Game.World
             {
                 transform.localScale = new Vector3(multiplicationX, multiplicationY, multiplicationZ);
             }
+        }
 
-            
+        private IEnumerator GetInfoCoroutine()
+        {
+            while (true)
+            {
+                childCount = self.GetComponentsInChildren<Transform>(true).Length - 1;
+                rendererCount = self.GetComponentsInChildren<Renderer>().Length;
+
+                List<MeshCollider> meshColliders = self.GetComponentsInChildren<MeshCollider>().ToList();
+                meshColliderCount = meshColliders.Count;
+                int meshColliderTotalVertesCount = 0;
+                meshColliderHighestVertexCount = 0;
+
+                foreach (var meshCollider in meshColliders)
+                {
+                    int vertexCount = meshCollider.sharedMesh.vertexCount;
+                    meshColliderTotalVertesCount += vertexCount;
+                    if (vertexCount > meshColliderHighestVertexCount)
+                    {
+                        meshColliderHighestVertexCount = vertexCount;
+                        meshColliderLargestMeshName = meshCollider.sharedMesh.name;
+                    }
+                }
+
+                if (meshColliders.Count > 0)
+                {
+                    meshColliderAverageVertexCount = meshColliderTotalVertesCount / meshColliders.Count;
+                }
+
+                yield return new WaitForSeconds(1);
+            }
         }
     }
-} //end of namespace
+} // end of namespace

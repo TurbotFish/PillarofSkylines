@@ -7,8 +7,6 @@ namespace Game.World
 #if UNITY_EDITOR
         void CreateSubScene(eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer);
 
-        void AdjustBounds();
-
         void SetDrawBounds(bool drawBounds);
 #endif
     }
