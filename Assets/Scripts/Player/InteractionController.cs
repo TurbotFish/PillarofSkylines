@@ -16,8 +16,8 @@ namespace Game.Player {
         IGameControllerBase gameController;
 
         //
-        bool favourPickUpInRange = false;
-        CurrencyPickUp favour;
+        bool isPickupInRange = false;
+        IPickup currentPickup;
         PillarEntranceInfo pillarEntranceInfo = new PillarEntranceInfo();
         bool pillarExitInRange = false;
         bool needleInRange = false;
@@ -60,16 +60,16 @@ namespace Game.Player {
                 isInteractButtonDown = true;
 
                 //favour
-                if (favourPickUpInRange)
+                if (isPickupInRange)
                 {
-                    if (!gameController.PlayerModel.CheckIfPickUpCollected(favour.PickUpId))
+                    if (!currentPickup.IsPickedUp)
                     {
-                        gameController.PlayerModel.CollectPickUp(favour);
+                        currentPickup.PickupObject(OnPickingUpFinished);
                     }
 
                     //clean up
-                    favourPickUpInRange = false;
-                    favour = null;
+                    isPickupInRange = false;
+                    currentPickup = null;
                     HideUiMessage("Favour");
                 }
                 //pillar entrance
@@ -184,22 +184,20 @@ namespace Game.Player {
                 {
                     //favour
                     case "Favour":
-                        if (!favourPickUpInRange)
+                        if (!isPickupInRange)
                         {
-                            favour = other.GetComponent<CurrencyPickUp>();
+                            currentPickup = other.GetComponent<IPickup>();
 
-                            if (!gameController.PlayerModel.CheckIfPickUpCollected(favour.PickUpId))
+                            if (!currentPickup.IsPickedUp)
                             {
-                                favourPickUpInRange = true;
+                                isPickupInRange = true;
 
-                                if (favour.CurrencyType == eCurrencyType.Favour)
-                                    ShowUiMessage("[X]: Accept Favour", other.tag);
-                                else if (favour.CurrencyType == eCurrencyType.PillarKey)
-                                    ShowUiMessage("[X]: Receive Mark", other.tag);
-
+                                ShowUiMessage("[X]: Accept " + currentPickup.PickupName, other.tag);
                             }
                             else
-                                favour = null;
+                            {
+                                currentPickup = null;
+                            }
                         }                     
                         break;
                     //pillar entrance
@@ -392,8 +390,8 @@ namespace Game.Player {
                 {
                     //favour
                     case "Favour":
-                        favourPickUpInRange = false;
-                        favour = null;
+                        isPickupInRange = false;
+                        currentPickup = null;
 
                         HideUiMessage(other.tag);
                         break;
@@ -509,6 +507,15 @@ namespace Game.Player {
                 Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
         }
 
+        private void OnPickingUpFinished(bool showMessage, string message="", string description = "")
+        {
+            if (showMessage)
+            {
+                var eventArgs = new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, UI.eMessageType.Announcement, description, 4);
+                Utilities.EventManager.SendShowHudMessageEvent(this, eventArgs);
+            }
+        }
+
         #endregion helper methods
 
         //########################################################################
@@ -538,8 +545,8 @@ namespace Game.Player {
         /// </summary>
         void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
-            this.favourPickUpInRange = false;
-            this.favour = null;
+            this.isPickupInRange = false;
+            this.currentPickup = null;
 
             this.needleInRange = false;
             this.needleSlotCollider = null;

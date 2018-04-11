@@ -87,6 +87,7 @@ namespace Game.UI.AbilityMenu
 
             IsActive = true;
             gameObject.SetActive(true);
+            centerView.Activate();
 
             isEchoAbilityActive = playerModel.CheckAbilityActive(eAbilityType.Echo);
 
@@ -95,7 +96,7 @@ namespace Game.UI.AbilityMenu
             {
                 foreach (var slot in abilityViews)
                 {
-                    slot.gameObject.SetActive(true);
+                    slot.Activate();
                 }
             }
             //tutorial
@@ -103,10 +104,10 @@ namespace Game.UI.AbilityMenu
             {
                 foreach (var slot in abilityViews)
                 {
-                    slot.gameObject.SetActive(false);
+                    slot.Deactivate();
                 }
 
-                centerView.SetContent(playerModel.AbilityData.GetAbility(eAbilityType.Echo));                
+                centerView.SetContent(playerModel.AbilityData.GetAbility(eAbilityType.Echo));
             }
 
             UpdateInputMessage();
@@ -114,8 +115,14 @@ namespace Game.UI.AbilityMenu
 
         void IUiState.Deactivate()
         {
-            IsActive = false;
+            centerView.Deactivate();
+            foreach (var slot in abilityViews)
+            {
+                slot.Deactivate();
+            }
+
             gameObject.SetActive(false);
+            IsActive = false;
         }
 
         //##################################################################
@@ -168,7 +175,7 @@ namespace Game.UI.AbilityMenu
                     {
                         foreach (var slot in abilityViews)
                         {
-                            slot.gameObject.SetActive(true);
+                            slot.Activate();
                         }
 
                         SetSelectedSlot(-1);
