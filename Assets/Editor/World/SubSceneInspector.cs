@@ -48,7 +48,7 @@ namespace Game.World
             EditorGUI.indentLevel++;
             EditorGUILayout.LabelField("Child Count", childCount.ToString());
             EditorGUILayout.LabelField("Renderer Count", rendererCount.ToString());
-            EditorGUILayout.LabelField("Mesh Colliders");
+            EditorGUILayout.LabelField("-- Mesh Colliders");
             EditorGUILayout.LabelField("Collider Count", meshColliderCount.ToString());
             EditorGUILayout.LabelField("Average Vertex Count", meshColliderAverageVertexCount.ToString());
             EditorGUILayout.LabelField("Highest Vertex Count", meshColliderHighestVertexCount.ToString() + " (" + meshColliderLargestMeshName + ")");

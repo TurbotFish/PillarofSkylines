@@ -11,19 +11,29 @@ namespace Game.UI.AbilityMenu
     {
         //##################################################################
 
-        [SerializeField]
-        eAbilityType ability;
+        [SerializeField] private eAbilityType ability;
 
-        [SerializeField]
-        Image backgroundImage;
+        [SerializeField] private Image backgroundImage;
+        [SerializeField] private Outline backgroundOutline;
+        [SerializeField] private Image abilityImage;
 
-        [SerializeField]
-        Outline backgroundOutline;
+        private PlayerModel playerModel;
+        private AbilityMenuController menuController;
+        private bool isActive;
 
-        [SerializeField]
-        Image abilityImage;
+        //##################################################################
 
-        AbilityMenuController menuController;
+        public void Initialize(PlayerModel playerModel, AbilityMenuController menuController)
+        {
+            this.playerModel = playerModel;
+            this.menuController = menuController;
+
+            abilityImage.sprite = playerModel.AbilityData.GetAbility(ability).Icon;
+            SetBackgroundColour(playerModel.GetAbilityState(ability));
+            backgroundOutline.enabled = false;
+
+            //Utilities.EventManager.AbilityStateChangedEvent += OnAbilityStateChangedEventHandler;
+        }
 
         //##################################################################
 
@@ -31,15 +41,16 @@ namespace Game.UI.AbilityMenu
 
         //##################################################################
 
-        public void Initialize(PlayerModel playerModel, AbilityMenuController menuController)
+        public void Activate()
         {
-            this.menuController = menuController;
+            isActive = true;
+            gameObject.SetActive(true);
+        }
 
-            abilityImage.sprite = playerModel.AbilityData.GetAbility(ability).Icon;
-            SetBackgroundColour(playerModel.GetAbilityState(ability));
-            backgroundOutline.enabled = false;
-
-            Utilities.EventManager.AbilityStateChangedEvent += OnAbilityStateChangedEventHandler;
+        public void Deactivate()
+        {
+            gameObject.SetActive(false);
+            isActive = false;
         }
 
         public void SetSelected(bool selected)
@@ -47,19 +58,28 @@ namespace Game.UI.AbilityMenu
             backgroundOutline.enabled = selected;
         }
 
-        //##################################################################
-
-        void OnAbilityStateChangedEventHandler(object sender, Utilities.EventManager.AbilityStateChangedEventArgs args)
+        private void Update()
         {
-            if (args.AbilityType != AbilityType)
+            if (!isActive)
             {
                 return;
             }
 
-            SetBackgroundColour(args.AbilityState);
+            var abilityState = playerModel.GetAbilityState(ability);
+            SetBackgroundColour(abilityState);
         }
 
-        void SetBackgroundColour(eAbilityState abilityState)
+        //void OnAbilityStateChangedEventHandler(object sender, Utilities.EventManager.AbilityStateChangedEventArgs args)
+        //{
+        //    if (args.AbilityType != AbilityType)
+        //    {
+        //        return;
+        //    }
+
+        //    SetBackgroundColour(args.AbilityState);
+        //}
+
+        private void SetBackgroundColour(eAbilityState abilityState)
         {
             switch (abilityState)
             {
@@ -81,26 +101,21 @@ namespace Game.UI.AbilityMenu
             }
         }
 
-        //##################################################################
-
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
         {
-            //Debug.LogFormat("OnPointerEnter: slot \"{0}\"", AbilityType.ToString());
-
+            Debug.LogError("Use an XBox controller you peasant!");
             menuController.OnPointerEnterSlot(this);
         }
 
         void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
         {
-            //Debug.LogFormat("OnPointerExit: slot \"{0}\"", AbilityType.ToString());
-
+            Debug.LogError("Use an XBox controller you peasant!");
             menuController.OnPointerExitSlot(this);
         }
 
         void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
         {
-            //Debug.LogFormat("OnPointerClick: slot \"{0}\"", AbilityType.ToString());
-
+            Debug.LogError("Use an XBox controller you peasant!");
             menuController.OnPointerClickSlot(this);
         }
     }
