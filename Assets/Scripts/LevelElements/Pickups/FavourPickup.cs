@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Game.LevelElements
 {
-    public class FavourPickup : Pickup<PickupPersistentData>
+    public class FavourPickup : Pickup
     {
         //##################################################################
 

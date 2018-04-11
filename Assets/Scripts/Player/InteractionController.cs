@@ -17,7 +17,7 @@ namespace Game.Player {
 
         //
         bool isPickupInRange = false;
-        IPickup currentPickup;
+        Pickup currentPickup;
         PillarEntranceInfo pillarEntranceInfo = new PillarEntranceInfo();
         bool pillarExitInRange = false;
         bool needleInRange = false;
@@ -186,7 +186,7 @@ namespace Game.Player {
                     case "Favour":
                         if (!isPickupInRange)
                         {
-                            currentPickup = other.GetComponent<IPickup>();
+                            currentPickup = other.GetComponent<Pickup>();
 
                             if (!currentPickup.IsPickedUp)
                             {

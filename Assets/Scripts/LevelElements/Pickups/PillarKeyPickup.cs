@@ -2,7 +2,7 @@
 
 namespace Game.LevelElements
 {
-    public class PillarKeyPickup : Pickup<PickupPersistentData>
+    public class PillarKeyPickup : Pickup
     {
         //##################################################################
 

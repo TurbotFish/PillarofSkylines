@@ -69,13 +69,12 @@ namespace Game.Model
         {
             if (Input.GetKeyUp(KeyCode.F2))
             {
-                if (Input.GetKey(KeyCode.LeftShift))
-                    pillarKeys++;
-                else
-                    ChangeCurrencyAmount(eCurrencyType.Favour, 1);
+                Debug.Log("CHEATING: One PillarKey appeared out of nowwhere!");
+                pillarKeys++;
             }
             else if (Input.GetKeyUp(KeyCode.F5))
             {
+                Debug.Log("CHEATING: All the evil eyes have decided to self-destruct!");
                 UnlockAbilityGroup(eAbilityGroup.Pillar1);
                 UnlockAbilityGroup(eAbilityGroup.Pillar2);
                 UnlockAbilityGroup(eAbilityGroup.Pillar3);
@@ -415,16 +414,16 @@ namespace Game.Model
         //    }
         //}
 
-        /// <summary>
-        /// Checks whether a Pick-up has already been collected.
-        /// </summary>
-        /// <param name="pickUpId">The Id of the favour to check.</param>
-        /// <returns></returns>
-        [Obsolete]
-        public bool CheckIfPickUpCollected(string pickUpId)
-        {
-            return collectedPickUps.Contains(pickUpId);
-        }
+        ///// <summary>
+        ///// Checks whether a Pick-up has already been collected.
+        ///// </summary>
+        ///// <param name="pickUpId">The Id of the favour to check.</param>
+        ///// <returns></returns>
+        //[Obsolete]
+        //public bool CheckIfPickUpCollected(string pickUpId)
+        //{
+        //    return collectedPickUps.Contains(pickUpId);
+        //}
 
         #endregion pick-up methods
 
@@ -439,36 +438,36 @@ namespace Game.Model
             return currencies[currencyType];
         }
 
-        /// <summary>
-        /// Changes the amount of a currency. Checks whether abilities have become available and sends appropriate events.
-        /// </summary>
-        /// <param name="currencyDelta"></param>
-        [Obsolete]
-        private void ChangeCurrencyAmount(eCurrencyType currencyType, int currencyDelta)
-        {
-            currencies[currencyType] += currencyDelta;
+        ///// <summary>
+        ///// Changes the amount of a currency. Checks whether abilities have become available and sends appropriate events.
+        ///// </summary>
+        ///// <param name="currencyDelta"></param>
+        //[Obsolete]
+        //private void ChangeCurrencyAmount(eCurrencyType currencyType, int currencyDelta)
+        //{
+        //    currencies[currencyType] += currencyDelta;
 
-            //Utilities.EventManager.SendCurrencyAmountChangedEvent(this, new Utilities.EventManager.CurrencyAmountChangedEventArgs(currencyType, currencies[currencyType]));
+        //    Utilities.EventManager.SendCurrencyAmountChangedEvent(this, new Utilities.EventManager.CurrencyAmountChangedEventArgs(currencyType, currencies[currencyType]));
 
-            ////send events
-            //var abilities = abilityData.GetAllAbilities();
-            //for (int i = 0; i < abilities.Count; i++)
-            //{
-            //    var ability = abilities[i];
+        //    //send events
+        //    var abilities = abilityData.GetAllAbilities();
+        //    for (int i = 0; i < abilities.Count; i++)
+        //    {
+        //        var ability = abilities[i];
 
-            //    if (!CheckAbilityActive(ability.Type) && CheckAbilityGroupUnlocked(ability.Group))
-            //    {
-            //        var newState = eAbilityState.locked;
+        //        if (!CheckAbilityActive(ability.Type) && CheckAbilityGroupUnlocked(ability.Group))
+        //        {
+        //            var newState = eAbilityState.locked;
 
-            //        if (GetCurrencyAmount(eCurrencyType.Favour) >= ability.ActivationPrice)
-            //        {
-            //            newState = eAbilityState.available;
-            //        }
+        //            if (GetCurrencyAmount(eCurrencyType.Favour) >= ability.ActivationPrice)
+        //            {
+        //                newState = eAbilityState.available;
+        //            }
 
-            //        Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(ability.Type, newState));
-            //    }
-            //}
-        }
+        //            Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(ability.Type, newState));
+        //        }
+        //    }
+        //}
 
         #endregion currency methods
 
@@ -575,7 +574,7 @@ namespace Game.Model
             {
                 return eAbilityState.active;
             }
-            else if (unlockedAbilityGroups.Contains(ability.Group) && GetCurrencyAmount(eCurrencyType.Favour) >= ability.ActivationPrice)
+            else if (unlockedAbilityGroups.Contains(ability.Group) /*&& GetCurrencyAmount(eCurrencyType.Favour) >= ability.ActivationPrice*/)
             {
                 return eAbilityState.available;
             }

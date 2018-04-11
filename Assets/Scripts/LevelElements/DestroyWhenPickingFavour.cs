@@ -1,4 +1,5 @@
 ﻿using Game.GameControl;
+using Game.Model;
 using Game.World;
 using UnityEngine;
 
@@ -8,7 +9,9 @@ namespace Game.LevelElements
     {
         //###########################################################
 
-        [SerializeField] public string favourID; //why public?
+        [SerializeField] private Pickup pickup; // This should not be used at runtime because the object is not guaranteed ot exist.
+
+        [SerializeField, HideInInspector] private string pickupID;
 
         private IGameControllerBase gameController;
         private bool isInitialized;
@@ -19,13 +22,15 @@ namespace Game.LevelElements
         {
             this.gameController = gameController;
 
-            if (gameController.PlayerModel.CheckIfPickUpCollected(favourID)) //the favour has already been picked up
+            var persistentData = gameController.PlayerModel.GetPersistentDataObject<PickupPersistentData>(pickupID);
+
+            if (persistentData!=null && persistentData.IsPickedUp) //the favour has already been picked up
             {
                 Destroy(gameObject);
             }
             else
             {
-                Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
+                Utilities.EventManager.PickupCollectedEvent += OnFavourPickedUpEventHandler;
             }
 
             isInitialized = true;
@@ -39,26 +44,41 @@ namespace Game.LevelElements
             {
                 return;
             }
-            else if (gameController.PlayerModel.CheckIfPickUpCollected(favourID)) //the favour has been picked up while this was disabled
+
+            var persistentData = gameController.PlayerModel.GetPersistentDataObject<PickupPersistentData>(pickupID);
+
+            if (persistentData != null && persistentData.IsPickedUp) //the favour has been picked up while this was disabled
             {
                 Destroy(gameObject);
             }
             else
             {
-                Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
+                Utilities.EventManager.PickupCollectedEvent += OnFavourPickedUpEventHandler;
             }
         }
 
         private void OnDisable()
         {
-            Utilities.EventManager.FavourPickedUpEvent -= OnFavourPickedUpEventHandler;
+            Utilities.EventManager.PickupCollectedEvent -= OnFavourPickedUpEventHandler;
+        }
+
+        private void OnValidate()
+        {
+            if(pickup == null)
+            {
+                pickupID = "";
+            }
+            else
+            {
+                pickupID = pickup.UniqueId;
+            }
         }
 
         //###########################################################
 
-        void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
+        void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.PickupCollectedEventArgs args)
         {
-            if (args.FavourId == favourID)
+            if (args.PickupID == pickupID)
             {
                 Destroy(gameObject);
             }

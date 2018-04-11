@@ -7,7 +7,7 @@ namespace Game.LevelElements
 {
     public delegate void PickingUpFinishedCallback(bool showMessage, string message = "", string description = "");
 
-    public abstract class Pickup<T> : PersistentLevelElement<T>, IPickup where T : PickupPersistentData
+    public abstract class Pickup : PersistentLevelElement<PickupPersistentData>
     {
         //##################################################################
 
