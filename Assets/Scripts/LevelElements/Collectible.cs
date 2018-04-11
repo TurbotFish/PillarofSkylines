@@ -15,36 +15,46 @@ public class Collectible : Interactible {
 
     [SerializeField] ParticleSystem feedback;
 
+    // state
     bool triggered;
     bool followingPlayer;
+    public bool collected;
+    // properties
+    Vector3 targetPoint;
     Vector3 targetOffset, pos, randomAxis;
     Transform my, pilou;
     int timeSet = 0;
 
-    private void Update()
-    {
+    private void Update() {
         if (followingPlayer) {
-            my.position = Vector3.Lerp(my.position, TargetPoint(), speed * Time.deltaTime);
+            targetPoint = pilou.position + targetOffset;
+            my.position = Vector3.Lerp(my.position, targetPoint, speed * Time.deltaTime);
+        } else if (collected) {
+            my.position = Vector3.Lerp(my.position, targetPoint, speed * Time.deltaTime);
         }
         // il faudrait une idle
     }
 
-    void StartFollowingPlayer()
-    {
+
+    public void GoToCollector(Vector3 position) {
+        followingPlayer = false;
+        collected = true;
+        targetPoint = position;
+    }
+
+    void StartFollowingPlayer() {
         pos = my.position;
         followingPlayer = true;
     }
-
+    
     void UpdateTargetPoint() {
         targetOffset.x = Random.value > 0.5f ? Random.Range(-maxRadius, -minRadius) : Random.Range(minRadius, maxRadius);
         targetOffset.y = Random.Range(0.5f, 1.5f);
         targetOffset.z = Random.value > 0.5f ? Random.Range(-maxRadius, -minRadius) : Random.Range(minRadius, maxRadius);
     }
-
-    void Dance() {
-        StartCoroutine(_Dance());
-    }
     
+
+
     public override void EnterTrigger(Transform player)
     {
         if (!triggered)
@@ -69,14 +79,20 @@ public class Collectible : Interactible {
         //    StartFollowingPlayer();
     }
 
+
     
+    void Dance() {
+        StartCoroutine(_Dance());
+    }
+
     IEnumerator _Dance() {
         Vector3 dancePivot = pilou.position;
         dancePivot.y += targetOffset.y;
 
-        float targetRadius = (dancePivot - TargetPoint()).magnitude;
+        targetPoint = pilou.position + targetOffset;
+        float targetRadius = (dancePivot - targetPoint).magnitude;
         
-        for(float elapsed = 0; elapsed < danceDuration || Vector3.SqrMagnitude(my.position - TargetPoint()) > 0.5f; elapsed += Time.deltaTime)
+        for(float elapsed = 0; elapsed < danceDuration || Vector3.SqrMagnitude(my.position - targetPoint) > 0.5f; elapsed += Time.deltaTime)
         {
             float t = elapsed / danceDuration;
 
@@ -92,15 +108,11 @@ public class Collectible : Interactible {
 
             my.position = Vector3.MoveTowards(my.position, pos, Time.deltaTime * speed);
 
+            targetPoint = pilou.position + targetOffset;
+
             yield return null;
         }
         StartFollowingPlayer();
     }
-
-
-    Vector3 TargetPoint()
-    {
-        return pilou.position + targetOffset;
-        //return pilou.TransformPoint(targetOffset);
-    }
+    
 }
