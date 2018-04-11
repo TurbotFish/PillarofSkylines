@@ -63,6 +63,34 @@ public class EditorDebugMaster : EditorWindow {
         {
             player.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(viewPos.forward, hit.normal), hit.normal);
             player.position = player.position + hit.normal * 1f;
+
+            Vector3 euler = Vector3.zero;
+            if (player.eulerAngles.x % 90 > 45)
+            {
+                euler.x = player.eulerAngles.x + (90 - (player.eulerAngles.x % 90));
+            } else
+            {
+                euler.x = player.eulerAngles.x - (player.eulerAngles.x % 90);
+            }
+            if (player.eulerAngles.y % 90 > 45)
+            {
+                euler.y = player.eulerAngles.y + (90 - (player.eulerAngles.y % 90));
+            }
+            else
+            {
+                euler.y = player.eulerAngles.y - (player.eulerAngles.y % 90);
+            }
+            if (player.eulerAngles.z % 90 > 45)
+            {
+                euler.z = player.eulerAngles.z + (90 - (player.eulerAngles.z % 90));
+            }
+            else
+            {
+                euler.z = player.eulerAngles.z - (player.eulerAngles.z % 90);
+            }
+
+            player.eulerAngles = euler;
+
         } else
         {
             player.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(viewPos.forward, Vector3.up), Vector3.up);

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Manual</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style type="text/css">
+/*  GitHub stylesheet for MarkdownPad (http://markdownpad.com) */
+
+/* RESET
+=============================================================================*/
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* BODY
+=============================================================================*/
+
+body {
+  font-family: Helvetica, arial, freesans, clean, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #fff;
+  background-color: #222;
+  padding: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+body>*:first-child {
+  margin-top: 0 !important;
+}
+
+body>*:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* BLOCKS
+=============================================================================*/
+
+p, blockquote, ul, ol, dl, table, pre {
+  margin: 15px 0;
+}
+
+/* HEADERS
+=============================================================================*/
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 20px 0 10px;
+  padding: 0;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 tt, h1 code, h2 tt, h2 code, h3 tt, h3 code, h4 tt, h4 code, h5 tt, h5 code, h6 tt, h6 code {
+  font-size: inherit;
+}
+
+h1 {
+  font-size: 28px;
+  color: #fff;
+}
+
+h2 {
+  font-size: 24px;
+  border-bottom: 1px solid #ccc;
+  color: #fff;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+h4 {
+  font-size: 16px;
+}
+
+h5 {
+  font-size: 14px;
+}
+
+h6 {
+  color: #fff;
+  font-size: 14px;
+}
+
+body>h2:first-child, body>h1:first-child, body>h1:first-child+h2, body>h3:first-child, body>h4:first-child, body>h5:first-child, body>h6:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+a:first-child h1, a:first-child h2, a:first-child h3, a:first-child h4, a:first-child h5, a:first-child h6 {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+h1+p, h2+p, h3+p, h4+p, h5+p, h6+p {
+  margin-top: 10px;
+}
+
+/* LINKS
+=============================================================================*/
+
+a {
+  color: #4183C4;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* LISTS
+=============================================================================*/
+
+ul, ol {
+  padding-left: 30px;
+}
+
+ul li > :first-child, 
+ol li > :first-child, 
+ul li ul:first-of-type, 
+ol li ol:first-of-type, 
+ul li ol:first-of-type, 
+ol li ul:first-of-type {
+  margin-top: 0px;
+}
+
+ul ul, ul ol, ol ol, ol ul {
+  margin-bottom: 0;
+}
+
+dl {
+  padding: 0;
+}
+
+dl dt {
+  font-size: 14px;
+  font-weight: bold;
+  font-style: italic;
+  padding: 0;
+  margin: 15px 0 5px;
+}
+
+dl dt:first-child {
+  padding: 0;
+}
+
+dl dt>:first-child {
+  margin-top: 0px;
+}
+
+dl dt>:last-child {
+  margin-bottom: 0px;
+}
+
+dl dd {
+  margin: 0 0 15px;
+  padding: 0 15px;
+}
+
+dl dd>:first-child {
+  margin-top: 0px;
+}
+
+dl dd>:last-child {
+  margin-bottom: 0px;
+}
+
+/* CODE
+=============================================================================*/
+
+pre, code, tt {
+  font-size: 12px;
+  font-family: Consolas, "Liberation Mono", Courier, monospace;
+}
+
+code, tt {
+  margin: 0 0px;
+  padding: 0px 0px;
+  white-space: nowrap;
+  border: 1px solid #eaeaea;
+  color: #000;
+  background-color: #f8f8f8;
+  border-radius: 3px;
+}
+
+pre>code {
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  border: none;
+  background: transparent;
+}
+
+pre {
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  line-height: 19px;
+  overflow: auto;
+  padding: 6px 10px;
+  border-radius: 3px;
+}
+
+pre code, pre tt {
+  background-color: transparent;
+  border: none;
+}
+
+kbd {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: #DDDDDD;
+    background-image: linear-gradient(#F1F1F1, #DDDDDD);
+    background-repeat: repeat-x;
+    border-color: #DDDDDD #CCCCCC #CCCCCC #DDDDDD;
+    border-image: none;
+    border-radius: 2px 2px 2px 2px;
+    border-style: solid;
+    border-width: 1px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    line-height: 10px;
+    padding: 1px 4px;
+}
+
+/* QUOTES
+=============================================================================*/
+
+blockquote {
+  border-left: 4px solid #DDD;
+  padding: 0 15px;
+  color: #777;
+}
+
+blockquote>:first-child {
+  margin-top: 0px;
+}
+
+blockquote>:last-child {
+  margin-bottom: 0px;
+}
+
+/* HORIZONTAL RULES
+=============================================================================*/
+
+hr {
+  clear: both;
+  margin: 15px 0;
+  height: 0px;
+  overflow: hidden;
+  border: none;
+  background: transparent;
+  border-bottom: 4px solid #ddd;
+  padding: 0;
+}
+
+/* TABLES
+=============================================================================*/
+
+table th {
+  font-weight: bold;
+}
+
+table th, table td {
+  border: 1px solid #ccc;
+  padding: 6px 13px;
+}
+
+table tr {
+  border-top: 1px solid #ccc;
+  color: #000;
+  background-color: #fff;
+}
+
+table tr:nth-child(2n) {
+	color: #000;
+  background-color: #f8f8f8;
+}
+
+/* IMAGES
+=============================================================================*/
+
+img {
+  max-width: 100%
+}
+
+</style>
+</head>
+<body>
+<h1>Runtime Mesh Baker v1.1.3</h1>
+<p><img src="RMB_1200_630.jpg" /></p>
+<table>
+<tbody>
+<tr>
+	<td align="right"><a href="screen_shoots/s1.jpg"><img src="screen_shoots/s1.jpg" /></a></td>
+	<td align="right"><a href="screen_shoots/s2.jpg"><img src="screen_shoots/s2.jpg" /></a></td>
+	<td align="right"><a href="screen_shoots/s3.jpg"><img src="screen_shoots/s3.jpg" /></a></td>
+	<td align="right"><a href="screen_shoots/s4.jpg"><img src="screen_shoots/s4.jpg" /></a></td>
+	<td align="right"><a href="screen_shoots/s5.jpg"><img src="screen_shoots/s5.jpg" /></a></td>
+	<td align="right"><a href="screen_shoots/s6.jpg"><img src="screen_shoots/s6.jpg" /></a></td>
+	<td align="right"><a href="screen_shoots/s7.jpg"><img src="screen_shoots/s7.jpg" /></a></td>
+	<td align="right"><a href="screen_shoots/s8.jpg"><img src="screen_shoots/s8.jpg" /></a></td>
+</tr>
+</tbody>
+</table>
+<h2>Introduction:</h2>
+<p>Help you to combine meshes 、 materials and textures to reduce draw calls in runtime！
+Got less draw calls than static and dynamic batching.
+Got more resource saving than non-runtime baking.</p>
+<ul>
+<li>Support merging skinned-meshes of same material</li>
+<li>Very simple to use, learn in 1 minutes</li>
+<li>Works with any material and shader</li>
+<li>The most effective solution of combination</li>
+<li>Automaticly chek and configure the shaders</li>
+<li>Runtime combine quickly</li>
+<li>Runtime auto garbage recyling.</li>
+<li>Undo Supported, friendly UIs.</li>
+</ul>
+<p>Warning:  this tool cannot combine meshes which vertext count are above 64k, because it is the limit of unity.</p>
+<p>Home Page:<a href="http://www.lonelywalker.cn">http://www.lonelywalker.cn</a><br>
+Support Mail: <a href="mailoflonelywalker@qq.com">mailoflonelywalker@qq.com</a><br>
+My Blog:  <a href="http://blog.csdn.net/andrewfan">http://blog.csdn.net/andrewfan</a><br></p>
+<h2>Version Changes:</h2>
+<p>Version 1.1.3 2017.11.15</p>
+<ul>
+<li>Fixed bug: error combination of mesh for skinned-meshes</li>
+<li>Add Example: unitychan for skinned-meshes </li>
+</ul>
+<p>Version 1.1.2 2017.9.18</p>
+<ul>
+<li>Support merging skinned-meshes of same material</li>
+</ul>
+<p>Version 1.1.1 2017.9.10</p>
+<ul>
+<li>support add baking script at runtime</li>
+<li>support the merging of multiple sub-meshes and multiple materials</li>
+</ul>
+<h2>Download URL:</h2>
+<p><a href="https://www.assetstore.unity3d.com/#!/content/90510">Runtime Mesh Baker Of AssetStore</a></p>
+<h2>Usage:</h2>
+<ol>
+<li>
+<p>Get your GameObjects ready for baking, just put them into one tree hierarchy, all GameObjects have the same top parent.</p>
+</li>
+<li>
+<p>Select the top parent,then select the menu &quot;Window/Rumtime Mesh Baker/Add MildBaker&quot; or &quot;Window/Rumtime Mesh Baker/Add DeepBaker&quot;or &quot;Window/Rumtime Mesh Baker/Add Skinned MeshBaker&quot;.<br>
+At runtime,you can do it in you code:</p>
+<pre><code>gameObject.AddComponent&lt;BAT_DeepBaker&gt;();//for static objects , eg stones,trees
+//or
+gameObject.AddComponent&lt;BAT_MildBaker&gt;();//for static objects , eg stones,trees
+//or
+gameObject.AddComponent&lt;BAT_SkinnedMeshBaker&gt;();//for motion objects , eg characters
+</code></pre>
+
+</li>
+<li>
+<p>It's ok. let's run it. Auto baking should be working.</p>
+</li>
+</ol>
+<h2>Mild Baking of meshes:</h2>
+<p><img src="mild_bake.png" /></p>
+<ul>
+<li>Auto Bake: wheter do baking automatically</li>
+<li>ClearSetting: after baking, it would do some clearing operation.</li>
+</ul>
+<h2>Deep Baking of meshes:</h2>
+<p><img src="deep_bake.png" /></p>
+<ul>
+<li>Auto Bake: wheter do baking automatically </li>
+<li>ClearSetting: after baking, it would do some clearing operation.</li>
+<li>Refresh button: refresh the configurations of baking.</li>
+<li>Shader: the group basis of meshes is the shader.</li>
+<li>Materials: materials use the same shader.</li>
+<li>UV configure- max texture size: max texture size could be when baking.</li>
+<li>UV configure- texture items: list all texture varient names of current shader to combine.you don't need to modify the items by default.</li>
+<li>References: list all the textures referenced. If any red item is shown,you can fix them by the &quot;Fix troubles&quot; button on the bottom.</li>
+</ul>
+<h2>Mild Baking of skinned-meshes:</h2>
+<p><img src="skinned-meshes_bake.png" /></p>
+<ul>
+<li>Auto Bake: wheter do baking automatically</li>
+<li>ClearSetting: after baking, it would do some clearing operation.</li>
+</ul>
+<p>It does the same work with Mild Baking,but for skinned-meshes.</p>
+<h2>Baking Process:</h2>
+<ol>
+<li>Search the target gameobject, check all MeshFilters and MeshRenderers.</li>
+<li>Find out all meshes and materials, and seperate the meshes into diffrent groups by materials(Mild Baking) or Shaders(Deep Baking) .</li>
+<li>Deep baking need to combine textures and generate new material.Mild baking will just use the original material.</li>
+<li>Create a new baking node and start mesh baking by groups,if group's mesh vertex count is overflow, then bake to new one mesh.</li>
+<li>Set the MeshFilters by new created mesh,and set MeshRenderers by the material of current group.</li>
+<li>Do clearing,it would remove the original MeshFilters and MeshRenderers by default.</li>
+</ol>
+<p><br></p>
+<h2>Diffrence of 3 baking method:</h2>
+<table>
+<tbody>
+<tr>
+	<td align="center"></td>
+	<td align="center">Basis</td>
+	<td align="center">Texture Combination</td>
+	<td align="center">Mesh Combination</td>
+	<td align="center">Draw calls</td>
+	<td align="center">Multiple SubMesh</td>
+	<td align="center">Used for</td>
+</tr>
+<tr>
+	<td align="center">Mild</td>
+	<td align="center">material</td>
+	<td align="center">not needed</td>
+	<td align="center">needed</td>
+	<td align="center">less</td>
+	<td align="center">not support</td>
+	<td align="center">static objects</td>
+</tr>
+<tr>
+	<td align="center">Deep</td>
+	<td align="center">shader</td>
+	<td align="center">needed</td>
+	<td align="center">needed</td>
+	<td align="center">least</td>
+	<td align="center">support</td>
+	<td align="center">static objects</td>
+</tr>
+<tr>
+	<td align="center">Skinned</td>
+	<td align="center">material</td>
+	<td align="center">not needed</td>
+	<td align="center">needed</td>
+	<td align="center">less</td>
+	<td align="center">not support</td>
+	<td align="center">character objects</td>
+</tr>
+</tbody>
+</table>
+<h2>Troubleshooting</h2>
+<p>If Baking error eccours,check these items:</p>
+<ol>
+<li>Make sure your Game Objects are not set static flags when deep baking.</li>
+<li>The texutes should be readable and set the right format when deep baking.You can fix this by &quot;Fix troubles&quot; button.</li>
+<li>If your material has set Tiling parameters(not 1), then the material can't not do deep baking.You could seperate these GameObject out of the baking tree.</li>
+<li>If you are using the BAT_SkinnedMeshBaker， be aware with the transformation of original skinned-mesh componenet, the must be set to zero scalation、translation and rotation to its Animation or Animator,if don't, you may get bad ragdolls.</li>
+</ol>
+<h2>Future Version</h2>
+<ul>
+<li>to support skinned meshes</li>
+<li>to deal with tiling textures</li>
+<li>to support lightmapping</li>
+</ul>
+
+</body>
+</html>
+<!-- This document was created with MarkdownPad, the Markdown editor for Windows (http://markdownpad.com) -->

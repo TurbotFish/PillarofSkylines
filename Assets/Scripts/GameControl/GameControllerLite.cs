@@ -71,6 +71,13 @@ namespace Game.GameControl
             throw new System.NotImplementedException();
         }
 
+        public void ExitGame()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#endif
+        }
+
         //###############################################################
         //###############################################################
 

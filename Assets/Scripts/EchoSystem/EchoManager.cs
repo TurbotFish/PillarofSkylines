@@ -16,6 +16,7 @@ namespace Game.EchoSystem
 
         [Header("ShellFX")]
         [SerializeField] private GameObject shell;
+		public bool useShells = false;
 
         private Animator playerAnimator;
 
@@ -210,18 +211,21 @@ namespace Game.EchoSystem
 
         void CreateShell()
         {
-            GameObject _shell;
-            _shell = Instantiate(shell, gameController.PlayerController.PlayerTransform.position, gameController.PlayerController.PlayerTransform.rotation) as GameObject;
-            //_shell.GetComponent<Animator> ().runtimeAnimatorController = playerAnimator.runtimeAnimatorController;
-            Animator _anim = _shell.GetComponent<Animator>();
-            Debug.Log("player animator : " + playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash);
-            _anim.Play(playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash, 0, playerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime);
-            int i = 0;
-            foreach (var param in playerAnimator.parameters)
-            {
-                _anim.parameters[i] = playerAnimator.parameters[i];
-            }
-            _anim.speed = 0;
+			if (useShells) {
+				GameObject _shell;
+				_shell = Instantiate(shell, gameController.PlayerController.PlayerTransform.position, gameController.PlayerController.PlayerTransform.rotation) as GameObject;
+				//_shell.GetComponent<Animator> ().runtimeAnimatorController = playerAnimator.runtimeAnimatorController;
+				Animator _anim = _shell.GetComponent<Animator>();
+				Debug.Log("player animator : " + playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash);
+				_anim.Play(playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash, 0, playerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime);
+				int i = 0;
+				foreach (var param in playerAnimator.parameters)
+				{
+					_anim.parameters[i] = playerAnimator.parameters[i];
+				}
+				_anim.speed = 0;
+			}
+
         }
 
 

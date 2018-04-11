@@ -38,5 +38,7 @@ namespace Game.GameControl
 
         //temp
         void StartGame();
+
+        void ExitGame();
     }
 }
