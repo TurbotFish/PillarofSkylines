@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using Game.GameControl;
 using Game.Model;
 using Game.World;
@@ -7,6 +8,7 @@ using UnityEngine.Serialization;
 
 namespace Game.LevelElements
 {
+    [Obsolete]
     public class CurrencyPickUp : MonoBehaviour, IWorldObject
     {
         //##################################################################
