@@ -16,9 +16,10 @@ namespace Game.Utilities
 
         public override void OnInspectorGUI()
         {
-            EditorGUILayout.LabelField("Id", idProperty.stringValue);
+            string formattedID = idProperty.stringValue.Replace(' ', '_');
+            EditorGUILayout.LabelField("Id", formattedID, EditorStyles.wordWrappedLabel);
 
-            EditorGUILayout.ObjectField("Owner", ownerProperty.objectReferenceValue, typeof(UniqueIdOwner), false);
+            EditorGUILayout.LabelField("Owner Type", ownerProperty.objectReferenceValue.GetType().Name);
         }
     }
 }

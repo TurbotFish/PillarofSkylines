@@ -144,28 +144,29 @@ namespace Game.Utilities
 
         //***********************************************************
 
+        // OBSOLETE
         #region currency amount changed event
 
-        public class CurrencyAmountChangedEventArgs : EventArgs
-        {
-            public Model.eCurrencyType CurrencyType { get; private set; }
-            public int CurrencyAmount { get; private set; }
+        //public class CurrencyAmountChangedEventArgs : EventArgs
+        //{
+        //    public Model.eCurrencyType CurrencyType { get; private set; }
+        //    public int CurrencyAmount { get; private set; }
 
-            public CurrencyAmountChangedEventArgs(Model.eCurrencyType currencyType, int currencyAmount)
-            {
-                CurrencyType = currencyType;
-                CurrencyAmount = currencyAmount;
-            }
-        }
+        //    public CurrencyAmountChangedEventArgs(Model.eCurrencyType currencyType, int currencyAmount)
+        //    {
+        //        CurrencyType = currencyType;
+        //        CurrencyAmount = currencyAmount;
+        //    }
+        //}
 
-        public delegate void CurrencyAmountChangedEventHandler(object sender, CurrencyAmountChangedEventArgs args);
+        //public delegate void CurrencyAmountChangedEventHandler(object sender, CurrencyAmountChangedEventArgs args);
 
-        public static event CurrencyAmountChangedEventHandler CurrencyAmountChangedEvent;
+        //public static event CurrencyAmountChangedEventHandler CurrencyAmountChangedEvent;
 
-        public static void SendCurrencyAmountChangedEvent(object sender, CurrencyAmountChangedEventArgs args)
-        {
-            CurrencyAmountChangedEvent?.Invoke(sender, args);
-        }
+        //public static void SendCurrencyAmountChangedEvent(object sender, CurrencyAmountChangedEventArgs args)
+        //{
+        //    CurrencyAmountChangedEvent?.Invoke(sender, args);
+        //}
 
         #endregion currency amount changed event
 
@@ -196,28 +197,29 @@ namespace Game.Utilities
 
         //***********************************************************
 
+        // OBSOLETE
         #region ability state changed
 
-        public class AbilityStateChangedEventArgs : EventArgs
-        {
-            public eAbilityType AbilityType { get; private set; }
-            public eAbilityState AbilityState { get; private set; }
+        //public class AbilityStateChangedEventArgs : EventArgs
+        //{
+        //    public eAbilityType AbilityType { get; private set; }
+        //    public eAbilityState AbilityState { get; private set; }
 
-            public AbilityStateChangedEventArgs(eAbilityType abilityType, eAbilityState abilityState)
-            {
-                AbilityType = abilityType;
-                AbilityState = abilityState;
-            }
-        }
+        //    public AbilityStateChangedEventArgs(eAbilityType abilityType, eAbilityState abilityState)
+        //    {
+        //        AbilityType = abilityType;
+        //        AbilityState = abilityState;
+        //    }
+        //}
 
-        public delegate void AbilityStateChangedEventHandler(object sender, AbilityStateChangedEventArgs args);
+        //public delegate void AbilityStateChangedEventHandler(object sender, AbilityStateChangedEventArgs args);
 
-        public static event AbilityStateChangedEventHandler AbilityStateChangedEvent;
+        //public static event AbilityStateChangedEventHandler AbilityStateChangedEvent;
 
-        public static void SendAbilityStateChangedEvent(object sender, AbilityStateChangedEventArgs args)
-        {
-            AbilityStateChangedEvent?.Invoke(sender, args);
-        }
+        //public static void SendAbilityStateChangedEvent(object sender, AbilityStateChangedEventArgs args)
+        //{
+        //    AbilityStateChangedEvent?.Invoke(sender, args);
+        //}
 
         #endregion ability state changed
 
