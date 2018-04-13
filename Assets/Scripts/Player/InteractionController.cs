@@ -17,7 +17,7 @@ namespace Game.Player {
 
         //
         bool isPickupInRange = false;
-        IPickup currentPickup;
+        Pickup currentPickup;
         PillarEntranceInfo pillarEntranceInfo = new PillarEntranceInfo();
         bool pillarExitInRange = false;
         bool needleInRange = false;
@@ -64,7 +64,7 @@ namespace Game.Player {
                 {
                     if (!currentPickup.IsPickedUp)
                     {
-                        currentPickup.PickupObject(OnPickingUpFinished);
+                        currentPickup.PickupObject();
                     }
 
                     //clean up
@@ -186,7 +186,7 @@ namespace Game.Player {
                     case "Favour":
                         if (!isPickupInRange)
                         {
-                            currentPickup = other.GetComponent<IPickup>();
+                            currentPickup = other.GetComponent<Pickup>();
 
                             if (!currentPickup.IsPickedUp)
                             {
@@ -505,15 +505,6 @@ namespace Game.Player {
         {
             if (tag == lastTag)
                 Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
-        }
-
-        private void OnPickingUpFinished(bool showMessage, string message="", string description = "")
-        {
-            if (showMessage)
-            {
-                var eventArgs = new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, UI.eMessageType.Announcement, description, 4);
-                Utilities.EventManager.SendShowHudMessageEvent(this, eventArgs);
-            }
         }
 
         #endregion helper methods

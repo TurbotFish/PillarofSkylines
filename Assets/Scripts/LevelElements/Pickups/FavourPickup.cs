@@ -3,7 +3,10 @@ using UnityEngine;
 
 namespace Game.LevelElements
 {
-    public class FavourPickup : Pickup<PickupPersistentData>
+    /// <summary>
+    /// Pickup that activates a player ability.
+    /// </summary>
+    public class FavourPickup : Pickup
     {
         //##################################################################
 
@@ -13,14 +16,14 @@ namespace Game.LevelElements
         //##################################################################
 
         public override string PickupName { get { return ability.ToString() + " Ability"; } }
-        public override string OnPickedUpMessage { get { return "You have been granted a Favour"; } }
-        public override string OnPickedUpDescription { get { return "Press Start to open the ability menu"; } }
+		public override string OnPickedUpMessage { get { return "You've been granted the "+ability.ToString() + " Ability"; } }
+        public override string OnPickedUpDescription { get { return "Press Back to see how to use your abilities"; } }
 
         //##################################################################
 
-        protected override bool OnPickedUp()
+        protected override void OnPickedUp()
         {
-            return gameController.PlayerModel.ActivateAbility(ability);
+            GameController.PlayerModel.ActivateAbility(ability);
         }
 
         //##################################################################

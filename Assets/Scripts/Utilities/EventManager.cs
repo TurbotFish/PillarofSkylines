@@ -473,23 +473,23 @@ namespace Game.Utilities
 
         #region pick-up collected event
 
-        public class FavourPickedUpEventArgs : EventArgs
+        public class PickupCollectedEventArgs : EventArgs
         {
-            public string FavourId { get; private set; }
+            public string PickupID { get; private set; }
 
-            public FavourPickedUpEventArgs(string favourId)
+            public PickupCollectedEventArgs(string favourId)
             {
-                FavourId = favourId;
+                PickupID = favourId;
             }
         }
 
-        public delegate void FavourPickedUpEventHandler(object sender, FavourPickedUpEventArgs args);
+        public delegate void PickupCollectedEventHandler(object sender, PickupCollectedEventArgs args);
 
-        public static event FavourPickedUpEventHandler FavourPickedUpEvent;
+        public static event PickupCollectedEventHandler PickupCollectedEvent;
 
-        public static void SendFavourPickedUpEvent(object sender, FavourPickedUpEventArgs args)
+        public static void SendPickupCollectedEvent(object sender, PickupCollectedEventArgs args)
         {
-            FavourPickedUpEvent?.Invoke(sender, args);
+            PickupCollectedEvent?.Invoke(sender, args);
         }
 
         #endregion pick-up collected event

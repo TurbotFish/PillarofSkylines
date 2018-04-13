@@ -2,7 +2,10 @@
 
 namespace Game.LevelElements
 {
-    public class PillarKeyPickup : Pickup<PickupPersistentData>
+    /// <summary>
+    /// Pickup that gives a PillarKey to the player.
+    /// </summary>
+    public class PillarKeyPickup : Pickup
     {
         //##################################################################
 
@@ -12,10 +15,9 @@ namespace Game.LevelElements
 
         //##################################################################
 
-        protected override bool OnPickedUp()
+        protected override void OnPickedUp()
         {
-            gameController.PlayerModel.ChangePillarKeysCount(1);
-            return true;
+            GameController.PlayerModel.ChangePillarKeysCount(1);
         }
 
         //##################################################################

@@ -9,7 +9,7 @@ public class GPUIDisplayManager : MonoBehaviour {
 	List<Matrix4x4> matrices = new List<Matrix4x4> ();
 	List<int> indices = new List<int> ();
 
-	//public static GPUIDisplayManager displayManager;
+	public static GPUIDisplayManager displayManager;
 
 	int numberOfCalls;
 	int boundaryLow;
@@ -19,7 +19,7 @@ public class GPUIDisplayManager : MonoBehaviour {
 
 	bool updatedThisFrame;
 
-	//temp, should be on seeder
+
 	public Mesh meshToDraw;
 	public Material materialToDraw;
 	public UnityEngine.Rendering.ShadowCastingMode shadowMode;
@@ -38,7 +38,9 @@ public class GPUIDisplayManager : MonoBehaviour {
 
 	void Awake(){
 		Shader.WarmupAllShaders ();
-		//displayManager = this;
+
+		//ALO: activate to use gpui in editor
+		displayManager = this;
 
 		for (int i = 0; i < matrices1023.Length; i++) {
 			matrices1023 [i] = new List<Matrix4x4> ();
