@@ -15,7 +15,7 @@ public class GPUISeederEditor : Editor {
 	Color colorRebake = new Color (1f, .6f, .2f, .5f);
 	Color colorNeverBaked = new Color (1f, .31f, .31f, .5f);
 
-	Color scaleButtonsColor = new Color (.2f, .2f, .2f, .4f);
+	Color scaleButtonsColor1 = new Color (.2f, .2f, .2f, .4f);
 
 	int bakingState = 1;
 
@@ -28,15 +28,12 @@ public class GPUISeederEditor : Editor {
 
 	public override void OnInspectorGUI(){
 
-
-		
-
 		base.OnInspectorGUI ();
 
 		colorsPainted = serializedObject.FindProperty ("_colorsWerePainted").boolValue;
 
 		foreach (GPUISeeder item in targets) {
-			if (Time.frameCount % 60 == 0) {
+			if (Time.frameCount % 10 == 0) {
 				//0 : baked
 				//1 : rebake needed
 				//2 : never baked
@@ -60,7 +57,7 @@ public class GPUISeederEditor : Editor {
 		}
 		scaleMult = EditorGUILayout.Vector3Field ("Scale Multiplier", scaleMult);
 		//set seeder values to inspector values
-		GUI.backgroundColor = scaleButtonsColor;
+		GUI.backgroundColor = scaleButtonsColor1;
 		if (!scaleUnchanged) {
 
 			EditorGUILayout.BeginHorizontal ();
@@ -71,6 +68,7 @@ public class GPUISeederEditor : Editor {
 					item.PaintScaleVariationMap ();
 				}
 			}
+
 
 			if (GUILayout.Button ("Set to map value")) {
 				foreach (GPUISeeder item in targets) {
