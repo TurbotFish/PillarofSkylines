@@ -17,7 +17,10 @@
 	uniform int _Iterations;
 	uniform float2 _Direction;
 	uniform float2 _CameraSpeed;
-	
+	uniform float _ColorChangeR;
+	uniform float _ColorChangeG;
+	uniform float _ColorChangeB;
+
 	uniform float _Threshold;
     uniform float _Intensity;
 	
@@ -60,8 +63,9 @@
 		}
 		// END Iterations
 
-		final = float4(final.r, saturate(final.g + final.r), saturate(final.b + final.r), final.a);
+		final = float4(lerp(final.r,saturate(final.r+final.b),_ColorChangeR), lerp(final.g,saturate(final.g + final.r),_ColorChangeG), lerp(final.b,saturate(final.b + final.r),_ColorChangeB), final.a);
 		final = lerp(src, final, _Intensity);
+
 
 		return final;
     }
