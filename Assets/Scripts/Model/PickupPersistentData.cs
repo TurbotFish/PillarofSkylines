@@ -16,7 +16,7 @@ namespace Game.Model
         public bool IsPickedUp
         {
             get { return isPickedUp; }
-            set { isPickedUp = value; SendOnPersistentDataChangeEvent(); }
+            set { isPickedUp = value; }
         }
     }
 } // end of namespace

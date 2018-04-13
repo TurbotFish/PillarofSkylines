@@ -64,7 +64,7 @@ namespace Game.Player {
                 {
                     if (!currentPickup.IsPickedUp)
                     {
-                        currentPickup.PickupObject(OnPickingUpFinished);
+                        currentPickup.PickupObject();
                     }
 
                     //clean up
@@ -505,15 +505,6 @@ namespace Game.Player {
         {
             if (tag == lastTag)
                 Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
-        }
-
-        private void OnPickingUpFinished(bool showMessage, string message="", string description = "")
-        {
-            if (showMessage)
-            {
-                var eventArgs = new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, UI.eMessageType.Announcement, description, 4);
-                Utilities.EventManager.SendShowHudMessageEvent(this, eventArgs);
-            }
         }
 
         #endregion helper methods
