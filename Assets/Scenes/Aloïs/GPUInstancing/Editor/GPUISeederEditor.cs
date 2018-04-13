@@ -15,14 +15,22 @@ public class GPUISeederEditor : Editor {
 	Color colorRebake = new Color (1f, .6f, .2f, .5f);
 	Color colorNeverBaked = new Color (1f, .31f, .31f, .5f);
 
+	Color scaleButtonsColor = new Color (.2f, .2f, .2f, .4f);
+
 	int bakingState = 1;
-	//public bool colorsAreBaked;
 
 	SerializedProperty _col;
 	bool colorsPainted;
 	SerializedProperty _colorsPainted;
 
+	Vector3 scaleMult = Vector3.one;
+	bool scaleUnchanged;
+
 	public override void OnInspectorGUI(){
+
+
+		
+
 		base.OnInspectorGUI ();
 
 		colorsPainted = serializedObject.FindProperty ("_colorsWerePainted").boolValue;
@@ -33,14 +41,58 @@ public class GPUISeederEditor : Editor {
 				//1 : rebake needed
 				//2 : never baked
 				bakingState = item.AreMatricesUpToDate ();
-				//colorsPainted = serializedObject.FindProperty ("_colorsWerePainted").boolValue;
+
+
+				scaleUnchanged = item.IsScaleUpToDate ();
+				//if doesn't need rebake but scale has changed, need rebake
+				bakingState = bakingState == 0 && !scaleUnchanged ? 1 : bakingState;
+
 				colorsPainted = bakingState != 0 ? false : colorsPainted;
 
 				ColorizeButton (bakingState);
 			}
 		}
 
+		///Scale multiplier stuff
+		//set inspector values to seeder values
+		foreach (GPUISeeder item in targets) {
+			scaleMult = item.scaleMultiplier;
+		}
+		scaleMult = EditorGUILayout.Vector3Field ("Scale Multiplier", scaleMult);
+		//set seeder values to inspector values
+		GUI.backgroundColor = scaleButtonsColor;
+		if (!scaleUnchanged) {
 
+			EditorGUILayout.BeginHorizontal ();
+			if (GUILayout.Button ("Paint map")) {
+
+				foreach (GPUISeeder item in targets) {
+					item.scaleMultiplier = scaleMult;
+					item.PaintScaleVariationMap ();
+				}
+			}
+
+			if (GUILayout.Button ("Set to map value")) {
+				foreach (GPUISeeder item in targets) {
+					item.SetToMapValue ();
+					scaleMult = item.scaleMultiplier;
+				}
+			}
+
+			EditorGUILayout.EndHorizontal ();
+		}
+
+		foreach (GPUISeeder item in targets) {
+			item.scaleMultiplier = scaleMult;
+		}
+		///
+
+		if (!scaleUnchanged) {
+			EditorGUILayout.HelpBox ("Sort out scale multiplier before baking.", MessageType.Info);
+		}
+
+		EditorGUI.BeginDisabledGroup (!scaleUnchanged);
+		///Matrix baking
 		GUI.backgroundColor = buttonColor;
 		if (GUILayout.Button ("Bake Matrices")) {
 			foreach (GPUISeeder item in targets) {
@@ -48,9 +100,15 @@ public class GPUISeederEditor : Editor {
 				ColorizeButton ();
 			}
 		}
+		///
+		EditorGUI.EndDisabledGroup();
+
+
 
 		EditorGUILayout.Space ();
 
+
+		///Grass colour
 		EditorGUI.BeginDisabledGroup (bakingState != 0);
 
 		GUI.backgroundColor = Color.white;
@@ -106,9 +164,6 @@ public class GPUISeederEditor : Editor {
 				buttonColor = colorNeverBaked;
 			}
 		}
-		//GPUISeeder _seeder = (GPUISeeder)target;
-
-	
 	}
 
 	void ColorizeButton(int _state){
