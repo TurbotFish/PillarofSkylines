@@ -69,15 +69,20 @@ namespace Game.Model
         {
             if (Input.GetKeyUp(KeyCode.F2))
             {
-                Debug.Log("CHEATING: One PillarKey appeared out of nowwhere!");
+                Debug.Log("CHEATING: One PillarKey appeared out of nowhere!");
                 pillarKeys++;
             }
             else if (Input.GetKeyUp(KeyCode.F5))
             {
-                Debug.Log("CHEATING: All the evil eyes have decided to self-destruct!");
+                Debug.Log("CHEATING: You were supposed to find the Tombs, not make them useless!");
                 UnlockAbilityGroup(eAbilityGroup.Pillar1);
                 UnlockAbilityGroup(eAbilityGroup.Pillar2);
                 UnlockAbilityGroup(eAbilityGroup.Pillar3);
+
+                foreach(var ability in abilityData.GetAllAbilities())
+                {
+                    ActivateAbility(ability.Type);
+                }
             }
         }
 
