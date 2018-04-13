@@ -50,10 +50,10 @@ Shader "Custom/ShadowHole" {
                 return o;
             }
             float4 frag(VertexOutput i) : COLOR {
-                float sceneZ = max(0,LinearEyeDepth (UNITY_SAMPLE_DEPTH(tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.projPos)))) - _ProjectionParams.g);
-                float partZ = max(0,i.projPos.z - _ProjectionParams.g);
+                float sceneZ = max(0, LinearEyeDepth (UNITY_SAMPLE_DEPTH(tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.projPos)))) - _ProjectionParams.g);
+                float partZ = max(0, i.projPos.z - _ProjectionParams.g);
 
-                fixed4 finalRGBA = fixed4(_Color.rgb, _Color.a * saturate((sceneZ-partZ)) * saturate(i.projPos.z/_Distance) );
+                fixed4 finalRGBA = fixed4(_Color.rgb, _Color.a * saturate((sceneZ-partZ) / 3 ) * saturate(i.projPos.z/_Distance) );
                 UNITY_APPLY_FOG(i.fogCoord, finalRGBA);
                 return finalRGBA;
             }
