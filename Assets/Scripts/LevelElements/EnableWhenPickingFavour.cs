@@ -1,4 +1,5 @@
 ﻿using Game.GameControl;
+using Game.Model;
 using Game.World;
 using UnityEngine;
 
@@ -10,9 +11,12 @@ namespace Game.LevelElements
 
         #region member variables
 
-        [SerializeField] public string favourID; //why public?
+        [SerializeField] private Pickup pickup; // This should not be used at runtime because the object is not guaranteed ot exist.
+
         [SerializeField] private bool disableAtStart = true;
         [SerializeField] public GameObject[] objectsToEnable = new GameObject[0]; //why public?
+
+        [SerializeField, HideInInspector] private string pickupID;
 
         private IGameControllerBase gameController;
         private bool isInitialized;
@@ -22,13 +26,15 @@ namespace Game.LevelElements
 
         //###########################################################
 
-        #region public methods
+        #region initialization methods
 
         public void Initialize(IGameControllerBase gameController, bool isCopy)
         {
             this.gameController = gameController;
 
-            if (gameController.PlayerModel.CheckIfPickUpCollected(favourID)) //the favour has already been picked up
+            var persistentData = gameController.PlayerModel.GetPersistentDataObject<PickupPersistentData>(pickupID);
+
+            if (persistentData != null && persistentData.IsPickedUp) //the favour has already been picked up
             {
                 ActivateAllObjects();
                 favourPickedUp = true;
@@ -40,13 +46,13 @@ namespace Game.LevelElements
                     DeactivateAllObjects();
                 }
 
-                Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
+                Utilities.EventManager.PickupCollectedEvent += OnPickpCollectedEventHandler;
             }
 
             isInitialized = true;
         }
 
-        #endregion public methods
+        #endregion initialization methods
 
         //###########################################################
 
@@ -58,20 +64,35 @@ namespace Game.LevelElements
             {
                 return;
             }
-            else if (gameController.PlayerModel.CheckIfPickUpCollected(favourID)) //the favour has been picked up while this was disabled
+
+            var persistentData = gameController.PlayerModel.GetPersistentDataObject<PickupPersistentData>(pickupID);
+
+            if (persistentData != null && persistentData.IsPickedUp) //the favour has been picked up while this was disabled
             {
                 ActivateAllObjects();
                 favourPickedUp = true;
             }
             else
             {
-                Utilities.EventManager.FavourPickedUpEvent += OnFavourPickedUpEventHandler;
+                Utilities.EventManager.PickupCollectedEvent += OnPickpCollectedEventHandler;
             }
         }
 
         private void OnDisable()
         {
-            Utilities.EventManager.FavourPickedUpEvent -= OnFavourPickedUpEventHandler;
+            Utilities.EventManager.PickupCollectedEvent -= OnPickpCollectedEventHandler;
+        }
+
+        private void OnValidate()
+        {
+            if (pickup == null)
+            {
+                pickupID = "";
+            }
+            else
+            {
+                pickupID = pickup.UniqueId;
+            }
         }
 
         #endregion monobehaviour methods
@@ -80,13 +101,13 @@ namespace Game.LevelElements
 
         #region private methods
 
-        private void OnFavourPickedUpEventHandler(object sender, Utilities.EventManager.FavourPickedUpEventArgs args)
+        private void OnPickpCollectedEventHandler(object sender, Utilities.EventManager.PickupCollectedEventArgs args)
         {
-            if (args.FavourId == favourID)
+            if (args.PickupID == pickupID)
             {
                 ActivateAllObjects();
                 favourPickedUp = true;
-                Utilities.EventManager.FavourPickedUpEvent -= OnFavourPickedUpEventHandler;               
+                Utilities.EventManager.PickupCollectedEvent -= OnPickpCollectedEventHandler;
             }
         }
 
