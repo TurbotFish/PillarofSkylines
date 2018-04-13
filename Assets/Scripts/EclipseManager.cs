@@ -18,6 +18,7 @@ namespace Game
         Vector3 eclipseGravity = new Vector3(1, 0, 0);
 
         Game.Player.CharacterController.CharController player;
+		[SerializeField]
         Eclipse eclipsePostEffect;
 
         bool isEclipseActive;
@@ -70,6 +71,12 @@ namespace Game
             }
 
             this.isEclipseActive = true;
+
+			eclipsePostEffect.Intensity = 1;
+			eclipsePostEffect.colorChangeR = 0;
+			eclipsePostEffect.colorChangeB = 1;
+			eclipsePostEffect.colorChangeG = 1;
+
             StopAllCoroutines();
             StartCoroutine(ChangeGravityRoutine(true));
         }

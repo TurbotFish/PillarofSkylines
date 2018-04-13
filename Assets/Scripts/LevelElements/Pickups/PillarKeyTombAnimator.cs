@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 namespace Game.LevelElements
 {
@@ -12,40 +13,24 @@ namespace Game.LevelElements
         //##################################################################
 
         // FSM: FaveurManager
-        [Header("Favour Manager")]
-        [SerializeField] private Transform faveur;
-        [SerializeField] private float duration = 1.9f;
+        [Header("PillarKey FX")]
+		public Animator eyeAnim;
+		public Light eyeLight;
+		public float timeBeforeChange;
+		public Material crystalOff;
+		public List<MeshRenderer> crystalsTransforming = new List<MeshRenderer>();
+		public List<MeshRenderer> crystalsImmediate = new List<MeshRenderer>();
+		public List<ParticleSystemRenderer> crystalParticles = new List<ParticleSystemRenderer>();
 
-        // FSM: Faveur_activation
-        [Header("Favour Activation")]
-        [SerializeField] private float animSpeed = 0.0005f;
-        [SerializeField] private float startDelay = 4;
-        [SerializeField] private float disparitionEnd = 10;
-        [SerializeField] private float disparitionSpeed = .03f;
-
-        [Header("Visuals")]
-        [SerializeField] private Animator animator;
-        [SerializeField] private Renderer recept;
-        [SerializeField] private GameObject favSparkUp;
-
-        // FSM: ParticleManager
-        [Header("Particle Manager")]
-        [SerializeField] private float delay2 = 3f;
-        [SerializeField] private float delay3 = 0.2f;
-
-        [SerializeField] private ParticleSystem favSparks;
-        [SerializeField] private GameObject favSparksOpen;
-        [SerializeField] private GameObject favSparksBurst;
-
-        // Dissolve Tomb
-        [Header("Tomb Dissolve")]
-        [SerializeField] private Renderer tombShell;
-        [SerializeField] private string dissolveVariableName = "_Dissolve";
-        [SerializeField] private Material fullyDissolvedMaterial;
-        [SerializeField] private float timeBeforeDissolve = 2;
-        [SerializeField] private float dissolveDuration = 2;
-        [SerializeField] private AnimationCurve dissolveCurve;
-
+		[Header("Eclipse")]
+		Eclipse _eclipse;
+		public float timeInBetween;
+		public float intensityMax;
+		public float intensitySpeed;
+		public float colorVariationSpeed;
+		public float colorVariationR;
+		public float colorVariationG;
+		public float colorVariationB;
         //##################################################################
 
         public override bool SetTombState(bool isActivated, bool interactWithPlayer, bool doImmediateTransition, TombAnimationFinishedCallback callback = null)
@@ -55,96 +40,78 @@ namespace Game.LevelElements
                 return false;
             }
 
-            //if (isActivated)
-            //{
-            //    if (interactWithPlayer)
-            //    {
-            //        animator.SetBool("Fav_activated", true);
-            //        StartCoroutine(FaveurActivation());
-            //        StartCoroutine(ParticleManager());
-            //        StartCoroutine(FavourManager());
-            //        StartCoroutine(DissolveTomb());
-            //    }
-            //    else
-            //    {
-            //        StartCoroutine(DissolveTomb());
-            //    }
-            //}
-            StartCoroutine(Test());
+            if (isActivated)
+            {
+                if (interactWithPlayer)
+                {
+					GetMark ();
+                }
+            }
             
             return true;
         }
 
-        private IEnumerator Test()
-        {
-            yield return new WaitForSeconds(0.5f);
-            animationFinishedCallback?.Invoke(); // Informs the Pickup that the Tomb has finished its animation.
-        }
 
-        private IEnumerator FaveurActivation()
-        {
-            float disparition = 0;
-            yield return new WaitForSeconds(startDelay);
 
-            favSparkUp.SetActive(true);
-            while (disparition < disparitionEnd)
-            {
-                disparition += disparitionSpeed;
-                recept.material.SetFloat("_Emissive_intensity", disparition);
-                animator.speed += animSpeed;
-                yield return new WaitForSeconds(0.01f);
-            }
-        }
+		public void GetMark()
+		{
+			eyeAnim.SetBool ("marked", true);
+			StartCoroutine (EndAnimation ());
+			StartCoroutine (HandleEclipse ());
 
-        private IEnumerator FavourManager()
-        {
-            Transform player = FindObjectOfType<Player.CharacterController.CharController>().transform;
-            yield return new WaitForSeconds(startDelay);
-            faveur.parent = null;
+		}
+			
 
-            float elapsed = 0;
-            while ((faveur.position - (player.position + player.up)).sqrMagnitude > 0.1f)
-            {
-                elapsed += Time.deltaTime;
-                faveur.position = Vector3.Lerp(faveur.position, player.position + player.up, elapsed / duration);
-                yield return null;
-            }
+		IEnumerator EndAnimation()
+		{
+			yield return new WaitForSeconds (timeBeforeChange);
+			eyeLight.DOIntensity (0, 3).SetEase (Ease.InSine);
+			animationFinishedCallback?.Invoke(); // Informs the Pickup that the Tomb has finished its animation.
 
-            Destroy(faveur.gameObject);
-            Instantiate(favSparksBurst, faveur.position, Quaternion.identity);
+			for (int i = 0; i < 200; i++) {
+				yield return new WaitForSeconds (0.01f);
+				foreach (MeshRenderer ms in crystalsTransforming) {
+					Material mat = ms.material;
+					mat.SetFloat ("_Transition", mat.GetFloat ("_Transition") - 0.005f);
+				}
+			}
+			foreach (MeshRenderer ms in crystalsImmediate) {
+				ms.material = crystalOff;
+			}
+			foreach (ParticleSystemRenderer psr in crystalParticles) {
+				psr.material = crystalOff;
+			}
 
-            animationFinishedCallback?.Invoke(); // Informs the Pickup that the Tomb has finished its animation.
-        }
+		}
 
-        private IEnumerator ParticleManager()
-        {
-            favSparksOpen.SetActive(true);
-            yield return new WaitForSeconds(delay2);
-            favSparksBurst.SetActive(true);
-            favSparks.gameObject.SetActive(true);
-            yield return new WaitForSeconds(delay3);
+		IEnumerator HandleEclipse()
+		{
 
-            var em = favSparks.emission;
+			_eclipse = GameObject.FindObjectOfType<Eclipse> ();
+			_eclipse.colorChangeR = 0;
+			_eclipse.colorChangeG = 0;
+			_eclipse.colorChangeB = 0;
+			_eclipse.Intensity = 0;
+			_eclipse.enabled = true;
+			while (_eclipse.Intensity < intensityMax) {
+				yield return new WaitForSeconds (0.01f);
+				_eclipse.Intensity += intensitySpeed;
+				_eclipse.colorChangeR += colorVariationSpeed;
+			}
 
-            while (em.rate.constant > 0f)
-            {
-                em.rate = new ParticleSystem.MinMaxCurve(em.rate.constant - 1.4f);
-                yield return new WaitForSeconds(0.01f);
-            }
-            favSparks.gameObject.SetActive(false);
-        }
+			yield return new WaitForSeconds (timeInBetween);
 
-        private IEnumerator DissolveTomb()
-        {
-            yield return new WaitForSeconds(timeBeforeDissolve);
+			while (_eclipse.Intensity > 0) {
+				yield return new WaitForSeconds (0.01f);
+				_eclipse.Intensity -= intensitySpeed;
+				_eclipse.colorChangeR -= colorVariationSpeed;
+			}
+			yield return new WaitForSeconds (timeInBetween);
+			_eclipse.enabled = false;
 
-            for (float elapsed = 0; elapsed < dissolveDuration; elapsed += Time.deltaTime)
-            {
-                tombShell.material.SetFloat(dissolveVariableName, dissolveCurve.Evaluate(elapsed / dissolveDuration));
-                yield return null;
-            }
-            tombShell.sharedMaterial = fullyDissolvedMaterial;
-        }
+		}
+     
+
 
         //##################################################################
     }

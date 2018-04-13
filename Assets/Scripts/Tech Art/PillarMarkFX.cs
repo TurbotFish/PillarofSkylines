@@ -32,7 +32,7 @@ public class PillarMarkFX : MonoBehaviour {
 		yield return new WaitForSecondsRealtime (timeBeforeChange);
 		eyeLight.DOIntensity (0, 3).SetEase (Ease.InSine);
 
-		for (int i = 0; i < 200; i++) {
+		for (int i = 0; i < 125; i++) {
 			yield return new WaitForSeconds (0.01f);
 			foreach (MeshRenderer ms in crystalsTransforming) {
 				Material mat = ms.material;
