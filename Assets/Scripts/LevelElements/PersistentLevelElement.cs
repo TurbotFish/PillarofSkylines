@@ -10,13 +10,15 @@ namespace Game.LevelElements
     {
         //##################################################################
 
-        protected PersistentData persistentData;
-        protected IGameControllerBase gameController;
+        private PersistentData persistentData;
+        private IGameControllerBase gameController;
 
         private bool isCopy;
         private bool isInitialized;
 
         //##################################################################
+
+        #region initialization methods
 
         public virtual void Initialize(IGameControllerBase gameController, bool isCopy)
         {
@@ -31,41 +33,30 @@ namespace Game.LevelElements
                 gameController.PlayerModel.AddPersistentDataObject(persistentData);
             }
 
-            if (!isInitialized)
-            {
-                PersistentData.OnPersistentDataChange += OnPersistentDataChange; // If the instance has already been initialized it subscribes to the event in OnEnable.
-            }
-
             isInitialized = true;
         }
 
+        #endregion initialization methods
+
         //##################################################################
+
+        #region inquiries
 
         public bool IsCopy { get { return isCopy; } }
         public bool IsInitialized { get { return isInitialized; } }
+
+        protected IGameControllerBase GameController { get { return gameController; } }
         protected T PersistentData { get { return persistentData as T; } }
+
+        #endregion inquiries
 
         //##################################################################
 
-        protected abstract void OnPersistentDataChange(object sender, EventArgs args);
+        #region operations
 
         protected abstract PersistentData CreatePersistentDataObject();
 
-        protected virtual void OnEnable()
-        {
-            if (isInitialized)
-            {
-                PersistentData.OnPersistentDataChange += OnPersistentDataChange;
-            }
-        }
-
-        protected virtual void OnDisable()
-        {
-            if (isInitialized)
-            {
-                PersistentData.OnPersistentDataChange -= OnPersistentDataChange;
-            }
-        }
+        #endregion operations
 
         //##################################################################
     }

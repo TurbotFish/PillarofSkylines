@@ -303,21 +303,22 @@ namespace Game.UI.AbilityMenu
 
         void ActivateSelectedAbility()
         {
-            if (SelectedSlot == null)
-                return;
+            Debug.LogWarning("WIP: this still exists but does not do anything!");
+            //if (SelectedSlot == null)
+            //    return;
 
-            print(" check if : " + SelectedSlot.AbilityType + " is active : " + playerModel.CheckAbilityActive(SelectedSlot.AbilityType));
+            //print(" check if : " + SelectedSlot.AbilityType + " is active : " + playerModel.CheckAbilityActive(SelectedSlot.AbilityType));
 
-            if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
-            {
-                playerModel.DeactivateAbility(SelectedSlot.AbilityType);
-            }
-            else
-            {
-                playerModel.ActivateAbility(SelectedSlot.AbilityType);
-            }
+            //if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
+            //{
+            //    playerModel.DeactivateAbility(SelectedSlot.AbilityType);
+            //}
+            //else
+            //{
+            //    playerModel.ActivateAbility(SelectedSlot.AbilityType);
+            //}
 
-            UpdateInputMessage();
+            //UpdateInputMessage();
         }
 
         void UpdateInputMessage()
