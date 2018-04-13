@@ -1,12 +1,11 @@
 ﻿using Game.GameControl;
 using Game.Model;
+using Game.Utilities;
 using System;
 using UnityEngine;
 
 namespace Game.LevelElements
 {
-    public delegate void PickingUpFinishedCallback(bool showMessage, string message = "", string description = "");
-
     public abstract class Pickup : PersistentLevelElement<PickupPersistentData>
     {
         //##################################################################
@@ -15,18 +14,48 @@ namespace Game.LevelElements
         [SerializeField] private TombAnimator tombAnimator;
         [SerializeField] private new Collider collider;
 
-        private PickingUpFinishedCallback callback;
-
         //##################################################################
+
+        #region initialization methods
 
         public override void Initialize(IGameControllerBase gameController, bool isCopy)
         {
+            if (IsInitialized)
+            {
+                return;
+            }
+
             base.Initialize(gameController, isCopy);
 
-            tombAnimator.SetTombState(PersistentData.IsPickedUp, false, true);
+            if (PersistentData.IsPickedUp && !tombAnimator.IsTombActivated)
+            {
+                tombAnimator.SetTombState(true, false, true);
+            }
         }
 
+        private void OnEnable()
+        {
+            EventManager.PickupCollectedEvent += OnPickupCollectedEvent;
+
+            if (IsInitialized)
+            {
+                if(PersistentData.IsPickedUp && !tombAnimator.IsTombActivated)
+                {
+                    tombAnimator.SetTombState(true, false, true);
+                }
+            }
+        }
+
+        private void OnDisable()
+        {
+            EventManager.PickupCollectedEvent -= OnPickupCollectedEvent;
+        }
+
+        #endregion initialization methods
+
         //##################################################################
+
+        #region inquiries
 
         public bool IsPickedUp { get { return PersistentData.IsPickedUp; } }
 
@@ -34,52 +63,79 @@ namespace Game.LevelElements
         public abstract string OnPickedUpMessage { get; }
         public abstract string OnPickedUpDescription { get; }
 
+        #endregion inquiries
+
         //##################################################################
 
-        protected abstract bool OnPickedUp();
+        #region operations
 
-        public void PickupObject(PickingUpFinishedCallback callback)
+        /// <summary>
+        /// Used to give the content of the Pickup to the player. Actual content depends on the specific implementation.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract void OnPickedUp();
+
+        /// <summary>
+        /// Called when the player picks up the object.
+        /// </summary>
+        /// <param name="callback"></param>
+        public void PickupObject()
         {
             if (PersistentData.IsPickedUp)
             {
                 return;
             }
 
-            if (OnPickedUp())
-            {
-                this.callback = callback;
+            PersistentData.IsPickedUp = true;
 
-                if (!tombAnimator.SetTombState(true, true, false, OnTombAnimatingDone))
-                {
-                    callback?.Invoke(false);
-                }
-
-                PersistentData.IsPickedUp = true;
-            }
+            tombAnimator.SetTombState(true, true, false, OnTombAnimatingDone);
         }
 
-        protected override void OnPersistentDataChange(object sender, EventArgs args)
-        {
-            if (PersistentData.IsPickedUp)
-            {
-                collider.enabled = false;
-
-                if (!tombAnimator.IsTombActivated)
-                {
-                    tombAnimator.SetTombState(true, IsCopy, true);
-                }
-            }
-        }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         protected override PersistentData CreatePersistentDataObject()
         {
             return new PickupPersistentData(UniqueId);
         }
 
+        /// <summary>
+        /// Called when another Pickup is collected.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void OnPickupCollectedEvent(object sender, EventManager.PickupCollectedEventArgs args)
+        {
+            if (IsInitialized && (sender as Pickup).UniqueId == UniqueId && !sender.Equals(this) && PersistentData.IsPickedUp)
+            {
+                tombAnimator.SetTombState(true, false, false);
+
+                collider.enabled = false;
+            }
+        }
+
+        /// <summary>
+        /// Called when the pickup animation finishes.
+        /// </summary>
         private void OnTombAnimatingDone()
         {
-            callback?.Invoke(true, OnPickedUpMessage, OnPickedUpDescription);
+            // give content to player
+            OnPickedUp();
+
+            // show message on screen
+            var HUDMessageEventArgs = new EventManager.OnShowHudMessageEventArgs(true, OnPickedUpMessage, UI.eMessageType.Announcement, OnPickedUpDescription, 4);
+            EventManager.SendShowHudMessageEvent(this, HUDMessageEventArgs);
+
+            // disable collider
+            collider.enabled = false;
+
+            // inform duplicate Pickup's
+            var pickupCollectedEventArgs = new EventManager.PickupCollectedEventArgs(UniqueId);
+            EventManager.SendPickupCollectedEvent(this, pickupCollectedEventArgs);
         }
+
+        #endregion operations
 
         //##################################################################
     }

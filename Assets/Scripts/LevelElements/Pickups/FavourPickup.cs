@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace Game.LevelElements
 {
+    /// <summary>
+    /// Pickup that activates a player ability.
+    /// </summary>
     public class FavourPickup : Pickup
     {
         //##################################################################
@@ -18,9 +21,9 @@ namespace Game.LevelElements
 
         //##################################################################
 
-        protected override bool OnPickedUp()
+        protected override void OnPickedUp()
         {
-            return gameController.PlayerModel.ActivateAbility(ability);
+            GameController.PlayerModel.ActivateAbility(ability);
         }
 
         //##################################################################
