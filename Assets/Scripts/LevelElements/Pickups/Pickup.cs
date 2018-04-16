@@ -6,7 +6,16 @@ using UnityEngine;
 
 namespace Game.LevelElements
 {
-    public abstract class Pickup : PersistentLevelElement<PickupPersistentData>
+    /// <summary>
+    /// Definition of generic Pickup. Other classes can use it without needing to specify the type of PersistentData used.
+    /// </summary>
+    public abstract class Pickup : Pickup<PickupPersistentData> { }
+
+    /// <summary>
+    /// Base class for a Pickup. Can be 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public abstract class Pickup<T> : PersistentLevelElement<T> where T : PickupPersistentData
     {
         //##################################################################
 
@@ -107,7 +116,7 @@ namespace Game.LevelElements
         /// <param name="args"></param>
         private void OnPickupCollectedEvent(object sender, EventManager.PickupCollectedEventArgs args)
         {
-            if (IsInitialized && (sender as Pickup).UniqueId == UniqueId && !sender.Equals(this) && PersistentData.IsPickedUp)
+            if (IsInitialized && (sender as Pickup<T>).UniqueId == UniqueId && !sender.Equals(this) && PersistentData.IsPickedUp)
             {
                 tombAnimator.SetTombState(true, false, false);
 

@@ -292,52 +292,6 @@ namespace Game.Player {
                             airOrigin = null;
                         }
                         break;
-                    //// doorHome
-                    //case "DoorHome": {
-                    //        // check if player is on the right side of door
-                    //        float dot = Vector3.Dot(other.transform.forward, myPlayer.transform.forward);
-                            
-                    //        if (dot > 0.4f) {
-                    //            // take offset from exact door position
-                    //            Vector3 offset = myPlayer.transform.position - other.transform.position;
-                    //            Vector3 targetPoint = spawnPointManager.GetHomeSpawnPoint() + other.transform.parent.InverseTransformDirection(offset);
-                    //            // calculate new rotation
-                    //            Vector3 newForward = other.transform.parent.InverseTransformDirection(myPlayer.transform.forward);
-                    //            // teleport to Home
-                    //            var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, Quaternion.LookRotation(newForward), false);
-                    //            Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
-                    //        }
-                    //        break;
-                    //    }
-                    //// doorHome
-                    //case "DoorBackHome": {
-                    //        // check if player is on the right side of door
-                    //        float dot = Vector3.Dot(other.transform.forward, myPlayer.transform.forward);
-                            
-                    //        if (dot < -0.4f) {
-                    //            // take offset from exact door position
-                    //            Vector3 offset = myPlayer.transform.position - other.transform.position;
-                    //            Transform destination = other.GetComponent<Beacon>().destination;
-                    //            Vector3 targetPoint = destination.position + destination.parent.TransformDirection(offset);
-                    //            // calculate new rotation
-                    //            Vector3 newForward = destination.parent.TransformDirection( myPlayer.transform.forward);
-                    //            // teleport to temporary Door
-                    //            var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, Quaternion.LookRotation(newForward), false);
-                    //            Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
-                    //        }
-                    //        break;
-                    //    }
-                    //// HomeBeacon
-                    //case "Beacon":
-                    //    beacon = other.GetComponent<Beacon>();
-                    //    if (!beacon.isHomeBeacon)
-                    //    {
-                    //        beacon.Activate();
-                    //    }
-
-                    //    if (beacon.activated)
-                    //        ShowUiMessage("[X]: Teleport", other.tag);
-                    //    break;
                     // Trigger Activator
                     case "TriggerActivator":
                         other.GetComponent<TimedActivator>().manager.Activate();
@@ -358,10 +312,6 @@ namespace Game.Player {
                         else
                             ShowUiMessage(tutoBox.message, other.tag);
                         break;
-                    //// Home
-                    //case "Home":
-                    //    gameController.EchoManager.atHome = true;
-                    //    break;
                     // CameraControlTrigger
                     case "CameraControlTrigger":
                         gameController.CameraController.PoS_Camera.EnterTrigger(other.GetComponent<CameraControlTrigger>());
