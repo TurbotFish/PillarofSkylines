@@ -8,27 +8,22 @@ namespace Game.UI.AbilityMenu
     {
         //##################################################################
 
-        [SerializeField]
-        Image backgroundImage;
+        [SerializeField] private Image backgroundImage;
 
-        [SerializeField]
-        Text favourText;
-        [SerializeField]
-        Text pillarKeyText;
+        //[SerializeField] private Text favourText;
+        [SerializeField] private Text pillarKeyText;
 
-        [SerializeField]
-        TMPro.TextMeshProUGUI abilityNameText;
-        [SerializeField]
-        TMPro.TextMeshProUGUI nameForDescription;
+        [SerializeField] private TMPro.TextMeshProUGUI abilityNameText;
+        [SerializeField] private TMPro.TextMeshProUGUI nameForDescription;
+        [SerializeField] private TMPro.TextMeshProUGUI abilityDescriptionText;
 
-        [SerializeField]
-        TMPro.TextMeshProUGUI abilityDescriptionText;
+        [SerializeField] private DescriptionPanel descriptionPanel;
 
-        PlayerModel playerModel;
-        AbilityMenuController menuController;
-        Ability currentAbility;
+        private PlayerModel playerModel;
+        private AbilityMenuController menuController;
 
-        DescriptionPanel descriptionPanel;
+        private Ability currentAbility;
+        private bool isActive;
 
         //##################################################################
 
@@ -37,17 +32,25 @@ namespace Game.UI.AbilityMenu
             this.playerModel = playerModel;
             this.menuController = menuController;
 
-            favourText.text = playerModel.GetCurrencyAmount(Model.eCurrencyType.Favour).ToString();
-            pillarKeyText.text = playerModel.GetCurrencyAmount(Model.eCurrencyType.PillarKey).ToString();
+            pillarKeyText.text = playerModel.PillarKeysCount.ToString();
 
             nameForDescription.text = abilityNameText.text = string.Empty;
             abilityDescriptionText.text = string.Empty;
             backgroundImage.color = menuController.AvailableAbilityColour;
+        }
 
-            descriptionPanel = abilityDescriptionText.transform.parent.GetComponent<DescriptionPanel>();
+        //##################################################################
 
-            Utilities.EventManager.CurrencyAmountChangedEvent += OnCurrencyAmountChangedEventHandler;
-            Utilities.EventManager.AbilityStateChangedEvent += OnAbilityStateChangedEventHandler;
+        public void Activate()
+        {
+            isActive = true;
+        }
+
+        public void Deactivate()
+        {
+            SetContent(null);
+
+            isActive = false;
         }
 
         public void SetContent(Ability ability)
@@ -62,11 +65,11 @@ namespace Game.UI.AbilityMenu
                 nameForDescription.text = abilityNameText.text = string.Empty;
                 abilityDescriptionText.text = string.Empty;
                 backgroundImage.color = menuController.AvailableAbilityColour;
-                descriptionPanel.gameObject.SetActive(false);
+                //descriptionPanel.gameObject.SetActive(false);
             }
             else
             {
-                descriptionPanel.gameObject.SetActive(true);
+                //descriptionPanel.gameObject.SetActive(true);
                 nameForDescription.text = abilityNameText.text = ability.Name;
                 abilityDescriptionText.text = ability.Description;
 
@@ -74,27 +77,39 @@ namespace Game.UI.AbilityMenu
             }
         }
 
-        //##################################################################
-
-        void OnCurrencyAmountChangedEventHandler(object sender, Utilities.EventManager.CurrencyAmountChangedEventArgs args)
+        private void Update()
         {
-            if (args.CurrencyType == Model.eCurrencyType.Favour)
-                favourText.text = args.CurrencyAmount.ToString();
-            else
-                pillarKeyText.text = args.CurrencyAmount.ToString();
-        }
-
-        void OnAbilityStateChangedEventHandler(object sender, Utilities.EventManager.AbilityStateChangedEventArgs args)
-        {
-            if (currentAbility == null || args.AbilityType != currentAbility.Type)
+            if (!isActive)
+            {
                 return;
+            }
 
-            SetBackgroundColour(args.AbilityState);
+            pillarKeyText.text = playerModel.PillarKeysCount.ToString();
+
+            if (currentAbility != null)
+            {
+                var abilityState = playerModel.GetAbilityState(currentAbility.Type);
+                SetBackgroundColour(abilityState);
+            }
         }
 
-        //##################################################################
+        //private void OnCurrencyAmountChangedEventHandler(object sender, Utilities.EventManager.CurrencyAmountChangedEventArgs args)
+        //{
+        //    if (args.CurrencyType == Model.eCurrencyType.Favour)
+        //        favourText.text = args.CurrencyAmount.ToString();
+        //    else
+        //        pillarKeyText.text = args.CurrencyAmount.ToString();
+        //}
 
-        void SetBackgroundColour(eAbilityState abilityState)
+        //private void OnAbilityStateChangedEventHandler(object sender, Utilities.EventManager.AbilityStateChangedEventArgs args)
+        //{
+        //    if (currentAbility == null || args.AbilityType != currentAbility.Type)
+        //        return;
+
+        //    SetBackgroundColour(args.AbilityState);
+        //}
+
+        private void SetBackgroundColour(eAbilityState abilityState)
         {
             switch (abilityState)
             {

@@ -11,7 +11,7 @@ namespace Game.UI.AbilityMenu
         Vector3 visiblePosition, hiddenPosition;
         RectTransform rec;
 
-        private void Awake()
+        public void Awake()
         {
             rec = GetComponent<RectTransform>();
 
@@ -22,6 +22,7 @@ namespace Game.UI.AbilityMenu
         public void Appear()
         {
             StopCoroutine(_Appear());
+
             if (gameObject.activeInHierarchy)
                 StartCoroutine(_Appear());
         }
@@ -35,7 +36,7 @@ namespace Game.UI.AbilityMenu
         {
             StopCoroutine(_Appear());
         }
-        
+
         IEnumerator _Appear()
         {
             if (!rec) yield break;
@@ -46,7 +47,6 @@ namespace Game.UI.AbilityMenu
                 rec.localPosition = Vector3.Lerp(hiddenPosition, visiblePosition, curve.Evaluate(t));
                 yield return null;
             }
-
         }
 
     }

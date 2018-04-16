@@ -144,28 +144,29 @@ namespace Game.Utilities
 
         //***********************************************************
 
+        // OBSOLETE
         #region currency amount changed event
 
-        public class CurrencyAmountChangedEventArgs : EventArgs
-        {
-            public Model.eCurrencyType CurrencyType { get; private set; }
-            public int CurrencyAmount { get; private set; }
+        //public class CurrencyAmountChangedEventArgs : EventArgs
+        //{
+        //    public Model.eCurrencyType CurrencyType { get; private set; }
+        //    public int CurrencyAmount { get; private set; }
 
-            public CurrencyAmountChangedEventArgs(Model.eCurrencyType currencyType, int currencyAmount)
-            {
-                CurrencyType = currencyType;
-                CurrencyAmount = currencyAmount;
-            }
-        }
+        //    public CurrencyAmountChangedEventArgs(Model.eCurrencyType currencyType, int currencyAmount)
+        //    {
+        //        CurrencyType = currencyType;
+        //        CurrencyAmount = currencyAmount;
+        //    }
+        //}
 
-        public delegate void CurrencyAmountChangedEventHandler(object sender, CurrencyAmountChangedEventArgs args);
+        //public delegate void CurrencyAmountChangedEventHandler(object sender, CurrencyAmountChangedEventArgs args);
 
-        public static event CurrencyAmountChangedEventHandler CurrencyAmountChangedEvent;
+        //public static event CurrencyAmountChangedEventHandler CurrencyAmountChangedEvent;
 
-        public static void SendCurrencyAmountChangedEvent(object sender, CurrencyAmountChangedEventArgs args)
-        {
-            CurrencyAmountChangedEvent?.Invoke(sender, args);
-        }
+        //public static void SendCurrencyAmountChangedEvent(object sender, CurrencyAmountChangedEventArgs args)
+        //{
+        //    CurrencyAmountChangedEvent?.Invoke(sender, args);
+        //}
 
         #endregion currency amount changed event
 
@@ -196,28 +197,29 @@ namespace Game.Utilities
 
         //***********************************************************
 
+        // OBSOLETE
         #region ability state changed
 
-        public class AbilityStateChangedEventArgs : EventArgs
-        {
-            public eAbilityType AbilityType { get; private set; }
-            public eAbilityState AbilityState { get; private set; }
+        //public class AbilityStateChangedEventArgs : EventArgs
+        //{
+        //    public eAbilityType AbilityType { get; private set; }
+        //    public eAbilityState AbilityState { get; private set; }
 
-            public AbilityStateChangedEventArgs(eAbilityType abilityType, eAbilityState abilityState)
-            {
-                AbilityType = abilityType;
-                AbilityState = abilityState;
-            }
-        }
+        //    public AbilityStateChangedEventArgs(eAbilityType abilityType, eAbilityState abilityState)
+        //    {
+        //        AbilityType = abilityType;
+        //        AbilityState = abilityState;
+        //    }
+        //}
 
-        public delegate void AbilityStateChangedEventHandler(object sender, AbilityStateChangedEventArgs args);
+        //public delegate void AbilityStateChangedEventHandler(object sender, AbilityStateChangedEventArgs args);
 
-        public static event AbilityStateChangedEventHandler AbilityStateChangedEvent;
+        //public static event AbilityStateChangedEventHandler AbilityStateChangedEvent;
 
-        public static void SendAbilityStateChangedEvent(object sender, AbilityStateChangedEventArgs args)
-        {
-            AbilityStateChangedEvent?.Invoke(sender, args);
-        }
+        //public static void SendAbilityStateChangedEvent(object sender, AbilityStateChangedEventArgs args)
+        //{
+        //    AbilityStateChangedEvent?.Invoke(sender, args);
+        //}
 
         #endregion ability state changed
 
@@ -471,23 +473,23 @@ namespace Game.Utilities
 
         #region pick-up collected event
 
-        public class FavourPickedUpEventArgs : EventArgs
+        public class PickupCollectedEventArgs : EventArgs
         {
-            public string FavourId { get; private set; }
+            public string PickupID { get; private set; }
 
-            public FavourPickedUpEventArgs(string favourId)
+            public PickupCollectedEventArgs(string favourId)
             {
-                FavourId = favourId;
+                PickupID = favourId;
             }
         }
 
-        public delegate void FavourPickedUpEventHandler(object sender, FavourPickedUpEventArgs args);
+        public delegate void PickupCollectedEventHandler(object sender, PickupCollectedEventArgs args);
 
-        public static event FavourPickedUpEventHandler FavourPickedUpEvent;
+        public static event PickupCollectedEventHandler PickupCollectedEvent;
 
-        public static void SendFavourPickedUpEvent(object sender, FavourPickedUpEventArgs args)
+        public static void SendPickupCollectedEvent(object sender, PickupCollectedEventArgs args)
         {
-            FavourPickedUpEvent?.Invoke(sender, args);
+            PickupCollectedEvent?.Invoke(sender, args);
         }
 
         #endregion pick-up collected event

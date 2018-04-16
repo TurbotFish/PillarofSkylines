@@ -16,8 +16,8 @@ namespace Game.Player {
         IGameControllerBase gameController;
 
         //
-        bool favourPickUpInRange = false;
-        CurrencyPickUp favour;
+        bool isPickupInRange = false;
+        Pickup currentPickup;
         PillarEntranceInfo pillarEntranceInfo = new PillarEntranceInfo();
         bool pillarExitInRange = false;
         bool needleInRange = false;
@@ -60,16 +60,16 @@ namespace Game.Player {
                 isInteractButtonDown = true;
 
                 //favour
-                if (favourPickUpInRange)
+                if (isPickupInRange)
                 {
-                    if (!gameController.PlayerModel.CheckIfPickUpCollected(favour.PickUpId))
+                    if (!currentPickup.IsPickedUp)
                     {
-                        gameController.PlayerModel.CollectPickUp(favour);
+                        currentPickup.PickupObject();
                     }
 
                     //clean up
-                    favourPickUpInRange = false;
-                    favour = null;
+                    isPickupInRange = false;
+                    currentPickup = null;
                     HideUiMessage("Favour");
                 }
                 //pillar entrance
@@ -184,22 +184,20 @@ namespace Game.Player {
                 {
                     //favour
                     case "Favour":
-                        if (!favourPickUpInRange)
+                        if (!isPickupInRange)
                         {
-                            favour = other.GetComponent<CurrencyPickUp>();
+                            currentPickup = other.GetComponent<Pickup>();
 
-                            if (!gameController.PlayerModel.CheckIfPickUpCollected(favour.PickUpId))
+                            if (!currentPickup.IsPickedUp)
                             {
-                                favourPickUpInRange = true;
+                                isPickupInRange = true;
 
-                                if (favour.CurrencyType == eCurrencyType.Favour)
-                                    ShowUiMessage("[X]: Accept Favour", other.tag);
-                                else if (favour.CurrencyType == eCurrencyType.PillarKey)
-                                    ShowUiMessage("[X]: Receive Mark", other.tag);
-
+                                ShowUiMessage("[X]: Accept " + currentPickup.PickupName, other.tag);
                             }
                             else
-                                favour = null;
+                            {
+                                currentPickup = null;
+                            }
                         }                     
                         break;
                     //pillar entrance
@@ -294,52 +292,6 @@ namespace Game.Player {
                             airOrigin = null;
                         }
                         break;
-                    //// doorHome
-                    //case "DoorHome": {
-                    //        // check if player is on the right side of door
-                    //        float dot = Vector3.Dot(other.transform.forward, myPlayer.transform.forward);
-                            
-                    //        if (dot > 0.4f) {
-                    //            // take offset from exact door position
-                    //            Vector3 offset = myPlayer.transform.position - other.transform.position;
-                    //            Vector3 targetPoint = spawnPointManager.GetHomeSpawnPoint() + other.transform.parent.InverseTransformDirection(offset);
-                    //            // calculate new rotation
-                    //            Vector3 newForward = other.transform.parent.InverseTransformDirection(myPlayer.transform.forward);
-                    //            // teleport to Home
-                    //            var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, Quaternion.LookRotation(newForward), false);
-                    //            Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
-                    //        }
-                    //        break;
-                    //    }
-                    //// doorHome
-                    //case "DoorBackHome": {
-                    //        // check if player is on the right side of door
-                    //        float dot = Vector3.Dot(other.transform.forward, myPlayer.transform.forward);
-                            
-                    //        if (dot < -0.4f) {
-                    //            // take offset from exact door position
-                    //            Vector3 offset = myPlayer.transform.position - other.transform.position;
-                    //            Transform destination = other.GetComponent<Beacon>().destination;
-                    //            Vector3 targetPoint = destination.position + destination.parent.TransformDirection(offset);
-                    //            // calculate new rotation
-                    //            Vector3 newForward = destination.parent.TransformDirection( myPlayer.transform.forward);
-                    //            // teleport to temporary Door
-                    //            var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(targetPoint, Quaternion.LookRotation(newForward), false);
-                    //            Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
-                    //        }
-                    //        break;
-                    //    }
-                    //// HomeBeacon
-                    //case "Beacon":
-                    //    beacon = other.GetComponent<Beacon>();
-                    //    if (!beacon.isHomeBeacon)
-                    //    {
-                    //        beacon.Activate();
-                    //    }
-
-                    //    if (beacon.activated)
-                    //        ShowUiMessage("[X]: Teleport", other.tag);
-                    //    break;
                     // Trigger Activator
                     case "TriggerActivator":
                         other.GetComponent<TimedActivator>().manager.Activate();
@@ -360,10 +312,6 @@ namespace Game.Player {
                         else
                             ShowUiMessage(tutoBox.message, other.tag);
                         break;
-                    //// Home
-                    //case "Home":
-                    //    gameController.EchoManager.atHome = true;
-                    //    break;
                     // CameraControlTrigger
                     case "CameraControlTrigger":
                         gameController.CameraController.PoS_Camera.EnterTrigger(other.GetComponent<CameraControlTrigger>());
@@ -392,8 +340,8 @@ namespace Game.Player {
                 {
                     //favour
                     case "Favour":
-                        favourPickUpInRange = false;
-                        favour = null;
+                        isPickupInRange = false;
+                        currentPickup = null;
 
                         HideUiMessage(other.tag);
                         break;
@@ -538,8 +486,8 @@ namespace Game.Player {
         /// </summary>
         void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
-            this.favourPickUpInRange = false;
-            this.favour = null;
+            this.isPickupInRange = false;
+            this.currentPickup = null;
 
             this.needleInRange = false;
             this.needleSlotCollider = null;

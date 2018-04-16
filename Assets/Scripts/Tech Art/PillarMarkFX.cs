@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class PillarMarkFX : MonoBehaviour {
 
 	public Animator eyeAnim;
+	public Light eyeLight;
 	public float timeBeforeChange;
 	public Material crystalOff;
 	public List<MeshRenderer> crystalsTransforming = new List<MeshRenderer>();
@@ -28,19 +30,22 @@ public class PillarMarkFX : MonoBehaviour {
 	IEnumerator EndAnimation()
 	{
 		yield return new WaitForSecondsRealtime (timeBeforeChange);
-		foreach (MeshRenderer ms in crystalsImmediate) {
-			ms.material = crystalOff;
-		}
-		for (int i = 0; i < 400; i++) {
+		eyeLight.DOIntensity (0, 3).SetEase (Ease.InSine);
+
+		for (int i = 0; i < 125; i++) {
 			yield return new WaitForSeconds (0.01f);
 			foreach (MeshRenderer ms in crystalsTransforming) {
 				Material mat = ms.material;
-				mat.SetFloat ("_Transition", mat.GetFloat ("_Transition") - 0.1f);
+				mat.SetFloat ("_Transition", mat.GetFloat ("_Transition") - 0.005f);
 			}
+		}
+		foreach (MeshRenderer ms in crystalsImmediate) {
+			ms.material = crystalOff;
 		}
 		foreach (ParticleSystemRenderer psr in crystalParticles) {
 			psr.material = crystalOff;
 		}
+
 	}
 
 }
