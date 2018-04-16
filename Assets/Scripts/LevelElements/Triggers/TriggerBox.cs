@@ -104,6 +104,15 @@ namespace Game.LevelElements
             {
                 yield return new WaitForSeconds(delayBeforeDeactivation);
                 SetTriggerState(false);
+
+				if (changeMaterial) {
+					Material[] sharedMaterialsCopy = renderer.sharedMaterials;
+					sharedMaterialsCopy [materialID] = off;
+					renderer.sharedMaterials = sharedMaterialsCopy;
+				}
+
+				Debug.Log ("bonjour hello");
+
 				GlyphFX _fx = GetComponent<GlyphFX> ();
 				if (_fx != null) {
 					_fx.GlyphOff ();
