@@ -67,6 +67,7 @@ namespace Game.LevelElements
                 else
                     SetTriggerState(true);
 
+
                 if (changeMaterial)
                 {
                     Material[] sharedMaterialsCopy = renderer.sharedMaterials;
@@ -76,7 +77,20 @@ namespace Game.LevelElements
 
 				GlyphFX _fx = GetComponent<GlyphFX> ();
 				if (_fx != null) {
-					_fx.GlyphOn ();
+					if (Toggle) {
+						
+						if (TriggerState) {
+							_fx.GlyphOn ();
+						} else {
+							_fx.GlyphOff ();
+						}
+
+
+					} else {
+						_fx.GlyphOn ();
+					}
+
+
 				} else {
 					Debug.LogError ("whoopsie, " + transform.name + " isn't attached to a glyph, is it ?");
 				}
