@@ -46,7 +46,14 @@ namespace Game.World
                     if (GUILayout.Button("Export SubScenes"))
                     {
                         working = true;
-                        ExportSubScenes();
+                        ExportSubScenes(true);
+                        working = false;
+                    }
+
+                    if(GUILayout.Button("Export SubScenes - no baking"))
+                    {
+                        working = true;
+                        ExportSubScenes(false);
                         working = false;
                     }
 
@@ -217,7 +224,7 @@ namespace Game.World
         /// Coroutine that creates the duplications of the world, moves them to separate scenes and does other stuff.
         /// </summary>
         /// <returns></returns>
-        private void ExportSubScenes()
+        private void ExportSubScenes(bool bakeOcclusion)
         {
             if (!worldController.EditorSubScenesLoaded)
             {
@@ -313,7 +320,10 @@ namespace Game.World
             stopWatch.Restart();
             //++++++++++++++++
 
-            StaticOcclusionCulling.Compute();
+            if (bakeOcclusion)
+            {
+                StaticOcclusionCulling.Compute();
+            }
 
             //++++++++++++++++
             stopWatch.Stop();
@@ -356,9 +366,9 @@ namespace Game.World
                     }
                 }
 
-                if(superRegionType != eSuperRegionType.Centre)
+                if (superRegionType != eSuperRegionType.Centre)
                 {
-                    foreach(var region in regionDict[superRegionType].Values)
+                    foreach (var region in regionDict[superRegionType].Values)
                     {
                         DestroyImmediate(region.gameObject);
                     }
