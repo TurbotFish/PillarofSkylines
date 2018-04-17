@@ -67,9 +67,18 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new JetpackState(charController, stateMachine));
             }
-            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MinWallAngle && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle && !collisionInfo.NotSlippySlope) || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f)
+            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MinWallAngle 
+                && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle && !collisionInfo.NotSlippySlope) 
+                || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f)
 			{
 				stateMachine.ChangeState(new SlideState(charController, stateMachine));
+            }
+            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MinWallAngle)
+            {
+                var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
+                stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
+
+                stateMachine.ChangeState(state);
             }
             else if (!inputInfo.leftStickAtZero)
             {
