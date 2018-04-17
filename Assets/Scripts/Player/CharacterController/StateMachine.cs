@@ -106,6 +106,7 @@ namespace Game.Player.CharacterController
                 {
                     model.UnflagAbility(stateToAbilityLinkDict[currentState.StateId]);
                 }
+                //Debug.Log("leaving " + currentState.ToString());
             }
 
             currentState = state;
@@ -114,6 +115,7 @@ namespace Game.Player.CharacterController
             {
                 model.FlagAbility(stateToAbilityLinkDict[currentState.StateId]);
             }
+            //Debug.Log("entering " + currentState.ToString());
 
             currentState.Enter();
             timeInCurrentState = 0f;

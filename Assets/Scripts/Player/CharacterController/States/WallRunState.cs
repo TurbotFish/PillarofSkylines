@@ -15,6 +15,7 @@ namespace Game.Player.CharacterController.States
         CharController charController;
         StateMachine stateMachine;
         CharData.WallRunData wallRunData;
+        CharData.GeneralData generalData;
 
         bool firstFrame = true;
         bool ledgeGrab = false;
@@ -32,6 +33,7 @@ namespace Game.Player.CharacterController.States
             this.charController = charController;
             this.stateMachine = stateMachine;
             wallRunData = charController.CharData.WallRun;
+            generalData = charController.CharData.General;
         }
 
         //#############################################################################
@@ -59,11 +61,23 @@ namespace Game.Player.CharacterController.States
             PlayerMovementInfo movementInfo = charController.MovementInfo;
             PlayerInputInfo inputInfo = charController.InputInfo;
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
-
-            //land on ground
-            if (collisionInfo.below)
+            
+            //landing on slope
+            if (collisionInfo.below && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < generalData.MinWallAngle && ((Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > generalData.MaxSlopeAngle && !collisionInfo.NotSlippySlope)
+                || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f))
             {
-                stateMachine.ChangeState(new StandState(charController, stateMachine));
+                stateMachine.ChangeState(new SlideState(charController, stateMachine));
+                charController.fxManager.FootDustPlay();
+
+            }
+            //landing
+            else if (collisionInfo.below && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < generalData.MinWallAngle)
+            {
+                stateMachine.ChangeState(new MoveState(charController, stateMachine));
+                if (!collisionInfo.SlippySlope)
+                    charController.SetVelocity(Vector3.Project(movementInfo.velocity, inputInfo.leftStickToSlope), false);
+                charController.fxManager.FootDustPlay();
+
             }
             else if (climbUp)
             {
@@ -145,7 +159,7 @@ namespace Game.Player.CharacterController.States
             }
 
             ledgeGrab = !Physics.Raycast(charController.MyTransform.position + charController.tempPhysicsHandler.playerAngle * (charController.tempPhysicsHandler.center + charController.tempPhysicsHandler.capsuleHeightModifier / 2)
-                                                    , -lastWallNormal, charController.tempPhysicsHandler.radius * 1.2f, charController.tempPhysicsHandler.collisionMask);
+                                                    , -lastWallNormal, charController.tempPhysicsHandler.radius * 2f, charController.tempPhysicsHandler.collisionMask);
            
 
             //********************************
@@ -193,7 +207,7 @@ namespace Game.Player.CharacterController.States
 
             if (ledgeGrab)
             {
-                result.PlayerForward = -lastWallNormal;
+                //result.PlayerForward = -lastWallNormal;
 
                 Debug.DrawRay(charController.MyTransform.position + charController.tempPhysicsHandler.playerAngle * (charController.tempPhysicsHandler.center - charController.tempPhysicsHandler.capsuleHeightModifier / 2)
                                                     - localWallRunDir.normalized * charController.tempPhysicsHandler.radius, -lastWallNormal, Color.black);
@@ -201,7 +215,8 @@ namespace Game.Player.CharacterController.States
                 climbUp = !Physics.Raycast(charController.MyTransform.position + charController.tempPhysicsHandler.playerAngle * (charController.tempPhysicsHandler.center - charController.tempPhysicsHandler.capsuleHeightModifier / 2)
                                                     - localWallRunDir.normalized * charController.tempPhysicsHandler.radius
                                                     , -lastWallNormal, charController.tempPhysicsHandler.radius * 1.1f, charController.tempPhysicsHandler.collisionMask);
-                
+
+                climbUp = climbUp && movementInfo.velocity.y > 0;
 
                 //Debug.Log("LEFFDGE GRAOBING!!! new forward is  : " + result.PlayerForward);
             }
