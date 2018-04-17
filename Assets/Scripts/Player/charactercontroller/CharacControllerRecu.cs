@@ -353,11 +353,22 @@ namespace Game.Player.CharacterController
                     if (currentGravifloor && Vector3.Dot(-currentGravifloor.gravityDirection, myTransform.up) > 0.6f)
                         currentGravifloor.AddPlayer(myPlayer, -hit.normal);
                 }
-				if (hit.collider.CompareTag("SlipperySlope")) {
-					collisions.SlippySlope = true;
-				} else {
-					collisions.SlippySlope = false;
-				}
+                if (hit.collider.CompareTag("SlipperySlope"))
+                {
+                    collisions.SlippySlope = true;
+                }
+                else
+                {
+                    collisions.SlippySlope = false;
+                }
+                if (hit.collider.CompareTag("NotSlipperySlope"))
+                {
+                    collisions.NotSlippySlope = true;
+                }
+                else
+                {
+                    collisions.NotSlippySlope = false;
+                }
             }
 
             if (currentGravifloor != null && (!collisions.below || !hit.collider.CompareTag("Gravifloor")))
@@ -632,7 +643,7 @@ namespace Game.Player.CharacterController
         public struct CollisionInfo
         {
             public bool above, below;
-            public bool side, SlippySlope;
+            public bool side, SlippySlope, NotSlippySlope;
 
             public bool cornerNormal;
             public float stepHeight;
@@ -652,7 +663,7 @@ namespace Game.Player.CharacterController
                 if (!below)
                     currentGroundNormal = Vector3.zero;
                 above = below = false;
-                side = SlippySlope = cornerNormal = false;
+                side = SlippySlope = cornerNormal = NotSlippySlope = false;
                 currentWallNormal = Vector3.zero;
                 currentWallHit= new RaycastHit();
             }

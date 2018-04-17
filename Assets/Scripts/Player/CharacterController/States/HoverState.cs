@@ -49,7 +49,7 @@ namespace Game.Player.CharacterController.States
 
         public void Enter()
         {
-            Debug.Log("Enter State: Hover");
+            //Debug.Log("Enter State: Hover");
             ParticleSystem.MainModule mainMod = charController.hoverFX.main;
             mainMod.duration = hoverData.Duration;
             charController.hoverFX.Play();
@@ -57,7 +57,7 @@ namespace Game.Player.CharacterController.States
 
         public void Exit()
         {
-            Debug.Log("Exit State: Hover");
+            //Debug.Log("Exit State: Hover");
             /*PlayerMovementInfo movementInfo = charController.MovementInfo;
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
             RaycastHit hit;

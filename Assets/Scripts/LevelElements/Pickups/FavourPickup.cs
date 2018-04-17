@@ -12,12 +12,15 @@ namespace Game.LevelElements
 
         [Header("FavourPickup")]
         [SerializeField] private eAbilityType ability;
+        private Ability AbilityData {
+            get { return GameController.PlayerModel.AbilityData.GetAbility(ability);  }
+        }
 
         //##################################################################
 
-        public override string PickupName { get { return ability.ToString() + " Ability"; } }
-		public override string OnPickedUpMessage { get { return "You've been granted the "+ability.ToString() + " Ability"; } }
-        public override string OnPickedUpDescription { get { return "Press Back to see how to use your abilities"; } }
+        public override string PickupName { get { return AbilityData.Name; } }
+		public override string OnPickedUpMessage { get { return "You've been granted the " + AbilityData.Name + " Ability"; } }
+        public override string OnPickedUpDescription { get { return AbilityData.Description; } }
 
         //##################################################################
 
