@@ -1,9 +1,11 @@
 ﻿using Game.GameControl;
 using Game.LevelElements;
 using Game.Model;
+using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game.Player {
+namespace Game.Player
+{
     /// <summary>
     /// This class handles picking up of objects in the world.
     /// </summary>
@@ -25,35 +27,63 @@ namespace Game.Player {
         bool needleSlotInRange = false;
         bool eyeInRange = false;
         Transform airParticle, airOrigin;
-        //Beacon beacon;
 
         //
         bool isActive = false;
         bool isInteractButtonDown = false;
         bool isDriftButtonDown = false;
 
+        private List<IInteractable> nearbyInteractableObjects = new List<IInteractable>();
+        private IInteractable currentInteractableObject;
+
         //########################################################################
 
         #region initialization
-        
-		public void Initialize(IGameControllerBase gameController)
+
+        public void Initialize(IGameControllerBase gameController)
         {
             this.gameController = gameController;
+
+            nearbyInteractableObjects.Clear();
+            currentInteractableObject = null;
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
         }
 
         #endregion initialization
-        
+
         //########################################################################
 
-        #region input handling
-            
-        void Update()
+        #region operations
+
+        private void Update()
         {
             if (!isActive)
+            {
                 return;
+            }
+
+            SetCurrentInteractableObject();
+
+            if (Input.GetButtonDown("Interact"))
+            {
+                if (currentInteractableObject != null)
+                {
+                    currentInteractableObject.OnInteraction();
+                }
+                else
+                {
+                    gameController.EchoManager.CreateEcho(true);
+                }
+            }
+            else if (Input.GetButtonDown("Drift"))
+            {
+                gameController.EchoManager.Drift();
+            }
+
+            return;
+            //éééééééééééé
 
             if (Input.GetButtonDown("Interact") && !isInteractButtonDown)
             {
@@ -64,7 +94,7 @@ namespace Game.Player {
                 {
                     if (!currentPickup.IsPickedUp)
                     {
-                        currentPickup.PickupObject();
+                        currentPickup.OnInteraction();
                     }
 
                     //clean up
@@ -90,9 +120,10 @@ namespace Game.Player {
                     Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(false));
                 }
                 //needle
-                else if (needleInRange || needleSlotInRange) {
+                else if (needleInRange || needleSlotInRange)
+                {
 
-                    foreach(Transform child in needleSlotCollider.transform)
+                    foreach (Transform child in needleSlotCollider.transform)
                         child.gameObject.SetActive(gameController.PlayerModel.hasNeedle);
 
                     gameController.PlayerModel.hasNeedle ^= true;
@@ -101,13 +132,14 @@ namespace Game.Player {
 
                     if (gameController.PlayerModel.hasNeedle)
                         needleSlotForDrift = needleSlotCollider;
-                    
+
                     Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(gameController.PlayerModel.hasNeedle));
 
                     ShowUiMessage(gameController.PlayerModel.hasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle", needleInRange ? "Needle" : "NeedleSlot");
                 }
                 //eye
-                else if (eyeInRange) {
+                else if (eyeInRange)
+                {
                     eyeInRange = false;
                     gameController.PlayerModel.hasNeedle = false;
                     Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(true));
@@ -126,22 +158,26 @@ namespace Game.Player {
                 isInteractButtonDown = false;
             }
 
-			// drift input handling
+            // drift input handling
             float driftInput = Input.GetAxis("Drift") + (Input.GetButtonUp("Drift") ? 1 : 0);
-            if (driftInput > 0.5f && !isDriftButtonDown)  {
+            if (driftInput > 0.5f && !isDriftButtonDown)
+            {
                 isDriftButtonDown = true;
             }
-            else if (driftInput < 0.4f && isDriftButtonDown) {
+            else if (driftInput < 0.4f && isDriftButtonDown)
+            {
                 isDriftButtonDown = false;
 
                 // stop eclipse
-                if (gameController.PlayerModel.hasNeedle) {
+                if (gameController.PlayerModel.hasNeedle)
+                {
 
                     print("Needle Slot for Drift: " + needleSlotForDrift + " Collider: " + needleSlotCollider);
 
                     gameController.PlayerModel.hasNeedle = false;
 
-                    if (needleSlotForDrift) {
+                    if (needleSlotForDrift)
+                    {
                         foreach (Transform child in needleSlotForDrift.transform)
                             child.gameObject.SetActive(true);
 
@@ -153,13 +189,15 @@ namespace Game.Player {
                     Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(false));
 
                     // stop air particles
-                } else if (airParticle) {
+                }
+                else if (airParticle)
+                {
                     airParticle.parent = airOrigin;
                     airParticle.transform.localPosition = Vector3.zero;
                     airParticle = null;
                 }
             }
-			
+
             // stop air particle if grounded
             if (airParticle && (gameController.PlayerController.CharController.CurrentState & (CharacterController.ePlayerState.move | CharacterController.ePlayerState.slide | CharacterController.ePlayerState.stand)) != 0)
             {
@@ -169,15 +207,22 @@ namespace Game.Player {
             }
         }
 
-        #endregion input handling
-
-        //########################################################################
-        //########################################################################
-
-        #region collision handling
-            
-        void OnTriggerEnter(Collider other)
+        private void OnTriggerEnter(Collider other)
         {
+            var interactableObject = other.GetComponent<IInteractable>();
+
+            if(interactableObject != null)
+            {
+                if (!nearbyInteractableObjects.Contains(interactableObject))
+                {
+                    nearbyInteractableObjects.Add(interactableObject);
+                    interactableObject.OnPlayerEnter();
+                }
+            }
+
+            return;
+            //éééééééééééé
+
             if (other.gameObject.layer == LayerMask.NameToLayer("PickUps"))
             {
                 switch (other.tag)
@@ -198,7 +243,7 @@ namespace Game.Player {
                             {
                                 currentPickup = null;
                             }
-                        }                     
+                        }
                         break;
                     //pillar entrance
                     case "Pillar":
@@ -216,7 +261,7 @@ namespace Game.Player {
                         }
 
                         var pillarExit = other.GetComponent<PillarExit>();
-                        if(pillarExit != null)
+                        if (pillarExit != null)
                         {
                             pillarExitInRange = true;
 
@@ -236,7 +281,8 @@ namespace Game.Player {
                     case "NeedleSlot":
                         // si on est dans l'éclipse on peut poser peu importe lequel c'est
                         // sinon on ne peut retirer que s'il a l'aiguille
-                        if (gameController.PlayerModel.hasNeedle || needleSlotCollider && needleSlotCollider == other) {
+                        if (gameController.PlayerModel.hasNeedle || needleSlotCollider && needleSlotCollider == other)
+                        {
                             needleSlotInRange = true;
                             needleSlotCollider = other;
 
@@ -245,11 +291,12 @@ namespace Game.Player {
                         break;
                     //eye
                     case "Eye":
-                        if (gameController.PlayerModel.hasNeedle) {
+                        if (gameController.PlayerModel.hasNeedle)
+                        {
                             eyeInRange = true;
                             ShowUiMessage("[X]: Plant Needle", other.tag);
                         }
-						break;
+                        break;
                     //echo
                     case "Echo":
                         other.GetComponent<EchoSystem.Echo>().Break(true);
@@ -272,19 +319,21 @@ namespace Game.Player {
                                 new CharacterController.States.WindTunnelState(gameController.PlayerController.CharController, gameController.PlayerController.CharController.stateMachine)
                             );
                         }
-						break;
+                        break;
                     // air particle
                     case "AirParticle":
-                        if (!airParticle) {
+                        if (!airParticle)
+                        {
                             airOrigin = other.transform;
                             airParticle = airOrigin.GetChild(0);
                             airParticle.parent = gameController.PlayerController.CharController.transform;
-                            airParticle.localPosition = new Vector3(0,1,0);
+                            airParticle.localPosition = new Vector3(0, 1, 0);
                         }
                         break;
                     // air particle
                     case "AirReceptor":
-                        if (airParticle) {
+                        if (airParticle)
+                        {
                             other.GetComponent<LevelElements.AirReceptor>().Activate();
                             Destroy(airParticle.gameObject);
                             Destroy(airOrigin.gameObject);
@@ -331,9 +380,23 @@ namespace Game.Player {
                 }
             }
         }
-        
-        void OnTriggerExit(Collider other)
+
+        private void OnTriggerExit(Collider other)
         {
+            var interactableObject = other.GetComponent<IInteractable>();
+
+            if (interactableObject != null)
+            {
+                if (nearbyInteractableObjects.Contains(interactableObject))
+                {
+                    nearbyInteractableObjects.Remove(interactableObject);
+                    interactableObject.OnPlayerExit();
+                }
+            }
+
+            return;
+            //éééééééééééé
+
             if (other.gameObject.layer == LayerMask.NameToLayer("PickUps"))
             {
                 switch (other.tag)
@@ -371,7 +434,7 @@ namespace Game.Player {
                         eyeInRange = false;
 
                         HideUiMessage(other.tag);
-						break;
+                        break;
                     //eye
                     case "Echo":
                         other.GetComponent<EchoSystem.Echo>().isActive = true;
@@ -406,7 +469,7 @@ namespace Game.Player {
                     case "Interactible":
                         other.GetComponent<Interactible>().ExitTrigger(transform);
                         break;
-                        // Zones where the player can only walk
+                    // Zones where the player can only walk
                     case "NoRunZone":
                         gameController.PlayerController.CharController.isInsideNoRunZone = false;
                         break;
@@ -418,18 +481,51 @@ namespace Game.Player {
             }
         }
 
-        #endregion collision handling
+        private void SetCurrentInteractableObject()
+        {
+            IInteractable nearestInteractableObject = null;
+            float smallestDistance = float.MaxValue;
+            Vector3 playerPosition = gameController.PlayerController.CharController.MyTransform.position;
+
+            foreach (var interactableObject in nearbyInteractableObjects)
+            {
+                if (!interactableObject.IsInteractable())
+                {
+                    continue;
+                }
+
+                float newDistance = Vector3.Distance(playerPosition, interactableObject.Position);
+                if (newDistance < smallestDistance)
+                {
+                    nearestInteractableObject = interactableObject;
+                    smallestDistance = newDistance;
+                }
+            }
+
+            if (nearestInteractableObject != currentInteractableObject)
+            {
+                currentInteractableObject.OnHoverEnd();
+                currentInteractableObject = nearestInteractableObject;
+
+                if (currentInteractableObject != null)
+                {
+                    currentInteractableObject.OnHoverBegin();
+                }
+            }
+        }
+
+        #endregion operations
 
         //########################################################################
         //########################################################################
 
         #region helper methods
-        
+
         /// <summary>
         /// Helps making sure the element turning off the UI is the same as the one turning it on.
         /// </summary>
         string lastTag;
-        
+
         void ShowUiMessage(string message, string tag)
         {
             lastTag = tag;
@@ -507,7 +603,8 @@ namespace Game.Player {
         //########################################################################
         //########################################################################
 
-        class PillarEntranceInfo {
+        class PillarEntranceInfo
+        {
             public bool IsPillarEntranceInRange = false;
             public PillarEntrance CurrentPillarEntrance = null;
         }
