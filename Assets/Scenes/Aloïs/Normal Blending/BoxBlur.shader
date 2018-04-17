@@ -64,8 +64,9 @@
 						lerp(_colXW, _color.rgb, _diffXW) + lerp(_colZW, _color.rgb, _diffZW);
 
 			s *= 0.25f;
-			return lerp(s, _color.rgb, 1-_color.a);
-			//return s;
+			//return lerp(s, _color.rgb, 1-_color.a);
+			return s;
+			//return float3(_color.a,_color.a,_color.a);
 		}
 
 		Interpolators VertexProgram (VertexData v) {
