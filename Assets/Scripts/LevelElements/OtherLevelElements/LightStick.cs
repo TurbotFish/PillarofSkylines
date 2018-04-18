@@ -2,14 +2,18 @@
 using System.Collections;
 using UnityEngine;
 
-public class AmbientBox : MonoBehaviour, IInteractable
+public class LightStick : MonoBehaviour, IInteractable
 {
     //##################################################################
 
-    [SerializeField] Color color;
-    [SerializeField] float fadeSpeed = 2;
+    [SerializeField] Renderer cube;
+    [SerializeField] Material litMaterial;
+    [SerializeField] GameObject sparkParticle;
+    [SerializeField] Light pointLight;
+    [SerializeField] float maxLightIntensity = 4;
+    [SerializeField] float timeToLightUp = 1;
 
-    Color defaultColor;
+    bool lit;
 
     //##################################################################
 
@@ -17,7 +21,7 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
     private void Start()
     {
-        defaultColor = RenderSettings.ambientLight;
+        tag = "Interactible";
     }
 
     #endregion initialization
@@ -35,21 +39,24 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
     #endregion inquiries
 
-    //################################################################## 
+    //##################################################################
 
     #region operations
 
     public void OnPlayerEnter()
     {
-        StopAllCoroutines();
-        StartCoroutine(FadeAmbient(color));
+        if (!lit)
+        {
+            lit = true;
+            cube.sharedMaterial = litMaterial;
+            sparkParticle.SetActive(true);
+            StartCoroutine(LightUp());
+        }
     }
 
     public void OnPlayerExit()
     {
-        StopAllCoroutines();
-        StartCoroutine(FadeAmbient(defaultColor));
-    }
+    }   
 
     public void OnHoverBegin()
     {
@@ -63,11 +70,11 @@ public class AmbientBox : MonoBehaviour, IInteractable
     {
     }
 
-    private IEnumerator FadeAmbient(Color goal)
+    private IEnumerator LightUp()
     {
-        while (RenderSettings.ambientLight != goal)
+        for (float elapsed = 0; elapsed < timeToLightUp; elapsed += Time.deltaTime)
         {
-            RenderSettings.ambientLight = Color.Lerp(RenderSettings.ambientLight, goal, Time.deltaTime * fadeSpeed);
+            pointLight.intensity = elapsed * maxLightIntensity;
             yield return null;
         }
     }

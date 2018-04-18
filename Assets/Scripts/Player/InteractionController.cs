@@ -64,6 +64,7 @@ namespace Game.Player
                 return;
             }
 
+            nearbyInteractableObjects.RemoveAll(item => item == null);
             SetCurrentInteractableObject();
 
             if (Input.GetButtonDown("Interact"))
@@ -82,6 +83,15 @@ namespace Game.Player
                 gameController.EchoManager.Drift();
             }
 
+            // stop air particle if grounded
+            if (airParticle && (gameController.PlayerController.CharController.CurrentState & (CharacterController.ePlayerState.move | CharacterController.ePlayerState.slide | CharacterController.ePlayerState.stand)) != 0)
+            {
+                Debug.Log("this should not be here!");
+                airParticle.parent = airOrigin;
+                airParticle.transform.localPosition = Vector3.zero;
+                airParticle = null;
+            }
+
             return;
             //éééééééééééé
 
@@ -89,38 +99,39 @@ namespace Game.Player
             {
                 isInteractButtonDown = true;
 
-                //favour
-                if (isPickupInRange)
-                {
-                    if (!currentPickup.IsPickedUp)
-                    {
-                        currentPickup.OnInteraction();
-                    }
+                ////favour
+                //if (isPickupInRange)
+                //{
+                //    if (!currentPickup.IsPickedUp)
+                //    {
+                //        currentPickup.OnInteraction();
+                //    }
 
-                    //clean up
-                    isPickupInRange = false;
-                    currentPickup = null;
-                    HideUiMessage("Favour");
-                }
-                //pillar entrance
-                else if (pillarEntranceInfo.IsPillarEntranceInRange)
-                {
-                    if (gameController.PlayerModel.CheckIsPillarUnlocked(pillarEntranceInfo.CurrentPillarEntrance.PillarId))
-                    {
-                        Utilities.EventManager.SendEnterPillarEvent(this, new Utilities.EventManager.EnterPillarEventArgs(pillarEntranceInfo.CurrentPillarEntrance.PillarId));
-                    }
-                    else
-                    {
-                        Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowPillarEntranceMenuEventArgs(pillarEntranceInfo.CurrentPillarEntrance.PillarId));
-                    }
-                }
-                //pillar exit
-                else if (pillarExitInRange)
-                {
-                    Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(false));
-                }
+                //    //clean up
+                //    isPickupInRange = false;
+                //    currentPickup = null;
+                //    HideUiMessage("Favour");
+                //}
+                ////pillar entrance
+                //else if (pillarEntranceInfo.IsPillarEntranceInRange)
+                //{
+                //    if (gameController.PlayerModel.CheckIsPillarUnlocked(pillarEntranceInfo.CurrentPillarEntrance.PillarId))
+                //    {
+                //        Utilities.EventManager.SendEnterPillarEvent(this, new Utilities.EventManager.EnterPillarEventArgs(pillarEntranceInfo.CurrentPillarEntrance.PillarId));
+                //    }
+                //    else
+                //    {
+                //        Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowPillarEntranceMenuEventArgs(pillarEntranceInfo.CurrentPillarEntrance.PillarId));
+                //    }
+                //}
+                ////pillar exit
+                //else if (pillarExitInRange)
+                //{
+                //    Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(false));
+                //}
                 //needle
-                else if (needleInRange || needleSlotInRange)
+                /*else*/
+                if (needleInRange || needleSlotInRange)
                 {
 
                     foreach (Transform child in needleSlotCollider.transform)
@@ -137,19 +148,14 @@ namespace Game.Player
 
                     ShowUiMessage(gameController.PlayerModel.hasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle", needleInRange ? "Needle" : "NeedleSlot");
                 }
-                //eye
-                else if (eyeInRange)
-                {
-                    eyeInRange = false;
-                    gameController.PlayerModel.hasNeedle = false;
-                    Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(true));
+                ////eye
+                //else if (eyeInRange)
+                //{
+                //    eyeInRange = false;
+                //    gameController.PlayerModel.hasNeedle = false;
+                //    Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(true));
 
-                    HideUiMessage("Eye");
-                }
-                ////home beacon
-                //else if (beacon && beacon.activated) {
-                //    var eventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(beacon.destination.position, Quaternion.identity, false);
-                //    Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
+                //    HideUiMessage("Eye");
                 //}
 
             }
@@ -197,21 +203,13 @@ namespace Game.Player
                     airParticle = null;
                 }
             }
-
-            // stop air particle if grounded
-            if (airParticle && (gameController.PlayerController.CharController.CurrentState & (CharacterController.ePlayerState.move | CharacterController.ePlayerState.slide | CharacterController.ePlayerState.stand)) != 0)
-            {
-                airParticle.parent = airOrigin;
-                airParticle.transform.localPosition = Vector3.zero;
-                airParticle = null;
-            }
         }
 
         private void OnTriggerEnter(Collider other)
         {
             var interactableObject = other.GetComponent<IInteractable>();
 
-            if(interactableObject != null)
+            if (interactableObject != null)
             {
                 if (!nearbyInteractableObjects.Contains(interactableObject))
                 {
@@ -227,49 +225,49 @@ namespace Game.Player
             {
                 switch (other.tag)
                 {
-                    //favour
-                    case "Favour":
-                        if (!isPickupInRange)
-                        {
-                            currentPickup = other.GetComponent<Pickup>();
+                    ////favour
+                    //case "Favour":
+                    //    if (!isPickupInRange)
+                    //    {
+                    //        currentPickup = other.GetComponent<Pickup>();
 
-                            if (!currentPickup.IsPickedUp)
-                            {
-                                isPickupInRange = true;
+                    //        if (!currentPickup.IsPickedUp)
+                    //        {
+                    //            isPickupInRange = true;
 
-                                ShowUiMessage("[X]: Accept " + currentPickup.PickupName, other.tag);
-                            }
-                            else
-                            {
-                                currentPickup = null;
-                            }
-                        }
-                        break;
-                    //pillar entrance
-                    case "Pillar":
-                        var pillarEntrance = other.GetComponent<PillarEntrance>();
-                        if (pillarEntrance != null)
-                        {
-                            if (!gameController.PlayerModel.CheckIsPillarDestroyed(pillarEntrance.PillarId))
-                            {
-                                pillarEntranceInfo.IsPillarEntranceInRange = true;
-                                pillarEntranceInfo.CurrentPillarEntrance = pillarEntrance;
+                    //            ShowUiMessage("[X]: Accept " + currentPickup.PickupName, other.tag);
+                    //        }
+                    //        else
+                    //        {
+                    //            currentPickup = null;
+                    //        }
+                    //    }
+                    //    break;
+                    ////pillar entrance
+                    //case "Pillar":
+                    //    var pillarEntrance = other.GetComponent<PillarEntrance>();
+                    //    if (pillarEntrance != null)
+                    //    {
+                    //        if (!gameController.PlayerModel.CheckIsPillarDestroyed(pillarEntrance.PillarId))
+                    //        {
+                    //            pillarEntranceInfo.IsPillarEntranceInRange = true;
+                    //            pillarEntranceInfo.CurrentPillarEntrance = pillarEntrance;
 
-                                ShowUiMessage("[X]: Enter Pillar", other.tag);
-                            }
-                            break;
-                        }
+                    //            ShowUiMessage("[X]: Enter Pillar", other.tag);
+                    //        }
+                    //        break;
+                    //    }
 
-                        var pillarExit = other.GetComponent<PillarExit>();
-                        if (pillarExit != null)
-                        {
-                            pillarExitInRange = true;
+                    //    var pillarExit = other.GetComponent<PillarExit>();
+                    //    if (pillarExit != null)
+                    //    {
+                    //        pillarExitInRange = true;
 
-                            ShowUiMessage("[X]: Exit Pillar", other.tag);
-                            break;
-                        }
+                    //        ShowUiMessage("[X]: Exit Pillar", other.tag);
+                    //        break;
+                    //    }
 
-                        break;
+                    //    break;
                     //needle
                     case "Needle":
                         needleInRange = true;
@@ -289,27 +287,27 @@ namespace Game.Player
                             ShowUiMessage(gameController.PlayerModel.hasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle", other.tag);
                         }
                         break;
-                    //eye
-                    case "Eye":
-                        if (gameController.PlayerModel.hasNeedle)
-                        {
-                            eyeInRange = true;
-                            ShowUiMessage("[X]: Plant Needle", other.tag);
-                        }
-                        break;
-                    //echo
-                    case "Echo":
-                        other.GetComponent<EchoSystem.Echo>().Break(true);
-                        break;
-                    //echo breaker
-                    case "EchoBreaker":
-                        gameController.EchoManager.BreakAll();
-                        break;
-                    //echo breaker
-                    case "EchoSeed":
-                        gameController.EchoManager.CreateEcho(false);
-                        Destroy(other.gameObject);
-                        break;
+                    ////eye
+                    //case "Eye":
+                    //    if (gameController.PlayerModel.hasNeedle)
+                    //    {
+                    //        eyeInRange = true;
+                    //        ShowUiMessage("[X]: Plant Needle", other.tag);
+                    //    }
+                    //    break;
+                    ////echo
+                    //case "Echo":
+                    //    other.GetComponent<EchoSystem.Echo>().Break(true);
+                    //    break;
+                    ////echo breaker
+                    //case "EchoBreaker":
+                    //    gameController.EchoManager.BreakAll();
+                    //    break;
+                    //echo seed
+                    //case "EchoSeed":
+                    //    gameController.EchoManager.CreateEcho(false);
+                    //    Destroy(other.gameObject);
+                    //    break;
                     //wind
                     case "Wind":
                         Utilities.EventManager.SendWindTunnelEnteredEvent(this, new Utilities.EventManager.WindTunnelPartEnteredEventArgs(other.GetComponent<WindTunnelPart>()));
@@ -361,22 +359,22 @@ namespace Game.Player
                         else
                             ShowUiMessage(tutoBox.message, other.tag);
                         break;
-                    // CameraControlTrigger
-                    case "CameraControlTrigger":
-                        gameController.CameraController.PoS_Camera.EnterTrigger(other.GetComponent<CameraControlTrigger>());
-                        break;
-                    // Miscelanous Interactive Elements
-                    case "Interactible":
-                        other.GetComponent<Interactible>().EnterTrigger(transform);
-                        break;
+                    //// CameraControlTrigger
+                    //case "CameraControlTrigger":
+                    //    gameController.CameraController.PoS_Camera.EnterTrigger(other.GetComponent<CameraControlTrigger>());
+                    //    break;
+                    //// Miscelanous Interactive Elements
+                    //case "Interactible":
+                    //    other.GetComponent<Interactible>().EnterTrigger(transform);
+                    //    break;
                     // Zones where the player can only walk
                     case "NoRunZone":
                         gameController.PlayerController.CharController.isInsideNoRunZone = true;
                         break;
-                    //other
-                    default:
-                        Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
-                        break;
+                        ////other
+                        //default:
+                        //    Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
+                        //    break;
                 }
             }
         }
@@ -401,22 +399,22 @@ namespace Game.Player
             {
                 switch (other.tag)
                 {
-                    //favour
-                    case "Favour":
-                        isPickupInRange = false;
-                        currentPickup = null;
+                    ////favour
+                    //case "Favour":
+                    //    isPickupInRange = false;
+                    //    currentPickup = null;
 
-                        HideUiMessage(other.tag);
-                        break;
-                    //pillar entrance
-                    case "Pillar":
-                        pillarEntranceInfo.IsPillarEntranceInRange = false;
-                        pillarEntranceInfo.CurrentPillarEntrance = null;
+                    //    HideUiMessage(other.tag);
+                    //    break;
+                    ////pillar entrance
+                    //case "Pillar":
+                    //    pillarEntranceInfo.IsPillarEntranceInRange = false;
+                    //    pillarEntranceInfo.CurrentPillarEntrance = null;
 
-                        pillarExitInRange = false;
+                    //    pillarExitInRange = false;
 
-                        HideUiMessage(other.tag);
-                        break;
+                    //    HideUiMessage(other.tag);
+                    //    break;
                     //needle
                     case "Needle":
                         needleInRange = false;
@@ -429,16 +427,16 @@ namespace Game.Player
 
                         HideUiMessage(other.tag);
                         break;
-                    //eye
-                    case "Eye":
-                        eyeInRange = false;
+                    ////eye
+                    //case "Eye":
+                    //    eyeInRange = false;
 
-                        HideUiMessage(other.tag);
-                        break;
-                    //eye
-                    case "Echo":
-                        other.GetComponent<EchoSystem.Echo>().isActive = true;
-                        break;
+                    //    HideUiMessage(other.tag);
+                    //    break;
+                    ////echo
+                    //case "Echo":
+                    //    other.GetComponent<EchoSystem.Echo>().isActive = true;
+                    //    break;
                     //wind
                     case "Wind":
                         Debug.Log("coucou");
@@ -461,22 +459,22 @@ namespace Game.Player
                     //case "Home":
                     //    echoManager.atHome = false;
                     //    break;
-                    // CameraControlTrigger
-                    case "CameraControlTrigger":
-                        gameController.CameraController.PoS_Camera.ExitTrigger(other.GetComponent<CameraControlTrigger>());
-                        break;
-                    // Miscelanous Interactive Elements
-                    case "Interactible":
-                        other.GetComponent<Interactible>().ExitTrigger(transform);
-                        break;
+                    //// CameraControlTrigger
+                    //case "CameraControlTrigger":
+                    //    gameController.CameraController.PoS_Camera.ExitTrigger(other.GetComponent<CameraControlTrigger>());
+                    //    break;
+                    //// Miscelanous Interactive Elements
+                    //case "Interactible":
+                    //    other.GetComponent<Interactible>().ExitTrigger(transform);
+                    //    break;
                     // Zones where the player can only walk
                     case "NoRunZone":
                         gameController.PlayerController.CharController.isInsideNoRunZone = false;
                         break;
-                    //other
-                    default:
-                        Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
-                        break;
+                        ////other
+                        //default:
+                        //    Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
+                        //    break;
                 }
             }
         }
@@ -504,7 +502,11 @@ namespace Game.Player
 
             if (nearestInteractableObject != currentInteractableObject)
             {
-                currentInteractableObject.OnHoverEnd();
+                if (currentInteractableObject != null)
+                {
+                    currentInteractableObject.OnHoverEnd();
+                }
+
                 currentInteractableObject = nearestInteractableObject;
 
                 if (currentInteractableObject != null)

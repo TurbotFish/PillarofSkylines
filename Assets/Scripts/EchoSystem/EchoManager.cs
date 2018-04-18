@@ -83,12 +83,12 @@ namespace Game.EchoSystem
 
         public void Drift()
         {
-            if (isEclipseActive)
+            if (isEclipseActive && !gameController.PlayerModel.hasNeedle)
             {
                 return;
             }
 
-            if (echoList.Count > 0)
+            if (!isEclipseActive && echoList.Count > 0)
             {
                 CreateShell();
 
@@ -278,6 +278,8 @@ namespace Game.EchoSystem
             placedEchoes = 0;
             echoParticles.RemoveAllEcho();
             echoList.Clear();
+
+            hasWaypoint = false;
         }
 
         void OnSceneChangedEventHandler(object sender, EventManager.SceneChangedEventArgs args)

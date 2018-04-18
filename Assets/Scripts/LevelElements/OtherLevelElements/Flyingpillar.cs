@@ -1,23 +1,30 @@
-﻿using Game.LevelElements;
+﻿using Game.GameControl;
+using Game.LevelElements;
+using Game.World;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class AmbientBox : MonoBehaviour, IInteractable
+public class Flyingpillar : MonoBehaviour, IInteractable, IWorldObject
 {
     //##################################################################
 
-    [SerializeField] Color color;
-    [SerializeField] float fadeSpeed = 2;
+    [SerializeField] public MovingPlatform movingPillar;
+    [SerializeField] public float damp = 0.2f;
 
-    Color defaultColor;
+    bool here;
+    Vector3 targetPos;
+    Transform player, move;
 
     //##################################################################
 
     #region initialization
 
-    private void Start()
+    public void Initialize(IGameControllerBase gameController, bool isCopy)
     {
-        defaultColor = RenderSettings.ambientLight;
+        move = movingPillar.transform;
+        targetPos = move.position;
+        player = gameController.PlayerController.transform;
     }
 
     #endregion initialization
@@ -35,20 +42,18 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
     #endregion inquiries
 
-    //################################################################## 
+    //##################################################################
 
     #region operations
 
     public void OnPlayerEnter()
     {
-        StopAllCoroutines();
-        StartCoroutine(FadeAmbient(color));
+        here = true;
     }
 
     public void OnPlayerExit()
     {
-        StopAllCoroutines();
-        StartCoroutine(FadeAmbient(defaultColor));
+        here = false;
     }
 
     public void OnHoverBegin()
@@ -63,12 +68,12 @@ public class AmbientBox : MonoBehaviour, IInteractable
     {
     }
 
-    private IEnumerator FadeAmbient(Color goal)
+    private void Update()
     {
-        while (RenderSettings.ambientLight != goal)
+        if (here)
         {
-            RenderSettings.ambientLight = Color.Lerp(RenderSettings.ambientLight, goal, Time.deltaTime * fadeSpeed);
-            yield return null;
+            targetPos.y = player.position.y;
+            move.position = Vector3.Lerp(move.position, targetPos, Time.deltaTime / damp);
         }
     }
 

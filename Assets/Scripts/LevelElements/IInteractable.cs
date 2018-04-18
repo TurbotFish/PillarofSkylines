@@ -8,7 +8,7 @@ namespace Game.LevelElements
     /// <summary>
     /// An interface for all objects in the world that react to the player's presence and/or that the player can interact with.
     /// </summary>
-    public interface IInteractable : IWorldObject
+    public interface IInteractable
     {
         /// <summary>
         /// Returns the position of the interactable object.
