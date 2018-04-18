@@ -129,25 +129,24 @@ namespace Game.Player
                 //{
                 //    Utilities.EventManager.SendLeavePillarEvent(this, new Utilities.EventManager.LeavePillarEventArgs(false));
                 //}
-                //needle
-                /*else*/
-                if (needleInRange || needleSlotInRange)
-                {
+                ////needle
+                //else if (needleInRange || needleSlotInRange)
+                //{
 
-                    foreach (Transform child in needleSlotCollider.transform)
-                        child.gameObject.SetActive(gameController.PlayerModel.hasNeedle);
+                //    foreach (Transform child in needleSlotCollider.transform)
+                //        child.gameObject.SetActive(gameController.PlayerModel.hasNeedle);
 
-                    gameController.PlayerModel.hasNeedle ^= true;
+                //    gameController.PlayerModel.hasNeedle ^= true;
 
-                    playerNeedle.SetActive(gameController.PlayerModel.hasNeedle);
+                //    playerNeedle.SetActive(gameController.PlayerModel.hasNeedle);
 
-                    if (gameController.PlayerModel.hasNeedle)
-                        needleSlotForDrift = needleSlotCollider;
+                //    if (gameController.PlayerModel.hasNeedle)
+                //        needleSlotForDrift = needleSlotCollider;
 
-                    Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(gameController.PlayerModel.hasNeedle));
+                //    Utilities.EventManager.SendEclipseEvent(this, new Utilities.EventManager.EclipseEventArgs(gameController.PlayerModel.hasNeedle));
 
-                    ShowUiMessage(gameController.PlayerModel.hasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle", needleInRange ? "Needle" : "NeedleSlot");
-                }
+                //    ShowUiMessage(gameController.PlayerModel.hasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle", needleInRange ? "Needle" : "NeedleSlot");
+                //}
                 ////eye
                 //else if (eyeInRange)
                 //{
@@ -268,25 +267,25 @@ namespace Game.Player
                     //    }
 
                     //    break;
-                    //needle
-                    case "Needle":
-                        needleInRange = true;
-                        needleSlotCollider = other;
+                    ////needle
+                    //case "Needle":
+                    //    needleInRange = true;
+                    //    needleSlotCollider = other;
 
-                        ShowUiMessage(gameController.PlayerModel.hasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle", other.tag);
-                        break;
-                    //needle slot
-                    case "NeedleSlot":
-                        // si on est dans l'éclipse on peut poser peu importe lequel c'est
-                        // sinon on ne peut retirer que s'il a l'aiguille
-                        if (gameController.PlayerModel.hasNeedle || needleSlotCollider && needleSlotCollider == other)
-                        {
-                            needleSlotInRange = true;
-                            needleSlotCollider = other;
+                    //    ShowUiMessage(gameController.PlayerModel.hasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle", other.tag);
+                    //    break;
+                    ////needle slot
+                    //case "NeedleSlot":
+                    //    // si on est dans l'éclipse on peut poser peu importe lequel c'est
+                    //    // sinon on ne peut retirer que s'il a l'aiguille
+                    //    if (gameController.PlayerModel.hasNeedle || needleSlotCollider && needleSlotCollider == other)
+                    //    {
+                    //        needleSlotInRange = true;
+                    //        needleSlotCollider = other;
 
-                            ShowUiMessage(gameController.PlayerModel.hasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle", other.tag);
-                        }
-                        break;
+                    //        ShowUiMessage(gameController.PlayerModel.hasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle", other.tag);
+                    //    }
+                    //    break;
                     ////eye
                     //case "Eye":
                     //    if (gameController.PlayerModel.hasNeedle)
@@ -308,16 +307,16 @@ namespace Game.Player
                     //    gameController.EchoManager.CreateEcho(false);
                     //    Destroy(other.gameObject);
                     //    break;
-                    //wind
-                    case "Wind":
-                        Utilities.EventManager.SendWindTunnelEnteredEvent(this, new Utilities.EventManager.WindTunnelPartEnteredEventArgs(other.GetComponent<WindTunnelPart>()));
-                        if (gameController.PlayerController.CharController.stateMachine.CurrentState != CharacterController.ePlayerState.windTunnel)
-                        {
-                            gameController.PlayerController.CharController.stateMachine.ChangeState(
-                                new CharacterController.States.WindTunnelState(gameController.PlayerController.CharController, gameController.PlayerController.CharController.stateMachine)
-                            );
-                        }
-                        break;
+                    ////wind
+                    //case "Wind":
+                    //    Utilities.EventManager.SendWindTunnelEnteredEvent(this, new Utilities.EventManager.WindTunnelPartEnteredEventArgs(other.GetComponent<WindTunnelPart>()));
+                    //    if (gameController.PlayerController.CharController.stateMachine.CurrentState != CharacterController.ePlayerState.windTunnel)
+                    //    {
+                    //        gameController.PlayerController.CharController.stateMachine.ChangeState(
+                    //            new CharacterController.States.WindTunnelState(gameController.PlayerController.CharController, gameController.PlayerController.CharController.stateMachine)
+                    //        );
+                    //    }
+                    //    break;
                     // air particle
                     case "AirParticle":
                         if (!airParticle)
@@ -339,38 +338,38 @@ namespace Game.Player
                             airOrigin = null;
                         }
                         break;
-                    // Trigger Activator
-                    case "TriggerActivator":
-                        other.GetComponent<TimedActivator>().manager.Activate();
-                        break;
-                    // Tutorial Message
-                    case "TutoBox":
-                        UI.TutoBox tutoBox = other.GetComponent<UI.TutoBox>();
-                        if (tutoBox.messageType == UI.eMessageType.Important)
-                        {
-                            ShowImportantMessage(tutoBox.message, tutoBox.description);
-                            Destroy(other.gameObject);
-                        }
-                        else if (tutoBox.messageType == UI.eMessageType.Announcement)
-                        {
-                            ShowAnnounceMessage(tutoBox.message, tutoBox.time);
-                            Destroy(other.gameObject);
-                        }
-                        else
-                            ShowUiMessage(tutoBox.message, other.tag);
-                        break;
-                    //// CameraControlTrigger
-                    //case "CameraControlTrigger":
-                    //    gameController.CameraController.PoS_Camera.EnterTrigger(other.GetComponent<CameraControlTrigger>());
-                    //    break;
-                    //// Miscelanous Interactive Elements
-                    //case "Interactible":
-                    //    other.GetComponent<Interactible>().EnterTrigger(transform);
-                    //    break;
-                    // Zones where the player can only walk
-                    case "NoRunZone":
-                        gameController.PlayerController.CharController.isInsideNoRunZone = true;
-                        break;
+                        //// Trigger Activator
+                        //case "TriggerActivator":
+                        //    other.GetComponent<TimedActivator>().manager.Activate();
+                        //    break;
+                        // Tutorial Message
+                        //case "TutoBox":
+                        //    UI.TutoBox tutoBox = other.GetComponent<UI.TutoBox>();
+                        //    if (tutoBox.messageType == UI.eMessageType.Important)
+                        //    {
+                        //        ShowImportantMessage(tutoBox.message, tutoBox.description);
+                        //        Destroy(other.gameObject);
+                        //    }
+                        //    else if (tutoBox.messageType == UI.eMessageType.Announcement)
+                        //    {
+                        //        ShowAnnounceMessage(tutoBox.message, tutoBox.time);
+                        //        Destroy(other.gameObject);
+                        //    }
+                        //    else
+                        //        ShowUiMessage(tutoBox.message, other.tag);
+                        //    break;
+                        //// CameraControlTrigger
+                        //case "CameraControlTrigger":
+                        //    gameController.CameraController.PoS_Camera.EnterTrigger(other.GetComponent<CameraControlTrigger>());
+                        //    break;
+                        //// Miscelanous Interactive Elements
+                        //case "Interactible":
+                        //    other.GetComponent<Interactible>().EnterTrigger(transform);
+                        //    break;
+                        //// Zones where the player can only walk
+                        //case "NoRunZone":
+                        //    gameController.PlayerController.CharController.isInsideNoRunZone = true;
+                        //    break;
                         ////other
                         //default:
                         //    Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
@@ -415,18 +414,18 @@ namespace Game.Player
 
                     //    HideUiMessage(other.tag);
                     //    break;
-                    //needle
-                    case "Needle":
-                        needleInRange = false;
+                    ////needle
+                    //case "Needle":
+                    //    needleInRange = false;
 
-                        HideUiMessage(other.tag);
-                        break;
-                    //needle slot
-                    case "NeedleSlot":
-                        needleSlotInRange = false;
+                    //    HideUiMessage(other.tag);
+                    //    break;
+                    ////needle slot
+                    //case "NeedleSlot":
+                    //    needleSlotInRange = false;
 
-                        HideUiMessage(other.tag);
-                        break;
+                    //    HideUiMessage(other.tag);
+                    //    break;
                     ////eye
                     //case "Eye":
                     //    eyeInRange = false;
@@ -437,24 +436,24 @@ namespace Game.Player
                     //case "Echo":
                     //    other.GetComponent<EchoSystem.Echo>().isActive = true;
                     //    break;
-                    //wind
-                    case "Wind":
-                        Debug.Log("coucou");
-                        Utilities.EventManager.SendWindTunnelExitedEvent(this, new Utilities.EventManager.WindTunnelPartExitedEventArgs(other.GetComponent<WindTunnelPart>()));
-                        break;
+                    ////wind
+                    //case "Wind":
+                    //    Debug.Log("coucou");
+                    //    Utilities.EventManager.SendWindTunnelExitedEvent(this, new Utilities.EventManager.WindTunnelPartExitedEventArgs(other.GetComponent<WindTunnelPart>()));
+                    //    break;
                     //// HomeBeacon
                     //case "Beacon":
                     //    beacon = null;
                     //    HideUiMessage(other.tag);
                     //    break;
-                    // Trigger Activator
-                    case "TriggerActivator":
-                        other.GetComponent<TimedActivator>().manager.StartTimer();
-                        break;
+                    //// Trigger Activator
+                    //case "TriggerActivator":
+                    //    other.GetComponent<TimedActivator>().manager.StartTimer();
+                    //    break;
                     // Tutorial Message
-                    case "TutoBox":
-                        HideUiMessage(other.tag);
-                        break;
+                    //case "TutoBox":
+                    //    HideUiMessage(other.tag);
+                    //    break;
                     //// Home
                     //case "Home":
                     //    echoManager.atHome = false;
@@ -468,13 +467,13 @@ namespace Game.Player
                     //    other.GetComponent<Interactible>().ExitTrigger(transform);
                     //    break;
                     // Zones where the player can only walk
-                    case "NoRunZone":
-                        gameController.PlayerController.CharController.isInsideNoRunZone = false;
-                        break;
-                        ////other
-                        //default:
-                        //    Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
-                        //    break;
+                    //case "NoRunZone":
+                    //    gameController.PlayerController.CharController.isInsideNoRunZone = false;
+                    //    break;
+                    ////other
+                    //default:
+                    //    Debug.LogWarningFormat("InteractionController: unhandled tag: \"{0}\"", other.tag);
+                    //    break;
                 }
             }
         }
