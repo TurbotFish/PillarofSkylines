@@ -42,7 +42,7 @@
 			return d;
 		}
 
-		half3 SampleBoxWithDepthCheck(float2 uv, float delta) {
+		half4 SampleBoxWithDepthCheck(float2 uv, float delta) {
 
 			float4 o = _MainTex_TexelSize.xyxy * float2(-delta, delta).xxyy;
 
@@ -79,8 +79,8 @@
 						lerp(_colXW, _color.rgb, _diffXW) + lerp(_colZW, _color.rgb, _diffZW);
 
 			s *= 0.25f;
-			//return lerp(s, _color.rgb, 1-_color.a);
-			return s;
+			return float4(lerp(s, _color.rgb, _color.a), _color.a);
+			//return s;
 			//return float3(_color.a,_color.a,_color.a);
 		}
 
@@ -107,7 +107,7 @@
 
 
 
-					return half4(SampleBoxWithDepthCheck(i.uv, 1), 1);
+					return SampleBoxWithDepthCheck(i.uv, 1);
 				}
 			ENDCG
 		}
