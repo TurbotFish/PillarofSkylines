@@ -77,7 +77,17 @@ namespace Game.World
 
         public float RenderDistanceFar { get { return renderDistanceFar; } }
 
-        public bool EditorSubScenesLoaded { get { return editorSubScenesLoaded; } }
+        public bool EditorSubScenesLoaded
+        {
+            get { return editorSubScenesLoaded; }
+#if UNITY_EDITOR
+            set
+            {
+                editorSubScenesLoaded = value;
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+            }
+#endif
+        }
 
         public float SecondaryPositionDistanceModifier { get { return secondaryPositionDistanceModifier; } }
 

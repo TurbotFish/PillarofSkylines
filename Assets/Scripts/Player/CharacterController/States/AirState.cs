@@ -119,14 +119,10 @@ namespace Game.Player.CharacterController.States
             remainingAerialJumps = stateMachine.CheckRemainingAerialJumps();
 			initializing = false;
 			firstUpdate = true;
-
-			Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
 		}
 
 		public void Exit() {
             //Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
-
-			Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
 		}
 
 		#endregion
@@ -283,16 +279,6 @@ namespace Game.Player.CharacterController.States
 		}
 
 		#endregion update
-
-		//#############################################################################
-
-		#region utils
-
-		void OnWindTunnelPartEnteredEventHandler(object sender, Utilities.EventManager.WindTunnelPartEnteredEventArgs args) {
-			stateMachine.ChangeState(new WindTunnelState(charController, stateMachine));
-		}
-
-		#endregion utils
 
 		//#############################################################################
 	}

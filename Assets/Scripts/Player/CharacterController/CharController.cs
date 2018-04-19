@@ -86,10 +86,6 @@ namespace Game.Player.CharacterController
 
         Vector3 velocity;
         Vector3 externalVelocity;
-
-        List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
-
-        public List<WindTunnelPart> WindTunnelPartList { get { return new List<WindTunnelPart>(windTunnelPartList); } }
         
         PlayerInputInfo inputInfo = new PlayerInputInfo();
 
@@ -157,8 +153,6 @@ namespace Game.Player.CharacterController
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
-            Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
-            Utilities.EventManager.WindTunnelExitedEvent += OnWindTunnelPartExitedEventHandler;
             Utilities.EventManager.GamePausedEvent += OnGamePausedEventHandler;
 
             isInitialized = true;
@@ -180,8 +174,6 @@ namespace Game.Player.CharacterController
         {
             Utilities.EventManager.OnMenuSwitchedEvent -= OnMenuSwitchedEventHandler;
             Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayerEventHandler;
-            Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
-            Utilities.EventManager.WindTunnelExitedEvent -= OnWindTunnelPartExitedEventHandler;
             Utilities.EventManager.GamePausedEvent -= OnGamePausedEventHandler;
         }
 
@@ -492,19 +484,6 @@ namespace Game.Player.CharacterController
                     ChangeGravityDirection(Vector3.down);
                 }
             }
-        }
-
-        void OnWindTunnelPartEnteredEventHandler(object sender, Utilities.EventManager.WindTunnelPartEnteredEventArgs args)
-        {
-            if (!windTunnelPartList.Contains(args.WindTunnelPart))
-            {
-                windTunnelPartList.Add(args.WindTunnelPart);
-            }
-        }
-
-        void OnWindTunnelPartExitedEventHandler(object sender, Utilities.EventManager.WindTunnelPartExitedEventArgs args)
-        {
-            windTunnelPartList.Remove(args.WindTunnelPart);
         }
 
         private void OnGamePausedEventHandler(object sender, Utilities.EventManager.GamePausedEventArgs args)

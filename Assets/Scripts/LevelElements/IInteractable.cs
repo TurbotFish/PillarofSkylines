@@ -8,8 +8,13 @@ namespace Game.LevelElements
     /// <summary>
     /// An interface for all objects in the world that react to the player's presence and/or that the player can interact with.
     /// </summary>
-    public interface IInteractible : IWorldObject
+    public interface IInteractable
     {
+        /// <summary>
+        /// Returns the position of the interactable object.
+        /// </summary>
+        Vector3 Position { get; }
+
         /// <summary>
         /// Called when the player enters the trigger collider.
         /// </summary>
@@ -23,7 +28,7 @@ namespace Game.LevelElements
         /// Used to check whether the player can interact with this object.
         /// </summary>
         /// <returns></returns>
-        bool CanBeInteractedWith();
+        bool IsInteractable();
         /// <summary>
         /// Called when this object becomes the nearest interactable object to the player.
         /// </summary>

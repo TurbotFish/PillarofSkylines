@@ -1,9 +1,12 @@
-﻿using UnityEngine;
+﻿using Game.LevelElements;
+using UnityEngine;
 
 namespace Game.UI
 {
-    public class TutoBox : MonoBehaviour
+    public class TutoBox : MonoBehaviour, IInteractable
     {
+        //########################################################################
+
         public eMessageType messageType;
 
         public string message = "EXAMPLE TUTORIAL MESSAGE";
@@ -11,6 +14,66 @@ namespace Game.UI
         public string description = "Example Description.";
         [ConditionalHide("messageType", 2)]
         public float time = 2;
-    }
-}
 
+        //########################################################################
+
+        #region inquiries
+
+        public Vector3 Position { get { return transform.position; } }
+
+        public bool IsInteractable()
+        {
+            return false;
+        }
+
+        #endregion inquiries
+
+        //########################################################################
+
+        #region operations
+
+        public void OnPlayerEnter()
+        {
+            if (messageType == eMessageType.Important)
+            {
+                var messageEventArgs = new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, messageType, description);
+                Utilities.EventManager.SendShowHudMessageEvent(this, messageEventArgs);
+
+                Destroy(gameObject);
+            }
+            else if (messageType == eMessageType.Announcement)
+            {
+                var messageEventArgs = new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, messageType, "");
+                Utilities.EventManager.SendShowHudMessageEvent(this, messageEventArgs);
+
+                Destroy(gameObject);
+            }
+            else
+            {
+                var messageEventArgs = new Utilities.EventManager.OnShowHudMessageEventArgs(true, message);
+                Utilities.EventManager.SendShowHudMessageEvent(this, messageEventArgs);
+            }
+        }
+
+        public void OnPlayerExit()
+        {
+            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
+        }
+
+        public void OnHoverBegin()
+        {
+        }
+
+        public void OnHoverEnd()
+        {
+        }
+
+        public void OnInteraction()
+        {
+        }
+
+        #endregion operations
+
+        //########################################################################
+    }
+} // end of namespace
