@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 75eac24319b2be9499a6d077cabfa52b
-timeCreated: 1524034414
+guid: 61ebba734947c114ebf8ceca686b8e66
+timeCreated: 1524037680
 licenseType: Free
 ModelImporter:
   serializedVersion: 21
@@ -9,7 +9,8 @@ ModelImporter:
     400000: //RootNode
     2300000: //RootNode
     3300000: //RootNode
-    4300000: SM_rock_L_B_col
+    4300000: SM_rock_L_B_collider
+    4300002: SM_rock_L_B_col
   materials:
     importMaterials: 0
     materialName: 0
