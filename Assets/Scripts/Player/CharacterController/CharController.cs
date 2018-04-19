@@ -100,6 +100,8 @@ namespace Game.Player.CharacterController
         /// </summary>
         public bool graviswapAvailable = false;
 
+        public bool IsGrounded { get { return (CurrentState & (ePlayerState.move | ePlayerState.slide | ePlayerState.stand)) != 0; } }
+
         //#############################################################################
 
         [Space(10)]
