@@ -60,6 +60,21 @@
 			float _diffXW = saturate(abs(SampleDepth(uv + o.xw) - _depth) / _Range);
 			float _diffZW = saturate(abs(SampleDepth(uv + o.zw) - _depth) / _Range);
 
+			float _dotXY = saturate(dot(_color.rgb, _colXY));
+			float _dotZY = saturate(dot(_color.rgb, _colZY));
+			float _dotXW = saturate(dot(_color.rgb, _colXW));
+			float _dotZW = saturate(dot(_color.rgb, _colZW));
+
+//			float _dotXY = dot(_color.rgb, _colXY);
+//			float _dotZY = dot(_color.rgb, _colZY);
+//			float _dotXW = dot(_color.rgb, _colXW);
+//			float _dotZW = dot(_color.rgb, _colZW);
+
+			_colXY = lerp(_colXY, _color.rgb, _dotXY);
+			_colZY = lerp(_colZY, _color.rgb, _dotZY);
+			_colXW = lerp(_colXW, _color.rgb, _dotXW);
+			_colZW = lerp(_colZW, _color.rgb, _dotZW);
+
 			half3 s = lerp(_colXY, _color.rgb, _diffXY) + lerp(_colZY, _color.rgb, _diffZY) +
 						lerp(_colXW, _color.rgb, _diffXW) + lerp(_colZW, _color.rgb, _diffZW);
 
