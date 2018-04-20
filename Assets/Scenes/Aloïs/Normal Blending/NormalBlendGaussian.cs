@@ -79,6 +79,32 @@ public class NormalBlendGaussian : MonoBehaviour {
 
 		int _normalsCopyID0 = Shader.PropertyToID ("_NormalsCopyTexture0");
 
+		#region downsampling
+//		int _normalsDownRes = Shader.PropertyToID ("_normalsDownRes");
+//		int _normalsDownRes2 = Shader.PropertyToID ("_normalsDownRes2");
+//
+//		_buff.GetTemporaryRT (_normalsCopyID0, -2, -2, 0, FilterMode.Bilinear);
+//		_buff.GetTemporaryRT (_normalsDownRes, -2, -2, 0, FilterMode.Bilinear);
+//		_buff.GetTemporaryRT (_normalsDownRes, -1, -1, 0, FilterMode.Bilinear);
+//
+//		_buff.Blit (BuiltinRenderTextureType.GBuffer2, _normalsDownRes, blurMat, 0);
+//		_buff.Blit (_normalsDownRes, BuiltinRenderTextureType.GBuffer2, blurMat, 1);
+//		_buff.Blit (BuiltinRenderTextureType.GBuffer2, _normalsCopyID0);
+//
+//		for (int i = 0; i < iterations; i++) {
+//			_buff.Blit (_normalsCopyID0, _normalsDownRes, blurMat, 0);
+//			_buff.Blit (_normalsDownRes, _normalsCopyID0, blurMat, 1);
+//		}
+//
+//		_buff.Blit (_normalsCopyID0, BuiltinRenderTextureType.GBuffer2);
+//
+//		_buff.ReleaseTemporaryRT (_normalsCopyID0);
+//		_buff.ReleaseTemporaryRT (_normalsDownRes);
+		#endregion
+
+
+
+		#region no downsampling
 		_buff.GetTemporaryRT (_normalsCopyID0, _camWidth, _camHeight, 0, FilterMode.Bilinear);
 		_buff.Blit (BuiltinRenderTextureType.GBuffer2, _normalsCopyID0, blurMat, 0);
 		_buff.Blit (_normalsCopyID0, BuiltinRenderTextureType.GBuffer2, blurMat, 1);
@@ -87,9 +113,11 @@ public class NormalBlendGaussian : MonoBehaviour {
 			_buff.Blit (BuiltinRenderTextureType.GBuffer2, _normalsCopyID0, blurMat, 0);
 			_buff.Blit (_normalsCopyID0, BuiltinRenderTextureType.GBuffer2, blurMat, 1);
 		}
-
-		//_buff.Blit (_normalsCopyID0, BuiltinRenderTextureType.GBuffer2);
+		_buff.Blit (_normalsCopyID0, BuiltinRenderTextureType.GBuffer2);
 		_buff.ReleaseTemporaryRT (_normalsCopyID0);
+		#endregion 
+
+
 
 		_cam.AddCommandBuffer (CameraEvent.BeforeLighting, _buff);
 	}
