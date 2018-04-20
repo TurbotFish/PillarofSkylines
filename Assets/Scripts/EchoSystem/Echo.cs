@@ -5,26 +5,28 @@ namespace Game.EchoSystem
     [RequireComponent(typeof(Collider))]
     public class Echo : MonoBehaviour
     {
-        new BoxCollider collider;
-        public bool isActive, isFrozen, playerEcho;
+        [SerializeField] public bool isActive;
+        [SerializeField] private bool isFrozen;
+        [SerializeField] public bool playerEcho; // TODO: init
+        [SerializeField] private float colliderSizeWhenSolid = 2;
 
-        public float colliderSizeWhenSolid = 2;
-        Vector3 defaultColliderSize;
-
-        [SerializeField] GameObject fluidEcho, solidEcho;
-
-        [HideInInspector] public EchoManager echoManager;
-        int pickUpLayer;
-
-        public Transform MyTransform { get; private set; }
-
-        Transform echoTransform;
+        [SerializeField] private GameObject fluidEcho;
+        [SerializeField] private GameObject solidEcho;
 
         [Header("Animation")]
-        [SerializeField] float speed = 1;
-        [SerializeField] float intensity = 0.2f;
-        [SerializeField] float height = 1.5f;
-        Vector3 fxPosition;
+        [SerializeField] private float speed = 1;
+        [SerializeField] private float intensity = 0.2f;
+        [SerializeField] private float height = 1.5f;
+
+        [HideInInspector] public EchoManager echoManager; // TODO: init
+
+        private new BoxCollider collider;       
+        private Vector3 defaultColliderSize;
+        private int pickUpLayer;
+        private Transform echoTransform;      
+        private Vector3 fxPosition;
+
+        public Transform MyTransform { get; private set; }
 
         //##################################################################
 
@@ -93,7 +95,7 @@ namespace Game.EchoSystem
 
         private void OnTriggerExit(Collider other)
         {
-            if(other.tag == "Player")
+            if (other.tag == "Player")
             {
                 isActive = true;
             }
@@ -110,7 +112,7 @@ namespace Game.EchoSystem
                 }
                 echoManager.Break(this);
             }
-        }    
+        }
 
         //##################################################################
     }
