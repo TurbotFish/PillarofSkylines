@@ -166,11 +166,6 @@ namespace Game.Player.CharacterController
             if (timerBeforeForgetVBC > 0)
             {
                 timerBeforeForgetVBC -= Time.deltaTime;
-                /*if (velocityBeforeCollision != Vector3.zero)
-                {
-                    Debug.Log("checking for velocity before collision : " + velocityBeforeCollision);
-                    Debug.DrawRay((myTransform.position + playerAngle * center), velocityBeforeCollision, Color.red);
-                }*/
                 if (velocityBeforeCollision != Vector3.zero && !Physics.CapsuleCast(
                     (myTransform.position + playerAngle * center) - (playerAngle * capsuleHeightModifier / 2),
                     (myTransform.position + playerAngle * center) + (playerAngle * capsuleHeightModifier / 2),
@@ -181,6 +176,7 @@ namespace Game.Player.CharacterController
                     ((velocityBeforeCollision.y > 0 || myPlayer.CurrentState == ePlayerState.glide) ? collisionMaskNoCloud : collisionMask)))
                 {
                     //Debug.Log("managed to add velocity from before collision");
+                    Debug.Log("added VBC : " + velocityBeforeCollision);
                     finalVelocity = velocityBeforeCollision.normalized * finalVelocity.magnitude;
                     velocityBeforeCollision = Vector3.zero;
                 }
@@ -192,7 +188,7 @@ namespace Game.Player.CharacterController
 
             //Update collision informations
             CollisionUpdate(velocity);
-
+            
             //**
             var pos2 = myTransform.position;
             if((pos2-pos1).magnitude > 0.01f)
@@ -506,7 +502,7 @@ namespace Game.Player.CharacterController
                 )
             {
 
-                if (collisionNumber == 0 && velocityBeforeCollision == Vector3.zero && (myPlayer.CurrentState != ePlayerState.slide || myPlayer.stateMachine.timeInCurrentState < 0.05f))
+                if (collisionNumber == 0 && velocityBeforeCollision == Vector3.zero && (myPlayer.CurrentState != ePlayerState.slide || myPlayer.stateMachine.timeInCurrentState < 0.05f) && myPlayer.CurrentState != ePlayerState.wallRun)
                 {
                     //Debug.Log("hey the velocity before collision is : " + velocity);
                     timerBeforeForgetVBC = 0.05f;
