@@ -5,7 +5,7 @@ using System;
 [ExecuteInEditMode, RequireComponent(typeof(Camera))]
 public class NormalBlendBuffer : MonoBehaviour {
 
-	public bool ApplyOnSceneView = true;
+	//public bool ApplyOnSceneView = true;
 
 	public Shader blurShader;
 
@@ -19,9 +19,9 @@ public class NormalBlendBuffer : MonoBehaviour {
 	Material blurMat;
 
 	Camera mainCam;
-	Camera sceneViewCam;
+	//Camera sceneViewCam;
 	CommandBuffer cBuffer;
-	CommandBuffer cBufferScene;
+	//CommandBuffer cBufferScene;
 
 	void OnEnable(){
 
@@ -29,21 +29,21 @@ public class NormalBlendBuffer : MonoBehaviour {
 		RemoveBuffer (mainCam, cBuffer);
 		GenerateBuffer (mainCam, cBuffer);
 
-		#if UNITY_EDITOR
-		RemoveBuffer (sceneViewCam, cBufferScene);
-		if (ApplyOnSceneView)
-			GenerateBuffer (sceneViewCam, cBufferScene);
-		
-		#endif
+//		#if UNITY_EDITOR
+//		RemoveBuffer (sceneViewCam, cBufferScene);
+//		if (ApplyOnSceneView)
+//			GenerateBuffer (sceneViewCam, cBufferScene);
+//		
+//		#endif
 	}
 
 	void OnDisable(){
 		RemoveBuffer (mainCam, cBuffer);
 
-		#if UNITY_EDITOR
-
-		RemoveBuffer (sceneViewCam, cBufferScene);
-		#endif
+//		#if UNITY_EDITOR
+//
+//		RemoveBuffer (sceneViewCam, cBufferScene);
+//		#endif
 
 		DestroyImmediate (blurMat);
 	}
@@ -58,11 +58,11 @@ public class NormalBlendBuffer : MonoBehaviour {
 		blurMat.SetFloat ("_Range", depthCheckRange);
 		GenerateBuffer (mainCam, cBuffer);
 
-		#if UNITY_EDITOR
-		RemoveBuffer (sceneViewCam, cBufferScene);
-		if (ApplyOnSceneView) 
-			GenerateBuffer (sceneViewCam, cBufferScene);
-		#endif
+//		#if UNITY_EDITOR
+//		RemoveBuffer (sceneViewCam, cBufferScene);
+//		if (ApplyOnSceneView) 
+//			GenerateBuffer (sceneViewCam, cBufferScene);
+//		#endif
 	}
 
 
@@ -82,12 +82,12 @@ public class NormalBlendBuffer : MonoBehaviour {
 		if (mainCam == null)
 			mainCam = GetComponent<Camera> ();
 
-		#if UNITY_EDITOR
-		if(sceneViewCam == null){
-			if(UnityEditor.SceneView.lastActiveSceneView.camera != null)
-				sceneViewCam = UnityEditor.SceneView.lastActiveSceneView.camera;
-		}
-		#endif
+//		#if UNITY_EDITOR
+//		if(sceneViewCam == null){
+//			if(UnityEditor.SceneView.lastActiveSceneView.camera != null)
+//				sceneViewCam = UnityEditor.SceneView.lastActiveSceneView.camera;
+//		}
+//		#endif
 
 		if (blurMat == null) {
 			blurMat = new Material (blurShader);
@@ -100,10 +100,10 @@ public class NormalBlendBuffer : MonoBehaviour {
 		cBuffer.name = "Normal Blend Buffer";
 
 			
-		#if UNITY_EDITOR
-		cBufferScene = new CommandBuffer ();
-		cBufferScene.name = "Normal Blend Buffer Scene";
-		#endif
+//		#if UNITY_EDITOR
+//		cBufferScene = new CommandBuffer ();
+//		cBufferScene.name = "Normal Blend Buffer Scene";
+//		#endif
 	}
 
 	void GenerateBuffer(Camera _cam, CommandBuffer _buff){
