@@ -119,14 +119,10 @@ namespace Game.Player.CharacterController.States
             remainingAerialJumps = stateMachine.CheckRemainingAerialJumps();
 			initializing = false;
 			firstUpdate = true;
-
-			Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
 		}
 
 		public void Exit() {
             //Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
-
-			Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
 		}
 
 		#endregion
@@ -176,7 +172,7 @@ namespace Game.Player.CharacterController.States
 				stateMachine.ChangeState(new GlideState(charController, stateMachine));
 			}
             //landing on slope
-            else if (collisionInfo.below && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < generalData.MinWallAngle && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > generalData.MaxSlopeAngle 
+            else if (collisionInfo.below && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < generalData.MinWallAngle && ((Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > generalData.MaxSlopeAngle && !collisionInfo.NotSlippySlope)
                 || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f)) {
 				stateMachine.ChangeState(new SlideState(charController, stateMachine));
 				charController.fxManager.FootDustPlay ();
@@ -283,16 +279,6 @@ namespace Game.Player.CharacterController.States
 		}
 
 		#endregion update
-
-		//#############################################################################
-
-		#region utils
-
-		void OnWindTunnelPartEnteredEventHandler(object sender, Utilities.EventManager.WindTunnelPartEnteredEventArgs args) {
-			stateMachine.ChangeState(new WindTunnelState(charController, stateMachine));
-		}
-
-		#endregion utils
 
 		//#############################################################################
 	}

@@ -16,7 +16,7 @@ namespace Game.EchoSystem
 
         [Header("ShellFX")]
         [SerializeField] private GameObject shell;
-		public bool useShells = false;
+        public bool useShells = false;
 
         private Animator playerAnimator;
 
@@ -53,7 +53,7 @@ namespace Game.EchoSystem
             EventManager.PreSceneChangeEvent += OnPreSceneChangeEvent;
             EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
             EventManager.SetWaypointEvent += OnSetWaypointEventHandler;
-        }       
+        }
 
         #endregion initialization
 
@@ -64,16 +64,16 @@ namespace Game.EchoSystem
             if (isActive && !isEclipseActive)
             {
                 //drift stuff (???)
-                bool driftInput = Input.GetButtonDown("Drift");
+                //bool driftInput = Input.GetButtonDown("Drift");
 
-                if (driftInput)
-                    Drift();
+                //if (driftInput)
+                //    Drift();
 
                 //create new echo
-                if (charController.InputInfo.echoButtonUp && charController.InputInfo.echoButtonTimePressed < 1f && gameController.PlayerModel.CheckAbilityActive(eAbilityType.Echo))
-                {
-                    CreateEcho(true);
-                }
+                //if (charController.InputInfo.echoButtonUp && charController.InputInfo.echoButtonTimePressed < 1f && gameController.PlayerModel.CheckAbilityActive(eAbilityType.Echo))
+                //{
+                //    CreateEcho(true);
+                //}
             }
         }
 
@@ -81,9 +81,14 @@ namespace Game.EchoSystem
 
         #region private methods
 
-        void Drift()
+        public void Drift()
         {
-            if (echoList.Count > 0)
+            if (isEclipseActive && !gameController.PlayerModel.hasNeedle)
+            {
+                return;
+            }
+
+            if (!isEclipseActive && echoList.Count > 0)
             {
                 CreateShell();
 
@@ -98,7 +103,8 @@ namespace Game.EchoSystem
                 EventManager.SendEchoDestroyedEvent(this);
                 Break(targetEcho);
 
-            } else if (hasWaypoint)
+            }
+            else if (hasWaypoint)
             {
                 CreateShell();
 
@@ -211,20 +217,21 @@ namespace Game.EchoSystem
 
         void CreateShell()
         {
-			if (useShells) {
-				GameObject _shell;
-				_shell = Instantiate(shell, gameController.PlayerController.PlayerTransform.position, gameController.PlayerController.PlayerTransform.rotation) as GameObject;
-				//_shell.GetComponent<Animator> ().runtimeAnimatorController = playerAnimator.runtimeAnimatorController;
-				Animator _anim = _shell.GetComponent<Animator>();
-				Debug.Log("player animator : " + playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash);
-				_anim.Play(playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash, 0, playerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime);
-				int i = 0;
-				foreach (var param in playerAnimator.parameters)
-				{
-					_anim.parameters[i] = playerAnimator.parameters[i];
-				}
-				_anim.speed = 0;
-			}
+            if (useShells)
+            {
+                GameObject _shell;
+                _shell = Instantiate(shell, gameController.PlayerController.PlayerTransform.position, gameController.PlayerController.PlayerTransform.rotation) as GameObject;
+                //_shell.GetComponent<Animator> ().runtimeAnimatorController = playerAnimator.runtimeAnimatorController;
+                Animator _anim = _shell.GetComponent<Animator>();
+                Debug.Log("player animator : " + playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash);
+                _anim.Play(playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash, 0, playerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime);
+                int i = 0;
+                foreach (var param in playerAnimator.parameters)
+                {
+                    _anim.parameters[i] = playerAnimator.parameters[i];
+                }
+                _anim.speed = 0;
+            }
 
         }
 
@@ -271,6 +278,8 @@ namespace Game.EchoSystem
             placedEchoes = 0;
             echoParticles.RemoveAllEcho();
             echoList.Clear();
+
+            hasWaypoint = false;
         }
 
         void OnSceneChangedEventHandler(object sender, EventManager.SceneChangedEventArgs args)

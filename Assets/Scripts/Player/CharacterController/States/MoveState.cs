@@ -49,7 +49,7 @@ namespace Game.Player.CharacterController.States
             } else if(inputInfo.sprintButton && (!collisionInfo.below || collisionInfo.cornerNormal) && !stateMachine.CheckStateLocked(ePlayerState.hover))
             {
                 stateMachine.ChangeState(new HoverState(charController, stateMachine));
-            } else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MinWallAngle && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle 
+            } else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MinWallAngle && ((Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle && !collisionInfo.NotSlippySlope)
                 || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f) 
                 && !collisionInfo.cornerNormal)
             {

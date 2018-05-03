@@ -2,6 +2,7 @@
 {
     public class AirReceptor : Trigger
     {
+        //########################################################################
         public void Activate()
         {
             SetTriggerState(true);

@@ -86,10 +86,6 @@ namespace Game.Player.CharacterController
 
         Vector3 velocity;
         Vector3 externalVelocity;
-
-        List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
-
-        public List<WindTunnelPart> WindTunnelPartList { get { return new List<WindTunnelPart>(windTunnelPartList); } }
         
         PlayerInputInfo inputInfo = new PlayerInputInfo();
 
@@ -103,6 +99,8 @@ namespace Game.Player.CharacterController
         /// debug pour graviswap parce que je sais pas activer/désactiver des abilities
         /// </summary>
         public bool graviswapAvailable = false;
+
+        public bool IsGrounded { get { return (CurrentState & (ePlayerState.move | ePlayerState.slide | ePlayerState.stand)) != 0; } }
 
         //#############################################################################
 
@@ -157,8 +155,6 @@ namespace Game.Player.CharacterController
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
-            Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
-            Utilities.EventManager.WindTunnelExitedEvent += OnWindTunnelPartExitedEventHandler;
             Utilities.EventManager.GamePausedEvent += OnGamePausedEventHandler;
 
             isInitialized = true;
@@ -180,8 +176,6 @@ namespace Game.Player.CharacterController
         {
             Utilities.EventManager.OnMenuSwitchedEvent -= OnMenuSwitchedEventHandler;
             Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayerEventHandler;
-            Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
-            Utilities.EventManager.WindTunnelExitedEvent -= OnWindTunnelPartExitedEventHandler;
             Utilities.EventManager.GamePausedEvent -= OnGamePausedEventHandler;
         }
 
@@ -442,9 +436,8 @@ namespace Game.Player.CharacterController
             {
                 turn = 0;
             }
-
             animator.SetFloat("Turn", turn);
-            animator.SetBool("OnGround", tempCollisionInfo.below || stateMachine.CurrentState == ePlayerState.hover);
+            animator.SetBool("OnGround", (tempCollisionInfo.below && Vector3.Angle(tempCollisionInfo.currentGroundNormal, movementInfo.up) < CharData.General.MinWallAngle) || stateMachine.CurrentState == ePlayerState.hover);
             animator.SetFloat("Speed", Vector3.ProjectOnPlane(velocity, Vector3.up).magnitude / animationRunSpeed);
             //animator.SetFloat("Turn", turn);
             animator.SetFloat("VerticalSpeed", velocity.y / animationJumpSpeed);
@@ -493,19 +486,6 @@ namespace Game.Player.CharacterController
                     ChangeGravityDirection(Vector3.down);
                 }
             }
-        }
-
-        void OnWindTunnelPartEnteredEventHandler(object sender, Utilities.EventManager.WindTunnelPartEnteredEventArgs args)
-        {
-            if (!windTunnelPartList.Contains(args.WindTunnelPart))
-            {
-                windTunnelPartList.Add(args.WindTunnelPart);
-            }
-        }
-
-        void OnWindTunnelPartExitedEventHandler(object sender, Utilities.EventManager.WindTunnelPartExitedEventArgs args)
-        {
-            windTunnelPartList.Remove(args.WindTunnelPart);
         }
 
         private void OnGamePausedEventHandler(object sender, Utilities.EventManager.GamePausedEventArgs args)

@@ -77,7 +77,17 @@ namespace Game.World
 
         public float RenderDistanceFar { get { return renderDistanceFar; } }
 
-        public bool EditorSubScenesLoaded { get { return editorSubScenesLoaded; } }
+        public bool EditorSubScenesLoaded
+        {
+            get { return editorSubScenesLoaded; }
+#if UNITY_EDITOR
+            set
+            {
+                editorSubScenesLoaded = value;
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+            }
+#endif
+        }
 
         public float SecondaryPositionDistanceModifier { get { return secondaryPositionDistanceModifier; } }
 
@@ -601,6 +611,7 @@ namespace Game.World
                     float time = 0;
                     float duration;
                     LoadingMeasurement measurement = null;
+                    
 
                     measurement = loadingDebug.Where(i =>
                         i.regionName == job.Region.name &&
@@ -621,13 +632,13 @@ namespace Game.World
                     time = Time.time;
                     //########
 
-                    if (CurrentState == eWorldControllerState.Activating)
-                    {
-                        SceneManager.LoadScene(sceneName, LoadSceneMode.Additive);
-                        yield return null;
-                    }
-                    else
-                    {
+                    //if (CurrentState == eWorldControllerState.Activating)
+                    //{
+                    //    SceneManager.LoadScene(sceneName, LoadSceneMode.Additive);
+                    //    yield return null;
+                    //}
+                    //else
+                    //{
                         async = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
                         async.allowSceneActivation = false;
 
@@ -635,7 +646,7 @@ namespace Game.World
                         {
                             yield return null;
                         }
-                    }
+                    //}
 
                     //########
                     duration = Time.time - time;
@@ -648,14 +659,14 @@ namespace Game.World
                     time = Time.time;
                     //########
 
-                    if (CurrentState != eWorldControllerState.Activating)
-                    {
+                    //if (CurrentState != eWorldControllerState.Activating)
+                    //{
                         async.allowSceneActivation = true;
                         while (!async.isDone)
                         {
                             yield return null;
                         }
-                    }
+                    //}
 
                     //########
                     duration = Time.time - time;

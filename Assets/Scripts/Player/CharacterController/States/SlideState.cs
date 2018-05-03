@@ -49,7 +49,7 @@ namespace Game.Player.CharacterController.States
             //jump
             if (inputInfo.jumpButtonDown && timerBeforeJump<=0f)
             {
-                Debug.Log("hey : " + movementInfo.velocity.sqrMagnitude / 100);
+                //Debug.Log("hey : " + movementInfo.velocity.sqrMagnitude / 100);
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
                 state.SetJumpDirection(Vector3.Lerp(charController.MyTransform.up, Vector3.ProjectOnPlane(collisionInfo.currentGroundNormal, charController.MyTransform.up), movementInfo.velocity.sqrMagnitude/100));
@@ -68,7 +68,7 @@ namespace Game.Player.CharacterController.States
                 stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             }
             //stop
-            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle && !collisionInfo.SlippySlope || Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < 2f)
+            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle && !collisionInfo.SlippySlope|| collisionInfo.NotSlippySlope || Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < 2f)
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
             }

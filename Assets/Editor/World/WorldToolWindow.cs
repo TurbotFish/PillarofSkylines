@@ -46,7 +46,14 @@ namespace Game.World
                     if (GUILayout.Button("Export SubScenes"))
                     {
                         working = true;
-                        ExportSubScenes();
+                        ExportSubScenes(true);
+                        working = false;
+                    }
+
+                    if(GUILayout.Button("Export SubScenes - no baking"))
+                    {
+                        working = true;
+                        ExportSubScenes(false);
                         working = false;
                     }
 
@@ -198,8 +205,9 @@ namespace Game.World
             }
 
             //Debug.Log("ImportSubScenes: aaaa");
-            subScenesLoaded.boolValue = true;
-            serializedObject.ApplyModifiedProperties();
+            //subScenesLoaded.boolValue = true;
+            //serializedObject.ApplyModifiedProperties();
+            worldController.EditorSubScenesLoaded = true;
 
             //clear subScene folder
             CleanSubSceneFolder();
@@ -217,7 +225,7 @@ namespace Game.World
         /// Coroutine that creates the duplications of the world, moves them to separate scenes and does other stuff.
         /// </summary>
         /// <returns></returns>
-        private void ExportSubScenes()
+        private void ExportSubScenes(bool bakeOcclusion)
         {
             if (!worldController.EditorSubScenesLoaded)
             {
@@ -238,10 +246,10 @@ namespace Game.World
             CleanSubSceneFolder();
 
             //delete Occlusion folder
-            //string occlusionFolderPath = Application.dataPath;
-            //occlusionFolderPath = occlusionFolderPath.Remove(occlusionFolderPath.LastIndexOf('A')); //removes the "Assets" part at the end
-            //occlusionFolderPath += "Library/Occlusion";
-            //FileUtil.DeleteFileOrDirectory(occlusionFolderPath);
+            string occlusionFolderPath = Application.dataPath;
+            occlusionFolderPath = occlusionFolderPath.Remove(occlusionFolderPath.LastIndexOf('A')); //removes the "Assets" part at the end
+            occlusionFolderPath += "Library/Occlusion";
+            FileUtil.DeleteFileOrDirectory(occlusionFolderPath);
 
             //++++++++++++++++
             stopWatch.Stop();
@@ -313,7 +321,10 @@ namespace Game.World
             stopWatch.Restart();
             //++++++++++++++++
 
-            StaticOcclusionCulling.Compute();
+            if (bakeOcclusion)
+            {
+                StaticOcclusionCulling.Compute();
+            }
 
             //++++++++++++++++
             stopWatch.Stop();
@@ -356,9 +367,9 @@ namespace Game.World
                     }
                 }
 
-                if(superRegionType != eSuperRegionType.Centre)
+                if (superRegionType != eSuperRegionType.Centre)
                 {
-                    foreach(var region in regionDict[superRegionType].Values)
+                    foreach (var region in regionDict[superRegionType].Values)
                     {
                         DestroyImmediate(region.gameObject);
                     }
@@ -373,9 +384,10 @@ namespace Game.World
 
             EditorBuildSettings.scenes = buildSettingsScenes.ToArray();
 
-            subScenesLoaded.boolValue = false;
+            //subScenesLoaded.boolValue = false;
+            //serializedObject.ApplyModifiedProperties();
+            worldController.EditorSubScenesLoaded = false;
 
-            serializedObject.ApplyModifiedProperties();
             EditorUtility.SetDirty(worldController);
             EditorSceneManager.MarkSceneDirty(worldController.gameObject.scene);
 
