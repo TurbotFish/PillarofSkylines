@@ -119,10 +119,17 @@ namespace Game.Player.CharacterController.States
 
             //Debug.Log("target velocity : " + targetVelocity + " forward : " + charController.MyTransform.forward);
 
+            
+
             //Stall when the player is too slow
             if (currentSpeed < glideData.StallSpeed) {
 				verticalAngle = glideData.MaxAngle;
 			}
+
+            if (currentSpeed < 0f)
+            {
+
+            }
 
             //---------HORIZONTAL
 
