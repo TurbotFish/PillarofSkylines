@@ -126,9 +126,10 @@ namespace Game.Player.CharacterController.States
 				verticalAngle = glideData.MaxAngle;
 			}
 
+
             if (currentSpeed < 0f)
             {
-
+                targetVelocity = Quaternion.AngleAxis((90f - glideData.MaxAngle) * 2, charController.MyTransform.right) * targetVelocity * currentSpeed - charController.MyTransform.up * glideData.StaticSpeed;
             }
 
             //---------HORIZONTAL
