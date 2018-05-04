@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Game.Player.CharacterController;
+using Game.GameControl;
 
 [AddComponentMenu("Camera/Third Person Camera")]
 [RequireComponent(typeof(Camera))]
@@ -146,12 +147,16 @@ public class PoS_Camera : MonoBehaviour
 
     Vector3 characterUp;
 
+    private IGameControllerBase gameController;
+
     #endregion
 
     #region MonoBehaviour
 
-    public void Initialize()
+    public void Initialize(IGameControllerBase gameController)
     {
+        this.gameController = gameController;
+
         camera = GetComponent<Camera>();
     }
 
@@ -215,6 +220,11 @@ public class PoS_Camera : MonoBehaviour
 
         if (enablePanoramaMode)
             DoPanorama();
+
+        if (gameController.DuplicationCameraController != null)
+        {
+            gameController.DuplicationCameraController.UpdateDuplicationCameras();
+        }
     }
     #endregion
 
