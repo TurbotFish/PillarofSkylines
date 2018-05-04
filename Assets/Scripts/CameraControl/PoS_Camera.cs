@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Game.Player.CharacterController;
+using Game.GameControl;
 
 [AddComponentMenu("Camera/Third Person Camera")]
 [RequireComponent(typeof(Camera))]
@@ -144,19 +145,27 @@ public class PoS_Camera : MonoBehaviour
 
     public Camera CameraComponent { get { return this.camera; } }
 
+    Vector3 characterUp;
+
+    private IGameControllerBase gameController;
+
     #endregion
 
     #region MonoBehaviour
 
-    public void Initialize()
+    public void Initialize(IGameControllerBase gameController)
     {
+        this.gameController = gameController;
+
         camera = GetComponent<Camera>();
     }
 
     void Start()
     {
         camera = GetComponent<Camera>();
+#if !UNITY_EDITOR
         Cursor.lockState = CursorLockMode.Locked;
+#endif
 
         my = transform;
         eclipseFX = GetComponent<Eclipse>();
@@ -189,7 +198,11 @@ public class PoS_Camera : MonoBehaviour
     void OnApplicationFocus(bool hasFocus)
     {
         if (!GameState.isPaused)
+        {
+#if !UNITY_EDITOR
             Cursor.lockState = CursorLockMode.Locked;
+#endif
+        }
     }
 
     void LateUpdate()
@@ -207,6 +220,11 @@ public class PoS_Camera : MonoBehaviour
 
         if (enablePanoramaMode)
             DoPanorama();
+
+        if (gameController.DuplicationCameraController != null)
+        {
+            gameController.DuplicationCameraController.UpdateDuplicationCameras();
+        }
     }
     #endregion
 
@@ -218,8 +236,7 @@ public class PoS_Camera : MonoBehaviour
     /// <param name="sender"> </param>
     /// <param name="args"> Contient la position vers laquelle tp, et un bool pour savoir si on a changé de scène. </param>
     void OnTeleportPlayer(object sender, Game.Utilities.EventManager.TeleportPlayerEventArgs args)
-    { // TODO: cleanup
-
+    {
         if (state == eCameraState.HomeDoor)
             return;
 
@@ -258,7 +275,7 @@ public class PoS_Camera : MonoBehaviour
         gamePaused = args.PauseActive;
     }
 
-    Vector3 characterUp;
+    
 
     public void ResetGravity()
     {
@@ -603,8 +620,7 @@ public class PoS_Camera : MonoBehaviour
     }
 
     [Header("WallRun")]
-    [SerializeField]
-    float facingWallBuffer = 0.5f;
+    [SerializeField] float facingWallBuffer = 0.5f;
     [SerializeField] float wallRunDamp = 0.5f;
 
     void WallRunCamera()
@@ -1056,8 +1072,7 @@ public class PoS_Camera : MonoBehaviour
     #region Home Door
 
     [Header("Home Door")]
-    [SerializeField]
-    float homeDoorMaxZoom = 10;
+    [SerializeField] float homeDoorMaxZoom = 10;
     [SerializeField] float homeDoorFov = 40;
 
     float lastFrameZoomSign;
