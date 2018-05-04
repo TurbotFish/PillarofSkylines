@@ -1,38 +1,78 @@
-﻿using System.Collections;
+﻿using Game.LevelElements;
+using System.Collections;
 using UnityEngine;
 
-public class AmbientBox : Interactible {
+public class AmbientBox : MonoBehaviour, IInteractable
+{
+    //##################################################################
 
     [SerializeField] Color color;
     [SerializeField] float fadeSpeed = 2;
 
     Color defaultColor;
 
+    //##################################################################
+
+    #region initialization
+
     private void Start()
     {
         defaultColor = RenderSettings.ambientLight;
     }
 
+    #endregion initialization
 
-    public override void EnterTrigger(Transform player)
+    //##################################################################
+
+    #region inquiries
+
+    public Vector3 Position { get { return transform.position; } }
+
+    public bool IsInteractable()
+    {
+        return false;
+    }
+
+    #endregion inquiries
+
+    //################################################################## 
+
+    #region operations
+
+    public void OnPlayerEnter()
     {
         StopAllCoroutines();
         StartCoroutine(FadeAmbient(color));
     }
 
-    public override void ExitTrigger(Transform player)
+    public void OnPlayerExit()
     {
         StopAllCoroutines();
         StartCoroutine(FadeAmbient(defaultColor));
     }
-    
-    IEnumerator FadeAmbient(Color goal)
+
+    public void OnHoverBegin()
     {
-        while(RenderSettings.ambientLight != goal)
+    }
+
+    public void OnHoverEnd()
+    {
+    }
+
+    public void OnInteraction()
+    {
+    }
+
+    private IEnumerator FadeAmbient(Color goal)
+    {
+        while (RenderSettings.ambientLight != goal)
         {
             RenderSettings.ambientLight = Color.Lerp(RenderSettings.ambientLight, goal, Time.deltaTime * fadeSpeed);
             yield return null;
         }
     }
 
+    #endregion operations
+
+    //##################################################################
 }

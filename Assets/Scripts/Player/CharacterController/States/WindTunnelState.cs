@@ -14,8 +14,6 @@ namespace Game.Player.CharacterController.States
         CharController charController;
         StateMachine stateMachine;
 
-        List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
-
         //#############################################################################
 
         public WindTunnelState(CharController charController, StateMachine stateMachine)
@@ -40,7 +38,7 @@ namespace Game.Player.CharacterController.States
 
         public void HandleInput()
         {
-            if (charController.WindTunnelPartList.Count == 0)
+            if (!WindTunnelPart.IsPlayerInWindTunnel)
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
 
@@ -50,12 +48,11 @@ namespace Game.Player.CharacterController.States
 
         public StateReturnContainer Update(float dt)
         {
-
             PlayerInputInfo inputInfo = charController.InputInfo;
 
             PlayerMovementInfo movementInfo = charController.MovementInfo;
 
-            windTunnelPartList = charController.WindTunnelPartList;
+            var windTunnelPartList = WindTunnelPart.ActiveWindTunnelParts;
 
             var partUp = Vector3.zero;
             var wind = Vector3.zero;
@@ -65,9 +62,9 @@ namespace Game.Player.CharacterController.States
                 {
                     partUp = windTunnelPart.MyTransform.up;
                     var partPos = windTunnelPart.MyTransform.position;
-                    wind = partUp * windTunnelPart.windStrength + (inputInfo.leftStickAtZero ? Vector3.ProjectOnPlane(partPos - movementInfo.position, partUp) * windTunnelPart.tunnelAttraction 
-                        : (charController.myCameraTransform.right * inputInfo.leftStickRaw.x + charController.myCameraTransform.forward
-                        * inputInfo.leftStickRaw.z)*10);
+                    wind = partUp * windTunnelPart.windStrength + (inputInfo.leftStickAtZero
+                        ? Vector3.ProjectOnPlane(partPos - movementInfo.position, partUp) * windTunnelPart.tunnelAttraction 
+                        : (charController.myCameraTransform.right * inputInfo.leftStickRaw.x + charController.myCameraTransform.forward * inputInfo.leftStickRaw.z)*10);
                     //Debug.Log("velocity added : " + (charController.myCameraTransform.right * inputInfo.leftStickRaw.x + charController.myCameraTransform.forward * inputInfo.leftStickRaw.z) * 10);
                 }
                 wind /= windTunnelPartList.Count;

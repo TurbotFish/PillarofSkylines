@@ -1,8 +1,11 @@
-﻿using System.Collections;
+﻿using Game.LevelElements;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GradientFogController : Interactible {
+public class GradientFogController : MonoBehaviour, IInteractable
+{
+    //##################################################################
 
     static GradientFogController currentControl;
     Gradient defaultGradient;
@@ -20,6 +23,10 @@ public class GradientFogController : Interactible {
 
     GradientFog fog;
 
+    //##################################################################
+
+    #region initialization
+
     private void Start()
     {
         fog = FindObjectOfType<GradientFog>(); // TODO: fix that
@@ -28,50 +35,84 @@ public class GradientFogController : Interactible {
         defaultEnd = fog.endDistance;
     }
 
-    public override void EnterTrigger(Transform player)
+    #endregion initialization
+
+    //##################################################################
+
+    #region inquiries
+
+    public Vector3 Position { get { return transform.position; } }
+
+    public bool IsInteractable()
     {
-        if (currentControl && currentControl.over)
-            currentControl.Stop();
-		
-        over = false;
-        currentControl = this;
-		fog.gradientLerp = 0;
-		StartCoroutine(LerpGradientFog(fog.gradient, gradient, fog.startDistance, fog.endDistance, startDistance, endDistance));
+        return false;
     }
 
-    public override void ExitTrigger(Transform player)
-    {
-        if (!over)
-            StopAllCoroutines();
-        if (currentControl == this || currentControl == null)
-        {
-			fog.gradientLerp = 0;
-			StartCoroutine(LerpGradientFog(gradient, defaultGradient, startDistance, endDistance, defaultStart, defaultEnd));
-            over = true;
-            currentControl = null;
-        }
-    }
+    #endregion inquiries
+
+    //##################################################################
+
+    #region operations
 
     public void Stop()
     {
         StopAllCoroutines();
     }
 
-    IEnumerator LerpGradientFog(Gradient From, Gradient To, float fromStart, float fromEnd, float toStart, float toEnd)
+    public void OnPlayerEnter()
+    {
+        if (currentControl && currentControl.over)
+            currentControl.Stop();
+
+        over = false;
+        currentControl = this;
+        fog.gradientLerp = 0;
+        StartCoroutine(LerpGradientFog(fog.gradient, gradient, fog.startDistance, fog.endDistance, startDistance, endDistance));
+    }
+
+    public void OnPlayerExit()
+    {
+        if (!over)
+            StopAllCoroutines();
+        if (currentControl == this || currentControl == null)
+        {
+            fog.gradientLerp = 0;
+            StartCoroutine(LerpGradientFog(gradient, defaultGradient, startDistance, endDistance, defaultStart, defaultEnd));
+            over = true;
+            currentControl = null;
+        }
+    } 
+
+    public void OnHoverBegin()
+    {
+    }
+
+    public void OnHoverEnd()
+    {
+    }
+
+    public void OnInteraction()
+    {
+    }
+
+    private IEnumerator LerpGradientFog(Gradient From, Gradient To, float fromStart, float fromEnd, float toStart, float toEnd)
     {
         fog.secondaryGradient = To;
         fog.gradient = From;
 
-        for(float elapsed = fog.gradientLerp; elapsed < transitionTime; elapsed += Time.deltaTime)
+        for (float elapsed = fog.gradientLerp; elapsed < transitionTime; elapsed += Time.deltaTime)
         {
             float t = elapsed / transitionTime;
-			fog.gradientLerp = t;
+            fog.gradientLerp = t;
             fog.startDistance = Mathf.Lerp(fromStart, toStart, t);
             fog.endDistance = Mathf.Lerp(fromEnd, toEnd, t);
             fog.GenerateTexture();
             yield return null;
         }
         fog.gradientLerp = 1;
-	}
+    }
 
+    #endregion operations
+
+    //##################################################################
 }

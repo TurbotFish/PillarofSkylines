@@ -179,6 +179,11 @@ namespace Game.World
 
                 foreach (var meshCollider in meshColliders)
                 {
+                    if(meshCollider.sharedMesh == null)
+                    {
+                        continue;
+                    }
+
                     int vertexCount = meshCollider.sharedMesh.vertexCount;
                     meshColliderTotalVertesCount += vertexCount;
                     if (vertexCount > meshColliderHighestVertexCount)

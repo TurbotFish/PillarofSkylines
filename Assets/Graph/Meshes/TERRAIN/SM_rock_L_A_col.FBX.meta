@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 4806a5df2cbd18f4583051e2bace94d3
-timeCreated: 1523982003
+guid: 54d3891f05a6081499dfa80059afa44b
+timeCreated: 1524037680
 licenseType: Free
 ModelImporter:
   serializedVersion: 21
@@ -9,7 +9,8 @@ ModelImporter:
     400000: //RootNode
     2300000: //RootNode
     3300000: //RootNode
-    4300000: SM_rock_L_A_col
+    4300000: SM_rock_L_A_collider
+    4300002: SM_rock_L_A_col
   materials:
     importMaterials: 0
     materialName: 0
@@ -34,7 +35,7 @@ ModelImporter:
     extraExposedTransformPaths: []
     extraUserProperties: []
     clipAnimations: []
-    isReadable: 1
+    isReadable: 0
   meshes:
     lODScreenPercentages: []
     globalScale: 1
@@ -47,9 +48,9 @@ ModelImporter:
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
-    optimizeMeshForGPU: 1
+    optimizeMeshForGPU: 0
     keepQuads: 0
-    weldVertices: 1
+    weldVertices: 0
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88

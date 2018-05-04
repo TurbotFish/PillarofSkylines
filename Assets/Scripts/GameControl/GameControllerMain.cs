@@ -42,6 +42,7 @@ namespace Game.GameControl
 
         public bool IsOpenWorldLoaded { get; private set; }
         public WorldController WorldController { get; private set; }
+        public DuplicationCameraController DuplicationCameraController { get; private set; }
 
         public bool IsPillarLoaded { get; private set; }
         public ePillarId ActivePillarId { get; private set; }
@@ -119,9 +120,11 @@ namespace Game.GameControl
             Scene scene = SceneManager.GetSceneByName(sceneName);
 
             WorldController = SearchForScriptInScene<WorldController>(scene);
+            DuplicationCameraController = SearchForScriptInScene<DuplicationCameraController>(scene);
             yield return null;
 
             WorldController.Initialize(this);
+            DuplicationCameraController.Initialize(this);
 
             yield return null;
 
@@ -225,6 +228,7 @@ namespace Game.GameControl
             IsOpenWorldLoaded = true;
 
             WorldController = SearchForScriptInScene<WorldController>(scene);
+            DuplicationCameraController = SearchForScriptInScene<DuplicationCameraController>(scene);
             SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(scene);
 
             yield return null;
@@ -253,6 +257,7 @@ namespace Game.GameControl
             //*****************************************
             //activating world controller
             WorldController.Activate();
+            DuplicationCameraController.Activate();
 
             while (WorldController.CurrentState == eWorldControllerState.Activating)
             {
@@ -300,6 +305,7 @@ namespace Game.GameControl
             Scene scene = SceneManager.GetSceneByName(worldSceneName);
 
             WorldController.Deactivate();
+            DuplicationCameraController.Deactivate();
 
             while (WorldController.CurrentState == eWorldControllerState.Deactivating)
             {
@@ -308,6 +314,7 @@ namespace Game.GameControl
 
             IsOpenWorldLoaded = false;
             WorldController = null;
+            DuplicationCameraController = null;
             SpawnPointManager = null;
 
             foreach (var obj in scene.GetRootGameObjects())

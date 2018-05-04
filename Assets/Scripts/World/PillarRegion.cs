@@ -8,9 +8,7 @@ namespace Game.World
     {
         //========================================================================================
 
-        [SerializeField]
-        [HideInInspector]
-        private ePillarId pillarId;
+        [SerializeField, HideInInspector] private ePillarId pillarId;
 
         //========================================================================================
 
