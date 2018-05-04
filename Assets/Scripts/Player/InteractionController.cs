@@ -13,6 +13,7 @@ namespace Game.Player
     public class InteractionController : MonoBehaviour
     {
         [SerializeField] GameObject playerNeedle;
+        public EchoSystem.Echo currentEcho;
 
         //
         IGameControllerBase gameController;
@@ -75,13 +76,14 @@ namespace Game.Player
                 }
                 else
                 {
-                    gameController.EchoManager.CreateEcho(true);
+                    currentEcho = gameController.EchoManager.CreateEcho(true);
                 }
             }
             else if (Input.GetButtonDown("Drift"))
             {
                 gameController.EchoManager.Drift();
             }
+
 
             // stop air particle if grounded
             if (airParticle && (gameController.PlayerController.CharController.CurrentState & (CharacterController.ePlayerState.move | CharacterController.ePlayerState.slide | CharacterController.ePlayerState.stand)) != 0)

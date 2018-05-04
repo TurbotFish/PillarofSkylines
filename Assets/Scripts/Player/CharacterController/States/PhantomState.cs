@@ -34,17 +34,15 @@ namespace Game.Player.CharacterController.States
             horizontalAngle = 0f;
             phantomController.gameObject.SetActive(true);
             charController.rotator.SetParent(charController.phantomController.transform);
+            charController.PlayerController.InteractionController.currentEcho.MyTransform.SetParent(charController.phantomController.transform);
 
             Time.timeScale = 0.05f;
 		}
 
 		public void Exit() {
 
+            charController.PlayerController.InteractionController.currentEcho.MyTransform.SetParent(null);
             phantomController.gameObject.SetActive(false);
-            EchoSystem.Echo echo = charController.gameController.EchoManager.CreateEcho(true, phantomController.transform.position);
-            if ((charController.MyTransform.position - phantomController.myTransform.position).sqrMagnitude > 1.2f)
-                echo.isActive = true;
-
             charController.phantomController.myTransform.localPosition = new Vector3(0f, 1.45f, 0f);
             charController.rotator.SetParent(charController.MyTransform);
             charController.phantomController.myTransform.localRotation = Quaternion.identity;

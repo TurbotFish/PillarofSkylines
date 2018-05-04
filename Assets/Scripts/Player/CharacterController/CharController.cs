@@ -245,17 +245,17 @@ namespace Game.Player.CharacterController
                 inputInfo.jumpButtonDown = Input.GetButtonDown("Jump");
                 inputInfo.jumpButtonUp = Input.GetButtonUp("Jump");
 
-                inputInfo.sprintButton = (Input.GetAxis("Right Trigger") > .9f) || Input.GetButton("Sprint");
-                inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint");
-                inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint");
+                inputInfo.sprintButton = (Input.GetAxis("Right Trigger") > .9f) || Input.GetButton("Sprint") && tempPhysicsHandler.currentGravifloor == null;
+                inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint") && tempPhysicsHandler.currentGravifloor == null;
+                inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint") && tempPhysicsHandler.currentGravifloor == null;
 
                 inputInfo.glideButton = (Input.GetAxis("Left Trigger") > .9f) || Input.GetButton("Sprint");
                 inputInfo.glideButtonDown = (inputInfo.glideButton && !glideDownLastFrame) || Input.GetButtonDown("Sprint");
                 inputInfo.glideButtonUp = (!inputInfo.glideButton && glideDownLastFrame) || Input.GetButtonUp("Sprint");
 
-                inputInfo.echoButton = Input.GetButton("Echo");
-                inputInfo.echoButtonDown = Input.GetButtonDown("Echo");
-                inputInfo.echoButtonUp = Input.GetButtonUp("Echo");
+                inputInfo.echoButton = Input.GetButton("Interact");
+                inputInfo.echoButtonDown = Input.GetButtonDown("Interact");
+                inputInfo.echoButtonUp = Input.GetButtonUp("Interact");
 
                 /*
                 inputInfo.jetpackButton = Input.GetButton("Jetpack");
@@ -267,11 +267,11 @@ namespace Game.Player.CharacterController
                 if (inputInfo.echoButton)
                 {
                     inputInfo.echoButtonTimePressed += Time.deltaTime;
+                    Debug.Log("time : " + inputInfo.echoButtonTimePressed);
                 }
                 if (echoUpLastFrame)
                 {
                     inputInfo.ResetTimeEcho();
-                    createdEchoOnThisInput = false;
                 }
 
                 if (Input.GetButtonDown("GroundRise"))

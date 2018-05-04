@@ -114,7 +114,7 @@ namespace Game.Player.CharacterController.States
         #region
 
         public void Enter() {
-			Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
+			//Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
 
             remainingAerialJumps = stateMachine.CheckRemainingAerialJumps();
 			initializing = false;
@@ -122,7 +122,7 @@ namespace Game.Player.CharacterController.States
 		}
 
 		public void Exit() {
-            Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
+            //Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
 		}
 
 		#endregion
@@ -195,7 +195,7 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
             }
-            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom) && !charController.createdEchoOnThisInput)
+            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom))
             {
                 stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
             }

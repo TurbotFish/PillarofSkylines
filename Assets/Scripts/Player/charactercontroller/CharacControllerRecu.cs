@@ -71,7 +71,8 @@ namespace Game.Player.CharacterController
         /// </summary>
         MovingPlatform[] currentPFs;
 
-        Gravifloor currentGravifloor;
+        [HideInInspector]
+        public Gravifloor currentGravifloor;
 
 		bool belowLastFrame;
         bool climbingStep;
