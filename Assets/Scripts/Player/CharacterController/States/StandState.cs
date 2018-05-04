@@ -75,7 +75,7 @@ namespace Game.Player.CharacterController.States
             }
             else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MinWallAngle)
             {
-                var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
+                var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 
                 stateMachine.ChangeState(state);

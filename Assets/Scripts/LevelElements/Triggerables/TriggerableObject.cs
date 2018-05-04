@@ -297,7 +297,7 @@ namespace Game.LevelElements
 
             if (triggerIds.Contains(args.TriggerId))
             {
-                Debug.Log("xxx: " + args.TriggerId);
+                //Debug.Log("xxx: " + args.TriggerId);
 
                 UpdateState(args.Trigger.Toggle);
             }

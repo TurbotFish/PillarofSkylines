@@ -114,7 +114,7 @@ namespace Game.Player.CharacterController.States
         #region
 
         public void Enter() {
-			//Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
+			Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
 
             remainingAerialJumps = stateMachine.CheckRemainingAerialJumps();
 			initializing = false;
@@ -122,7 +122,7 @@ namespace Game.Player.CharacterController.States
 		}
 
 		public void Exit() {
-            //Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
+            Debug.LogFormat("Exit State: Air - {0}", mode.ToString());
 		}
 
 		#endregion

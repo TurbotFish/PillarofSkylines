@@ -368,8 +368,8 @@ namespace Game.Player.CharacterController
             {*/
                 lastPositionDelta = tempPhysicsHandler.Move(turnedVelocity * Time.deltaTime);
             //}
-
             velocity = lastPositionDelta / Time.deltaTime;
+
 
             externalVelocity = Vector3.zero;
             tempCollisionInfo = tempPhysicsHandler.collisions;
