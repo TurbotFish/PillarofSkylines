@@ -148,6 +148,7 @@ public class PoS_Camera : MonoBehaviour
     Vector3 characterUp;
 
     private IGameControllerBase gameController;
+    private bool isInitialized;
 
     #endregion
 
@@ -158,6 +159,8 @@ public class PoS_Camera : MonoBehaviour
         this.gameController = gameController;
 
         camera = GetComponent<Camera>();
+
+        isInitialized = true;
     }
 
     void Start()
@@ -207,8 +210,10 @@ public class PoS_Camera : MonoBehaviour
 
     void LateUpdate()
     {
-        if (gamePaused)
+        if (gamePaused || !isInitialized)
+        {
             return;
+        }
 
         deltaTime = Time.deltaTime;
 
