@@ -165,7 +165,7 @@ namespace Game.GameControl
                 {
                     if (obj is IWorldObject)
                     {
-                        (obj as IWorldObject).Initialize(this, false);
+                        (obj as IWorldObject).Initialize(this);
                     }
                 }
                 yield return null;

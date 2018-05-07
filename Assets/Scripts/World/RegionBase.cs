@@ -28,8 +28,9 @@ namespace Game.World
 
         [SerializeField, HideInInspector] private bool doNotDuplicate;
 
+        protected WorldController WorldController;
+
         private Transform myTransform;
-        private SuperRegion superRegion;
 
         private List<Vector3> boundsCorners;
 
@@ -53,13 +54,11 @@ namespace Game.World
 
         public Bounds BoundingBox { get { return new Bounds(boundsCentre + transform.position, boundsSize); } }
 
-        public SuperRegion SuperRegion { get { return superRegion; } }
+        public float RenderDistanceNear { get { return overrideRenderDistances ? localRenderDistanceNear : WorldController.RenderDistanceNear; } }
 
-        public float RenderDistanceNear { get { return overrideRenderDistances ? localRenderDistanceNear : superRegion.World.RenderDistanceNear; } }
+        public float RenderDistanceMedium { get { return overrideRenderDistances ? localRenderDistanceMedium : WorldController.RenderDistanceMedium; } }
 
-        public float RenderDistanceMedium { get { return overrideRenderDistances ? localRenderDistanceMedium : superRegion.World.RenderDistanceMedium; } }
-
-        public float RenderDistanceFar { get { return overrideRenderDistances ? localRenderDistanceFar : superRegion.World.RenderDistanceFar; } }
+        public float RenderDistanceFar { get { return overrideRenderDistances ? localRenderDistanceFar : WorldController.RenderDistanceFar; } }
 
         public eSubSceneVariant CurrentSubSceneVariant { get { return currentSubSceneVariant; } }
 
@@ -94,7 +93,7 @@ namespace Game.World
             }
         }
 
-        public virtual void Initialize(SuperRegion superRegion)
+        public virtual void Initialize(WorldController world_controller)
         {
             if (isInitialized)
             {
@@ -102,7 +101,7 @@ namespace Game.World
             }
 
             myTransform = transform;
-            this.superRegion = superRegion;
+            WorldController = world_controller;
 
             currentRegionMode = eRegionMode.Inactive;
             currentSubSceneVariant = InitialSubSceneVariant;
@@ -175,14 +174,14 @@ namespace Game.World
             }
 
             //check if visible
-            if (superRegion.World.UnloadInvisibleRegions)
+            if (WorldController.UnloadInvisibleRegions)
             {
                 foreach (var corner in boundsCorners)
                 {
                     Vector3 vectorToCorner = corner - cameraPosition;
                     float angle = Vector3.Angle(vectorToCorner, cameraTransform.forward);
 
-                    if (Mathf.Approximately(angle, superRegion.World.InvisibilityAngle) || angle < superRegion.World.InvisibilityAngle)
+                    if (Mathf.Approximately(angle, WorldController.InvisibilityAngle) || angle < WorldController.InvisibilityAngle)
                     {
                         isVisible = true;
                         break;
@@ -214,7 +213,7 @@ namespace Game.World
                     else
                     {
                         float dist = (bounds.ClosestPoint(teleportPosition) - teleportPosition).magnitude;
-                        dist *= superRegion.World.SecondaryPositionDistanceModifier;
+                        dist *= WorldController.SecondaryPositionDistanceModifier;
 
                         if (dist < playerDistance)
                         {
@@ -274,8 +273,7 @@ namespace Game.World
                 {
                     if (subSceneStates[currentSubSceneVariant][eSubSceneLayer.Near] != eSubSceneState.Loaded)
                     {
-                        Debug.LogWarningFormat("{0} {1}: SubScene Near should be loaded but isn't! currentState={2}",
-                            superRegion.Type,
+                        Debug.LogWarningFormat("{0}: SubScene Near should be loaded but isn't! currentState={1}",
                             name,
                             subSceneStates[currentSubSceneVariant][eSubSceneLayer.Near]
                         );
@@ -287,8 +285,7 @@ namespace Game.World
                 {
                     if (subSceneStates[currentSubSceneVariant][eSubSceneLayer.Far] != eSubSceneState.Loaded)
                     {
-                        Debug.LogWarningFormat("{0} {1}: SubScene Far should be loaded but isn't! currentState={2}",
-                            superRegion.Type,
+                        Debug.LogWarningFormat("{0}: SubScene Far should be loaded but isn't! currentState={1}",
                             name,
                             subSceneStates[currentSubSceneVariant][eSubSceneLayer.Far]
                         );
@@ -300,8 +297,7 @@ namespace Game.World
                 {
                     if (subSceneStates[currentSubSceneVariant][eSubSceneLayer.Always] != eSubSceneState.Loaded)
                     {
-                        Debug.LogWarningFormat("{0} {1}: SubScene Always should be loaded but isn't! currentState={2}",
-                            superRegion.Type,
+                        Debug.LogWarningFormat("{0}: SubScene Always should be loaded but isn't! currentState={1}",
                             name,
                             subSceneStates[currentSubSceneVariant][eSubSceneLayer.Always]
                         );
@@ -464,7 +460,7 @@ namespace Game.World
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
-            if (Application.isPlaying && isInitialized && superRegion.World.ShowRegionMode)
+            if (Application.isPlaying && isInitialized && WorldController.ShowRegionMode)
             {
                 var bounds = BoundingBox;
                 Color colour = new Color(0, 0, 0, 0);
@@ -472,13 +468,13 @@ namespace Game.World
                 switch (currentRegionMode)
                 {
                     case eRegionMode.Near:
-                        colour = superRegion.World.ModeNearColor;
+                        colour = WorldController.ModeNearColor;
                         break;
                     case eRegionMode.Medium:
-                        colour = superRegion.World.ModeMediumColor;
+                        colour = WorldController.ModeMediumColor;
                         break;
                     case eRegionMode.Far:
-                        colour = superRegion.World.ModeFarColor;
+                        colour = WorldController.ModeFarColor;
                         break;
                     case eRegionMode.Inactive:
                         break;

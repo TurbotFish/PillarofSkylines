@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 
 namespace Game.World
 {
-    public class WorldController : MonoBehaviour/*, IWorldEventHandler*/
+    public class WorldController : MonoBehaviour
     {
         public static readonly Dictionary<eSuperRegionType, Vector3> SUPERREGION_OFFSETS = new Dictionary<eSuperRegionType, Vector3>()
         {
@@ -23,9 +23,9 @@ namespace Game.World
             {eSuperRegionType.NorthDown,    new Vector3(0,-1,1) }
         };
 
-        //========================================================================================
+        //###############################################################
 
-        #region member variables
+        // -- CONSTANTS
 
         [SerializeField, HideInInspector] private Vector3 worldSize;
 
@@ -46,36 +46,28 @@ namespace Game.World
 
         [SerializeField, HideInInspector] private bool editorSubScenesLoaded;
 
-        [SerializeField, HideInInspector] private bool unloadInvisibleRegions = true; //should the regions behind the player be unloaded?
+        [SerializeField, HideInInspector] private bool unloadInvisibleRegions = false; //should the regions behind the player be unloaded?
         [SerializeField, HideInInspector] private float invisibilityAngle = 90; //if the angle between camera forward and a region is higher than this, the region is invisible.
 
-        private IGameControllerBase gameController;
-
-        private List<SuperRegion> superRegionsList = new List<SuperRegion>();
-        private List<SubSceneJob> subSceneJobsList = new List<SubSceneJob>();
-
-        private bool isInitialized = false;
-        private bool isJobRunning = false;
-        private int currentSuperRegionIndex;
-
         [SerializeField, HideInInspector] private int debugResultCount = 10;
-        private List<LoadingMeasurement> loadingDebug = new List<LoadingMeasurement>();
 
-        #endregion member variables 
+        //###############################################################
+        //###############################################################
 
-        //========================================================================================
-
-        #region properties
-
-        public IGameControllerBase GameController { get { return gameController; } }
+        // -- ATTRIBUTES
 
         public Vector3 WorldSize { get { return worldSize; } }
 
         public float RenderDistanceNear { get { return renderDistanceNear; } }
-
         public float RenderDistanceMedium { get { return renderDistanceMedium; } }
-
         public float RenderDistanceFar { get { return renderDistanceFar; } }
+
+        public float SecondaryPositionDistanceModifier { get { return secondaryPositionDistanceModifier; } }
+
+        public bool ShowRegionMode { get { return showRegionMode; } }
+        public Color ModeNearColor { get { return modeNearColor; } }
+        public Color ModeMediumColor { get { return modeMediumColor; } }
+        public Color ModeFarColor { get { return modeFarColor; } }
 
         public bool EditorSubScenesLoaded
         {
@@ -89,27 +81,28 @@ namespace Game.World
 #endif
         }
 
-        public float SecondaryPositionDistanceModifier { get { return secondaryPositionDistanceModifier; } }
-
-        public int CurrentJobCount { get { return subSceneJobsList.Count; } }
-
-        public bool ShowRegionMode { get { return showRegionMode; } }
-
-        public Color ModeNearColor { get { return modeNearColor; } }
-
-        public Color ModeMediumColor { get { return modeMediumColor; } }
-
-        public Color ModeFarColor { get { return modeFarColor; } }
-
         public bool UnloadInvisibleRegions { get { return unloadInvisibleRegions; } }
-
         public float InvisibilityAngle { get { return invisibilityAngle; } }
 
+
+
+
+
+        public IGameControllerBase GameController { get; private set; }
         public eWorldControllerState CurrentState { get; private set; }
 
-        #endregion properties
 
-        //========================================================================================
+        private List<RegionBase> RegionList = new List<RegionBase>();
+        private List<SubSceneJob> subSceneJobsList = new List<SubSceneJob>();
+
+        private bool isInitialized = false;
+        private bool isJobRunning = false;
+        private int CurrentRegionIndex;
+
+        private List<LoadingMeasurement> loadingDebug = new List<LoadingMeasurement>();
+
+        //###############################################################
+        //###############################################################
 
         #region public methods
 
@@ -119,80 +112,43 @@ namespace Game.World
         /// <param name="gameController"></param>
         public void Initialize(IGameControllerBase gameController)
         {
-            this.gameController = gameController;
+            GameController = gameController;
+            RegionList.Clear();
 
             CurrentState = eWorldControllerState.Deactivated;
 
-            //find all the initial regions
             var initialRegions = GetComponentsInChildren<RegionBase>().ToList();
 
-            //if the subScenes are loaded they are used instead of the saved files and the world is not duplicated
-            if (editorSubScenesLoaded)
+            foreach (var region in initialRegions)
             {
-                var superRegion = new GameObject(string.Concat("SuperRegion_", eSuperRegionType.Centre.ToString()), typeof(SuperRegion)).GetComponent<SuperRegion>();
-                superRegion.transform.SetParent(transform);
-                superRegion.transform.Translate(Vector3.Scale(worldSize, SUPERREGION_OFFSETS[eSuperRegionType.Centre]));
+                region.Initialize(this);
+                RegionList.Add(region);
+            }
 
+            if (editorSubScenesLoaded)    //no streaming
+            {
                 foreach (var region in initialRegions)
                 {
-                    region.transform.SetParent(superRegion.transform, true);
-
-                    //deactivating all subScenes
-                    foreach (var child in region.GetAllSubSceneRoots())
+                    foreach (var child in region.GetAllSubSceneRoots())    //deactivating all subScenes
                     {
                         child.gameObject.SetActive(false);
                     }
                 }
-
-                superRegion.Initialize(eSuperRegionType.Centre, this, initialRegions);
-                superRegionsList.Add(superRegion);
             }
-            //else if the subScenes are not loaded the world is duplicated and the initial (empty) regions are destroyed
-            //create SuperRegions and clone the regions once for every SuperRegions
-            else
+            else    //streaming
             {
-                //"cleaning" the initial regions, just in case
                 foreach (var initialRegion in initialRegions)
                 {
-                    initialRegion.Clear();
-                }
-
-                //creating all the superRegions and duplicating the initial regions into them
-                foreach (var superRegionType in Enum.GetValues(typeof(eSuperRegionType)).Cast<eSuperRegionType>())
-                {
-                    var superRegion = new GameObject(string.Concat("SuperRegion_", superRegionType.ToString()), typeof(SuperRegion)).GetComponent<SuperRegion>();
-                    superRegion.transform.SetParent(transform);
-                    superRegion.transform.Translate(Vector3.Scale(worldSize, SUPERREGION_OFFSETS[superRegionType]));
-
-
-                    var clonedRegions = new List<RegionBase>();
-                    foreach (var initialRegion in initialRegions)
-                    {
-                        if (superRegionType != eSuperRegionType.Centre && initialRegion.DoNotDuplicate)
-                        {
-                            continue;
-                        }
-
-                        var regionClone = Instantiate(initialRegion.gameObject, superRegion.transform, false);
-                        regionClone.name = initialRegion.name;
-
-                        clonedRegions.Add(regionClone.GetComponent<RegionBase>());
-                    }
-
-                    superRegion.Initialize(superRegionType, this, clonedRegions);
-                    superRegionsList.Add(superRegion);
-                }
-
-                //destroy the initial regions
-                foreach (var initialRegion in initialRegions)
-                {
-                    Destroy(initialRegion.gameObject);
+                    initialRegion.Clear();    //"cleaning" the initial regions, just in case
                 }
             }
 
             isInitialized = true;
         }
 
+        /// <summary>
+        /// Activates the WorldController.
+        /// </summary>
         public void Activate()
         {
             if (!isInitialized)
@@ -205,18 +161,21 @@ namespace Game.World
             }
 
             CurrentState = eWorldControllerState.Activating;
-            currentSuperRegionIndex = 0;
+            CurrentRegionIndex = 0;
 
             subSceneJobsList.Clear();
-            foreach (var superRegion in superRegionsList)
+            foreach (var region in RegionList)
             {
-                subSceneJobsList.AddRange(CreateNewSubSceneJobs(superRegion));
+                subSceneJobsList.AddRange(CreateNewSubSceneJobs(region));
             }
             subSceneJobsList = subSceneJobsList.OrderBy(item => item.Priority).ToList();
 
             StartCoroutine(ActivationCR());
         }
 
+        /// <summary>
+        /// Deactivates the WorldController.
+        /// </summary>
         public void Deactivate()
         {
             if (!isInitialized)
@@ -231,17 +190,18 @@ namespace Game.World
             CurrentState = eWorldControllerState.Deactivating;
 
             subSceneJobsList.Clear();
-            foreach (var superRegion in superRegionsList)
+            foreach (var region in RegionList)
             {
-                subSceneJobsList.AddRange(superRegion.UnloadAll());
+                subSceneJobsList.AddRange(region.UnloadAll());
             }
+            subSceneJobsList.RemoveAll(item => item == null);
 
             StartCoroutine(DeactivationCR());
         }
 
         #endregion public regions
 
-        //========================================================================================
+        //###############################################################
 
         #region monobehaviour methods
 
@@ -260,24 +220,23 @@ namespace Game.World
             if (CurrentState == eWorldControllerState.Activated)
             {
                 //updating one super region, getting a list of new jobs
-                var newJobs = CreateNewSubSceneJobs(superRegionsList[currentSuperRegionIndex]);
+                var newJobs = CreateNewSubSceneJobs(RegionList[CurrentRegionIndex]);
 
-                currentSuperRegionIndex++;
-                if (currentSuperRegionIndex == superRegionsList.Count)
+                CurrentRegionIndex++;
+                if (CurrentRegionIndex == RegionList.Count)
                 {
-                    currentSuperRegionIndex = 0;
+                    CurrentRegionIndex = 0;
                 }
 
                 //removing jobs that are already in the queue
                 var unnecessaryNewJobs = new List<SubSceneJob>();
                 foreach (var job in newJobs)
                 {
-                    var existingJob = subSceneJobsList.Where(i =>
-                        i.JobType == job.JobType &&
-                        i.Region.SuperRegion.Type == job.Region.SuperRegion.Type &&
-                        i.Region.UniqueId == job.Region.UniqueId &&
-                        i.SubSceneLayer == job.SubSceneLayer &&
-                        i.SubSceneVariant == job.SubSceneVariant
+                    var existingJob = subSceneJobsList.Where(item =>
+                        item.JobType == job.JobType &&
+                        item.Region.UniqueId == job.Region.UniqueId &&
+                        item.SubSceneLayer == job.SubSceneLayer &&
+                        item.SubSceneVariant == job.SubSceneVariant
                     ).FirstOrDefault();
 
                     if (existingJob != null)
@@ -297,7 +256,6 @@ namespace Game.World
                 {
                     deprecatedJobs.AddRange(subSceneJobsList.Where(item =>
                         item.JobType != job.JobType &&
-                        item.Region.SuperRegion.Type == job.Region.SuperRegion.Type &&
                         item.Region.UniqueId == job.Region.UniqueId &&
                         item.SubSceneVariant == job.SubSceneVariant &&
                         item.SubSceneLayer == job.SubSceneLayer
@@ -489,7 +447,7 @@ namespace Game.World
 
         #endregion monobehaviour methods
 
-        //========================================================================================
+        //###############################################################
 
         #region activation coroutines
 
@@ -519,14 +477,14 @@ namespace Game.World
 
         #endregion activation coroutines
 
-        //========================================================================================
+        //###############################################################
 
         #region update helper methods
 
-        private List<SubSceneJob> CreateNewSubSceneJobs(SuperRegion superRegion)
+        private List<SubSceneJob> CreateNewSubSceneJobs(RegionBase region)
         {
-            var cameraTransform = gameController.CameraController.transform;
-            var playerPosition = gameController.PlayerController.CharController.MyTransform.position;
+            var cameraTransform = GameController.CameraController.transform;
+            var playerPosition = GameController.PlayerController.CharController.MyTransform.position;
             var teleportPositions = new List<Vector3>();
             var halfSize = worldSize * 0.5f;
 
@@ -557,12 +515,16 @@ namespace Game.World
                 teleportPositions.Add(telePos);
             }
 
-            return superRegion.UpdateSuperRegion(cameraTransform, playerPosition, teleportPositions);
+            var result = new List<SubSceneJob>();
+            result.AddRange(region.UpdateRegion(cameraTransform, playerPosition, teleportPositions));
+            result.RemoveAll(item => item == null);
+
+            return result;
         }
 
         #endregion update helper methods
 
-        //========================================================================================
+        //###############################################################
 
         #region job handling coroutines
 
@@ -576,7 +538,7 @@ namespace Game.World
             isJobRunning = true;
             //Debug.LogFormat("Load Job started: {0} {1} {2} {3}", job.Region.SuperRegion.Type, job.Region.name, job.SubSceneVariant, job.SubSceneLayer);
 
-            string sceneName = WorldUtility.GetSubSceneName(job.Region.UniqueId, job.SubSceneVariant, job.SubSceneLayer, job.Region.SuperRegion.Type);
+            string sceneName = WorldUtility.GetSubSceneName(job.Region.UniqueId, job.SubSceneVariant, job.SubSceneLayer, eSuperRegionType.Centre);
             var subSceneRoot = job.Region.GetSubSceneRoot(job.SubSceneLayer);
 
             //editor subScenes are loaded (no streaming)
@@ -591,7 +553,7 @@ namespace Game.World
                     var worldObjects = subSceneRoot.GetComponentsInChildren<IWorldObject>();
                     for (int i = 0; i < worldObjects.Length; i++)
                     {
-                        worldObjects[i].Initialize(gameController, job.Region.SuperRegion.Type != eSuperRegionType.Centre);
+                        worldObjects[i].Initialize(GameController);
                     }
                     yield return null;
                 }
@@ -601,7 +563,7 @@ namespace Game.World
             {
                 if (subSceneRoot)
                 {
-                    Debug.LogWarningFormat("Load Job for existing subScene started! {0} {1} {2} {3}", job.Region.SuperRegion.Type, job.Region.name, job.SubSceneVariant, job.SubSceneLayer);
+                    Debug.LogWarningFormat("Load Job for existing subScene started! {0} {1} {2} {3}", eSuperRegionType.Centre, job.Region.name, job.SubSceneVariant, job.SubSceneLayer);
                 }
                 else if (Application.CanStreamedLevelBeLoaded(sceneName))
                 {
@@ -611,7 +573,7 @@ namespace Game.World
                     float time = 0;
                     float duration;
                     LoadingMeasurement measurement = null;
-                    
+
 
                     measurement = loadingDebug.Where(i =>
                         i.regionName == job.Region.name &&
@@ -639,13 +601,13 @@ namespace Game.World
                     //}
                     //else
                     //{
-                        async = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-                        async.allowSceneActivation = false;
+                    async = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+                    async.allowSceneActivation = false;
 
-                        while (async.progress < 0.9f)
-                        {
-                            yield return null;
-                        }
+                    while (async.progress < 0.9f)
+                    {
+                        yield return null;
+                    }
                     //}
 
                     //########
@@ -661,11 +623,11 @@ namespace Game.World
 
                     //if (CurrentState != eWorldControllerState.Activating)
                     //{
-                        async.allowSceneActivation = true;
-                        while (!async.isDone)
-                        {
-                            yield return null;
-                        }
+                    async.allowSceneActivation = true;
+                    while (!async.isDone)
+                    {
+                        yield return null;
+                    }
                     //}
 
                     //########
@@ -698,7 +660,7 @@ namespace Game.World
                     var worldObjects = root.GetComponentsInChildren<IWorldObject>();
                     for (int i = 0; i < worldObjects.Length; i++)
                     {
-                        worldObjects[i].Initialize(gameController, job.Region.SuperRegion.Type != eSuperRegionType.Centre);
+                        worldObjects[i].Initialize(GameController);
                     }
                     yield return null;
 
@@ -755,8 +717,7 @@ namespace Game.World
 
         #endregion job handling coroutines
 
-        //========================================================================================
-        //========================================================================================
+        //###############################################################
 
         private class LoadingMeasurement
         {
