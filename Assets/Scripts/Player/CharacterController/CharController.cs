@@ -267,7 +267,6 @@ namespace Game.Player.CharacterController
                 if (inputInfo.echoButton)
                 {
                     inputInfo.echoButtonTimePressed += Time.deltaTime;
-                    Debug.Log("time : " + inputInfo.echoButtonTimePressed);
                 }
                 if (echoUpLastFrame)
                 {

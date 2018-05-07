@@ -77,6 +77,7 @@ namespace Game.Player
                 else
                 {
                     currentEcho = gameController.EchoManager.CreateEcho(true);
+                    currentEcho.transform.SetParent(gameController.PlayerController.CharController.MyTransform);
                 }
             }
             else if (Input.GetButtonDown("Drift"))
@@ -84,6 +85,12 @@ namespace Game.Player
                 gameController.EchoManager.Drift();
             }
 
+            if (Input.GetButtonUp("Interact"))
+            {
+                if (currentInteractableObject == null && currentEcho != null) {
+                    currentEcho.MyTransform.SetParent(null);
+                }
+            }
 
             // stop air particle if grounded
             if (airParticle && (gameController.PlayerController.CharController.CurrentState & (CharacterController.ePlayerState.move | CharacterController.ePlayerState.slide | CharacterController.ePlayerState.stand)) != 0)

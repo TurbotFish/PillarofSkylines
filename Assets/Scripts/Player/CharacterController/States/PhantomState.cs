@@ -13,7 +13,8 @@ namespace Game.Player.CharacterController.States
 		StateMachine stateMachine;
 		CharData.PhantomData phantomData;
         PhantomController phantomController;
-        
+        EchoSystem.Echo currentEcho;
+
 		float verticalAngle;
 		float horizontalAngle;
 
@@ -33,21 +34,22 @@ namespace Game.Player.CharacterController.States
             verticalAngle = 0f;
             horizontalAngle = 0f;
             phantomController.gameObject.SetActive(true);
-            charController.rotator.SetParent(charController.phantomController.transform);
-            charController.PlayerController.InteractionController.currentEcho.MyTransform.SetParent(charController.phantomController.transform);
-            charController.PlayerController.InteractionController.currentEcho.isActive = false;
+            charController.rotator.SetParent(charController.phantomController.myTransform);
+            currentEcho = charController.PlayerController.InteractionController.currentEcho;
+            currentEcho.MyTransform.SetParent(charController.phantomController.myTransform);
+            currentEcho.isActive = false;
             Time.timeScale = 0.05f;
 		}
 
 		public void Exit() {
 
-            charController.PlayerController.InteractionController.currentEcho.MyTransform.SetParent(null);
+            currentEcho.MyTransform.SetParent(null);
             phantomController.gameObject.SetActive(false);
             charController.phantomController.myTransform.localPosition = new Vector3(0f, 1.45f, 0f);
             charController.rotator.SetParent(charController.MyTransform);
             charController.phantomController.myTransform.localRotation = Quaternion.identity;
             
-            charController.PlayerController.InteractionController.currentEcho.isActive = true;
+            currentEcho.isActive = true;
             charController.ResetEchoInputTime();
 
             Time.timeScale = 1f;
@@ -73,6 +75,9 @@ namespace Game.Player.CharacterController.States
             dt = Time.unscaledDeltaTime;
             PlayerInputInfo inputInfo = charController.InputInfo;
 
+
+            if (currentEcho.isActive)
+                currentEcho.isActive = false;
 
             //---------VERTICAL
 
