@@ -92,7 +92,6 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
             }
-            Debug.Log((inputInfo.echoButtonTimePressed > .5f) + " " + !stateMachine.CheckStateLocked(ePlayerState.phantom));
         }
 
         public StateReturnContainer Update(float dt)

@@ -35,7 +35,7 @@ namespace Game.Player.CharacterController.States
             phantomController.gameObject.SetActive(true);
             charController.rotator.SetParent(charController.phantomController.transform);
             charController.PlayerController.InteractionController.currentEcho.MyTransform.SetParent(charController.phantomController.transform);
-
+            charController.PlayerController.InteractionController.currentEcho.isActive = false;
             Time.timeScale = 0.05f;
 		}
 
@@ -46,7 +46,8 @@ namespace Game.Player.CharacterController.States
             charController.phantomController.myTransform.localPosition = new Vector3(0f, 1.45f, 0f);
             charController.rotator.SetParent(charController.MyTransform);
             charController.phantomController.myTransform.localRotation = Quaternion.identity;
-
+            
+            charController.PlayerController.InteractionController.currentEcho.isActive = true;
             charController.ResetEchoInputTime();
 
             Time.timeScale = 1f;
