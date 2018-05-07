@@ -1,4 +1,5 @@
 ﻿using Game.GameControl;
+using Game.Model;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,54 +8,51 @@ namespace Game.UI.AbilityMenu
 {
     public class AbilityMenuController : MonoBehaviour, IUiState
     {
-        //##################################################################
-
         const float CIRCLE_INTERVAL = 360f / 8f;
 
+        //##################################################################
+
         [Tooltip("If the total value of the 2 axes of the left stick is less than this value, no slot is selected.")]
-        [SerializeField]
-        float stickDeadWeight;
+        [SerializeField] float stickDeadWeight;
 
         [Header("")]
-        [SerializeField]
-        CenterView centerView;
+        [SerializeField] private CenterView centerView;
 
-        [SerializeField]
-        List<SlotView> abilityViews = new List<SlotView>();
+        [SerializeField] private List<SlotView> abilityViews = new List<SlotView>();
 
-        //[SerializeField]
-        //GroupView orangeGroup;
+        [Space, SerializeField] TMPro.TextMeshProUGUI helpMessage;
 
-        //[SerializeField]
-        //GroupView yellowGroup;
+        [Space, SerializeField] TMPro.TextMeshProUGUI descriptionHelpMessage;
 
-        //[SerializeField]
-        //GroupView blueGroup;
+        [SerializeField] private Cursor cursor;
 
-        //[SerializeField]
-        //GroupView greenGroup;
+        [Header("Colours")]
+        [SerializeField] private Color lockedAbilityColour;
 
-        [Header("")]
-        [SerializeField]
-        Color lockedAbilityColour;
-        public Color LockedAbilityColour { get { return lockedAbilityColour; } }
+        [SerializeField] private Color availableAbilityColour;
 
-        [SerializeField]
-        Color availableAbilityColour;
-        public Color AvailableAbilityColour { get { return availableAbilityColour; } }
+        [SerializeField] private Color activeAbilityColour;
 
-        [SerializeField]
-        Color activeAbilityColour;
-        public Color ActiveAbilityColour { get { return activeAbilityColour; } }
+        [SerializeField] private Color pillarLockedAbilityColour;
 
 
+        PlayerModel playerModel;
 
-        Player.PlayerModel playerModel;
+        bool isEchoAbilityActive;
+        int selectedSlotIndex = -1;
+
+        bool activationButtonDown = false;
+        Vector2 previousStickPos = Vector2.zero;
+
+        //##################################################################
 
         public bool IsActive { get; private set; }
 
-        //List<SlotView> slotList = new List<SlotView>();
-        int selectedSlotIndex = -1;
+        public Color LockedAbilityColour { get { return lockedAbilityColour; } }
+        public Color AvailableAbilityColour { get { return availableAbilityColour; } }
+        public Color ActiveAbilityColour { get { return activeAbilityColour; } }
+        public Color PillarLockedAbilityColour { get { return pillarLockedAbilityColour; } }
+
         SlotView SelectedSlot
         {
             get
@@ -65,19 +63,11 @@ namespace Game.UI.AbilityMenu
             }
         }
 
-        bool activationButtonDown = false;
-        Vector2 previousStickPos = Vector2.zero;
-
         //##################################################################
 
         void IUiState.Initialize(IGameControllerBase gameController)
         {
             playerModel = gameController.PlayerModel;
-
-            //slotList.AddRange(orangeGroup.Slots);
-            //slotList.AddRange(yellowGroup.Slots);
-            //slotList.AddRange(blueGroup.Slots);
-            //slotList.AddRange(greenGroup.Slots);
 
             for (int i = 0; i < abilityViews.Count; i++)
             {
@@ -85,6 +75,7 @@ namespace Game.UI.AbilityMenu
             }
 
             centerView.Initialize(playerModel, this);
+            helpMessage.text = "";
         }
 
         void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
@@ -96,12 +87,42 @@ namespace Game.UI.AbilityMenu
 
             IsActive = true;
             gameObject.SetActive(true);
+            centerView.Activate();
+
+            isEchoAbilityActive = playerModel.CheckAbilityActive(eAbilityType.Echo);
+
+            //not tutorial
+            if (isEchoAbilityActive)
+            {
+                foreach (var slot in abilityViews)
+                {
+                    slot.Activate();
+                }
+            }
+            //tutorial
+            else
+            {
+                foreach (var slot in abilityViews)
+                {
+                    slot.Deactivate();
+                }
+
+                centerView.SetContent(playerModel.AbilityData.GetAbility(eAbilityType.Echo));
+            }
+
+            UpdateInputMessage();
         }
 
         void IUiState.Deactivate()
         {
-            IsActive = false;
+            centerView.Deactivate();
+            foreach (var slot in abilityViews)
+            {
+                slot.Deactivate();
+            }
+
             gameObject.SetActive(false);
+            IsActive = false;
         }
 
         //##################################################################
@@ -121,6 +142,7 @@ namespace Game.UI.AbilityMenu
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HUD));
                 return;
             }
+            //show help menu
             else if (Input.GetButtonDown("Back"))
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HelpMenu));
@@ -130,56 +152,81 @@ namespace Game.UI.AbilityMenu
             //**********************************************
             //handle ability activation
 
-            if (Input.GetButton("Jump") && !activationButtonDown && SelectedSlot != null)
+            //not tutorial
+            if (isEchoAbilityActive)
             {
-                ActivateSelectedAbility();
+                if (Input.GetButtonDown("Jump") && !activationButtonDown && SelectedSlot != null)
+                {
+                    ActivateSelectedAbility();
 
-                activationButtonDown = true;
+                    activationButtonDown = true;
+                }
+                else if (!Input.GetButton("Jump"))
+                {
+                    activationButtonDown = false;
+                }
             }
-            else if (!Input.GetButton("Jump"))
+            //tutorial
+            else
             {
-                activationButtonDown = false;
+                if (Input.GetButtonDown("Jump"))
+                {
+                    if (playerModel.ActivateAbility(eAbilityType.Echo))
+                    {
+                        foreach (var slot in abilityViews)
+                        {
+                            slot.Activate();
+                        }
+
+                        SetSelectedSlot(-1);
+
+                        isEchoAbilityActive = true;
+                    }
+                }
             }
 
             //**********************************************
             //handle ability selection
 
-            var leftStick = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-
-            if ((previousStickPos - leftStick).magnitude > 0.05f) //ignore stick if it is not moving
+            if (isEchoAbilityActive)
             {
-                float weight = Mathf.Abs(leftStick.x) + Mathf.Abs(leftStick.y);
+                var leftStick = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
-                if (weight < stickDeadWeight)
+                if ((previousStickPos - leftStick).magnitude > 0.05f) //ignore stick if it is not moving
                 {
-                    SetSelectedSlot(-1);
-                }
-                else
-                {
-                    float angle = Vector2.SignedAngle(Vector2.up, leftStick.normalized);
+                    float weight = Mathf.Abs(leftStick.x) + Mathf.Abs(leftStick.y);
 
-                    if (angle < 0f)
+                    if (weight < stickDeadWeight)
                     {
-                        angle *= -1;
+                        SetSelectedSlot(-1);
                     }
                     else
                     {
-                        angle = 360f - angle;
+                        float angle = Vector2.SignedAngle(Vector2.up, leftStick.normalized);
+
+                        if (angle < 0f)
+                        {
+                            angle *= -1;
+                        }
+                        else
+                        {
+                            angle = 360f - angle;
+                        }
+
+                        angle += CIRCLE_INTERVAL * 0.5f;
+
+                        if (angle >= 360f)
+                        {
+                            angle -= 360f;
+                        }
+
+                        SetSelectedSlot((int)(angle / CIRCLE_INTERVAL));
+
+                        //Debug.LogFormat("AbilityMenuController: Update: stick={0} ; angle={1} ; slot = {2}", leftStick, angle, selectedSlotIndex);
                     }
 
-                    angle += CIRCLE_INTERVAL * 0.5f;
-
-                    if (angle >= 360f)
-                    {
-                        angle -= 360f;
-                    }
-
-                    SetSelectedSlot((int)(angle / CIRCLE_INTERVAL));
-
-                    //Debug.LogFormat("AbilityMenuController: Update: stick={0} ; angle={1} ; slot = {2}", leftStick, angle, selectedSlotIndex);
+                    previousStickPos = leftStick;
                 }
-
-                previousStickPos = leftStick;
             }
 
             //**********************************************
@@ -231,6 +278,7 @@ namespace Game.UI.AbilityMenu
             {
                 if (i == selectedSlotIndex)
                 {
+                    cursor.GoTo(abilityViews[i].transform.position);
                     abilityViews[i].SetSelected(true);
                 }
                 else
@@ -242,30 +290,89 @@ namespace Game.UI.AbilityMenu
             if (SelectedSlot == null)
             {
                 centerView.SetContent(null);
+                cursor.gameObject.SetActive(false);
             }
             else
             {
+                cursor.gameObject.SetActive(true);
                 centerView.SetContent(playerModel.AbilityData.GetAbility(SelectedSlot.AbilityType));
             }
+
+            UpdateInputMessage();
         }
 
         void ActivateSelectedAbility()
         {
-            if (SelectedSlot == null)
-            {
-                return;
-            }
+            Debug.LogWarning("WIP: this still exists but does not do anything!");
+            //if (SelectedSlot == null)
+            //    return;
 
-            if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
+            //print(" check if : " + SelectedSlot.AbilityType + " is active : " + playerModel.CheckAbilityActive(SelectedSlot.AbilityType));
+
+            //if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
+            //{
+            //    playerModel.DeactivateAbility(SelectedSlot.AbilityType);
+            //}
+            //else
+            //{
+            //    playerModel.ActivateAbility(SelectedSlot.AbilityType);
+            //}
+
+            //UpdateInputMessage();
+        }
+
+        void UpdateInputMessage()
+        {
+            helpMessage.color = new Color(1, 1, 1);
+
+            //tutorial
+            if (!isEchoAbilityActive)
             {
-                //Debug.LogFormat("Ability Menu: deactivating ability {0}", SelectedSlot.AbilityType);
-                playerModel.DeactivateAbility(SelectedSlot.AbilityType);
+                //not enough favours
+                if (playerModel.GetCurrencyAmount(eCurrencyType.Favour) < playerModel.AbilityData.GetAbility(eAbilityType.Echo).ActivationPrice)
+                {
+                    helpMessage.text = "";
+                    descriptionHelpMessage.text = "You don't have enough Favours to unlock this ability";
+                }
+                //enough favours
+                else
+                {
+                    helpMessage.text = "[A] Place Favour";
+                    descriptionHelpMessage.text = "Press [A] to start using this ability";
+                    helpMessage.color = ActiveAbilityColour;
+                }
             }
+            //no slot selected
+            else if (SelectedSlot == null)
+            {
+                helpMessage.text = "";
+            }
+            //ability is active
+            else if (playerModel.CheckAbilityActive(SelectedSlot.AbilityType))
+            {
+                helpMessage.text = "[A] Remove Favour";
+                descriptionHelpMessage.text = "Press [A] to stop using this ability";
+            }
+            //ability is locked
+            else if (!playerModel.CheckAbilityUnlocked(SelectedSlot.AbilityType))
+            {
+                helpMessage.text = "Destroy a Pillar to Unlock";
+                descriptionHelpMessage.text = "Destroy a Pillar to unlock this ability";
+            }
+            //not enough favours
+            else if (playerModel.GetCurrencyAmount(eCurrencyType.Favour) < playerModel.AbilityData.GetAbility(SelectedSlot.AbilityType).ActivationPrice)
+            {
+                helpMessage.text = "";
+                descriptionHelpMessage.text = "You don't have enough Favours to unlock this ability";
+            }
+            //enough favours
             else
             {
-                //Debug.LogFormat("Ability Menu: activating ability {0}", SelectedSlot.AbilityType);
-                playerModel.ActivateAbility(SelectedSlot.AbilityType);
+                helpMessage.text = "[A] Place Favour";
+                descriptionHelpMessage.text = "Press [A] to start using this ability";
+                helpMessage.color = ActiveAbilityColour;
             }
+
         }
 
         //##################################################################

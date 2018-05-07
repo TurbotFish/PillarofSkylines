@@ -1,4 +1,5 @@
-﻿using Game.Player.CharacterController.Containers;
+﻿using Game.Model;
+using Game.Player.CharacterController.Containers;
 using Game.Player.CharacterController.States;
 using System.Collections.Generic;
 using UnityEngine;
@@ -21,8 +22,9 @@ namespace Game.Player.CharacterController
 
         IState currentState;
         public ePlayerState CurrentState { get { return currentState.StateId; } }
+        public float timeInCurrentState;
 
-        //Multipliers
+        //Multipliers (echo boost)
         [HideInInspector]
         public float speedMultiplier = 1;
         [HideInInspector]
@@ -31,6 +33,9 @@ namespace Game.Player.CharacterController
         public float glideMultiplier = 1;
         float boostTimer;
 
+        [HideInInspector]
+        public float jetpackFuel;
+
 
         //#############################################################################
 
@@ -38,6 +43,7 @@ namespace Game.Player.CharacterController
         {
             this.character = character;
             model = character.PlayerModel;
+
 
             Utilities.EventManager.EchoDestroyedEvent += EchoDestroyedEventHandler;
         }
@@ -100,6 +106,7 @@ namespace Game.Player.CharacterController
                 {
                     model.UnflagAbility(stateToAbilityLinkDict[currentState.StateId]);
                 }
+                //Debug.Log("leaving " + currentState.ToString());
             }
 
             currentState = state;
@@ -108,9 +115,10 @@ namespace Game.Player.CharacterController
             {
                 model.FlagAbility(stateToAbilityLinkDict[currentState.StateId]);
             }
+            //Debug.Log("entering " + currentState.ToString());
 
             currentState.Enter();
-
+            timeInCurrentState = 0f;
             return true;
         }
 
@@ -167,8 +175,21 @@ namespace Game.Player.CharacterController
                 {
                     cooldownDict.Remove(cooldown.StateId);
                 }
+                
             }
+            timeInCurrentState += Time.deltaTime;
 
+            if (CurrentState != ePlayerState.jetpack)
+            {
+                jetpackFuel += Time.deltaTime * character.CharData.Jetpack.RechargeSpeed;
+
+                if (jetpackFuel > character.CharData.Jetpack.MaxFuel)
+                    jetpackFuel = character.CharData.Jetpack.MaxFuel;
+            }
+            else
+            {
+                jetpackFuel -= Time.deltaTime;
+            }
 
             if (boostTimer < 0)
             {
@@ -176,11 +197,6 @@ namespace Game.Player.CharacterController
             } else
             {
                 boostTimer -= dt;
-            }
-
-            if (GuiFollowText.Instance != null)
-            {
-                GuiFollowText.Instance.SetText(currentState.StateId.ToString());
             }
 
             //updating the current state

@@ -15,6 +15,8 @@ namespace Game.Player.CharacterController.States
         StateMachine stateMachine;
         CharData.SlideData slideData;
 
+        float timerBeforeJump;
+
         public SlideState(CharController charController, StateMachine stateMachine)
         {
             this.charController = charController;
@@ -27,7 +29,7 @@ namespace Game.Player.CharacterController.States
         public void Enter()
         {
             //Debug.Log("Enter State: Slide");
-			charController.animator.SetBool("Sliding", true); 
+            timerBeforeJump = slideData.WaitBeforeJump;
         }
 
         public void Exit()
@@ -45,11 +47,12 @@ namespace Game.Player.CharacterController.States
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
             //jump
-            if (inputInfo.jumpButtonDown)
+            if (inputInfo.jumpButtonDown && timerBeforeJump<=0f)
             {
+                //Debug.Log("hey : " + movementInfo.velocity.sqrMagnitude / 100);
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
-				state.SetJumpDirection(Vector3.ProjectOnPlane(collisionInfo.currentGroundNormal, charController.MyTransform.up));
+                state.SetJumpDirection(Vector3.Lerp(charController.MyTransform.up, Vector3.ProjectOnPlane(collisionInfo.currentGroundNormal, charController.MyTransform.up), movementInfo.velocity.sqrMagnitude/100));
                 stateMachine.ChangeState(state);
             }
             //fall
@@ -57,17 +60,21 @@ namespace Game.Player.CharacterController.States
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
-                stateMachine.ChangeState(state);
-            } 
+                stateMachine.ChangeState(state); 
+            }
             //dash
             else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
             {
                 stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             }
             //stop
-            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle && !collisionInfo.SlippySlope || Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < 2f) 
+            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MaxSlopeAngle && !collisionInfo.SlippySlope|| collisionInfo.NotSlippySlope || Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < 2f)
             {
                 stateMachine.ChangeState(new StandState(charController, stateMachine));
+            }
+            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom) && !charController.createdEchoOnThisInput)
+            {
+                stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
             }
         }
 
@@ -86,10 +93,23 @@ namespace Game.Player.CharacterController.States
                 result.Acceleration += charController.InputInfo.leftStickToSlope * slideData.Control;
             } else {
                 result.IgnoreGravity = false;
-                result.Acceleration = Vector3.ProjectOnPlane(-charController.MyTransform.up, charController.CollisionInfo.currentGroundNormal).normalized * slideData.MinimalSpeed;
+                result.Acceleration = charController.TurnSpaceToLocal(Vector3.ProjectOnPlane(-charController.MyTransform.up, charController.CollisionInfo.currentGroundNormal)).normalized * slideData.MinimalSpeed;
                 result.Acceleration += charController.InputInfo.leftStickToSlope * slideData.Control;
             }
-            result.PlayerForward = result.Acceleration.normalized;
+
+            if (timerBeforeJump <= 0f)
+            {
+                result.PlayerForward = result.Acceleration.normalized;
+                if (timerBeforeJump < 0f)
+                {
+                    timerBeforeJump = 0f;
+                    charController.animator.SetBool("Sliding", true);
+                }
+            }
+            else
+            {
+                timerBeforeJump -= Time.deltaTime;
+            }
 
             return result;
         }

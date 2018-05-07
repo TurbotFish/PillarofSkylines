@@ -69,7 +69,7 @@ namespace Game.Player.CharacterController
         /// <summary>
         /// The moving platform the player is currently on (null if not on a moving platform).
         /// </summary>
-        MovingPlatform currentPF;
+        MovingPlatform[] currentPFs;
 
         Gravifloor currentGravifloor;
 
@@ -77,12 +77,16 @@ namespace Game.Player.CharacterController
         bool climbingStep;
         bool insideWallOnThisFrame;
         Vector3 stepOffset;
+        Vector3 rebordOffset = Vector3.zero;
 
         [HideInInspector]
         public Quaternion playerAngle;
         RaycastHit hit;
         RaycastHit hit2;
+        RaycastHit hit3;
         Vector3 wallDir;
+        Vector3 velocityBeforeCollision = Vector3.zero;
+        float timerBeforeForgetVBC = 0f;
         RaycastHit sideHit;
 
         //#############################################################################
@@ -96,6 +100,7 @@ namespace Game.Player.CharacterController
             favourCollider.radius = radius;
             favourCollider.height = height + radius * 2;
             capsuleHeightModifier = new Vector3(0, height, 0);
+            collisions.collisionLayer = collisionMask;
         }
 
         //#############################################################################
@@ -126,6 +131,17 @@ namespace Game.Player.CharacterController
             collisionNumber = 0;
             //Recursively check if the movement meets obstacles
             velocity = CollisionDetection(velocity, myTransform.position + playerAngle * center, new RaycastHit());
+            //Debug.Log("col num : " + collisionNumber);
+
+            
+
+            /*
+            if (rebordOffset != Vector3.zero)
+            {
+                transform.position += rebordOffset;
+                print("rebord is : " + rebordOffset);
+                rebordOffset = Vector3.zero;
+            }*/
             if (climbingStep)
             {
                 transform.position += stepOffset;
@@ -135,6 +151,7 @@ namespace Game.Player.CharacterController
             Vector3 finalVelocity = Vector3.zero;
             //Check if calculated movement will end up in a wall, if so try to adjust movement
             wallsOverPlayer = Physics.OverlapCapsule(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + velocity, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + velocity, radius, collisionMaskNoCloud);
+
             if (wallsOverPlayer.Length == 0)
             {
                 finalVelocity = ConfirmMovement(velocity);
@@ -146,9 +163,32 @@ namespace Game.Player.CharacterController
                 finalVelocity = AdjustPlayerPosition(velocity);
             }
 
+            if (timerBeforeForgetVBC > 0)
+            {
+                timerBeforeForgetVBC -= Time.deltaTime;
+                if (velocityBeforeCollision != Vector3.zero && !Physics.CapsuleCast(
+                    (myTransform.position + playerAngle * center) - (playerAngle * capsuleHeightModifier / 2),
+                    (myTransform.position + playerAngle * center) + (playerAngle * capsuleHeightModifier / 2),
+                    radius,
+                    velocityBeforeCollision,
+                    out hit,
+                    velocityBeforeCollision.magnitude,
+                    ((velocityBeforeCollision.y > 0 || myPlayer.CurrentState == ePlayerState.glide) ? collisionMaskNoCloud : collisionMask)))
+                {
+                    //Debug.Log("managed to add velocity from before collision");
+                    Debug.Log("added VBC : " + velocityBeforeCollision);
+                    finalVelocity = velocityBeforeCollision.normalized * finalVelocity.magnitude;
+                    velocityBeforeCollision = Vector3.zero;
+                }
+                if (timerBeforeForgetVBC < 0f)
+                {
+                    velocityBeforeCollision = Vector3.zero;
+                }
+            }
+
             //Update collision informations
             CollisionUpdate(velocity);
-
+            
             //**
             var pos2 = myTransform.position;
             if((pos2-pos1).magnitude > 0.01f)
@@ -168,15 +208,16 @@ namespace Game.Player.CharacterController
             var pos1 = myTransform.position;
             myTransform.Translate(velocity, Space.World);
             var pos2 = myTransform.position;
-
+            
+            /*
             if (myPlayer.CurrentState == ePlayerState.move)
             {
-                //Debug.LogFormat("input={0}", velocity.ToString());
-                //Debug.LogFormat("translation={0}; magnitude={1}", (pos2 - pos1).ToString(), (pos2 - pos1).magnitude.ToString());
-                //Debug.LogFormat("angle:{0}", Vector3.Angle(transform.up, Vector3.up));
-                //Debug.LogFormat("axis:{0}", Vector3.Cross(transform.up, Vector3.up));
-                //Debug.LogFormat("velocity / deltaTime = {0}", velocity / Time.deltaTime);
-            }
+                Debug.LogFormat("input={0}", velocity.ToString());
+                Debug.LogFormat("translation={0}; magnitude={1}", (pos2 - pos1).ToString(), (pos2 - pos1).magnitude.ToString());
+                Debug.LogFormat("angle:{0}", Vector3.Angle(transform.up, Vector3.up));
+                Debug.LogFormat("axis:{0}", Vector3.Cross(transform.up, Vector3.up));
+                Debug.LogFormat("velocity / deltaTime = {0}", velocity / Time.deltaTime);
+            }*/
 
             var result = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * velocity /*/ Time.deltaTime*/;
 
@@ -216,11 +257,11 @@ namespace Game.Player.CharacterController
             Physics.Raycast(myTransform.position + velocity + playerAngle * center, -OutOfWallDirection, out hit, radius + height / 2, collisionMask);
             OutOfWallDirection = OutOfWallDirection.normalized * (radius + height / 2);
 
-			if (Physics.CapsuleCast(myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier / 2) + OutOfWallDirection, myTransform.position + velocity + playerAngle * (center + capsuleHeightModifier / 2) + OutOfWallDirection
+            if (Physics.CapsuleCast(myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier / 2) + OutOfWallDirection, myTransform.position + velocity + playerAngle * (center + capsuleHeightModifier / 2) + OutOfWallDirection
 				, radius, -OutOfWallDirection, out hit, radius + height, collisionMask))
             {
-				print("hit distance : " + hit.distance + "distance adj : " + (1-hit.distance));
-                myTransform.Translate(OutOfWallDirection * (1 - hit.distance)/2, Space.World);
+				print("hit distance : " + hit.distance + "distance adj : " + ((radius + height) - hit.distance));
+                myTransform.Translate(OutOfWallDirection * ((radius + height) - hit.distance)/2, Space.World);
                 result = ConfirmMovement(velocity);
             }
             else
@@ -229,7 +270,7 @@ namespace Game.Player.CharacterController
 				result = ConfirmMovement(velocity);
             }
 
-			if (belowLastFrame && !insideWallOnThisFrame)
+            if (belowLastFrame && !insideWallOnThisFrame && myPlayer.CurrentState != ePlayerState.jetpack)
 			{
 				print("must be below");
 				int security = 5;
@@ -252,7 +293,6 @@ namespace Game.Player.CharacterController
                                             skinWidth * 2,
                                             collisionMask) && security > 0)
                 {
-                    print("déplacement !");
                     security--;
                     myTransform.Translate(-collisions.lastWallNormal * skinWidth * 2, Space.World);
                 }
@@ -264,26 +304,27 @@ namespace Game.Player.CharacterController
 
         void CollisionUpdate(Vector3 velocity)
         {
-
-            if (currentPF != null)
+            if (currentPFs != null)
             {
-                Debug.Log("removing platform");
-                currentPF.RemovePlayer();
-                currentPF = null;
+                foreach (MovingPlatform PF in currentPFs)
+                {
+                    PF.RemovePlayer();
+                }
+                currentPFs = null;
             }
             // EN TEST POUR BIEN RESTER AU SOL, à voir ce que ça vaut
+            
             if (myPlayer.CurrentState == ePlayerState.stand || myPlayer.CurrentState == ePlayerState.move)
             {
-                if (Physics.SphereCast(myTransform.position + myTransform.up * (radius + skinWidth), radius, -myTransform.up, out hit2, myPlayer.CharData.Physics.MaxStepHeight, collisionMask))
+                if (Physics.SphereCast(myTransform.position + myTransform.up * (radius + skinWidth), radius, -myTransform.up, out hit2, myPlayer.CharData.Physics.MaxStepHeight, collisionMask) && velocity.y < .2f)
                 {
                     transform.position += -myTransform.up * (hit2.distance - skinWidth);
-                    //									print("adjusted position on ground by : " + hit2.distance);
                 }
             }
 
             //Send casts to check if there's stuff around the player and set bools depending on the results
             collisions.below = Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask) || climbingStep;
-
+            Debug.DrawRay(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, -myTransform.up * skinWidth * 4, Color.green);
 
             if (Physics.Raycast(myTransform.position, hit.point - myTransform.position, out hit2, height*2, collisionMask))
             {
@@ -294,38 +335,48 @@ namespace Game.Player.CharacterController
             if (collisions.below && !climbingStep)
             {
                 collisions.currentGroundNormal = hit.normal;
-                if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
+                if (currentPFs == null && hit.collider.CompareTag("MovingPlatform"))
                 {
-                    Debug.Log("adding platform below");
-                    currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
-                    currentPF.AddPlayer(myPlayer, hit.point);
+                    currentPFs = hit.collider.GetComponentsInParent<MovingPlatform>();
+                    foreach (MovingPlatform PF in currentPFs)
+                    {
+                      PF.AddPlayer(myPlayer, hit.point);
+                    }
                 }
                 if (hit.collider.CompareTag("Gravifloor") && (currentGravifloor == null || currentGravifloor != hit.collider.GetComponent<Gravifloor>()))
                 {
-                    if (Vector3.Dot(hit.transform.up, myTransform.up) > 0.7f)
-                    {
-                        currentGravifloor = hit.collider.GetComponent<Gravifloor>();
-                        print("Found Gravifloor " + currentGravifloor.name);
-                        currentGravifloor.AddPlayer(myPlayer);
-                    }
+                    currentGravifloor = hit.collider.GetComponent<Gravifloor>();
+                    if (currentGravifloor && Vector3.Dot(-currentGravifloor.gravityDirection, myTransform.up) > 0.6f)
+                        currentGravifloor.AddPlayer(myPlayer, -hit.normal);
                 }
-				if (hit.collider.CompareTag("SlipperySlope")) {
-					collisions.SlippySlope = true;
-				} else {
-					collisions.SlippySlope = false;
-				}
+                if (hit.collider.CompareTag("SlipperySlope"))
+                {
+                    collisions.SlippySlope = true;
+                }
+                else
+                {
+                    collisions.SlippySlope = false;
+                }
+                if (hit.collider.CompareTag("NotSlipperySlope"))
+                {
+                    collisions.NotSlippySlope = true;
+                }
+                else
+                {
+                    collisions.NotSlippySlope = false;
+                }
             }
 
             if (currentGravifloor != null && (!collisions.below || !hit.collider.CompareTag("Gravifloor")))
             {
                 currentGravifloor.RemovePlayer(!collisions.below);
-                print("Quit Gravifloor " + currentGravifloor.name + " Collision Below: " + collisions.below);
                 currentGravifloor = null;
             }
 
             if (collisions.below && !belowLastFrame)
             {
                 myPlayer.myCamera.SetVerticalOffset(Vector3.Project(collisions.initialVelocityOnThisFrame, myTransform.up).magnitude);
+				myPlayer.fxManager.ImpactPlay (Vector3.Project (collisions.initialVelocityOnThisFrame/Time.deltaTime, myTransform.up).magnitude);
             }
 
             collisions.above = Physics.SphereCast(myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) - myTransform.up * skinWidth * 2, radius, myTransform.up, out hit, skinWidth * 4, collisionMask);
@@ -335,11 +386,13 @@ namespace Game.Player.CharacterController
                 {
                     collisions.above = false;
                 }
-                if (currentPF == null && hit.collider.CompareTag("MovingPlatform"))
+                if (currentPFs == null && hit.collider.CompareTag("MovingPlatform"))
                 {
-                    Debug.Log("adding platform above");
-                    currentPF = hit.collider.GetComponentInParent<MovingPlatform>();
-                    currentPF.AddPlayer(myPlayer, hit.point);
+                    currentPFs = hit.collider.GetComponentsInParent<MovingPlatform>();
+                    foreach (MovingPlatform PF in currentPFs)
+                    {
+                        PF.AddPlayer(myPlayer, hit.point);
+                    }
                 }
             }
 
@@ -412,11 +465,13 @@ namespace Game.Player.CharacterController
 
             if (collisions.side)
             { //register with moving platforms
-                if (currentPF == null && sideHit.collider.CompareTag("MovingPlatform"))
+                if (currentPFs == null && sideHit.collider.CompareTag("MovingPlatform"))
                 {
-                    Debug.Log("adding platform side");
-                    currentPF = sideHit.collider.GetComponentInParent<MovingPlatform>();
-                    currentPF.AddPlayer(myPlayer, sideHit.point);
+                    currentPFs = sideHit.collider.GetComponentsInParent<MovingPlatform>();
+                    foreach (MovingPlatform PF in currentPFs)
+                    {
+                        PF.AddPlayer(myPlayer, sideHit.point);
+                    }
                 }
             }
 
@@ -446,7 +501,13 @@ namespace Game.Player.CharacterController
                 ((veloNorm.y > 0 || myPlayer.CurrentState == ePlayerState.glide) ? collisionMaskNoCloud : collisionMask))
                 )
             {
-                collisionNumber++;
+
+                if (collisionNumber == 0 && velocityBeforeCollision == Vector3.zero && (myPlayer.CurrentState != ePlayerState.slide || myPlayer.stateMachine.timeInCurrentState < 0.05f) && myPlayer.CurrentState != ePlayerState.wallRun)
+                {
+                    //Debug.Log("hey the velocity before collision is : " + velocity);
+                    timerBeforeForgetVBC = 0.05f;
+                    velocityBeforeCollision = velocity;
+                }
 
                 //print("met smth ! name : " + hit.collider.name + " at : " + hit.point + " distance : " + hit.distance);
 
@@ -456,10 +517,15 @@ namespace Game.Player.CharacterController
                 //Get the remaining velocity after getting to the obstacle
                 Vector3 extraVelocity = (velocity - movementVector);
 
+                collisionNumber++;
+               
+
+
                 #region step detection
                 //Detect the obstacle met from above to check if it's a step
                 //Debug.DrawRay(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up * (height + radius * 2), Color.red);
                 //Debug.DrawRay(myTransform.position + movementVector + myTransform.up * (height + radius * 2), Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), Color.red);
+
                 if (
                     (myPlayer.CurrentState == ePlayerState.move || climbingStep) &&
                     Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up, out hit2, height + radius * 2, collisionMask) &&
@@ -472,10 +538,10 @@ namespace Game.Player.CharacterController
                         && collisions.stepHeight < myPlayer.CharData.Physics.MaxStepHeight
                         && Vector3.Dot(hit.normal, hit2.normal) < .95f
                         && Vector3.Dot(hit.normal, hit2.normal) >= -.01f
-                       )
+                        )
                     {
                         stepOffset = myTransform.up * collisions.stepHeight;
-                        //						print("step added : " + stepOffset.y);
+                        //print("step added : " + stepOffset.y);
                         climbingStep = true;
                     }
                     else
@@ -490,7 +556,7 @@ namespace Game.Player.CharacterController
                     climbingStep = false;
                 }
                 #endregion step detection
-
+                    
                 //Stop the process if the script detected a lot of collisions
                 if (collisionNumber < (climbingStep ? 4 : 5))
                 {
@@ -499,6 +565,8 @@ namespace Game.Player.CharacterController
                     //if it's not the first, project on the line parallel to both the current obstacle and the previous one
                     //if the player is on the ground, count the ground as a first collision
                     //once the extra velocity has been projected, Call the function once more to check if this new velocity meets obstacle and do everything again
+
+
                     if (climbingStep)
                     {
                         // If the controller detected the player is going up a step, send a new detection from above the step
@@ -539,6 +607,7 @@ namespace Game.Player.CharacterController
             }
             else
             {
+
                 if (collisionNumber == 0)
                 {
                     //print("stopped climbing 3");
@@ -554,9 +623,10 @@ namespace Game.Player.CharacterController
                 Debug.LogWarning("whoa that was a lot of collisions there (" + collisionNumber + ").");
             }
             //			print("coll nmber : " + collisionNumber);
-            Debug.DrawRay(newOrigin, movementVector, Color.red);
+            //Debug.DrawRay(newOrigin, movementVector, Color.red);
 
 
+            
             //return the movement vector calculated
             return movementVector;
         }
@@ -569,10 +639,12 @@ namespace Game.Player.CharacterController
         public struct CollisionInfo
         {
             public bool above, below;
-            public bool side, SlippySlope;
+            public bool side, SlippySlope, NotSlippySlope;
 
             public bool cornerNormal;
             public float stepHeight;
+
+            public LayerMask collisionLayer;
 
             public Vector3 initialVelocityOnThisFrame;
 
@@ -587,7 +659,7 @@ namespace Game.Player.CharacterController
                 if (!below)
                     currentGroundNormal = Vector3.zero;
                 above = below = false;
-                side = SlippySlope = cornerNormal = false;
+                side = SlippySlope = cornerNormal = NotSlippySlope = false;
                 currentWallNormal = Vector3.zero;
                 currentWallHit= new RaycastHit();
             }

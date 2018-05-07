@@ -15,14 +15,13 @@ public class StraightMovementAndTeleport : MovingPlatform {
 
 	bool waiting = false, moving = false;
 
-	void Start() {
+	protected override void Start() {
 		waiting = true;
 		currWaitTime = waitTime + initialWaitTime;
 		initialPosition = transform.position;
-        gameObject.tag = "MovingPlatform";
-	}
-
-	// Update is called once per frame
+        base.Start();
+    }
+    
 	void Update () {
 		if (waiting) {
 			currWaitTime -= Time.deltaTime;
@@ -34,10 +33,9 @@ public class StraightMovementAndTeleport : MovingPlatform {
 		}
 		if (moving) {
 			transform.position += movement * 1 / timeMoving * Time.deltaTime;
-
-            if (currPlayer != null) {
-				currPlayer.ImmediateMovement(movement * 1 / timeMoving * Time.deltaTime, true);
-            }
+            
+            if (currPlayer != null)
+				currPlayer.ImmediateMovement(movement * 1 / timeMoving * Time.deltaTime, true, false);
 			movementProgression += 1 / timeMoving * Time.deltaTime;
 
 			if (movementProgression >= 1f) {
@@ -46,9 +44,7 @@ public class StraightMovementAndTeleport : MovingPlatform {
 				movementProgression = 0f;
 				transform.position = initialPosition;
 			}
-
 		}
 	}
-
-
+    
 }

@@ -1,4 +1,5 @@
 ﻿using Game.GameControl;
+using Game.Model;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace Game.UI.PillarEntranceMenu
         [SerializeField]
         GameObject warningMessage;
 
-        Player.PlayerModel playerModel;
+        PlayerModel playerModel;
 
         //
         World.ePillarId pillarId;
@@ -46,14 +47,10 @@ namespace Game.UI.PillarEntranceMenu
             }
             else if (canEnterPillar && Input.GetButtonDown("Interact"))
             {
-                if (playerModel.CheckIsPillarUnlocked(pillarId))
+                if (playerModel.UnlockPillar(pillarId))
                 {
-                    Utilities.EventManager.SendEnterPillarEvent(this, new Utilities.EventManager.EnterPillarEventArgs(this.pillarId));
-                }
-                else
-                {
-                    playerModel.UnlockPillar(pillarId);
-                }                
+                    Utilities.EventManager.SendEnterPillarEvent(this, new Utilities.EventManager.EnterPillarEventArgs(pillarId));
+                }             
             }
         }
 
@@ -63,7 +60,7 @@ namespace Game.UI.PillarEntranceMenu
 
         void IUiState.Initialize(IGameControllerBase gameController)
         {
-            this.playerModel = gameController.PlayerModel;
+            playerModel = gameController.PlayerModel;
         }
 
         void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
@@ -86,7 +83,7 @@ namespace Game.UI.PillarEntranceMenu
             int cost = playerModel.GetPillarEntryPrice(pillarId);
             costPanelView.Initialize(cost);
 
-            if (playerModel.Favours < cost)
+            if (playerModel.PillarKeysCount < cost)
             {
                 warningMessage.SetActive(true);
             }

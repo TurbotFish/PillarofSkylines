@@ -3,33 +3,33 @@ using UnityEditor;
 
 public class RepeatObjectQuiDepasse : EditorWindow
 {
-    static Game.World.ChunkSystem.WorldController world;
+    static Game.World.WorldController world;
 
     [MenuItem("GameObject/Repeat Object", false, 11)]
     public static void RepeatObject(MenuCommand menuCommand)
     {
-        world = FindObjectOfType<Game.World.ChunkSystem.WorldController>();
+        world = FindObjectOfType<Game.World.WorldController>();
         GameObject target = (GameObject)menuCommand.context;
 
         Transform copyParent = new GameObject().transform;
         copyParent.name = target.name + " REPETITIONS";
         copyParent.parent = target.transform.parent;
         copyParent.position = Vector3.zero;
-        
+
         Undo.RegisterCreatedObjectUndo(copyParent.gameObject, "Repeated " + target.name);
         Undo.RegisterCompleteObjectUndo(target, "Repeated " + target.name);
-        
+
         RepeatChildrenIfTheyDepassent(target, copyParent);
-        
+
         if (copyParent.childCount == 0)
             DestroyImmediate(copyParent.gameObject);
-        
+
     }
 
     static void RepeatChildrenIfTheyDepassent(GameObject target, Transform copyParent)
     {
         Collider col = target.GetComponent<Collider>();
-        
+
         if (col)
         {
             Vector3 minPoint = world.transform.position - world.WorldSize / 2;
@@ -37,8 +37,8 @@ public class RepeatObjectQuiDepasse : EditorWindow
 
             int minDepasse = (int)CheckPointInBounds(col.bounds.min, minPoint, maxPoint);
             int maxDepasse = (int)CheckPointInBounds(col.bounds.max, minPoint, maxPoint);
-            
-            if (minDepasse + maxDepasse != minDepasse*maxDepasse*2) // si le collider dépasse
+
+            if (minDepasse + maxDepasse != minDepasse * maxDepasse * 2) // si le collider dépasse
             {
                 // FULL OUTSIDE
 
@@ -60,7 +60,8 @@ public class RepeatObjectQuiDepasse : EditorWindow
                         // on le déplace
                         BuildCopy(target, copyParent, new Vector3(0, world.WorldSize.y, -world.WorldSize.z), " (COPY Z-Y+)");
                         fullOutsideY = true;
-                    } else
+                    }
+                    else
                     {
                         // on le déplace
                         BuildCopy(target, copyParent, new Vector3(0, 0, -world.WorldSize.z), " (COPY Z-)");
@@ -81,12 +82,14 @@ public class RepeatObjectQuiDepasse : EditorWindow
                         // on le déplace
                         BuildCopy(target, copyParent, new Vector3(0, world.WorldSize.y, world.WorldSize.z), " (COPY Z+Y+)");
                         fullOutsideY = true;
-                    } else
+                    }
+                    else
                     {
                         // on le déplace
                         BuildCopy(target, copyParent, new Vector3(0, 0, world.WorldSize.z), " (COPY Z+)");
                     }
-                } else
+                }
+                else
                 {
                     if (minDepasse % (int)Depassage.yPositive == 0) // on est complètement en dehors en y positive
                     {
@@ -101,14 +104,14 @@ public class RepeatObjectQuiDepasse : EditorWindow
                         fullOutsideY = true;
                     }
                 }
-                
+
                 // CROSSING
 
                 if (!fullOutsideZ) // Si on est pas full dehors, check si on cross en Z
                 {
                     if (minDepasse % (int)Depassage.zNegative == 0) // si on dépasse en z neg on fait une copie en z Pos
                         BuildCopy(target, copyParent, new Vector3(0, 0, world.WorldSize.z), " (COPY Z+)");
-                    
+
                     if (maxDepasse % (int)Depassage.zPositive == 0) // si on dépasse en z pos on fait une copie en z Neg
                         BuildCopy(target, copyParent, new Vector3(0, 0, -world.WorldSize.z), " (COPY Z-)");
                 }
@@ -155,7 +158,7 @@ public class RepeatObjectQuiDepasse : EditorWindow
         foreach (Transform child in target.transform)
             RepeatChildrenIfTheyDepassent(child.gameObject, copyParent);
     }
-    
+
     static void BuildCopy(GameObject original, Transform parent, Vector3 offsetPos, string addName)
     {
         GameObject copy = Instantiate(original, parent);
@@ -177,15 +180,15 @@ public class RepeatObjectQuiDepasse : EditorWindow
             result *= (int)Depassage.zNegative;
         else if (point.z > max.z)
             result *= (int)Depassage.zPositive;
-        
+
         if (point.y < min.y)
             result *= (int)Depassage.yNegative;
         else if (point.y > max.y)
             result *= (int)Depassage.yPositive;
-        
+
         return (Depassage)result;
     }
-    
+
     enum Depassage
     {
         None = 1,

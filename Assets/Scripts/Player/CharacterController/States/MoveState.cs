@@ -39,45 +39,62 @@ namespace Game.Player.CharacterController.States
 			PlayerInputInfo inputInfo = charController.InputInfo;
 			PlayerMovementInfo movementInfo = charController.MovementInfo;
 			CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
-            if (inputInfo.jumpButtonDown) {
+            if (inputInfo.jumpButtonDown && !charController.isInsideNoRunZone) {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
 				stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 
 				stateMachine.ChangeState(state);
-			} else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash)) {
+			} else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash) && !charController.isInsideNoRunZone) {
 				stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             } else if(inputInfo.sprintButton && (!collisionInfo.below || collisionInfo.cornerNormal) && !stateMachine.CheckStateLocked(ePlayerState.hover))
             {
                 stateMachine.ChangeState(new HoverState(charController, stateMachine));
-            } else if ((Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle 
+            } else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MinWallAngle && ((Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle && !collisionInfo.NotSlippySlope)
                 || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f) 
-                && !collisionInfo.cornerNormal) {
+                && !collisionInfo.cornerNormal)
+            {
                 stateMachine.ChangeState(new SlideState(charController, stateMachine));
             } else if (inputInfo.leftStickAtZero) {
 				stateMachine.ChangeState(new StandState(charController, stateMachine));
-			} else if (!collisionInfo.below)
+            }
+            //jetpack
+            else if (inputInfo.jetpackButtonDown && !stateMachine.CheckStateLocked(ePlayerState.jetpack) && !charController.isInsideNoRunZone)
             {
-                Debug.Log("in air " + inputInfo.sprintButton);
+                stateMachine.ChangeState(new JetpackState(charController, stateMachine));
+            }
+            else if (!collisionInfo.below)
+            {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
                 state.SetJumpTimer(moveData.CanStillJumpTimer);
 
                 stateMachine.ChangeState(state);
             }
-            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable)
+            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MinWallAngle)
+            {
+                var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
+
+                stateMachine.ChangeState(state);
+            }
+            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable && !charController.isInsideNoRunZone)
             {
                 stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
+            }
+            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom) && !charController.createdEchoOnThisInput)
+            {
+                stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
             }
         }
 
 		public StateReturnContainer Update(float dt) {
 			PlayerInputInfo inputInfo = charController.InputInfo;
 
+            //Debug.Log("inside zone ? " + charController.isInsideNoRunZone);
             var result = new StateReturnContainer
             {
                 CanTurnPlayer = true,
-
-                Acceleration = inputInfo.leftStickToSlope * moveData.Speed * (inputInfo.sprintButton ? moveData.SprintCoefficient : 1) * stateMachine.speedMultiplier,
+                
+                Acceleration = inputInfo.leftStickToSlope * (charController.isInsideNoRunZone ? moveData.WalkingSpeed : moveData.Speed) * (inputInfo.sprintButton && !charController.isInsideNoRunZone ? moveData.SprintCoefficient : 1) * stateMachine.speedMultiplier,
 
                 IgnoreGravity = true,
 				MaxSpeed = moveData.MaxSpeed,

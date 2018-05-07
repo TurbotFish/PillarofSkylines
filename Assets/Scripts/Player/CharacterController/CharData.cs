@@ -59,6 +59,18 @@ namespace Game.Player.CharacterController
         HoverData hover = new HoverData();
         public HoverData Hover { get { return hover; } }
 
+        [SerializeField]
+        JetpackData jetpack = new JetpackData();
+        public JetpackData Jetpack { get { return jetpack; } }
+
+        [SerializeField]
+        GroundRiseData groundRise = new GroundRiseData();
+        public GroundRiseData GroundRise { get { return groundRise; } }
+
+        [SerializeField]
+        PhantomData phantom = new PhantomData();
+        public PhantomData Phantom { get { return phantom; } }
+
         #endregion inspector variables
 
         //#############################################################################
@@ -77,6 +89,7 @@ namespace Game.Player.CharacterController
             slide.OnValidate();
             glide.OnValidate();
             wallRun.OnValidate();
+            jetpack.OnValidate();
         }
 
         #endregion on validate
@@ -107,6 +120,10 @@ namespace Game.Player.CharacterController
             [SerializeField]
             float gravityStrength;
             public float GravityStrength { get { return gravityStrength; } }
+
+            [SerializeField]
+            float gravityFallingMultiplier;
+            public float GravityFallingMultiplier { get { return gravityFallingMultiplier; } }
 
             [SerializeField]
             float turnSpeed;
@@ -174,6 +191,10 @@ namespace Game.Player.CharacterController
             public float Speed { get { return speed; } }
 
             [SerializeField]
+            float walkingSpeed;
+            public float WalkingSpeed { get { return walkingSpeed; } }
+
+            [SerializeField]
             float sprintCoefficient;
             public float SprintCoefficient { get { return sprintCoefficient; } }
 
@@ -196,6 +217,7 @@ namespace Game.Player.CharacterController
             public void OnValidate()
             {
                 speed = Mathf.Clamp(speed, 0, float.MaxValue);
+                walkingSpeed = Mathf.Clamp(walkingSpeed, 0, float.MaxValue);
                 sprintCoefficient = Mathf.Clamp(sprintCoefficient, 0, float.MaxValue);
                 maxSpeed = Mathf.Clamp(maxSpeed, 0, float.MaxValue);
                 transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
@@ -355,6 +377,10 @@ namespace Game.Player.CharacterController
             public float MinimalSpeed { get { return minimalSpeed; } }
 
             [SerializeField]
+            float waitBeforeJump;
+            public float WaitBeforeJump { get { return waitBeforeJump; } }
+
+            [SerializeField]
             float control;
             public float Control { get { return control; } }
 
@@ -362,6 +388,7 @@ namespace Game.Player.CharacterController
             {
                 transitionSpeed = Mathf.Clamp(transitionSpeed, 0, float.MaxValue);
                 minimalSpeed = Mathf.Clamp(minimalSpeed, 0, float.MaxValue);
+                waitBeforeJump = Mathf.Clamp(waitBeforeJump, 0, float.MaxValue);
                 control = Mathf.Clamp(control, 0, float.MaxValue);
             }
         }
@@ -476,7 +503,7 @@ namespace Game.Player.CharacterController
             [SerializeField]
             float speed;
             public float Speed { get { return speed; } }
-
+            
             [SerializeField]
             float timeToUnstick;
             public float TimeToUnstick { get { return timeToUnstick; } }
@@ -544,13 +571,177 @@ namespace Game.Player.CharacterController
             float duration;
             public float Duration { get { return duration; } }
 
+            [SerializeField]
+            float maxHeight;
+            public float MaxHeight { get { return maxHeight; } }
+
             public void OnValidate()
             {
                 duration = Mathf.Clamp(duration, 0, float.MaxValue);
+                maxHeight = Mathf.Clamp(maxHeight, 0, float.MaxValue);
             }
         }
 
         #endregion hover
+
+        //*******************************************
+
+        #region ground rise
+
+        [System.Serializable]
+        public class GroundRiseData
+        {
+
+            [SerializeField]
+            float height;
+            public float Height { get { return height; } }
+
+            [SerializeField]
+            float strength;
+            public float Strength { get { return strength; } }
+
+            [SerializeField]
+            float duration;
+            public float Duration { get { return duration; } }
+
+            [SerializeField]
+            float range;
+            public float Range { get { return range; } }
+
+            [SerializeField]
+            float velocityToFlat;
+            public float VelocityToFlat { get { return velocityToFlat; } }
+
+            [SerializeField]
+            float flatLength;
+            public float FlatLength { get { return flatLength; } }
+
+            [SerializeField]
+            float flatAngle;
+            public float FlatAngle { get { return flatAngle; } }
+
+
+            public void OnValidate()
+            {
+                height = Mathf.Clamp(height, 0, float.MaxValue);
+                strength = Mathf.Clamp(strength, 0, float.MaxValue);
+                duration = Mathf.Clamp(duration, 0, float.MaxValue);
+                range = Mathf.Clamp(range, 0, float.MaxValue);
+                velocityToFlat = Mathf.Clamp(velocityToFlat, 0, float.MaxValue);
+                flatLength = Mathf.Clamp(flatLength, 0, float.MaxValue);
+                flatAngle = Mathf.Clamp(flatAngle, 0, 90);
+            }
+        }
+
+        #endregion ground rise
+
+        //*******************************************
+
+        #region jetpack
+
+        [System.Serializable]
+        public class JetpackData
+        {
+
+            [SerializeField]
+            float maxFuel;
+            public float MaxFuel { get { return maxFuel; } }
+
+            [SerializeField]
+            float strength;
+            public float Strength { get { return strength; } }
+
+            [SerializeField]
+            float rechargeSpeed;
+            public float RechargeSpeed { get { return rechargeSpeed; } }
+
+            [SerializeField]
+            float maxSpeed;
+            public float MaxSpeed { get { return maxSpeed; } }
+
+            [SerializeField]
+            float horizontalSpeed;
+            public float HorizontalSpeed { get { return horizontalSpeed; } }
+
+            [SerializeField]
+            float fallingCoeff;
+            public float FallingCoeff { get { return fallingCoeff; } }
+
+
+            public void OnValidate()
+            {
+                maxFuel = Mathf.Clamp(maxFuel, 0, float.MaxValue);
+                strength = Mathf.Clamp(strength, 0, float.MaxValue);
+                rechargeSpeed = Mathf.Clamp(rechargeSpeed, 0, float.MaxValue);
+                maxSpeed = Mathf.Clamp(maxSpeed, 0, float.MaxValue);
+                horizontalSpeed = Mathf.Clamp(horizontalSpeed, 0, float.MaxValue);
+                fallingCoeff = Mathf.Clamp(fallingCoeff, 0, float.MaxValue);
+            }
+        }
+
+        #endregion jetpack
+
+        //*******************************************
+
+        #region phantom
+
+        [System.Serializable]
+        public class PhantomData
+        {
+            [SerializeField]
+            float minAngle;
+            public float MinAngle { get { return minAngle; } }
+
+            [SerializeField]
+            float baseAngle;
+            public float BaseAngle { get { return baseAngle; } }
+
+            [SerializeField]
+            float maxAngle;
+            public float MaxAngle { get { return maxAngle; } }
+
+            [SerializeField]
+            float minHorizAngle;
+            public float MinHorizAngle { get { return minHorizAngle; } }
+
+            [SerializeField]
+            float maxHorizAngle;
+            public float MaxHorizAngle { get { return maxHorizAngle; } }
+
+            [SerializeField]
+            float speed;
+            public float Speed { get { return speed; } }
+
+            [SerializeField]
+            float maxDistance;
+            public float MaxDistance { get { return maxDistance; } }
+
+            [SerializeField]
+            float vertUpAngleCtrl;
+            public float VertUpAngleCtrl { get { return vertUpAngleCtrl; } }
+
+            [SerializeField]
+            float vertDownAngleCtrl;
+            public float VertDownAngleCtrl { get { return vertDownAngleCtrl; } }
+
+            [SerializeField]
+            float noInputImpactCoeff;
+            public float NoInputImpactCoeff { get { return noInputImpactCoeff; } }
+
+            [SerializeField]
+            float horizComingBack;
+            public float HorizComingBack { get { return horizComingBack; } }
+
+            [SerializeField]
+            float horizAngleCtrl;
+            public float HorizAngleCtrl { get { return horizAngleCtrl; } }
+
+            public void OnValidate()
+            {
+            }
+        }
+
+        #endregion phantom
 
         //*******************************************
 

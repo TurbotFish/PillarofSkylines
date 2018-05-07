@@ -9,6 +9,6 @@ namespace Game.GameControl
     {
         public Scene Scene { get; set; }
         public World.ePillarId PillarId { get; set; }
-        public World.SpawnPointSystem.SpawnPointManager SpawnPointManager { get; set; }
+        public SpawnPointManager SpawnPointManager { get; set; }
     }
 }

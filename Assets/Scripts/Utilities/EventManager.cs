@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using Game.Model;
 
 namespace Game.Utilities
 {
@@ -22,8 +23,8 @@ namespace Game.Utilities
 
             public OnMenuSwitchedEventArgs(UI.eUiState newUiState, UI.eUiState previousUiState)
             {
-                this.NewUiState = newUiState;
-                this.PreviousUiState = previousUiState;
+                NewUiState = newUiState;
+                PreviousUiState = previousUiState;
             }
         }
 
@@ -46,11 +47,17 @@ namespace Game.Utilities
         {
             public bool Show { get; private set; }
             public string Message { get; private set; }
+            public string Description { get; private set; }
+            public float Time { get; private set; }
+            public UI.eMessageType MessageType { get; private set; }
 
-            public OnShowHudMessageEventArgs(bool show, string message = null)
+            public OnShowHudMessageEventArgs(bool show, string message = null, UI.eMessageType messageType = 0, string description = "", float time = 2)
             {
-                this.Show = show;
-                this.Message = message;
+                Show = show;
+                Message = message;
+                MessageType = messageType;
+                Description = description;
+                Time = time;
             }
         }
 
@@ -81,7 +88,7 @@ namespace Game.Utilities
             /// </summary>
             public OnShowMenuEventArgs(UI.eUiState menu)
             {
-                this.Menu = menu;
+                Menu = menu;
             }
         }
 
@@ -97,7 +104,22 @@ namespace Game.Utilities
             /// </summary>
             public OnShowPillarEntranceMenuEventArgs(World.ePillarId pillarId) : base(UI.eUiState.PillarEntrance)
             {
-                this.PillarId = pillarId;
+                PillarId = pillarId;
+            }
+        }
+
+        public class OnShowLoadingScreenEventArgs : OnShowMenuEventArgs
+        {
+            public int Id { get; private set; }
+
+            public OnShowLoadingScreenEventArgs() : base(UI.eUiState.LoadingScreen)
+            {
+                Id = -1;
+            }
+
+            public OnShowLoadingScreenEventArgs(World.ePillarId pillarId) : base(UI.eUiState.LoadingScreen)
+            {
+                Id = (int)pillarId;
             }
         }
 
@@ -114,31 +136,6 @@ namespace Game.Utilities
 
         //***********************************************************
 
-        //#region ability menu events
-
-        //public static class AbilityMenuEvents
-        //{
-
-        //    #region on pointer enter slot event
-
-        //    public class PointerEnterSlotEventArgs : EventArgs
-        //    {
-
-        //    }
-
-        //    public static void SendPointerEnterSlotEvent()
-        //    {
-
-        //    }
-
-        //    #endregion on pointer enter slot event
-
-        //}
-
-        //#endregion ability menu events
-
-        //***********************************************************
-
         #endregion ui events
 
         //###########################################################
@@ -147,28 +144,31 @@ namespace Game.Utilities
 
         //***********************************************************
 
-        #region favour amount changed event
+        // OBSOLETE
+        #region currency amount changed event
 
-        public class FavourAmountChangedEventArgs : EventArgs
-        {
-            public int FavourAmount { get; private set; }
+        //public class CurrencyAmountChangedEventArgs : EventArgs
+        //{
+        //    public Model.eCurrencyType CurrencyType { get; private set; }
+        //    public int CurrencyAmount { get; private set; }
 
-            public FavourAmountChangedEventArgs(int favourAmount)
-            {
-                this.FavourAmount = favourAmount;
-            }
-        }
+        //    public CurrencyAmountChangedEventArgs(Model.eCurrencyType currencyType, int currencyAmount)
+        //    {
+        //        CurrencyType = currencyType;
+        //        CurrencyAmount = currencyAmount;
+        //    }
+        //}
 
-        public delegate void FavourAmountChangedEventHandler(object sender, FavourAmountChangedEventArgs args);
+        //public delegate void CurrencyAmountChangedEventHandler(object sender, CurrencyAmountChangedEventArgs args);
 
-        public static event FavourAmountChangedEventHandler FavourAmountChangedEvent;
+        //public static event CurrencyAmountChangedEventHandler CurrencyAmountChangedEvent;
 
-        public static void SendFavourAmountChangedEvent(object sender, FavourAmountChangedEventArgs args)
-        {
-            FavourAmountChangedEvent?.Invoke(sender, args);
-        }
+        //public static void SendCurrencyAmountChangedEvent(object sender, CurrencyAmountChangedEventArgs args)
+        //{
+        //    CurrencyAmountChangedEvent?.Invoke(sender, args);
+        //}
 
-        #endregion favour amount changed event
+        #endregion currency amount changed event
 
         //***********************************************************
 
@@ -197,28 +197,29 @@ namespace Game.Utilities
 
         //***********************************************************
 
+        // OBSOLETE
         #region ability state changed
 
-        public class AbilityStateChangedEventArgs : EventArgs
-        {
-            public Player.eAbilityType AbilityType { get; private set; }
-            public Player.eAbilityState AbilityState { get; private set; }
+        //public class AbilityStateChangedEventArgs : EventArgs
+        //{
+        //    public eAbilityType AbilityType { get; private set; }
+        //    public eAbilityState AbilityState { get; private set; }
 
-            public AbilityStateChangedEventArgs(Player.eAbilityType abilityType, Player.eAbilityState abilityState)
-            {
-                AbilityType = abilityType;
-                AbilityState = abilityState;
-            }
-        }
+        //    public AbilityStateChangedEventArgs(eAbilityType abilityType, eAbilityState abilityState)
+        //    {
+        //        AbilityType = abilityType;
+        //        AbilityState = abilityState;
+        //    }
+        //}
 
-        public delegate void AbilityStateChangedEventHandler(object sender, AbilityStateChangedEventArgs args);
+        //public delegate void AbilityStateChangedEventHandler(object sender, AbilityStateChangedEventArgs args);
 
-        public static event AbilityStateChangedEventHandler AbilityStateChangedEvent;
+        //public static event AbilityStateChangedEventHandler AbilityStateChangedEvent;
 
-        public static void SendAbilityStateChangedEvent(object sender, AbilityStateChangedEventArgs args)
-        {
-            AbilityStateChangedEvent?.Invoke(sender, args);
-        }
+        //public static void SendAbilityStateChangedEvent(object sender, AbilityStateChangedEventArgs args)
+        //{
+        //    AbilityStateChangedEvent?.Invoke(sender, args);
+        //}
 
         #endregion ability state changed
 
@@ -232,10 +233,40 @@ namespace Game.Utilities
 
         //***********************************************************
 
+        #region game paused event
+
+        public class GamePausedEventArgs : EventArgs
+        {
+            public bool PauseActive { get; private set; }
+
+            public GamePausedEventArgs(bool pauseActive)
+            {
+                PauseActive = pauseActive;
+            }
+        }
+
+        public delegate void GamePausedEventHandler(object sender, GamePausedEventArgs args);
+
+        public static event GamePausedEventHandler GamePausedEvent;
+
+        public static void SendGamePausedEvent(object sender, GamePausedEventArgs args)
+        {
+            GamePausedEvent?.Invoke(sender, args);
+        }
+
+        #endregion game paused event
+
+        //***********************************************************
+
         #region teleport player event
 
         public class TeleportPlayerEventArgs : EventArgs
         {
+            /// <summary>
+            /// The Position the Player should be teleported from.
+            /// </summary>
+            public Vector3 FromPosition { get; private set; }
+
             /// <summary>
             /// The Position the Player should be teleported to.
             /// </summary>
@@ -271,6 +302,24 @@ namespace Game.Utilities
                 IsNewScene = isNewScene;
                 TakeRotation = true;
             }
+
+            public TeleportPlayerEventArgs(Vector3 fromPosition, Vector3 position, bool isNewScene)
+            {
+                FromPosition = fromPosition;
+                Position = position;
+                Rotation = Quaternion.identity;
+                IsNewScene = isNewScene;
+                TakeRotation = false;
+            }
+
+            public TeleportPlayerEventArgs(Vector3 fromPosition, Vector3 position, Quaternion rotation, bool isNewScene)
+            {
+                FromPosition = fromPosition;
+                Position = position;
+                Rotation = rotation;
+                IsNewScene = isNewScene;
+                TakeRotation = true;
+            }
         }
 
         public delegate void TeleportPlayerEventHandler(object sender, TeleportPlayerEventArgs args);
@@ -286,7 +335,28 @@ namespace Game.Utilities
 
         //***********************************************************
 
-        #region scene changed event
+        #region scene change events
+
+        public class PreSceneChangeEventArgs : EventArgs
+        {
+            public bool ChangingToOpenWorld { get; private set; }
+            public bool ChangingToPillar { get; private set; }
+
+            public PreSceneChangeEventArgs(bool changingToOpenWorld)
+            {
+                ChangingToOpenWorld = changingToOpenWorld;
+                ChangingToPillar = !changingToOpenWorld;
+            }
+        }
+
+        public delegate void PreSceneChangeEventHandler(object sender, PreSceneChangeEventArgs args);
+
+        public static event PreSceneChangeEventHandler PreSceneChangeEvent;
+
+        public static void SendPreSceneChangeEvent(object sender, PreSceneChangeEventArgs args)
+        {
+            PreSceneChangeEvent?.Invoke(sender, args);
+        }
 
         public class SceneChangedEventArgs : EventArgs
         {
@@ -319,10 +389,10 @@ namespace Game.Utilities
         public static void SendSceneChangedEvent(object sender, SceneChangedEventArgs args)
         {
             SceneChangedEvent?.Invoke(sender, args);
-            Debug.Log("Event sent: SceneChanged");
+            //Debug.Log("Event sent: SceneChanged");
         }
 
-        #endregion scene changed event
+        #endregion scene change events
 
         //***********************************************************
 
@@ -401,28 +471,28 @@ namespace Game.Utilities
 
         //***********************************************************
 
-        #region favour picked up event
+        #region pick-up collected event
 
-        public class FavourPickedUpEventArgs : EventArgs
+        public class PickupCollectedEventArgs : EventArgs
         {
-            public string FavourId { get; private set; }
+            public string PickupID { get; private set; }
 
-            public FavourPickedUpEventArgs(string favourId)
+            public PickupCollectedEventArgs(string favourId)
             {
-                FavourId = favourId;
+                PickupID = favourId;
             }
         }
 
-        public delegate void FavourPickedUpEventHandler(object sender, FavourPickedUpEventArgs args);
+        public delegate void PickupCollectedEventHandler(object sender, PickupCollectedEventArgs args);
 
-        public static event FavourPickedUpEventHandler FavourPickedUpEvent;
+        public static event PickupCollectedEventHandler PickupCollectedEvent;
 
-        public static void SendFavourPickedUpEvent(object sender, FavourPickedUpEventArgs args)
+        public static void SendPickupCollectedEvent(object sender, PickupCollectedEventArgs args)
         {
-            FavourPickedUpEvent?.Invoke(sender, args);
+            PickupCollectedEvent?.Invoke(sender, args);
         }
 
-        #endregion favour picked up event
+        #endregion pick-up collected event
 
         //***********************************************************
 
@@ -441,62 +511,16 @@ namespace Game.Utilities
 
         //***********************************************************
 
-        #region wind tunnel events
-
-        public class WindTunnelPartEnteredEventArgs : EventArgs
-        {
-            public WindTunnelPart WindTunnelPart { get; private set; }
-
-            public WindTunnelPartEnteredEventArgs(WindTunnelPart windTunnelPart)
-            {
-                WindTunnelPart = windTunnelPart;
-            }
-        }
-
-        public delegate void WindTunnelPartEnteredEventHandler(object sender, WindTunnelPartEnteredEventArgs args);
-
-        public static event WindTunnelPartEnteredEventHandler WindTunnelPartEnteredEvent;
-
-        public static void SendWindTunnelEnteredEvent(object sender, WindTunnelPartEnteredEventArgs args)
-        {
-            WindTunnelPartEnteredEvent?.Invoke(sender, args);
-        }
-
-        //***
-
-        public class WindTunnelPartExitedEventArgs : EventArgs
-        {
-            public WindTunnelPart WindTunnelPart { get; private set; }
-
-            public WindTunnelPartExitedEventArgs(WindTunnelPart windTunnelPart)
-            {
-                WindTunnelPart = windTunnelPart;
-            }
-        }
-
-        public delegate void WindTunnelExitedEventHandler(object sender, WindTunnelPartExitedEventArgs args);
-
-        public static event WindTunnelExitedEventHandler WindTunnelExitedEvent;
-
-        public static void SendWindTunnelExitedEvent(object sender, WindTunnelPartExitedEventArgs args)
-        {
-            WindTunnelExitedEvent?.Invoke(sender, args);
-        }
-
-        #endregion wind tunnel events
-
-        //***********************************************************
-
         #region trigger updated
 
         public class TriggerUpdatedEventArgs : EventArgs
         {
             public string TriggerId { get; private set; }
-            public Trigger Trigger { get; private set; }
+            public LevelElements.Trigger Trigger { get; private set; }
 
-            public TriggerUpdatedEventArgs(Trigger trigger)
+            public TriggerUpdatedEventArgs(LevelElements.Trigger trigger)
             {
-                TriggerId = trigger.Id;
+                TriggerId = trigger.UniqueId;
                 Trigger = trigger;
             }
         }
@@ -511,6 +535,33 @@ namespace Game.Utilities
         }
 
         #endregion trigger updated
+
+        //***********************************************************
+
+        #region set waypoint event
+
+        public class SetWaypointEventArgs : EventArgs
+        {
+            public string WaypointID { get; private set; }
+            public Vector3 Position { get; private set; }
+
+            public SetWaypointEventArgs(string wayPointID, Vector3 position)
+            {
+                WaypointID = wayPointID;
+                Position = position;
+            }
+        }
+
+        public delegate void SetWaypointEventHandler(object sender, SetWaypointEventArgs args);
+
+        public static event SetWaypointEventHandler SetWaypointEvent;
+
+        public static void SendSetWaypointEvent(object sender, SetWaypointEventArgs args)
+        {
+            SetWaypointEvent?.Invoke(sender, args);
+        }
+
+        #endregion set waypoint event
 
         //***********************************************************
 

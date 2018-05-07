@@ -1,4 +1,8 @@
-﻿using System.Collections;
+﻿using Game.CameraControl;
+using Game.Model;
+using Game.Utilities;
+using Game.World;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -9,36 +13,50 @@ namespace Game.GameControl
     {
         public const string UI_SCENE_NAME = "UiScene";
 
+        //###############################################################
+
         [SerializeField]
-        bool showIntroMenu = false;
+        private bool showIntroMenu = false;
 
         [SerializeField]
         private GameObject uiPrefab;
 
         //
-        Player.PlayerModel playerModel;
-        public Player.PlayerModel PlayerModel { get { return playerModel; } }
+        private PlayerModel playerModel;
+        private EchoSystem.EchoManager echoManager;
+        private EclipseManager eclipseManager;
 
-        EchoSystem.EchoManager echoManager;
+        //
+        private UI.UiController uiController;
+        private Player.PlayerController playerController;
+
+        //
+        private bool isOpenWorldLoaded;
+        private WorldController worldController;
+        private DuplicationCameraController duplicationCameraController;
+
+        //
+        private bool isPillarLoaded;
+        private ePillarId pillarId;
+
+        //###############################################################
+
+        public PlayerModel PlayerModel { get { return playerModel; } }
         public EchoSystem.EchoManager EchoManager { get { return echoManager; } }
-
-        EclipseManager eclipseManager;
         public EclipseManager EclipseManager { get { return eclipseManager; } }
 
-
-        //
-        UI.UiController uiController;
         public UI.UiController UiController { get { return uiController; } }
-
-
-        //
-        Player.PlayerController playerController;
         public Player.PlayerController PlayerController { get { return playerController; } }
+        public CameraController CameraController { get; private set; }
 
-        public CameraControl.CameraController CameraController { get; private set; }
+        public bool IsOpenWorldLoaded { get { return isOpenWorldLoaded; } }
+        public WorldController WorldController { get { return worldController; } }
+        public DuplicationCameraController DuplicationCameraController { get { return duplicationCameraController; } }
 
-        World.ChunkSystem.WorldController worldController;
-        public World.ChunkSystem.WorldController WorldController { get { return worldController; } }
+        public bool IsPillarLoaded { get { return isPillarLoaded; } }
+        public ePillarId ActivePillarId { get { return pillarId; } }
+
+        public SpawnPointManager SpawnPointManager { get; private set; }
 
         //###############################################################
         //###############################################################
@@ -56,6 +74,13 @@ namespace Game.GameControl
             throw new System.NotImplementedException();
         }
 
+        public void ExitGame()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#endif
+        }
+
         //###############################################################
         //###############################################################
 
@@ -71,7 +96,7 @@ namespace Game.GameControl
             //***********************
 
             //getting references in game controller
-            playerModel = GetComponentInChildren<Player.PlayerModel>();
+            playerModel = GetComponentInChildren<PlayerModel>();
             echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
             eclipseManager = GetComponentInChildren<EclipseManager>();
 
@@ -99,11 +124,12 @@ namespace Game.GameControl
 
             //getting references in local scene
             playerController = FindObjectOfType<Player.PlayerController>();
-            CameraController = FindObjectOfType<CameraControl.CameraController>();
-            worldController = FindObjectOfType<World.ChunkSystem.WorldController>();
+            CameraController = FindObjectOfType<CameraController>();
+            worldController = FindObjectOfType<WorldController>();
+            duplicationCameraController = FindObjectOfType<DuplicationCameraController>();
 
             //initializing the ui
-            uiController.InitializeUi(this, UI.eUiState.LoadingScreen);
+            uiController.InitializeUi(this, UI.eUiState.LoadingScreen, new EventManager.OnShowLoadingScreenEventArgs());
 
             yield return null;
             //***********************
@@ -112,19 +138,49 @@ namespace Game.GameControl
             playerController.InitializePlayerController(this);
             CameraController.InitializeCameraController(this);
 
+            //pausing game until world has loaded a bit
+            EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(true));
+
+            yield return null;
+
             if (worldController != null)
             {
-                worldController.InitializeWorldController(this);
+                worldController.Initialize(this);
+                duplicationCameraController.Initialize(this);
+                yield return null;
+
+                worldController.Activate();
+                duplicationCameraController.Activate();
+                yield return null;
+
+                while (worldController.CurrentState == eWorldControllerState.Activating)
+                {
+                    yield return null;
+                }
+            }
+            else //this is a Pillar
+            {
+                var worldObjects = FindObjectsOfType<MonoBehaviour>();
+                foreach(var obj in worldObjects)
+                {
+                    if (obj is IWorldObject)
+                    {
+                        (obj as IWorldObject).Initialize(this, false);
+                    }
+                }
+                yield return null;
             }
 
-            echoManager.InitializeEchoManager(this);
+            echoManager.Initialize(this);
             EclipseManager.InitializeEclipseManager(this);
+            SpawnPointManager = FindObjectOfType<SpawnPointManager>();
 
             yield return null;
             //***********************
 
             //starting game
             Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());
+            Utilities.EventManager.SendGamePausedEvent(this, new Utilities.EventManager.GamePausedEventArgs(false));
 
             if (showIntroMenu)
             {
@@ -134,6 +190,8 @@ namespace Game.GameControl
             {
                 Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.HUD));
             }
+
+            
         }
 
         //###############################################################

@@ -1,47 +1,143 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Game.GameControl;
 
-public class EchoParticleSystem : MonoBehaviour {
+namespace Game.EchoSystem
+{
+    public class EchoParticleSystem : MonoBehaviour
+    {
+        
+        public EchoParticle particlePrefab;
+        public float particleSpeed = 10f;
+        [HideInInspector]
+        public int numEchoes = 3;
 
-	ParticleSystem system;
-	ParticleSystem.Particle[] particles;
+        IGameControllerBase gameController;
+        float worldSizeX, worldSizeY, worldSizeZ;
+        bool isInitialized = false;
+        
+        List<EchoParticle> activeEchoParticles = new List<EchoParticle>();
+        List<Vector3[]> targets = new List<Vector3[]>();
+        
+        List<EchoParticle> disabledEchoParticles = new List<EchoParticle>();
+        
 
-	int numParticlesAlive;
+        public void InitializeEchoParticleSystem(IGameControllerBase gameController)
+        {
+            this.gameController = gameController;
 
-	public int numEchoes = 3;
+            Utilities.EventManager.SceneChangedEvent += OnSceneLoaded;
 
-	void Update () {
-		InitializeIfNeeded();
+            for (int i = 0; i < numEchoes; i++)
+            {
+                disabledEchoParticles.Add(Instantiate(particlePrefab, transform.position + new Vector3(0f, 1f, 0f), Quaternion.identity));
+                disabledEchoParticles[i].target = transform.position;
+                disabledEchoParticles[i].speed = particleSpeed;
+                disabledEchoParticles[i].gameObject.SetActive(false);
+            }
+            if (gameController.IsOpenWorldLoaded)
+            {
+                worldSizeX = gameController.WorldController.WorldSize.x;
+                worldSizeY = gameController.WorldController.WorldSize.y;
+                worldSizeZ = gameController.WorldController.WorldSize.z;
+            }
 
-		system = GetComponent<ParticleSystem>();
-		numParticlesAlive = system.GetParticles(particles);
+            isInitialized = true;
+        }
 
+        void OnSceneLoaded(object sender, Utilities.EventManager.SceneChangedEventArgs args)
+        {
+            if (gameController.IsOpenWorldLoaded)
+            {
+                worldSizeX = gameController.WorldController.WorldSize.x;
+                worldSizeY = gameController.WorldController.WorldSize.y;
+                worldSizeZ = gameController.WorldController.WorldSize.z;
+            }
+        }
 
-//		print("there is currently " + numParticlesAlive + " particles, and we have " + numEchoes + " echoes available.");
+        void Update()
+        {
+            if (!isInitialized)
+            {
+                return;
+            }
+            int i = 0;
+            foreach (EchoParticle ep in activeEchoParticles)
+            {
+                Quaternion lookEcho = Quaternion.identity;
+                Vector3 target = Vector3.positiveInfinity;
+                if (targets.Count > 0)
+                {
+                    foreach (Vector3 echoPos in targets[i])
+                    {
+                        if ((target - transform.position).sqrMagnitude > (echoPos - transform.position).sqrMagnitude)
+                        {
+                            target = echoPos;
+                        }
+                    }
+                }
+                if (target - transform.position != Vector3.zero)
+                    lookEcho = Quaternion.LookRotation(target - transform.position);
+                
+                ep.target = transform.position + new Vector3(0f, 1f, 0f) + lookEcho * Vector3.forward;
+                ep.transform.rotation = lookEcho;
+                i++;
+            }
+        }
 
-		if (numParticlesAlive > numEchoes) {
-			particles[numParticlesAlive].remainingLifetime = 0f;
-//			print("destroyed one particle");
-			system.SetParticles(particles, numParticlesAlive-1);
-		} else if (numParticlesAlive < numEchoes) {
-			system.Emit(numEchoes - numParticlesAlive);
-//			print("added " + (numEchoes - numParticlesAlive) + " particle");
-		}
+        public void AddEcho(Vector3 echoPosition)
+        {
+            activeEchoParticles.Add(disabledEchoParticles[0]);
+            disabledEchoParticles.RemoveAt(0);
+            activeEchoParticles[activeEchoParticles.Count - 1].gameObject.SetActive(true);
+            activeEchoParticles[activeEchoParticles.Count - 1].transform.position = transform.position + new Vector3(0f, 1f, 0f);
+            if (gameController.IsOpenWorldLoaded)
+            {
+                targets.Add(new Vector3[] {echoPosition, echoPosition + new Vector3(0, worldSizeY, worldSizeZ), echoPosition + new Vector3(0, worldSizeY, 0), echoPosition + new Vector3(0, worldSizeY, -worldSizeZ)
+                    , echoPosition + new Vector3(0, 0, worldSizeZ), echoPosition + new Vector3(0, 0, -worldSizeZ)
+                    , echoPosition + new Vector3(0, -worldSizeY, worldSizeZ), echoPosition + new Vector3(0, -worldSizeY, 0), echoPosition + new Vector3(0, -worldSizeY, -worldSizeZ)});
+            }
+            else
+            {
+                targets.Add(new Vector3[] { echoPosition });
+            }
+        }
+        
+        public void RemoveAllEcho()
+        {
+            foreach (EchoParticle ep in activeEchoParticles)
+            {
+                disabledEchoParticles.Add(ep);
+                ep.gameObject.SetActive(false);
+            }
+            activeEchoParticles.Clear();
+            targets.Clear();
+        }
 
-	}
-
-	public void SetEchoNumber(int echoesAvailable){
-		numEchoes = echoesAvailable;
-	}
-
-	void InitializeIfNeeded()
-	{
-		if (system == null)
-			system = GetComponent<ParticleSystem>();
-
-		if (particles == null || particles.Length < system.maxParticles)
-			particles = new ParticleSystem.Particle[system.maxParticles];
-	}
-
-}
+        public void RemoveEcho(int index)
+        {
+            disabledEchoParticles.Add(activeEchoParticles[0]);
+            activeEchoParticles.RemoveAt(0);
+            disabledEchoParticles[disabledEchoParticles.Count - 1].gameObject.SetActive(false);
+            if (gameController.IsOpenWorldLoaded)
+            {
+                targets.RemoveAt(index);
+            }
+            else
+            {
+                targets.RemoveAt(index);
+            }
+        }
+        /*
+        int EchoIndexFromPosition(Vector3 position)
+        {
+            for (int i = 0; i < numActiveEchoes; i++)
+            {
+                if (targets[i] == position)
+                    return i;
+            }
+            return 1000;
+        }*/
+    }
+} //end of namespace

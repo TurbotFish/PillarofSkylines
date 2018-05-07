@@ -1,13 +1,13 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
 
-public class EditorDebugMaster : EditorWindow
-{
+public class EditorDebugMaster : EditorWindow {
 
     [MenuItem("PoS Debug/Debug Replacement Shader Mode _F1", false)]
     public static void ChangeDebugShaderMode()
     {
-        var shaderScript = Camera.main.GetComponent<DebugReplacementShading>();
+        var shaderScript = FindObjectOfType<DebugReplacementShading>();
 
         if (!shaderScript.enabled)
         {
@@ -36,6 +36,19 @@ public class EditorDebugMaster : EditorWindow
         cam.rotation = viewPos.rotation;
     }
 
+    [MenuItem("GameObject/Select Children %<", false)]
+    public static void SelectChildren() {
+        if (Selection.gameObjects.Length > 0) {
+            List<GameObject> children = new List<GameObject>();
+            foreach (GameObject go in Selection.gameObjects) {
+                foreach(Transform child in go.transform)
+                    children.Add(child.gameObject);
+
+            }
+            Selection.objects = children.ToArray();
+        }
+    }
+
     [MenuItem("PoS Debug/Bring Player &F", false)]
     public static void BringPlayer()
     {
@@ -50,6 +63,34 @@ public class EditorDebugMaster : EditorWindow
         {
             player.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(viewPos.forward, hit.normal), hit.normal);
             player.position = player.position + hit.normal * 1f;
+
+            Vector3 euler = Vector3.zero;
+            if (player.eulerAngles.x % 90 > 45)
+            {
+                euler.x = player.eulerAngles.x + (90 - (player.eulerAngles.x % 90));
+            } else
+            {
+                euler.x = player.eulerAngles.x - (player.eulerAngles.x % 90);
+            }
+            if (player.eulerAngles.y % 90 > 45)
+            {
+                euler.y = player.eulerAngles.y + (90 - (player.eulerAngles.y % 90));
+            }
+            else
+            {
+                euler.y = player.eulerAngles.y - (player.eulerAngles.y % 90);
+            }
+            if (player.eulerAngles.z % 90 > 45)
+            {
+                euler.z = player.eulerAngles.z + (90 - (player.eulerAngles.z % 90));
+            }
+            else
+            {
+                euler.z = player.eulerAngles.z - (player.eulerAngles.z % 90);
+            }
+
+            player.eulerAngles = euler;
+
         } else
         {
             player.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(viewPos.forward, Vector3.up), Vector3.up);
@@ -62,7 +103,7 @@ public class EditorDebugMaster : EditorWindow
     {
         Debug.Log("get scene view !");
         Transform viewPos = SceneView.lastActiveSceneView.camera.transform;
-        Game.World.ChunkSystem.WorldController worldController = FindObjectOfType<Game.World.ChunkSystem.WorldController>();
+        Game.World.WorldController worldController = FindObjectOfType<Game.World.WorldController>();
 
 
         Debug.Log("world : " + worldController.name);

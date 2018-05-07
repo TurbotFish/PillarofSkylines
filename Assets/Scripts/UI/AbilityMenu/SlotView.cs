@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Game.Model;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -10,35 +11,46 @@ namespace Game.UI.AbilityMenu
     {
         //##################################################################
 
-        [SerializeField]
-        Player.eAbilityType ability;
+        [SerializeField] private eAbilityType ability;
 
-        [SerializeField]
-        Image backgroundImage;
+        [SerializeField] private Image backgroundImage;
+        [SerializeField] private Outline backgroundOutline;
+        [SerializeField] private Image abilityImage;
 
-        [SerializeField]
-        Outline backgroundOutline;
-
-        [SerializeField]
-        Image abilityImage;
-
-        AbilityMenuController menuController;
+        private PlayerModel playerModel;
+        private AbilityMenuController menuController;
+        private bool isActive;
 
         //##################################################################
 
-        public Player.eAbilityType AbilityType { get { return ability; } }
-
-        //##################################################################
-
-        public void Initialize(Player.PlayerModel playerModel, AbilityMenuController menuController)
+        public void Initialize(PlayerModel playerModel, AbilityMenuController menuController)
         {
+            this.playerModel = playerModel;
             this.menuController = menuController;
 
             abilityImage.sprite = playerModel.AbilityData.GetAbility(ability).Icon;
             SetBackgroundColour(playerModel.GetAbilityState(ability));
             backgroundOutline.enabled = false;
 
-            Utilities.EventManager.AbilityStateChangedEvent += OnAbilityStateChangedEventHandler;
+            //Utilities.EventManager.AbilityStateChangedEvent += OnAbilityStateChangedEventHandler;
+        }
+
+        //##################################################################
+
+        public eAbilityType AbilityType { get { return ability; } }
+
+        //##################################################################
+
+        public void Activate()
+        {
+            isActive = true;
+            gameObject.SetActive(true);
+        }
+
+        public void Deactivate()
+        {
+            gameObject.SetActive(false);
+            isActive = false;
         }
 
         public void SetSelected(bool selected)
@@ -46,57 +58,64 @@ namespace Game.UI.AbilityMenu
             backgroundOutline.enabled = selected;
         }
 
-        //##################################################################
-
-        void OnAbilityStateChangedEventHandler(object sender, Utilities.EventManager.AbilityStateChangedEventArgs args)
+        private void Update()
         {
-            if (args.AbilityType != AbilityType)
+            if (!isActive)
             {
                 return;
             }
 
-            SetBackgroundColour(args.AbilityState);
+            var abilityState = playerModel.GetAbilityState(ability);
+            SetBackgroundColour(abilityState);
         }
 
-        void SetBackgroundColour(Player.eAbilityState abilityState)
+        //void OnAbilityStateChangedEventHandler(object sender, Utilities.EventManager.AbilityStateChangedEventArgs args)
+        //{
+        //    if (args.AbilityType != AbilityType)
+        //    {
+        //        return;
+        //    }
+
+        //    SetBackgroundColour(args.AbilityState);
+        //}
+
+        private void SetBackgroundColour(eAbilityState abilityState)
         {
             switch (abilityState)
             {
-                case Player.eAbilityState.active:
+                case eAbilityState.active:
                     backgroundImage.color = menuController.ActiveAbilityColour;
                     break;
-                case Player.eAbilityState.available:
+                case eAbilityState.available:
                     backgroundImage.color = menuController.AvailableAbilityColour;
                     break;
-                case Player.eAbilityState.locked:
+                case eAbilityState.locked:
                     backgroundImage.color = menuController.LockedAbilityColour;
                     break;
+                case eAbilityState.pillarLocked:
+                    backgroundImage.color = menuController.PillarLockedAbilityColour;
+                    break;
                 default:
-                    Debug.LogError("error!");
+                    Debug.LogError("No colour defined for this ability state: " + abilityState);
                     break;
             }
         }
 
-        //##################################################################
-
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
         {
-            //Debug.LogFormat("OnPointerEnter: slot \"{0}\"", AbilityType.ToString());
-
+            Debug.LogError("Use an XBox controller you peasant!");
             menuController.OnPointerEnterSlot(this);
         }
 
         void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
         {
-            //Debug.LogFormat("OnPointerExit: slot \"{0}\"", AbilityType.ToString());
-
+            Debug.LogError("Use an XBox controller you peasant!");
             menuController.OnPointerExitSlot(this);
         }
 
         void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
         {
-            //Debug.LogFormat("OnPointerClick: slot \"{0}\"", AbilityType.ToString());
-
+            Debug.LogError("Use an XBox controller you peasant!");
             menuController.OnPointerClickSlot(this);
         }
     }

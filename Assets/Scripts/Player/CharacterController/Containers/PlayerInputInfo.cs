@@ -23,6 +23,19 @@ namespace Game.Player.CharacterController.Containers
         public bool sprintButtonDown;
         public bool sprintButtonUp;
 
+        public bool glideButton;
+        public bool glideButtonDown;
+        public bool glideButtonUp;
+
+        public bool jetpackButton;
+        public bool jetpackButtonDown;
+        public bool jetpackButtonUp;
+
+        public bool echoButton;
+        public bool echoButtonDown;
+        public bool echoButtonUp;
+        public float echoButtonTimePressed;
+
         public bool rightStickButtonDown;
 
         public void Reset()
@@ -44,7 +57,24 @@ namespace Game.Player.CharacterController.Containers
             sprintButtonDown = false;
             sprintButtonUp = false;
 
+            glideButton = false;
+            glideButtonDown = false;
+            glideButtonUp = false;
+
+            jetpackButton = false;
+            jetpackButtonDown = false;
+            jetpackButtonUp = false;
+
+            echoButton = false;
+            echoButtonDown = false;
+            echoButtonUp = false;
+
             rightStickButtonDown = false;
+        }
+
+        public void ResetTimeEcho()
+        {
+            echoButtonTimePressed = 0f;
         }
     }
 }

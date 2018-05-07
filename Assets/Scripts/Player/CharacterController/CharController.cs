@@ -1,4 +1,5 @@
-﻿using Game.Player.CharacterController.Containers;
+﻿using Game.Model;
+using Game.Player.CharacterController.Containers;
 using Game.Player.CharacterController.States;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,21 +14,28 @@ namespace Game.Player.CharacterController
         /// <summary>
         /// The rotator used to turn the camera.
         /// </summary>
-        [SerializeField]
-        Transform rotator;
-        [SerializeField]
+        public Transform rotator;
+
         public Transform myCameraTransform;
-        [SerializeField]
         public PoS_Camera myCamera;
+
+        //public float gameSpeed = 10f;
 
         /// <summary>
         /// The controller checking if there's collisions on the way.
         /// </summary>
         [HideInInspector]
         public CharacControllerRecu tempPhysicsHandler;
+        public PhantomController phantomController;
         CharacControllerRecu.CollisionInfo tempCollisionInfo;
 
         public CharacControllerRecu.CollisionInfo CollisionInfo { get { return tempCollisionInfo; } }
+
+
+        [Space(10)]
+        [Header("Prefabs")]
+        public GroundRise groundRisePrefab;
+
 
         /// <summary>
         /// The animator of the character.
@@ -44,6 +52,8 @@ namespace Game.Player.CharacterController
         public CharData CharData { get; private set; }
 
         public PlayerController PlayerController { get; private set; }
+
+        public GameControl.IGameControllerBase gameController;
 
         public Transform MyTransform { get; private set; }
 
@@ -62,6 +72,12 @@ namespace Game.Player.CharacterController
         }
 
         bool isInitialized;
+        bool gamePaused = true;
+
+        [HideInInspector]
+        public bool isInsideNoRunZone;
+        [HideInInspector]
+        public bool createdEchoOnThisInput;
 
         /// <summary>
         /// This is set to false if the player has opened a menu, true otherwise.
@@ -70,10 +86,6 @@ namespace Game.Player.CharacterController
 
         Vector3 velocity;
         Vector3 externalVelocity;
-
-        List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
-
-        public List<WindTunnelPart> WindTunnelPartList { get { return new List<WindTunnelPart>(windTunnelPartList); } }
         
         PlayerInputInfo inputInfo = new PlayerInputInfo();
 
@@ -88,6 +100,8 @@ namespace Game.Player.CharacterController
         /// </summary>
         public bool graviswapAvailable = false;
 
+        public bool IsGrounded { get { return (CurrentState & (ePlayerState.move | ePlayerState.slide | ePlayerState.stand)) != 0; } }
+
         //#############################################################################
 
         [Space(10)]
@@ -96,6 +110,9 @@ namespace Game.Player.CharacterController
         public ParticlesManager windParticles;
         public ParticlesManager glideParticles;
         public ParticleSystem aerialJumpFX;
+        public ParticleSystem hoverFX;
+
+		public FXManager fxManager;
 
         //#############################################################################
 
@@ -109,7 +126,9 @@ namespace Game.Player.CharacterController
             myCamera = FindObjectOfType<PoS_Camera>();
             myCameraTransform = myCamera.transform;
 
+            GetComponentInChildren<EchoSystem.EchoParticleSystem>().InitializeEchoParticleSystem(gameController);
 
+            this.gameController = gameController;
             PlayerModel = gameController.PlayerModel;
             CharData = Resources.Load<CharData>("ScriptableObjects/CharData");
             PlayerController = gameController.PlayerController;
@@ -122,11 +141,13 @@ namespace Game.Player.CharacterController
 
             stateMachine.RegisterAbility(ePlayerState.dash, eAbilityType.Dash);
             stateMachine.RegisterAbility(ePlayerState.glide, eAbilityType.Glide);
-            stateMachine.RegisterAbility(ePlayerState.wallDrift, eAbilityType.WallRun);
-            stateMachine.RegisterAbility(ePlayerState.wallClimb, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
             stateMachine.RegisterAbility(ePlayerState.hover, eAbilityType.Hover);
+            stateMachine.RegisterAbility(ePlayerState.jetpack, eAbilityType.Jetpack);
             stateMachine.RegisterAbility(ePlayerState.graviswap, eAbilityType.Graviswap);
+            stateMachine.RegisterAbility(ePlayerState.phantom, eAbilityType.Phantom);
+
+            stateMachine.jetpackFuel = CharData.Jetpack.MaxFuel;
 
             stateMachine.ChangeState(new AirState(this, stateMachine, AirState.eAirStateMode.fall));
 
@@ -134,8 +155,7 @@ namespace Game.Player.CharacterController
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
-            Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
-            Utilities.EventManager.WindTunnelExitedEvent += OnWindTunnelPartExitedEventHandler;
+            Utilities.EventManager.GamePausedEvent += OnGamePausedEventHandler;
 
             isInitialized = true;
             isHandlingInput = true;
@@ -156,8 +176,7 @@ namespace Game.Player.CharacterController
         {
             Utilities.EventManager.OnMenuSwitchedEvent -= OnMenuSwitchedEventHandler;
             Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayerEventHandler;
-            Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
-            Utilities.EventManager.WindTunnelExitedEvent -= OnWindTunnelPartExitedEventHandler;
+            Utilities.EventManager.GamePausedEvent -= OnGamePausedEventHandler;
         }
 
         #endregion monobehaviour methods
@@ -169,11 +188,10 @@ namespace Game.Player.CharacterController
         // Update is called once per frame
         void Update()
         {
-            if (!isInitialized)
+            if (!isInitialized || gamePaused)
             {
                 return;
             }
-
 
             if (Input.GetKeyDown(KeyCode.F6))
             {
@@ -190,13 +208,13 @@ namespace Game.Player.CharacterController
 
             //*******************************************
             //handling input
-           
+            bool sprintDownLastFrame = inputInfo.sprintButton;
+            bool glideDownLastFrame = inputInfo.glideButton;
+            bool echoUpLastFrame = inputInfo.echoButtonUp;
             inputInfo.Reset();
-
             if (isHandlingInput)
             {
-                bool sprintDownLastFrame = inputInfo.sprintButton;
-
+                
                 float stickH = Input.GetAxisRaw("Horizontal");
                 float stickV = Input.GetAxisRaw("Vertical");
 
@@ -227,14 +245,40 @@ namespace Game.Player.CharacterController
                 inputInfo.jumpButtonDown = Input.GetButtonDown("Jump");
                 inputInfo.jumpButtonUp = Input.GetButtonUp("Jump");
 
-                inputInfo.sprintButton = (Input.GetAxis("Left Trigger") > .9f) || Input.GetButton("Sprint");
+                inputInfo.sprintButton = (Input.GetAxis("Right Trigger") > .9f) || Input.GetButton("Sprint");
                 inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint");
                 inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint");
 
+                inputInfo.glideButton = (Input.GetAxis("Left Trigger") > .9f) || Input.GetButton("Sprint");
+                inputInfo.glideButtonDown = (inputInfo.glideButton && !glideDownLastFrame) || Input.GetButtonDown("Sprint");
+                inputInfo.glideButtonUp = (!inputInfo.glideButton && glideDownLastFrame) || Input.GetButtonUp("Sprint");
+
+                inputInfo.echoButton = Input.GetButton("Echo");
+                inputInfo.echoButtonDown = Input.GetButtonDown("Echo");
+                inputInfo.echoButtonUp = Input.GetButtonUp("Echo");
+
+                /*
+                inputInfo.jetpackButton = Input.GetButton("Jetpack");
+                inputInfo.jetpackButtonDown = Input.GetButtonDown("Jetpack");
+                inputInfo.jetpackButtonUp = Input.GetButtonUp("Jetpack");*/
 
                 inputInfo.rightStickButtonDown = Input.GetButtonDown("RightStickClick");
+                
+                if (inputInfo.echoButton)
+                {
+                    inputInfo.echoButtonTimePressed += Time.deltaTime;
+                }
+                if (echoUpLastFrame)
+                {
+                    inputInfo.ResetTimeEcho();
+                    createdEchoOnThisInput = false;
+                }
 
-                //
+                if (Input.GetButtonDown("GroundRise"))
+                {
+                    CreateGroundRise();
+                }
+                
                 stateMachine.HandleInput();
             }
 
@@ -253,7 +297,15 @@ namespace Game.Player.CharacterController
             if (stateReturn.PlayerForwardSet)
             {
                 //Debug.Log("forward is : " + stateReturn.PlayerForward);
-                MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up), MyTransform.up);
+                if (stateReturn.PlayerForward != Vector3.zero)
+                {
+                    MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(stateReturn.PlayerForward, MyTransform.up), MyTransform.up);
+                }
+                else
+                {
+                    print("Trying to apply zero as player forward >:c");
+                    MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(MyTransform.forward, MyTransform.up), MyTransform.up);
+                }
             }
 
             if (stateReturn.PlayerUpSet)
@@ -266,18 +318,18 @@ namespace Game.Player.CharacterController
             //var newVelocity = velocity * (1 - Time.deltaTime * transitionSpeed) + (acceleration + externalVelocity) * (Time.deltaTime * transitionSpeed);
             if (stateReturn.resetVerticalVelocity)
             {
-                velocity.y = 0;
+                ResetVerticalVelocity();
             }
 
-            Vector3 tempVertical = new Vector3();
+            float tempVertical;
             Vector3 newVelocity = new Vector3();
 
 
             if (stateReturn.keepVerticalMovement)
             {
-                tempVertical = new Vector3(0, velocity.y, 0);
+                tempVertical = velocity.y;
                 newVelocity = Vector3.Lerp(Vector3.ProjectOnPlane(velocity, Vector3.up), acceleration, Time.deltaTime * transitionSpeed);
-                newVelocity += tempVertical;
+                newVelocity = new Vector3(newVelocity.x, tempVertical, newVelocity.z);
             }
             else
             {
@@ -298,7 +350,7 @@ namespace Game.Player.CharacterController
                 //Debug.LogFormat("clamped velocity: {0}", newVelocity);
             }
 
-            //
+            
             newVelocity += externalVelocity;
 
             //*******************************************
@@ -384,15 +436,14 @@ namespace Game.Player.CharacterController
             {
                 turn = 0;
             }
-
             animator.SetFloat("Turn", turn);
-            animator.SetBool("OnGround", tempCollisionInfo.below || stateMachine.CurrentState == ePlayerState.hover);
+            animator.SetBool("OnGround", (tempCollisionInfo.below && Vector3.Angle(tempCollisionInfo.currentGroundNormal, movementInfo.up) < CharData.General.MinWallAngle) || stateMachine.CurrentState == ePlayerState.hover);
             animator.SetFloat("Speed", Vector3.ProjectOnPlane(velocity, Vector3.up).magnitude / animationRunSpeed);
             //animator.SetFloat("Turn", turn);
             animator.SetFloat("VerticalSpeed", velocity.y / animationJumpSpeed);
 
             windParticles.SetVelocity(velocity);
-            glideParticles.SetVelocity(velocity);
+            //glideParticles.SetVelocity(velocity);
 
             #endregion update animator
 
@@ -437,19 +488,9 @@ namespace Game.Player.CharacterController
             }
         }
 
-        void OnWindTunnelPartEnteredEventHandler(object sender, Utilities.EventManager.WindTunnelPartEnteredEventArgs args)
+        private void OnGamePausedEventHandler(object sender, Utilities.EventManager.GamePausedEventArgs args)
         {
-            if (!windTunnelPartList.Contains(args.WindTunnelPart))
-            {
-                print("eventreceived");
-                windTunnelPartList.Add(args.WindTunnelPart);
-            }
-        }
-
-        void OnWindTunnelPartExitedEventHandler(object sender, Utilities.EventManager.WindTunnelPartExitedEventArgs args)
-        {
-            print("partremoved");
-            windTunnelPartList.Remove(args.WindTunnelPart);
+            gamePaused = args.PauseActive;
         }
 
         #endregion event handlers
@@ -468,11 +509,31 @@ namespace Game.Player.CharacterController
             return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, MyTransform.up), Vector3.Cross(MyTransform.up, Vector3.up))) * vector;
         }
 
+        public void ResetEchoInputTime()
+        {
+            inputInfo.ResetTimeEcho();
+        }
+
         #endregion utility methods
 
         //#############################################################################
 
         #region cancer
+
+        void CreateGroundRise()
+        {
+            if (PlayerModel.CheckAbilityActive(eAbilityType.GroundRise))
+            {
+                GroundRise grRise = Instantiate(groundRisePrefab);
+                grRise.Initialize(MyTransform.position, MyTransform.up, this, velocity);
+            }
+        }
+
+        public void ResetVerticalVelocity(bool onlyDownVelocity = false)
+        {
+            if (!onlyDownVelocity || velocity.y <= 0f)
+                velocity.y = 0;
+        }
 
         public void AddExternalVelocity(Vector3 newVelocity, bool worldSpace, bool lerped)
         {
@@ -482,13 +543,16 @@ namespace Game.Player.CharacterController
             }
             else
             {
-                externalVelocity += (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
+                newVelocity = (worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity);
+                externalVelocity += newVelocity;
             }
         }
 
-        public void ImmediateMovement(Vector3 newVelocity, bool worldSpace)
+        public void ImmediateMovement(Vector3 newVelocity, bool worldSpace, bool addToVelocity = false)
         {
-            tempPhysicsHandler.Move((worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity));
+            newVelocity = tempPhysicsHandler.Move((worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity));
+            if (addToVelocity)
+                velocity += newVelocity/Time.deltaTime;
         }
      
         public void SetVelocity(Vector3 newVelocity, bool worldSpace)
@@ -499,11 +563,13 @@ namespace Game.Player.CharacterController
         public void ChangeGravityDirection(Vector3 newGravity)
         {
             MyTransform.Rotate(Vector3.Cross(MyTransform.up, -newGravity), Vector3.SignedAngle(MyTransform.up, -newGravity, Vector3.Cross(MyTransform.up, -newGravity)), Space.World);
+            myCamera.UpdateGravity();
         }
 
         public void ChangeGravityDirection(Vector3 newGravity, Vector3 point)
         {
             MyTransform.RotateAround(point, Vector3.Cross(MyTransform.up, -newGravity), Vector3.SignedAngle(MyTransform.up, -newGravity, Vector3.Cross(MyTransform.up, -newGravity)));
+            myCamera.UpdateGravity();
         }
 
         #endregion cancer

@@ -17,7 +17,11 @@ namespace Game.Player.CharacterController.States
         CharData.MoveData moveData;
         CharData.HoverData hoverData;
 
+
+        Vector3 gravityToResetTo;
+        int nbrOfBlocksFeedback = 10;
         float timer;
+        bool shouldResetGravity = true;
 
         //#############################################################################
 
@@ -28,18 +32,43 @@ namespace Game.Player.CharacterController.States
             moveData = charController.CharData.Move;
             hoverData = charController.CharData.Hover;
             timer = hoverData.Duration;
+            gravityToResetTo = new Vector3(0f, -1f, 0f);
+        }
+
+        public HoverState(CharController charController, StateMachine stateMachine, Vector3 gravityReset)
+        {
+            this.charController = charController;
+            this.stateMachine = stateMachine;
+            moveData = charController.CharData.Move;
+            hoverData = charController.CharData.Hover;
+            timer = hoverData.Duration;
+            gravityToResetTo = gravityReset;
         }
 
         //#############################################################################
 
         public void Enter()
         {
-            Debug.Log("Enter State: Hover");
+            //Debug.Log("Enter State: Hover");
+            ParticleSystem.MainModule mainMod = charController.hoverFX.main;
+            mainMod.duration = hoverData.Duration;
+            charController.hoverFX.Play();
         }
 
         public void Exit()
         {
-            Debug.Log("Exit State: Hover");
+            //Debug.Log("Exit State: Hover");
+            /*PlayerMovementInfo movementInfo = charController.MovementInfo;
+            CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
+            RaycastHit hit;
+            if (Physics.Raycast(movementInfo.position, -movementInfo.up, out hit, hoverData.MaxHeight, collisionInfo.collisionLayer))
+            {
+                if (hit.collider.CompareTag("Gravifloor"))
+                {
+                    charController.ChangeGravityDirection(gravityToResetTo);
+                }
+            }*/
+            charController.hoverFX.Stop();
         }
 
         //#############################################################################
@@ -61,11 +90,16 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             }
+            //jetpack
+            else if (inputInfo.jetpackButtonDown && !stateMachine.CheckStateLocked(ePlayerState.jetpack))
+            {
+                stateMachine.ChangeState(new JetpackState(charController, stateMachine));
+            }
             else if (collisionInfo.below)
             {
-                stateMachine.ChangeState(new StandState(charController, stateMachine));
+                stateMachine.ChangeState(new MoveState(charController, stateMachine));
             }
-            else if (inputInfo.leftStickAtZero || inputInfo.sprintButtonUp)
+            else if (Physics.Raycast(movementInfo.position, -movementInfo.up, hoverData.MaxHeight, collisionInfo.collisionLayer) || inputInfo.leftStickAtZero || inputInfo.sprintButtonUp)
             {
                 stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
             }
@@ -73,10 +107,20 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
             }
+            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom) && !charController.createdEchoOnThisInput)
+            {
+                stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
+            }
         }
 
         public StateReturnContainer Update(float dt)
         {
+            /*
+            ParticleSystem parts = Object.Instantiate(charController.hoverFX, charController.MyTransform.position, charController.MyTransform.rotation);
+            parts.transform.localScale *= (timer / hoverData.Duration) * 5;
+            parts.Play();
+            */
+
             PlayerInputInfo inputInfo = charController.InputInfo;
 
             timer -= dt;
@@ -104,5 +148,6 @@ namespace Game.Player.CharacterController.States
         }
 
         //#############################################################################
+        
     }
 }

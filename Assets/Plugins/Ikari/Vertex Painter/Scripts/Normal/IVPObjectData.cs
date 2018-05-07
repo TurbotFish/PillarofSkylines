@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
-#if UNITY_EDITOR
-using UnityEditor;
+//#if UNITY_EDITOR
+//using UnityEditor;
 
 namespace Ikari.VertexPainter {
   public class IVPObjectData : MonoBehaviour {
@@ -33,4 +33,4 @@ namespace Ikari.VertexPainter {
     public Material[] originalMaterials;
   }
 }
-#endif
+//#endif

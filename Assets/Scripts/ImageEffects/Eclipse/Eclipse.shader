@@ -17,40 +17,55 @@
 	uniform int _Iterations;
 	uniform float2 _Direction;
 	uniform float2 _CameraSpeed;
-	
+	uniform float _ColorChangeR;
+	uniform float _ColorChangeG;
+	uniform float _ColorChangeB;
+
 	uniform float _Threshold;
     uniform float _Intensity;
 	
-    half4 frag(v2f_img i) : SV_Target {
+	// Vignette
+    uniform float _Falloff;
+    uniform float _Power;
+
+    float4 frag(v2f_img i) : SV_Target {
         half4 src = tex2D(_MainTex, i.uv);
-		
-        #if UNITY_UV_STARTS_AT_TOP
-            float grabSign = -_ProjectionParams.x;
-        #else
-            float grabSign = _ProjectionParams.x;
-        #endif
-
 		float4 timer = (_Time + _TimeEditor) * _Speed;
+		float4 final = src;
 
+		// DEFORMATION
 		float2 noiseUV = (i.uv + timer.g * _Direction);
 		float4 _Noise_var = tex2D(_Noise, TRANSFORM_TEX(noiseUV, _Noise) );
 
 		_Noise_var.x = lerp(_Noise_var.x, (_CameraSpeed.x + 1)/2, abs(_CameraSpeed.x));
 		_Noise_var.y = lerp(_Noise_var.y, (_CameraSpeed.y + 1)/2, abs(_CameraSpeed.y));
+		//END Deformation
 
-		float4 final = src;
+		// VIGNETTE
+        float2 coord = (i.uv - 0.5) * 2;
+        float rf = sqrt(dot(coord, coord)) * _Falloff;
 
+		float rf2_1 = pow(rf, _Power) + 1.0;
+        float e = 1.0 / (rf2_1 * rf2_1);
+		// END Vignette
+
+		// ITERATIONS
 		for(int j = 0; j < _Iterations; j++) {
-			float3 deformedUV = lerp(float3((i.uv), 0.0), _Noise_var.rgb, j * _Deformation/float(_Iterations));
+			float3 deformedUV = lerp(float3((i.uv), 1), _Noise_var.rgb, /*(1-e) */ (j+1) * _Deformation/float(_Iterations));
 			float4 newIteration = tex2D(_MainTex, deformedUV);
 
-			float a = (newIteration.r + newIteration.g + newIteration.b)/3;
-			float t = saturate((a+_Threshold) * (1.0 - float(j)/float(_Iterations)));
-			final = lerp(final, saturate(1-(1-final)*(1-newIteration)), t);
+			float a = (newIteration.r + newIteration.g + newIteration.b)/3 + _Threshold;
+
+			float t = saturate((a) * (1.0 - float(j)/float(_Iterations)));
+
+			final = lerp(final, newIteration, t*(1-e));
+			//final = newIteration; // for a cleaner look (but looks less "phantomatic" I guess)
 		}
-		
-		final = float4(final.b, final.g, final.r, final.a);
+		// END Iterations
+
+		final = float4(lerp(final.r,saturate(final.r+final.b),_ColorChangeR), lerp(final.g,saturate(final.g + final.r),_ColorChangeG), lerp(final.b,saturate(final.b + final.r),_ColorChangeB), final.a);
 		final = lerp(src, final, _Intensity);
+
 
 		return final;
     }

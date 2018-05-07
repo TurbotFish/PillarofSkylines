@@ -5,71 +5,54 @@ namespace Game.EchoSystem
     [RequireComponent(typeof(Collider))]
     public class Echo : MonoBehaviour
     {
-        new BoxCollider collider;
-        public bool isActive, isFrozen, playerEcho;
+        [SerializeField] public bool isActive;
+        [SerializeField] private bool isFrozen;
+        [SerializeField] public bool playerEcho; // TODO: init
+        [SerializeField] private float colliderSizeWhenSolid = 2;
 
-        public float colliderSizeWhenSolid = 2;
-        Vector3 defaultColliderSize;
+        [SerializeField] private GameObject fluidEcho;
+        [SerializeField] private GameObject solidEcho;
 
-        [SerializeField]
-        Material solidMaterial;
-        Material defaultMaterial;
+        [Header("Animation")]
+        [SerializeField] private float speed = 1;
+        [SerializeField] private float intensity = 0.2f;
+        [SerializeField] private float height = 1.5f;
 
-        ParticleSystem myParticleSystem;
-        Renderer myRenderer;
+        [HideInInspector] public EchoManager echoManager; // TODO: init
 
-        [HideInInspector] public EchoManager echoManager;
-        int pickUpLayer;
+        private new BoxCollider collider;       
+        private Vector3 defaultColliderSize;
+        private int pickUpLayer;
+        private Transform echoTransform;      
+        private Vector3 fxPosition;
 
         public Transform MyTransform { get; private set; }
 
         //##################################################################
 
-        void Start() {
+        void Start()
+        {
             MyTransform = transform;
-
-            myParticleSystem = GetComponentInChildren<ParticleSystem>();
-            myRenderer = myParticleSystem.GetComponent<Renderer>();
-            defaultMaterial = myRenderer.sharedMaterial;
 
             collider = GetComponent<BoxCollider>();
             collider.isTrigger = true;
+            fluidEcho.SetActive(true);
+            solidEcho.SetActive(false);
             defaultColliderSize = collider.size;
+
+            echoTransform = fluidEcho.transform;
 
             pickUpLayer = gameObject.layer;
         }
 
         //##################################################################
 
-        #region collision stuff
-
-        void OnTriggerEnter(Collider col) {
-            if (!col.isTrigger)
-                Break(col.tag == "Player"); // Si un truc rentre dans un écho, il est détruit
-        }
-
-        #endregion collision stuff
-
         //##################################################################
-
-        public void Break(bool byPlayer = false) {
-            if (isActive) {
-                isActive = false;
-                if (byPlayer)
-                    Utilities.EventManager.SendEchoDestroyedEvent(this);
-                echoManager.Break(this);
-            }
-        }
 
         public void Freeze()
         {
-            if (!myParticleSystem)
-                Start();
-
-            myParticleSystem.Pause();
-
-            myRenderer.sharedMaterial = solidMaterial;
-            myRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            fluidEcho.SetActive(false);
+            solidEcho.SetActive(true);
 
             gameObject.layer = 0;
 
@@ -83,20 +66,52 @@ namespace Game.EchoSystem
 
         public void Unfreeze()
         {
-            if (!myParticleSystem)
-                Start();
-
-            myParticleSystem.Play();
-
-            myRenderer.sharedMaterial = defaultMaterial;
-            myRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-
+            fluidEcho.SetActive(true);
+            solidEcho.SetActive(false);
             gameObject.layer = pickUpLayer;
 
             isFrozen = false;
 
             collider.size = defaultColliderSize;
             collider.isTrigger = true;
+        }
+
+        private void Update()
+        {
+            if (!isFrozen)
+            {
+                fxPosition.y = Mathf.Sin(Time.time * speed) * intensity + height;
+                echoTransform.localPosition = fxPosition;
+            }
+        }
+
+        private void OnTriggerEnter(Collider col)
+        {
+            if (!col.isTrigger)
+            {
+                Break(col.tag == "Player"); // Si un truc rentre dans un écho, il est détruit
+            }
+        }
+
+        private void OnTriggerExit(Collider other)
+        {
+            if (other.tag == "Player")
+            {
+                isActive = true;
+            }
+        }
+
+        public void Break(bool byPlayer = false)
+        {
+            if (isActive)
+            {
+                isActive = false;
+                if (byPlayer)
+                {
+                    Utilities.EventManager.SendEchoDestroyedEvent(this);
+                }
+                echoManager.Break(this);
+            }
         }
 
         //##################################################################

@@ -28,12 +28,11 @@ namespace Game.Player.CharacterController.States
 
         public void Enter()
         {
-            Debug.Log("Enter State: Stand");
         }
 
         public void Exit()
         {
-            Debug.Log("Exit State: Stand");
+
         }
 
         //#############################################################################
@@ -45,14 +44,14 @@ namespace Game.Player.CharacterController.States
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
 
-            if (inputInfo.jumpButtonDown)
+            if (inputInfo.jumpButtonDown && !charController.isInsideNoRunZone)
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 
                 stateMachine.ChangeState(state);
             }
-            else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash))
+            else if (inputInfo.dashButtonDown && !stateMachine.CheckStateLocked(ePlayerState.dash) && !charController.isInsideNoRunZone)
             {
                 stateMachine.ChangeState(new DashState(charController, stateMachine, movementInfo.forward));
             }
@@ -62,18 +61,36 @@ namespace Game.Player.CharacterController.States
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
                 state.SetJumpTimer(charController.CharData.Move.CanStillJumpTimer);
                 stateMachine.ChangeState(state);
-			}
-			else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f)
+            }
+            //jetpack
+            else if (inputInfo.jetpackButtonDown && !stateMachine.CheckStateLocked(ePlayerState.jetpack) && !charController.isInsideNoRunZone)
+            {
+                stateMachine.ChangeState(new JetpackState(charController, stateMachine));
+            }
+            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) < charController.CharData.General.MinWallAngle 
+                && (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MaxSlopeAngle && !collisionInfo.NotSlippySlope) 
+                || collisionInfo.SlippySlope && Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > 2f)
 			{
 				stateMachine.ChangeState(new SlideState(charController, stateMachine));
+            }
+            else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MinWallAngle)
+            {
+                var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
+                stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
+
+                stateMachine.ChangeState(state);
             }
             else if (!inputInfo.leftStickAtZero)
             {
                 stateMachine.ChangeState(new MoveState(charController, stateMachine));
             }
-            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable)
+            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable && !charController.isInsideNoRunZone)
             {
                 stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
+            }
+            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom) && !charController.createdEchoOnThisInput)
+            {
+                stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
             }
         }
 
@@ -83,6 +100,7 @@ namespace Game.Player.CharacterController.States
             {
                 CanTurnPlayer = true,
                 IgnoreGravity = true,
+                keepVerticalMovement = true,
 
                 Acceleration = Vector3.zero,
                 TransitionSpeed = standData.TransitionSpeed
