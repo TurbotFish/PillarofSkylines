@@ -2,11 +2,6 @@
 {
     public interface IWorldObject
     {
-        void Initialize(GameControl.IGameControllerBase gameController, bool isCopy);
-    }
-
-    public interface IWorldObjectDuplication
-    {
-        void OnDuplication();
+        void Initialize(GameControl.IGameControllerBase gameController);
     }
 } //end of namespace

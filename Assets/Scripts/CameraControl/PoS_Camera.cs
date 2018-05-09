@@ -148,6 +148,7 @@ public class PoS_Camera : MonoBehaviour
     Vector3 characterUp;
 
     private IGameControllerBase gameController;
+    private bool isInitialized;
 
     #endregion
 
@@ -158,6 +159,8 @@ public class PoS_Camera : MonoBehaviour
         this.gameController = gameController;
 
         camera = GetComponent<Camera>();
+
+        isInitialized = true;
     }
 
     void Start()
@@ -207,8 +210,10 @@ public class PoS_Camera : MonoBehaviour
 
     void LateUpdate()
     {
-        if (gamePaused)
+        if (gamePaused || !isInitialized)
+        {
             return;
+        }
 
         deltaTime = Time.deltaTime;
 
@@ -237,9 +242,6 @@ public class PoS_Camera : MonoBehaviour
     /// <param name="args"> Contient la position vers laquelle tp, et un bool pour savoir si on a changé de scène. </param>
     void OnTeleportPlayer(object sender, Game.Utilities.EventManager.TeleportPlayerEventArgs args)
     {
-        if (state == eCameraState.HomeDoor)
-            return;
-
         if (args.IsNewScene)
         {
             // on reset les paramètres par défaut de la caméra
@@ -257,7 +259,9 @@ public class PoS_Camera : MonoBehaviour
 
         }
         else
+        {
             my.position = args.Position - lastFrameOffset;
+        }
 
         negDistance.z = -currentDistance;
         Vector3 targetWithOffset = args.Position + my.right * offset.x + my.up * offset.y;
@@ -268,6 +272,8 @@ public class PoS_Camera : MonoBehaviour
         {
             my.position = camPosition;
         }
+
+        Debug.LogError("finished teleporting");
     }
 
     void OnGamePaused(object sender, Game.Utilities.EventManager.GamePausedEventArgs args)

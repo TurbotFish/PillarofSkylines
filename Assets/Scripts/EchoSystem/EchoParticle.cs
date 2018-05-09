@@ -15,6 +15,11 @@ namespace Game.EchoSystem
             EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
         }
 
+        private void OnDestroy()
+        {
+            EventManager.TeleportPlayerEvent -= OnTeleportPlayerEventHandler;
+        }
+
 
         private void OnTeleportPlayerEventHandler(object sender, EventManager.TeleportPlayerEventArgs args)
         {

@@ -76,7 +76,7 @@ namespace Game.LevelElements
 
         #region public methods
 
-        public void Initialize(IGameControllerBase gameController, bool isCopy)
+        public void Initialize(IGameControllerBase gameController)
         {
             my = transform;
             renderer = GetComponent<LineRenderer>();

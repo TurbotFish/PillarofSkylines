@@ -19,9 +19,9 @@ namespace Game.LevelElements
 
         #region initialization
 
-        public override void Initialize(IGameControllerBase gameController, bool isCopy)
+        public override void Initialize(IGameControllerBase gameController)
         {
-            base.Initialize(gameController, isCopy);
+            base.Initialize(gameController);
 
             needleGameObject.SetActive(PersistentData.ContainsNeedle);
         }
