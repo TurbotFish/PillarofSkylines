@@ -34,7 +34,7 @@ namespace Game.Player.CharacterController.States
 			charController.animator.SetBool("Gliding", true);
 			//charController.glideParticles.Play();
 			verticalAngle = Vector3.Angle(Vector3.up, (charController.MovementInfo.velocity)) - 90f;
-            Debug.Log("velocity entering : " + charController.MovementInfo.velocity + " vertical angle : " + verticalAngle);
+            //Debug.Log("velocity entering : " + charController.MovementInfo.velocity + " vertical angle : " + verticalAngle);
             horizontalAngle = 0f;
 
 			charController.fxManager.GlidePlay ();
@@ -100,11 +100,11 @@ namespace Game.Player.CharacterController.States
 				targetVerticalAngle,
 				a * dt * b
 			);
+
+            //Debug.Log("verticalangle : " + verticalAngle);
             
-            if (verticalAngle > 0f)
+            if (verticalAngle > glideData.BaseAngle)
             {
-                if (glidingDown)
-                    recovering = true;
                 glidingDown = false;
                 currentSpeed = 0.1f;
             }
@@ -149,7 +149,10 @@ namespace Game.Player.CharacterController.States
             if (glidingDown)
             {
                 currentSpeed = Mathf.Lerp(currentSpeed, glideData.StaticSpeed, glideData.SpeedSmooth);
-                targetVelocity = - charController.MyTransform.up * currentSpeed;
+                targetVelocity = Quaternion.AngleAxis(90f - glideData.MaxAngle, -charController.MyTransform.right) * (- charController.MyTransform.up * currentSpeed);
+            
+                targetVelocity = Quaternion.AngleAxis(Mathf.Lerp(0f, glideData.MaxAngle - glideData.BaseAngle, verticalAngle+90f/glideData.BaseAngle+90f), -charController.MyTransform.right) * targetVelocity;
+                 
             }
 
             //---------HORIZONTAL
@@ -166,7 +169,7 @@ namespace Game.Player.CharacterController.States
 
             //Turn the player horizontally with the angle calculated above
 
-            if (!glidingDown)
+            //if (!glidingDown)
                 charController.MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(TurnLocalToSpace(movementInfo.velocity), charController.MyTransform.up), charController.MyTransform.up);
             //Debug.Log("velocity : " + movementInfo.velocity);
 
