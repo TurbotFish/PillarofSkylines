@@ -50,7 +50,7 @@ namespace Game.World
                         working = false;
                     }
 
-                    if(GUILayout.Button("Export SubScenes - no baking"))
+                    if (GUILayout.Button("Export SubScenes - no baking"))
                     {
                         working = true;
                         ExportSubScenes(false);
@@ -174,7 +174,7 @@ namespace Game.World
 
                         if (System.IO.File.Exists(subScenePathFull))
                         {
-                            subScene = EditorSceneManager.OpenScene(subScenePath, UnityEditor.SceneManagement.OpenSceneMode.Additive);
+                            subScene = EditorSceneManager.OpenScene(subScenePath, OpenSceneMode.Additive);
                         }
                         else
                         {
@@ -232,6 +232,7 @@ namespace Game.World
                 return;
             }
 
+            List<RegionBase> region_list = new List<RegionBase>();
             var regionDict = new Dictionary<eSuperRegionType, Dictionary<string, RegionBase>>(); //dictionary<SuperRegion, dictionary<regionId, region>>
             var scenes = new Dictionary<string, Scene>();
             var buildSettingsScenes = EditorBuildSettings.scenes.ToList();
@@ -258,12 +259,6 @@ namespace Game.World
             stopWatch.Restart();
             //++++++++++++++++
 
-            //initializing
-            foreach (var superRegionType in Enum.GetValues(typeof(eSuperRegionType)).Cast<eSuperRegionType>())
-            {
-                regionDict.Add(superRegionType, new Dictionary<string, RegionBase>());
-            }
-
             //find the central regions
             for (int i = 0; i < worldController.transform.childCount; i++)
             {
@@ -271,46 +266,7 @@ namespace Game.World
 
                 if (region != null)
                 {
-                    regionDict[eSuperRegionType.Centre].Add(region.UniqueId, region);
-                }
-            }
-
-            //duplicating the regions
-            foreach (var region in regionDict[eSuperRegionType.Centre].Values)
-            {
-                foreach (var superRegionType in Enum.GetValues(typeof(eSuperRegionType)).Cast<eSuperRegionType>())
-                {
-                    if (superRegionType == eSuperRegionType.Centre || region.DoNotDuplicate) //the centre already exists, there is no need to create a duplicate for it
-                    {
-                        continue;
-                    }
-
-                    var duplicatedRegion = Instantiate(region, worldController.transform, true);
-
-                    var offset = WorldController.SUPERREGION_OFFSETS[superRegionType];
-                    var translate = new Vector3(offset.x * worldController.WorldSize.x, offset.y * worldController.WorldSize.y, offset.z * worldController.WorldSize.z);
-                    duplicatedRegion.transform.Translate(translate);
-
-                    foreach (var subSceneRoot in duplicatedRegion.GetAllSubSceneRoots())
-                    {
-                        //removing "do not repeat" objects
-                        List<DoNotRepeatTag> doNotRepeatTags = subSceneRoot.GetComponentsInChildren<DoNotRepeatTag>(true).ToList();
-                        while (doNotRepeatTags.Count > 0)
-                        {
-                            var tag = doNotRepeatTags[0];
-                            doNotRepeatTags.RemoveAt(0);
-                            DestroyImmediate(tag.gameObject);
-                        }
-
-                        //informing world objects
-                        var worldObjects = subSceneRoot.GetComponentsInChildren<IWorldObjectDuplication>();
-                        for (int i = 0; i < worldObjects.Length; i++)
-                        {
-                            worldObjects[i].OnDuplication();
-                        }
-                    }
-
-                    regionDict[superRegionType].Add(duplicatedRegion.UniqueId, duplicatedRegion);
+                    region_list.Add(region);
                 }
             }
 
@@ -338,41 +294,30 @@ namespace Game.World
                 buildSettingsScenes.Add(new EditorBuildSettingsScene(worldController.gameObject.scene.path, true));
             }
 
-            foreach (var superRegionType in Enum.GetValues(typeof(eSuperRegionType)).Cast<eSuperRegionType>())
+            foreach (var region in region_list)
             {
-                foreach (var region in regionDict[superRegionType].Values)
+                foreach (var subScene in region.GetAllSubScenes())
                 {
-                    foreach (var subScene in region.GetAllSubScenes())
+                    if (subScene.transform.childCount == 0)
                     {
-                        if (subScene.transform.childCount == 0)
-                        {
-                            continue;
-                        }
-
-                        eSubSceneLayer layer = subScene.SubSceneLayer;
-                        eSubSceneVariant variant = subScene.SubSceneVariant;
-
-                        subScene.transform.SetParent(null, true);
-                        var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
-                        EditorSceneManager.MoveGameObjectToScene(subScene.gameObject, scene);
-
-                        string subScenePath = WorldUtility.GetSubScenePath(worldController.gameObject.scene.path, region.UniqueId, variant, layer, superRegionType);
-
-                        EditorSceneManager.SaveScene(scene, subScenePath);
-                        scenes.Add(subScenePath, scene);
-
-                        buildSettingsScenes.Add(new EditorBuildSettingsScene(subScenePath, true));
-
-                        EditorSceneManager.CloseScene(scene, true);
+                        continue;
                     }
-                }
 
-                if (superRegionType != eSuperRegionType.Centre)
-                {
-                    foreach (var region in regionDict[superRegionType].Values)
-                    {
-                        DestroyImmediate(region.gameObject);
-                    }
+                    eSubSceneLayer layer = subScene.SubSceneLayer;
+                    eSubSceneVariant variant = subScene.SubSceneVariant;
+
+                    subScene.transform.SetParent(null, true);
+                    var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
+                    EditorSceneManager.MoveGameObjectToScene(subScene.gameObject, scene);
+
+                    string subScenePath = WorldUtility.GetSubScenePath(worldController.gameObject.scene.path, region.UniqueId, variant, layer, eSuperRegionType.Centre);
+
+                    EditorSceneManager.SaveScene(scene, subScenePath);
+                    scenes.Add(subScenePath, scene);
+
+                    buildSettingsScenes.Add(new EditorBuildSettingsScene(subScenePath, true));
+
+                    EditorSceneManager.CloseScene(scene, true);
                 }
             }
 

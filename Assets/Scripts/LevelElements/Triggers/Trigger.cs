@@ -63,7 +63,7 @@ namespace Game.LevelElements
         /// </summary>
         /// <param name="worldController"></param>
         /// <param name="isCopy"></param>
-        public virtual void Initialize(GameControl.IGameControllerBase gameController, bool isCopy)
+        public virtual void Initialize(GameControl.IGameControllerBase gameController)
         {
             model = gameController.PlayerModel;
             this.isCopy = isCopy;
@@ -157,7 +157,10 @@ namespace Game.LevelElements
             //targets.RemoveAll(item => item == null); //this helps keeping the target list clean (for example when target objects get deleted)
             foreach (TriggerableObject target in targets)
             {
-                Gizmos.DrawLine(Vector3.zero, transform.InverseTransformPoint(target.transform.position));
+                if (target != null)
+                {
+                    Gizmos.DrawLine(Vector3.zero, transform.InverseTransformPoint(target.transform.position));
+                }
             }
         }
 #endif

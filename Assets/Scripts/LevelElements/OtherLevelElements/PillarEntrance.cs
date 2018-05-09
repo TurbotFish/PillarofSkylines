@@ -22,7 +22,7 @@ namespace Game.LevelElements
 
         #region initialization
 
-        public void Initialize(IGameControllerBase gameController, bool isCopy)
+        public void Initialize(IGameControllerBase gameController)
         {
             if (isInitialized)
             {

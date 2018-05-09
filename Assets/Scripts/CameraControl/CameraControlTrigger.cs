@@ -44,7 +44,7 @@ public class CameraControlTrigger : MonoBehaviour, IInteractable, IWorldObject
 
     //########################################################################
 
-    public void Initialize(IGameControllerBase gameController, bool isCopy)
+    public void Initialize(IGameControllerBase gameController)
     {
         this.gameController = gameController;
     }

@@ -17,20 +17,7 @@ namespace Game.GameControl
     {
         //###############################################################
 
-        #region member variables
-
-        private SceneNamesData sceneNamesData;
-
-        //private string currentSceneName;
-
-        private bool isInitialized = false;
-        private bool isGameStarted = false;
-
-        #endregion member variables
-
-        //###############################################################
-
-        #region propperties
+        // -- ATTRIBUTES     
 
         public PlayerModel PlayerModel { get; private set; }
         public EchoManager EchoManager { get; private set; }
@@ -49,12 +36,15 @@ namespace Game.GameControl
 
         public SpawnPointManager SpawnPointManager { get; private set; }
 
-        #endregion properties
+        private SceneNamesData sceneNamesData;
+        private bool isInitialized = false;
+        private bool isGameStarted = false;
+
 
         //###############################################################
         //###############################################################
 
-        #region monobehaviour methods
+        // -- INITIALIZATION
 
         private void Start()
         {
@@ -88,13 +78,6 @@ namespace Game.GameControl
             //load open world scene
             StartCoroutine(LoadOpenWorldSceneCR());
         }
-
-        #endregion monobehaviour methods
-
-        //###############################################################
-        //###############################################################
-
-        #region initialization methods
 
         private IEnumerator LoadOpenWorldSceneCR()
         {
@@ -134,6 +117,11 @@ namespace Game.GameControl
             EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.MainMenu));
         }
 
+        //###############################################################
+        //###############################################################
+
+        // -- OPERATIONS
+
         /// <summary>
         /// Starts the game.
         /// </summary>
@@ -168,13 +156,6 @@ namespace Game.GameControl
             Application.Quit();
 #endif
         }
-
-        #endregion initialization methods
-
-        //###############################################################
-        //###############################################################
-
-        #region scene loading methods
 
         /// <summary>
         /// Coroutine for switching to the open world scene.
@@ -353,7 +334,7 @@ namespace Game.GameControl
 
             foreach (var worldObject in worldObjects)
             {
-                worldObject.Initialize(this, false);
+                worldObject.Initialize(this);
             }
             yield return null;
 
@@ -379,19 +360,22 @@ namespace Game.GameControl
             SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
         }
 
-        #endregion scene loading methods
-
-        //###############################################################
-        //###############################################################
-
-        #region event methods
-
+        /// <summary>
+        /// Handles the Unity "sceneLoaded" event.
+        /// </summary>
+        /// <param name="scene"></param>
+        /// <param name="loadSceneMode"></param>
         private void OnSceneLoadedEventHandler(Scene scene, LoadSceneMode loadSceneMode)
         {
             //Debug.Log("on scene loaded event");
             CleanScene(scene);
         }
 
+        /// <summary>
+        /// Handles the "EnterPillar" event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void OnEnterPillarEventHandler(object sender, EventManager.EnterPillarEventArgs args)
         {
             if (IsPillarLoaded)
@@ -402,6 +386,11 @@ namespace Game.GameControl
             StartCoroutine(LoadPillarSceneCR(args.PillarId));
         }
 
+        /// <summary>
+        /// Handles the "LeavePillar" event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void OnLeavePillarEventHandler(object sender, EventManager.LeavePillarEventArgs args)
         {
             if (!IsPillarLoaded)
@@ -419,14 +408,13 @@ namespace Game.GameControl
             StartCoroutine(ActivateOpenWorldCR(false));
         }
 
-        #endregion event methods
-
-        //###############################################################
-        //###############################################################
-
-        #region static methods
-
-        private static T SearchForScriptInScene<T>(Scene scene) where T : class
+        /// <summary>
+        /// Returns the first instance of T found in the scene.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="scene"></param>
+        /// <returns></returns>
+        private T SearchForScriptInScene<T>(Scene scene) where T : class
         {
             T result = null;
 
@@ -443,7 +431,13 @@ namespace Game.GameControl
             return result;
         }
 
-        private static List<T> SearchForScriptsInScene<T>(Scene scene) where T : class
+        /// <summary>
+        /// Returns all instances of T in the scene.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="scene"></param>
+        /// <returns></returns>
+        private List<T> SearchForScriptsInScene<T>(Scene scene) where T : class
         {
             var result = new List<T>();
 
@@ -455,7 +449,11 @@ namespace Game.GameControl
             return result;
         }
 
-        private static void CleanScene(Scene scene)
+        /// <summary>
+        /// Cleans up the Level scene.
+        /// </summary>
+        /// <param name="scene"></param>
+        private void CleanScene(Scene scene)
         {
             var gameControllerLiteInstances = SearchForScriptsInScene<GameControllerLite>(scene);
             //Debug.LogFormat("Scene {0} contained {1} GameControllerLite!", scene.name, gameControllerLiteInstances.Count());
@@ -491,8 +489,6 @@ namespace Game.GameControl
                 Destroy(eclipseManager.gameObject);
             }
         }
-
-        #endregion static methods
 
         //###############################################################
     }
