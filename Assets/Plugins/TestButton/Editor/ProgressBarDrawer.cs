@@ -17,7 +17,7 @@ public class ProgressBarDrawer : PropertyDrawer
 
         var dynamicLabel = property.serializedObject.FindProperty((attribute as ProgressBarAttribute).label);
 
-        EditorGUI.ProgressBar(position, property.floatValue/1f, dynamicLabel == null ? property.name : dynamicLabel.stringValue);
+        EditorGUI.ProgressBar(position, property.floatValue/1f, property.name);
     }
 
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)

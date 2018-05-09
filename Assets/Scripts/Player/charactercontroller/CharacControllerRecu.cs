@@ -71,7 +71,8 @@ namespace Game.Player.CharacterController
         /// </summary>
         MovingPlatform[] currentPFs;
 
-        Gravifloor currentGravifloor;
+        [HideInInspector]
+        public Gravifloor currentGravifloor;
 
 		bool belowLastFrame;
         bool climbingStep;
@@ -528,8 +529,9 @@ namespace Game.Player.CharacterController
 
                 if (
                     (myPlayer.CurrentState == ePlayerState.move || climbingStep) &&
-                    Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up, out hit2, height + radius * 2, collisionMask) &&
-                    !Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2), Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up), (radius + skinWidth), collisionMask))
+                    Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius*2 + skinWidth)
+                                        , -myTransform.up, out hit2, height + radius * 2, collisionMask) &&
+                    !Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2), Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up), (radius*2 + skinWidth), collisionMask))
                 {
                     collisions.stepHeight = (height + radius * 2) - hit2.distance;
                     // Once checked if it's a step, check if it's not too high, and if it's not a slope
