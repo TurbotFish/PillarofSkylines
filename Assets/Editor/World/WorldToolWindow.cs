@@ -159,7 +159,7 @@ namespace Game.World
                 {
                     foreach (var subSceneMode in region.AvailableSubSceneVariants)
                     {
-                        if (region.GetSubSceneRoot(subSceneLayer, subSceneMode) != null)
+                        if (region.GetSubSceneRoot(subSceneMode, subSceneLayer) != null)
                         {
                             //Debug.LogErrorFormat("The \"{0}\" of Region \"{1}\" is already loaded!", WorldUtility.GetSubSceneRootName(subSceneMode, subSceneLayer), region.name);
                             continue;

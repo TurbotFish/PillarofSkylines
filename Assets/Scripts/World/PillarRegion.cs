@@ -47,7 +47,7 @@ namespace Game.World
                 return;
             }
 
-            ChangeSubSceneMode(eSubSceneVariant.DestroyedPillar);
+            SwitchVariant(eSubSceneVariant.DestroyedPillar);
         }
 
     }

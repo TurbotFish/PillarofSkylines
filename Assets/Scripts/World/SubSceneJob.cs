@@ -11,17 +11,17 @@ namespace Game.World
         public eSubSceneVariant SubSceneVariant { get; private set; }
         public eSubSceneLayer SubSceneLayer { get; private set; }
         public eSubSceneJobType JobType { get; private set; }
-        public Action<SubSceneJob, bool> Callback { get; private set; }
 
-        public SubSceneJob(RegionBase region, eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer, eSubSceneJobType jobType, Action<SubSceneJob, bool> callback)
+        public eSubSceneJobState CurrentState = eSubSceneJobState.Pending;
+
+        public SubSceneJob(RegionBase region, eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer, eSubSceneJobType jobType)
         {
             Region = region;
             SubSceneVariant = subSceneVariant;
             SubSceneLayer = subSceneLayer;
             JobType = jobType;
-            Callback = callback;
         }
 
-        public float Priority { get { return Region.CameraDistance; } }
+        public float Priority { get { return Region.PlayerDistance; } }
     }
 } //end of namespace
