@@ -447,6 +447,10 @@ namespace Game.Player.CharacterController
             public float StallSpeed { get { return stallSpeed; } }
 
             [SerializeField]
+            float staticSpeed;
+            public float StaticSpeed { get { return staticSpeed; } }
+
+            [SerializeField]
             float minHorizAngle;
             public float MinHorizAngle { get { return minHorizAngle; } }
 

@@ -59,7 +59,7 @@ namespace Game.LevelElements
 
         protected override void Activate()
         {
-            Debug.LogFormat("Door \"{0}\": Activate called!", name);
+            //Debug.LogFormat("Door \"{0}\": Activate called!", name);
 
             localPositionWhenOpen = localPositionWhenClosed + offsetWhenOpen;
             Move(localPositionWhenClosed, localPositionWhenOpen);
@@ -67,7 +67,7 @@ namespace Game.LevelElements
 
         protected override void Deactivate()
         {
-            Debug.LogFormat("Door \"{0}\": Deactivate called!", name);
+            //Debug.LogFormat("Door \"{0}\": Deactivate called!", name);
 
             localPositionWhenClosed = localPositionWhenOpen - offsetWhenOpen;
             Move(localPositionWhenOpen, localPositionWhenClosed);

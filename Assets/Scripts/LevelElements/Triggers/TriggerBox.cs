@@ -111,7 +111,6 @@ namespace Game.LevelElements
 					renderer.sharedMaterials = sharedMaterialsCopy;
 				}
 
-				Debug.Log ("bonjour hello");
 
 				GlyphFX _fx = GetComponent<GlyphFX> ();
 				if (_fx != null) {
