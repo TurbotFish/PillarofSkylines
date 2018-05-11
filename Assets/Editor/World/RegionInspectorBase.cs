@@ -58,8 +58,6 @@ namespace Game.World
 
         public override void OnInspectorGUI()
         {
-            List<SubScene> loadedSubScenes = self.GetAllSubScenes();
-
             base.OnInspectorGUI();
             doNotDuplicateProperty.boolValue = EditorGUILayout.Toggle("Do Not Repeat", doNotDuplicateProperty.boolValue);
 

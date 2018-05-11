@@ -152,7 +152,7 @@ namespace Game.World
         /// <summary>
         /// Activates the WorldController.
         /// </summary>
-        public void Activate()
+        public void Activate(Vector3 spawn_position)
         {
             if (!isInitialized)
             {
@@ -168,14 +168,10 @@ namespace Game.World
 
             foreach (var region in RegionList)
             {
-                UpdateRegion(region);
+                var teleport_positions = ComputeTeleportPositions(spawn_position);
+
+                region.UpdateRegion(spawn_position, teleport_positions);
             }
-            //SubSceneJobsList.Clear();
-            //foreach (var region in RegionList)
-            //{
-            //    SubSceneJobsList.AddRange(UpdateRegion(region));
-            //}
-            //SubSceneJobsList = SubSceneJobsList.OrderBy(item => item.Priority).ToList();
 
             StartCoroutine(ActivationCR());
         }
@@ -239,8 +235,11 @@ namespace Game.World
             //updating world -> creating new jobs
             if (CurrentState == eWorldControllerState.Activated)
             {
-                //updating one super region, getting a list of new jobs
-                UpdateRegion(RegionList[CurrentRegionIndex]);
+                var player_position = GameController.PlayerController.CharController.MyTransform.position;
+                var teleport_positions = ComputeTeleportPositions(player_position);
+                teleport_positions.AddRange(GameController.EchoManager.GetEchoPositions());
+
+                RegionList[CurrentRegionIndex].UpdateRegion(player_position, teleport_positions);
 
                 CurrentRegionIndex++;
                 if (CurrentRegionIndex == RegionList.Count)
@@ -451,17 +450,15 @@ namespace Game.World
         }
 
         /// <summary>
-        /// 
+        /// Creates a list of the positions the player would teleport to if he reached the border of the world.
         /// </summary>
-        /// <param name="region"></param>
-        private void UpdateRegion(RegionBase region)
+        /// <param name="player_position"></param>
+        /// <returns></returns>
+        private List<Vector3> ComputeTeleportPositions(Vector3 player_position)
         {
-            var camera_transform = GameController.CameraController.transform;
-            var player_position = GameController.PlayerController.CharController.MyTransform.position;
             var teleport_positions = new List<Vector3>();
             var half_size = worldSize * 0.5f;
 
-            //identifying teleport positions
             if (player_position.y > half_size.y - preTeleportOffset)
             {
                 var teleport_position = player_position;
@@ -488,7 +485,7 @@ namespace Game.World
                 teleport_positions.Add(teleport_position);
             }
 
-            region.UpdateRegion(camera_transform, player_position, teleport_positions);
+            return teleport_positions;
         }
 
         /// <summary>
@@ -496,52 +493,6 @@ namespace Game.World
         /// </summary>
         private void UpdateSubSceneJobQueue()
         {
-            ////removing jobs that are already in the queue
-            //var unnecessaryNewJobs = new List<SubSceneJob>();
-            //foreach (var job in newJobs)
-            //{
-            //    var existingJob = SubSceneJobsList.Where(item =>
-            //        item.JobType == job.JobType &&
-            //        item.Region.UniqueId == job.Region.UniqueId &&
-            //        item.SubSceneLayer == job.SubSceneLayer &&
-            //        item.SubSceneVariant == job.SubSceneVariant
-            //    ).FirstOrDefault();
-
-            //    if (existingJob != null)
-            //    {
-            //        unnecessaryNewJobs.Add(job);
-            //    }
-            //}
-
-            //foreach (var unnecessaryJob in unnecessaryNewJobs)
-            //{
-            //    newJobs.Remove(unnecessaryJob);
-            //}
-
-            ////removing different jobs for same SubScene
-            //var deprecatedJobs = new List<SubSceneJob>();
-            //foreach (var job in newJobs)
-            //{
-            //    deprecatedJobs.AddRange(SubSceneJobsList.Where(item =>
-            //        item.JobType != job.JobType &&
-            //        item.Region.UniqueId == job.Region.UniqueId &&
-            //        item.SubSceneVariant == job.SubSceneVariant &&
-            //        item.SubSceneLayer == job.SubSceneLayer
-            //    ));
-            //}
-
-            //foreach (var deprecatedJob in deprecatedJobs)
-            //{
-            //    SubSceneJobsList.Remove(deprecatedJob);
-            //    deprecatedJob.Region.OnSubSceneJobOver(deprecatedJob, false);
-            //}
-
-            ////adding new jobs to queue
-            //foreach (var job in newJobs)
-            //{
-            //    SubSceneJobsList.Add(job);
-            //}
-
             /* 
              * Cleaning the queue.
              */
