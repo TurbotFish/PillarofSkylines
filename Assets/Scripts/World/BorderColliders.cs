@@ -1,5 +1,7 @@
 ﻿#if UNITY_EDITOR
+using System.Linq;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
@@ -56,13 +58,15 @@ namespace Game.World {
 
             Vector3 yBoxReach = new Vector3(world.WorldSize.x + outsideReach, outsideReach, world.WorldSize.z + outsideReach);
             Vector3 zBoxReach = new Vector3(world.WorldSize.x + outsideReach, world.WorldSize.y + outsideReach, outsideReach);
-            
-            Transform topParent = CreateContainer(world.transform, " Top");
-            Transform westParent = CreateContainer(world.transform, " West");
-            Transform eastParent = CreateContainer(world.transform, " East");
-            Transform bottomParent = CreateContainer(world.transform, " Bottom");
 
-            yield return null;
+            Transform uniqueParent = CreateContainer(world.transform);
+
+            //Transform topParent = CreateContainer(world.transform, " Top");
+            //Transform westParent = CreateContainer(world.transform, " West");
+            //Transform eastParent = CreateContainer(world.transform, " East");
+            //Transform bottomParent = CreateContainer(world.transform, " Bottom");
+            
+
             //top
 
             boxPos.y = world.WorldSize.y / 2 + outsideReach;
@@ -87,15 +91,67 @@ namespace Game.World {
             Collider[] bottomBorderColliders = Physics.OverlapBox(boxPos, yBoxReach);
             boxPos.y = 0;
 
+
+            List<Collider> allColliders = new List<Collider>(topBorderColliders);
+            allColliders.AddRange(westBorderColliders);
+            allColliders.AddRange(eastBorderColliders);
+            allColliders.AddRange(bottomBorderColliders);
+
+            allColliders = allColliders.Distinct().ToList();
+
+            List<List<Collider>> orderedList = new List<List<Collider>>();
+            orderedList.Add(new List<Collider>()); // list for non-mesh colliders
+
+            List<Mesh> meshes = new List<Mesh>();
+            
+
+            foreach (Collider col in allColliders)  {
+
+                if (col is MeshCollider)
+                {
+                    Mesh mesh = ((MeshCollider)col).sharedMesh;
+
+                    if (meshes.Contains(mesh)) {
+                        orderedList[meshes.IndexOf(mesh) + 1].Add(col);
+
+                    } else {
+                        meshes.Add(mesh);
+
+                        while (orderedList.Count < meshes.Count + 1)
+                            orderedList.Add(new List<Collider>());
+
+                        orderedList[meshes.Count].Add(col);
+                    }
+
+                } else {
+                    orderedList[0].Add(col);
+                }
+            }
+
+            allColliders.Clear();
+
+            int ix = 0;
+
+            foreach(List<Collider> list in orderedList)
+            {
+                ix++;
+                if (ix < meshes.Count)
+                    print("Found the mesh " + meshes[ix] + " with " + meshes[ix].triangles.Length + " triangles");
+
+                allColliders.AddRange(list);
+            }
+            
             jobsDone = 0;
-            totalJobs = topBorderColliders.Length + westBorderColliders.Length + eastBorderColliders.Length + bottomBorderColliders.Length;
+            totalJobs = allColliders.Count;
 
             Debug.Log("Found " + totalJobs + " colliders to repeat");
+            
+            StartCoroutine(_DoAllColliders(allColliders.ToArray(), uniqueParent));
+            while (jobsDone < totalJobs)
+                yield return null;
 
+            /*
             int jobsGoal = topBorderColliders.Length-1;
-
-            // check for duplicates in the lists mayb??
-
             StartCoroutine(_DoAllColliders(topBorderColliders, topParent));
             while(jobsDone < jobsGoal)
                 yield return null;
@@ -114,8 +170,10 @@ namespace Game.World {
             StartCoroutine(_DoAllColliders(bottomBorderColliders, bottomParent));
             while (jobsDone < jobsGoal)
                 yield return null;
+            */
 
             Debug.Log("Border Colliders Repetition DONE!");
+
             completionPercent = -1;
         }
         
