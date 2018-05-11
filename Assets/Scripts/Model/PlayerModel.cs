@@ -27,9 +27,6 @@ namespace Game.Model
         public bool hasNeedle;
         private int pillarKeys;
 
-        //pick-ups
-        List<string> collectedPickUps = new List<string>(); //a list with the id's of the pick-ups that have been collected
-
         //currencies
         private Dictionary<eCurrencyType, int> currencies;
 
@@ -222,8 +219,6 @@ namespace Game.Model
         /// </summary>
         public bool DeactivateAbility(eAbilityType abilityType)
         {
-            var ability = abilityData.GetAbility(abilityType);
-
             if (!activatedAbilities.Contains(abilityType))
             {
                 return true;

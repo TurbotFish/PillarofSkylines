@@ -1,4 +1,4 @@
-﻿using EditorCoroutines;
+﻿//using EditorCoroutines;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,12 +29,11 @@ namespace Game.World
             subSceneVariantProperty = serializedObject.FindProperty("subSceneVariant");
             subSceneLayerProperty = serializedObject.FindProperty("subSceneLayer");
 
-            this.StartCoroutine(GetInfoCoroutine());
+            GetInfo();
         }
 
         private void OnDisable()
         {
-            this.StopAllCoroutines();
         }
 
         public override void OnInspectorGUI()
@@ -108,40 +107,35 @@ namespace Game.World
             }
         }
 
-        private IEnumerator GetInfoCoroutine()
+        private void GetInfo()
         {
-            while (true)
+            childCount = self.GetComponentsInChildren<Transform>(true).Length - 1;
+            rendererCount = self.GetComponentsInChildren<Renderer>().Length;
+
+            List<MeshCollider> meshColliders = self.GetComponentsInChildren<MeshCollider>().ToList();
+            meshColliderCount = meshColliders.Count;
+            int meshColliderTotalVertesCount = 0;
+            meshColliderHighestVertexCount = 0;
+
+            foreach (var meshCollider in meshColliders)
             {
-                childCount = self.GetComponentsInChildren<Transform>(true).Length - 1;
-                rendererCount = self.GetComponentsInChildren<Renderer>().Length;
-
-                List<MeshCollider> meshColliders = self.GetComponentsInChildren<MeshCollider>().ToList();
-                meshColliderCount = meshColliders.Count;
-                int meshColliderTotalVertesCount = 0;
-                meshColliderHighestVertexCount = 0;
-
-                foreach (var meshCollider in meshColliders)
+                if (meshCollider == null || meshCollider.sharedMesh == null)
                 {
-                    if(meshCollider == null || meshCollider.sharedMesh == null)
-                    {
-                        continue;
-                    }
-
-                    int vertexCount = meshCollider.sharedMesh.vertexCount;
-                    meshColliderTotalVertesCount += vertexCount;
-                    if (vertexCount > meshColliderHighestVertexCount)
-                    {
-                        meshColliderHighestVertexCount = vertexCount;
-                        meshColliderLargestMeshName = meshCollider.sharedMesh.name;
-                    }
+                    continue;
                 }
 
-                if (meshColliders.Count > 0)
+                int vertexCount = meshCollider.sharedMesh.vertexCount;
+                meshColliderTotalVertesCount += vertexCount;
+                if (vertexCount > meshColliderHighestVertexCount)
                 {
-                    meshColliderAverageVertexCount = meshColliderTotalVertesCount / meshColliders.Count;
+                    meshColliderHighestVertexCount = vertexCount;
+                    meshColliderLargestMeshName = meshCollider.sharedMesh.name;
                 }
+            }
 
-                yield return new WaitForSeconds(1);
+            if (meshColliders.Count > 0)
+            {
+                meshColliderAverageVertexCount = meshColliderTotalVertesCount / meshColliders.Count;
             }
         }
     }

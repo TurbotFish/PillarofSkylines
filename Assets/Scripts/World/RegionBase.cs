@@ -36,9 +36,7 @@ namespace Game.World
         public float PlayerDistance { get; private set; }
 
         protected WorldController WorldController;
-
         private Transform myTransform;
-        private List<Vector3> boundsCorners;
 
         private Dictionary<eSubSceneVariant, Dictionary<eSubSceneLayer, List<SubSceneJob>>> SubSceneJobLists;
 
@@ -103,18 +101,6 @@ namespace Game.World
 
                 SubSceneJobLists.Add(sub_scene_variant, job_dictionary);
             }
-
-            Bounds bounds = BoundingBox;
-            boundsCorners = new List<Vector3>(){
-                new Vector3(bounds.center.x + bounds.extents.x, bounds.center.y + bounds.extents.y, bounds.center.z + bounds.extents.z),
-                new Vector3(bounds.center.x + bounds.extents.x, bounds.center.y + bounds.extents.y, bounds.center.z - bounds.extents.z),
-                new Vector3(bounds.center.x + bounds.extents.x, bounds.center.y - bounds.extents.y, bounds.center.z + bounds.extents.z),
-                new Vector3(bounds.center.x + bounds.extents.x, bounds.center.y - bounds.extents.y, bounds.center.z - bounds.extents.z),
-                new Vector3(bounds.center.x - bounds.extents.x, bounds.center.y + bounds.extents.y, bounds.center.z + bounds.extents.z),
-                new Vector3(bounds.center.x - bounds.extents.x, bounds.center.y + bounds.extents.y, bounds.center.z - bounds.extents.z),
-                new Vector3(bounds.center.x - bounds.extents.x, bounds.center.y - bounds.extents.y, bounds.center.z + bounds.extents.z),
-                new Vector3(bounds.center.x - bounds.extents.x, bounds.center.y - bounds.extents.y, bounds.center.z - bounds.extents.z)
-            };
 
             foreach (var variant in AvailableSubSceneVariants)
             {
@@ -264,6 +250,11 @@ namespace Game.World
             return null;
         }
 
+        public int GetJobIndex(SubSceneJob job)
+        {
+            return SubSceneJobLists[job.SubSceneVariant][job.SubSceneLayer].IndexOf(job);
+        }
+
         //###############################################################
         //###############################################################
 
@@ -272,43 +263,19 @@ namespace Game.World
         /// <summary>
         /// Updates the mode of the Region (far, medium, near) depending on the position of the player.
         /// </summary>
-        /// <param name="camera_transform"></param>
         /// <param name="player_position"></param>
         /// <param name="teleport_positions"></param>
         /// <returns></returns>
-        public void UpdateRegion(Transform camera_transform, Vector3 player_position, List<Vector3> teleport_positions)
+        public void UpdateRegion(Vector3 player_position, List<Vector3> teleport_positions)
         {
             if (!isInitialized)
             {
                 return;
             }
 
-            ////handling SubScene mode change
-            //if (hasSubSceneModeChanged)
-            //{
-            //    Debug.Log("Region \"" + name + "\": mode has changed!");
-            //    foreach (var subSceneVariant in SubSceneStates.Keys)
-            //    {
-            //        if (subSceneVariant != currentSubSceneVariant)
-            //        {
-            //            foreach (var subSceneLayer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
-            //            {
-            //                var subSceneState = SubSceneStates[subSceneVariant][subSceneLayer];
-            //                if (subSceneState == eSubSceneState.Loading || subSceneState == eSubSceneState.Loaded)
-            //                {
-            //                    result.Add(CreateUnloadSubSceneJob(subSceneVariant, subSceneLayer));
-            //                }
-            //            }
-            //        }
-            //    }
-            //    result.AddRange(SwitchRegionMode(currentRegionMode));
-            //    hasSubSceneModeChanged = false;
-            //}
-
             CleanSubSceneJobLists();
 
             PlayerDistance = ComputePlayerDistance(player_position, teleport_positions);
-            //Debug.LogFormat("RegionBase: UpdateRegion: PlayerDistance = {0}", PlayerDistance);
 
             var desired_mode = ComputeDesiredRegionMode();
 
@@ -316,93 +283,6 @@ namespace Game.World
             {
                 SwitchMode(desired_mode);
             }
-
-
-
-            ////****************************************
-            ////switch mode
-            ////****************************************
-            ////MODE NEAR
-            ////when the player is inside a region it is always active, this is important to keep teleport destinations loaded
-            //if (currentRegionMode != eRegionMode.Near && playerDistance == 0)
-            //{
-            //    //Debug.LogFormat("{0} {1}: mode switch AAA! dist={2}",superRegion.Type, name, playerDistance);
-            //    result.AddRange(SwitchRegionMode(eRegionMode.Near));
-            //}
-            //else if (currentRegionMode != eRegionMode.Near && isVisible && playerDistance < RenderDistanceNear)
-            //{
-            //    //Debug.LogFormat("{0} {1}: mode switch BBB! dist={2}", superRegion.Type, name, playerDistance);
-            //    result.AddRange(SwitchRegionMode(eRegionMode.Near));
-            //}
-            ////****************************************
-            ////MODE MEDIUM
-            //else if (currentRegionMode != eRegionMode.Medium && isVisible && playerDistance > RenderDistanceNear * 1.1f && playerDistance < RenderDistanceMedium)
-            //{
-            //    //Debug.LogFormat("{0} {1}: mode switch CCC! dist={2}", superRegion.Type, name, playerDistance);
-            //    result.AddRange(SwitchRegionMode(eRegionMode.Medium));
-            //}
-            ////****************************************
-            //// MODE FAR
-            //else if (currentRegionMode != eRegionMode.Far && isVisible && playerDistance > RenderDistanceMedium * 1.1f && playerDistance < RenderDistanceFar)
-            //{
-            //    //Debug.LogFormat("{0} {1}: mode switch DDD! dist={2}", superRegion.Type, name, playerDistance);
-            //    result.AddRange(SwitchRegionMode(eRegionMode.Far));
-            //}
-            ////****************************************
-            //// MODE INACTIVE
-            //else if (currentRegionMode != eRegionMode.Inactive && !isVisible && playerDistance > 0)
-            //{
-            //    //Debug.LogFormat("{0} {1}: mode switch EEE! dist={2}", superRegion.Type, name, playerDistance);
-            //    result.AddRange(SwitchRegionMode(eRegionMode.Inactive));
-            //}
-            //else if (currentRegionMode != eRegionMode.Inactive && playerDistance > RenderDistanceFar * 1.1f)
-            //{
-            //    //Debug.LogFormat("{0} {1}: mode switch FFF! dist={2}", superRegion.Type, name, playerDistance);
-            //    result.AddRange(SwitchRegionMode(eRegionMode.Inactive));
-            //}
-            ////****************************************
-
-            ////checks if all the SubScenes are loaded
-            //if (validateSubScenes && firstJobDone && currentJobs.Count == 0)
-            //{
-            //    if (currentRegionMode == eRegionMode.Near)
-            //    {
-            //        if (SubSceneStates[currentSubSceneVariant][eSubSceneLayer.Near] != eSubSceneState.Loaded)
-            //        {
-            //            Debug.LogWarningFormat("{0}: SubScene Near should be loaded but isn't! currentState={1}",
-            //                name,
-            //                SubSceneStates[currentSubSceneVariant][eSubSceneLayer.Near]
-            //            );
-            //            result.Add(CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Near));
-            //        }
-            //    }
-
-            //    if (currentRegionMode == eRegionMode.Far)
-            //    {
-            //        if (SubSceneStates[currentSubSceneVariant][eSubSceneLayer.Far] != eSubSceneState.Loaded)
-            //        {
-            //            Debug.LogWarningFormat("{0}: SubScene Far should be loaded but isn't! currentState={1}",
-            //                name,
-            //                SubSceneStates[currentSubSceneVariant][eSubSceneLayer.Far]
-            //            );
-            //            result.Add(CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Far));
-            //        }
-            //    }
-
-            //    if (currentRegionMode != eRegionMode.Inactive)
-            //    {
-            //        if (SubSceneStates[currentSubSceneVariant][eSubSceneLayer.Always] != eSubSceneState.Loaded)
-            //        {
-            //            Debug.LogWarningFormat("{0}: SubScene Always should be loaded but isn't! currentState={1}",
-            //                name,
-            //                SubSceneStates[currentSubSceneVariant][eSubSceneLayer.Always]
-            //            );
-            //            result.Add(CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Always));
-            //        }
-            //    }
-            //} //end of SubScene validation
-            ////Debug.LogFormat("{0}: jobCount={1}", name, currentJobs);
-            //validateSubScenes = false;
         }
 
         /// <summary>
@@ -414,73 +294,6 @@ namespace Game.World
             SwitchMode(eRegionMode.Inactive);
         }
 
-        ///// <summary>
-        ///// Called to inform the Region that a SubSceneJob has been either finished or discarded.
-        ///// </summary>
-        ///// <param name="job"></param>
-        ///// <param name="is_job_done"></param>
-        //public void OnSubSceneJobOver(SubSceneJob job)
-        //{
-        //    currentJobs.Remove(job);
-
-        //    if (is_job_done)
-        //    {
-        //        firstJobDone = true;
-        //        int index = (int)job.SubSceneLayer;
-
-        //        if (job.JobType == eSubSceneJobType.Load)
-        //        {
-        //            SubSceneStates[job.SubSceneVariant][job.SubSceneLayer] = eSubSceneState.Loaded;
-        //        }
-        //        else if (job.JobType == eSubSceneJobType.Unload)
-        //        {
-        //            SubSceneStates[job.SubSceneVariant][job.SubSceneLayer] = eSubSceneState.Unloaded;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        if (job.JobType == eSubSceneJobType.Load)
-        //        {
-        //            SubSceneStates[job.SubSceneVariant][job.SubSceneLayer] = eSubSceneState.Unloaded;
-        //        }
-        //        else if (job.JobType == eSubSceneJobType.Unload)
-        //        {
-        //            SubSceneStates[job.SubSceneVariant][job.SubSceneLayer] = eSubSceneState.Loaded;
-        //        }
-        //    }
-        //}
-
-        /// <summary>
-        /// Editor method that creates a SubScene object and initializes it.
-        /// </summary>
-        /// <param name="subSceneVariant"></param>
-        /// <param name="subSceneLayer"></param>
-        public void CreateSubScene(eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer)
-        {
-            string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, UniqueId, subSceneVariant, subSceneLayer, eSuperRegionType.Centre);
-            string subScenePathFull = WorldUtility.GetFullPath(subScenePath);
-
-            if (GetSubSceneRoot(subSceneVariant, subSceneLayer) != null)
-            {
-                return;
-            }
-            else if (System.IO.File.Exists(subScenePathFull))
-            {
-                Debug.LogFormat("SubScene \"{0}\" already exists but is not loaded!", subScenePath);
-                return;
-            }
-            else
-            {
-                var rootGO = new GameObject(WorldUtility.GetSubSceneRootName(subSceneVariant, subSceneLayer), typeof(SubScene));
-                rootGO.GetComponent<SubScene>().Initialize(subSceneVariant, subSceneLayer);
-
-                var root = rootGO.transform;
-                root.SetParent(transform, false);
-            }
-
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
-        }
-
         /// <summary>
         /// Editor method used to switch drawing of the region bounds on and off.
         /// </summary>
@@ -488,8 +301,6 @@ namespace Game.World
         public void SetDrawBounds(bool drawBounds)
         {
             this.drawBounds = drawBounds;
-
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
         }
 
         /// <summary>

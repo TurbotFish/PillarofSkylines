@@ -61,7 +61,6 @@ namespace Game.LevelElements
             if (other.tag == tagToActivate && Mathf.Abs(Vector3.Dot(other.transform.up, transform.up)) > 0.9f)
             {
 
-
                 if (Toggle)
                     SetTriggerState(!TriggerState);
                 else

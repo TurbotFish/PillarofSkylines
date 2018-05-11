@@ -17,14 +17,10 @@ namespace Game.CameraControl
         private bool isActive;
         private bool areDuplicationCamerasEnabled;
 
-        private IGameControllerBase gameController;
-
         // -- INITIALIZATION
 
         public void Initialize(IGameControllerBase gameController)
         {
-            this.gameController = gameController;
-
             MainCamera = gameController.CameraController.PoS_Camera.CameraComponent;
             MainCameraTransform = MainCamera.transform;
             transform.position = MainCameraTransform.position;

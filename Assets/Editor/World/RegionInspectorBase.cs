@@ -1,4 +1,4 @@
-﻿using EditorCoroutines;
+﻿//using EditorCoroutines;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -49,18 +49,15 @@ namespace Game.World
 
             doNotDuplicateProperty = serializedObject.FindProperty("doNotDuplicate");
 
-            this.StartCoroutine(GetInfoCoroutine());
+            GetInfo();
         }
 
         protected void OnDisable()
         {
-            this.StopAllCoroutines();
         }
 
         public override void OnInspectorGUI()
         {
-            List<SubScene> loadedSubScenes = self.GetAllSubScenes();
-
             base.OnInspectorGUI();
             doNotDuplicateProperty.boolValue = EditorGUILayout.Toggle("Do Not Repeat", doNotDuplicateProperty.boolValue);
 
@@ -121,7 +118,7 @@ namespace Game.World
                     {
                         if (!self.GetSubSceneRoot(subSceneVariant, subSceneLayer) && GUILayout.Button("Create " + WorldUtility.GetSubSceneRootName(subSceneVariant, subSceneLayer)))
                         {
-                            self.CreateSubScene(subSceneVariant, subSceneLayer);
+                            CreateSubScene(subSceneVariant, subSceneLayer);
                         }
                     }
                 }
@@ -166,42 +163,68 @@ namespace Game.World
         //    boundsSizeProperty.vector3Value = bounds.size;
         //}
 
-        private IEnumerator GetInfoCoroutine()
+        private void GetInfo()
         {
-            while (true)
+            List<SubScene> loadedSubScenes = self.GetAllSubScenes();
+            childCount = self.GetComponentsInChildren<Transform>(true).Length - 1 - loadedSubScenes.Count;
+            rendererCount = self.GetComponentsInChildren<Renderer>().Length;
+
+            List<MeshCollider> meshColliders = self.GetComponentsInChildren<MeshCollider>().ToList();
+            meshColliderCount = meshColliders.Count;
+            int meshColliderTotalVertesCount = 0;
+            meshColliderHighestVertexCount = 0;
+
+            foreach (var meshCollider in meshColliders)
             {
-                List<SubScene> loadedSubScenes = self.GetAllSubScenes();
-                childCount = self.GetComponentsInChildren<Transform>(true).Length - 1 - loadedSubScenes.Count;
-                rendererCount = self.GetComponentsInChildren<Renderer>().Length;
-
-                List<MeshCollider> meshColliders = self.GetComponentsInChildren<MeshCollider>().ToList();
-                meshColliderCount = meshColliders.Count;
-                int meshColliderTotalVertesCount = 0;
-                meshColliderHighestVertexCount = 0;
-
-                foreach (var meshCollider in meshColliders)
+                if (meshCollider.sharedMesh == null)
                 {
-                    if(meshCollider.sharedMesh == null)
-                    {
-                        continue;
-                    }
-
-                    int vertexCount = meshCollider.sharedMesh.vertexCount;
-                    meshColliderTotalVertesCount += vertexCount;
-                    if (vertexCount > meshColliderHighestVertexCount)
-                    {
-                        meshColliderHighestVertexCount = vertexCount;
-                        meshColliderLargestMeshName = meshCollider.sharedMesh.name;
-                    }
+                    continue;
                 }
 
-                if (meshColliders.Count > 0)
+                int vertexCount = meshCollider.sharedMesh.vertexCount;
+                meshColliderTotalVertesCount += vertexCount;
+                if (vertexCount > meshColliderHighestVertexCount)
                 {
-                    meshColliderAverageVertexCount = meshColliderTotalVertesCount / meshColliders.Count;
+                    meshColliderHighestVertexCount = vertexCount;
+                    meshColliderLargestMeshName = meshCollider.sharedMesh.name;
                 }
-
-                yield return new WaitForSeconds(1);
             }
+
+            if (meshColliders.Count > 0)
+            {
+                meshColliderAverageVertexCount = meshColliderTotalVertesCount / meshColliders.Count;
+            }
+        }
+
+        /// <summary>
+        /// Editor method that creates a SubScene object and initializes it.
+        /// </summary>
+        /// <param name="subSceneVariant"></param>
+        /// <param name="subSceneLayer"></param>
+        private void CreateSubScene(eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer)
+        {
+            string subScenePath = WorldUtility.GetSubScenePath(self.gameObject.scene.path, self.UniqueId, subSceneVariant, subSceneLayer, eSuperRegionType.Centre);
+            string subScenePathFull = WorldUtility.GetFullPath(subScenePath);
+
+            if (self.GetSubSceneRoot(subSceneVariant, subSceneLayer) != null)
+            {
+                return;
+            }
+            else if (System.IO.File.Exists(subScenePathFull))
+            {
+                Debug.LogFormat("SubScene \"{0}\" already exists but is not loaded!", subScenePath);
+                return;
+            }
+            else
+            {
+                var rootGO = new GameObject(WorldUtility.GetSubSceneRootName(subSceneVariant, subSceneLayer), typeof(SubScene));
+                rootGO.GetComponent<SubScene>().Initialize(subSceneVariant, subSceneLayer);
+
+                var root = rootGO.transform;
+                root.SetParent(self.transform, false);
+            }
+
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(self.gameObject.scene);
         }
     }
 } // end of namespace
