@@ -164,20 +164,25 @@ namespace Game.GameControl
         /// <returns></returns>
         private IEnumerator ActivateOpenWorldCR(bool useInitialSpawnPoint)
         {
+            /*
+             * initializing
+             */
             CameraController.PoS_Camera.CameraComponent.enabled = false;
 
             AsyncOperation async;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
-            //*****************************************
-            //pausing game
+            /*
+             * pausing game
+             */
             EventManager.SendPreSceneChangeEvent(this, new EventManager.PreSceneChangeEventArgs(true));
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(true));
             EventManager.SendShowMenuEvent(this, new EventManager.OnShowLoadingScreenEventArgs());
             yield return null;
 
-            //*****************************************
-            //unloading pillar scene   
+            /*
+             * unloading pillar scene
+             */
             string pillarSceneName = sceneNamesData.GetPillarSceneName(ActivePillarId);
 
             if (IsPillarLoaded && !string.IsNullOrEmpty(pillarSceneName))
@@ -195,8 +200,9 @@ namespace Game.GameControl
             IsPillarLoaded = false;
             SpawnPointManager = null;
 
-            //*****************************************
-            //"activating" open world scene
+            /*
+             * "loading" open world scene
+             */
             string worldSceneName = sceneNamesData.GetOpenWorldSceneName();
             Scene scene = SceneManager.GetSceneByName(worldSceneName);
 
@@ -214,30 +220,28 @@ namespace Game.GameControl
 
             yield return null;
 
-            //*****************************************
-            //teleporting player
-            Vector3 position;
-            Quaternion rotation;
+            /*
+             * preparing player spawn
+             */
+            Vector3 spawn_position;
+            Quaternion spawn_rotation;
 
             if (useInitialSpawnPoint)
             {
-                position = SpawnPointManager.GetInitialSpawnPoint();
-                rotation = SpawnPointManager.GetInitialSpawnOrientation();
+                spawn_position = SpawnPointManager.GetInitialSpawnPoint();
+                spawn_rotation = SpawnPointManager.GetInitialSpawnOrientation();
             }
             else
             {
                 ePillarState pillarState = PlayerModel.CheckIsPillarDestroyed(ActivePillarId) ? ePillarState.Destroyed : ePillarState.Intact;
-                position = SpawnPointManager.GetPillarExitPoint(ActivePillarId, pillarState);
-                rotation = SpawnPointManager.GetPillarExitOrientation(ActivePillarId, pillarState);
+                spawn_position = SpawnPointManager.GetPillarExitPoint(ActivePillarId, pillarState);
+                spawn_rotation = SpawnPointManager.GetPillarExitOrientation(ActivePillarId, pillarState);
             }
 
-            var teleportPlayerEventArgs = new EventManager.TeleportPlayerEventArgs(position, rotation, true);
-            EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
-            yield return null;
-
-            //*****************************************
-            //activating world controller
-            WorldController.Activate();
+            /*
+             * activating world
+             */
+            WorldController.Activate(spawn_position);
             DuplicationCameraController.Activate();
 
             while (WorldController.CurrentState == eWorldControllerState.Activating)
@@ -245,19 +249,27 @@ namespace Game.GameControl
                 yield return null;
             }
 
-            //*****************************************
-            //informing everyone!
+            /*
+             * teleporting player to spawn
+             */
+            var teleportPlayerEventArgs = new EventManager.TeleportPlayerEventArgs(spawn_position, spawn_rotation, true);
+            EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
+            yield return null;
+
+            /*
+             * unpausing game
+             */
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());
 
-            //*****************************************
-            //unpausing game
             CameraController.PoS_Camera.CameraComponent.enabled = true;
             yield return new WaitForSeconds(0.5f);
 
             EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.HUD));
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
 
-            //*****************************************
+            /*
+             * cleaning up
+             */
             SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
         }
 

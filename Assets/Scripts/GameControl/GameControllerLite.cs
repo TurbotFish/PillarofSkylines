@@ -149,7 +149,7 @@ namespace Game.GameControl
                 duplicationCameraController.Initialize(this);
                 yield return null;
 
-                worldController.Activate();
+                worldController.Activate(PlayerController.CharController.MyTransform.position);
                 duplicationCameraController.Activate();
                 yield return null;
 
