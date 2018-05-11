@@ -106,7 +106,7 @@ namespace Game.World
             {
                 if (GUILayout.Button("Auto-adjust Bounds"))
                 {
-                    AdjustBounds();
+                    self.AdjustBounds();
                 }
             }
 
@@ -115,13 +115,13 @@ namespace Game.World
 
             if (!Application.isPlaying && self.transform.parent.GetComponent<WorldController>().EditorSubScenesLoaded)
             {
-                foreach (var subSceneMode in self.AvailableSubSceneVariants)
+                foreach (var subSceneVariant in self.AvailableSubSceneVariants)
                 {
                     foreach (var subSceneLayer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
                     {
-                        if (!self.GetSubSceneRoot(subSceneLayer, subSceneMode, loadedSubScenes) && GUILayout.Button("Create " + WorldUtility.GetSubSceneRootName(subSceneMode, subSceneLayer)))
+                        if (!self.GetSubSceneRoot(subSceneVariant, subSceneLayer) && GUILayout.Button("Create " + WorldUtility.GetSubSceneRootName(subSceneVariant, subSceneLayer)))
                         {
-                            UnityEngine.EventSystems.ExecuteEvents.Execute<IRegionEventHandler>(self.gameObject, null, (x, y) => x.CreateSubScene(subSceneMode, subSceneLayer));
+                            self.CreateSubScene(subSceneVariant, subSceneLayer);
                         }
                     }
                 }
@@ -131,38 +131,40 @@ namespace Game.World
             serializedObject.ApplyModifiedProperties();
         }
 
-        /// <summary>
-        /// Editor method that adjusts the size and centre of the region bounds to encompass all contained renderers.
-        /// </summary>
-        private void AdjustBounds()
-        {
-            Bounds bounds = new Bounds();
-            List<Renderer> renderers = self.GetComponentsInChildren<Renderer>().ToList();
-            Vector3 position = Vector3.zero;
+        ///// <summary>
+        ///// Editor method that adjusts the size and centre of the region bounds to encompass all contained renderers.
+        ///// </summary>
+        //private void AdjustBounds()
+        //{
+        //    Bounds bounds = new Bounds();
+        //    List<Renderer> renderers = self.GetComponentsInChildren<Renderer>().ToList();
+        //    Vector3 position = Vector3.zero;
 
-            if (renderers.Count() == 0)
-            {
-                boundsCentreProperty.vector3Value = self.transform.position;
-                boundsSizeProperty.vector3Value = Vector3.zero;
-            }
-            else
-            {
-                foreach (var renderer in renderers)
-                {
-                    position += renderer.bounds.center;
-                }
+        //    renderers.RemoveAll(item => item is LineRenderer || item is ParticleSystemRenderer || item is TrailRenderer);      
 
-                bounds.center = position / renderers.Count();
+        //    if (renderers.Count() == 0)
+        //    {
+        //        boundsCentreProperty.vector3Value = self.transform.position;
+        //        boundsSizeProperty.vector3Value = Vector3.zero;
+        //    }
+        //    else
+        //    {
+        //        foreach (var renderer in renderers)
+        //        {
+        //            position += renderer.bounds.center;
+        //        }
 
-                foreach (var renderer in renderers)
-                {
-                    bounds.Encapsulate(renderer.bounds);
-                }
-            }
+        //        bounds.center = position / renderers.Count();
 
-            boundsCentreProperty.vector3Value = bounds.center;
-            boundsSizeProperty.vector3Value = bounds.size;
-        }
+        //        foreach (var renderer in renderers)
+        //        {
+        //            bounds.Encapsulate(renderer.bounds);
+        //        }
+        //    }
+
+        //    boundsCentreProperty.vector3Value = bounds.center;
+        //    boundsSizeProperty.vector3Value = bounds.size;
+        //}
 
         private IEnumerator GetInfoCoroutine()
         {

@@ -114,7 +114,7 @@ namespace Game.World
 
                     if (region)
                     {
-                        UnityEngine.EventSystems.ExecuteEvents.Execute<IRegionEventHandler>(region.gameObject, null, (x, y) => x.SetDrawBounds(drawRegionBoundsProperty.boolValue));
+                        region.SetDrawBounds(drawRegionBoundsProperty.boolValue);
                     }
                 }
             }
@@ -139,9 +139,33 @@ namespace Game.World
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("-- Debug");
 
-            debugResultCountProperty.intValue = EditorGUILayout.IntField("Result Count", debugResultCountProperty.intValue);           
+            debugResultCountProperty.intValue = EditorGUILayout.IntField("Result Count", debugResultCountProperty.intValue);
+
+            EditorGUILayout.LabelField("");
+            EditorGUILayout.LabelField("-- Tools");
+
+            if (!Application.isPlaying && self.EditorSubScenesLoaded)
+            {
+                if (GUILayout.Button("Auto-adjust Bounds"))
+                {
+                    AutoAdjustAllBounds();
+                }
+            }
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private void AutoAdjustAllBounds()
+        {
+            for(int child_index = 0; child_index < self.transform.childCount; child_index++)
+            {
+                var region = self.transform.GetChild(child_index).GetComponent<RegionBase>();
+
+                if(region != null)
+                {
+                    region.AdjustBounds();
+                }
+            }
         }
 
         #endregion update      
