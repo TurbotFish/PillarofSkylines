@@ -36,9 +36,7 @@ namespace Game.World
         public float PlayerDistance { get; private set; }
 
         protected WorldController WorldController;
-
         private Transform myTransform;
-        private List<Vector3> boundsCorners;
 
         private Dictionary<eSubSceneVariant, Dictionary<eSubSceneLayer, List<SubSceneJob>>> SubSceneJobLists;
 
@@ -103,18 +101,6 @@ namespace Game.World
 
                 SubSceneJobLists.Add(sub_scene_variant, job_dictionary);
             }
-
-            Bounds bounds = BoundingBox;
-            boundsCorners = new List<Vector3>(){
-                new Vector3(bounds.center.x + bounds.extents.x, bounds.center.y + bounds.extents.y, bounds.center.z + bounds.extents.z),
-                new Vector3(bounds.center.x + bounds.extents.x, bounds.center.y + bounds.extents.y, bounds.center.z - bounds.extents.z),
-                new Vector3(bounds.center.x + bounds.extents.x, bounds.center.y - bounds.extents.y, bounds.center.z + bounds.extents.z),
-                new Vector3(bounds.center.x + bounds.extents.x, bounds.center.y - bounds.extents.y, bounds.center.z - bounds.extents.z),
-                new Vector3(bounds.center.x - bounds.extents.x, bounds.center.y + bounds.extents.y, bounds.center.z + bounds.extents.z),
-                new Vector3(bounds.center.x - bounds.extents.x, bounds.center.y + bounds.extents.y, bounds.center.z - bounds.extents.z),
-                new Vector3(bounds.center.x - bounds.extents.x, bounds.center.y - bounds.extents.y, bounds.center.z + bounds.extents.z),
-                new Vector3(bounds.center.x - bounds.extents.x, bounds.center.y - bounds.extents.y, bounds.center.z - bounds.extents.z)
-            };
 
             foreach (var variant in AvailableSubSceneVariants)
             {
