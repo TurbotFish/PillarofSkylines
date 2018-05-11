@@ -96,6 +96,8 @@ namespace Game.World {
 
             // check for duplicates in the lists mayb??
 
+            // order the list by same meshes in mesh collidrs so that it goes faster
+
             StartCoroutine(_DoAllColliders(topBorderColliders, topParent));
             while(jobsDone < jobsGoal)
                 yield return null;
@@ -116,6 +118,7 @@ namespace Game.World {
                 yield return null;
 
             Debug.Log("Border Colliders Repetition DONE!");
+
             completionPercent = -1;
         }
         
