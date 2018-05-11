@@ -26,12 +26,12 @@ namespace Game.Player.CharacterController.States
 
         public void Enter()
         {
-            Debug.Log("Enter State: Wind Tunnel");
+            //Debug.Log("Enter State: Wind Tunnel");
         }
 
         public void Exit()
         {
-            Debug.Log("Exit State: Wind Tunnel");
+            //Debug.Log("Exit State: Wind Tunnel");
         }
 
         //#############################################################################
