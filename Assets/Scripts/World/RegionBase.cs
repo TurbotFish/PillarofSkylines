@@ -264,6 +264,11 @@ namespace Game.World
             return null;
         }
 
+        public int GetJobIndex(SubSceneJob job)
+        {
+            return SubSceneJobLists[job.SubSceneVariant][job.SubSceneLayer].IndexOf(job);
+        }
+
         //###############################################################
         //###############################################################
 
@@ -414,73 +419,6 @@ namespace Game.World
             SwitchMode(eRegionMode.Inactive);
         }
 
-        ///// <summary>
-        ///// Called to inform the Region that a SubSceneJob has been either finished or discarded.
-        ///// </summary>
-        ///// <param name="job"></param>
-        ///// <param name="is_job_done"></param>
-        //public void OnSubSceneJobOver(SubSceneJob job)
-        //{
-        //    currentJobs.Remove(job);
-
-        //    if (is_job_done)
-        //    {
-        //        firstJobDone = true;
-        //        int index = (int)job.SubSceneLayer;
-
-        //        if (job.JobType == eSubSceneJobType.Load)
-        //        {
-        //            SubSceneStates[job.SubSceneVariant][job.SubSceneLayer] = eSubSceneState.Loaded;
-        //        }
-        //        else if (job.JobType == eSubSceneJobType.Unload)
-        //        {
-        //            SubSceneStates[job.SubSceneVariant][job.SubSceneLayer] = eSubSceneState.Unloaded;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        if (job.JobType == eSubSceneJobType.Load)
-        //        {
-        //            SubSceneStates[job.SubSceneVariant][job.SubSceneLayer] = eSubSceneState.Unloaded;
-        //        }
-        //        else if (job.JobType == eSubSceneJobType.Unload)
-        //        {
-        //            SubSceneStates[job.SubSceneVariant][job.SubSceneLayer] = eSubSceneState.Loaded;
-        //        }
-        //    }
-        //}
-
-        /// <summary>
-        /// Editor method that creates a SubScene object and initializes it.
-        /// </summary>
-        /// <param name="subSceneVariant"></param>
-        /// <param name="subSceneLayer"></param>
-        public void CreateSubScene(eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer)
-        {
-            string subScenePath = WorldUtility.GetSubScenePath(gameObject.scene.path, UniqueId, subSceneVariant, subSceneLayer, eSuperRegionType.Centre);
-            string subScenePathFull = WorldUtility.GetFullPath(subScenePath);
-
-            if (GetSubSceneRoot(subSceneVariant, subSceneLayer) != null)
-            {
-                return;
-            }
-            else if (System.IO.File.Exists(subScenePathFull))
-            {
-                Debug.LogFormat("SubScene \"{0}\" already exists but is not loaded!", subScenePath);
-                return;
-            }
-            else
-            {
-                var rootGO = new GameObject(WorldUtility.GetSubSceneRootName(subSceneVariant, subSceneLayer), typeof(SubScene));
-                rootGO.GetComponent<SubScene>().Initialize(subSceneVariant, subSceneLayer);
-
-                var root = rootGO.transform;
-                root.SetParent(transform, false);
-            }
-
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
-        }
-
         /// <summary>
         /// Editor method used to switch drawing of the region bounds on and off.
         /// </summary>
@@ -488,8 +426,6 @@ namespace Game.World
         public void SetDrawBounds(bool drawBounds)
         {
             this.drawBounds = drawBounds;
-
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
         }
 
         /// <summary>

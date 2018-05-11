@@ -115,6 +115,8 @@ namespace Game.World
                     if (region)
                     {
                         region.SetDrawBounds(drawRegionBoundsProperty.boolValue);
+
+                        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(self.gameObject.scene);
                     }
                 }
             }

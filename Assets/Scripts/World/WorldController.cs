@@ -550,7 +550,7 @@ namespace Game.World
             /* 
              * Ordering the queue.
              */
-            SubSceneJobsList = SubSceneJobsList.OrderBy(item => item.Priority).ToList();
+            SubSceneJobsList = SubSceneJobsList.OrderBy(item => item.GetPriority()).ToList();
         }
 
         /// <summary>

@@ -22,6 +22,9 @@ namespace Game.World
             JobType = jobType;
         }
 
-        public float Priority { get { return Region.PlayerDistance; } }
+        public float GetPriority()
+        {
+            return Region.PlayerDistance + Region.GetJobIndex(this);
+        }
     }
 } //end of namespace
