@@ -27,14 +27,14 @@ namespace Game.LevelElements
 
         #region initialization
 
-        public override void Initialize(IGameControllerBase gameController, bool isCopy)
+        public override void Initialize(IGameControllerBase gameController)
         {
             if (IsInitialized)
             {
                 return;
             }
 
-            base.Initialize(gameController, isCopy);
+            base.Initialize(gameController);
 
             if (PersistentData.IsPickedUp && !tombAnimator.IsTombActivated)
             {

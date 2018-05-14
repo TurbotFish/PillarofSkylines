@@ -59,6 +59,24 @@ namespace Game.EchoSystem
 
         //##################################################################
 
+        /// <summary>
+        /// Returns a list with the position of all echos.
+        /// </summary>
+        /// <returns></returns>
+        public List<Vector3> GetEchoPositions()
+        {
+            var result = new List<Vector3>();
+
+            foreach (var echo in echoList)
+            {
+                result.Add(echo.MyTransform.position);
+            }
+
+            return result;
+        }
+
+        //##################################################################
+
         void Update()
         {
             if (isActive && !isEclipseActive)
@@ -141,7 +159,7 @@ namespace Game.EchoSystem
 
         public Echo CreateEcho(bool isPlayerEcho)
         {
-            if (isEclipseActive || charController.createdEchoOnThisInput)
+            if (isEclipseActive)
                 return null;
 
             if (placedEchoes == maxEchoes)
@@ -167,13 +185,12 @@ namespace Game.EchoSystem
                 placedEchoes++;
                 echoParticles.AddEcho(newEcho.transform.position);
             }
-            charController.createdEchoOnThisInput = true;
             return newEcho;
         }
 
         public Echo CreateEcho(bool isPlayerEcho, Vector3 position)
         {
-            if (isEclipseActive || charController.createdEchoOnThisInput)
+            if (isEclipseActive)
                 return null;
 
             if (placedEchoes == maxEchoes)
@@ -199,7 +216,6 @@ namespace Game.EchoSystem
                 placedEchoes++;
                 echoParticles.AddEcho(newEcho.transform.position);
             }
-            charController.createdEchoOnThisInput = true;
             return newEcho;
         }
 

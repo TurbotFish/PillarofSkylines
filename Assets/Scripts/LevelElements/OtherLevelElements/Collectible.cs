@@ -35,7 +35,7 @@ public class Collectible : MonoBehaviour, IInteractable, IWorldObject
 
     //##################################################################
 
-    public void Initialize(IGameControllerBase gameController, bool isCopy)
+    public void Initialize(IGameControllerBase gameController)
     {
         myTransform = transform;
         pilouTransform = gameController.PlayerController.transform;

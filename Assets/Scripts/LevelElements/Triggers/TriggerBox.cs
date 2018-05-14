@@ -61,7 +61,6 @@ namespace Game.LevelElements
             if (other.tag == tagToActivate && Mathf.Abs(Vector3.Dot(other.transform.up, transform.up)) > 0.9f)
             {
 
-
                 if (Toggle)
                     SetTriggerState(!TriggerState);
                 else
@@ -111,7 +110,6 @@ namespace Game.LevelElements
 					renderer.sharedMaterials = sharedMaterialsCopy;
 				}
 
-				Debug.Log ("bonjour hello");
 
 				GlyphFX _fx = GetComponent<GlyphFX> ();
 				if (_fx != null) {
@@ -128,9 +126,9 @@ namespace Game.LevelElements
 
         #region public methods
 
-        public override void Initialize(IGameControllerBase gameController, bool isCopy)
+        public override void Initialize(IGameControllerBase gameController)
         {
-            base.Initialize(gameController, isCopy);
+            base.Initialize(gameController);
 			//Debug.Log ("INITIALISE" + transform.name);
             GetComponent<BoxCollider>().isTrigger = true;
         }

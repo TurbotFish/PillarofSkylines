@@ -58,7 +58,7 @@ namespace Game.Player.CharacterController.States
         public void Exit()
         {
             //Debug.Log("Exit State: Hover");
-            /*PlayerMovementInfo movementInfo = charController.MovementInfo;
+            PlayerMovementInfo movementInfo = charController.MovementInfo;
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
             RaycastHit hit;
             if (Physics.Raycast(movementInfo.position, -movementInfo.up, out hit, hoverData.MaxHeight, collisionInfo.collisionLayer))
@@ -67,7 +67,7 @@ namespace Game.Player.CharacterController.States
                 {
                     charController.ChangeGravityDirection(gravityToResetTo);
                 }
-            }*/
+            }
             charController.hoverFX.Stop();
         }
 
@@ -107,7 +107,7 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
             }
-            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom) && !charController.createdEchoOnThisInput)
+            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom))
             {
                 stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
             }

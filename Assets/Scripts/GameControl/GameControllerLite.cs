@@ -2,6 +2,7 @@
 using Game.Model;
 using Game.Utilities;
 using Game.World;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -37,7 +38,6 @@ namespace Game.GameControl
 
         //
         private bool isPillarLoaded;
-        private ePillarId pillarId;
 
         //###############################################################
 
@@ -54,7 +54,7 @@ namespace Game.GameControl
         public DuplicationCameraController DuplicationCameraController { get { return duplicationCameraController; } }
 
         public bool IsPillarLoaded { get { return isPillarLoaded; } }
-        public ePillarId ActivePillarId { get { return pillarId; } }
+        public ePillarId ActivePillarId { get { throw new NotImplementedException(); } }
 
         public SpawnPointManager SpawnPointManager { get; private set; }
 
@@ -145,11 +145,24 @@ namespace Game.GameControl
 
             if (worldController != null)
             {
+                isOpenWorldLoaded = true;
+                isPillarLoaded = false;
+
                 worldController.Initialize(this);
                 duplicationCameraController.Initialize(this);
                 yield return null;
 
-                worldController.Activate();
+                var worldObjects = FindObjectsOfType<MonoBehaviour>();
+                foreach (var obj in worldObjects)
+                {
+                    if (obj is IWorldObject)
+                    {
+                        (obj as IWorldObject).Initialize(this);
+                    }
+                }
+                yield return null;
+
+                worldController.Activate(PlayerController.CharController.MyTransform.position);
                 duplicationCameraController.Activate();
                 yield return null;
 
@@ -160,12 +173,15 @@ namespace Game.GameControl
             }
             else //this is a Pillar
             {
+                isOpenWorldLoaded = false;
+                isPillarLoaded = true;
+
                 var worldObjects = FindObjectsOfType<MonoBehaviour>();
                 foreach(var obj in worldObjects)
                 {
                     if (obj is IWorldObject)
                     {
-                        (obj as IWorldObject).Initialize(this, false);
+                        (obj as IWorldObject).Initialize(this);
                     }
                 }
                 yield return null;
@@ -197,7 +213,7 @@ namespace Game.GameControl
         //###############################################################
         //###############################################################
 
-        protected static T SearchForScriptInScene<T>(Scene scene) where T : Object
+        protected static T SearchForScriptInScene<T>(Scene scene) where T : UnityEngine.Object
         {
             T result = null;
 

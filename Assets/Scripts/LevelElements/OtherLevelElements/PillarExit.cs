@@ -14,7 +14,7 @@ namespace Game.LevelElements
 
         //########################################################################
 
-        public void Initialize(IGameControllerBase gameController, bool isCopy)
+        public void Initialize(IGameControllerBase gameController)
         {
             this.gameController = gameController;
         }

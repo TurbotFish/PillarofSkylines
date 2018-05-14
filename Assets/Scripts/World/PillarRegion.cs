@@ -12,9 +12,9 @@ namespace Game.World
 
         //========================================================================================
 
-        public override void Initialize(SuperRegion superRegion)
+        public override void Initialize(WorldController world_controller)
         {
-            base.Initialize(superRegion);
+            base.Initialize(world_controller);
 
             EventManager.PillarDestroyedEvent += OnPillarDestroyedEventHandler;
         }
@@ -34,7 +34,7 @@ namespace Game.World
         {
             get
             {
-                return SuperRegion.World.GameController.PlayerModel.CheckIsPillarDestroyed(pillarId) ? eSubSceneVariant.DestroyedPillar : eSubSceneVariant.IntactPillar;
+                return WorldController.GameController.PlayerModel.CheckIsPillarDestroyed(pillarId) ? eSubSceneVariant.DestroyedPillar : eSubSceneVariant.IntactPillar;
             }
         }
 
@@ -47,7 +47,7 @@ namespace Game.World
                 return;
             }
 
-            ChangeSubSceneMode(eSubSceneVariant.DestroyedPillar);
+            SwitchVariant(eSubSceneVariant.DestroyedPillar);
         }
 
     }

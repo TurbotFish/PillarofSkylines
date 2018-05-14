@@ -71,7 +71,8 @@ namespace Game.Player.CharacterController
         /// </summary>
         MovingPlatform[] currentPFs;
 
-        Gravifloor currentGravifloor;
+        [HideInInspector]
+        public Gravifloor currentGravifloor;
 
 		bool belowLastFrame;
         bool climbingStep;
@@ -150,7 +151,9 @@ namespace Game.Player.CharacterController
 
             Vector3 finalVelocity = Vector3.zero;
             //Check if calculated movement will end up in a wall, if so try to adjust movement
-            wallsOverPlayer = Physics.OverlapCapsule(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + velocity, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + velocity, radius, collisionMaskNoCloud);
+            wallsOverPlayer = Physics.OverlapCapsule(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + velocity, myTransform.position + playerAngle * (center + capsuleHeightModifier / 2) + velocity
+                , radius*.99f, collisionMaskNoCloud);
+            
 
             if (wallsOverPlayer.Length == 0)
             {
@@ -324,7 +327,7 @@ namespace Game.Player.CharacterController
 
             //Send casts to check if there's stuff around the player and set bools depending on the results
             collisions.below = Physics.SphereCast(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, radius, -myTransform.up, out hit, skinWidth * 4, collisionMask) || climbingStep;
-            Debug.DrawRay(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * skinWidth * 2, -myTransform.up * skinWidth * 4, Color.green);
+            Debug.DrawRay(myTransform.position + playerAngle * (center - capsuleHeightModifier / 2) + myTransform.up * (skinWidth * 2-radius), -myTransform.up * skinWidth * 4, Color.blue);
 
             if (Physics.Raycast(myTransform.position, hit.point - myTransform.position, out hit2, height*2, collisionMask))
             {
@@ -528,8 +531,14 @@ namespace Game.Player.CharacterController
 
                 if (
                     (myPlayer.CurrentState == ePlayerState.move || climbingStep) &&
-                    Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth), -myTransform.up, out hit2, height + radius * 2, collisionMask) &&
-                    !Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2), Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up), (radius + skinWidth), collisionMask))
+                    (
+                    Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius * 2 + skinWidth)
+                                        , -myTransform.up, out hit2, height + radius * 2, collisionMask) || 
+                    Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2) + Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up).normalized * (radius + skinWidth)
+                                        , -myTransform.up, out hit2, height + radius * 2, collisionMask)
+                                        )
+                                        &&
+                    !Physics.Raycast(myTransform.position + movementVector + myTransform.up * (height + radius * 2), Vector3.ProjectOnPlane(hit.point - myTransform.position, myTransform.up), (radius*2 + skinWidth), collisionMask))
                 {
                     collisions.stepHeight = (height + radius * 2) - hit2.distance;
                     // Once checked if it's a step, check if it's not too high, and if it's not a slope
@@ -566,7 +575,7 @@ namespace Game.Player.CharacterController
                     //if the player is on the ground, count the ground as a first collision
                     //once the extra velocity has been projected, Call the function once more to check if this new velocity meets obstacle and do everything again
 
-
+                    //Debug.Log("hit.normal " + hit.normal + " collisions.currentGroundNormal " + collisions.currentGroundNormal + " collisions.below " + collisions.below + " belowLastFrame " + belowLastFrame);
                     if (climbingStep)
                     {
                         // If the controller detected the player is going up a step, send a new detection from above the step
@@ -584,12 +593,13 @@ namespace Game.Player.CharacterController
                             else
                             {
                                 //print("recu 2");
+                                return movementVector;
                                 reflection = CollisionDetection(Vector3.ProjectOnPlane(extraVelocity, hit.normal), position + movementVector, hit);
                             }
                         }
                         else
                         {
-                            if (collisions.below && Vector3.Dot(hit.normal, collisions.currentGroundNormal) < 0)
+                            if ((collisions.below || belowLastFrame) && Vector3.Dot(hit.normal, collisions.currentGroundNormal) < 0)
                             {
                                 //print("recu 3");
                                 reflection = CollisionDetection(Vector3.Project(extraVelocity, Vector3.Cross(hit.normal, collisions.currentGroundNormal)), position + movementVector, hit);

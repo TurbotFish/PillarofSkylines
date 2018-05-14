@@ -27,12 +27,12 @@ namespace Game.LevelElements
 
         #region public methods
 
-        public override void Initialize(IGameControllerBase gameController, bool isCopy)
+        public override void Initialize(IGameControllerBase gameController)
         {
             rend = GetComponent<Renderer>(); //this is called before base.Initialize in order to gurantee that it is set before it is used.
             rend.sharedMaterial = off;
 
-            base.Initialize(gameController, isCopy);
+            base.Initialize(gameController);
         }
 
         #endregion public methods

@@ -44,7 +44,7 @@ public class CameraControlTrigger : MonoBehaviour, IInteractable, IWorldObject
 
     //########################################################################
 
-    public void Initialize(IGameControllerBase gameController, bool isCopy)
+    public void Initialize(IGameControllerBase gameController)
     {
         this.gameController = gameController;
     }
@@ -62,12 +62,18 @@ public class CameraControlTrigger : MonoBehaviour, IInteractable, IWorldObject
 
     public void OnPlayerEnter()
     {
-        gameController.CameraController.PoS_Camera.EnterTrigger(this);
+        if (gameController != null)
+        {
+            gameController.CameraController.PoS_Camera.EnterTrigger(this);
+        }
     }
 
     public void OnPlayerExit()
     {
-        gameController.CameraController.PoS_Camera.ExitTrigger(this);
+        if (gameController != null)
+        {
+            gameController.CameraController.PoS_Camera.ExitTrigger(this);
+        }
     }
 
     public void OnHoverBegin()
