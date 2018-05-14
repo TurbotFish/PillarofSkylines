@@ -34,7 +34,7 @@ namespace Game.GameControl
         //
         private bool isOpenWorldLoaded;
         private WorldController worldController;
-        private DuplicationCameraController duplicationCameraController;
+        private DuplicationCameraManager duplicationCameraController;
 
         //
         private bool isPillarLoaded;
@@ -51,7 +51,7 @@ namespace Game.GameControl
 
         public bool IsOpenWorldLoaded { get { return isOpenWorldLoaded; } }
         public WorldController WorldController { get { return worldController; } }
-        public DuplicationCameraController DuplicationCameraController { get { return duplicationCameraController; } }
+        public DuplicationCameraManager DuplicationCameraController { get { return duplicationCameraController; } }
 
         public bool IsPillarLoaded { get { return isPillarLoaded; } }
         public ePillarId ActivePillarId { get { throw new NotImplementedException(); } }
@@ -126,7 +126,7 @@ namespace Game.GameControl
             playerController = FindObjectOfType<Player.PlayerController>();
             CameraController = FindObjectOfType<CameraController>();
             worldController = FindObjectOfType<WorldController>();
-            duplicationCameraController = FindObjectOfType<DuplicationCameraController>();
+            duplicationCameraController = FindObjectOfType<DuplicationCameraManager>();
 
             //initializing the ui
             uiController.InitializeUi(this, UI.eUiState.LoadingScreen, new EventManager.OnShowLoadingScreenEventArgs());
