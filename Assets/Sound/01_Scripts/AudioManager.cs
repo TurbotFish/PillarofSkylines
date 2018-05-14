@@ -11,6 +11,8 @@ public class AudioManager : MonoBehaviour {
 		Grass
 	};
 
+    public AudioLibrary lib;
+
 	[Header("Player")]
 	public Animator anim;
 	public Game.Player.CharacterController.CharController player;
@@ -51,6 +53,8 @@ public class AudioManager : MonoBehaviour {
 		foreach (AudioSource source in startingAudios) {
 			source.Play ();
 		}
+
+        lib.Initialize();
 
         foreach (AudioSource source in sfx)
             SfxIndex.Add(source.name, source);
