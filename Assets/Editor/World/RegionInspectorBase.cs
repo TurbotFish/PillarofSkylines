@@ -1,4 +1,4 @@
-﻿using EditorCoroutines;
+﻿//using EditorCoroutines;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -49,18 +49,15 @@ namespace Game.World
 
             doNotDuplicateProperty = serializedObject.FindProperty("doNotDuplicate");
 
-            this.StartCoroutine(GetInfoCoroutine());
+            GetInfo();
         }
 
         protected void OnDisable()
         {
-            this.StopAllCoroutines();
         }
 
         public override void OnInspectorGUI()
         {
-            List<SubScene> loadedSubScenes = self.GetAllSubScenes();
-
             base.OnInspectorGUI();
             doNotDuplicateProperty.boolValue = EditorGUILayout.Toggle("Do Not Repeat", doNotDuplicateProperty.boolValue);
 
@@ -106,7 +103,7 @@ namespace Game.World
             {
                 if (GUILayout.Button("Auto-adjust Bounds"))
                 {
-                    AdjustBounds();
+                    self.AdjustBounds();
                 }
             }
 
@@ -115,13 +112,13 @@ namespace Game.World
 
             if (!Application.isPlaying && self.transform.parent.GetComponent<WorldController>().EditorSubScenesLoaded)
             {
-                foreach (var subSceneMode in self.AvailableSubSceneVariants)
+                foreach (var subSceneVariant in self.AvailableSubSceneVariants)
                 {
                     foreach (var subSceneLayer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
                     {
-                        if (!self.GetSubSceneRoot(subSceneLayer, subSceneMode, loadedSubScenes) && GUILayout.Button("Create " + WorldUtility.GetSubSceneRootName(subSceneMode, subSceneLayer)))
+                        if (!self.GetSubSceneRoot(subSceneVariant, subSceneLayer) && GUILayout.Button("Create " + WorldUtility.GetSubSceneRootName(subSceneVariant, subSceneLayer)))
                         {
-                            UnityEngine.EventSystems.ExecuteEvents.Execute<IRegionEventHandler>(self.gameObject, null, (x, y) => x.CreateSubScene(subSceneMode, subSceneLayer));
+                            CreateSubScene(subSceneVariant, subSceneLayer);
                         }
                     }
                 }
@@ -131,70 +128,103 @@ namespace Game.World
             serializedObject.ApplyModifiedProperties();
         }
 
-        /// <summary>
-        /// Editor method that adjusts the size and centre of the region bounds to encompass all contained renderers.
-        /// </summary>
-        private void AdjustBounds()
-        {
-            Bounds bounds = new Bounds();
-            List<Renderer> renderers = self.GetComponentsInChildren<Renderer>().ToList();
-            Vector3 position = Vector3.zero;
+        ///// <summary>
+        ///// Editor method that adjusts the size and centre of the region bounds to encompass all contained renderers.
+        ///// </summary>
+        //private void AdjustBounds()
+        //{
+        //    Bounds bounds = new Bounds();
+        //    List<Renderer> renderers = self.GetComponentsInChildren<Renderer>().ToList();
+        //    Vector3 position = Vector3.zero;
 
-            if (renderers.Count() == 0)
+        //    renderers.RemoveAll(item => item is LineRenderer || item is ParticleSystemRenderer || item is TrailRenderer);      
+
+        //    if (renderers.Count() == 0)
+        //    {
+        //        boundsCentreProperty.vector3Value = self.transform.position;
+        //        boundsSizeProperty.vector3Value = Vector3.zero;
+        //    }
+        //    else
+        //    {
+        //        foreach (var renderer in renderers)
+        //        {
+        //            position += renderer.bounds.center;
+        //        }
+
+        //        bounds.center = position / renderers.Count();
+
+        //        foreach (var renderer in renderers)
+        //        {
+        //            bounds.Encapsulate(renderer.bounds);
+        //        }
+        //    }
+
+        //    boundsCentreProperty.vector3Value = bounds.center;
+        //    boundsSizeProperty.vector3Value = bounds.size;
+        //}
+
+        private void GetInfo()
+        {
+            List<SubScene> loadedSubScenes = self.GetAllSubScenes();
+            childCount = self.GetComponentsInChildren<Transform>(true).Length - 1 - loadedSubScenes.Count;
+            rendererCount = self.GetComponentsInChildren<Renderer>().Length;
+
+            List<MeshCollider> meshColliders = self.GetComponentsInChildren<MeshCollider>().ToList();
+            meshColliderCount = meshColliders.Count;
+            int meshColliderTotalVertesCount = 0;
+            meshColliderHighestVertexCount = 0;
+
+            foreach (var meshCollider in meshColliders)
             {
-                boundsCentreProperty.vector3Value = self.transform.position;
-                boundsSizeProperty.vector3Value = Vector3.zero;
+                if (meshCollider.sharedMesh == null)
+                {
+                    continue;
+                }
+
+                int vertexCount = meshCollider.sharedMesh.vertexCount;
+                meshColliderTotalVertesCount += vertexCount;
+                if (vertexCount > meshColliderHighestVertexCount)
+                {
+                    meshColliderHighestVertexCount = vertexCount;
+                    meshColliderLargestMeshName = meshCollider.sharedMesh.name;
+                }
+            }
+
+            if (meshColliders.Count > 0)
+            {
+                meshColliderAverageVertexCount = meshColliderTotalVertesCount / meshColliders.Count;
+            }
+        }
+
+        /// <summary>
+        /// Editor method that creates a SubScene object and initializes it.
+        /// </summary>
+        /// <param name="subSceneVariant"></param>
+        /// <param name="subSceneLayer"></param>
+        private void CreateSubScene(eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer)
+        {
+            string subScenePath = WorldUtility.GetSubScenePath(self.gameObject.scene.path, self.UniqueId, subSceneVariant, subSceneLayer, eSuperRegionType.Centre);
+            string subScenePathFull = WorldUtility.GetFullPath(subScenePath);
+
+            if (self.GetSubSceneRoot(subSceneVariant, subSceneLayer) != null)
+            {
+                return;
+            }
+            else if (System.IO.File.Exists(subScenePathFull))
+            {
+                Debug.LogFormat("SubScene \"{0}\" already exists but is not loaded!", subScenePath);
+                return;
             }
             else
             {
-                foreach (var renderer in renderers)
-                {
-                    position += renderer.bounds.center;
-                }
+                var rootGO = new GameObject(WorldUtility.GetSubSceneRootName(subSceneVariant, subSceneLayer), typeof(SubScene));
+                rootGO.GetComponent<SubScene>().Initialize(subSceneVariant, subSceneLayer);
 
-                bounds.center = position / renderers.Count();
-
-                foreach (var renderer in renderers)
-                {
-                    bounds.Encapsulate(renderer.bounds);
-                }
+                var root = rootGO.transform;
+                root.SetParent(self.transform, false);
             }
 
-            boundsCentreProperty.vector3Value = bounds.center;
-            boundsSizeProperty.vector3Value = bounds.size;
-        }
-
-        private IEnumerator GetInfoCoroutine()
-        {
-            while (true)
-            {
-                List<SubScene> loadedSubScenes = self.GetAllSubScenes();
-                childCount = self.GetComponentsInChildren<Transform>(true).Length - 1 - loadedSubScenes.Count;
-                rendererCount = self.GetComponentsInChildren<Renderer>().Length;
-
-                List<MeshCollider> meshColliders = self.GetComponentsInChildren<MeshCollider>().ToList();
-                meshColliderCount = meshColliders.Count;
-                int meshColliderTotalVertesCount = 0;
-                meshColliderHighestVertexCount = 0;
-
-                foreach (var meshCollider in meshColliders)
-                {
-                    int vertexCount = meshCollider.sharedMesh.vertexCount;
-                    meshColliderTotalVertesCount += vertexCount;
-                    if (vertexCount > meshColliderHighestVertexCount)
-                    {
-                        meshColliderHighestVertexCount = vertexCount;
-                        meshColliderLargestMeshName = meshCollider.sharedMesh.name;
-                    }
-                }
-
-                if (meshColliders.Count > 0)
-                {
-                    meshColliderAverageVertexCount = meshColliderTotalVertesCount / meshColliders.Count;
-                }
-
-                yield return new WaitForSeconds(1);
-            }
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(self.gameObject.scene);
         }
     }
 } // end of namespace

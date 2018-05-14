@@ -20,7 +20,7 @@ namespace Game.LevelElements
 
         #region initialization methods
 
-        public virtual void Initialize(IGameControllerBase gameController, bool isCopy)
+        public virtual void Initialize(IGameControllerBase gameController)
         {
             this.gameController = gameController;
             this.isCopy = isCopy;

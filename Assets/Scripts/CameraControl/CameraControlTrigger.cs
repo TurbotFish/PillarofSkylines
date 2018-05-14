@@ -1,7 +1,9 @@
-﻿using UnityEngine;
+﻿using Game.GameControl;
+using Game.LevelElements;
+using Game.World;
+using UnityEngine;
 
-[ExecuteInEditMode]
-public class CameraControlTrigger : MonoBehaviour
+public class CameraControlTrigger : MonoBehaviour, IInteractable, IWorldObject
 {
     public enum CameraControl
     {
@@ -10,6 +12,8 @@ public class CameraControlTrigger : MonoBehaviour
         AlignWithForwardAxis = 2,
         OverrideCameraTransform = 3
     }
+
+    //########################################################################
 
     [HideInInspector, SerializeField] bool displayTarget;
 
@@ -36,7 +40,53 @@ public class CameraControlTrigger : MonoBehaviour
     [Tooltip("Ignore user input for this amount of seconds")]
     public float ignoreInput = 0;
 
-    new PoS_Camera camera;
+    private IGameControllerBase gameController;
+
+    //########################################################################
+
+    public void Initialize(IGameControllerBase gameController)
+    {
+        this.gameController = gameController;
+    }
+
+    //########################################################################
+
+    public Vector3 Position { get { return transform.position; } }
+
+    public bool IsInteractable()
+    {
+        return false;
+    }
+
+    //########################################################################
+
+    public void OnPlayerEnter()
+    {
+        if (gameController != null)
+        {
+            gameController.CameraController.PoS_Camera.EnterTrigger(this);
+        }
+    }
+
+    public void OnPlayerExit()
+    {
+        if (gameController != null)
+        {
+            gameController.CameraController.PoS_Camera.ExitTrigger(this);
+        }
+    }
+
+    public void OnHoverBegin()
+    {
+    }
+
+    public void OnHoverEnd()
+    {
+    }
+
+    public void OnInteraction()
+    {
+    }
 
     private void OnDrawGizmos()
     {
@@ -58,7 +108,7 @@ public class CameraControlTrigger : MonoBehaviour
     /// <summary>
     /// Use to set what shows in the inspector
     /// </summary>
-    void SetDisplay()
+    private void SetDisplay()
     {
         displayTarget = mode == CameraControl.PointOfInterest || mode == CameraControl.OverrideCameraTransform;
 
@@ -68,4 +118,6 @@ public class CameraControlTrigger : MonoBehaviour
         if (gameObject.layer != LayerMask.NameToLayer("PickUps"))
             gameObject.layer = LayerMask.NameToLayer("PickUps");
     }
+
+    //########################################################################
 }

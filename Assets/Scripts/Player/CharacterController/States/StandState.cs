@@ -75,7 +75,7 @@ namespace Game.Player.CharacterController.States
             }
             else if (Vector3.Angle(collisionInfo.currentGroundNormal, movementInfo.up) > charController.CharData.General.MinWallAngle)
             {
-                var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
+                var state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 
                 stateMachine.ChangeState(state);
@@ -88,7 +88,7 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
             }
-            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom) && !charController.createdEchoOnThisInput)
+            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom))
             {
                 stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
             }

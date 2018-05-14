@@ -15,7 +15,7 @@ namespace Game.LevelElements
     /// Base class for a Pickup. Can be 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class Pickup<T> : PersistentLevelElement<T> where T : PickupPersistentData
+    public abstract class Pickup<T> : PersistentLevelElement<T>, IInteractable where T : PickupPersistentData
     {
         //##################################################################
 
@@ -25,16 +25,16 @@ namespace Game.LevelElements
 
         //##################################################################
 
-        #region initialization methods
+        #region initialization
 
-        public override void Initialize(IGameControllerBase gameController, bool isCopy)
+        public override void Initialize(IGameControllerBase gameController)
         {
             if (IsInitialized)
             {
                 return;
             }
 
-            base.Initialize(gameController, isCopy);
+            base.Initialize(gameController);
 
             if (PersistentData.IsPickedUp && !tombAnimator.IsTombActivated)
             {
@@ -48,7 +48,7 @@ namespace Game.LevelElements
 
             if (IsInitialized)
             {
-                if(PersistentData.IsPickedUp && !tombAnimator.IsTombActivated)
+                if (PersistentData.IsPickedUp && !tombAnimator.IsTombActivated)
                 {
                     tombAnimator.SetTombState(true, false, true);
                 }
@@ -60,17 +60,31 @@ namespace Game.LevelElements
             EventManager.PickupCollectedEvent -= OnPickupCollectedEvent;
         }
 
-        #endregion initialization methods
+        #endregion initialization
 
         //##################################################################
 
         #region inquiries
 
+        /// <summary>
+        /// Has the Pickup already been picked up?
+        /// </summary>
         public bool IsPickedUp { get { return PersistentData.IsPickedUp; } }
 
         public abstract string PickupName { get; }
         public abstract string OnPickedUpMessage { get; }
         public abstract string OnPickedUpDescription { get; }
+
+        public Vector3 Position { get { return transform.position; } }
+
+        /// <summary>
+        /// Implemented from IInteractable.
+        /// </summary>
+        /// <returns></returns>
+        public bool IsInteractable()
+        {
+            return !PersistentData.IsPickedUp;
+        }
 
         #endregion inquiries
 
@@ -85,10 +99,44 @@ namespace Game.LevelElements
         protected abstract void OnPickedUp();
 
         /// <summary>
+        /// Implemented from IInteractable.
+        /// </summary>
+        public void OnPlayerEnter()
+        {
+
+        }
+
+        /// <summary>
+        /// Implemented from IInteractable.
+        /// </summary>
+        public void OnPlayerExit()
+        {
+
+        }
+
+        /// <summary>
+        /// Implemented from IInteractable.
+        /// </summary>
+        public void OnHoverBegin()
+        {
+            var eventArgs = new EventManager.OnShowHudMessageEventArgs(true, "[X]: Accept " + PickupName);
+            EventManager.SendShowHudMessageEvent(this, eventArgs);
+        }
+
+        /// <summary>
+        /// Implemented from IInteractable.
+        /// </summary>
+        public void OnHoverEnd()
+        {
+            var eventArgs = new EventManager.OnShowHudMessageEventArgs(false);
+            EventManager.SendShowHudMessageEvent(this, eventArgs);
+        }
+
+        /// <summary>
         /// Called when the player picks up the object.
         /// </summary>
         /// <param name="callback"></param>
-        public void PickupObject()
+        public void OnInteraction()
         {
             if (PersistentData.IsPickedUp)
             {
@@ -101,7 +149,7 @@ namespace Game.LevelElements
         }
 
         /// <summary>
-        /// 
+        /// Implemented from PersistentLevelElement.
         /// </summary>
         /// <returns></returns>
         protected override PersistentData CreatePersistentDataObject()

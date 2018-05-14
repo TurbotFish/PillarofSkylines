@@ -1,136 +1,217 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using Game.GameControl;
 
-public class GPUIDisplayManager : MonoBehaviour {
+//Ce script a été optimisé avec l'esprit de Bruno Mabille
+public class GPUIDisplayManager : MonoBehaviour
+{
+    //##################################################################
 
-	//Ce script a été optimisé avec l'esprit de Bruno Mabille
+    // -- ATTRIBUTES
 
-	Dictionary<int, List<Matrix4x4>> transformsID = new Dictionary<int, List<Matrix4x4>> ();
-	List<Matrix4x4> matrices = new List<Matrix4x4> ();
-	List<int> indices = new List<int> ();
+    [SerializeField] private Mesh meshToDraw;
+    [SerializeField] private Material materialToDraw;
+    [SerializeField] private UnityEngine.Rendering.ShadowCastingMode shadowMode;
 
-	public static GPUIDisplayManager displayManager;
+    private IGameControllerBase gameController;
+    private bool isInitialized;
 
-	int numberOfCalls;
-	int boundaryLow;
-	int instancesPerList;
+    //private Dictionary<int, List<Matrix4x4>> MatrixGroupDictionary = new Dictionary<int, List<Matrix4x4>>();
+    private Dictionary<int, List<List<Matrix4x4>>> MatrixGroupDictionary = new Dictionary<int, List<List<Matrix4x4>>>();
+    private List<int> MatrixGroupIdList = new List<int>();
 
-	List<Matrix4x4>[] matrices1023 = new List<Matrix4x4>[150];
+    private List<Matrix4x4> matrices = new List<Matrix4x4>();
 
-	bool updatedThisFrame;
+    private int numberOfCalls;
+    private int boundaryLow;
+    private int instancesPerList;
 
+    private List<Matrix4x4>[] matrices1023 = new List<Matrix4x4>[150];
 
-	public Mesh meshToDraw;
-	public Material materialToDraw;
-	public UnityEngine.Rendering.ShadowCastingMode shadowMode;
-	public Transform player;
+    private bool updatedThisFrame;
 
+    private Texture2D eastMap;
+    private Texture2D westMap;
 
-	Texture2D eastMap;
-	Texture2D westMap;
+    private string east = "EastPlane";
+    private string west = "WestPlane";
+    private int eastLayer;
+    private int westLayer;
+    private int currentLayer;
+    private Texture2D colorVariationMap;
 
-	string east = "EastPlane";
-	string west = "WestPlane";
-	int eastLayer;
-	int westLayer;
-	int currentLayer;
-	Texture2D colorVariationMap;
+    //##################################################################
 
-	void Awake(){
-		Shader.WarmupAllShaders ();
+    // INITIALIZATION
 
-		//ALO: activate to use gpui in editor
-		displayManager = this;
+    public void Initialize(IGameControllerBase gameController)
+    {
+        this.gameController = gameController;
 
-		for (int i = 0; i < matrices1023.Length; i++) {
-			matrices1023 [i] = new List<Matrix4x4> ();
-		}
+        Shader.WarmupAllShaders();
 
-		eastLayer = LayerMask.NameToLayer (east);
-		westLayer = LayerMask.NameToLayer (west);
-
-		SurfaceTextureHolder _mapHolder = (SurfaceTextureHolder)Resources.Load ("ScriptableObjects/GrassColorMaps");
-		eastMap = _mapHolder.eastTex;
-		westMap = _mapHolder.westTex;
-	}
-
-	public void AddStuffToDraw(List<Matrix4x4> _mat, int _id){
-        if (!indices.Contains(_id) && _mat.Count > 0)
+        for (int i = 0; i < matrices1023.Length; i++)
         {
-            transformsID.Add(_id, _mat);
-            indices.Add(_id);
+            matrices1023[i] = new List<Matrix4x4>();
+        }
+
+        eastLayer = LayerMask.NameToLayer(east);
+        westLayer = LayerMask.NameToLayer(west);
+
+        SurfaceTextureHolder _mapHolder = (SurfaceTextureHolder)Resources.Load("ScriptableObjects/GrassColorMaps");
+        eastMap = _mapHolder.eastTex;
+        westMap = _mapHolder.westTex;
+
+        isInitialized = true;
+    }
+
+    //##################################################################
+
+    // OPERATIONS
+
+    public void AddStuffToDraw(List<Matrix4x4> matrix_list, int matrix_group_id)
+    {
+        if (!MatrixGroupIdList.Contains(matrix_group_id) && matrix_list.Count > 0)
+        {
+            MatrixGroupDictionary.Add(matrix_group_id, new List<List<Matrix4x4>>());
+
+            List<Matrix4x4> current_sub_list = new List<Matrix4x4>();
+            for(int matrix_index = 0; matrix_index < matrix_list.Count; matrix_index++)
+            {
+                if(current_sub_list.Count == 1023)
+                {
+                    MatrixGroupDictionary[matrix_group_id].Add(current_sub_list);
+                    current_sub_list = new List<Matrix4x4>();
+                }
+
+                current_sub_list.Add(matrix_list[matrix_index]);
+            }
+
+            //MatrixGroupDictionary.Add(_id, _mat);
+            MatrixGroupIdList.Add(matrix_group_id);
             updatedThisFrame = true;
             //Debug.LogFormat("GPUIDisplayManager: AddStuffToDraw: added {0} matrices!", _mat.Count);
         }
-		//Debug.Log (_id);
-	}
+        //Debug.Log (_id);
+    }
 
-	public void RemoveStuffToDraw(List<Matrix4x4> _mat, int _id){
-		transformsID.Remove (_id);
-		indices.Remove (_id);
-		updatedThisFrame = true;
+    public void RemoveStuffToDraw(int matrix_group_id)
+    {
+        MatrixGroupDictionary.Remove(matrix_group_id);
+        MatrixGroupIdList.Remove(matrix_group_id);
+        updatedThisFrame = true;
         //Debug.LogFormat("GPUIDisplayManager: RemoveStuffToDraw: removed {0} matrices!", _mat.Count);
     }
 
-	void LateUpdate(){
-		if (updatedThisFrame)
-			RearrangeListOfObjectsToDraw ();
+    private void LateUpdate()
+    {
+        if (!isInitialized)
+        {
+            return;
+        }
 
-		SetGPUILayer ();
+        GPUIDraw();
+    }
 
-		GPUIDraw();
-		updatedThisFrame = false;
-	}
+    private void FixedUpdate()
+    {
+        if (!isInitialized)
+        {
+            return;
+        }
 
-	void GPUIDraw(){
+        //++++
+        //if (updatedThisFrame)
+        //{
+        //    RearrangeListOfObjectsToDraw();
+        //    updatedThisFrame = false;
+        //}
+        //++++
 
-		if (matrices.Count == 0)
-			return;
+        SetGPUILayer();
+    }
 
-		for (int i = 0; i < numberOfCalls; i++) {
+    private void GPUIDraw()
+    {
+        //+++++
+        //if (matrices.Count == 0)
+        //{
+        //    return;
+        //}
+        //++++
 
-			Graphics.DrawMeshInstanced (meshToDraw, 0, materialToDraw, matrices1023[i], null, shadowMode, false, currentLayer, null);
-		}
-	}
+        foreach (int matrix_group_id in MatrixGroupIdList)
+        {
+            List<List<Matrix4x4>> matrix_sub_lists = MatrixGroupDictionary[matrix_group_id];
 
-	void RearrangeListOfObjectsToDraw(){
-		matrices.Clear ();
+            foreach(List<Matrix4x4> matrix_sub_list in matrix_sub_lists)
+            {
+                Graphics.DrawMeshInstanced(meshToDraw, 0, materialToDraw, matrix_sub_list, null, shadowMode, false, currentLayer);
+            }
+        }
 
-		for (int i = 0; i < indices.Count; i++) {
-			matrices.AddRange (transformsID[indices[i]]);
-		}
+        //++++
+        //for (int i = 0; i < numberOfCalls; i++)
+        //{
+        //    Graphics.DrawMeshInstanced(meshToDraw, 0, materialToDraw, matrices1023[i], null, shadowMode, false, currentLayer, gameController.CameraController.Camera);
+        //}
+        //++++
+    }
 
-		numberOfCalls = matrices.Count / 1024 + 1;
-		//Debug.Log (numberOfCalls);
-		if (numberOfCalls > matrices1023.Length) {
-			numberOfCalls = Mathf.Min (numberOfCalls, matrices1023.Length);
-			Debug.LogError ("Trying to draw too many instances of " + meshToDraw.name);
-		}
+    //private void RearrangeListOfObjectsToDraw()
+    //{
+    //    matrices.Clear();
 
-		//Debug.Log ("calls : "+numberOfCalls+"    vertices : "+matrices.Count);
+    //    for (int i = 0; i < MatrixGroupIdList.Count; i++)
+    //    {
+    //        matrices.AddRange(MatrixGroupDictionary[MatrixGroupIdList[i]]);
+    //    }
 
-		for (int i = 0; i < numberOfCalls; i++) {
-			boundaryLow = i * 1023;
-			instancesPerList = Mathf.Min (1023, matrices.Count - boundaryLow);
+    //    numberOfCalls = matrices.Count / 1024 + 1;
+    //    //Debug.Log (numberOfCalls);
+    //    if (numberOfCalls > matrices1023.Length)
+    //    {
+    //        numberOfCalls = Mathf.Min(numberOfCalls, matrices1023.Length);
+    //        Debug.LogError("Trying to draw too many instances of " + meshToDraw.name);
+    //    }
 
-			matrices1023 [i].Clear ();
-			matrices1023 [i].AddRange (matrices.GetRange (boundaryLow, instancesPerList));
-		}
-	}
+    //    //Debug.Log ("calls : "+numberOfCalls+"    vertices : "+matrices.Count);
 
-	void SetGPUILayer(){
-		//TO DO: optimise this to happen when it's changed
-		if (player.position.x > 0) {
-			currentLayer = eastLayer;
-			colorVariationMap = eastMap;
+    //    for (int i = 0; i < numberOfCalls; i++)
+    //    {
+    //        boundaryLow = i * 1023;
+    //        instancesPerList = Mathf.Min(1023, matrices.Count - boundaryLow);
 
-			//materialToDraw.EnableKeyword ("_GPUI_EAST");
-		} else {
-			currentLayer = westLayer;
-			colorVariationMap = westMap;
-			//materialToDraw.DisableKeyword ("_GPUI_EAST");
-		}
-		Shader.SetGlobalTexture ("_GPUIColorMap", colorVariationMap);
-	}
+    //        matrices1023[i].Clear();
+    //        matrices1023[i].AddRange(matrices.GetRange(boundaryLow, instancesPerList));
+    //    }
+    //}
 
+    private void SetGPUILayer()
+    {
+        bool hasLayerChanged = false;
+        float playerXPos = gameController.PlayerController.PlayerTransform.position.x;
+
+        if (currentLayer != eastLayer && playerXPos > 0)
+        {
+            currentLayer = eastLayer;
+            colorVariationMap = eastMap;
+            //materialToDraw.EnableKeyword ("_GPUI_EAST");
+            hasLayerChanged = true;
+        }
+        else if (currentLayer != westLayer && playerXPos < 0)
+        {
+            currentLayer = westLayer;
+            colorVariationMap = westMap;
+            //materialToDraw.DisableKeyword ("_GPUI_EAST");
+            hasLayerChanged = true;
+        }
+
+        if (hasLayerChanged)
+        {
+            Shader.SetGlobalTexture("_GPUIColorMap", colorVariationMap);
+        }
+    }
+
+    //##################################################################
 }

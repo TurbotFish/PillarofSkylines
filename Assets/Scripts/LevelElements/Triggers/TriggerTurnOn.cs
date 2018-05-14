@@ -16,9 +16,9 @@ namespace Game.LevelElements
 
         //###########################################################
 
-        public override void Initialize(IGameControllerBase gameController, bool isCopy)
+        public override void Initialize(IGameControllerBase gameController)
         {
-            base.Initialize(gameController, isCopy);
+            base.Initialize(gameController);
 
             GetComponent<BoxCollider>().isTrigger = true;
         }

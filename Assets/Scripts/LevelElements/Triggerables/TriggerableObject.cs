@@ -70,7 +70,7 @@ namespace Game.LevelElements
         /// </summary>
         /// <param name="worldController"></param>
         /// <param name="isCopy"></param>
-        public virtual void Initialize(GameControl.IGameControllerBase gameController, bool isCopy)
+        public virtual void Initialize(GameControl.IGameControllerBase gameController)
         {
             //
             this.isCopy = isCopy;
@@ -297,7 +297,7 @@ namespace Game.LevelElements
 
             if (triggerIds.Contains(args.TriggerId))
             {
-                Debug.Log("xxx: " + args.TriggerId);
+                //Debug.Log("xxx: " + args.TriggerId);
 
                 UpdateState(args.Trigger.Toggle);
             }

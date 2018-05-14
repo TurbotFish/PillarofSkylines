@@ -1,4 +1,6 @@
-﻿using Game.Player.CharacterController;
+﻿using Game.GameControl;
+using Game.LevelElements;
+using Game.Player.CharacterController;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,28 +13,31 @@ namespace Game.Player
     /// </summary>
     public class PlayerController : MonoBehaviour
     {
-        public Transform PlayerTransform { get; private set; }
+        //########################################################################
 
-        public CharController CharController { get; private set; }
+        // ATTRIBUTES
 
-        public InteractionController InteractionController { get; private set; }
+        private Transform myTransform;
 
-        WrappableObject wrappableObject;
+        private CharController charController;
+        private InteractionController interactionController;
+        private WrappableObject wrappableObject;
 
-        /// <summary>
-        /// Initializes the Player Prefab with references to outside scripts.
-        /// </summary>
-        /// <param name="gameController"></param>
-        public void InitializePlayerController(GameControl.IGameControllerBase gameController)
+        private AirParticle airParticle;
+
+        //########################################################################
+
+        // INITIALIZATION
+
+        public void InitializePlayerController(IGameControllerBase gameController)
         {
             Debug.Log("PlayerController: Initialize");
 
             //getting all references
-            PlayerTransform = transform;
+            myTransform = transform;
 
-            CharController = GetComponent<CharController>();
-
-            InteractionController = GetComponentInChildren<InteractionController>();
+            charController = GetComponent<CharController>();
+            interactionController = GetComponentInChildren<InteractionController>();
             wrappableObject = GetComponent<WrappableObject>();
 
             //initializing all the things
@@ -40,5 +45,35 @@ namespace Game.Player
             InteractionController.Initialize(gameController);
             wrappableObject.InitializeWrappableObject(gameController);
         }
+
+        //########################################################################
+
+        // INQUIRIES
+
+        public Transform PlayerTransform
+        {
+            get
+            {
+                if (myTransform == null) { myTransform = transform; }
+                return myTransform;
+            }
+        }
+
+        public CharController CharController { get { return charController; } }
+        public InteractionController InteractionController { get { return interactionController; } }
+
+        public bool HasAirParticle { get { return airParticle != null; } }
+        public AirParticle AirParticle { get { return airParticle; } }
+
+        //########################################################################
+
+        // OPERATIONS
+
+        public void SetAirParticle(AirParticle airParticle)
+        {
+            this.airParticle = airParticle;
+        }
+
+        //########################################################################
     }
-}
+} // end of namespace

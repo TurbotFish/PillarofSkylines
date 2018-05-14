@@ -44,9 +44,9 @@ namespace Game.LevelElements
 
         #region public methods
 
-        public override void Initialize(IGameControllerBase gameController, bool isCopy)
+        public override void Initialize(IGameControllerBase gameController)
         {
-            base.Initialize(gameController, isCopy);
+            base.Initialize(gameController);
 
             rend = GetComponent<Renderer>();
             SetTriggerState(false);

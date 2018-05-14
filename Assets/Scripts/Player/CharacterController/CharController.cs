@@ -86,10 +86,6 @@ namespace Game.Player.CharacterController
 
         Vector3 velocity;
         Vector3 externalVelocity;
-
-        List<WindTunnelPart> windTunnelPartList = new List<WindTunnelPart>();
-
-        public List<WindTunnelPart> WindTunnelPartList { get { return new List<WindTunnelPart>(windTunnelPartList); } }
         
         PlayerInputInfo inputInfo = new PlayerInputInfo();
 
@@ -103,6 +99,8 @@ namespace Game.Player.CharacterController
         /// debug pour graviswap parce que je sais pas activer/désactiver des abilities
         /// </summary>
         public bool graviswapAvailable = false;
+
+        public bool IsGrounded { get { return (CurrentState & (ePlayerState.move | ePlayerState.slide | ePlayerState.stand)) != 0; } }
 
         //#############################################################################
 
@@ -157,8 +155,6 @@ namespace Game.Player.CharacterController
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
-            Utilities.EventManager.WindTunnelPartEnteredEvent += OnWindTunnelPartEnteredEventHandler;
-            Utilities.EventManager.WindTunnelExitedEvent += OnWindTunnelPartExitedEventHandler;
             Utilities.EventManager.GamePausedEvent += OnGamePausedEventHandler;
 
             isInitialized = true;
@@ -180,8 +176,6 @@ namespace Game.Player.CharacterController
         {
             Utilities.EventManager.OnMenuSwitchedEvent -= OnMenuSwitchedEventHandler;
             Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayerEventHandler;
-            Utilities.EventManager.WindTunnelPartEnteredEvent -= OnWindTunnelPartEnteredEventHandler;
-            Utilities.EventManager.WindTunnelExitedEvent -= OnWindTunnelPartExitedEventHandler;
             Utilities.EventManager.GamePausedEvent -= OnGamePausedEventHandler;
         }
 
@@ -251,17 +245,17 @@ namespace Game.Player.CharacterController
                 inputInfo.jumpButtonDown = Input.GetButtonDown("Jump");
                 inputInfo.jumpButtonUp = Input.GetButtonUp("Jump");
 
-                inputInfo.sprintButton = (Input.GetAxis("Right Trigger") > .9f) || Input.GetButton("Sprint");
-                inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint");
-                inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint");
+                inputInfo.sprintButton = (Input.GetAxis("Right Trigger") > .9f) || Input.GetButton("Sprint") && tempPhysicsHandler.currentGravifloor == null;
+                inputInfo.sprintButtonDown = (inputInfo.sprintButton && !sprintDownLastFrame) || Input.GetButtonDown("Sprint") && tempPhysicsHandler.currentGravifloor == null;
+                inputInfo.sprintButtonUp = (!inputInfo.sprintButton && sprintDownLastFrame) || Input.GetButtonUp("Sprint") && tempPhysicsHandler.currentGravifloor == null;
 
                 inputInfo.glideButton = (Input.GetAxis("Left Trigger") > .9f) || Input.GetButton("Sprint");
                 inputInfo.glideButtonDown = (inputInfo.glideButton && !glideDownLastFrame) || Input.GetButtonDown("Sprint");
                 inputInfo.glideButtonUp = (!inputInfo.glideButton && glideDownLastFrame) || Input.GetButtonUp("Sprint");
 
-                inputInfo.echoButton = Input.GetButton("Echo");
-                inputInfo.echoButtonDown = Input.GetButtonDown("Echo");
-                inputInfo.echoButtonUp = Input.GetButtonUp("Echo");
+                inputInfo.echoButton = Input.GetButton("Interact");
+                inputInfo.echoButtonDown = Input.GetButtonDown("Interact");
+                inputInfo.echoButtonUp = Input.GetButtonUp("Interact");
 
                 /*
                 inputInfo.jetpackButton = Input.GetButton("Jetpack");
@@ -277,7 +271,6 @@ namespace Game.Player.CharacterController
                 if (echoUpLastFrame)
                 {
                     inputInfo.ResetTimeEcho();
-                    createdEchoOnThisInput = false;
                 }
 
                 if (Input.GetButtonDown("GroundRise"))
@@ -374,8 +367,8 @@ namespace Game.Player.CharacterController
             {*/
                 lastPositionDelta = tempPhysicsHandler.Move(turnedVelocity * Time.deltaTime);
             //}
-
             velocity = lastPositionDelta / Time.deltaTime;
+
 
             externalVelocity = Vector3.zero;
             tempCollisionInfo = tempPhysicsHandler.collisions;
@@ -492,19 +485,6 @@ namespace Game.Player.CharacterController
                     ChangeGravityDirection(Vector3.down);
                 }
             }
-        }
-
-        void OnWindTunnelPartEnteredEventHandler(object sender, Utilities.EventManager.WindTunnelPartEnteredEventArgs args)
-        {
-            if (!windTunnelPartList.Contains(args.WindTunnelPart))
-            {
-                windTunnelPartList.Add(args.WindTunnelPart);
-            }
-        }
-
-        void OnWindTunnelPartExitedEventHandler(object sender, Utilities.EventManager.WindTunnelPartExitedEventArgs args)
-        {
-            windTunnelPartList.Remove(args.WindTunnelPart);
         }
 
         private void OnGamePausedEventHandler(object sender, Utilities.EventManager.GamePausedEventArgs args)
