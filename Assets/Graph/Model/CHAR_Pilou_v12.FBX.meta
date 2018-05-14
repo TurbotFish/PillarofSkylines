@@ -1,7 +1,7 @@
 fileFormatVersion: 2
-guid: cd7e5627e0fbc45468304ed96c29a78e
-timeCreated: 1490283209
-licenseType: Pro
+guid: 34019e636d37eee46b8836d36430ff7a
+timeCreated: 1525686533
+licenseType: Free
 ModelImporter:
   serializedVersion: 21
   fileIDToRecycleName:
@@ -9,9 +9,10 @@ ModelImporter:
     400000: //RootNode
     2300000: //RootNode
     3300000: //RootNode
-    4300000: Box017
+    4300000: Group2470
+    9500000: //RootNode
   materials:
-    importMaterials: 0
+    importMaterials: 1
     materialName: 0
     materialSearch: 1
   animations:
@@ -42,8 +43,8 @@ ModelImporter:
     addColliders: 0
     importVisibility: 1
     importBlendShapes: 1
-    importCameras: 0
-    importLights: 0
+    importCameras: 1
+    importLights: 1
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
@@ -58,9 +59,9 @@ ModelImporter:
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
-    tangentImportMode: 1
+    tangentImportMode: 3
     normalCalculationMode: 4
-  importAnimation: 0
+  importAnimation: 1
   copyAvatar: 0
   humanDescription:
     serializedVersion: 2
@@ -79,7 +80,7 @@ ModelImporter:
     hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
-  animationType: 0
+  animationType: 2
   humanoidOversampling: 1
   additionalBone: 0
   userData: DIO_applied
