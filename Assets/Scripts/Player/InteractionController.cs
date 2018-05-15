@@ -75,7 +75,7 @@ namespace Game.Player
                 {
                     currentInteractableObject.OnInteraction();
                 }
-                else
+                else if(gameController.PlayerModel.CheckAbilityActive(eAbilityType.Echo))
                 {
                     currentEcho = gameController.EchoManager.CreateEcho(true);
                     currentEcho.transform.SetParent(gameController.PlayerController.CharController.MyTransform);

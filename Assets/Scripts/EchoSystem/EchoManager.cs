@@ -160,7 +160,9 @@ namespace Game.EchoSystem
         public Echo CreateEcho(bool isPlayerEcho)
         {
             if (isEclipseActive)
+            {
                 return null;
+            }
 
             if (placedEchoes == maxEchoes)
             {
