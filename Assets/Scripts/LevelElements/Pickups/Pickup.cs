@@ -75,7 +75,7 @@ namespace Game.LevelElements
         public abstract string OnPickedUpMessage { get; }
         public abstract string OnPickedUpDescription { get; }
 
-        public Vector3 Position { get { return transform.position; } }
+        public Transform Transform { get { return transform; } }
 
         /// <summary>
         /// Implemented from IInteractable.

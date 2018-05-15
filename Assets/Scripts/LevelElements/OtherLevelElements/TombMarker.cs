@@ -15,9 +15,9 @@ namespace Game.LevelElements
         [SerializeField] private GameObject toDisable;
         [SerializeField] private GameObject waypointFeedback;
 
-        [SerializeField, HideInInspector] private string tombID;       
+        [SerializeField, HideInInspector] private string tombID;
 
-        public Vector3 Position { get { return transform.position; } }
+        public Transform Transform { get { return transform; } }
 
         private PickupPersistentData TombPersistentData;
 

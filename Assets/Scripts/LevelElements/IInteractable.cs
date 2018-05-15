@@ -11,9 +11,9 @@ namespace Game.LevelElements
     public interface IInteractable
     {
         /// <summary>
-        /// Returns the position of the interactable object.
+        /// Returns the Transform of the interactable object.
         /// </summary>
-        Vector3 Position { get; }
+        Transform Transform { get; }
 
         /// <summary>
         /// Called when the player enters the trigger collider.

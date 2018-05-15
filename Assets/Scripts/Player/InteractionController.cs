@@ -501,7 +501,7 @@ namespace Game.Player
                     continue;
                 }
 
-                float newDistance = Vector3.Distance(playerPosition, interactableObject.Position);
+                float newDistance = Vector3.Distance(playerPosition, interactableObject.Transform.position);
                 if (newDistance < smallestDistance)
                 {
                     nearestInteractableObject = interactableObject;
