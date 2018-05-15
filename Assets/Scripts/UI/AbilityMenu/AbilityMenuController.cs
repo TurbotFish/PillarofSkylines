@@ -65,7 +65,7 @@ namespace Game.UI.AbilityMenu
 
         //##################################################################
 
-        void IUiState.Initialize(IGameControllerBase gameController)
+        void IUiState.Initialize(IGameController gameController)
         {
             playerModel = gameController.PlayerModel;
 

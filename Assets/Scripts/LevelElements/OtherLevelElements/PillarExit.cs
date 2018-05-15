@@ -10,11 +10,11 @@ namespace Game.LevelElements
     /// </summary>
     public class PillarExit : MonoBehaviour, IInteractable, IWorldObject
     {
-        private IGameControllerBase gameController;
+        private IGameController gameController;
 
         //########################################################################
 
-        public void Initialize(IGameControllerBase gameController)
+        public void Initialize(IGameController gameController)
         {
             this.gameController = gameController;
         }
@@ -54,7 +54,7 @@ namespace Game.LevelElements
         {
             if (!gameController.PlayerModel.hasNeedle)
             {
-                EventManager.SendLeavePillarEvent(this, new EventManager.LeavePillarEventArgs(false));
+                gameController.SwitchToOpenWorld();
             }
         }
 

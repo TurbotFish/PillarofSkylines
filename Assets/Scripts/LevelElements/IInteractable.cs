@@ -29,6 +29,7 @@ namespace Game.LevelElements
         /// </summary>
         /// <returns></returns>
         bool IsInteractable();
+
         /// <summary>
         /// Called when this object becomes the nearest interactable object to the player.
         /// </summary>

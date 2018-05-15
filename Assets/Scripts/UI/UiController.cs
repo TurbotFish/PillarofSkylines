@@ -45,7 +45,7 @@ namespace Game.UI
 
 
 
-        GameControl.IGameControllerBase gameController;
+        GameControl.IGameController gameController;
 
         eUiState currentState = eUiState.NONE;
         Dictionary<eUiState, IUiState> uiStates = new Dictionary<eUiState, IUiState>();
@@ -54,7 +54,7 @@ namespace Game.UI
 
         //###########################################################
 
-        public void InitializeUi(GameControl.IGameControllerBase gameController, eUiState startState, Utilities.EventManager.OnShowMenuEventArgs args)
+        public void InitializeUi(GameControl.IGameController gameController, eUiState startState, Utilities.EventManager.OnShowMenuEventArgs args)
         {
             this.gameController = gameController;
 

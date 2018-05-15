@@ -19,7 +19,7 @@ namespace Game.LevelElements
 
         #region initialization
 
-        public override void Initialize(IGameControllerBase gameController)
+        public override void Initialize(IGameController gameController)
         {
             base.Initialize(gameController);
 

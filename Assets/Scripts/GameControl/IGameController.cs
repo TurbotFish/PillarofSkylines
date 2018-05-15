@@ -4,7 +4,7 @@ using Game.World;
 
 namespace Game.GameControl
 {
-    public interface IGameControllerBase
+    public interface IGameController
     {
         PlayerModel PlayerModel { get; }
         EchoSystem.EchoManager EchoManager { get; }
@@ -25,8 +25,7 @@ namespace Game.GameControl
         /// <summary>
         /// The controller for the cameras that duplicate the world.
         /// </summary>
-        DuplicationCameraManager DuplicationCameraController { get; }
-
+        DuplicationCameraManager DuplicationCameraManager { get; }
         /// <summary>
         /// Is a pillar scene currently loaded?
         /// </summary>
@@ -35,15 +34,19 @@ namespace Game.GameControl
         /// The id of the pillar scene.
         /// </summary>
         ePillarId ActivePillarId { get; }
-
         /// <summary>
         /// The spawn point manager of the currently loaded scene. Is null if no scene is loaded!
         /// </summary>
         SpawnPointManager SpawnPointManager { get; }
 
-        //temp
+        //###########################################################
+
         void StartGame();
 
         void ExitGame();
+
+        void SwitchToPillar(ePillarId pillar_id);
+
+        void SwitchToOpenWorld();
     }
 }

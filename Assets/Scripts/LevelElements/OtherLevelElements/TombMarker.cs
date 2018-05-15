@@ -5,82 +5,110 @@ using UnityEngine;
 
 namespace Game.LevelElements
 {
-    public class TombMarker : MonoBehaviour, IWorldObject
+    public class TombMarker : PersistentLevelElement<TombMarkerPersistentData>, IInteractable
     {
         //###########################################################
 
-        //[SerializeField] public string favourID; //why public?
-        [SerializeField] private Pickup tomb;
+        // -- ATTRIBUTES
 
+        [SerializeField] private Pickup tomb;
         [SerializeField] private GameObject toDisable;
         [SerializeField] private GameObject waypointFeedback;
 
-        [SerializeField, HideInInspector] private string tombID;
+        [SerializeField, HideInInspector] private string tombID;       
 
-        private IGameControllerBase gameController;
-        private PickupPersistentData persistentData;
-        private bool isInitialized;
-        private bool isFavourPickedUp;
+        public Vector3 Position { get { return transform.position; } }
 
-        //###########################################################
-
-        public void Initialize(IGameControllerBase gameController)
-        {
-            this.gameController = gameController;
-
-            persistentData = gameController.PlayerModel.GetPersistentDataObject<PickupPersistentData>(tombID);
-            if (persistentData != null && persistentData.IsPickedUp) //the favour has already been picked up
-                OnPickupCollected();
-            else
-            {
-                Utilities.EventManager.PickupCollectedEvent += OnPickupCollectedEvent;
-                Utilities.EventManager.SetWaypointEvent += OnSetWaypointEventHandler;
-            }
-
-            isInitialized = true;
-        }
+        private PickupPersistentData TombPersistentData;
 
         //###########################################################
 
-        private void OnEnable()
+        // -- INITIALIZATION
+
+        public override void Initialize(IGameController game_controller)
         {
-            if (!isInitialized || isFavourPickedUp)
+            base.Initialize(game_controller);
+
+            if(tombID == "")
             {
-                return;
+                Debug.LogErrorFormat("TombMarker {0} is not linked to a Tomb and has been destroyed!", this.name);
+                Destroy(this.gameObject);
             }
 
-            if (persistentData == null)
+            if (this.isActiveAndEnabled)
             {
-                persistentData = gameController.PlayerModel.GetPersistentDataObject<PickupPersistentData>(tombID);
-            }
-
-            if (persistentData.IsPickedUp) //the favour has been picked up while the marker was disabled
-            {
-                OnPickupCollected();
-            }
-            else
-            {
-                Utilities.EventManager.PickupCollectedEvent += OnPickupCollectedEvent;
-                Utilities.EventManager.SetWaypointEvent += OnSetWaypointEventHandler;
+                OnEnable();
             }
         }
 
-        private void OnDisable()
+        //###########################################################
+
+        // -- INQUIRIES
+
+        /// <summary>
+        /// Used to check whether the player can interact with this object.
+        /// </summary>
+        public bool IsInteractable()
         {
-            Utilities.EventManager.PickupCollectedEvent -= OnPickupCollectedEvent;
-            Utilities.EventManager.SetWaypointEvent -= OnSetWaypointEventHandler;
+            return false;
         }
 
-        private void OnTriggerEnter(Collider other)
+        //###########################################################
+
+        // -- OPERATIONS
+
+        /// <summary>
+        /// Called when the player enters the trigger collider.
+        /// </summary>
+        public void OnPlayerEnter()
         {
-            if (other.tag == "Player")
-            {
-                Utilities.EventManager.SendSetWaypointEvent(this, new Utilities.EventManager.SetWaypointEventArgs(tombID, transform.position));
-            }
+            Utilities.EventManager.SendSetWaypointEvent(this, new Utilities.EventManager.SetWaypointEventArgs(tombID, transform.position));
         }
 
-        private void OnValidate()
+        /// <summary>
+        /// Called when the player leaves the trigger collider.
+        /// </summary>
+        public void OnPlayerExit()
         {
+        }
+
+        /// <summary>
+        /// Called when this object becomes the nearest interactable object to the player.
+        /// </summary>
+        public void OnHoverBegin()
+        {
+        }
+
+        /// <summary>
+        /// Called when this object is not the nearest interactable object to the player anymore.
+        /// </summary>
+        public void OnHoverEnd()
+        {
+        }
+
+        /// <summary>
+        /// Called when the player interacts with this object.
+        /// </summary>
+        public void OnInteraction()
+        {
+        }
+
+        /// <summary>
+        /// Creates the persitent data object.
+        /// </summary>
+        /// <returns></returns>
+        protected override PersistentData CreatePersistentDataObject()
+        {
+            return new TombMarkerPersistentData(UniqueId);
+        }
+
+        /// <summary>
+        /// Called by the editor.
+        /// </summary>
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+
             if (tomb == null)
             {
                 tombID = "";
@@ -91,15 +119,61 @@ namespace Game.LevelElements
             }
         }
 
-        //###########################################################
+        /// <summary>
+        /// Called when the game object is activated.
+        /// </summary>
+        private void OnEnable()
+        {
+            if (!IsInitialized)
+            {
+                return;
+            }
 
+            if (TombPersistentData == null)
+            {
+                TombPersistentData = GameController.PlayerModel.GetPersistentDataObject<PickupPersistentData>(tombID);
+            }
+
+            if (TombPersistentData != null && TombPersistentData.IsPickedUp) // The tomb has already been "collected".
+            {
+                OnPickupCollected();
+            }
+            else // The tomb has not been "collected" yet.
+            {
+                Utilities.EventManager.PickupCollectedEvent += OnPickupCollectedEvent;
+            }
+
+            ActivateWaypoint(PersistentData.IsWaypoint);
+            Utilities.EventManager.SetWaypointEvent += OnSetWaypointEventHandler;
+        }
+
+        /// <summary>
+        /// Called when the game object is deactivated.
+        /// </summary>
+        private void OnDisable()
+        {
+            Utilities.EventManager.PickupCollectedEvent -= OnPickupCollectedEvent;
+            Utilities.EventManager.SetWaypointEvent -= OnSetWaypointEventHandler;
+        }
+
+        /// <summary>
+        /// Handles the SetWaypointEvent.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void OnSetWaypointEventHandler(object sender, Utilities.EventManager.SetWaypointEventArgs args)
         {
             ActivateWaypoint(args.WaypointID == tombID);
         }
 
+        /// <summary>
+        /// Used to activate or deactivate the waypoint effect.
+        /// </summary>
+        /// <param name="active"></param>
         private void ActivateWaypoint(bool active)
         {
+            PersistentData.IsWaypoint = active;
+
             if (waypointFeedback != null)
             {
                 waypointFeedback.SetActive(active);
@@ -110,8 +184,11 @@ namespace Game.LevelElements
             }
         }
 
-        //###########################################################
-
+        /// <summary>
+        /// Handles the PickupCollectedEvent.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void OnPickupCollectedEvent(object sender, Utilities.EventManager.PickupCollectedEventArgs args)
         {
             if (args.PickupID == tombID)
@@ -120,10 +197,13 @@ namespace Game.LevelElements
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void OnPickupCollected()
         {
             toDisable.SetActive(false);
-            isFavourPickedUp = true;
+            PersistentData.IsTombCollected = true;
             Utilities.EventManager.PickupCollectedEvent -= OnPickupCollectedEvent;
         }
 

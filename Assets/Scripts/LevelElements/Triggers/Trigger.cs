@@ -63,7 +63,7 @@ namespace Game.LevelElements
         /// </summary>
         /// <param name="worldController"></param>
         /// <param name="isCopy"></param>
-        public virtual void Initialize(GameControl.IGameControllerBase gameController)
+        public virtual void Initialize(GameControl.IGameController gameController)
         {
             model = gameController.PlayerModel;
             this.isCopy = isCopy;

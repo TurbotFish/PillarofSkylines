@@ -16,7 +16,7 @@ namespace Game.Player
         public EchoSystem.Echo currentEcho;
 
         //
-        IGameControllerBase gameController;
+        IGameController gameController;
 
         //
         bool isPickupInRange = false;
@@ -41,7 +41,7 @@ namespace Game.Player
 
         #region initialization
 
-        public void Initialize(IGameControllerBase gameController)
+        public void Initialize(IGameController gameController)
         {
             this.gameController = gameController;
 
@@ -50,6 +50,7 @@ namespace Game.Player
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
+            Utilities.EventManager.PreSceneChangeEvent += PreSceneChangedEventHandler;
         }
 
         #endregion initialization
@@ -588,10 +589,23 @@ namespace Game.Player
         }
 
         /// <summary>
+        /// Called before a level switch.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void PreSceneChangedEventHandler(object sender, Utilities.EventManager.PreSceneChangeEventArgs args)
+        {
+            nearbyInteractableObjects.Clear();
+
+            HideUiMessage();
+        }
+
+        /// <summary>
         /// "Reset everything!"  "Everything?"  "EVERYTHING!"
         /// </summary>
         void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
+            //***
             this.isPickupInRange = false;
             this.currentPickup = null;
 
@@ -604,8 +618,7 @@ namespace Game.Player
             this.pillarEntranceInfo.CurrentPillarEntrance = null;
 
             this.pillarExitInRange = false;
-
-            HideUiMessage();
+            //***          
         }
 
         #endregion event handlers
