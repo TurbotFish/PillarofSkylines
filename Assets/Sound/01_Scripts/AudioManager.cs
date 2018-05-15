@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Audio;
 using DG.Tweening;
+using System.Collections.Generic;
 
 public class AudioManager : MonoBehaviour {
 
@@ -9,6 +10,8 @@ public class AudioManager : MonoBehaviour {
 		Concrete,
 		Grass
 	};
+
+    public AudioLibrary lib;
 
 	[Header("Player")]
 	public Animator anim;
@@ -37,6 +40,9 @@ public class AudioManager : MonoBehaviour {
 
 	[Header ("Other")]
 	public AudioSource[] startingAudios;
+    public AudioSource[] sfx;
+
+    Dictionary<string, AudioSource> SfxIndex = new Dictionary<string, AudioSource>();
 
 	[Header ("AudioMixers")]
 	public AudioMixer masterMixer;
@@ -47,6 +53,11 @@ public class AudioManager : MonoBehaviour {
 		foreach (AudioSource source in startingAudios) {
 			source.Play ();
 		}
+
+        lib.Initialize();
+
+        foreach (AudioSource source in sfx)
+            SfxIndex.Add(source.name, source);
 	}
 	
 
@@ -116,6 +127,25 @@ public class AudioManager : MonoBehaviour {
 	{
 		currenTrack.DOFade (0, transitionTime).SetEase (Ease.InOutSine).OnComplete (OnCompleteStop);
 	}
+
+    public void PlaySfx(string name) {
+        if (SfxIndex.ContainsKey(name))
+            SfxIndex[name].Play();
+        else
+            Debug.LogError("Le SFX demandé n'existe pas. Le nom est sans doute mal tappé, ou il n'a pas été ajouté à l'AudioManager.");
+    }
+
+    public void StopSfx(string name) {
+        if (SfxIndex.ContainsKey(name))
+            SfxIndex[name].Stop();
+        else
+            Debug.LogError("Le SFX demandé n'existe pas. Le nom est sans doute mal tappé, ou il n'a pas été ajouté à l'AudioManager.");
+    }
+    
+    public void StopAllSfx() {
+        foreach (AudioSource source in sfx)
+            source.Stop();
+    }
 
 	void OnCompleteStop()
 	{

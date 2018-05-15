@@ -231,8 +231,9 @@ namespace Game.World
                 return;
             }
 
-            //***********************************************
-            //updating world -> creating new jobs
+            /*
+             * updating world
+             */
             if (CurrentState == eWorldControllerState.Activated)
             {
                 var player_position = GameController.PlayerController.CharController.MyTransform.position;
@@ -248,8 +249,9 @@ namespace Game.World
                 }
             }
 
-            //***********************************************
-            //executing jobs
+            /*
+             * executing jobs
+             */
             if (!isJobRunning && SubSceneJobsList.Count > 0)
             {
                 UpdateSubSceneJobQueue();
@@ -518,6 +520,8 @@ namespace Game.World
             string sceneName = WorldUtility.GetSubSceneName(job.Region.UniqueId, job.SubSceneVariant, job.SubSceneLayer, eSuperRegionType.Centre);
             var subSceneRoot = job.Region.GetSubSceneRoot(job.SubSceneVariant, job.SubSceneLayer);
 
+            float sub_scene_loading_start_time = Time.time;
+
             //editor subScenes are loaded (no streaming)
             if (editorSubScenesLoaded)
             {
@@ -651,7 +655,8 @@ namespace Game.World
                 }
             }
 
-            //Debug.Log("Load Job done");
+            Debug.LogFormat("SubScene {0} {1} {2} loaded! duration={3}", job.Region.name, job.SubSceneVariant, job.SubSceneLayer, (Time.time - sub_scene_loading_start_time));
+
             job.CurrentState = eSubSceneJobState.Successfull;
             isJobRunning = false;
         }
