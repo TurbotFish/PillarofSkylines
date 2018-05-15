@@ -11,10 +11,10 @@ namespace Game.LevelElements
     {
         //###########################################################
 
-        [Header("Step By Step Movement")]
 
-       // [HideInInspector]
+        [HideInInspector]
         public List<Vector3> waypoints;
+        [Header("Step By Step Movement")]
         public List<float> waitTime;
 
         public List<float> timeToMove;
@@ -120,7 +120,7 @@ namespace Game.LevelElements
 
                 Move(waypoints[currentPoint % (waypoints.Count)], waypoints[(currentPoint + (goingForward ? 1 : -1)) % (waypoints.Count)], timeToMove[currentPoint]);
 
-                print("moving order : " + waypoints[currentPoint % (waypoints.Count)] + " to " + waypoints[(currentPoint + (goingForward? 1:-1)) % (waypoints.Count)]);
+                //print("moving order : " + waypoints[currentPoint % (waypoints.Count)] + " to " + waypoints[(currentPoint + (goingForward? 1:-1)) % (waypoints.Count)]);
                 
                 currentPoint += (goingForward?1:-1);
                 if (currentPoint == waypoints.Count && looping)
@@ -165,7 +165,7 @@ namespace Game.LevelElements
                     elapsed += Time.deltaTime;
                     float t = elapsed / timeMoving;
 
-                    Vector3 movement = Vector3.Lerp(startPos, endPos, (Mathf.Pow(t, easing) / (Mathf.Pow(t, easing) + Mathf.Pow(1 - t, easing)))) - my.localPosition;
+                    Vector3 movement = Vector3.Lerp(startPos, endPos, (Mathf.Pow(t, easing) / (Mathf.Pow(t, easing) + (float.IsNaN(Mathf.Pow(1 - t, easing))?0: Mathf.Pow(1 - t, easing))))) - my.localPosition;
                     platform.Move(movement);
                 }
                 yield return null;
