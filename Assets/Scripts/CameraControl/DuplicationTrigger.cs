@@ -4,20 +4,20 @@ using UnityEngine;
 
 namespace Game.CameraControl
 {
-    public class DuplicationPlane : MonoBehaviour
+    public class DuplicationTrigger : MonoBehaviour
     {
         public bool IsVisible { get; private set; }
 
         private void OnBecameVisible()
         {
-            //Debug.LogError("Became visible!");
+            //Debug.LogErrorFormat("Trigger {0} became visible!", this.name);
 
             IsVisible = true;
         }
 
         private void OnBecameInvisible()
         {
-            //Debug.LogError("Became invisible!");
+            //Debug.LogErrorFormat("Trigger {0} became invisible!", this.name);
 
             IsVisible = false;
         }
