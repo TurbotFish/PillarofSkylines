@@ -25,7 +25,7 @@ namespace Game.GameControl
         /// <summary>
         /// The controller for the cameras that duplicate the world.
         /// </summary>
-        DuplicationCameraController DuplicationCameraController { get; }
+        DuplicationCameraManager DuplicationCameraController { get; }
 
         /// <summary>
         /// Is a pillar scene currently loaded?

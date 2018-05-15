@@ -29,7 +29,7 @@ namespace Game.GameControl
 
         public bool IsOpenWorldLoaded { get; private set; }
         public WorldController WorldController { get; private set; }
-        public DuplicationCameraController DuplicationCameraController { get; private set; }
+        public DuplicationCameraManager DuplicationCameraController { get; private set; }
 
         public bool IsPillarLoaded { get; private set; }
         public ePillarId ActivePillarId { get; private set; }
@@ -103,7 +103,7 @@ namespace Game.GameControl
             Scene scene = SceneManager.GetSceneByName(sceneName);
 
             WorldController = SearchForScriptInScene<WorldController>(scene);
-            DuplicationCameraController = SearchForScriptInScene<DuplicationCameraController>(scene);
+            DuplicationCameraController = SearchForScriptInScene<DuplicationCameraManager>(scene);
             yield return null;
 
             WorldController.Initialize(this);
@@ -215,7 +215,7 @@ namespace Game.GameControl
             IsOpenWorldLoaded = true;
 
             WorldController = SearchForScriptInScene<WorldController>(scene);
-            DuplicationCameraController = SearchForScriptInScene<DuplicationCameraController>(scene);
+            DuplicationCameraController = SearchForScriptInScene<DuplicationCameraManager>(scene);
             SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(scene);
 
             yield return null;
