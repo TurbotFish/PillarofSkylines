@@ -10,7 +10,7 @@ namespace Game.CameraControl
 
         // -- ATTRIBUTES
 
-        [SerializeField] private List<DuplicationPlane> Triggers;
+        [SerializeField] private List<DuplicationTrigger> Triggers;
 
         private Transform TransformComponent;
         private Camera CameraComponent;
@@ -27,6 +27,7 @@ namespace Game.CameraControl
 
             TransformComponent = transform;
             CameraComponent = GetComponent<Camera>();
+            CameraComponent.enabled = false;
         }
 
         //###############################################################
@@ -34,6 +35,25 @@ namespace Game.CameraControl
         // -- OPERATIONS
 
         public void UpdateDuplicationCamera()
+        {
+            bool is_any_trigger_visible = CheckIsAnyTriggerVisible();
+
+            if (!CameraComponent.enabled && CameraManager.IsActive && is_any_trigger_visible)
+            {
+                CameraComponent.enabled = true;
+                //Debug.LogErrorFormat("{0} enabled!", this.name);
+            }
+            else if (CameraComponent.enabled && (!CameraManager.IsActive || !is_any_trigger_visible))
+            {
+                CameraComponent.enabled = false;
+                //Debug.LogErrorFormat("{0} disabled!", this.name);
+            }
+
+            CameraComponent.fieldOfView = CameraManager.MainCamera.fieldOfView;
+            TransformComponent.rotation = CameraManager.MainCameraTransform.rotation;
+        }
+
+        private bool CheckIsAnyTriggerVisible()
         {
             bool is_trigger_visible = false;
 
@@ -46,17 +66,7 @@ namespace Game.CameraControl
                 }
             }
 
-            if (!CameraComponent.enabled && CameraManager.IsActive && is_trigger_visible)
-            {
-                CameraComponent.enabled = true;
-            }
-            else if (CameraComponent.enabled && !(CameraManager.IsActive || is_trigger_visible))
-            {
-                CameraComponent.enabled = false;
-            }
-
-            CameraComponent.fieldOfView = CameraManager.MainCamera.fieldOfView;
-            TransformComponent.rotation = CameraManager.MainCameraTransform.rotation;
+            return is_trigger_visible;
         }
     }
 } // end of namespace
