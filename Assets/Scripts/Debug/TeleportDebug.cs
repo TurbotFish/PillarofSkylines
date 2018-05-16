@@ -52,7 +52,7 @@ public class TeleportDebug : MonoBehaviour
             userY = GUI.TextField(new Rect(110, 10, 60, 20), userY, 99);
             GUI.SetNextControlName("UserZ");
             userZ = GUI.TextField(new Rect(210, 10, 60, 20), userZ, 99);
-            if (Event.current.type == EventType.keyDown && Event.current.character == '\n')
+            if (Event.current.type == EventType.KeyDown && Event.current.character == '\n')
                 GUIUtility.keyboardControl = 0;
         }
     }
