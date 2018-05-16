@@ -85,7 +85,7 @@ namespace Game.UI.PillarEntranceMenu
             int cost = playerModel.GetPillarEntryPrice(pillarId);
             costPanelView.Initialize(cost);
 
-            if (playerModel.PillarKeysCount < cost)
+            if (playerModel.PillarKeys < cost)
             {
                 warningMessage.SetActive(true);
             }

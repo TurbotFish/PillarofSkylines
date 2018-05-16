@@ -33,7 +33,7 @@ namespace Game.LevelElements
 
         private PlayerModel model;
 
-        private PersistentTrigger persistentTrigger;
+        private TriggerPersistentData persistentTrigger;
 
         private bool isCopy;
         private bool isInitialized;
@@ -50,7 +50,7 @@ namespace Game.LevelElements
         public List<TriggerableObject> Targets { get { return new List<TriggerableObject>(targets); } }
 #endif
 
-        protected PersistentTrigger PersistentDataObject { get { return persistentTrigger; } }
+        protected TriggerPersistentData PersistentDataObject { get { return persistentTrigger; } }
 
         #endregion properties
 
@@ -68,7 +68,7 @@ namespace Game.LevelElements
             model = gameController.PlayerModel;
             this.isCopy = isCopy;
 
-            persistentTrigger = model.GetPersistentDataObject<PersistentTrigger>(UniqueId);
+            persistentTrigger = model.GetPersistentDataObject<TriggerPersistentData>(UniqueId);
 
             if (persistentTrigger == null)
             {
@@ -175,9 +175,9 @@ namespace Game.LevelElements
         /// Creates the object containing persitent data for the trigger object. Allows inherited classes to create their own version.
         /// </summary>
         /// <returns></returns>
-        protected virtual PersistentTrigger CreatePersistentDataObject()
+        protected virtual TriggerPersistentData CreatePersistentDataObject()
         {
-            return new PersistentTrigger(this);
+            return new TriggerPersistentData(this);
         }
 
         #endregion protected methods

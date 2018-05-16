@@ -32,7 +32,7 @@ namespace Game.UI.AbilityMenu
             this.playerModel = playerModel;
             this.menuController = menuController;
 
-            pillarKeyText.text = playerModel.PillarKeysCount.ToString();
+            pillarKeyText.text = playerModel.PillarKeys.ToString();
 
             nameForDescription.text = abilityNameText.text = string.Empty;
             abilityDescriptionText.text = string.Empty;
@@ -84,7 +84,7 @@ namespace Game.UI.AbilityMenu
                 return;
             }
 
-            pillarKeyText.text = playerModel.PillarKeysCount.ToString();
+            pillarKeyText.text = playerModel.PillarKeys.ToString();
 
             if (currentAbility != null)
             {

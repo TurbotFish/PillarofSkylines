@@ -11,13 +11,8 @@ namespace Game.Model
         [SerializeField, HideInInspector] public string title; //this is used by Unity to name the object in an inspector array!!!!
 
         //type
-        [SerializeField, HideInInspector] private eAbilityType type; 
-        public eAbilityType Type { get { return type; } }
-
-        //group
-        [SerializeField]
-        eAbilityGroup group;
-        public eAbilityGroup Group { get { return group; } }
+        [SerializeField, HideInInspector] private AbilityType type; 
+        public AbilityType Type { get { return type; } }
 
         //activation price
         [SerializeField]
@@ -43,7 +38,7 @@ namespace Game.Model
 
         //###########################################################
 
-        public Ability(eAbilityType abilityType)
+        public Ability(AbilityType abilityType)
         {
             type = abilityType;
         }

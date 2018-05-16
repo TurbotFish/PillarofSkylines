@@ -75,7 +75,7 @@ namespace Game.Player
                 {
                     currentInteractableObject.OnInteraction();
                 }
-                else if(gameController.PlayerModel.CheckAbilityActive(eAbilityType.Echo))
+                else if(gameController.PlayerModel.CheckAbilityActive(AbilityType.Echo))
                 {
                     currentEcho = gameController.EchoManager.CreateEcho(true);
                     currentEcho.transform.SetParent(gameController.PlayerController.CharController.MyTransform);
@@ -184,12 +184,12 @@ namespace Game.Player
                 isDriftButtonDown = false;
 
                 // stop eclipse
-                if (gameController.PlayerModel.hasNeedle)
+                if (gameController.PlayerModel.HasNeedle)
                 {
 
                     print("Needle Slot for Drift: " + needleSlotForDrift + " Collider: " + needleSlotCollider);
 
-                    gameController.PlayerModel.hasNeedle = false;
+                    gameController.PlayerModel.HasNeedle = false;
 
                     if (needleSlotForDrift)
                     {

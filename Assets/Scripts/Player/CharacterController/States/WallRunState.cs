@@ -245,7 +245,7 @@ namespace Game.Player.CharacterController.States
         public static bool CheckCanEnterWallRun(CharController charController)
         {
             //has the player activated the wall run ability?
-            bool isAbilityActive = charController.PlayerModel.CheckAbilityActive(eAbilityType.WallRun);
+            bool isAbilityActive = charController.PlayerModel.CheckAbilityActive(AbilityType.WallRun);
 
             //is the player touching a wall?
             bool isTouchingWall = charController.CollisionInfo.side;

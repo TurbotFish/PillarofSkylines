@@ -63,7 +63,7 @@ namespace Game.GameControl
             UiController = FindObjectOfType<UiController>();
 
             //initializing
-            PlayerModel.InitializePlayerModel();
+            PlayerModel.Initialize();
             UiController.InitializeUi(this, eUiState.LoadingScreen, new EventManager.OnShowLoadingScreenEventArgs());
 
             PlayerController.InitializePlayerController(this);

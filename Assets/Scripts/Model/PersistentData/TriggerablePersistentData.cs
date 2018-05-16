@@ -2,7 +2,7 @@
 
 namespace Game.Model
 {
-    public class PersistentTriggerable : PersistentData
+    public class TriggerablePersistentData : PersistentData
     {
         //###########################################################
 
@@ -10,7 +10,7 @@ namespace Game.Model
 
         //###########################################################
 
-        public PersistentTriggerable(string uniqueId, bool triggered) : base(uniqueId)
+        public TriggerablePersistentData(string uniqueId, bool triggered) : base(uniqueId)
         {
             Triggered = triggered;
         }

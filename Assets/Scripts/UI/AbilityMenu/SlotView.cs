@@ -11,7 +11,7 @@ namespace Game.UI.AbilityMenu
     {
         //##################################################################
 
-        [SerializeField] private eAbilityType ability;
+        [SerializeField] private AbilityType ability;
 
         [SerializeField] private Image backgroundImage;
         [SerializeField] private Outline backgroundOutline;
@@ -37,7 +37,7 @@ namespace Game.UI.AbilityMenu
 
         //##################################################################
 
-        public eAbilityType AbilityType { get { return ability; } }
+        public AbilityType AbilityType { get { return ability; } }
 
         //##################################################################
 

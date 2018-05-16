@@ -111,7 +111,7 @@ namespace Game.GameControl
             eclipseManager = GetComponentInChildren<EclipseManager>();
 
             //initializing game controller
-            playerModel.InitializePlayerModel();
+            playerModel.Initialize();
 
             //cleaning up, just in case
             var echoManagers = FindObjectsOfType<EchoSystem.EchoManager>();

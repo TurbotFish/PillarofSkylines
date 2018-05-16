@@ -7,7 +7,7 @@ namespace Game.Model
     /// <summary>
     /// The list of the abilities of the player
     /// </summary>
-    public enum eAbilityType
+    public enum AbilityType
     {
         DoubleJump,
         GroundRise,

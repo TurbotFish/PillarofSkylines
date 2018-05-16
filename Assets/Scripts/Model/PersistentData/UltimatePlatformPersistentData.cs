@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Game.Model
 {
-    public class PersistentUltimatePlatform : PersistentTriggerable
+    public class UltimatePlatformPersistentData : TriggerablePersistentData
     {
         public UltimatePlatform Master { get; set; }
         public bool MasterSetOnce { get; set; }
@@ -19,7 +19,7 @@ namespace Game.Model
         public bool FinishingMovement { get; set; }
         public float Elapsed { get; set; }
 
-        public PersistentUltimatePlatform(string uniqueId, bool triggered) : base(uniqueId, triggered)
+        public UltimatePlatformPersistentData(string uniqueId, bool triggered) : base(uniqueId, triggered)
         {
         }
     }

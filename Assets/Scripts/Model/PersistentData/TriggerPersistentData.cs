@@ -2,7 +2,7 @@
 
 namespace Game.Model
 {
-    public class PersistentTrigger : PersistentData
+    public class TriggerPersistentData : PersistentData
     {
         //###########################################################
 
@@ -10,7 +10,7 @@ namespace Game.Model
 
         //###########################################################
 
-        public PersistentTrigger(Trigger trigger) : base(trigger.UniqueId)
+        public TriggerPersistentData(Trigger trigger) : base(trigger.UniqueId)
         {
             TriggerState = trigger.TriggerState;
         }
