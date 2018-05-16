@@ -149,7 +149,7 @@ namespace grreuze {
 			cursorChangeRect.height = 5;
 			EditorGUIUtility.AddCursorRect(cursorChangeRect, MouseCursor.ResizeVertical);
 
-			if (Event.current.type == EventType.mouseDown && cursorChangeRect.Contains(Event.current.mousePosition)) {
+			if (Event.current.type == EventType.MouseDown && cursorChangeRect.Contains(Event.current.mousePosition)) {
 				resize = true;
 			}
 			if (resize) {
