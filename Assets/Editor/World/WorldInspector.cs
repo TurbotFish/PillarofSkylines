@@ -122,7 +122,7 @@ namespace Game.World
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("-- Tools");
 
-            if (!Application.isPlaying && Self.EditorSubScenesLoaded)
+            if (!Application.isPlaying)
             {
                 if (Self.EditorSubScenesLoaded)
                 {

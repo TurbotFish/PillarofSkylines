@@ -8,11 +8,22 @@ namespace Game.CameraControl
     {
         public bool IsVisible { get; private set; }
 
+        //public bool isVisible;
+        //public bool rendererVisible;
+
+        //private Renderer myRenderer;
+
+        //private void Start()
+        //{
+        //    myRenderer = GetComponent<Renderer>();
+        //}
+
         private void OnBecameVisible()
         {
             //Debug.LogErrorFormat("Trigger {0} became visible!", this.name);
 
             IsVisible = true;
+            //isVisible = true;
         }
 
         private void OnBecameInvisible()
@@ -20,6 +31,12 @@ namespace Game.CameraControl
             //Debug.LogErrorFormat("Trigger {0} became invisible!", this.name);
 
             IsVisible = false;
+            //isVisible = false;
         }
+
+        //private void Update()
+        //{
+        //    rendererVisible = myRenderer.isVisible;
+        //}
     }
 } // end of namespace
