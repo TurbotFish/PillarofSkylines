@@ -31,7 +31,6 @@ namespace Game.Model
         private Dictionary<eCurrencyType, int> currencies;
 
         //ability variables
-        List<eAbilityGroup> unlockedAbilityGroups = new List<eAbilityGroup>();
         List<eAbilityType> activatedAbilities = new List<eAbilityType>();
         List<eAbilityType> flaggedAbilities = new List<eAbilityType>();
 
@@ -54,8 +53,6 @@ namespace Game.Model
             {
                 currencies.Add(value, 0);
             }
-
-            UnlockAbilityGroup(eAbilityGroup.Default);
         }
 
         //###########################################################
@@ -72,9 +69,6 @@ namespace Game.Model
             else if (Input.GetKeyUp(KeyCode.F5))
             {
                 Debug.Log("CHEATING: You were supposed to find the Tombs, not make them useless!");
-                UnlockAbilityGroup(eAbilityGroup.Pillar1);
-                UnlockAbilityGroup(eAbilityGroup.Pillar2);
-                UnlockAbilityGroup(eAbilityGroup.Pillar3);
 
                 foreach(var ability in abilityData.GetAllAbilities())
                 {
@@ -87,74 +81,6 @@ namespace Game.Model
 
         //###########################################################
 
-        #region ability group unlocking methods
-
-        /// <summary>
-        /// This method checks if an ability group is unlocked
-        /// </summary>
-        /// <returns>Returns true if the ability group is unlocked, false otherwise.</returns>
-        public bool CheckAbilityGroupUnlocked(eAbilityGroup abilityGroup)
-        {
-            return unlockedAbilityGroups.Contains(abilityGroup);
-        }
-
-        /// <summary>
-        /// This method unlocks an ability group.
-        /// </summary>
-        /// <returns>Returns true if the ability group is now unlocked, false otherwise.</returns>
-        public bool UnlockAbilityGroup(eAbilityGroup abilityGroup)
-        {
-            if (!unlockedAbilityGroups.Contains(abilityGroup))
-            {
-                unlockedAbilityGroups.Add(abilityGroup);
-
-                return true;
-            }
-            else
-            {
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// This method locks an ability group and deactivates all abilities that are part of it.
-        /// </summary>
-        /// <returns>Returns true if the ability group is now locked, false otherwise.</returns>
-        public bool LockAbilityGroup(eAbilityGroup abilityGroup)
-        {
-            if (unlockedAbilityGroups.Contains(abilityGroup))
-            {
-                unlockedAbilityGroups.Remove(abilityGroup);
-
-                var abilitiesToDeactivate = new List<eAbilityType>();
-                foreach (var abilityType in activatedAbilities)
-                {
-                    var ability = abilityData.GetAbility(abilityType);
-
-                    if (ability.Group == abilityGroup)
-                    {
-                        abilitiesToDeactivate.Add(abilityType);
-                    }
-                }
-
-                foreach (var abilityType in abilitiesToDeactivate)
-                {
-                    activatedAbilities.Remove(abilityType);
-                    flaggedAbilities.Remove(abilityType);
-                }
-
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        #endregion ability group unlocking methods
-
-        //###########################################################
-
         #region ability activation methods
 
         /// <summary>
@@ -164,21 +90,6 @@ namespace Game.Model
         public bool CheckAbilityActive(eAbilityType abilityType)
         {
             return activatedAbilities.Contains(abilityType);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool CheckAbilityUnlocked(eAbilityType abilityType)
-        {
-            var ability = abilityData.GetAbility(abilityType);
-
-            if (CheckAbilityGroupUnlocked(ability.Group))
-            {
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -201,14 +112,10 @@ namespace Game.Model
             {
                 return true;
             }
-            else if (CheckAbilityGroupUnlocked(ability.Group))
+            else
             {
                 activatedAbilities.Add(abilityType);
 
-                return true;
-            }
-            else
-            {
                 return false;
             }
         }
@@ -310,7 +217,6 @@ namespace Game.Model
             if (!destoyedPillars.Contains(pillarId))
             {
                 destoyedPillars.Add(pillarId);
-                UnlockAbilityGroup(pillarData.GetPillarAbilityGroup(pillarId));
 
                 Utilities.EventManager.SendPillarDestroyedEvent(this, new Utilities.EventManager.PillarDestroyedEventArgs(pillarId));
             }
@@ -378,98 +284,6 @@ namespace Game.Model
         }
 
         #endregion pillar methods
-
-        //###########################################################
-
-        //OBSOLETE
-        #region pick-up methods
-
-        ///// <summary>
-        ///// Informs the model that a Pick-up has been collected.
-        ///// </summary>
-        ///// <param name="pickUp">The collected Pick-up.</param>
-        //[Obsolete]
-        //public void CollectPickUp(CurrencyPickUp pickUp)
-        //{
-        //    if (collectedPickUps.Contains(pickUp.PickUpId))
-        //    {
-        //        Debug.LogWarningFormat("Pick-up \"{0}\" already collected!", pickUp.PickUpId);
-        //    }
-        //    else
-        //    {
-        //        //pick up favour
-        //        if (pickUp.CurrencyType == eCurrencyType.Favour)
-        //        {
-        //            ChangeCurrencyAmount(eCurrencyType.Favour, 1);
-        //        }
-        //        else if (pickUp.CurrencyType == eCurrencyType.PillarKey)
-        //        {
-        //            ChangeCurrencyAmount(eCurrencyType.PillarKey, 1);
-        //        }
-
-        //        collectedPickUps.Add(pickUp.PickUpId);
-
-        //        //send event
-        //        Utilities.EventManager.SendFavourPickedUpEvent(this, new Utilities.EventManager.FavourPickedUpEventArgs(pickUp.PickUpId));
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Checks whether a Pick-up has already been collected.
-        ///// </summary>
-        ///// <param name="pickUpId">The Id of the favour to check.</param>
-        ///// <returns></returns>
-        //[Obsolete]
-        //public bool CheckIfPickUpCollected(string pickUpId)
-        //{
-        //    return collectedPickUps.Contains(pickUpId);
-        //}
-
-        #endregion pick-up methods
-
-        //###########################################################
-
-        //OBSOLETE
-        #region currency methods
-
-        [Obsolete]
-        public int GetCurrencyAmount(eCurrencyType currencyType)
-        {
-            return currencies[currencyType];
-        }
-
-        ///// <summary>
-        ///// Changes the amount of a currency. Checks whether abilities have become available and sends appropriate events.
-        ///// </summary>
-        ///// <param name="currencyDelta"></param>
-        //[Obsolete]
-        //private void ChangeCurrencyAmount(eCurrencyType currencyType, int currencyDelta)
-        //{
-        //    currencies[currencyType] += currencyDelta;
-
-        //    Utilities.EventManager.SendCurrencyAmountChangedEvent(this, new Utilities.EventManager.CurrencyAmountChangedEventArgs(currencyType, currencies[currencyType]));
-
-        //    //send events
-        //    var abilities = abilityData.GetAllAbilities();
-        //    for (int i = 0; i < abilities.Count; i++)
-        //    {
-        //        var ability = abilities[i];
-
-        //        if (!CheckAbilityActive(ability.Type) && CheckAbilityGroupUnlocked(ability.Group))
-        //        {
-        //            var newState = eAbilityState.locked;
-
-        //            if (GetCurrencyAmount(eCurrencyType.Favour) >= ability.ActivationPrice)
-        //            {
-        //                newState = eAbilityState.available;
-        //            }
-
-        //            Utilities.EventManager.SendAbilityStateChangedEvent(this, new Utilities.EventManager.AbilityStateChangedEventArgs(ability.Type, newState));
-        //        }
-        //    }
-        //}
-
-        #endregion currency methods
 
         //###########################################################
 
@@ -573,14 +387,6 @@ namespace Game.Model
             if (activatedAbilities.Contains(abilityType))
             {
                 return eAbilityState.active;
-            }
-            else if (unlockedAbilityGroups.Contains(ability.Group) /*&& GetCurrencyAmount(eCurrencyType.Favour) >= ability.ActivationPrice*/)
-            {
-                return eAbilityState.available;
-            }
-            else if (!CheckAbilityUnlocked(abilityType))
-            {
-                return eAbilityState.pillarLocked;
             }
             else
             {

@@ -23,7 +23,7 @@ namespace Game.CameraControl
 
         // -- INITIALIZATION
 
-        public void Initialize(IGameControllerBase gameController)
+        public void Initialize(IGameController gameController)
         {
             TransformComponent = transform;
 

@@ -20,7 +20,7 @@ public class Flyingpillar : MonoBehaviour, IInteractable, IWorldObject
 
     #region initialization
 
-    public void Initialize(IGameControllerBase gameController)
+    public void Initialize(IGameController gameController)
     {
         move = movingPillar.transform;
         targetPos = move.position;
@@ -33,7 +33,7 @@ public class Flyingpillar : MonoBehaviour, IInteractable, IWorldObject
 
     #region inquiries
 
-    public Vector3 Position { get { return transform.position; } }
+    public Transform Transform { get { return transform; } }
 
     public bool IsInteractable()
     {

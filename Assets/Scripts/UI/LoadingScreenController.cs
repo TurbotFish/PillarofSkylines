@@ -33,7 +33,7 @@ namespace Game.UI
 
         //###########################################################
 
-        void IUiState.Initialize(IGameControllerBase gameController)
+        void IUiState.Initialize(IGameController gameController)
         {
             screenImages = Resources.Load<LoadingScreenImages>("ScriptableObjects/LoadingScreenImages");
             background = transform.Find("Background").GetComponent<Image>();

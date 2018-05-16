@@ -30,7 +30,7 @@ public class LightStick : MonoBehaviour, IInteractable
 
     #region inquiries
 
-    public Vector3 Position { get { return transform.position; } }
+    public Transform Transform { get { return transform; } }
 
     public bool IsInteractable()
     {

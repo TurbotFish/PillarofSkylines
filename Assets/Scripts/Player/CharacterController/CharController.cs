@@ -53,7 +53,7 @@ namespace Game.Player.CharacterController
 
         public PlayerController PlayerController { get; private set; }
 
-        public GameControl.IGameControllerBase gameController;
+        public GameControl.IGameController gameController;
 
         public Transform MyTransform { get; private set; }
 
@@ -119,7 +119,7 @@ namespace Game.Player.CharacterController
 
         #region initialization
 
-        public void Initialize(GameControl.IGameControllerBase gameController)
+        public void Initialize(GameControl.IGameController gameController)
         {
             tempPhysicsHandler = GetComponent<CharacControllerRecu>();
             animator = GetComponentInChildren<Animator>();

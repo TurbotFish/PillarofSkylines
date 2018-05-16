@@ -10,7 +10,7 @@ namespace Game.CameraControl
         public Eclipse EclipseEffect { get; private set; }
         public GPUIDisplayManager GPUIDisplayManager { get; private set; }
 
-        public void InitializeCameraController(GameControl.IGameControllerBase gameController)
+        public void InitializeCameraController(GameControl.IGameController gameController)
         {
             Camera = GetComponent<Camera>();
             PoS_Camera = GetComponent<PoS_Camera>();
