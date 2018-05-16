@@ -2,29 +2,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace Game.UI.PillarEntranceMenu
 {
     public class CostPanelView : MonoBehaviour
     {
         [SerializeField]
-        Text valueText;
+        TextMeshProUGUI valueText;
 
         [SerializeField]
-        Text unitSuffixText;
+        TextMeshProUGUI unitSuffixText;
 
         public void Initialize(int cost)
         {
-            this.valueText.text = cost.ToString();
+            valueText.text = cost.ToString();
 
             if (cost == 1)
-            {
-                this.unitSuffixText.text = "";
-            }
+                unitSuffixText.text = "";
             else
-            {
-                this.unitSuffixText.text = "s";
-            }
+                unitSuffixText.text = "s";
         }
     }
 } //end of namespace
