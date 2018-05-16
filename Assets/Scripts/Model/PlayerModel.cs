@@ -19,9 +19,7 @@ namespace Game.Model
         AbilityData abilityData;
         public AbilityData AbilityData { get { return abilityData; } }
 
-        //pillar data
-        PillarData pillarData;
-        public PillarData PillarData { get { return pillarData; } }
+        public LevelData LevelData { get; private set; }
 
         //
         public bool hasNeedle;
@@ -45,7 +43,7 @@ namespace Game.Model
 
         public void InitializePlayerModel()
         {
-            pillarData = Resources.Load<PillarData>("ScriptableObjects/PillarData");
+            LevelData = Resources.Load<LevelData>("ScriptableObjects/LevelData");
 
             //initializing currency dictionary
             currencies = new Dictionary<eCurrencyType, int>();
@@ -269,7 +267,7 @@ namespace Game.Model
             }
             else
             {
-                return pillarData.GetPillarEntryPrice(pillarId);
+                return LevelData.GetPillarSceneActivationCost(pillarId);
             }
         }
 

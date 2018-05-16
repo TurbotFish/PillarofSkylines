@@ -36,7 +36,8 @@ namespace Game.GameControl
 
         public SpawnPointManager SpawnPointManager { get; private set; }
 
-        private SceneNamesData sceneNamesData;
+        public LevelData LevelData { get; private set; }
+
         private bool isInitialized = false;
         private bool isGameStarted = false;
 
@@ -49,7 +50,7 @@ namespace Game.GameControl
         private void Start()
         {
             //load resources
-            sceneNamesData = Resources.Load<SceneNamesData>("ScriptableObjects/SceneNamesData");
+            LevelData = Resources.Load<LevelData>("ScriptableObjects/LevelData");
 
             //getting references in game controller
             PlayerModel = GetComponentInChildren<PlayerModel>();
@@ -82,7 +83,7 @@ namespace Game.GameControl
             AsyncOperation async;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
-            string sceneName = sceneNamesData.GetOpenWorldSceneName();
+            string sceneName = LevelData.OpenWorldSceneName;
 
             async = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
             async.allowSceneActivation = false;
@@ -200,7 +201,7 @@ namespace Game.GameControl
             /*
              * unloading pillar scene
              */
-            string pillarSceneName = sceneNamesData.GetPillarSceneName(ActivePillarId);
+            string pillarSceneName = LevelData.GetPillarSceneName(ActivePillarId);
 
             if (IsPillarLoaded && !string.IsNullOrEmpty(pillarSceneName))
             {
@@ -220,7 +221,7 @@ namespace Game.GameControl
             /*
              * "loading" open world scene
              */
-            string worldSceneName = sceneNamesData.GetOpenWorldSceneName();
+            string worldSceneName = LevelData.OpenWorldSceneName;
             Scene scene = SceneManager.GetSceneByName(worldSceneName);
 
             foreach (var obj in scene.GetRootGameObjects())
@@ -311,7 +312,7 @@ namespace Game.GameControl
 
             //*****************************************
             //deactivating open world scene
-            string worldSceneName = sceneNamesData.GetOpenWorldSceneName();
+            string worldSceneName = LevelData.OpenWorldSceneName;
             Scene scene = SceneManager.GetSceneByName(worldSceneName);
 
             WorldController.Deactivate();
@@ -334,7 +335,7 @@ namespace Game.GameControl
 
             //*****************************************
             //loading pillar scene
-            string pillarSceneName = sceneNamesData.GetPillarSceneName(pillarId);
+            string pillarSceneName = LevelData.GetPillarSceneName(pillarId);
 
             async = SceneManager.LoadSceneAsync(pillarSceneName, LoadSceneMode.Additive);
             async.allowSceneActivation = false;
