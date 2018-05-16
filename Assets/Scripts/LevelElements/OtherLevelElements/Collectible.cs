@@ -71,6 +71,8 @@ public class Collectible : MonoBehaviour, IInteractable, IWorldObject
         {
             triggered = true;
 
+            myTransform.parent = null;
+
             Instantiate(feedback, myTransform.position, myTransform.rotation).Play();
 
             UpdateTargetPoint();
