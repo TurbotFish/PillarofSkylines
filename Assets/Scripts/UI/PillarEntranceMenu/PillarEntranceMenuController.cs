@@ -19,6 +19,7 @@ namespace Game.UI.PillarEntranceMenu
         //
         World.ePillarId pillarId;
         bool canEnterPillar = false;
+        private IGameController GameController;
 
         //
         public bool IsActive { get; private set; }
@@ -49,7 +50,7 @@ namespace Game.UI.PillarEntranceMenu
             {
                 if (playerModel.UnlockPillar(pillarId))
                 {
-                    Utilities.EventManager.SendEnterPillarEvent(this, new Utilities.EventManager.EnterPillarEventArgs(pillarId));
+                    GameController.SwitchToPillar(pillarId);
                 }             
             }
         }
@@ -58,9 +59,10 @@ namespace Game.UI.PillarEntranceMenu
 
         //###########################################################
 
-        void IUiState.Initialize(IGameControllerBase gameController)
+        void IUiState.Initialize(IGameController gameController)
         {
-            playerModel = gameController.PlayerModel;
+            GameController = gameController;
+            playerModel = GameController.PlayerModel;
         }
 
         void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)

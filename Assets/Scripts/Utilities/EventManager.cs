@@ -144,34 +144,6 @@ namespace Game.Utilities
 
         //***********************************************************
 
-        // OBSOLETE
-        #region currency amount changed event
-
-        //public class CurrencyAmountChangedEventArgs : EventArgs
-        //{
-        //    public Model.eCurrencyType CurrencyType { get; private set; }
-        //    public int CurrencyAmount { get; private set; }
-
-        //    public CurrencyAmountChangedEventArgs(Model.eCurrencyType currencyType, int currencyAmount)
-        //    {
-        //        CurrencyType = currencyType;
-        //        CurrencyAmount = currencyAmount;
-        //    }
-        //}
-
-        //public delegate void CurrencyAmountChangedEventHandler(object sender, CurrencyAmountChangedEventArgs args);
-
-        //public static event CurrencyAmountChangedEventHandler CurrencyAmountChangedEvent;
-
-        //public static void SendCurrencyAmountChangedEvent(object sender, CurrencyAmountChangedEventArgs args)
-        //{
-        //    CurrencyAmountChangedEvent?.Invoke(sender, args);
-        //}
-
-        #endregion currency amount changed event
-
-        //***********************************************************
-
         #region pillar destroyed event
 
         public class PillarDestroyedEventArgs : EventArgs
@@ -396,31 +368,6 @@ namespace Game.Utilities
 
         //***********************************************************
 
-        #region enter pillar event
-
-        public class EnterPillarEventArgs : EventArgs
-        {
-            public World.ePillarId PillarId { get; private set; }
-
-            public EnterPillarEventArgs(World.ePillarId pillarId)
-            {
-                this.PillarId = pillarId;
-            }
-        }
-
-        public delegate void EnterPillarEventHandler(object sender, EnterPillarEventArgs args);
-
-        public static event EnterPillarEventHandler EnterPillarEvent;
-
-        public static void SendEnterPillarEvent(object sender, EnterPillarEventArgs args)
-        {
-            EnterPillarEvent?.Invoke(sender, args);
-        }
-
-        #endregion enter pillar event
-
-        //***********************************************************
-
         #region eclipse event
 
         public class EclipseEventArgs : EventArgs
@@ -443,31 +390,6 @@ namespace Game.Utilities
         }
 
         #endregion eclipse event
-
-        //***********************************************************
-
-        #region leave pillar event
-
-        public class LeavePillarEventArgs
-        {
-            public bool PillarDestroyed { get; private set; }
-
-            public LeavePillarEventArgs(bool pillarDestroyed)
-            {
-                this.PillarDestroyed = pillarDestroyed;
-            }
-        }
-
-        public delegate void LeavePillarEventHandler(object sender, LeavePillarEventArgs args);
-
-        public static event LeavePillarEventHandler LeavePillarEvent;
-
-        public static void SendLeavePillarEvent(object sender, LeavePillarEventArgs args)
-        {
-            LeavePillarEvent?.Invoke(sender, args);
-        }
-
-        #endregion leave pillar event
 
         //***********************************************************
 

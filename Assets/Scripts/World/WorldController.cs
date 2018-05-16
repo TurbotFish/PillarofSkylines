@@ -88,7 +88,7 @@ namespace Game.World
 
 
 
-        public IGameControllerBase GameController { get; private set; }
+        public IGameController GameController { get; private set; }
         public eWorldControllerState CurrentState { get; private set; }
 
 
@@ -110,7 +110,7 @@ namespace Game.World
         /// Initializes the GameController.
         /// </summary>
         /// <param name="gameController"></param>
-        public void Initialize(IGameControllerBase gameController)
+        public void Initialize(IGameController gameController)
         {
             GameController = gameController;
             RegionList.Clear();
@@ -165,6 +165,18 @@ namespace Game.World
 
             CurrentState = eWorldControllerState.Activating;
             CurrentRegionIndex = 0;
+
+            if (EditorSubScenesLoaded)
+            {
+                var worldObjects = FindObjectsOfType<MonoBehaviour>();
+                foreach (var obj in worldObjects)
+                {
+                    if (obj is IWorldObject)
+                    {
+                        (obj as IWorldObject).Initialize(GameController);
+                    }
+                }
+            }
 
             foreach (var region in RegionList)
             {

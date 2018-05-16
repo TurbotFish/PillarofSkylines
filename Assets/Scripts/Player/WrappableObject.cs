@@ -11,7 +11,7 @@ namespace Game.Player
         [SerializeField]
         List<Transform> followers;
 
-        IGameControllerBase gameController;
+        IGameController gameController;
         Transform myTransform;
 
         AxisInfo xAxisInfo;
@@ -24,7 +24,7 @@ namespace Game.Player
 
         //#####################################################
 
-        public void InitializeWrappableObject(IGameControllerBase gameController)
+        public void InitializeWrappableObject(IGameController gameController)
         {
             Debug.Log("WrappableObject: Initialize");
 

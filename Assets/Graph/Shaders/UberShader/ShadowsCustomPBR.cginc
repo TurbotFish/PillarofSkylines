@@ -1,3 +1,5 @@
+// Upgrade NOTE: upgraded instancing buffer 'InstanceProperties' to new syntax.
+
 #if !defined(CUSTOM_SHADOWS_INCLUDED)
 #define CUSTOM_SHADOWS_INCLUDED
 
@@ -25,9 +27,10 @@ float4 _MainTex_ST;
 float _Cutoff;
 sampler3D _DitherMaskLOD;
 
-UNITY_INSTANCING_CBUFFER_START(InstanceProperties)
+UNITY_INSTANCING_BUFFER_START(InstanceProperties)
 	UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
-UNITY_INSTANCING_CBUFFER_END
+#define _Color_arr InstanceProperties
+UNITY_INSTANCING_BUFFER_END(InstanceProperties)
 
 struct VertexData {
 	UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -69,7 +72,7 @@ struct Interpolators {
 };
 
 float GetAlpha(Interpolators i){
-		float alpha = UNITY_ACCESS_INSTANCED_PROP(_Color).a;
+		float alpha = UNITY_ACCESS_INSTANCED_PROP(_Color_arr, _Color).a;
 		#if SHADOWS_NEED_UV
 			alpha *= tex2D(_MainTex, i.uv.xy).a;
 		#endif

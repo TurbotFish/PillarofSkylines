@@ -14,7 +14,7 @@ namespace Game.LevelElements
 
         [SerializeField] private ePillarId pillarId;
 
-        private IGameControllerBase gameController;
+        private IGameController gameController;
         private bool isInitialized;
         private bool isPillarDestroyed;
 
@@ -22,7 +22,7 @@ namespace Game.LevelElements
 
         #region initialization
 
-        public void Initialize(IGameControllerBase gameController)
+        public void Initialize(IGameController gameController)
         {
             if (isInitialized)
             {
@@ -61,7 +61,7 @@ namespace Game.LevelElements
 
         public ePillarId PillarId { get { return pillarId; } }
 
-        public Vector3 Position { get { return transform.position; } }
+        public Transform Transform { get { return transform; } }
 
         public bool IsInteractable()
         {
@@ -90,7 +90,7 @@ namespace Game.LevelElements
         {
             if (gameController.PlayerModel.CheckIsPillarUnlocked(pillarId))
             {
-                EventManager.SendEnterPillarEvent(this, new EventManager.EnterPillarEventArgs(pillarId));
+                gameController.SwitchToPillar(pillarId);
             }
             else
             {

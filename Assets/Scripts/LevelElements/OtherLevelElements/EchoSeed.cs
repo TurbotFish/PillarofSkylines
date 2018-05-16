@@ -10,18 +10,18 @@ namespace Game.LevelElements
     {
         //########################################################################
 
-        private IGameControllerBase gameController;
+        private IGameController gameController;
 
         //########################################################################
 
-        public void Initialize(IGameControllerBase gameController)
+        public void Initialize(IGameController gameController)
         {
             this.gameController = gameController;
         }
 
         //########################################################################
 
-        public Vector3 Position { get { return transform.position; } }
+        public Transform Transform { get { return transform; } }
 
         public bool IsInteractable()
         {

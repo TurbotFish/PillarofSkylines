@@ -19,7 +19,7 @@ namespace Game.LevelElements
 
         #region initialization
 
-        public override void Initialize(IGameControllerBase gameController)
+        public override void Initialize(IGameController gameController)
         {
             base.Initialize(gameController);
 
@@ -32,7 +32,7 @@ namespace Game.LevelElements
 
         #region inquiries
 
-        public Vector3 Position { get { return transform.position; } }
+        public Transform Transform { get { return transform; } }
 
         public bool IsInteractable()
         {

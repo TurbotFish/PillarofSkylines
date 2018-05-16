@@ -147,14 +147,14 @@ public class PoS_Camera : MonoBehaviour
 
     Vector3 characterUp;
 
-    private IGameControllerBase gameController;
+    private IGameController gameController;
     private bool isInitialized;
 
     #endregion
 
     #region MonoBehaviour
 
-    public void Initialize(IGameControllerBase gameController)
+    public void Initialize(IGameController gameController)
     {
         this.gameController = gameController;
 
@@ -226,9 +226,9 @@ public class PoS_Camera : MonoBehaviour
         if (enablePanoramaMode)
             DoPanorama();
 
-        if (gameController.DuplicationCameraController != null)
+        if (gameController.DuplicationCameraManager != null)
         {
-            gameController.DuplicationCameraController.UpdateDuplicationCameras();
+            gameController.DuplicationCameraManager.UpdateDuplicationCameras();
         }
     }
     #endregion

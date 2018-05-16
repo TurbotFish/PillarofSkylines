@@ -12,11 +12,11 @@ namespace Game.UI
         //##################################################################
 
         public bool IsActive { get; private set; }
-        private IGameControllerBase gameController;
+        private IGameController gameController;
 
         //##################################################################
 
-        void IUiState.Initialize(IGameControllerBase gameController)
+        void IUiState.Initialize(IGameController gameController)
         {
             this.gameController = gameController;
         }
