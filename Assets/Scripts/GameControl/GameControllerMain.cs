@@ -13,7 +13,7 @@ using UnityEngine.SceneManagement;
 
 namespace Game.GameControl
 {
-    public class GameControllerMain : MonoBehaviour, IGameControllerBase
+    public class GameControllerMain : MonoBehaviour, IGameController
     {
         //###############################################################
 
@@ -29,7 +29,7 @@ namespace Game.GameControl
 
         public bool IsOpenWorldLoaded { get; private set; }
         public WorldController WorldController { get; private set; }
-        public DuplicationCameraController DuplicationCameraController { get; private set; }
+        public DuplicationCameraManager DuplicationCameraManager { get; private set; }
 
         public bool IsPillarLoaded { get; private set; }
         public ePillarId ActivePillarId { get; private set; }
@@ -71,10 +71,6 @@ namespace Game.GameControl
             EchoManager.Initialize(this);
             EclipseManager.InitializeEclipseManager(this);
 
-            //register to events
-            EventManager.LeavePillarEvent += OnLeavePillarEventHandler;
-            EventManager.EnterPillarEvent += OnEnterPillarEventHandler;
-
             //load open world scene
             StartCoroutine(LoadOpenWorldSceneCR());
         }
@@ -103,12 +99,11 @@ namespace Game.GameControl
             Scene scene = SceneManager.GetSceneByName(sceneName);
 
             WorldController = SearchForScriptInScene<WorldController>(scene);
-            DuplicationCameraController = SearchForScriptInScene<DuplicationCameraController>(scene);
+            DuplicationCameraManager = SearchForScriptInScene<DuplicationCameraManager>(scene);
             yield return null;
 
             WorldController.Initialize(this);
-            DuplicationCameraController.Initialize(this);
-
+            DuplicationCameraManager.Initialize(this);
             yield return null;
 
             SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
@@ -155,6 +150,28 @@ namespace Game.GameControl
 #else
             Application.Quit();
 #endif
+        }
+
+        public void SwitchToPillar(ePillarId pillar_id)
+        {
+            if (IsPillarLoaded)
+            {
+                Debug.LogError("A Pillar is already active!");
+                return;
+            }
+
+            StartCoroutine(LoadPillarSceneCR(pillar_id));
+        }
+
+        public void SwitchToOpenWorld()
+        {
+            if (!IsPillarLoaded)
+            {
+                Debug.LogError("No Pillar is active!");
+                return;
+            }
+
+            StartCoroutine(ActivateOpenWorldCR(false));
         }
 
         /// <summary>
@@ -215,7 +232,7 @@ namespace Game.GameControl
             IsOpenWorldLoaded = true;
 
             WorldController = SearchForScriptInScene<WorldController>(scene);
-            DuplicationCameraController = SearchForScriptInScene<DuplicationCameraController>(scene);
+            DuplicationCameraManager = SearchForScriptInScene<DuplicationCameraManager>(scene);
             SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(scene);
 
             yield return null;
@@ -242,7 +259,7 @@ namespace Game.GameControl
              * activating world
              */
             WorldController.Activate(spawn_position);
-            DuplicationCameraController.Activate();
+            DuplicationCameraManager.Activate();
 
             while (WorldController.CurrentState == eWorldControllerState.Activating)
             {
@@ -298,7 +315,7 @@ namespace Game.GameControl
             Scene scene = SceneManager.GetSceneByName(worldSceneName);
 
             WorldController.Deactivate();
-            DuplicationCameraController.Deactivate();
+            DuplicationCameraManager.Deactivate();
 
             while (WorldController.CurrentState == eWorldControllerState.Deactivating)
             {
@@ -307,7 +324,7 @@ namespace Game.GameControl
 
             IsOpenWorldLoaded = false;
             WorldController = null;
-            DuplicationCameraController = null;
+            DuplicationCameraManager = null;
             SpawnPointManager = null;
 
             foreach (var obj in scene.GetRootGameObjects())
@@ -381,43 +398,6 @@ namespace Game.GameControl
         {
             //Debug.Log("on scene loaded event");
             CleanScene(scene);
-        }
-
-        /// <summary>
-        /// Handles the "EnterPillar" event.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void OnEnterPillarEventHandler(object sender, EventManager.EnterPillarEventArgs args)
-        {
-            if (IsPillarLoaded)
-            {
-                throw new Exception("A Pillar is already active!");
-            }
-
-            StartCoroutine(LoadPillarSceneCR(args.PillarId));
-        }
-
-        /// <summary>
-        /// Handles the "LeavePillar" event.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void OnLeavePillarEventHandler(object sender, EventManager.LeavePillarEventArgs args)
-        {
-            if (!IsPillarLoaded)
-            {
-                Debug.LogError("No Pillar is active!");
-                return;
-            }
-
-            //switch pillar to destroyed state
-            if (args.PillarDestroyed)
-            {
-                PlayerModel.DestroyPillar(ActivePillarId);
-            }
-
-            StartCoroutine(ActivateOpenWorldCR(false));
         }
 
         /// <summary>

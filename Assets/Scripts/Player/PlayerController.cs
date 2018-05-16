@@ -29,7 +29,7 @@ namespace Game.Player
 
         // INITIALIZATION
 
-        public void InitializePlayerController(IGameControllerBase gameController)
+        public void InitializePlayerController(IGameController gameController)
         {
             Debug.Log("PlayerController: Initialize");
 

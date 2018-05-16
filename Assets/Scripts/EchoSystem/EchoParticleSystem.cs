@@ -13,7 +13,7 @@ namespace Game.EchoSystem
         [HideInInspector]
         public int numEchoes = 3;
 
-        IGameControllerBase gameController;
+        IGameController gameController;
         float worldSizeX, worldSizeY, worldSizeZ;
         bool isInitialized = false;
         
@@ -23,7 +23,7 @@ namespace Game.EchoSystem
         List<EchoParticle> disabledEchoParticles = new List<EchoParticle>();
         
 
-        public void InitializeEchoParticleSystem(IGameControllerBase gameController)
+        public void InitializeEchoParticleSystem(IGameController gameController)
         {
             this.gameController = gameController;
 

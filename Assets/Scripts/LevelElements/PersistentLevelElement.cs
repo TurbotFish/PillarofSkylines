@@ -10,53 +10,43 @@ namespace Game.LevelElements
     {
         //##################################################################
 
-        private PersistentData persistentData;
-        private IGameControllerBase gameController;
+        // -- ATTRIBUTES
 
-        private bool isCopy;
-        private bool isInitialized;
+        public bool IsInitialized { get; private set; }
+
+        protected IGameController GameController { get; private set; }
+        protected T PersistentData { get; private set; }
 
         //##################################################################
 
-        #region initialization methods
+        // -- INITIALIZATION
 
-        public virtual void Initialize(IGameControllerBase gameController)
+        public virtual void Initialize(IGameController gameController)
         {
-            this.gameController = gameController;
-            this.isCopy = isCopy;
+            GameController = gameController;
 
-            persistentData = gameController.PlayerModel.GetPersistentDataObject(UniqueId);
+            PersistentData = GameController.PlayerModel.GetPersistentDataObject(UniqueId) as T;
 
-            if (persistentData == null)
+            if (PersistentData == null)
             {
-                persistentData = CreatePersistentDataObject();
-                gameController.PlayerModel.AddPersistentDataObject(persistentData);
+                PersistentData = CreatePersistentDataObject() as T;
+                gameController.PlayerModel.AddPersistentDataObject(PersistentData);
             }
 
-            isInitialized = true;
+            IsInitialized = true;
         }
 
-        #endregion initialization methods
+        //##################################################################
+
+        // -- INQUIRIES
+
+
 
         //##################################################################
 
-        #region inquiries
-
-        public bool IsCopy { get { return isCopy; } }
-        public bool IsInitialized { get { return isInitialized; } }
-
-        protected IGameControllerBase GameController { get { return gameController; } }
-        protected T PersistentData { get { return persistentData as T; } }
-
-        #endregion inquiries
-
-        //##################################################################
-
-        #region operations
+        // -- OPERATIONS
 
         protected abstract PersistentData CreatePersistentDataObject();
-
-        #endregion operations
 
         //##################################################################
     }

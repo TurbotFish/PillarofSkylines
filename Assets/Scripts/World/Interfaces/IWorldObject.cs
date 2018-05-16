@@ -2,6 +2,6 @@
 {
     public interface IWorldObject
     {
-        void Initialize(GameControl.IGameControllerBase gameController);
+        void Initialize(GameControl.IGameController gameController);
     }
 } //end of namespace

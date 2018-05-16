@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 
 namespace Game.GameControl
 {
-    public class GameControllerLite : MonoBehaviour, IGameControllerBase
+    public class GameControllerLite : MonoBehaviour, IGameController
     {
         public const string UI_SCENE_NAME = "UiScene";
 
@@ -34,7 +34,7 @@ namespace Game.GameControl
         //
         private bool isOpenWorldLoaded;
         private WorldController worldController;
-        private DuplicationCameraController duplicationCameraController;
+        private DuplicationCameraManager duplicationCameraController;
 
         //
         private bool isPillarLoaded;
@@ -51,7 +51,7 @@ namespace Game.GameControl
 
         public bool IsOpenWorldLoaded { get { return isOpenWorldLoaded; } }
         public WorldController WorldController { get { return worldController; } }
-        public DuplicationCameraController DuplicationCameraController { get { return duplicationCameraController; } }
+        public DuplicationCameraManager DuplicationCameraManager { get { return duplicationCameraController; } }
 
         public bool IsPillarLoaded { get { return isPillarLoaded; } }
         public ePillarId ActivePillarId { get { throw new NotImplementedException(); } }
@@ -79,6 +79,16 @@ namespace Game.GameControl
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #endif
+        }
+
+        public void SwitchToPillar(ePillarId pillar_id)
+        {
+            Debug.LogError("GameControllerLite: SwitchToPillar: cannot do that!");
+        }
+
+        public void SwitchToOpenWorld()
+        {
+            Debug.LogError("GameControllerLite: SwitchToOpenWorld: cannot do that!");
         }
 
         //###############################################################
@@ -126,7 +136,7 @@ namespace Game.GameControl
             playerController = FindObjectOfType<Player.PlayerController>();
             CameraController = FindObjectOfType<CameraController>();
             worldController = FindObjectOfType<WorldController>();
-            duplicationCameraController = FindObjectOfType<DuplicationCameraController>();
+            duplicationCameraController = FindObjectOfType<DuplicationCameraManager>();
 
             //initializing the ui
             uiController.InitializeUi(this, UI.eUiState.LoadingScreen, new EventManager.OnShowLoadingScreenEventArgs());
@@ -228,7 +238,9 @@ namespace Game.GameControl
             }
 
             return result;
-        }       
+        }
+
+        
 
         //###############################################################
     }

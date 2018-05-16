@@ -16,9 +16,9 @@ namespace UnityEngine.PostProcessing
         // Inspector fields
         public PostProcessingProfile profileOutside;
         public PostProcessingProfile profileInside;
-		PostProcessingProfile profile;
+        PostProcessingProfile profile;
 
-		public Func<Vector2, Matrix4x4> jitteredMatrixFunc;
+        public Func<Vector2, Matrix4x4> jitteredMatrixFunc;
 
         // Internal helpers
         Dictionary<Type, KeyValuePair<CameraEvent, CommandBuffer>> m_CommandBuffers;
@@ -50,23 +50,15 @@ namespace UnityEngine.PostProcessing
         VignetteComponent m_Vignette;
         DitheringComponent m_Dithering;
         FxaaComponent m_Fxaa;
-		
-		void EnterPillar(object sender, Game.Utilities.EventManager.EnterPillarEventArgs args) {
-			profile = profileInside;
-		}
 
-		void LeavePillar(object sender, Game.Utilities.EventManager.LeavePillarEventArgs args) {
-			profile = profileOutside;
-		}
+        void OnEnable()
+        {
+            if (profile == null)
+                profile = profileOutside;
 
-		void OnEnable() {
-			if (profile == null)
-				profile = profileOutside;
+            Game.Utilities.EventManager.SceneChangedEvent += SceneChangedEventHandler;
 
-			Game.Utilities.EventManager.EnterPillarEvent += EnterPillar;
-			Game.Utilities.EventManager.LeavePillarEvent += LeavePillar;
-
-			m_CommandBuffers = new Dictionary<Type, KeyValuePair<CameraEvent, CommandBuffer>>();
+            m_CommandBuffers = new Dictionary<Type, KeyValuePair<CameraEvent, CommandBuffer>>();
             m_MaterialFactory = new MaterialFactory();
             m_RenderTextureFactory = new RenderTextureFactory();
             m_Context = new PostProcessingContext();
@@ -99,6 +91,23 @@ namespace UnityEngine.PostProcessing
                 m_ComponentStates.Add(component, false);
 
             useGUILayout = false;
+        }
+
+        /// <summary>
+        /// Handles ScneChangedEvent.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void SceneChangedEventHandler(object sender, Game.Utilities.EventManager.SceneChangedEventArgs args)
+        {
+            if (args.HasChangedToPillar)
+            {
+                profile = profileInside;
+            }
+            else
+            {
+                profile = profileOutside;
+            }
         }
 
         void OnPreCull()
@@ -327,13 +336,12 @@ namespace UnityEngine.PostProcessing
                 m_UserLut.OnGUI();
         }
 
-        void OnDisable() {
+        void OnDisable()
+        {
+            Game.Utilities.EventManager.SceneChangedEvent -= SceneChangedEventHandler;
 
-			Game.Utilities.EventManager.EnterPillarEvent -= EnterPillar;
-			Game.Utilities.EventManager.LeavePillarEvent -= LeavePillar;
-
-			// Clear command buffers
-			foreach (var cb in m_CommandBuffers.Values)
+            // Clear command buffers
+            foreach (var cb in m_CommandBuffers.Values)
             {
                 m_Camera.RemoveCommandBuffer(cb.Key, cb.Value);
                 cb.Value.Dispose();

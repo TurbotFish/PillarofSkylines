@@ -6,7 +6,7 @@ namespace Game.UI
     {
         bool IsActive { get; }
 
-        void Initialize(IGameControllerBase gameController);
+        void Initialize(IGameController gameController);
 
         void Activate(Utilities.EventManager.OnShowMenuEventArgs args);
 

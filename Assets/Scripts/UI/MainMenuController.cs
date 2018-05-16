@@ -16,14 +16,14 @@ namespace Game.UI
 
         public bool IsActive { get; private set; }
 
-        IGameControllerBase gameController;
+        IGameController gameController;
 
         [SerializeField]
         private Button playButton;
 
         //##################################################################
 
-        void IUiState.Initialize(IGameControllerBase gameController)
+        void IUiState.Initialize(IGameController gameController)
         {
             this.gameController = gameController;
         }
