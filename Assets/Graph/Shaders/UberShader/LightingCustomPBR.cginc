@@ -1,3 +1,5 @@
+// Upgrade NOTE: upgraded instancing buffer 'InstanceProperties' to new syntax.
+
 
 	#if !defined (LIGHTING_CUSTOM_PBR_INCLUDED)
 
@@ -176,9 +178,10 @@
 		#endif
 	};
 
-	UNITY_INSTANCING_CBUFFER_START(InstanceProperties)
+	UNITY_INSTANCING_BUFFER_START(InstanceProperties)
 		UNITY_DEFINE_INSTANCED_PROP(float4, _Color)
-	UNITY_INSTANCING_CBUFFER_END
+#define _Color_arr InstanceProperties
+	UNITY_INSTANCING_BUFFER_END(InstanceProperties)
 
 	void ComputeVertexLightColor(inout Interpolators i){
 		#if defined(VERTEXLIGHT_ON)
@@ -213,7 +216,7 @@
 
 	float3 GetAlbedo(Interpolators i){
 		float3 albedoTex = tex2D(_MainTex, i.uv.xy).rgb;
-		float3 albedo = albedoTex * UNITY_ACCESS_INSTANCED_PROP(_Color).rgb;
+		float3 albedo = albedoTex * UNITY_ACCESS_INSTANCED_PROP(_Color_arr, _Color).rgb;
 		#if defined(_ALBEDO_VERTEX_MASK)
 			albedo = lerp(albedoTex, albedo, i.color.g);
 		#endif
@@ -307,7 +310,7 @@
 	}
 
 	float GetAlpha(Interpolators i){
-		float alpha = UNITY_ACCESS_INSTANCED_PROP(_Color).a;
+		float alpha = UNITY_ACCESS_INSTANCED_PROP(_Color_arr, _Color).a;
 		#if !defined(_SMOOTHNESS_ALBEDO)
 			alpha *= tex2D(_MainTex, i.uv.xy).a;
 		#endif

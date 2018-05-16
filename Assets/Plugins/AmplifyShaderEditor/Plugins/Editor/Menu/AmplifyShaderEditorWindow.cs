@@ -1625,7 +1625,7 @@ namespace AmplifyShaderEditor
 
 		void PreTestLeftMouseDown()
 		{
-			if( m_currentEvent.type == EventType.mouseDown && m_currentEvent.button == ButtonClickId.LeftMouseButton )
+			if( m_currentEvent.type == EventType.MouseDown && m_currentEvent.button == ButtonClickId.LeftMouseButton )
 			{
 				ParentNode node = m_mainGraphInstance.CheckNodeAt( m_currentMousePos );
 				if( node != null )
@@ -2539,14 +2539,14 @@ namespace AmplifyShaderEditor
 			{
 				m_contextMenu.UpdateKeyPress( m_currentEvent.keyCode );
 			}
-			else if( m_currentEvent.type == EventType.keyUp )
+			else if( m_currentEvent.type == EventType.KeyUp )
 			{
 				m_contextMenu.UpdateKeyReleased( m_currentEvent.keyCode );
 			}
 
 			if( InsideMenus( m_currentMousePos2D ) )
 			{
-				if( m_currentEvent.type == EventType.mouseDown )
+				if( m_currentEvent.type == EventType.MouseDown )
 				{
 					m_mouseDownOnValidArea = false;
 					UseCurrentEvent();
@@ -2623,12 +2623,12 @@ namespace AmplifyShaderEditor
 					OnScrollWheel();
 				}
 				break;
-				case EventType.keyDown:
+				case EventType.KeyDown:
 				{
 					OnKeyboardDown();
 				}
 				break;
-				case EventType.keyUp:
+				case EventType.KeyUp:
 				{
 					OnKeyboardUp();
 				}
@@ -3872,7 +3872,7 @@ namespace AmplifyShaderEditor
 				m_previousShaderFunction = CurrentGraph.CurrentShaderFunction;
 			}
 
-			if( m_nodeToFocus != null && m_currentEvent.type == EventType.layout )
+			if( m_nodeToFocus != null && m_currentEvent.type == EventType.Layout )
 			{
 				FocusOnNode( m_nodeToFocus, m_zoomToFocus, m_selectNodeToFocus );
 				m_nodeToFocus = null;
@@ -3974,7 +3974,7 @@ namespace AmplifyShaderEditor
 			m_cameraInfo = position;
 
 			//if( m_currentEvent.type == EventType.keyDown )
-			if( m_currentEvent.type == EventType.repaint )
+			if( m_currentEvent.type == EventType.Repaint )
 				m_keyEvtMousePos2D = m_currentEvent.mousePosition;
 
 			m_currentMousePos2D = m_currentEvent.mousePosition;
@@ -4013,10 +4013,10 @@ namespace AmplifyShaderEditor
 			bool restoreMouse = false;
 			if( InsideMenus( m_currentMousePos2D ) /*|| _confirmationWindow.IsActive*/ )
 			{
-				if( Event.current.type == EventType.mouseDown )
+				if( Event.current.type == EventType.MouseDown )
 				{
 					restoreMouse = true;
-					Event.current.type = EventType.ignore;
+					Event.current.type = EventType.Ignore;
 				}
 
 				// Must guarantee that mouse up ops on menus will reset auto pan if it is set
@@ -4100,8 +4100,8 @@ namespace AmplifyShaderEditor
 
 			if( restoreMouse )
 			{
-				Event.current.type = EventType.mouseDown;
-				m_drawInfo.CurrentEventType = EventType.mouseDown;
+				Event.current.type = EventType.MouseDown;
+				m_drawInfo.CurrentEventType = EventType.MouseDown;
 			}
 
 			m_toolsWindow.InitialX = m_nodeParametersWindow.RealWidth;
@@ -4126,10 +4126,10 @@ namespace AmplifyShaderEditor
 
 			// Test to ignore mouse on main palette when inside context palette ... IsInside also takes active state into account 
 			bool ignoreMouseForPalette = m_contextPalette.IsInside( m_currentMousePos2D );
-			if( ignoreMouseForPalette && Event.current.type == EventType.mouseDown )
+			if( ignoreMouseForPalette && Event.current.type == EventType.MouseDown )
 			{
-				Event.current.type = EventType.ignore;
-				m_drawInfo.CurrentEventType = EventType.ignore;
+				Event.current.type = EventType.Ignore;
+				m_drawInfo.CurrentEventType = EventType.Ignore;
 			}
 			if( autoMinimize )
 				m_paletteWindow.IsMaximized = false;
@@ -4144,8 +4144,8 @@ namespace AmplifyShaderEditor
 			{
 				if( restoreMouse )
 				{
-					Event.current.type = EventType.mouseDown;
-					m_drawInfo.CurrentEventType = EventType.mouseDown;
+					Event.current.type = EventType.MouseDown;
+					m_drawInfo.CurrentEventType = EventType.MouseDown;
 				}
 			}
 
@@ -4195,7 +4195,7 @@ namespace AmplifyShaderEditor
 			if( !MouseInteracted )
 				HandleGUIEvents();
 
-			if( m_currentEvent.type == EventType.repaint )
+			if( m_currentEvent.type == EventType.Repaint )
 			{
 				m_mainGraphInstance.UpdateMarkForDeletion();
 			}

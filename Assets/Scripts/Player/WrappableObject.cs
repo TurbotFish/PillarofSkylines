@@ -8,8 +8,6 @@ namespace Game.Player
 {
     public class WrappableObject : MonoBehaviour
     {
-        [SerializeField]
-        List<Transform> followers;
 
         IGameController gameController;
         Transform myTransform;
