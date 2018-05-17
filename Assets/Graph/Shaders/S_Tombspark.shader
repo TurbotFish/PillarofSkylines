@@ -12,7 +12,7 @@ Shader "Bobo/Particle/TombSpark"
 
 	SubShader
 	{
-		Tags{ "RenderType" = "Transparent"  "Queue" = "Transparent+0" "IgnoreProjector" = "True" "IsEmissive" = "true"  }
+		Tags{ "RenderType" = "Transparent"  "Queue" = "Transparent+1" "IgnoreProjector" = "True" "IsEmissive" = "true"  }
 		Cull Back
 		CGINCLUDE
 		#include "UnityPBSLighting.cginc"
@@ -34,7 +34,8 @@ Shader "Bobo/Particle/TombSpark"
 			o.Albedo = temp_output_1_0.rgb;
 			o.Emission = ( i.vertexColor * _Emissive_intensity ).rgb;
 			float2 uv_TextureSample0 = i.uv_texcoord * _TextureSample0_ST.xy + _TextureSample0_ST.zw;
-			o.Alpha = lerp( 0.0 , i.vertexColor.a , tex2D( _TextureSample0, uv_TextureSample0 ).r );
+			float lerpResult2 = lerp( 0.0 , i.vertexColor.a , tex2D( _TextureSample0, uv_TextureSample0 ).r);
+			o.Alpha = lerpResult2;
 		}
 
 		ENDCG
@@ -76,7 +77,7 @@ Shader "Bobo/Particle/TombSpark"
 				UNITY_INITIALIZE_OUTPUT( v2f, o );
 				UNITY_TRANSFER_INSTANCE_ID( v, o );
 				float3 worldPos = mul( unity_ObjectToWorld, v.vertex ).xyz;
-				half3 worldNormal = UnityObjectToWorldNormal( v.normal );
+				fixed3 worldNormal = UnityObjectToWorldNormal( v.normal );
 				o.texcoords01 = float4( v.texcoord.xy, v.texcoord1.xy );
 				o.worldPos = worldPos;
 				TRANSFER_SHADOW_CASTER_NORMALOFFSET( o )
@@ -91,7 +92,7 @@ Shader "Bobo/Particle/TombSpark"
 				UNITY_SETUP_INSTANCE_ID( IN );
 				Input surfIN;
 				UNITY_INITIALIZE_OUTPUT( Input, surfIN );
-				surfIN.uv_texcoord = IN.texcoords01.xy;
+				surfIN.uv_texcoord.xy = IN.texcoords01.xy;
 				float3 worldPos = IN.worldPos;
 				fixed3 worldViewDir = normalize( UnityWorldSpaceViewDir( worldPos ) );
 				SurfaceOutputStandard o;
@@ -111,15 +112,15 @@ Shader "Bobo/Particle/TombSpark"
 	CustomEditor "ASEMaterialInspector"
 }
 /*ASEBEGIN
-Version=10001
-1927;29;1906;1004;1159;286;1;True;True
+Version=13201
+-1913;29;1906;1004;1159;286;1;True;True
 Node;AmplifyShaderEditor.VertexColorNode;1;-602,23;Float;False;0;5;COLOR;FLOAT;FLOAT;FLOAT;FLOAT
 Node;AmplifyShaderEditor.RangedFloatNode;5;-596,-82;Float;False;Constant;_Float0;Float 0;1;0;0;0;0;0;1;FLOAT
 Node;AmplifyShaderEditor.SamplerNode;4;-724,201;Float;True;Property;_TextureSample0;Texture Sample 0;0;0;None;True;0;False;white;Auto;False;Object;-1;Auto;Texture2D;6;0;SAMPLER2D;;False;1;FLOAT2;0,0;False;2;FLOAT;0.0;False;3;FLOAT2;0,0;False;4;FLOAT2;0,0;False;5;FLOAT;0.0;False;5;COLOR;FLOAT;FLOAT;FLOAT;FLOAT
 Node;AmplifyShaderEditor.RangedFloatNode;7;-665,-166;Float;False;Property;_Emissive_intensity;Emissive_intensity;1;0;0;0;0;0;1;FLOAT
 Node;AmplifyShaderEditor.LerpOp;2;-356,168;Float;False;3;0;FLOAT;0.0;False;1;FLOAT;0.0;False;2;FLOAT;0,0,0,0;False;1;FLOAT
-Node;AmplifyShaderEditor.SimpleMultiplyOpNode;6;-281,-36;Float;False;2;0;COLOR;0.0;False;1;FLOAT;0,0,0,0;False;1;COLOR
-Node;AmplifyShaderEditor.StandardSurfaceOutputNode;0;0,0;Float;False;True;2;Float;ASEMaterialInspector;0;Standard;Bobo/Particle/TombSpark;False;False;False;False;False;False;False;False;False;False;False;False;Back;0;0;False;0;0;Transparent;0.5;True;True;0;False;Transparent;Transparent;All;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;False;0;255;255;0;0;0;0;False;0;4;10;25;False;0.5;True;0;Zero;Zero;0;Zero;Zero;Add;Add;0;False;0;0,0,0,0;VertexOffset;False;Cylindrical;Relative;0;;-1;-1;-1;-1;16;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT;0.0;False;4;FLOAT;0.0;False;5;FLOAT;0.0;False;6;FLOAT3;0,0,0;False;7;FLOAT3;0,0,0;False;8;FLOAT;0.0;False;9;FLOAT;0.0;False;10;OBJECT;0.0;False;11;FLOAT3;0,0,0;False;12;FLOAT3;0,0,0;False;13;FLOAT3;0,0,0;False;14;FLOAT4;0,0,0,0;False;15;FLOAT3;0,0,0;False;0
+Node;AmplifyShaderEditor.SimpleMultiplyOpNode;6;-281,-36;Float;False;2;2;0;COLOR;0,0,0,0;False;1;FLOAT;0,0,0,0;False;1;COLOR
+Node;AmplifyShaderEditor.StandardSurfaceOutputNode;0;0,0;Float;False;True;2;Float;ASEMaterialInspector;0;0;Standard;Bobo/Particle/TombSpark;False;False;False;False;False;False;False;False;False;False;False;False;False;False;True;False;False;Back;0;0;False;0;0;Transparent;0.5;True;True;1;False;Transparent;Transparent;All;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;True;False;0;255;255;0;0;0;0;False;0;4;10;25;False;0.5;True;0;Zero;Zero;0;Zero;Zero;Add;Add;0;False;0;0,0,0,0;VertexOffset;False;Cylindrical;False;Relative;0;;-1;-1;-1;-1;0;0;0;15;0;FLOAT3;0,0,0;False;1;FLOAT3;0,0,0;False;2;FLOAT3;0,0,0;False;3;FLOAT;0.0;False;4;FLOAT;0.0;False;5;FLOAT;0.0;False;6;FLOAT3;0,0,0;False;7;FLOAT3;0,0,0;False;8;FLOAT;0.0;False;9;FLOAT;0.0;False;10;OBJECT;0.0;False;11;FLOAT3;0,0,0;False;12;FLOAT3;0,0,0;False;14;FLOAT4;0,0,0,0;False;15;FLOAT3;0,0,0;False;0
 WireConnection;2;0;5;0
 WireConnection;2;1;1;4
 WireConnection;2;2;4;1
@@ -129,4 +130,4 @@ WireConnection;0;0;1;0
 WireConnection;0;2;6;0
 WireConnection;0;9;2;0
 ASEEND*/
-//CHKSM=AC88F5E0C3F3BA7A3D0222751288E9E6D2E0079D
+//CHKSM=9DBA99A7599956F51C6B9D72CDE2E5948EA87F8C

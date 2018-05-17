@@ -16,7 +16,7 @@ namespace Game.Player
         public EchoSystem.Echo currentEcho;
 
         //
-        IGameControllerBase gameController;
+        IGameController gameController;
 
         //
         bool isPickupInRange = false;
@@ -41,7 +41,7 @@ namespace Game.Player
 
         #region initialization
 
-        public void Initialize(IGameControllerBase gameController)
+        public void Initialize(IGameController gameController)
         {
             this.gameController = gameController;
 
@@ -50,6 +50,7 @@ namespace Game.Player
 
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
+            Utilities.EventManager.PreSceneChangeEvent += PreSceneChangedEventHandler;
         }
 
         #endregion initialization
@@ -74,7 +75,7 @@ namespace Game.Player
                 {
                     currentInteractableObject.OnInteraction();
                 }
-                else
+                else if(gameController.PlayerModel.CheckAbilityActive(AbilityType.Echo))
                 {
                     currentEcho = gameController.EchoManager.CreateEcho(true);
                     currentEcho.transform.SetParent(gameController.PlayerController.CharController.MyTransform);
@@ -183,12 +184,12 @@ namespace Game.Player
                 isDriftButtonDown = false;
 
                 // stop eclipse
-                if (gameController.PlayerModel.hasNeedle)
+                if (gameController.PlayerModel.HasNeedle)
                 {
 
                     print("Needle Slot for Drift: " + needleSlotForDrift + " Collider: " + needleSlotCollider);
 
-                    gameController.PlayerModel.hasNeedle = false;
+                    gameController.PlayerModel.HasNeedle = false;
 
                     if (needleSlotForDrift)
                     {
@@ -500,7 +501,7 @@ namespace Game.Player
                     continue;
                 }
 
-                float newDistance = Vector3.Distance(playerPosition, interactableObject.Position);
+                float newDistance = Vector3.Distance(playerPosition, interactableObject.Transform.position);
                 if (newDistance < smallestDistance)
                 {
                     nearestInteractableObject = interactableObject;
@@ -588,10 +589,23 @@ namespace Game.Player
         }
 
         /// <summary>
+        /// Called before a level switch.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void PreSceneChangedEventHandler(object sender, Utilities.EventManager.PreSceneChangeEventArgs args)
+        {
+            nearbyInteractableObjects.Clear();
+
+            HideUiMessage();
+        }
+
+        /// <summary>
         /// "Reset everything!"  "Everything?"  "EVERYTHING!"
         /// </summary>
         void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
+            //***
             this.isPickupInRange = false;
             this.currentPickup = null;
 
@@ -604,8 +618,7 @@ namespace Game.Player
             this.pillarEntranceInfo.CurrentPillarEntrance = null;
 
             this.pillarExitInRange = false;
-
-            HideUiMessage();
+            //***          
         }
 
         #endregion event handlers

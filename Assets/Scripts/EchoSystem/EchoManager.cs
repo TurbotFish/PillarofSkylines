@@ -20,7 +20,7 @@ namespace Game.EchoSystem
 
         private Animator playerAnimator;
 
-        private IGameControllerBase gameController;
+        private IGameController gameController;
         public Player.CharacterController.CharController charController;
         private EchoCameraEffect echoCamera;
         private EchoParticleSystem echoParticles;
@@ -39,7 +39,7 @@ namespace Game.EchoSystem
 
         #region initialization
 
-        public void Initialize(IGameControllerBase gameController)
+        public void Initialize(IGameController gameController)
         {
             this.gameController = gameController;
             echoCamera = gameController.CameraController.EchoCameraEffect;
@@ -101,7 +101,7 @@ namespace Game.EchoSystem
 
         public void Drift()
         {
-            if (isEclipseActive && !gameController.PlayerModel.hasNeedle)
+            if (isEclipseActive && !gameController.PlayerModel.HasNeedle)
             {
                 return;
             }
@@ -160,7 +160,9 @@ namespace Game.EchoSystem
         public Echo CreateEcho(bool isPlayerEcho)
         {
             if (isEclipseActive)
+            {
                 return null;
+            }
 
             if (placedEchoes == maxEchoes)
             {
@@ -295,6 +297,7 @@ namespace Game.EchoSystem
             echoParticles.RemoveAllEcho();
             echoList.Clear();
 
+            EventManager.SendSetWaypointEvent(this, new EventManager.SetWaypointEventArgs("", transform.position));
             hasWaypoint = false;
         }
 

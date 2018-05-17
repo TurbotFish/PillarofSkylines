@@ -38,7 +38,7 @@ public class CustomDoor : TriggerableObject {
 
 	#region public methods
 
-	public override void Initialize(IGameControllerBase gameController)
+	public override void Initialize(IGameController gameController)
 	{
 		base.Initialize(gameController);
 

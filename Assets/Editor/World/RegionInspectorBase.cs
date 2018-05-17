@@ -114,7 +114,7 @@ namespace Game.World
             {
                 foreach (var subSceneVariant in self.AvailableSubSceneVariants)
                 {
-                    foreach (var subSceneLayer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
+                    foreach (var subSceneLayer in Enum.GetValues(typeof(SubSceneLayer)).Cast<SubSceneLayer>())
                     {
                         if (!self.GetSubSceneRoot(subSceneVariant, subSceneLayer) && GUILayout.Button("Create " + WorldUtility.GetSubSceneRootName(subSceneVariant, subSceneLayer)))
                         {
@@ -201,9 +201,9 @@ namespace Game.World
         /// </summary>
         /// <param name="subSceneVariant"></param>
         /// <param name="subSceneLayer"></param>
-        private void CreateSubScene(eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer)
+        private void CreateSubScene(SubSceneVariant subSceneVariant, SubSceneLayer subSceneLayer)
         {
-            string subScenePath = WorldUtility.GetSubScenePath(self.gameObject.scene.path, self.UniqueId, subSceneVariant, subSceneLayer, eSuperRegionType.Centre);
+            string subScenePath = WorldUtility.GetSubScenePath(self.gameObject.scene.path, self.UniqueId, subSceneVariant, subSceneLayer);
             string subScenePathFull = WorldUtility.GetFullPath(subScenePath);
 
             if (self.GetSubSceneRoot(subSceneVariant, subSceneLayer) != null)

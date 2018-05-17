@@ -14,12 +14,12 @@ namespace Game.LevelElements
         
         [SerializeField] float lookAtDamp = 0.5f;
 
-        private IGameControllerBase gameController;
+        private IGameController gameController;
         private Transform target;
 
         //########################################################################
 
-        public void Initialize(IGameControllerBase gameController)
+        public void Initialize(IGameController gameController)
         {
             this.gameController = gameController;
             target = gameController.PlayerController.CharController.MyTransform;
@@ -37,11 +37,11 @@ namespace Game.LevelElements
 
         //########################################################################
 
-        public Vector3 Position { get { return transform.position; } }
+        public Transform Transform { get { return transform; } }
 
         public bool IsInteractable()
         {
-            return gameController.PlayerModel.hasNeedle;
+            return gameController.PlayerModel.HasNeedle;
         }
 
         //########################################################################
@@ -77,12 +77,14 @@ namespace Game.LevelElements
 
         public void OnInteraction()
         {
-            gameController.PlayerModel.hasNeedle = false;
-
-            EventManager.SendLeavePillarEvent(this, new EventManager.LeavePillarEventArgs(true));
-
             var showMessageEventArgs = new EventManager.OnShowHudMessageEventArgs(false);
             EventManager.SendShowHudMessageEvent(this, showMessageEventArgs);
+
+            gameController.PlayerModel.HasNeedle = false;
+
+            gameController.PlayerModel.DestroyPillar(gameController.ActivePillarId);
+
+            gameController.SwitchToOpenWorld();         
         }
 
         void OnEclipseEventHandler(object sender, EventManager.EclipseEventArgs args)

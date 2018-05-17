@@ -146,7 +146,7 @@ namespace Game.Player.CharacterController.States
 					stateMachine.ChangeState(state);
 				}
                 //if the player is falling or is jumping again
-                else if (remainingAerialJumps > 0 && charController.PlayerModel.CheckAbilityActive(eAbilityType.DoubleJump)) {
+                else if (remainingAerialJumps > 0 && charController.PlayerModel.CheckAbilityActive(AbilityType.DoubleJump)) {
 					var state = new AirState(charController, stateMachine, eAirStateMode.aerialJump);
 					stateMachine.SetRemainingAerialJumps(remainingAerialJumps - 1);
 

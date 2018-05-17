@@ -14,7 +14,7 @@ namespace Game.Model
 
         #region methods
 
-        public Ability GetAbility(eAbilityType ability)
+        public Ability GetAbility(AbilityType ability)
         {
             var result = ab.FirstOrDefault(item => item.Type == ability);
             return result;
@@ -31,8 +31,8 @@ namespace Game.Model
 
         void OnValidate()
         {
-            List<eAbilityType> wantedValues = Enum.GetValues(typeof(eAbilityType)).Cast<eAbilityType>().ToList();
-            List<eAbilityType> presentValues = new List<eAbilityType>();
+            List<AbilityType> wantedValues = Enum.GetValues(typeof(AbilityType)).Cast<AbilityType>().ToList();
+            List<AbilityType> presentValues = new List<AbilityType>();
 
             List<Ability> elementsToRemove = new List<Ability>();
             bool changedList = false;

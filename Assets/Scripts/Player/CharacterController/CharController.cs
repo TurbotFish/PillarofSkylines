@@ -53,7 +53,7 @@ namespace Game.Player.CharacterController
 
         public PlayerController PlayerController { get; private set; }
 
-        public GameControl.IGameControllerBase gameController;
+        public GameControl.IGameController gameController;
 
         public Transform MyTransform { get; private set; }
 
@@ -119,7 +119,7 @@ namespace Game.Player.CharacterController
 
         #region initialization
 
-        public void Initialize(GameControl.IGameControllerBase gameController)
+        public void Initialize(GameControl.IGameController gameController)
         {
             tempPhysicsHandler = GetComponent<CharacControllerRecu>();
             animator = GetComponentInChildren<Animator>();
@@ -139,13 +139,13 @@ namespace Game.Player.CharacterController
 
             stateMachine = new StateMachine(this);
 
-            stateMachine.RegisterAbility(ePlayerState.dash, eAbilityType.Dash);
-            stateMachine.RegisterAbility(ePlayerState.glide, eAbilityType.Glide);
-            stateMachine.RegisterAbility(ePlayerState.wallRun, eAbilityType.WallRun);
-            stateMachine.RegisterAbility(ePlayerState.hover, eAbilityType.Hover);
-            stateMachine.RegisterAbility(ePlayerState.jetpack, eAbilityType.Jetpack);
-            stateMachine.RegisterAbility(ePlayerState.graviswap, eAbilityType.Graviswap);
-            stateMachine.RegisterAbility(ePlayerState.phantom, eAbilityType.Phantom);
+            stateMachine.RegisterAbility(ePlayerState.dash, AbilityType.Dash);
+            stateMachine.RegisterAbility(ePlayerState.glide, AbilityType.Glide);
+            stateMachine.RegisterAbility(ePlayerState.wallRun, AbilityType.WallRun);
+            stateMachine.RegisterAbility(ePlayerState.hover, AbilityType.Hover);
+            stateMachine.RegisterAbility(ePlayerState.jetpack, AbilityType.Jetpack);
+            stateMachine.RegisterAbility(ePlayerState.graviswap, AbilityType.Graviswap);
+            stateMachine.RegisterAbility(ePlayerState.phantom, AbilityType.Phantom);
 
             stateMachine.jetpackFuel = CharData.Jetpack.MaxFuel;
 
@@ -521,7 +521,7 @@ namespace Game.Player.CharacterController
 
         void CreateGroundRise()
         {
-            if (PlayerModel.CheckAbilityActive(eAbilityType.GroundRise))
+            if (PlayerModel.CheckAbilityActive(AbilityType.GroundRise))
             {
                 GroundRise grRise = Instantiate(groundRisePrefab);
                 grRise.Initialize(MyTransform.position, MyTransform.up, this, velocity);

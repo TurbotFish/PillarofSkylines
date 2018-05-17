@@ -39,7 +39,7 @@ namespace Game.UI
 
         //###########################################################
 
-        void IUiState.Initialize(IGameControllerBase gameController)
+        void IUiState.Initialize(IGameController gameController)
         {
             //this.playerModel = playerModel;
         }

@@ -19,7 +19,7 @@ namespace Game.LevelElements
 
         #region initialization
 
-        public override void Initialize(IGameControllerBase gameController)
+        public override void Initialize(IGameController gameController)
         {
             base.Initialize(gameController);
 
@@ -32,11 +32,11 @@ namespace Game.LevelElements
 
         #region inquiries
 
-        public Vector3 Position { get { return transform.position; } }
+        public Transform Transform { get { return transform; } }
 
         public bool IsInteractable()
         {
-            return (PersistentData.ContainsNeedle || GameController.PlayerModel.hasNeedle);
+            return (PersistentData.ContainsNeedle || GameController.PlayerModel.HasNeedle);
         }
 
         #endregion inquiries
@@ -55,7 +55,7 @@ namespace Game.LevelElements
 
         public void OnHoverBegin()
         {
-            var eventArgs = new EventManager.OnShowHudMessageEventArgs(true, GameController.PlayerModel.hasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle");
+            var eventArgs = new EventManager.OnShowHudMessageEventArgs(true, GameController.PlayerModel.HasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle");
             EventManager.SendShowHudMessageEvent(this, eventArgs);
         }
 
@@ -72,19 +72,19 @@ namespace Game.LevelElements
                 return;
             }
 
-            needleGameObject.SetActive(GameController.PlayerModel.hasNeedle);
+            needleGameObject.SetActive(GameController.PlayerModel.HasNeedle);
 
-            GameController.PlayerModel.hasNeedle ^= true;
-            PersistentData.ContainsNeedle = !GameController.PlayerModel.hasNeedle;
+            GameController.PlayerModel.HasNeedle ^= true;
+            PersistentData.ContainsNeedle = !GameController.PlayerModel.HasNeedle;
 
-            if (GameController.PlayerModel.hasNeedle)
+            if (GameController.PlayerModel.HasNeedle)
             {
                 EventManager.SendSetWaypointEvent(this, new EventManager.SetWaypointEventArgs("NeedleSlot", transform.position));
             }
 
-            EventManager.SendEclipseEvent(this, new EventManager.EclipseEventArgs(GameController.PlayerModel.hasNeedle)); // This will activate the player needle.
+            EventManager.SendEclipseEvent(this, new EventManager.EclipseEventArgs(GameController.PlayerModel.HasNeedle)); // This will activate the player needle.
 
-            var showHudEventArgs = new EventManager.OnShowHudMessageEventArgs(true, GameController.PlayerModel.hasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle");
+            var showHudEventArgs = new EventManager.OnShowHudMessageEventArgs(true, GameController.PlayerModel.HasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle");
             EventManager.SendShowHudMessageEvent(this, showHudEventArgs);
         }
 
