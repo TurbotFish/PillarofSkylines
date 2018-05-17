@@ -24,9 +24,6 @@ namespace Game.World
         private SerializedProperty RenderDistanceMediumProperty;
         private SerializedProperty RenderDistanceFarProperty;
 
-        private SerializedProperty PreTeleportOffsetProperty;
-        private SerializedProperty SecondaryPositionDistanceModifierProperty;
-
         private SerializedProperty DrawBoundsProperty;
         private SerializedProperty DrawRegionBoundsProperty;
 
@@ -48,9 +45,6 @@ namespace Game.World
             RenderDistanceNearProperty = serializedObject.FindProperty("renderDistanceNear");
             RenderDistanceMediumProperty = serializedObject.FindProperty("renderDistanceMedium");
             RenderDistanceFarProperty = serializedObject.FindProperty("renderDistanceFar");
-
-            PreTeleportOffsetProperty = serializedObject.FindProperty("preTeleportOffset");
-            SecondaryPositionDistanceModifierProperty = serializedObject.FindProperty("secondaryPositionDistanceModifier");
 
             DrawBoundsProperty = serializedObject.FindProperty("drawBounds");
             DrawRegionBoundsProperty = serializedObject.FindProperty("drawRegionBounds");
@@ -82,9 +76,6 @@ namespace Game.World
             RenderDistanceNearProperty.floatValue = EditorGUILayout.FloatField("Near", RenderDistanceNearProperty.floatValue);
             RenderDistanceMediumProperty.floatValue = EditorGUILayout.FloatField("Medium", RenderDistanceMediumProperty.floatValue);
             RenderDistanceFarProperty.floatValue = EditorGUILayout.FloatField("Far", RenderDistanceFarProperty.floatValue);
-
-            PreTeleportOffsetProperty.floatValue = EditorGUILayout.FloatField("PreTeleportOffset", PreTeleportOffsetProperty.floatValue);
-            SecondaryPositionDistanceModifierProperty.floatValue = EditorGUILayout.FloatField("SecondaryPositionDistanceModifier", SecondaryPositionDistanceModifierProperty.floatValue);
 
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("--Bounds - Editor--");

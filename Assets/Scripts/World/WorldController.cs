@@ -20,9 +20,6 @@ namespace Game.World
         [SerializeField, HideInInspector] private float renderDistanceMedium;
         [SerializeField, HideInInspector] private float renderDistanceFar;
 
-        [SerializeField, HideInInspector] private float preTeleportOffset;
-        [SerializeField, HideInInspector] private float secondaryPositionDistanceModifier;
-
         [SerializeField, HideInInspector] private bool drawBounds;
         [SerializeField, HideInInspector] private bool drawRegionBounds;
 
@@ -48,8 +45,6 @@ namespace Game.World
         public float RenderDistanceNear { get { return renderDistanceNear; } }
         public float RenderDistanceMedium { get { return renderDistanceMedium; } }
         public float RenderDistanceFar { get { return renderDistanceFar; } }
-
-        public float SecondaryPositionDistanceModifier { get { return secondaryPositionDistanceModifier; } }
 
         public bool ShowRegionMode { get { return showRegionMode; } }
         public Color ModeNearColor { get { return modeNearColor; } }
@@ -311,22 +306,8 @@ namespace Game.World
                 renderDistanceFar = renderDistanceMedium + part;
             }
 
-            //
-            if (preTeleportOffset < 1)
-            {
-                preTeleportOffset = 1;
-            }
-
-            //
-            if (secondaryPositionDistanceModifier < 0)
-            {
-                secondaryPositionDistanceModifier = 0;
-            }
-
-            //
             invisibilityAngle = Mathf.Clamp(invisibilityAngle, 0, 360);
 
-            //
             if (debugResultCount < 1)
             {
                 debugResultCount = 1;
@@ -458,7 +439,13 @@ namespace Game.World
         private List<Vector3> ComputeTeleportPositions(Vector3 player_position)
         {
             var teleport_positions = new List<Vector3>();
-            var half_size = worldSize * 0.5f;
+
+            teleport_positions.Add(player_position + new Vector3(0, worldSize.y, 0));
+            teleport_positions.Add(player_position + new Vector3(0, -worldSize.y, 0));
+            teleport_positions.Add(player_position + new Vector3(0, 0, worldSize.z));
+            teleport_positions.Add(player_position + new Vector3(0, 0, -worldSize.z));
+
+            /*var half_size = worldSize * 0.5f;
 
             if (player_position.y > half_size.y - preTeleportOffset)
             {
@@ -484,7 +471,7 @@ namespace Game.World
                 var teleport_position = player_position;
                 teleport_position.z = half_size.z;
                 teleport_positions.Add(teleport_position);
-            }
+            }*/
 
             return teleport_positions;
         }
