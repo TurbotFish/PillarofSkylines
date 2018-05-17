@@ -24,12 +24,12 @@ namespace Game.Model
 
         // -- INQUIRIES
 
-        public string GetPillarSceneName(ePillarId pillar_id)
+        public string GetPillarSceneName(PillarId pillar_id)
         {
             return PillarSceneNameList[(int)pillar_id];
         }
 
-        public int GetPillarSceneActivationCost(ePillarId pillar_id)
+        public int GetPillarSceneActivationCost(PillarId pillar_id)
         {
             return PillarSceneActivationPriceList[(int)pillar_id];
         }

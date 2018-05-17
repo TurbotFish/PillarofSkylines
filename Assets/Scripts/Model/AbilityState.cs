@@ -1,6 +1,6 @@
 ﻿namespace Game.Model
 {
-    public enum eAbilityState
+    public enum AbilityState
     {
         locked,
         available,

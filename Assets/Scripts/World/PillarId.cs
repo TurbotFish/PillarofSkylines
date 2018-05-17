@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Game.World
 {
-    public enum ePillarId
+    public enum PillarId
     {
         Pillar_01,
         Pillar_02,

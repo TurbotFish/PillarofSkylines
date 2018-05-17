@@ -2,35 +2,28 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game
+namespace Game.GameControl
 {
     public class TimeController : MonoBehaviour
     {
-        [SerializeField]
-        float transitionTimeSlowDown = 0.2f;
+        //###########################################################
 
-        [SerializeField]
-        float transitionTimeSpeedUp = 0.2f;
+        // -- ATTRIBUTES
 
-        [SerializeField]
-        float timescaleMenuOpen = 0.1f;
+        [SerializeField] float transitionTimeSlowDown = 0.2f;
+        [SerializeField] float transitionTimeSpeedUp = 0.2f;
+        [SerializeField] float timescaleMenuOpen = 0.1f;
 
         bool isSlowingDownTime = false;
         bool isSpeedingUpTime = false;
 
         //###########################################################
 
+        // -- INITIALIZATION
+
         void Start()
         {
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuOpenedEventHandler;
-        }
-
-        void OnValidate()
-        {
-            if (this.timescaleMenuOpen <= 0.001f)
-            {
-                this.timescaleMenuOpen = 0.001f;
-            }
         }
 
         private void OnDestroy()
@@ -39,10 +32,16 @@ namespace Game
         }
 
         //###########################################################
-        //###########################################################
 
-        //###########################################################
-        //###########################################################
+        // -- OPERATIONS
+
+        void OnValidate()
+        {
+            if (this.timescaleMenuOpen <= 0.001f)
+            {
+                this.timescaleMenuOpen = 0.001f;
+            }
+        }
 
         void OnMenuOpenedEventHandler(object sender, Utilities.EventManager.OnMenuSwitchedEventArgs args)
         {
@@ -79,8 +78,6 @@ namespace Game
                 StartCoroutine(ChangeTimescaleRoutine(1f, this.transitionTimeSpeedUp));
             }
         }
-
-        //###########################################################
 
         IEnumerator ChangeTimescaleRoutine(float targetValue, float duration)
         {
@@ -129,4 +126,4 @@ namespace Game
             }
         }
     }
-}
+} // end of namespace

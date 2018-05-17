@@ -24,8 +24,8 @@ namespace Game.Model
 
         private List<AbilityType> ActivatedAbilityList = new List<AbilityType>();
 
-        private List<ePillarId> DestoyedPillarList = new List<ePillarId>();
-        private List<ePillarId> UnlockedPillarList = new List<ePillarId>();
+        private List<PillarId> DestoyedPillarList = new List<PillarId>();
+        private List<PillarId> UnlockedPillarList = new List<PillarId>();
 
         private Dictionary<string, PersistentData> PersistentDataDictionary = new Dictionary<string, PersistentData>();
 
@@ -48,17 +48,15 @@ namespace Game.Model
         /// </summary>
         /// <param name="abilityType"></param>
         /// <returns></returns>
-        public eAbilityState GetAbilityState(AbilityType abilityType)
+        public AbilityState GetAbilityState(AbilityType abilityType)
         {
-            var ability = AbilityData.GetAbility(abilityType);
-
             if (ActivatedAbilityList.Contains(abilityType))
             {
-                return eAbilityState.active;
+                return AbilityState.active;
             }
             else
             {
-                return eAbilityState.locked;
+                return AbilityState.locked;
             }
         }
 
@@ -84,7 +82,7 @@ namespace Game.Model
         /// </summary>
         /// <param name="pillarId">The Id of the pillar to check.</param>
         /// <returns></returns>
-        public bool CheckIsPillarDestroyed(ePillarId pillarId)
+        public bool CheckIsPillarDestroyed(PillarId pillarId)
         {
             return DestoyedPillarList.Contains(pillarId);
         }
@@ -94,7 +92,7 @@ namespace Game.Model
         /// </summary>
         /// <param name="pillarId">The Id of the pillar to be unlocked.</param>
         /// <returns></returns>
-        public int GetPillarEntryPrice(ePillarId pillarId)
+        public int GetPillarEntryPrice(PillarId pillarId)
         {
             if (UnlockedPillarList.Contains(pillarId))
             {
@@ -111,7 +109,7 @@ namespace Game.Model
         /// </summary>
         /// <param name="pillarId">The Id of the pillar to check.</param>
         /// <returns></returns>
-        public bool CheckIsPillarUnlocked(ePillarId pillarId)
+        public bool CheckIsPillarUnlocked(PillarId pillarId)
         {
             return UnlockedPillarList.Contains(pillarId);
         }
@@ -165,16 +163,13 @@ namespace Game.Model
         {
             var ability = AbilityData.GetAbility(abilityType);
 
-            if (ActivatedAbilityList.Contains(abilityType))
-            {
-                return true;
-            }
-            else
+            if (!ActivatedAbilityList.Contains(abilityType))
             {
                 ActivatedAbilityList.Add(abilityType);
-
-                return false;
+                
             }
+
+            return true;
         }
 
         /// <summary>
@@ -192,7 +187,7 @@ namespace Game.Model
         /// Destroys a pillar.
         /// </summary>
         /// <param name="pillarId">The Id of the pillar to destroy.</param>
-        public void DestroyPillar(ePillarId pillarId)
+        public void DestroyPillar(PillarId pillarId)
         {
             if (!DestoyedPillarList.Contains(pillarId))
             {
@@ -207,7 +202,7 @@ namespace Game.Model
         /// </summary>
         /// <param name="pillarId">The Id of the pillar to unlock</param>
         /// <returns>true if the Pillar is unlocked, false otherwise</returns>
-        public bool UnlockPillar(ePillarId pillarId)
+        public bool UnlockPillar(PillarId pillarId)
         {
             if (UnlockedPillarList.Contains(pillarId))
             {

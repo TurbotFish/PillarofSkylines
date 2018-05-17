@@ -13,19 +13,19 @@ namespace Game.World
         [SerializeField]
         [HideInInspector]
         [FormerlySerializedAs("subSceneMode")]
-        eSubSceneVariant subSceneVariant;
+        SubSceneVariant subSceneVariant;
 
         [SerializeField]
         [HideInInspector]
         [FormerlySerializedAs("subSceneType")]
-        eSubSceneLayer subSceneLayer;
+        SubSceneLayer subSceneLayer;
 
         //========================================================================================
 
-        public eSubSceneVariant SubSceneVariant { get { return subSceneVariant; } }
-        public eSubSceneLayer SubSceneLayer { get { return subSceneLayer; } }
+        public SubSceneVariant SubSceneVariant { get { return subSceneVariant; } }
+        public SubSceneLayer SubSceneLayer { get { return subSceneLayer; } }
 
-        public void Initialize(eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer)
+        public void Initialize(SubSceneVariant subSceneVariant, SubSceneLayer subSceneLayer)
         {
             this.subSceneVariant = subSceneVariant;
             this.subSceneLayer = subSceneLayer;
