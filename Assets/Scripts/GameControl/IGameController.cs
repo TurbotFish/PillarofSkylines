@@ -33,7 +33,7 @@ namespace Game.GameControl
         /// <summary>
         /// The id of the pillar scene.
         /// </summary>
-        ePillarId ActivePillarId { get; }
+        PillarId ActivePillarId { get; }
         /// <summary>
         /// The spawn point manager of the currently loaded scene. Is null if no scene is loaded!
         /// </summary>
@@ -45,7 +45,7 @@ namespace Game.GameControl
 
         void ExitGame();
 
-        void SwitchToPillar(ePillarId pillar_id);
+        void SwitchToPillar(PillarId pillar_id);
 
         void SwitchToOpenWorld();
     }

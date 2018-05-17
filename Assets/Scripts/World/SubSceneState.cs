@@ -3,7 +3,7 @@
 namespace Game.World
 {
     [Flags]
-    public enum eSubSceneState
+    public enum SubSceneState
     {
         Unloaded = 1,
         Loading = 2,

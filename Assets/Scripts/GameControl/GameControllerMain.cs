@@ -32,7 +32,7 @@ namespace Game.GameControl
         public DuplicationCameraManager DuplicationCameraManager { get; private set; }
 
         public bool IsPillarLoaded { get; private set; }
-        public ePillarId ActivePillarId { get; private set; }
+        public PillarId ActivePillarId { get; private set; }
 
         public SpawnPointManager SpawnPointManager { get; private set; }
 
@@ -153,7 +153,7 @@ namespace Game.GameControl
 #endif
         }
 
-        public void SwitchToPillar(ePillarId pillar_id)
+        public void SwitchToPillar(PillarId pillar_id)
         {
             if (IsPillarLoaded)
             {
@@ -251,7 +251,7 @@ namespace Game.GameControl
             }
             else
             {
-                ePillarState pillarState = PlayerModel.CheckIsPillarDestroyed(ActivePillarId) ? ePillarState.Destroyed : ePillarState.Intact;
+                PillarState pillarState = PlayerModel.CheckIsPillarDestroyed(ActivePillarId) ? PillarState.Destroyed : PillarState.Intact;
                 spawn_position = SpawnPointManager.GetPillarExitPoint(ActivePillarId, pillarState);
                 spawn_rotation = SpawnPointManager.GetPillarExitOrientation(ActivePillarId, pillarState);
             }
@@ -262,7 +262,7 @@ namespace Game.GameControl
             WorldController.Activate(spawn_position);
             DuplicationCameraManager.Activate();
 
-            while (WorldController.CurrentState == eWorldControllerState.Activating)
+            while (WorldController.CurrentState == WorldControllerState.Activating)
             {
                 yield return null;
             }
@@ -296,7 +296,7 @@ namespace Game.GameControl
         /// </summary>
         /// <param name="pillarId"></param>
         /// <returns></returns>
-        private IEnumerator LoadPillarSceneCR(ePillarId pillarId)
+        private IEnumerator LoadPillarSceneCR(PillarId pillarId)
         {
             CameraController.PoS_Camera.CameraComponent.enabled = false;
 
@@ -318,7 +318,7 @@ namespace Game.GameControl
             WorldController.Deactivate();
             DuplicationCameraManager.Deactivate();
 
-            while (WorldController.CurrentState == eWorldControllerState.Deactivating)
+            while (WorldController.CurrentState == WorldControllerState.Deactivating)
             {
                 yield return null;
             }

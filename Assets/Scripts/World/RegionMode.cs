@@ -1,6 +1,6 @@
 ﻿namespace Game.World
 {
-    public enum eRegionMode
+    public enum RegionMode
     {
         Near,
         Medium,

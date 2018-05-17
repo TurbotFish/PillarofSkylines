@@ -3,7 +3,7 @@
     /// <summary>
     /// The variant of a SubScene (normal, intact, destroyed, ...).
     /// </summary>
-    public enum eSubSceneVariant
+    public enum SubSceneVariant
     {
         Normal,
         IntactPillar,

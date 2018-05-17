@@ -54,7 +54,7 @@ namespace Game.GameControl
         public DuplicationCameraManager DuplicationCameraManager { get { return duplicationCameraController; } }
 
         public bool IsPillarLoaded { get { return isPillarLoaded; } }
-        public ePillarId ActivePillarId { get { throw new NotImplementedException(); } }
+        public PillarId ActivePillarId { get { throw new NotImplementedException(); } }
 
         public SpawnPointManager SpawnPointManager { get; private set; }
 
@@ -81,7 +81,7 @@ namespace Game.GameControl
 #endif
         }
 
-        public void SwitchToPillar(ePillarId pillar_id)
+        public void SwitchToPillar(PillarId pillar_id)
         {
             Debug.LogError("GameControllerLite: SwitchToPillar: cannot do that!");
         }
@@ -176,7 +176,7 @@ namespace Game.GameControl
                 duplicationCameraController.Activate();
                 yield return null;
 
-                while (worldController.CurrentState == eWorldControllerState.Activating)
+                while (worldController.CurrentState == WorldControllerState.Activating)
                 {
                     yield return null;
                 }

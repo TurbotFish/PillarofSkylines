@@ -3,7 +3,7 @@
     /// <summary>
     /// The layer of a SubScene, determining its visibility.
     /// </summary>
-    public enum eSubSceneLayer
+    public enum SubSceneLayer
     {
         Always,
         Near,

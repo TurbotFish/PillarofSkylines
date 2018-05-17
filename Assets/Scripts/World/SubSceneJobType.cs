@@ -1,6 +1,6 @@
 ﻿namespace Game.World
 {
-    public enum eSubSceneJobType
+    public enum SubSceneJobType
     {
         Load,
         Unload

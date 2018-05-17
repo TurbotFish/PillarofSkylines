@@ -1,6 +1,6 @@
 ﻿namespace Game.World
 {
-    public enum eWorldControllerState
+    public enum WorldControllerState
     {
         Deactivated,
         Activated,
