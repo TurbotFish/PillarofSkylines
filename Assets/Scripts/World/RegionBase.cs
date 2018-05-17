@@ -477,7 +477,6 @@ namespace Game.World
                     else
                     {
                         float dist = (BoundingBox.ClosestPoint(teleportPosition) - teleportPosition).magnitude;
-                        dist *= WorldController.SecondaryPositionDistanceModifier;
 
                         if (dist < distance)
                         {
