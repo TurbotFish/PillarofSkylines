@@ -41,7 +41,7 @@ namespace Game.LevelElements
 
         public bool IsInteractable()
         {
-            return gameController.PlayerModel.hasNeedle;
+            return gameController.PlayerModel.HasNeedle;
         }
 
         //########################################################################
@@ -80,7 +80,7 @@ namespace Game.LevelElements
             var showMessageEventArgs = new EventManager.OnShowHudMessageEventArgs(false);
             EventManager.SendShowHudMessageEvent(this, showMessageEventArgs);
 
-            gameController.PlayerModel.hasNeedle = false;
+            gameController.PlayerModel.HasNeedle = false;
 
             gameController.PlayerModel.DestroyPillar(gameController.ActivePillarId);
 

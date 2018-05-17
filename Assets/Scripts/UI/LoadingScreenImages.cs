@@ -72,7 +72,7 @@ namespace Game.UI
     {
         private LoadingScreenImages self;
 
-        int pillarIdCount = Enum.GetValues(typeof(ePillarId)).Cast<ePillarId>().Count();
+        int pillarIdCount = Enum.GetValues(typeof(PillarId)).Cast<PillarId>().Count();
         Dictionary<int, List<Sprite>> images = new Dictionary<int, List<Sprite>>();
         //Dictionary<int, int> listSizes = new Dictionary<int, int>();
         Dictionary<int, bool> foldouts = new Dictionary<int, bool>();
@@ -94,9 +94,9 @@ namespace Game.UI
             for (int id = -1; id < pillarIdCount; id++)
             {
                 string name = "Open World Images";
-                if (Enum.IsDefined((typeof(ePillarId)), id))
+                if (Enum.IsDefined((typeof(PillarId)), id))
                 {
-                    name = ((ePillarId)id).ToString() + " Images";
+                    name = ((PillarId)id).ToString() + " Images";
                 }
                 //EditorGUILayout.LabelField(name);
                 foldouts[id] = EditorGUILayout.Foldout(foldouts[id], name);

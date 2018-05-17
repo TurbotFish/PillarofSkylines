@@ -10,6 +10,7 @@ namespace Game.CameraControl
 
         // -- ATTRIBUTES
 
+        //[SerializeField] private Vector3 OffsetDirection;
         [SerializeField] private List<DuplicationTrigger> Triggers;
 
         private Transform TransformComponent;

@@ -8,13 +8,13 @@ namespace Game.World
     public class SubSceneJob
     {
         public RegionBase Region { get; private set; }
-        public eSubSceneVariant SubSceneVariant { get; private set; }
-        public eSubSceneLayer SubSceneLayer { get; private set; }
-        public eSubSceneJobType JobType { get; private set; }
+        public SubSceneVariant SubSceneVariant { get; private set; }
+        public SubSceneLayer SubSceneLayer { get; private set; }
+        public SubSceneJobType JobType { get; private set; }
 
-        public eSubSceneJobState CurrentState = eSubSceneJobState.Pending;
+        public SubSceneJobState CurrentState = SubSceneJobState.Pending;
 
-        public SubSceneJob(RegionBase region, eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer, eSubSceneJobType jobType)
+        public SubSceneJob(RegionBase region, SubSceneVariant subSceneVariant, SubSceneLayer subSceneLayer, SubSceneJobType jobType)
         {
             Region = region;
             SubSceneVariant = subSceneVariant;

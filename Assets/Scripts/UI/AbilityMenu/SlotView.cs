@@ -11,7 +11,7 @@ namespace Game.UI.AbilityMenu
     {
         //##################################################################
 
-        [SerializeField] private eAbilityType ability;
+        [SerializeField] private AbilityType ability;
 
         [SerializeField] private Image backgroundImage;
         [SerializeField] private Outline backgroundOutline;
@@ -37,7 +37,7 @@ namespace Game.UI.AbilityMenu
 
         //##################################################################
 
-        public eAbilityType AbilityType { get { return ability; } }
+        public AbilityType AbilityType { get { return ability; } }
 
         //##################################################################
 
@@ -79,20 +79,20 @@ namespace Game.UI.AbilityMenu
         //    SetBackgroundColour(args.AbilityState);
         //}
 
-        private void SetBackgroundColour(eAbilityState abilityState)
+        private void SetBackgroundColour(AbilityState abilityState)
         {
             switch (abilityState)
             {
-                case eAbilityState.active:
+                case AbilityState.active:
                     backgroundImage.color = menuController.ActiveAbilityColour;
                     break;
-                case eAbilityState.available:
+                case AbilityState.available:
                     backgroundImage.color = menuController.AvailableAbilityColour;
                     break;
-                case eAbilityState.locked:
+                case AbilityState.locked:
                     backgroundImage.color = menuController.LockedAbilityColour;
                     break;
-                case eAbilityState.pillarLocked:
+                case AbilityState.pillarLocked:
                     backgroundImage.color = menuController.PillarLockedAbilityColour;
                     break;
                 default:

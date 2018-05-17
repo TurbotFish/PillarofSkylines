@@ -101,7 +101,7 @@ namespace Game.EchoSystem
 
         public void Drift()
         {
-            if (isEclipseActive && !gameController.PlayerModel.hasNeedle)
+            if (isEclipseActive && !gameController.PlayerModel.HasNeedle)
             {
                 return;
             }

@@ -89,7 +89,7 @@ namespace Game.UI.AbilityMenu
             gameObject.SetActive(true);
             centerView.Activate();
 
-            isEchoAbilityActive = playerModel.CheckAbilityActive(eAbilityType.Echo);
+            isEchoAbilityActive = playerModel.CheckAbilityActive(AbilityType.Echo);
 
             //not tutorial
             if (isEchoAbilityActive)
@@ -107,7 +107,7 @@ namespace Game.UI.AbilityMenu
                     slot.Deactivate();
                 }
 
-                centerView.SetContent(playerModel.AbilityData.GetAbility(eAbilityType.Echo));
+                centerView.SetContent(playerModel.AbilityData.GetAbility(AbilityType.Echo));
             }
 
             UpdateInputMessage();

@@ -32,7 +32,7 @@ namespace Game.UI.AbilityMenu
             this.playerModel = playerModel;
             this.menuController = menuController;
 
-            pillarKeyText.text = playerModel.PillarKeysCount.ToString();
+            pillarKeyText.text = playerModel.PillarKeys.ToString();
 
             nameForDescription.text = abilityNameText.text = string.Empty;
             abilityDescriptionText.text = string.Empty;
@@ -84,7 +84,7 @@ namespace Game.UI.AbilityMenu
                 return;
             }
 
-            pillarKeyText.text = playerModel.PillarKeysCount.ToString();
+            pillarKeyText.text = playerModel.PillarKeys.ToString();
 
             if (currentAbility != null)
             {
@@ -109,20 +109,20 @@ namespace Game.UI.AbilityMenu
         //    SetBackgroundColour(args.AbilityState);
         //}
 
-        private void SetBackgroundColour(eAbilityState abilityState)
+        private void SetBackgroundColour(AbilityState abilityState)
         {
             switch (abilityState)
             {
-                case eAbilityState.active:
+                case AbilityState.active:
                     backgroundImage.color = menuController.ActiveAbilityColour;
                     break;
-                case eAbilityState.locked:
+                case AbilityState.locked:
                     backgroundImage.color = menuController.LockedAbilityColour;
                     break;
-                case eAbilityState.available:
+                case AbilityState.available:
                     backgroundImage.color = menuController.AvailableAbilityColour;
                     break;
-                case eAbilityState.pillarLocked:
+                case AbilityState.pillarLocked:
                     backgroundImage.color = menuController.PillarLockedAbilityColour;
                     break;
                 default:

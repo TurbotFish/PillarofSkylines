@@ -200,12 +200,9 @@ public class PoS_Camera : MonoBehaviour
 
     void OnApplicationFocus(bool hasFocus)
     {
-        if (!GameState.isPaused)
-        {
 #if !UNITY_EDITOR
             Cursor.lockState = CursorLockMode.Locked;
 #endif
-        }
     }
 
     void LateUpdate()
