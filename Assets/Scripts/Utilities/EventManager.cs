@@ -169,34 +169,6 @@ namespace Game.Utilities
 
         //***********************************************************
 
-        // OBSOLETE
-        #region ability state changed
-
-        //public class AbilityStateChangedEventArgs : EventArgs
-        //{
-        //    public eAbilityType AbilityType { get; private set; }
-        //    public eAbilityState AbilityState { get; private set; }
-
-        //    public AbilityStateChangedEventArgs(eAbilityType abilityType, eAbilityState abilityState)
-        //    {
-        //        AbilityType = abilityType;
-        //        AbilityState = abilityState;
-        //    }
-        //}
-
-        //public delegate void AbilityStateChangedEventHandler(object sender, AbilityStateChangedEventArgs args);
-
-        //public static event AbilityStateChangedEventHandler AbilityStateChangedEvent;
-
-        //public static void SendAbilityStateChangedEvent(object sender, AbilityStateChangedEventArgs args)
-        //{
-        //    AbilityStateChangedEvent?.Invoke(sender, args);
-        //}
-
-        #endregion ability state changed
-
-        //***********************************************************
-
         #endregion model events
 
         //###########################################################
