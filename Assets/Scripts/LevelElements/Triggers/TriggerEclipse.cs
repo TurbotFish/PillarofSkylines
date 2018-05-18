@@ -7,18 +7,24 @@ namespace Game.LevelElements
     public class TriggerEclipse : Trigger
     {
 
+        public bool inverted;
+
         //###########################################################
 
         #region private methods
 
         void OnEclipseEventHandler(object sender, Game.Utilities.EventManager.EclipseEventArgs args)
         {
-            
+
+            Debug.Log("I am " + (inverted ? "" : "not") + " inverted and the result is : " + !(args.EclipseOn ^ inverted));
+            SetTriggerState(!(args.EclipseOn ^ inverted), true);
+
+            /*
             if (args.EclipseOn)
                 SetTriggerState(false, true);
             else
                 SetTriggerState(true, true);
-
+                */
         }
 
         #endregion private methods
