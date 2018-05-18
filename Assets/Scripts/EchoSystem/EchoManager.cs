@@ -182,6 +182,8 @@ namespace Game.EchoSystem
             newEcho.echoManager = this;
             echoList.Add(newEcho);
 
+			charController.fxManager.EchoPlay ();
+
             if (isPlayerEcho)
             {
                 placedEchoes++;
@@ -213,6 +215,8 @@ namespace Game.EchoSystem
             newEcho.echoManager = this;
             echoList.Add(newEcho);
 
+			charController.fxManager.EchoPlay ();
+
             if (isPlayerEcho)
             {
                 placedEchoes++;
@@ -220,6 +224,13 @@ namespace Game.EchoSystem
             }
             return newEcho;
         }
+
+		public void PlaceEcho ()
+		{
+			charController.fxManager.EchoStop ();
+			echoList [echoList.Count - 1].StartParticles();
+		}
+
 
         void FreezeAll()
         {
