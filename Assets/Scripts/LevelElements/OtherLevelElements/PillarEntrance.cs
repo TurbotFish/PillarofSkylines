@@ -12,7 +12,7 @@ namespace Game.LevelElements
     {
         //########################################################################
 
-        [SerializeField] private ePillarId pillarId;
+        [SerializeField] private PillarId pillarId;
 
         private IGameController gameController;
         private bool isInitialized;
@@ -59,7 +59,7 @@ namespace Game.LevelElements
 
         #region inquiries
 
-        public ePillarId PillarId { get { return pillarId; } }
+        public PillarId PillarId { get { return pillarId; } }
 
         public Transform Transform { get { return transform; } }
 

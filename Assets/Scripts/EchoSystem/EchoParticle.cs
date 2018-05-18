@@ -10,13 +10,11 @@ namespace Game.EchoSystem
         public Vector3 target;
         public float speed;
 
-        void Start()
-        {
+        void Start() {
             EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
         }
 
-        private void OnDestroy()
-        {
+        private void OnDestroy() {
             EventManager.TeleportPlayerEvent -= OnTeleportPlayerEventHandler;
         }
 

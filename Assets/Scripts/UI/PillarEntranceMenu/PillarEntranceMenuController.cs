@@ -17,7 +17,7 @@ namespace Game.UI.PillarEntranceMenu
         PlayerModel playerModel;
 
         //
-        World.ePillarId pillarId;
+        World.PillarId pillarId;
         bool canEnterPillar = false;
         private IGameController GameController;
 

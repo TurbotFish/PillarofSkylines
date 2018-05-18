@@ -46,9 +46,10 @@ namespace Game.LevelElements
             platform = GetComponent<MovingPlatform>();
 
             waypoints.Add(Vector3.zero);
+
             foreach (Transform child in transform.GetChild(0))
             {
-                waypoints.Add(new Vector3(child.localPosition.x * my.lossyScale.x, child.localPosition.y * my.lossyScale.y, child.localPosition.z * my.lossyScale.z));
+                waypoints.Add(my.localRotation * new Vector3(child.localPosition.x * my.lossyScale.x, child.localPosition.y * my.lossyScale.y, child.localPosition.z * my.lossyScale.z));
             }
 
             if (waitTime.Count < waypoints.Count)
