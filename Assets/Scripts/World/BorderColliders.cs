@@ -8,6 +8,7 @@ using UnityEditorInternal;
 
 namespace Game.World {
 
+    [ExecuteInEditMode]
     public class BorderColliders : MonoBehaviour {
 
         [TestButton("Stop Repetition", "StopRepetition", isActiveInEditor = true, isActiveAtRuntime = false)]
@@ -28,6 +29,8 @@ namespace Game.World {
 
             // Just in case
             StopAllCoroutines();
+            
+            EditorApplication.update += ExecuteCoroutine;
 
             //Launch
             world = FindObjectOfType<WorldController>();
@@ -43,12 +46,14 @@ namespace Game.World {
         public void StopRepetition() {
             StopAllCoroutines();
             completionPercent = -1;
+
+            EditorApplication.update -= ExecuteCoroutine;
             print("BORDER COLLIDERS REPETITION STOPPED");
         }
 
         void FindAllBorderColliders()
         {
-            StartCoroutine(_FindAllBorderColliders());
+            EditorStartCoroutine(_FindAllBorderColliders());
         }
 
         IEnumerator _FindAllBorderColliders() {
@@ -145,8 +150,8 @@ namespace Game.World {
             totalJobs = allColliders.Count;
 
             Debug.Log("Found " + totalJobs + " colliders to repeat");
-            
-            StartCoroutine(_DoAllColliders(allColliders.ToArray(), uniqueParent));
+
+            EditorStartCoroutine(_DoAllColliders(allColliders.ToArray(), uniqueParent));
             while (jobsDone < totalJobs)
                 yield return null;
 
@@ -175,6 +180,7 @@ namespace Game.World {
             Debug.Log("Border Colliders Repetition DONE!");
 
             completionPercent = -1;
+            EditorApplication.update -= ExecuteCoroutine;
         }
         
         IEnumerator _DoAllColliders(Collider[] colliderArray, Transform parent)
@@ -185,6 +191,29 @@ namespace Game.World {
                 jobsDone++;
                 completionPercent = jobsDone / (float)totalJobs;
                 yield return null;
+            }
+        }
+
+        public static IEnumerator EditorStartCoroutine(IEnumerator newCorou)
+        {
+            CoroutineInProgress.Add(newCorou);
+            return newCorou;
+        }
+
+        private static List<IEnumerator> CoroutineInProgress = new List<IEnumerator>();
+        int currentExecute = 0;
+        void ExecuteCoroutine()
+        {
+            if (CoroutineInProgress.Count <= 0)
+                return;
+            
+            currentExecute = (currentExecute + 1) % CoroutineInProgress.Count;
+
+            bool finish = !CoroutineInProgress[currentExecute].MoveNext();
+
+            if (finish)
+            {
+                CoroutineInProgress.RemoveAt(currentExecute);
             }
         }
 

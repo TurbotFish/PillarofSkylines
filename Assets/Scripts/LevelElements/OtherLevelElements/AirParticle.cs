@@ -7,10 +7,10 @@ namespace Game.LevelElements
 {
     public class AirParticle : MonoBehaviour
     {
-        private IGameControllerBase gameController;
+        private IGameController gameController;
         private string originUniqueId;
 
-        public void Initialize(IGameControllerBase gameController, string originUniqueId)
+        public void Initialize(IGameController gameController, string originUniqueId)
         {
             this.gameController = gameController;
             this.originUniqueId = originUniqueId;

@@ -17,11 +17,11 @@ namespace Game.GameControl
             //
             var spawnPoint = target as SpawnPoint;
 
-            spawnPoint.Type = (eSpawnPointType)EditorGUILayout.EnumPopup("Type", spawnPoint.Type);
+            spawnPoint.Type = (SpawnPointType)EditorGUILayout.EnumPopup("Type", spawnPoint.Type);
 
-            if(spawnPoint.Type == eSpawnPointType.PillarExitIntact || spawnPoint.Type == eSpawnPointType.PillarExitDestroyed)
+            if(spawnPoint.Type == SpawnPointType.PillarExitIntact || spawnPoint.Type == SpawnPointType.PillarExitDestroyed)
             {
-                spawnPoint.Pillar = (ePillarId)EditorGUILayout.EnumPopup("Pillar", spawnPoint.Pillar);
+                spawnPoint.Pillar = (PillarId)EditorGUILayout.EnumPopup("Pillar", spawnPoint.Pillar);
             }
 
             //

@@ -179,8 +179,8 @@ namespace Game.Player.CharacterController
                     ((velocityBeforeCollision.y > 0 || myPlayer.CurrentState == ePlayerState.glide) ? collisionMaskNoCloud : collisionMask)))
                 {
                     //Debug.Log("managed to add velocity from before collision");
-                    Debug.Log("added VBC : " + velocityBeforeCollision);
-                    finalVelocity = velocityBeforeCollision.normalized * finalVelocity.magnitude;
+                    Debug.Log("added VBC : " + velocityBeforeCollision + " final velocity : " + finalVelocity);
+                    finalVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * velocityBeforeCollision.normalized * finalVelocity.magnitude;
                     velocityBeforeCollision = Vector3.zero;
                 }
                 if (timerBeforeForgetVBC < 0f)

@@ -76,7 +76,7 @@ namespace Game.LevelElements
 
         #region public methods
 
-        public void Initialize(IGameControllerBase gameController)
+        public void Initialize(IGameController gameController)
         {
             my = transform;
             renderer = GetComponent<LineRenderer>();

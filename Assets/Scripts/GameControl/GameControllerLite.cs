@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 
 namespace Game.GameControl
 {
-    public class GameControllerLite : MonoBehaviour, IGameControllerBase
+    public class GameControllerLite : MonoBehaviour, IGameController
     {
         public const string UI_SCENE_NAME = "UiScene";
 
@@ -34,7 +34,7 @@ namespace Game.GameControl
         //
         private bool isOpenWorldLoaded;
         private WorldController worldController;
-        private DuplicationCameraController duplicationCameraController;
+        private DuplicationCameraManager duplicationCameraController;
 
         //
         private bool isPillarLoaded;
@@ -51,10 +51,10 @@ namespace Game.GameControl
 
         public bool IsOpenWorldLoaded { get { return isOpenWorldLoaded; } }
         public WorldController WorldController { get { return worldController; } }
-        public DuplicationCameraController DuplicationCameraController { get { return duplicationCameraController; } }
+        public DuplicationCameraManager DuplicationCameraManager { get { return duplicationCameraController; } }
 
         public bool IsPillarLoaded { get { return isPillarLoaded; } }
-        public ePillarId ActivePillarId { get { throw new NotImplementedException(); } }
+        public PillarId ActivePillarId { get { throw new NotImplementedException(); } }
 
         public SpawnPointManager SpawnPointManager { get; private set; }
 
@@ -81,6 +81,16 @@ namespace Game.GameControl
 #endif
         }
 
+        public void SwitchToPillar(PillarId pillar_id)
+        {
+            Debug.LogError("GameControllerLite: SwitchToPillar: cannot do that!");
+        }
+
+        public void SwitchToOpenWorld()
+        {
+            Debug.LogError("GameControllerLite: SwitchToOpenWorld: cannot do that!");
+        }
+
         //###############################################################
         //###############################################################
 
@@ -101,7 +111,7 @@ namespace Game.GameControl
             eclipseManager = GetComponentInChildren<EclipseManager>();
 
             //initializing game controller
-            playerModel.InitializePlayerModel();
+            playerModel.Initialize();
 
             //cleaning up, just in case
             var echoManagers = FindObjectsOfType<EchoSystem.EchoManager>();
@@ -126,7 +136,7 @@ namespace Game.GameControl
             playerController = FindObjectOfType<Player.PlayerController>();
             CameraController = FindObjectOfType<CameraController>();
             worldController = FindObjectOfType<WorldController>();
-            duplicationCameraController = FindObjectOfType<DuplicationCameraController>();
+            duplicationCameraController = FindObjectOfType<DuplicationCameraManager>();
 
             //initializing the ui
             uiController.InitializeUi(this, UI.eUiState.LoadingScreen, new EventManager.OnShowLoadingScreenEventArgs());
@@ -166,7 +176,7 @@ namespace Game.GameControl
                 duplicationCameraController.Activate();
                 yield return null;
 
-                while (worldController.CurrentState == eWorldControllerState.Activating)
+                while (worldController.CurrentState == WorldControllerState.Activating)
                 {
                     yield return null;
                 }
@@ -228,7 +238,9 @@ namespace Game.GameControl
             }
 
             return result;
-        }       
+        }
+
+        
 
         //###############################################################
     }

@@ -65,7 +65,7 @@ namespace Game.UI.AbilityMenu
 
         //##################################################################
 
-        void IUiState.Initialize(IGameControllerBase gameController)
+        void IUiState.Initialize(IGameController gameController)
         {
             playerModel = gameController.PlayerModel;
 
@@ -89,7 +89,7 @@ namespace Game.UI.AbilityMenu
             gameObject.SetActive(true);
             centerView.Activate();
 
-            isEchoAbilityActive = playerModel.CheckAbilityActive(eAbilityType.Echo);
+            isEchoAbilityActive = playerModel.CheckAbilityActive(AbilityType.Echo);
 
             //not tutorial
             if (isEchoAbilityActive)
@@ -107,7 +107,7 @@ namespace Game.UI.AbilityMenu
                     slot.Deactivate();
                 }
 
-                centerView.SetContent(playerModel.AbilityData.GetAbility(eAbilityType.Echo));
+                centerView.SetContent(playerModel.AbilityData.GetAbility(AbilityType.Echo));
             }
 
             UpdateInputMessage();
@@ -152,38 +152,38 @@ namespace Game.UI.AbilityMenu
             //**********************************************
             //handle ability activation
 
-            //not tutorial
-            if (isEchoAbilityActive)
-            {
-                if (Input.GetButtonDown("Jump") && !activationButtonDown && SelectedSlot != null)
-                {
-                    ActivateSelectedAbility();
+            ////not tutorial
+            //if (isEchoAbilityActive)
+            //{
+            //    if (Input.GetButtonDown("Jump") && !activationButtonDown && SelectedSlot != null)
+            //    {
+            //        ActivateSelectedAbility();
 
-                    activationButtonDown = true;
-                }
-                else if (!Input.GetButton("Jump"))
-                {
-                    activationButtonDown = false;
-                }
-            }
-            //tutorial
-            else
-            {
-                if (Input.GetButtonDown("Jump"))
-                {
-                    if (playerModel.ActivateAbility(eAbilityType.Echo))
-                    {
-                        foreach (var slot in abilityViews)
-                        {
-                            slot.Activate();
-                        }
+            //        activationButtonDown = true;
+            //    }
+            //    else if (!Input.GetButton("Jump"))
+            //    {
+            //        activationButtonDown = false;
+            //    }
+            //}
+            ////tutorial
+            //else
+            //{
+            //    if (Input.GetButtonDown("Jump"))
+            //    {
+            //        if (playerModel.ActivateAbility(eAbilityType.Echo))
+            //        {
+            //            foreach (var slot in abilityViews)
+            //            {
+            //                slot.Activate();
+            //            }
 
-                        SetSelectedSlot(-1);
+            //            SetSelectedSlot(-1);
 
-                        isEchoAbilityActive = true;
-                    }
-                }
-            }
+            //            isEchoAbilityActive = true;
+            //        }
+            //    }
+            //}
 
             //**********************************************
             //handle ability selection
@@ -328,19 +328,19 @@ namespace Game.UI.AbilityMenu
             //tutorial
             if (!isEchoAbilityActive)
             {
-                //not enough favours
-                if (playerModel.GetCurrencyAmount(eCurrencyType.Favour) < playerModel.AbilityData.GetAbility(eAbilityType.Echo).ActivationPrice)
-                {
-                    helpMessage.text = "";
-                    descriptionHelpMessage.text = "You don't have enough Favours to unlock this ability";
-                }
+                ////not enough favours
+                //if (playerModel.GetCurrencyAmount(eCurrencyType.Favour) < playerModel.AbilityData.GetAbility(eAbilityType.Echo).ActivationPrice)
+                //{
+                //    helpMessage.text = "";
+                //    descriptionHelpMessage.text = "You don't have enough Favours to unlock this ability";
+                //}
                 //enough favours
-                else
-                {
+                //else
+                //{
                     helpMessage.text = "[A] Place Favour";
                     descriptionHelpMessage.text = "Press [A] to start using this ability";
                     helpMessage.color = ActiveAbilityColour;
-                }
+                //}
             }
             //no slot selected
             else if (SelectedSlot == null)
@@ -353,18 +353,18 @@ namespace Game.UI.AbilityMenu
                 helpMessage.text = "[A] Remove Favour";
                 descriptionHelpMessage.text = "Press [A] to stop using this ability";
             }
-            //ability is locked
-            else if (!playerModel.CheckAbilityUnlocked(SelectedSlot.AbilityType))
-            {
-                helpMessage.text = "Destroy a Pillar to Unlock";
-                descriptionHelpMessage.text = "Destroy a Pillar to unlock this ability";
-            }
-            //not enough favours
-            else if (playerModel.GetCurrencyAmount(eCurrencyType.Favour) < playerModel.AbilityData.GetAbility(SelectedSlot.AbilityType).ActivationPrice)
-            {
-                helpMessage.text = "";
-                descriptionHelpMessage.text = "You don't have enough Favours to unlock this ability";
-            }
+            ////ability is locked
+            //else if (!playerModel.CheckAbilityUnlocked(SelectedSlot.AbilityType))
+            //{
+            //    helpMessage.text = "Destroy a Pillar to Unlock";
+            //    descriptionHelpMessage.text = "Destroy a Pillar to unlock this ability";
+            //}
+            ////not enough favours
+            //else if (playerModel.GetCurrencyAmount(eCurrencyType.Favour) < playerModel.AbilityData.GetAbility(SelectedSlot.AbilityType).ActivationPrice)
+            //{
+            //    helpMessage.text = "";
+            //    descriptionHelpMessage.text = "You don't have enough Favours to unlock this ability";
+            //}
             //enough favours
             else
             {

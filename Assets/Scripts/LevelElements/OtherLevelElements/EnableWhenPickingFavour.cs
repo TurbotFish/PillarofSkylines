@@ -18,7 +18,7 @@ namespace Game.LevelElements
 
         [SerializeField, HideInInspector] private string pickupID;
 
-        private IGameControllerBase gameController;
+        private IGameController gameController;
         private bool isInitialized;
         private bool favourPickedUp;
 
@@ -28,7 +28,7 @@ namespace Game.LevelElements
 
         #region initialization methods
 
-        public void Initialize(IGameControllerBase gameController)
+        public void Initialize(IGameController gameController)
         {
             this.gameController = gameController;
 

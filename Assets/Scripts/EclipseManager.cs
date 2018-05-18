@@ -27,7 +27,7 @@ namespace Game
 
         #region initialization
 
-        public void InitializeEclipseManager(GameControl.IGameControllerBase gameController)
+        public void InitializeEclipseManager(GameControl.IGameController gameController)
         {
             this.player = gameController.PlayerController.CharController;
             this.eclipsePostEffect = gameController.CameraController.EclipseEffect;

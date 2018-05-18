@@ -143,18 +143,18 @@ public class PoS_Camera : MonoBehaviour
     /// </summary>
     float autoDamp;
 
-    public Camera CameraComponent { get { return this.camera; } }
+    public Camera CameraComponent { get { return camera; } }
 
     Vector3 characterUp;
 
-    private IGameControllerBase gameController;
+    private IGameController gameController;
     private bool isInitialized;
 
     #endregion
 
     #region MonoBehaviour
 
-    public void Initialize(IGameControllerBase gameController)
+    public void Initialize(IGameController gameController)
     {
         this.gameController = gameController;
 
@@ -191,21 +191,23 @@ public class PoS_Camera : MonoBehaviour
     {
         Game.Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayer;
         Game.Utilities.EventManager.GamePausedEvent += OnGamePaused;
+        Game.Utilities.EventManager.PreSceneChangeEvent += OnPreSceneChangeEvent;
+        Game.Utilities.EventManager.SceneChangedEvent += OnSceneChangedEvent;
     }
+
     private void OnDisable()
     {
         Game.Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayer;
         Game.Utilities.EventManager.GamePausedEvent -= OnGamePaused;
+        Game.Utilities.EventManager.PreSceneChangeEvent -= OnPreSceneChangeEvent;
+        Game.Utilities.EventManager.SceneChangedEvent -= OnSceneChangedEvent;
     }
 
     void OnApplicationFocus(bool hasFocus)
     {
-        if (!GameState.isPaused)
-        {
 #if !UNITY_EDITOR
             Cursor.lockState = CursorLockMode.Locked;
 #endif
-        }
     }
 
     void LateUpdate()
@@ -226,9 +228,9 @@ public class PoS_Camera : MonoBehaviour
         if (enablePanoramaMode)
             DoPanorama();
 
-        if (gameController.DuplicationCameraController != null)
+        if (gameController.DuplicationCameraManager != null)
         {
-            gameController.DuplicationCameraController.UpdateDuplicationCameras();
+            gameController.DuplicationCameraManager.UpdateDuplicationCameras();
         }
     }
     #endregion
@@ -279,7 +281,15 @@ public class PoS_Camera : MonoBehaviour
         gamePaused = args.PauseActive;
     }
 
-    
+    private void OnSceneChangedEvent(object sender, Game.Utilities.EventManager.SceneChangedEventArgs args)
+    {
+        CameraComponent.enabled = true;
+    }
+
+    private void OnPreSceneChangeEvent(object sender, Game.Utilities.EventManager.PreSceneChangeEventArgs args)
+    {
+        CameraComponent.enabled = false;
+    }
 
     public void ResetGravity()
     {

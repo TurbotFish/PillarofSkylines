@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 namespace Game.UI
 {
@@ -16,14 +17,14 @@ namespace Game.UI
 
         public bool IsActive { get; private set; }
 
-        IGameControllerBase gameController;
+        IGameController gameController;
 
-        [SerializeField]
-        private Button playButton;
+        [SerializeField] private Button playButton;
+        [SerializeField] private VideoPlayer VideoPlayer;
 
         //##################################################################
 
-        void IUiState.Initialize(IGameControllerBase gameController)
+        void IUiState.Initialize(IGameController gameController)
         {
             this.gameController = gameController;
         }
@@ -40,8 +41,8 @@ namespace Game.UI
             IsActive = true;
             gameObject.SetActive(true);
 
-            //
             playButton.Select();
+            VideoPlayer.Play();
         }
 
         void IUiState.Deactivate()
@@ -49,8 +50,8 @@ namespace Game.UI
             IsActive = false;
             gameObject.SetActive(false);
 
-            //
             EventSystem.current.SetSelectedGameObject(null);
+            VideoPlayer.Stop();
         }
 
         //##################################################################

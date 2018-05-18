@@ -8,7 +8,7 @@ namespace Game.World
     {
         //========================================================================================
 
-        [SerializeField, HideInInspector] private ePillarId pillarId;
+        [SerializeField, HideInInspector] private PillarId pillarId;
 
         //========================================================================================
 
@@ -19,22 +19,22 @@ namespace Game.World
             EventManager.PillarDestroyedEvent += OnPillarDestroyedEventHandler;
         }
 
-        public override List<eSubSceneVariant> AvailableSubSceneVariants
+        public override List<SubSceneVariant> AvailableSubSceneVariants
         {
             get
             {
-                return new List<eSubSceneVariant>() {
-                    eSubSceneVariant.IntactPillar,
-                    eSubSceneVariant.DestroyedPillar
+                return new List<SubSceneVariant>() {
+                    SubSceneVariant.IntactPillar,
+                    SubSceneVariant.DestroyedPillar
                 };
             }
         }
 
-        protected override eSubSceneVariant InitialSubSceneVariant
+        protected override SubSceneVariant InitialSubSceneVariant
         {
             get
             {
-                return WorldController.GameController.PlayerModel.CheckIsPillarDestroyed(pillarId) ? eSubSceneVariant.DestroyedPillar : eSubSceneVariant.IntactPillar;
+                return WorldController.GameController.PlayerModel.CheckIsPillarDestroyed(pillarId) ? SubSceneVariant.DestroyedPillar : SubSceneVariant.IntactPillar;
             }
         }
 
@@ -47,7 +47,7 @@ namespace Game.World
                 return;
             }
 
-            SwitchVariant(eSubSceneVariant.DestroyedPillar);
+            SwitchVariant(SubSceneVariant.DestroyedPillar);
         }
 
     }

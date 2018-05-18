@@ -18,7 +18,17 @@ public class Collectible : MonoBehaviour, IInteractable, IWorldObject
     float minRadius = 0.3f;
     float maxRadius = 0.7f;
 
+    //idle
+    public float xScale = 1;
+    public float yScale = 0.3f;
+    public float zScale = 0.3f;
+
+    // light
+    float minIntensity = 0.5f;
+    float maxIntensity = 2f;
+
     [SerializeField] ParticleSystem feedback;
+    new Light light;
 
     // state
     bool triggered;
@@ -27,7 +37,7 @@ public class Collectible : MonoBehaviour, IInteractable, IWorldObject
     // properties
     Vector3 targetPoint;
     Vector3 targetOffset;
-    Vector3 pos;
+    Vector3 startPos;
     Vector3 randomAxis;
     Transform myTransform;
     Transform pilouTransform;
@@ -35,17 +45,20 @@ public class Collectible : MonoBehaviour, IInteractable, IWorldObject
 
     //##################################################################
 
-    public void Initialize(IGameControllerBase gameController)
+    public void Initialize(IGameController gameController)
     {
         myTransform = transform;
+        startPos = myTransform.position;
         pilouTransform = gameController.PlayerController.transform;
+        light = GetComponentInChildren<Light>();
+        speed += Random.Range(-speedVariance, speedVariance);
     }
 
     //##################################################################
 
     #region inquiries
 
-    public Vector3 Position { get { return transform.position; } }
+    public Transform Transform { get { return transform; } }
 
     public bool IsInteractable()
     {
@@ -71,10 +84,11 @@ public class Collectible : MonoBehaviour, IInteractable, IWorldObject
         {
             triggered = true;
 
+            myTransform.parent = null;
+
             Instantiate(feedback, myTransform.position, myTransform.rotation).Play();
 
             UpdateTargetPoint();
-            speed += Random.Range(-speedVariance, speedVariance);
 
             Invoke("Dance", 0.4f);
         }
@@ -100,6 +114,8 @@ public class Collectible : MonoBehaviour, IInteractable, IWorldObject
 
     private void Update()
     {
+        if (!myTransform) return;
+
         if (followingPlayer)
         {
             targetPoint = pilouTransform.position + targetOffset;
@@ -108,14 +124,31 @@ public class Collectible : MonoBehaviour, IInteractable, IWorldObject
         else if (collected)
         {
             myTransform.position = Vector3.Lerp(myTransform.position, targetPoint, speed * Time.deltaTime);
+
+        } else if (!triggered)
+        {
+            //idle
+            myTransform.position = startPos + (Vector3.right * Mathf.Sin(Time.time / 2 * speed) * xScale 
+                                             - Vector3.up * Mathf.Sin(Time.time * speed) * yScale
+                                             - Vector3.forward * Mathf.Sin(Time.time * speed) * zScale);
+
         }
+        
+        
+        /*else if (light)
+        {
+            light.intensity = Mathf.Abs(Mathf.Sin(Time.time * 10)) * maxIntensity + minIntensity;
+        }*/
+
+
+
         // il faudrait une idle
     }
 
     private void StartFollowingPlayer()
     {
-        pos = myTransform.position;
         followingPlayer = true;
+        light.intensity = minIntensity;
     }
 
     private void UpdateTargetPoint()

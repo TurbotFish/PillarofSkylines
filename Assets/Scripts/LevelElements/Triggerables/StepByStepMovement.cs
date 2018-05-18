@@ -29,11 +29,11 @@ namespace Game.LevelElements
 
         #region public methods
 
-        public override void Initialize(IGameControllerBase gameController)
+        public override void Initialize(IGameController gameController)
         {
             base.Initialize(gameController);
 
-            (PersistentDataObject as PersistentStepByStepTriggerable).State = currentState;
+            (PersistentDataObject as StepByStepTriggerablePersistentData).State = currentState;
 
             my = transform;
             platform = GetComponent<MovingPlatform>();
@@ -50,7 +50,7 @@ namespace Game.LevelElements
             if (initializing)
             {
                 //print("hey i do nothing i'm being initialized lol");
-                currentState = (PersistentDataObject as PersistentStepByStepTriggerable).State;
+                currentState = (PersistentDataObject as StepByStepTriggerablePersistentData).State;
                 transform.localPosition = startPosition + offsets[currentState];
             }
             else
@@ -93,9 +93,9 @@ namespace Game.LevelElements
             }*/
         }
 
-        protected override PersistentTriggerable CreatePersistentObject()
+        protected override TriggerablePersistentData CreatePersistentObject()
         {
-            return new PersistentStepByStepTriggerable(this);
+            return new StepByStepTriggerablePersistentData(this);
         }
 
         #endregion protected methods
@@ -110,12 +110,12 @@ namespace Game.LevelElements
             if (up && currentState < offsets.Count - 1)
             {
                 currentState++;
-                (PersistentDataObject as PersistentStepByStepTriggerable).State++;
+                (PersistentDataObject as StepByStepTriggerablePersistentData).State++;
             }
             else if (!up && currentState > 0)
             {
                 currentState--;
-                (PersistentDataObject as PersistentStepByStepTriggerable).State--;
+                (PersistentDataObject as StepByStepTriggerablePersistentData).State--;
             }
             else
             {

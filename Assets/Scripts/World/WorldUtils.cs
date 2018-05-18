@@ -12,7 +12,7 @@ namespace Game.World
         /// <param name="subSceneVariant"></param>
         /// <param name="subSceneLayer"></param>
         /// <returns></returns>
-        public static string GetSubSceneRootName(eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer)
+        public static string GetSubSceneRootName(SubSceneVariant subSceneVariant, SubSceneLayer subSceneLayer)
         {
             return string.Concat("SubScene_", subSceneVariant.ToString(), "_", subSceneLayer.ToString());
         }
@@ -24,9 +24,9 @@ namespace Game.World
         /// <param name="subSceneVariant"></param>
         /// <param name="subSceneLayer"></param>
         /// <returns></returns>
-        public static string GetSubSceneName(string regionId, eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer, eSuperRegionType superRegionType)
+        public static string GetSubSceneName(string regionId, SubSceneVariant subSceneVariant, SubSceneLayer subSceneLayer)
         {
-            return string.Concat("SubScene_", superRegionType, "_", subSceneVariant, "_", subSceneLayer, "_", regionId);
+            return string.Concat("SubScene_", "_", subSceneVariant, "_", subSceneLayer, "_", regionId);
         }
 
         /// <summary>
@@ -37,10 +37,10 @@ namespace Game.World
         /// <param name="subSceneVariant"></param>
         /// <param name="subSceneLayer"></param>
         /// <returns></returns>
-        public static string GetSubScenePath(string worldScenePath, string regionId, eSubSceneVariant subSceneVariant, eSubSceneLayer subSceneLayer, eSuperRegionType superRegionType)
+        public static string GetSubScenePath(string worldScenePath, string regionId, SubSceneVariant subSceneVariant, SubSceneLayer subSceneLayer)
         {
             string subScenePath = GetSubSceneFolderPath(worldScenePath);
-            return string.Concat(subScenePath, "/", GetSubSceneName(regionId, subSceneVariant, subSceneLayer, superRegionType), ".unity");
+            return string.Concat(subScenePath, "/", GetSubSceneName(regionId, subSceneVariant, subSceneLayer), ".unity");
         }
 
         //========================================================================================

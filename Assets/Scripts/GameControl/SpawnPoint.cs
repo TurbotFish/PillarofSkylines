@@ -9,8 +9,8 @@ namespace Game.GameControl
     {
         [SerializeField]
         [HideInInspector]
-        eSpawnPointType type;
-        public eSpawnPointType Type
+        SpawnPointType type;
+        public SpawnPointType Type
         {
             get { return type; }
 #if UNITY_EDITOR
@@ -20,8 +20,8 @@ namespace Game.GameControl
 
         [SerializeField]
         [HideInInspector]
-        ePillarId pillar;
-        public ePillarId Pillar
+        PillarId pillar;
+        public PillarId Pillar
         {
             get { return pillar; }
 #if UNITY_EDITOR
