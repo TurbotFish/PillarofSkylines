@@ -39,9 +39,12 @@ namespace Game.Player.CharacterController.States
             currentEcho.MyTransform.SetParent(charController.phantomController.myTransform);
             currentEcho.isActive = false;
             Time.timeScale = 0.05f;
+			charController.fxManager.PhantomPlay ();
 		}
 
 		public void Exit() {
+
+			charController.fxManager.PhantomStop ();
 
             currentEcho.MyTransform.SetParent(null);
             phantomController.gameObject.SetActive(false);
@@ -53,6 +56,7 @@ namespace Game.Player.CharacterController.States
             charController.ResetEchoInputTime();
 
             Time.timeScale = 1f;
+
         }
 
 		//#############################################################################

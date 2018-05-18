@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 namespace Game.EchoSystem
 {
@@ -27,6 +28,9 @@ namespace Game.EchoSystem
         private Vector3 fxPosition;
 
         public Transform MyTransform { get; private set; }
+
+		[Header("Particles")]
+		public List<ParticleSystem> pss = new List<ParticleSystem> ();
 
         //##################################################################
 
@@ -114,6 +118,12 @@ namespace Game.EchoSystem
             }
         }
 
+		public void StartParticles()
+		{
+			foreach (ParticleSystem ps in pss) {
+				ps.Play ();
+			}
+		}
         //##################################################################
     }
 } //end of namespace

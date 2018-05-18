@@ -183,4 +183,45 @@ public class FXManager : MonoBehaviour {
 	}
 
 
+	[Header ("Echo")]
+	public Transform echoParticlesHolder;
+	public ParticleSystem echoPose;
+	public List<ParticleSystem> holdEchoParticles = new List<ParticleSystem>();
+	public float speedToGrow;
+
+	public void EchoPlay ()
+	{
+		echoParticlesHolder.localScale = Vector3.zero;
+		echoParticlesHolder.gameObject.SetActive (true);
+		echoParticlesHolder.DOScale (Vector3.zero, speedToGrow).From ().SetEase (Ease.OutSine);
+		foreach (ParticleSystem ps in holdEchoParticles) {
+			ps.Play ();
+		}
+	}
+	public void EchoStop ()
+	{
+		echoPose.Play ();
+		echoParticlesHolder.gameObject.SetActive (false);
+		foreach (ParticleSystem ps in holdEchoParticles) {
+			ps.Stop ();
+		}	
+	}
+
+	[Header ("Phantom")]
+	public ParticleSystem phantomPose;
+	public List<ParticleSystem> phantomIdleParticles = new List<ParticleSystem>();
+
+	public void PhantomPlay ()
+	{
+		foreach (ParticleSystem ps in phantomIdleParticles) {
+			ps.Play ();
+		}
+	}
+	public void PhantomStop ()
+	{
+		phantomPose.Play ();
+		foreach (ParticleSystem ps in phantomIdleParticles) {
+			ps.Stop ();
+		}	
+	}
 }
