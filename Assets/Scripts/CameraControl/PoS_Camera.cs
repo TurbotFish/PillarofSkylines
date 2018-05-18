@@ -143,7 +143,7 @@ public class PoS_Camera : MonoBehaviour
     /// </summary>
     float autoDamp;
 
-    public Camera CameraComponent { get { return this.camera; } }
+    public Camera CameraComponent { get { return camera; } }
 
     Vector3 characterUp;
 
@@ -191,11 +191,16 @@ public class PoS_Camera : MonoBehaviour
     {
         Game.Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayer;
         Game.Utilities.EventManager.GamePausedEvent += OnGamePaused;
+        Game.Utilities.EventManager.PreSceneChangeEvent += OnPreSceneChangeEvent;
+        Game.Utilities.EventManager.SceneChangedEvent += OnSceneChangedEvent;
     }
+
     private void OnDisable()
     {
         Game.Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayer;
         Game.Utilities.EventManager.GamePausedEvent -= OnGamePaused;
+        Game.Utilities.EventManager.PreSceneChangeEvent -= OnPreSceneChangeEvent;
+        Game.Utilities.EventManager.SceneChangedEvent -= OnSceneChangedEvent;
     }
 
     void OnApplicationFocus(bool hasFocus)
@@ -276,7 +281,15 @@ public class PoS_Camera : MonoBehaviour
         gamePaused = args.PauseActive;
     }
 
-    
+    private void OnSceneChangedEvent(object sender, Game.Utilities.EventManager.SceneChangedEventArgs args)
+    {
+        CameraComponent.enabled = true;
+    }
+
+    private void OnPreSceneChangeEvent(object sender, Game.Utilities.EventManager.PreSceneChangeEventArgs args)
+    {
+        CameraComponent.enabled = false;
+    }
 
     public void ResetGravity()
     {

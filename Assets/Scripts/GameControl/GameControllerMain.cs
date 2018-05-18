@@ -78,8 +78,6 @@ namespace Game.GameControl
 
         private IEnumerator LoadOpenWorldSceneCR()
         {
-            CameraController.PoS_Camera.CameraComponent.enabled = false;
-
             AsyncOperation async;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
@@ -185,8 +183,6 @@ namespace Game.GameControl
             /*
              * initializing
              */
-            CameraController.PoS_Camera.CameraComponent.enabled = false;
-
             AsyncOperation async;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
@@ -278,8 +274,6 @@ namespace Game.GameControl
              * unpausing game
              */
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());
-
-            CameraController.PoS_Camera.CameraComponent.enabled = true;
             yield return new WaitForSeconds(0.5f);
 
             EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.HUD));
@@ -298,8 +292,6 @@ namespace Game.GameControl
         /// <returns></returns>
         private IEnumerator LoadPillarSceneCR(PillarId pillarId)
         {
-            CameraController.PoS_Camera.CameraComponent.enabled = false;
-
             AsyncOperation async;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
@@ -376,11 +368,6 @@ namespace Game.GameControl
             //*****************************************
             //informing everyone!
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs(pillarId));
-            yield return new WaitForSeconds(0.1f);
-
-            //*****************************************
-            //unpausing game
-            CameraController.PoS_Camera.CameraComponent.enabled = true;
             yield return new WaitForSeconds(0.5f);
 
             EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.HUD));
