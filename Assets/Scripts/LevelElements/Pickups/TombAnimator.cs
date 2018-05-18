@@ -13,14 +13,15 @@ namespace Game.LevelElements
     {
         //##################################################################
 
-        private bool isTombActivated;
+        // -- ATTRIBUTES
+
+        public bool IsTombActivated { get; private set; }
+
         protected TombAnimationFinishedCallback animationFinishedCallback;
 
         //##################################################################
 
-        public bool IsTombActivated { get { return isTombActivated; } }
-
-        //##################################################################
+        // -- OPERATIONS
 
         public virtual bool SetTombState(bool isActivated, bool interactWithPlayer, bool doImmediateTransition, TombAnimationFinishedCallback callback = null)
         {
@@ -29,12 +30,10 @@ namespace Game.LevelElements
                 return false;
             }
 
-            isTombActivated = isActivated;
+            IsTombActivated = isActivated;
             animationFinishedCallback = callback;
 
             return true;
         }
-
-        //##################################################################
     }
 } // end of namespace
