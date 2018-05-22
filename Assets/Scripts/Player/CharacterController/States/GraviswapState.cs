@@ -103,8 +103,11 @@ namespace Game.Player.CharacterController.States
 
             PlayerInputInfo inputInfo = charController.InputInfo;
 
-            charController.MyTransform.Rotate(charController.MyTransform.forward, inputInfo.leftStickRaw.x * 10, Space.World);
-            charController.MyTransform.Rotate(charController.MyTransform.right, -inputInfo.leftStickRaw.z * 10, Space.World);
+           // charController.MyTransform.Rotate(charController.MyTransform.forward, inputInfo.leftStickRaw.x * 10, Space.World);
+            //charController.MyTransform.Rotate(charController.MyTransform.right, -inputInfo.leftStickRaw.z * 10, Space.World);
+
+			Quaternion quarterBack = Quaternion.AngleAxis (-inputInfo.leftStickRaw.x * 10f, charController.MyTransform.forward) * Quaternion.AngleAxis (inputInfo.leftStickRaw.z * 10f, charController.MyTransform.right);
+			charController.ChangeGravityDirection (quarterBack * -charController.MyTransform.up, charController.MyTransform.position + charController.MyTransform.up);
 
             var result = new StateReturnContainer
             {
