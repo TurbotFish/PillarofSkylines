@@ -37,6 +37,11 @@ namespace Game.Model
         {
             AbilityData = Resources.Load<AbilityData>("ScriptableObjects/AbilityData");
             LevelData = Resources.Load<LevelData>("ScriptableObjects/LevelData");
+
+            if (Application.isEditor)
+            {
+                ActivateAbility(AbilityType.Echo);
+            }
         }
 
         //###########################################################
