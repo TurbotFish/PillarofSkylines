@@ -37,7 +37,7 @@ namespace Game.LevelElements
 
         public bool IsInteractable()
         {
-            return (PersistentData.ContainsNeedle || GameController.PlayerModel.HasNeedle);
+            return (PersistentData.ContainsNeedle || GameController.PlayerModel.PlayerHasNeedle);
         }
 
         //########################################################################
@@ -54,7 +54,7 @@ namespace Game.LevelElements
 
         public void OnHoverBegin()
         {
-            var eventArgs = new EventManager.OnShowHudMessageEventArgs(true, GameController.PlayerModel.HasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle");
+            var eventArgs = new EventManager.OnShowHudMessageEventArgs(true, GameController.PlayerModel.PlayerHasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle");
             EventManager.SendShowHudMessageEvent(this, eventArgs);
         }
 
@@ -74,15 +74,15 @@ namespace Game.LevelElements
             /*
              * transfering needle
              */
-            needleGameObject.SetActive(GameController.PlayerModel.HasNeedle);
+            needleGameObject.SetActive(GameController.PlayerModel.PlayerHasNeedle);
 
-            GameController.PlayerModel.HasNeedle ^= true;
-            PersistentData.ContainsNeedle = !GameController.PlayerModel.HasNeedle;
+            GameController.PlayerModel.PlayerHasNeedle ^= true;
+            PersistentData.ContainsNeedle = !GameController.PlayerModel.PlayerHasNeedle;
 
             /*
              * "reacting" to the transfer
              */
-            if (GameController.PlayerModel.HasNeedle)
+            if (GameController.PlayerModel.PlayerHasNeedle)
             {
                 GameController.EchoManager.SetWaypoint(this);
             }
@@ -91,9 +91,9 @@ namespace Game.LevelElements
                 GameController.EchoManager.RemoveWaypoint();    // Removing ALL the waypoints.
             }
 
-            EventManager.SendEclipseEvent(this, new EventManager.EclipseEventArgs(GameController.PlayerModel.HasNeedle)); // This will activate the player needle.
+            EventManager.SendEclipseEvent(this, new EventManager.EclipseEventArgs(GameController.PlayerModel.PlayerHasNeedle)); // This will activate the player needle.
 
-            var showHudEventArgs = new EventManager.OnShowHudMessageEventArgs(true, GameController.PlayerModel.HasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle");
+            var showHudEventArgs = new EventManager.OnShowHudMessageEventArgs(true, GameController.PlayerModel.PlayerHasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle");
             EventManager.SendShowHudMessageEvent(this, showHudEventArgs);
         }
 

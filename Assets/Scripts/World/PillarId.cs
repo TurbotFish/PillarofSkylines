@@ -8,11 +8,6 @@ namespace Game.World
     {
         Pillar_01,
         Pillar_02,
-        Pillar_03,
-        Pillar_04,
-        Pillar_05,
-        Pillar_06,
-        Pillar_07,
-        Pillar_08
+        Pillar_03
     }
 }

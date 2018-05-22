@@ -26,7 +26,7 @@ namespace Game.LevelElements
 
         protected override void OnPickedUp()
         {
-            GameController.PlayerModel.ActivateAbility(ability);
+            GameController.PlayerModel.SetAbilityActive(ability);
         }
 
         //##################################################################

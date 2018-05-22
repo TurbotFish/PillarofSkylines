@@ -139,7 +139,10 @@ namespace Game.UI
         void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
         {
             if (IsActive)
+            {
                 return;
+            }
+
             IsActive = true;
             myRenderer.alpha = 1;
             StopAllCoroutines();
@@ -148,11 +151,21 @@ namespace Game.UI
 
         void IUiState.Deactivate()
         {
+            if (!IsActive)
+            {
+                return;
+            }
+
             IsActive = false;
+
             if (myRenderer)
+            {
                 Display(myRenderer, false, 0.5f);
+            }
             else
+            {
                 gameObject.SetActive(false);
+            }
         }
 
         //###########################################################
