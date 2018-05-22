@@ -26,16 +26,25 @@ namespace Game.World
         [SerializeField, HideInInspector] bool drawBounds;
         [SerializeField, HideInInspector] Color boundsColour = Color.green;
 
-        [SerializeField, HideInInspector] private bool doNotDuplicate;
-
         //###############################################################
         //###############################################################
 
         // -- ATTRIBUTES
 
+        public Bounds BoundingBox { get { return new Bounds(boundsCentre + transform.position, boundsSize); } }
+
+        public float RenderDistanceNear { get { return overrideRenderDistances ? localRenderDistanceNear : WorldController.RenderDistanceNear; } }
+        public float RenderDistanceMedium { get { return overrideRenderDistances ? localRenderDistanceMedium : WorldController.RenderDistanceMedium; } }
+        public float RenderDistanceFar { get { return overrideRenderDistances ? localRenderDistanceFar : WorldController.RenderDistanceFar; } }
+
+        public SubSceneVariant CurrentSubSceneVariant { get { return currentSubSceneVariant; } }
+
         public float PlayerDistance { get; private set; }
 
+
         protected WorldController WorldController;
+
+
         private Transform myTransform;
 
         private Dictionary<SubSceneVariant, Dictionary<SubSceneLayer, List<SubSceneJob>>> SubSceneJobLists;
@@ -48,21 +57,6 @@ namespace Game.World
         private bool firstJobDone;
         private bool validateSubScenes;
 
-
-
-        public Bounds BoundingBox { get { return new Bounds(boundsCentre + transform.position, boundsSize); } }
-
-        public float RenderDistanceNear { get { return overrideRenderDistances ? localRenderDistanceNear : WorldController.RenderDistanceNear; } }
-
-        public float RenderDistanceMedium { get { return overrideRenderDistances ? localRenderDistanceMedium : WorldController.RenderDistanceMedium; } }
-
-        public float RenderDistanceFar { get { return overrideRenderDistances ? localRenderDistanceFar : WorldController.RenderDistanceFar; } }
-
-        public SubSceneVariant CurrentSubSceneVariant { get { return currentSubSceneVariant; } }
-
-
-
-        public bool DoNotDuplicate { get { return doNotDuplicate; } }
 
 
 
@@ -396,7 +390,7 @@ namespace Game.World
 
             currentSubSceneVariant = new_variant;
 
-            SwitchMode(previous_mode);       
+            SwitchMode(previous_mode);
         }
 
         /// <summary>
@@ -496,53 +490,49 @@ namespace Game.World
         /// <returns></returns>
         private RegionMode ComputeDesiredRegionMode()
         {
-            //MODE NEAR
-            //when the player is inside a region it is always active, this is important to keep teleport destinations loaded
-            if (currentRegionMode != RegionMode.Near && PlayerDistance == 0)
+            // MODE NEAR
+            if (PlayerDistance < RenderDistanceNear)
             {
-                //Debug.LogFormat("{0} {1}: mode switch AAA! dist={2}",superRegion.Type, name, playerDistance);
-                //result.AddRange(SwitchRegionMode(eRegionMode.Near));
                 return RegionMode.Near;
             }
-            else if (currentRegionMode != RegionMode.Near && PlayerDistance < RenderDistanceNear)
+
+            // Switch NEAR to MEDIUM
+            if (currentRegionMode == RegionMode.Near && PlayerDistance > (RenderDistanceNear * 1.1f) && PlayerDistance < RenderDistanceMedium)
             {
-                //Debug.LogFormat("{0} {1}: mode switch BBB! dist={2}", superRegion.Type, name, playerDistance);
-                //result.AddRange(SwitchRegionMode(eRegionMode.Near));
-                return RegionMode.Near;
-            }
-            //****************************************
-            //MODE MEDIUM
-            else if (currentRegionMode != RegionMode.Medium && PlayerDistance > RenderDistanceNear * 1.1f && PlayerDistance < RenderDistanceMedium)
-            {
-                //Debug.LogFormat("{0} {1}: mode switch CCC! dist={2}", superRegion.Type, name, playerDistance);
-                //result.AddRange(SwitchRegionMode(eRegionMode.Medium));
                 return RegionMode.Medium;
             }
-            //****************************************
-            // MODE FAR
-            else if (currentRegionMode != RegionMode.Far && PlayerDistance > RenderDistanceMedium * 1.1f && PlayerDistance < RenderDistanceFar)
+
+            //MODE MEDIUM
+            else if (PlayerDistance > RenderDistanceNear && PlayerDistance < RenderDistanceMedium)
             {
-                //Debug.LogFormat("{0} {1}: mode switch DDD! dist={2}", superRegion.Type, name, playerDistance);
-                //result.AddRange(SwitchRegionMode(eRegionMode.Far));
+                return RegionMode.Medium;
+            }
+
+            // Switch MEDIUM to FAR
+            else if (currentRegionMode == RegionMode.Medium && PlayerDistance > (RenderDistanceMedium * 1.1f) && PlayerDistance < RenderDistanceFar)
+            {
                 return RegionMode.Far;
             }
-            //****************************************
-            // MODE INACTIVE
-            //else if (currentRegionMode != eRegionMode.Inactive && !isVisible && playerDistance > 0)
-            //{
-            //    //Debug.LogFormat("{0} {1}: mode switch EEE! dist={2}", superRegion.Type, name, playerDistance);
-            //    //result.AddRange(SwitchRegionMode(eRegionMode.Inactive));
-            //    return eRegionMode.Inactive;
-            //}
-            else if (currentRegionMode != RegionMode.Inactive && PlayerDistance > RenderDistanceFar * 1.1f)
+
+            // MODE FAR
+            else if (PlayerDistance > RenderDistanceMedium && PlayerDistance < RenderDistanceFar)
             {
-                //Debug.LogFormat("{0} {1}: mode switch FFF! dist={2}", superRegion.Type, name, playerDistance);
-                //result.AddRange(SwitchRegionMode(eRegionMode.Inactive));
+                return RegionMode.Far;
+            }
+
+            // Switch FAR to INACTIVE
+
+            else if (currentRegionMode == RegionMode.Far && PlayerDistance > (RenderDistanceFar * 1.1f))
+            {
                 return RegionMode.Inactive;
             }
 
-            //Debug.LogWarning("RegionBase: ComputeDesiredRegionMode: no valid case!");
-            return currentRegionMode;
+            // MODE INACTIVE
+            else
+            {
+                Debug.LogErrorFormat("RegionBase {0}: ComputeDesiredRegionMode: error! mode={1} distance={2}", this.name, currentRegionMode.ToString(), PlayerDistance);
+                return RegionMode.Inactive;
+            }
         }
 
         /// <summary>
