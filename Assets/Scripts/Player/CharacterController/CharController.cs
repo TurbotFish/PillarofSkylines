@@ -457,7 +457,7 @@ namespace Game.Player.CharacterController
 
         void OnMenuSwitchedEventHandler(object sender, Utilities.EventManager.OnMenuSwitchedEventArgs args)
         {
-            if (args.NewUiState == UI.eUiState.HUD)
+            if (args.NewUiState == UI.MenuType.HUD)
             {
                 isHandlingInput = true;
             }

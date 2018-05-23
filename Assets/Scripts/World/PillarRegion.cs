@@ -1,4 +1,5 @@
-﻿using Game.Utilities;
+﻿using Game.Model;
+using Game.Utilities;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -34,7 +35,12 @@ namespace Game.World
         {
             get
             {
-                return WorldController.GameController.PlayerModel.CheckIsPillarDestroyed(pillarId) ? SubSceneVariant.DestroyedPillar : SubSceneVariant.IntactPillar;
+                if(WorldController.GameController.PlayerModel.GetPillarState(pillarId) == PillarState.Destroyed)
+                {
+                    return SubSceneVariant.DestroyedPillar;
+                }
+
+                return SubSceneVariant.IntactPillar;
             }
         }
 

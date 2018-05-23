@@ -1,4 +1,5 @@
 ﻿using Game.GameControl;
+using Game.Model;
 using Game.Utilities;
 using Game.World;
 using UnityEngine;
@@ -31,7 +32,7 @@ namespace Game.LevelElements
 
             this.gameController = gameController;
 
-            isPillarDestroyed = gameController.PlayerModel.CheckIsPillarDestroyed(pillarId);
+            isPillarDestroyed = gameController.PlayerModel.GetPillarState(pillarId) == PillarState.Destroyed;
             isInitialized = true;
         }
 
@@ -41,7 +42,7 @@ namespace Game.LevelElements
 
             if (isInitialized)
             {
-                if(!isPillarDestroyed && gameController.PlayerModel.CheckIsPillarDestroyed(pillarId))
+                if(!isPillarDestroyed && gameController.PlayerModel.GetPillarState(pillarId) == PillarState.Destroyed)
                 {
                     isPillarDestroyed = true;
                 }
@@ -88,7 +89,7 @@ namespace Game.LevelElements
 
         public void OnInteraction()
         {
-            if (gameController.PlayerModel.CheckIsPillarUnlocked(pillarId))
+            if (gameController.PlayerModel.GetPillarState(pillarId) == PillarState.Unlocked)
             {
                 gameController.SwitchToPillar(pillarId);
             }

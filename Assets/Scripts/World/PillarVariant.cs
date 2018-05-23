@@ -1,6 +1,6 @@
 ﻿namespace Game.World
 {
-    public enum PillarState
+    public enum PillarVariant
     {
         Intact,
         Destroyed

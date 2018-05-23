@@ -1,4 +1,5 @@
-﻿using Game.World;
+﻿using Game.Model;
+using Game.World;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;

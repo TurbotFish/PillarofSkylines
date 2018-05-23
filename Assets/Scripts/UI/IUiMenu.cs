@@ -2,7 +2,7 @@
 
 namespace Game.UI
 {
-    public interface IUiState
+    public interface IUiMenu
     {
         bool IsActive { get; }
 

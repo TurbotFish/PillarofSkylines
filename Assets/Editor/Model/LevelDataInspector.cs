@@ -24,7 +24,7 @@ namespace Game.Model
         {
             Self = target as LevelData;
 
-            int pillar_count = Enum.GetValues(typeof(World.PillarId)).Cast<World.PillarId>().Count();
+            int pillar_count = Enum.GetValues(typeof(PillarId)).Cast<PillarId>().Count();
 
             AdjustListSize(Self.PillarSceneObjectList, pillar_count, null);
             AdjustListSize(Self.PillarSceneActivationPriceList, pillar_count, 0);
@@ -45,7 +45,7 @@ namespace Game.Model
 
             EditorGUILayout.LabelField("");
 
-            foreach (var pillar_id in Enum.GetValues(typeof(World.PillarId)).Cast<World.PillarId>())
+            foreach (var pillar_id in Enum.GetValues(typeof(PillarId)).Cast<PillarId>())
             {
                 EditorGUILayout.LabelField("-- " + pillar_id.ToString(), EditorStyles.boldLabel);
 

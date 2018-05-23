@@ -1,8 +1,8 @@
 ﻿namespace Game.Model
 {
-    public enum AbilityState
+    public enum PillarMarkState
     {
         inactive,
         active
     }
-} //end of namespace
+} // end of namespace
