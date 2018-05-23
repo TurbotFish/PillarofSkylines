@@ -1,5 +1,4 @@
 ﻿using Game.World;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,6 +18,7 @@ namespace Game.Model
         [SerializeField, HideInInspector] public List<string> PillarSceneNameList = new List<string>();
 
         [SerializeField, HideInInspector] public List<int> PillarSceneActivationPriceList = new List<int>();
+        [SerializeField, HideInInspector] public List<AbilityType> PillarRewardAbilityList = new List<AbilityType>();
 
         //###############################################################
 
@@ -34,33 +34,38 @@ namespace Game.Model
             return PillarSceneActivationPriceList[(int)pillar_id];
         }
 
+        public AbilityType GetPillarRewardAbility(PillarId pillar_id)
+        {
+            return PillarRewardAbilityList[(int)pillar_id];
+        }
+
         //###############################################################
 
         // -- OPERATIONS
 
-        public void SetNames()
-        {
-            if (OpenWorldSceneObject == null)
-            {
-                OpenWorldSceneName = string.Empty;
-            }
-            else
-            {
-                OpenWorldSceneName = OpenWorldSceneObject.name;
-            }
+        //public void SetNames()
+        //{
+        //    if (OpenWorldSceneObject == null)
+        //    {
+        //        OpenWorldSceneName = string.Empty;
+        //    }
+        //    else
+        //    {
+        //        OpenWorldSceneName = OpenWorldSceneObject.name;
+        //    }
 
-            PillarSceneNameList.Clear();
-            foreach (var pillar_scene in PillarSceneObjectList)
-            {
-                if (pillar_scene == null)
-                {
-                    PillarSceneNameList.Add(string.Empty);
-                }
-                else
-                {
-                    PillarSceneNameList.Add(pillar_scene.name);
-                }
-            }
-        }
+        //    PillarSceneNameList.Clear();
+        //    foreach (var pillar_scene in PillarSceneObjectList)
+        //    {
+        //        if (pillar_scene == null)
+        //        {
+        //            PillarSceneNameList.Add(string.Empty);
+        //        }
+        //        else
+        //        {
+        //            PillarSceneNameList.Add(pillar_scene.name);
+        //        }
+        //    }
+        //}
     }
 } // end of namespace

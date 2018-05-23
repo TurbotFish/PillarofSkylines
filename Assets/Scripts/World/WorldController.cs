@@ -641,7 +641,10 @@ namespace Game.World
                 }
             }
 
-            Debug.LogFormat("SubScene {0} {1} {2} loaded! duration={3}", job.Region.name, job.SubSceneVariant, job.SubSceneLayer, (Time.time - sub_scene_loading_start_time));
+            if (Time.time - sub_scene_loading_start_time > 0)
+            {
+                Debug.LogFormat("SubScene {0} {1} {2} loaded! duration={3}", job.Region.name, job.SubSceneVariant, job.SubSceneLayer, (Time.time - sub_scene_loading_start_time));
+            }
 
             job.CurrentState = SubSceneJobState.Successfull;
             isJobRunning = false;

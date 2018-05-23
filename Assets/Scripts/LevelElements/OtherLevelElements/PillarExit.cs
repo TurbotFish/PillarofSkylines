@@ -25,7 +25,7 @@ namespace Game.LevelElements
 
         public bool IsInteractable()
         {
-            return !gameController.PlayerModel.HasNeedle;
+            return !gameController.PlayerModel.PlayerHasNeedle;
         }
 
         //########################################################################
@@ -52,7 +52,7 @@ namespace Game.LevelElements
 
         public void OnInteraction()
         {
-            if (!gameController.PlayerModel.HasNeedle)
+            if (!gameController.PlayerModel.PlayerHasNeedle)
             {
                 gameController.SwitchToOpenWorld();
             }

@@ -19,7 +19,7 @@ namespace Game.Model
         public AbilityData AbilityData { get; private set; }
         public LevelData LevelData { get; private set; }
 
-        public bool HasNeedle { get; set; }
+        public bool PlayerHasNeedle { get; set; }
         public int PillarKeys { get; private set; }
 
         private List<AbilityType> ActivatedAbilityList = new List<AbilityType>();
@@ -37,6 +37,11 @@ namespace Game.Model
         {
             AbilityData = Resources.Load<AbilityData>("ScriptableObjects/AbilityData");
             LevelData = Resources.Load<LevelData>("ScriptableObjects/LevelData");
+
+            if (Application.isEditor)
+            {
+                SetAbilityActive(AbilityType.Echo);
+            }
         }
 
         //###########################################################
@@ -156,38 +161,31 @@ namespace Game.Model
         // -- OPERATIONS
 
         /// <summary>
-        /// This method activates an ability if its Group is unlocked.
-        /// Returns true if the ability is now activated, false otherwise.
+        /// This method activates an ability.
         /// </summary>
-        public bool ActivateAbility(AbilityType abilityType)
+        public void SetAbilityActive(AbilityType abilityType)
         {
-            var ability = AbilityData.GetAbility(abilityType);
-
             if (!ActivatedAbilityList.Contains(abilityType))
             {
                 ActivatedAbilityList.Add(abilityType);
                 
             }
-
-            return true;
         }
 
         /// <summary>
         /// This method deactivates an ability and gives the player back the amount of favours it cost to activate it.
         /// Returns true if the ability is now deactivated, false otherwise.
         /// </summary>
-        public bool DeactivateAbility(AbilityType abilityType)
+        public void SetAbilityInactive(AbilityType abilityType)
         {
             ActivatedAbilityList.Remove(abilityType);
-
-            return true;
         }
 
         /// <summary>
         /// Destroys a pillar.
         /// </summary>
         /// <param name="pillarId">The Id of the pillar to destroy.</param>
-        public void DestroyPillar(PillarId pillarId)
+        public void SetPillarDestroyed(PillarId pillarId)
         {
             if (!DestoyedPillarList.Contains(pillarId))
             {
@@ -281,7 +279,7 @@ namespace Game.Model
 
                 foreach (var ability in AbilityData.GetAllAbilities())
                 {
-                    ActivateAbility(ability.Type);
+                    SetAbilityActive(ability.Type);
                 }
             }
         }
