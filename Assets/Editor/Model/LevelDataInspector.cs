@@ -26,29 +26,9 @@ namespace Game.Model
 
             int pillar_count = Enum.GetValues(typeof(World.PillarId)).Cast<World.PillarId>().Count();
 
-            while (Self.PillarSceneObjectList.Count != pillar_count)
-            {
-                if (Self.PillarSceneObjectList.Count > pillar_count)
-                {
-                    Self.PillarSceneObjectList.RemoveAt(Self.PillarSceneObjectList.Count - 1);
-                }
-                else
-                {
-                    Self.PillarSceneObjectList.Add(null);
-                }
-            }
-
-            while (Self.PillarSceneActivationPriceList.Count != pillar_count)
-            {
-                if (Self.PillarSceneActivationPriceList.Count > pillar_count)
-                {
-                    Self.PillarSceneActivationPriceList.RemoveAt(Self.PillarSceneActivationPriceList.Count - 1);
-                }
-                else
-                {
-                    Self.PillarSceneActivationPriceList.Add(0);
-                }
-            }
+            AdjustListSize(Self.PillarSceneObjectList, pillar_count, null);
+            AdjustListSize(Self.PillarSceneActivationPriceList, pillar_count, 0);
+            AdjustListSize(Self.PillarRewardAbilityList, pillar_count, AbilityType.Dash);
         }
 
         //###############################################################
@@ -57,6 +37,8 @@ namespace Game.Model
 
         public override void OnInspectorGUI()
         {
+            EditorGUI.BeginChangeCheck();
+
             base.OnInspectorGUI();
 
             Self.OpenWorldSceneObject = EditorGUILayout.ObjectField("Open World Scene", Self.OpenWorldSceneObject, typeof(SceneAsset), false);
@@ -71,11 +53,55 @@ namespace Game.Model
 
                 Self.PillarSceneObjectList[pillar_index] = EditorGUILayout.ObjectField("Scene", Self.PillarSceneObjectList[pillar_index], typeof(SceneAsset), false);
                 Self.PillarSceneActivationPriceList[pillar_index] = EditorGUILayout.IntField("Activation Price", Self.PillarSceneActivationPriceList[pillar_index]);
+                Self.PillarRewardAbilityList[pillar_index] = (AbilityType)EditorGUILayout.EnumPopup("Reward Ability", Self.PillarRewardAbilityList[pillar_index]);
             }
 
-            Self.SetNames();
+            if (EditorGUI.EndChangeCheck())
+            {
+                SetNames();
 
-            EditorUtility.SetDirty(Self);
+                EditorUtility.SetDirty(Self);
+            } 
+        }
+
+        private void SetNames()
+        {
+            if (Self.OpenWorldSceneObject == null)
+            {
+                Self.OpenWorldSceneName = string.Empty;
+            }
+            else
+            {
+                Self.OpenWorldSceneName = Self.OpenWorldSceneObject.name;
+            }
+
+            Self.PillarSceneNameList.Clear();
+            foreach (var pillar_scene in Self.PillarSceneObjectList)
+            {
+                if (pillar_scene == null)
+                {
+                    Self.PillarSceneNameList.Add(string.Empty);
+                }
+                else
+                {
+                    Self.PillarSceneNameList.Add(pillar_scene.name);
+                }
+            }
+        }
+
+        private void AdjustListSize<T>(List<T> list, int size, T item)
+        {
+            while (list.Count != size)
+            {
+                if (list.Count > size)
+                {
+                    list.RemoveAt(list.Count - 1);
+                }
+                else
+                {
+                    list.Add(item);
+                }
+            }
         }
     }
 } // end of namespace

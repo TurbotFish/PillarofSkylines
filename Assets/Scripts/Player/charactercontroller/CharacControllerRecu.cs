@@ -161,7 +161,7 @@ namespace Game.Player.CharacterController
             }
             else
             {
-                Debug.LogWarning("The player's inside " + wallsOverPlayer.Length + " wall(s) : " + wallsOverPlayer[0].name);
+                //Debug.LogWarning("The player's inside " + wallsOverPlayer.Length + " wall(s) : " + wallsOverPlayer[0].name);
                 insideWallOnThisFrame = true;
                 finalVelocity = AdjustPlayerPosition(velocity);
             }
@@ -179,7 +179,7 @@ namespace Game.Player.CharacterController
                     ((velocityBeforeCollision.y > 0 || myPlayer.CurrentState == ePlayerState.glide) ? collisionMaskNoCloud : collisionMask)))
                 {
                     //Debug.Log("managed to add velocity from before collision");
-                    Debug.Log("added VBC : " + velocityBeforeCollision + " final velocity : " + finalVelocity);
+                    //Debug.Log("added VBC : " + velocityBeforeCollision + " final velocity : " + finalVelocity);
                     finalVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * velocityBeforeCollision.normalized * finalVelocity.magnitude;
                     velocityBeforeCollision = Vector3.zero;
                 }
@@ -263,7 +263,7 @@ namespace Game.Player.CharacterController
             if (Physics.CapsuleCast(myTransform.position + velocity + playerAngle * (center - capsuleHeightModifier / 2) + OutOfWallDirection, myTransform.position + velocity + playerAngle * (center + capsuleHeightModifier / 2) + OutOfWallDirection
 				, radius, -OutOfWallDirection, out hit, radius + height, collisionMask))
             {
-				print("hit distance : " + hit.distance + "distance adj : " + ((radius + height) - hit.distance));
+				//print("hit distance : " + hit.distance + "distance adj : " + ((radius + height) - hit.distance));
                 myTransform.Translate(OutOfWallDirection * ((radius + height) - hit.distance)/2, Space.World);
                 result = ConfirmMovement(velocity);
             }
