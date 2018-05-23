@@ -180,11 +180,23 @@ namespace Game.GameControl
         /// <returns></returns>
         private IEnumerator ActivateOpenWorldCR(bool useInitialSpawnPoint)
         {
+            bool show_ability_message = false;
+            string message = "";
+            string description = "";
+
             /*
              * initializing
              */
             AsyncOperation async;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
+
+            if (IsPillarLoaded && PlayerModel.CheckIsPillarDestroyed(ActivePillarId))
+            {
+                show_ability_message = true;
+                var ability = PlayerModel.AbilityData.GetAbility(PlayerModel.LevelData.GetPillarRewardAbility(ActivePillarId));
+                message = "You've been granted the " + ability.Name + " Ability";
+                description = ability.Description;
+            }
 
             /*
              * pausing game
@@ -278,6 +290,15 @@ namespace Game.GameControl
 
             EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.HUD));
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
+
+            /*
+             * show ability gained message
+             */
+            if (show_ability_message)
+            {
+                var HUDMessageEventArgs = new EventManager.OnShowHudMessageEventArgs(true, message, eMessageType.Announcement, description, 6);
+                EventManager.SendShowHudMessageEvent(this, HUDMessageEventArgs);
+            }
 
             /*
              * cleaning up
