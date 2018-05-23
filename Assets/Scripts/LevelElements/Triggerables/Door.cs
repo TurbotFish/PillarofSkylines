@@ -15,11 +15,12 @@ namespace Game.LevelElements
         Vector3 localPositionWhenOpen, localPositionWhenClosed;
 
         public float timeToMove = 1;
+        public float comingBackMultiplicator = 1;
 
         Transform my; //use the property "MyTransform" instead of this! The property is guranteed to be initialized!
         MovingPlatform platform;
         float elapsed;
-
+        bool comingBack = false;
         //###########################################################
 
         public Transform MyTransform { get { if (my == null) { my = transform; } return my; } }
@@ -60,7 +61,7 @@ namespace Game.LevelElements
         protected override void Activate()
         {
             //Debug.LogFormat("Door \"{0}\": Activate called!", name);
-
+            comingBack = false;
             localPositionWhenOpen = localPositionWhenClosed + offsetWhenOpen;
             Move(localPositionWhenClosed, localPositionWhenOpen);
         }
@@ -68,7 +69,7 @@ namespace Game.LevelElements
         protected override void Deactivate()
         {
             //Debug.LogFormat("Door \"{0}\": Deactivate called!", name);
-
+            comingBack = true;
             localPositionWhenClosed = localPositionWhenOpen - offsetWhenOpen;
             Move(localPositionWhenOpen, localPositionWhenClosed);
         }
@@ -87,7 +88,7 @@ namespace Game.LevelElements
 
         private IEnumerator _Move(Vector3 startPos, Vector3 endPos)
         {
-            for (elapsed = timeToMove - elapsed; elapsed < timeToMove; elapsed += Time.deltaTime)
+            for (elapsed = timeToMove - elapsed; elapsed < timeToMove; elapsed += Time.deltaTime * (comingBack ? comingBackMultiplicator : 1))
             {
                 float t = elapsed / timeToMove;
 

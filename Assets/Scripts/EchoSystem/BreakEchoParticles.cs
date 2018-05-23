@@ -1,16 +1,19 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 namespace Game.EchoSystem
 {
     public class BreakEchoParticles : MonoBehaviour
     {
-        ParticleSystem ps;
+		public List<ParticleSystem> particles = new List<ParticleSystem>();
+		public float duration;
 
         void Start()
         {
-            ps = GetComponentInChildren<ParticleSystem>();
-            ps.Play();
-            Invoke("DestroyWhenOver", ps.main.duration);
+			foreach (ParticleSystem ps in particles) {
+				ps.Play ();
+			}
+            Invoke("DestroyWhenOver", duration);
         }
 
         void DestroyWhenOver()

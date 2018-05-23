@@ -15,7 +15,7 @@ namespace Game.Player.CharacterController
 
         Dictionary<ePlayerState, StateCooldown> cooldownDict = new Dictionary<ePlayerState, StateCooldown>();
 
-        Dictionary<ePlayerState, eAbilityType> stateToAbilityLinkDict = new Dictionary<ePlayerState, eAbilityType>();
+        Dictionary<ePlayerState, AbilityType> stateToAbilityLinkDict = new Dictionary<ePlayerState, AbilityType>();
         //Dictionary<eAbilityType, ePlayerState> abilityToStateLinkDict = new Dictionary<eAbilityType, ePlayerState>();
 
         int remainingAerialJumps;
@@ -50,7 +50,7 @@ namespace Game.Player.CharacterController
         
         //#############################################################################
 
-        public void RegisterAbility(ePlayerState stateId, eAbilityType abilityType)
+        public void RegisterAbility(ePlayerState stateId, AbilityType abilityType)
         {
             stateToAbilityLinkDict.Add(stateId, abilityType);
             //abilityToStateLinkDict.Add(abilityType, stateId);
@@ -104,7 +104,7 @@ namespace Game.Player.CharacterController
 
                 if (stateToAbilityLinkDict.ContainsKey(currentState.StateId))
                 {
-                    model.UnflagAbility(stateToAbilityLinkDict[currentState.StateId]);
+                    //model.UnflagAbility(stateToAbilityLinkDict[currentState.StateId]);
                 }
                 //Debug.Log("leaving " + currentState.ToString());
             }
@@ -113,7 +113,7 @@ namespace Game.Player.CharacterController
 
             if (stateToAbilityLinkDict.ContainsKey(currentState.StateId))
             {
-                model.FlagAbility(stateToAbilityLinkDict[currentState.StateId]);
+                //model.FlagAbility(stateToAbilityLinkDict[currentState.StateId]);
             }
             //Debug.Log("entering " + currentState.ToString());
 
@@ -138,7 +138,7 @@ namespace Game.Player.CharacterController
 
         public void EchoDestroyedEventHandler(object sender)
         {
-            if (character.PlayerModel.CheckAbilityActive(eAbilityType.EchoBoost))
+            if (character.PlayerModel.CheckAbilityActive(AbilityType.EchoBoost))
             {
                 StartEchoBoost(character.CharData.EchoBoost.Duration, character.CharData.EchoBoost.LerpSpeed);
             }

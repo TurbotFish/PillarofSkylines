@@ -10,6 +10,8 @@ namespace Game.EchoSystem
     {
         //##################################################################
 
+        // ATTRIBUTES
+
         [SerializeField] private Echo echoPrefab;
         [SerializeField] public BreakEchoParticles breakEchoParticles; //why public?
         [SerializeField] private int maxEchoes = 3;
@@ -32,12 +34,12 @@ namespace Game.EchoSystem
         private float driftInputDown;
         private bool isActive; //set to true when a scene is loaded, false otherwise. This helps avoid errors ;)
 
-        private Vector3 wayPointPosition;
         private bool hasWaypoint = false;
+        private IWaypoint Waypoint;
 
         //##################################################################
 
-        #region initialization
+        // INITIALIZATION
 
         public void Initialize(IGameController gameController)
         {
@@ -52,12 +54,11 @@ namespace Game.EchoSystem
             EventManager.EclipseEvent += OnEclipseEventHandler;
             EventManager.PreSceneChangeEvent += OnPreSceneChangeEvent;
             EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
-            EventManager.SetWaypointEvent += OnSetWaypointEventHandler;
         }
 
-        #endregion initialization
-
         //##################################################################
+
+        // INQUIRIES
 
         /// <summary>
         /// Returns a list with the position of all echos.
@@ -77,31 +78,11 @@ namespace Game.EchoSystem
 
         //##################################################################
 
-        void Update()
-        {
-            if (isActive && !isEclipseActive)
-            {
-                //drift stuff (???)
-                //bool driftInput = Input.GetButtonDown("Drift");
-
-                //if (driftInput)
-                //    Drift();
-
-                //create new echo
-                //if (charController.InputInfo.echoButtonUp && charController.InputInfo.echoButtonTimePressed < 1f && gameController.PlayerModel.CheckAbilityActive(eAbilityType.Echo))
-                //{
-                //    CreateEcho(true);
-                //}
-            }
-        }
-
-        //##################################################################
-
-        #region private methods
+        // OPERATIONS
 
         public void Drift()
         {
-            if (isEclipseActive && !gameController.PlayerModel.hasNeedle)
+            if (isEclipseActive && !gameController.PlayerModel.PlayerHasNeedle)
             {
                 return;
             }
@@ -128,7 +109,7 @@ namespace Game.EchoSystem
 
                 echoCamera.SetFov(70, 0.15f, true);
 
-                var eventArgs = new EventManager.TeleportPlayerEventArgs(wayPointPosition, false);
+                var eventArgs = new EventManager.TeleportPlayerEventArgs(Waypoint.Position, false);
                 EventManager.SendTeleportPlayerEvent(this, eventArgs);
             }
         }
@@ -182,6 +163,8 @@ namespace Game.EchoSystem
             newEcho.echoManager = this;
             echoList.Add(newEcho);
 
+            charController.fxManager.EchoPlay();
+
             if (isPlayerEcho)
             {
                 placedEchoes++;
@@ -213,6 +196,8 @@ namespace Game.EchoSystem
             newEcho.echoManager = this;
             echoList.Add(newEcho);
 
+            charController.fxManager.EchoPlay();
+
             if (isPlayerEcho)
             {
                 placedEchoes++;
@@ -221,19 +206,64 @@ namespace Game.EchoSystem
             return newEcho;
         }
 
-        void FreezeAll()
+        public void PlaceEcho()
+        {
+            charController.fxManager.EchoStop();
+            echoList[echoList.Count - 1].StartParticles();
+        }
+
+        /// <summary>
+        /// Sets the current waypoint.
+        /// <param name="waypoint"></param>
+        public void SetWaypoint(IWaypoint waypoint)
+        {
+            if (waypoint == null)
+            {
+                Debug.LogError("EchoManager: SetWaypoint: waypoint is null!");
+                return;
+            }
+
+            if (Waypoint != null && Waypoint != waypoint)
+            {
+                Waypoint.OnWaypointRemoved();
+            }
+
+            hasWaypoint = true;
+            Waypoint = waypoint;
+        }
+
+        /// <summary>
+        /// Removes the current waypoint. If "waypoint_id" is set the waypoint will only be removed if it has this id.
+        /// </summary>
+        /// <param name="waypoint_id"></param>
+        public void RemoveWaypoint(string waypoint_id = "")
+        {
+            if (Waypoint == null)
+            {
+                return;
+            }
+
+            if (waypoint_id == "" || Waypoint.UniqueId == waypoint_id)
+            {
+                Waypoint.OnWaypointRemoved();
+                Waypoint = null;
+                hasWaypoint = false;
+            }
+        }
+
+        private void FreezeAll()
         {
             for (int i = 0; i < echoList.Count; i++)
                 echoList[i].Freeze();
         }
 
-        void UnfreezeAll()
+        private void UnfreezeAll()
         {
             for (int i = 0; i < echoList.Count; i++)
                 echoList[i].Unfreeze();
         }
 
-        void CreateShell()
+        private void CreateShell()
         {
             if (useShells)
             {
@@ -253,14 +283,7 @@ namespace Game.EchoSystem
 
         }
 
-
-        #endregion private methods
-
-        //##################################################################
-
-        #region event handlers
-
-        void OnEclipseEventHandler(object sender, EventManager.EclipseEventArgs args)
+        private void OnEclipseEventHandler(object sender, EventManager.EclipseEventArgs args)
         {
             if (args.EclipseOn)
             {
@@ -297,23 +320,12 @@ namespace Game.EchoSystem
             echoParticles.RemoveAllEcho();
             echoList.Clear();
 
-            EventManager.SendSetWaypointEvent(this, new EventManager.SetWaypointEventArgs("", transform.position));
-            hasWaypoint = false;
+            RemoveWaypoint();
         }
 
-        void OnSceneChangedEventHandler(object sender, EventManager.SceneChangedEventArgs args)
+        private void OnSceneChangedEventHandler(object sender, EventManager.SceneChangedEventArgs args)
         {
             isActive = true;
         }
-
-        void OnSetWaypointEventHandler(object sender, EventManager.SetWaypointEventArgs args)
-        {
-            hasWaypoint = true;
-            wayPointPosition = args.Position;
-        }
-
-        #endregion event handlers
-
-        //##################################################################
     }
 } //end of namespace

@@ -11,7 +11,7 @@ namespace Game.LevelElements
 
         [SerializeField] GameObject defaultEye;
         [SerializeField] GameObject eclipseEye;
-        
+
         [SerializeField] float lookAtDamp = 0.5f;
 
         private IGameController gameController;
@@ -41,7 +41,7 @@ namespace Game.LevelElements
 
         public bool IsInteractable()
         {
-            return gameController.PlayerModel.hasNeedle;
+            return gameController.PlayerModel.PlayerHasNeedle;
         }
 
         //########################################################################
@@ -77,14 +77,22 @@ namespace Game.LevelElements
 
         public void OnInteraction()
         {
+            if (!IsInteractable())
+            {
+                return;
+            }
+
             var showMessageEventArgs = new EventManager.OnShowHudMessageEventArgs(false);
             EventManager.SendShowHudMessageEvent(this, showMessageEventArgs);
 
-            gameController.PlayerModel.hasNeedle = false;
+            var model = gameController.PlayerModel;
 
-            gameController.PlayerModel.DestroyPillar(gameController.ActivePillarId);
+            model.PlayerHasNeedle = false;
 
-            gameController.SwitchToOpenWorld();         
+            model.SetAbilityActive(model.LevelData.GetPillarRewardAbility(gameController.ActivePillarId));
+            model.SetPillarDestroyed(gameController.ActivePillarId);
+
+            gameController.SwitchToOpenWorld();
         }
 
         void OnEclipseEventHandler(object sender, EventManager.EclipseEventArgs args)

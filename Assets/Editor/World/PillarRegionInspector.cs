@@ -22,7 +22,7 @@ namespace Game.World
             //
             EditorGUILayout.LabelField("-- Pillar");
 
-            pillarIdProperty.enumValueIndex = (int)(ePillarId)EditorGUILayout.EnumPopup("Pillar Id", (ePillarId)pillarIdProperty.enumValueIndex);
+            pillarIdProperty.enumValueIndex = (int)(PillarId)EditorGUILayout.EnumPopup("Pillar Id", (PillarId)pillarIdProperty.enumValueIndex);
 
             serializedObject.ApplyModifiedProperties();
         }

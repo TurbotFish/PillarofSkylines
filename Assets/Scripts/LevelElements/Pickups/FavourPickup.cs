@@ -11,7 +11,7 @@ namespace Game.LevelElements
         //##################################################################
 
         [Header("FavourPickup")]
-        [SerializeField] private eAbilityType ability;
+        [SerializeField] private AbilityType ability;
         private Ability AbilityData {
             get { return GameController.PlayerModel.AbilityData.GetAbility(ability);  }
         }
@@ -26,7 +26,7 @@ namespace Game.LevelElements
 
         protected override void OnPickedUp()
         {
-            GameController.PlayerModel.ActivateAbility(ability);
+            GameController.PlayerModel.SetAbilityActive(ability);
         }
 
         //##################################################################

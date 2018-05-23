@@ -24,9 +24,6 @@ namespace Game.World
         private SerializedProperty RenderDistanceMediumProperty;
         private SerializedProperty RenderDistanceFarProperty;
 
-        private SerializedProperty PreTeleportOffsetProperty;
-        private SerializedProperty SecondaryPositionDistanceModifierProperty;
-
         private SerializedProperty DrawBoundsProperty;
         private SerializedProperty DrawRegionBoundsProperty;
 
@@ -48,9 +45,6 @@ namespace Game.World
             RenderDistanceNearProperty = serializedObject.FindProperty("renderDistanceNear");
             RenderDistanceMediumProperty = serializedObject.FindProperty("renderDistanceMedium");
             RenderDistanceFarProperty = serializedObject.FindProperty("renderDistanceFar");
-
-            PreTeleportOffsetProperty = serializedObject.FindProperty("preTeleportOffset");
-            SecondaryPositionDistanceModifierProperty = serializedObject.FindProperty("secondaryPositionDistanceModifier");
 
             DrawBoundsProperty = serializedObject.FindProperty("drawBounds");
             DrawRegionBoundsProperty = serializedObject.FindProperty("drawRegionBounds");
@@ -82,9 +76,6 @@ namespace Game.World
             RenderDistanceNearProperty.floatValue = EditorGUILayout.FloatField("Near", RenderDistanceNearProperty.floatValue);
             RenderDistanceMediumProperty.floatValue = EditorGUILayout.FloatField("Medium", RenderDistanceMediumProperty.floatValue);
             RenderDistanceFarProperty.floatValue = EditorGUILayout.FloatField("Far", RenderDistanceFarProperty.floatValue);
-
-            PreTeleportOffsetProperty.floatValue = EditorGUILayout.FloatField("PreTeleportOffset", PreTeleportOffsetProperty.floatValue);
-            SecondaryPositionDistanceModifierProperty.floatValue = EditorGUILayout.FloatField("SecondaryPositionDistanceModifier", SecondaryPositionDistanceModifierProperty.floatValue);
 
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("--Bounds - Editor--");
@@ -122,7 +113,7 @@ namespace Game.World
             EditorGUILayout.LabelField("");
             EditorGUILayout.LabelField("-- Tools");
 
-            if (!Application.isPlaying && Self.EditorSubScenesLoaded)
+            if (!Application.isPlaying)
             {
                 if (Self.EditorSubScenesLoaded)
                 {
@@ -240,7 +231,7 @@ namespace Game.World
 
             foreach (var region in regions)
             {
-                foreach (var sub_scene_layer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
+                foreach (var sub_scene_layer in Enum.GetValues(typeof(SubSceneLayer)).Cast<SubSceneLayer>())
                 {
                     foreach (var sub_scene_mode in region.AvailableSubSceneVariants)
                     {
@@ -249,7 +240,7 @@ namespace Game.World
                             continue;
                         }
 
-                        string sub_scene_path = WorldUtility.GetSubScenePath(Self.gameObject.scene.path, region.UniqueId, sub_scene_mode, sub_scene_layer, eSuperRegionType.Centre);
+                        string sub_scene_path = WorldUtility.GetSubScenePath(Self.gameObject.scene.path, region.UniqueId, sub_scene_mode, sub_scene_layer);
                         string sub_scene_path_full = WorldUtility.GetFullPath(sub_scene_path);
 
                         Scene sub_scene = new Scene();
@@ -358,14 +349,14 @@ namespace Game.World
                         continue;
                     }
 
-                    eSubSceneLayer layer = sub_scene.SubSceneLayer;
-                    eSubSceneVariant variant = sub_scene.SubSceneVariant;
+                    SubSceneLayer layer = sub_scene.SubSceneLayer;
+                    SubSceneVariant variant = sub_scene.SubSceneVariant;
 
                     sub_scene.transform.SetParent(null, true);
                     var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
                     EditorSceneManager.MoveGameObjectToScene(sub_scene.gameObject, scene);
 
-                    string sub_scene_path = WorldUtility.GetSubScenePath(Self.gameObject.scene.path, region.UniqueId, variant, layer, eSuperRegionType.Centre);
+                    string sub_scene_path = WorldUtility.GetSubScenePath(Self.gameObject.scene.path, region.UniqueId, variant, layer);
 
                     EditorSceneManager.SaveScene(scene, sub_scene_path);
                     scenes.Add(sub_scene_path, scene);

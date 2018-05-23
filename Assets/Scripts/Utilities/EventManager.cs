@@ -97,12 +97,12 @@ namespace Game.Utilities
             /// <summary>
             /// 
             /// </summary>
-            public World.ePillarId PillarId { get; private set; }
+            public World.PillarId PillarId { get; private set; }
 
             /// <summary>
             /// Constructor for the Pillar entrance menu.
             /// </summary>
-            public OnShowPillarEntranceMenuEventArgs(World.ePillarId pillarId) : base(UI.eUiState.PillarEntrance)
+            public OnShowPillarEntranceMenuEventArgs(World.PillarId pillarId) : base(UI.eUiState.PillarEntrance)
             {
                 PillarId = pillarId;
             }
@@ -117,7 +117,7 @@ namespace Game.Utilities
                 Id = -1;
             }
 
-            public OnShowLoadingScreenEventArgs(World.ePillarId pillarId) : base(UI.eUiState.LoadingScreen)
+            public OnShowLoadingScreenEventArgs(World.PillarId pillarId) : base(UI.eUiState.LoadingScreen)
             {
                 Id = (int)pillarId;
             }
@@ -148,9 +148,9 @@ namespace Game.Utilities
 
         public class PillarDestroyedEventArgs : EventArgs
         {
-            public World.ePillarId PillarId { get; private set; }
+            public World.PillarId PillarId { get; private set; }
 
-            public PillarDestroyedEventArgs(World.ePillarId pillarId)
+            public PillarDestroyedEventArgs(World.PillarId pillarId)
             {
                 this.PillarId = pillarId;
             }
@@ -166,34 +166,6 @@ namespace Game.Utilities
         }
 
         #endregion pillar destroyed event
-
-        //***********************************************************
-
-        // OBSOLETE
-        #region ability state changed
-
-        //public class AbilityStateChangedEventArgs : EventArgs
-        //{
-        //    public eAbilityType AbilityType { get; private set; }
-        //    public eAbilityState AbilityState { get; private set; }
-
-        //    public AbilityStateChangedEventArgs(eAbilityType abilityType, eAbilityState abilityState)
-        //    {
-        //        AbilityType = abilityType;
-        //        AbilityState = abilityState;
-        //    }
-        //}
-
-        //public delegate void AbilityStateChangedEventHandler(object sender, AbilityStateChangedEventArgs args);
-
-        //public static event AbilityStateChangedEventHandler AbilityStateChangedEvent;
-
-        //public static void SendAbilityStateChangedEvent(object sender, AbilityStateChangedEventArgs args)
-        //{
-        //    AbilityStateChangedEvent?.Invoke(sender, args);
-        //}
-
-        #endregion ability state changed
 
         //***********************************************************
 
@@ -333,7 +305,7 @@ namespace Game.Utilities
         public class SceneChangedEventArgs : EventArgs
         {
             public bool HasChangedToPillar { get; private set; }
-            public World.ePillarId PillarId { get; private set; }
+            public World.PillarId PillarId { get; private set; }
 
             /// <summary>
             /// Change to Open World.
@@ -347,7 +319,7 @@ namespace Game.Utilities
             /// Change to Pillar.
             /// </summary>
             /// <param name="pillarId"></param>
-            public SceneChangedEventArgs(World.ePillarId pillarId)
+            public SceneChangedEventArgs(World.PillarId pillarId)
             {
                 this.HasChangedToPillar = true;
                 this.PillarId = pillarId;
@@ -457,33 +429,6 @@ namespace Game.Utilities
         }
 
         #endregion trigger updated
-
-        //***********************************************************
-
-        #region set waypoint event
-
-        public class SetWaypointEventArgs : EventArgs
-        {
-            public string WaypointID { get; private set; }
-            public Vector3 Position { get; private set; }
-
-            public SetWaypointEventArgs(string wayPointID, Vector3 position)
-            {
-                WaypointID = wayPointID;
-                Position = position;
-            }
-        }
-
-        public delegate void SetWaypointEventHandler(object sender, SetWaypointEventArgs args);
-
-        public static event SetWaypointEventHandler SetWaypointEvent;
-
-        public static void SendSetWaypointEvent(object sender, SetWaypointEventArgs args)
-        {
-            SetWaypointEvent?.Invoke(sender, args);
-        }
-
-        #endregion set waypoint event
 
         //***********************************************************
 

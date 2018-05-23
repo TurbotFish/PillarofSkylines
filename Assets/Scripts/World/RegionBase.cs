@@ -26,22 +26,31 @@ namespace Game.World
         [SerializeField, HideInInspector] bool drawBounds;
         [SerializeField, HideInInspector] Color boundsColour = Color.green;
 
-        [SerializeField, HideInInspector] private bool doNotDuplicate;
-
         //###############################################################
         //###############################################################
 
         // -- ATTRIBUTES
 
+        public Bounds BoundingBox { get { return new Bounds(boundsCentre + transform.position, boundsSize); } }
+
+        public float RenderDistanceNear { get { return overrideRenderDistances ? localRenderDistanceNear : WorldController.RenderDistanceNear; } }
+        public float RenderDistanceMedium { get { return overrideRenderDistances ? localRenderDistanceMedium : WorldController.RenderDistanceMedium; } }
+        public float RenderDistanceFar { get { return overrideRenderDistances ? localRenderDistanceFar : WorldController.RenderDistanceFar; } }
+
+        public SubSceneVariant CurrentSubSceneVariant { get { return currentSubSceneVariant; } }
+
         public float PlayerDistance { get; private set; }
 
+
         protected WorldController WorldController;
+
+
         private Transform myTransform;
 
-        private Dictionary<eSubSceneVariant, Dictionary<eSubSceneLayer, List<SubSceneJob>>> SubSceneJobLists;
+        private Dictionary<SubSceneVariant, Dictionary<SubSceneLayer, List<SubSceneJob>>> SubSceneJobLists;
 
-        private eRegionMode currentRegionMode;
-        private eSubSceneVariant currentSubSceneVariant;
+        private RegionMode currentRegionMode;
+        private SubSceneVariant currentSubSceneVariant;
 
         private bool isInitialized;
         private bool hasSubSceneModeChanged;
@@ -50,25 +59,10 @@ namespace Game.World
 
 
 
-        public Bounds BoundingBox { get { return new Bounds(boundsCentre + transform.position, boundsSize); } }
 
-        public float RenderDistanceNear { get { return overrideRenderDistances ? localRenderDistanceNear : WorldController.RenderDistanceNear; } }
+        public abstract List<SubSceneVariant> AvailableSubSceneVariants { get; }
 
-        public float RenderDistanceMedium { get { return overrideRenderDistances ? localRenderDistanceMedium : WorldController.RenderDistanceMedium; } }
-
-        public float RenderDistanceFar { get { return overrideRenderDistances ? localRenderDistanceFar : WorldController.RenderDistanceFar; } }
-
-        public eSubSceneVariant CurrentSubSceneVariant { get { return currentSubSceneVariant; } }
-
-
-
-        public bool DoNotDuplicate { get { return doNotDuplicate; } }
-
-
-
-        public abstract List<eSubSceneVariant> AvailableSubSceneVariants { get; }
-
-        protected abstract eSubSceneVariant InitialSubSceneVariant { get; }
+        protected abstract SubSceneVariant InitialSubSceneVariant { get; }
 
 
         //###############################################################
@@ -86,15 +80,15 @@ namespace Game.World
             myTransform = transform;
             WorldController = world_controller;
 
-            currentRegionMode = eRegionMode.Inactive;
+            currentRegionMode = RegionMode.Inactive;
             currentSubSceneVariant = InitialSubSceneVariant;
 
-            SubSceneJobLists = new Dictionary<eSubSceneVariant, Dictionary<eSubSceneLayer, List<SubSceneJob>>>();
+            SubSceneJobLists = new Dictionary<SubSceneVariant, Dictionary<SubSceneLayer, List<SubSceneJob>>>();
             foreach (var sub_scene_variant in AvailableSubSceneVariants)
             {
-                var job_dictionary = new Dictionary<eSubSceneLayer, List<SubSceneJob>>();
+                var job_dictionary = new Dictionary<SubSceneLayer, List<SubSceneJob>>();
 
-                foreach (var sub_scene_layer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
+                foreach (var sub_scene_layer in Enum.GetValues(typeof(SubSceneLayer)).Cast<SubSceneLayer>())
                 {
                     job_dictionary.Add(sub_scene_layer, new List<SubSceneJob>());
                 }
@@ -106,7 +100,7 @@ namespace Game.World
             {
                 if (variant != currentSubSceneVariant)
                 {
-                    foreach (var layer in Enum.GetValues(typeof(eSubSceneLayer)).Cast<eSubSceneLayer>())
+                    foreach (var layer in Enum.GetValues(typeof(SubSceneLayer)).Cast<SubSceneLayer>())
                     {
                         CreateUnloadSubSceneJob(variant, layer);
                     }
@@ -127,7 +121,7 @@ namespace Game.World
         /// <param name="sub_scene_variant"></param>
         /// <param name="sub_scene_layer"></param>
         /// <returns></returns>
-        public eSubSceneState GetSubSceneState(eSubSceneVariant sub_scene_variant, eSubSceneLayer sub_scene_layer)
+        public SubSceneState GetSubSceneState(SubSceneVariant sub_scene_variant, SubSceneLayer sub_scene_layer)
         {
             var sub_scene_root_transform = GetSubSceneRoot(sub_scene_variant, sub_scene_layer);
             var sub_scene_job_list = SubSceneJobLists[sub_scene_variant][sub_scene_layer];
@@ -144,7 +138,7 @@ namespace Game.World
             {
                 var job = sub_scene_job_list[last_job_index];
 
-                if ((job.CurrentState & (eSubSceneJobState.Aborted)) > 0)
+                if ((job.CurrentState & (SubSceneJobState.Aborted)) > 0)
                 {
                     last_job = job;
                 }
@@ -158,34 +152,34 @@ namespace Game.World
             {
                 if (sub_scene_job_list.Count == 0 || last_job == null)
                 {
-                    return eSubSceneState.Loaded;
+                    return SubSceneState.Loaded;
                 }
-                else if (last_job.JobType == eSubSceneJobType.Unload)
+                else if (last_job.JobType == SubSceneJobType.Unload)
                 {
-                    return eSubSceneState.Unloading;
+                    return SubSceneState.Unloading;
                 }
                 else
                 {
                     Debug.LogWarningFormat("Region {0}: SubScene {1} {2} is loaded and the type of the last job is {3}", this.name, sub_scene_variant, sub_scene_layer, last_job.JobType);
 
-                    return eSubSceneState.Loaded;
+                    return SubSceneState.Loaded;
                 }
             }
             else
             {
                 if (sub_scene_job_list.Count == 0 || last_job == null)
                 {
-                    return eSubSceneState.Unloaded;
+                    return SubSceneState.Unloaded;
                 }
-                if (last_job.JobType == eSubSceneJobType.Load)
+                if (last_job.JobType == SubSceneJobType.Load)
                 {
-                    return eSubSceneState.Loading;
+                    return SubSceneState.Loading;
                 }
                 else
                 {
                     Debug.LogWarningFormat("Region {0}: SubScene {1} {2} is loaded and the type of the last job is {3}", this.name, sub_scene_variant, sub_scene_layer, last_job.JobType);
 
-                    return eSubSceneState.Unloaded;
+                    return SubSceneState.Unloaded;
                 }
             }
         }
@@ -235,7 +229,7 @@ namespace Game.World
         /// <param name="sub_scene_variant"></param>
         /// <param name="sub_scene_layer"></param>
         /// <returns></returns>
-        public Transform GetSubSceneRoot(eSubSceneVariant sub_scene_variant, eSubSceneLayer sub_scene_layer)
+        public Transform GetSubSceneRoot(SubSceneVariant sub_scene_variant, SubSceneLayer sub_scene_layer)
         {
             var subSceneList = GetAllSubScenes();
 
@@ -291,7 +285,7 @@ namespace Game.World
         /// <returns></returns>
         public void UnloadAll()
         {
-            SwitchMode(eRegionMode.Inactive);
+            SwitchMode(RegionMode.Inactive);
         }
 
         /// <summary>
@@ -388,15 +382,15 @@ namespace Game.World
         /// 
         /// </summary>
         /// <param name="new_variant"></param>
-        protected void SwitchVariant(eSubSceneVariant new_variant)
+        protected void SwitchVariant(SubSceneVariant new_variant)
         {
             var previous_mode = currentRegionMode;
 
-            SwitchMode(eRegionMode.Inactive);
+            SwitchMode(RegionMode.Inactive);
 
             currentSubSceneVariant = new_variant;
 
-            SwitchMode(previous_mode);       
+            SwitchMode(previous_mode);
         }
 
         /// <summary>
@@ -411,16 +405,16 @@ namespace Game.World
 
                 switch (currentRegionMode)
                 {
-                    case eRegionMode.Near:
+                    case RegionMode.Near:
                         colour = WorldController.ModeNearColor;
                         break;
-                    case eRegionMode.Medium:
+                    case RegionMode.Medium:
                         colour = WorldController.ModeMediumColor;
                         break;
-                    case eRegionMode.Far:
+                    case RegionMode.Far:
                         colour = WorldController.ModeFarColor;
                         break;
-                    case eRegionMode.Inactive:
+                    case RegionMode.Inactive:
                         break;
                 }
 
@@ -444,7 +438,7 @@ namespace Game.World
             {
                 foreach (var layer_pair in variant_group.Value)
                 {
-                    layer_pair.Value.RemoveAll(item => item.CurrentState == eSubSceneJobState.Aborted || item.CurrentState == eSubSceneJobState.Successfull);
+                    layer_pair.Value.RemoveAll(item => item.CurrentState == SubSceneJobState.Aborted || item.CurrentState == SubSceneJobState.Successfull);
                 }
             }
         }
@@ -477,7 +471,6 @@ namespace Game.World
                     else
                     {
                         float dist = (BoundingBox.ClosestPoint(teleportPosition) - teleportPosition).magnitude;
-                        dist *= WorldController.SecondaryPositionDistanceModifier;
 
                         if (dist < distance)
                         {
@@ -495,55 +488,51 @@ namespace Game.World
         /// Takes into consideration the current mode in order to avoid flickering.
         /// </summary>
         /// <returns></returns>
-        private eRegionMode ComputeDesiredRegionMode()
+        private RegionMode ComputeDesiredRegionMode()
         {
-            //MODE NEAR
-            //when the player is inside a region it is always active, this is important to keep teleport destinations loaded
-            if (currentRegionMode != eRegionMode.Near && PlayerDistance == 0)
+            // MODE NEAR
+            if (PlayerDistance < RenderDistanceNear)
             {
-                //Debug.LogFormat("{0} {1}: mode switch AAA! dist={2}",superRegion.Type, name, playerDistance);
-                //result.AddRange(SwitchRegionMode(eRegionMode.Near));
-                return eRegionMode.Near;
-            }
-            else if (currentRegionMode != eRegionMode.Near && PlayerDistance < RenderDistanceNear)
-            {
-                //Debug.LogFormat("{0} {1}: mode switch BBB! dist={2}", superRegion.Type, name, playerDistance);
-                //result.AddRange(SwitchRegionMode(eRegionMode.Near));
-                return eRegionMode.Near;
-            }
-            //****************************************
-            //MODE MEDIUM
-            else if (currentRegionMode != eRegionMode.Medium && PlayerDistance > RenderDistanceNear * 1.1f && PlayerDistance < RenderDistanceMedium)
-            {
-                //Debug.LogFormat("{0} {1}: mode switch CCC! dist={2}", superRegion.Type, name, playerDistance);
-                //result.AddRange(SwitchRegionMode(eRegionMode.Medium));
-                return eRegionMode.Medium;
-            }
-            //****************************************
-            // MODE FAR
-            else if (currentRegionMode != eRegionMode.Far && PlayerDistance > RenderDistanceMedium * 1.1f && PlayerDistance < RenderDistanceFar)
-            {
-                //Debug.LogFormat("{0} {1}: mode switch DDD! dist={2}", superRegion.Type, name, playerDistance);
-                //result.AddRange(SwitchRegionMode(eRegionMode.Far));
-                return eRegionMode.Far;
-            }
-            //****************************************
-            // MODE INACTIVE
-            //else if (currentRegionMode != eRegionMode.Inactive && !isVisible && playerDistance > 0)
-            //{
-            //    //Debug.LogFormat("{0} {1}: mode switch EEE! dist={2}", superRegion.Type, name, playerDistance);
-            //    //result.AddRange(SwitchRegionMode(eRegionMode.Inactive));
-            //    return eRegionMode.Inactive;
-            //}
-            else if (currentRegionMode != eRegionMode.Inactive && PlayerDistance > RenderDistanceFar * 1.1f)
-            {
-                //Debug.LogFormat("{0} {1}: mode switch FFF! dist={2}", superRegion.Type, name, playerDistance);
-                //result.AddRange(SwitchRegionMode(eRegionMode.Inactive));
-                return eRegionMode.Inactive;
+                return RegionMode.Near;
             }
 
-            //Debug.LogWarning("RegionBase: ComputeDesiredRegionMode: no valid case!");
-            return currentRegionMode;
+            // Switch NEAR to MEDIUM
+            if (currentRegionMode == RegionMode.Near && PlayerDistance > (RenderDistanceNear * 1.1f) && PlayerDistance < RenderDistanceMedium)
+            {
+                return RegionMode.Medium;
+            }
+
+            //MODE MEDIUM
+            else if (PlayerDistance > RenderDistanceNear && PlayerDistance < RenderDistanceMedium)
+            {
+                return RegionMode.Medium;
+            }
+
+            // Switch MEDIUM to FAR
+            else if (currentRegionMode == RegionMode.Medium && PlayerDistance > (RenderDistanceMedium * 1.1f) && PlayerDistance < RenderDistanceFar)
+            {
+                return RegionMode.Far;
+            }
+
+            // MODE FAR
+            else if (PlayerDistance > RenderDistanceMedium && PlayerDistance < RenderDistanceFar)
+            {
+                return RegionMode.Far;
+            }
+
+            // Switch FAR to INACTIVE
+
+            else if (currentRegionMode == RegionMode.Far && PlayerDistance > (RenderDistanceFar * 1.1f))
+            {
+                return RegionMode.Inactive;
+            }
+
+            // MODE INACTIVE
+            else
+            {
+                Debug.LogErrorFormat("RegionBase {0}: ComputeDesiredRegionMode: error! mode={1} distance={2}", this.name, currentRegionMode.ToString(), PlayerDistance);
+                return RegionMode.Inactive;
+            }
         }
 
         /// <summary>
@@ -551,7 +540,7 @@ namespace Game.World
         /// </summary>
         /// <param name="new_region_mode"></param>
         /// <returns></returns>
-        private void SwitchMode(eRegionMode new_region_mode)
+        private void SwitchMode(RegionMode new_region_mode)
         {
             if (currentRegionMode == new_region_mode)
             {
@@ -560,42 +549,42 @@ namespace Game.World
 
             switch (new_region_mode)
             {
-                case eRegionMode.Near:
+                case RegionMode.Near:
                     //load
-                    CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Always);
-                    CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Medium);
-                    CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Near);
+                    CreateLoadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Always);
+                    CreateLoadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Medium);
+                    CreateLoadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Near);
 
                     //unload
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Far);
+                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Far);
 
                     break;
-                case eRegionMode.Medium:
+                case RegionMode.Medium:
                     //load
-                    CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Always);
-                    CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Medium);
+                    CreateLoadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Always);
+                    CreateLoadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Medium);
 
                     //unload
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Near);
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Far);
+                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Near);
+                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Far);
 
                     break;
-                case eRegionMode.Far:
+                case RegionMode.Far:
                     //load
-                    CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Always);
-                    CreateLoadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Far);
+                    CreateLoadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Always);
+                    CreateLoadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Far);
 
                     //unload
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Near);
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Medium);
+                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Near);
+                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Medium);
 
                     break;
-                case eRegionMode.Inactive:
+                case RegionMode.Inactive:
                     //unload
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Near);
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Medium);
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Far);
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, eSubSceneLayer.Always);
+                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Near);
+                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Medium);
+                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Far);
+                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Always);
 
                     break;
             }
@@ -609,27 +598,27 @@ namespace Game.World
         /// <param name="sub_scene_variant"></param>
         /// <param name="sub_scene_layer"></param>
         /// <returns></returns>
-        private void CreateLoadSubSceneJob(eSubSceneVariant sub_scene_variant, eSubSceneLayer sub_scene_layer)
+        private void CreateLoadSubSceneJob(SubSceneVariant sub_scene_variant, SubSceneLayer sub_scene_layer)
         {
-            eSubSceneState sub_scene_state = GetSubSceneState(sub_scene_variant, sub_scene_layer);
+            SubSceneState sub_scene_state = GetSubSceneState(sub_scene_variant, sub_scene_layer);
 
             //Debug.LogWarningFormat("RegionBase \"{0}\": CreateSubSceneLoadJob: mode={1}; type={2}; currentState={3}", name, subSceneMode, subSceneType, state);
 
-            if ((sub_scene_state & (eSubSceneState.Loaded | eSubSceneState.Loading)) > 0)
+            if ((sub_scene_state & (SubSceneState.Loaded | SubSceneState.Loading)) > 0)
             {
                 return;
             }
 
-            if (sub_scene_state == eSubSceneState.Unloading)
+            if (sub_scene_state == SubSceneState.Unloading)
             {
                 var job_list = SubSceneJobLists[sub_scene_variant][sub_scene_layer];
                 var last_job = job_list[job_list.Count - 1];
 
-                if (last_job.CurrentState != eSubSceneJobState.Active && last_job.JobType == eSubSceneJobType.Unload)
+                if (last_job.CurrentState != SubSceneJobState.Active && last_job.JobType == SubSceneJobType.Unload)
                 {
-                    last_job.CurrentState = eSubSceneJobState.Aborted;
+                    last_job.CurrentState = SubSceneJobState.Aborted;
 
-                    if ((GetSubSceneState(sub_scene_variant, sub_scene_layer) & (eSubSceneState.Loaded | eSubSceneState.Loading)) > 0)
+                    if ((GetSubSceneState(sub_scene_variant, sub_scene_layer) & (SubSceneState.Loaded | SubSceneState.Loading)) > 0)
                     {
                         return;
                     }
@@ -640,7 +629,7 @@ namespace Game.World
                 }
             }
 
-            var new_job = new SubSceneJob(this, sub_scene_variant, sub_scene_layer, eSubSceneJobType.Load);
+            var new_job = new SubSceneJob(this, sub_scene_variant, sub_scene_layer, SubSceneJobType.Load);
 
             SubSceneJobLists[sub_scene_variant][sub_scene_layer].Add(new_job);
             WorldController.AddSubSceneJob(new_job);
@@ -652,25 +641,25 @@ namespace Game.World
         /// <param name="sub_scene_variant"></param>
         /// <param name="sub_scene_layer"></param>
         /// <returns></returns>
-        private void CreateUnloadSubSceneJob(eSubSceneVariant sub_scene_variant, eSubSceneLayer sub_scene_layer)
+        private void CreateUnloadSubSceneJob(SubSceneVariant sub_scene_variant, SubSceneLayer sub_scene_layer)
         {
-            eSubSceneState sub_scene_state = GetSubSceneState(sub_scene_variant, sub_scene_layer);
+            SubSceneState sub_scene_state = GetSubSceneState(sub_scene_variant, sub_scene_layer);
 
-            if ((sub_scene_state & (eSubSceneState.Unloaded | eSubSceneState.Unloading)) > 0)
+            if ((sub_scene_state & (SubSceneState.Unloaded | SubSceneState.Unloading)) > 0)
             {
                 return;
             }
 
-            if (sub_scene_state == eSubSceneState.Loading)
+            if (sub_scene_state == SubSceneState.Loading)
             {
                 var job_list = SubSceneJobLists[sub_scene_variant][sub_scene_layer];
                 var last_job = job_list[job_list.Count - 1];
 
-                if (last_job.CurrentState != eSubSceneJobState.Active && last_job.JobType == eSubSceneJobType.Load)
+                if (last_job.CurrentState != SubSceneJobState.Active && last_job.JobType == SubSceneJobType.Load)
                 {
-                    last_job.CurrentState = eSubSceneJobState.Aborted;
+                    last_job.CurrentState = SubSceneJobState.Aborted;
 
-                    if ((GetSubSceneState(sub_scene_variant, sub_scene_layer) & (eSubSceneState.Unloaded | eSubSceneState.Unloading)) > 0)
+                    if ((GetSubSceneState(sub_scene_variant, sub_scene_layer) & (SubSceneState.Unloaded | SubSceneState.Unloading)) > 0)
                     {
                         return;
                     }
@@ -681,7 +670,7 @@ namespace Game.World
                 }
             }
 
-            var new_job = new SubSceneJob(this, sub_scene_variant, sub_scene_layer, eSubSceneJobType.Unload);
+            var new_job = new SubSceneJob(this, sub_scene_variant, sub_scene_layer, SubSceneJobType.Unload);
 
             SubSceneJobLists[sub_scene_variant][sub_scene_layer].Add(new_job);
             WorldController.AddSubSceneJob(new_job);

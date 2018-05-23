@@ -32,11 +32,12 @@ namespace Game.GameControl
         public DuplicationCameraManager DuplicationCameraManager { get; private set; }
 
         public bool IsPillarLoaded { get; private set; }
-        public ePillarId ActivePillarId { get; private set; }
+        public PillarId ActivePillarId { get; private set; }
 
         public SpawnPointManager SpawnPointManager { get; private set; }
 
-        private SceneNamesData sceneNamesData;
+        public LevelData LevelData { get; private set; }
+
         private bool isInitialized = false;
         private bool isGameStarted = false;
 
@@ -49,7 +50,7 @@ namespace Game.GameControl
         private void Start()
         {
             //load resources
-            sceneNamesData = Resources.Load<SceneNamesData>("ScriptableObjects/SceneNamesData");
+            LevelData = Resources.Load<LevelData>("ScriptableObjects/LevelData");
 
             //getting references in game controller
             PlayerModel = GetComponentInChildren<PlayerModel>();
@@ -62,7 +63,7 @@ namespace Game.GameControl
             UiController = FindObjectOfType<UiController>();
 
             //initializing
-            PlayerModel.InitializePlayerModel();
+            PlayerModel.Initialize();
             UiController.InitializeUi(this, eUiState.LoadingScreen, new EventManager.OnShowLoadingScreenEventArgs());
 
             PlayerController.InitializePlayerController(this);
@@ -77,12 +78,10 @@ namespace Game.GameControl
 
         private IEnumerator LoadOpenWorldSceneCR()
         {
-            CameraController.PoS_Camera.CameraComponent.enabled = false;
-
             AsyncOperation async;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
-            string sceneName = sceneNamesData.GetOpenWorldSceneName();
+            string sceneName = LevelData.OpenWorldSceneName;
 
             async = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
             async.allowSceneActivation = false;
@@ -152,7 +151,7 @@ namespace Game.GameControl
 #endif
         }
 
-        public void SwitchToPillar(ePillarId pillar_id)
+        public void SwitchToPillar(PillarId pillar_id)
         {
             if (IsPillarLoaded)
             {
@@ -181,13 +180,23 @@ namespace Game.GameControl
         /// <returns></returns>
         private IEnumerator ActivateOpenWorldCR(bool useInitialSpawnPoint)
         {
+            bool show_ability_message = false;
+            string message = "";
+            string description = "";
+
             /*
              * initializing
              */
-            CameraController.PoS_Camera.CameraComponent.enabled = false;
-
             AsyncOperation async;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
+
+            if (IsPillarLoaded && PlayerModel.CheckIsPillarDestroyed(ActivePillarId))
+            {
+                show_ability_message = true;
+                var ability = PlayerModel.AbilityData.GetAbility(PlayerModel.LevelData.GetPillarRewardAbility(ActivePillarId));
+                message = "You've been granted the " + ability.Name + " Ability";
+                description = ability.Description;
+            }
 
             /*
              * pausing game
@@ -200,7 +209,7 @@ namespace Game.GameControl
             /*
              * unloading pillar scene
              */
-            string pillarSceneName = sceneNamesData.GetPillarSceneName(ActivePillarId);
+            string pillarSceneName = LevelData.GetPillarSceneName(ActivePillarId);
 
             if (IsPillarLoaded && !string.IsNullOrEmpty(pillarSceneName))
             {
@@ -220,7 +229,7 @@ namespace Game.GameControl
             /*
              * "loading" open world scene
              */
-            string worldSceneName = sceneNamesData.GetOpenWorldSceneName();
+            string worldSceneName = LevelData.OpenWorldSceneName;
             Scene scene = SceneManager.GetSceneByName(worldSceneName);
 
             foreach (var obj in scene.GetRootGameObjects())
@@ -250,7 +259,7 @@ namespace Game.GameControl
             }
             else
             {
-                ePillarState pillarState = PlayerModel.CheckIsPillarDestroyed(ActivePillarId) ? ePillarState.Destroyed : ePillarState.Intact;
+                PillarState pillarState = PlayerModel.CheckIsPillarDestroyed(ActivePillarId) ? PillarState.Destroyed : PillarState.Intact;
                 spawn_position = SpawnPointManager.GetPillarExitPoint(ActivePillarId, pillarState);
                 spawn_rotation = SpawnPointManager.GetPillarExitOrientation(ActivePillarId, pillarState);
             }
@@ -261,7 +270,7 @@ namespace Game.GameControl
             WorldController.Activate(spawn_position);
             DuplicationCameraManager.Activate();
 
-            while (WorldController.CurrentState == eWorldControllerState.Activating)
+            while (WorldController.CurrentState == WorldControllerState.Activating)
             {
                 yield return null;
             }
@@ -277,12 +286,19 @@ namespace Game.GameControl
              * unpausing game
              */
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());
-
-            CameraController.PoS_Camera.CameraComponent.enabled = true;
             yield return new WaitForSeconds(0.5f);
 
             EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.HUD));
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
+
+            /*
+             * show ability gained message
+             */
+            if (show_ability_message)
+            {
+                var HUDMessageEventArgs = new EventManager.OnShowHudMessageEventArgs(true, message, eMessageType.Announcement, description, 6);
+                EventManager.SendShowHudMessageEvent(this, HUDMessageEventArgs);
+            }
 
             /*
              * cleaning up
@@ -295,10 +311,8 @@ namespace Game.GameControl
         /// </summary>
         /// <param name="pillarId"></param>
         /// <returns></returns>
-        private IEnumerator LoadPillarSceneCR(ePillarId pillarId)
+        private IEnumerator LoadPillarSceneCR(PillarId pillarId)
         {
-            CameraController.PoS_Camera.CameraComponent.enabled = false;
-
             AsyncOperation async;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
@@ -311,13 +325,13 @@ namespace Game.GameControl
 
             //*****************************************
             //deactivating open world scene
-            string worldSceneName = sceneNamesData.GetOpenWorldSceneName();
+            string worldSceneName = LevelData.OpenWorldSceneName;
             Scene scene = SceneManager.GetSceneByName(worldSceneName);
 
             WorldController.Deactivate();
             DuplicationCameraManager.Deactivate();
 
-            while (WorldController.CurrentState == eWorldControllerState.Deactivating)
+            while (WorldController.CurrentState == WorldControllerState.Deactivating)
             {
                 yield return null;
             }
@@ -334,7 +348,7 @@ namespace Game.GameControl
 
             //*****************************************
             //loading pillar scene
-            string pillarSceneName = sceneNamesData.GetPillarSceneName(pillarId);
+            string pillarSceneName = LevelData.GetPillarSceneName(pillarId);
 
             async = SceneManager.LoadSceneAsync(pillarSceneName, LoadSceneMode.Additive);
             async.allowSceneActivation = false;
@@ -375,11 +389,6 @@ namespace Game.GameControl
             //*****************************************
             //informing everyone!
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs(pillarId));
-            yield return new WaitForSeconds(0.1f);
-
-            //*****************************************
-            //unpausing game
-            CameraController.PoS_Camera.CameraComponent.enabled = true;
             yield return new WaitForSeconds(0.5f);
 
             EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.HUD));

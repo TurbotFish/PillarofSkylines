@@ -37,7 +37,7 @@ namespace Game.LevelElements
         [SerializeField, HideInInspector] private List<string> triggerIds = new List<string>(); //list with the Id's of the Trigger objects
 
         private PlayerModel model;
-        private PersistentTriggerable persistentTriggerable;
+        private TriggerablePersistentData persistentTriggerable;
         private bool isCopy;
         [HideInInspector]
         public bool isInitialized;
@@ -48,7 +48,7 @@ namespace Game.LevelElements
 
         public bool Triggered { get { return triggered; } }
 
-        protected PersistentTriggerable PersistentDataObject { get { return persistentTriggerable; } }
+        protected TriggerablePersistentData PersistentDataObject { get { return persistentTriggerable; } }
 
         #endregion properties
 
@@ -77,7 +77,7 @@ namespace Game.LevelElements
             model = gameController.PlayerModel;
 
             //
-            persistentTriggerable = model.GetPersistentDataObject<PersistentTriggerable>(UniqueId);
+            persistentTriggerable = model.GetPersistentDataObject<TriggerablePersistentData>(UniqueId);
 
             if (persistentTriggerable == null)
             {
@@ -211,9 +211,9 @@ namespace Game.LevelElements
         /// Creates the object containing persitent data for the triggerable object. Allows inherited classes to create their own version.
         /// </summary>
         /// <returns></returns>
-        protected virtual PersistentTriggerable CreatePersistentObject()
+        protected virtual TriggerablePersistentData CreatePersistentObject()
         {
-            return new PersistentTriggerable(UniqueId, Triggered);
+            return new TriggerablePersistentData(UniqueId, Triggered);
         }
 
         #endregion protected methods
@@ -236,10 +236,10 @@ namespace Game.LevelElements
 
         private bool CheckTriggers()
         {
-            var persistentTriggers = new List<PersistentTrigger>();
+            var persistentTriggers = new List<TriggerPersistentData>();
             foreach (var triggerId in triggerIds)
             {
-                persistentTriggers.Add(model.GetPersistentDataObject<PersistentTrigger>(triggerId));
+                persistentTriggers.Add(model.GetPersistentDataObject<TriggerPersistentData>(triggerId));
             }
 
             switch (triggerWith)

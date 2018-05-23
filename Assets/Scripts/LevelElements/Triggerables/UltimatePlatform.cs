@@ -19,6 +19,7 @@ namespace Game.LevelElements
 
         public List<float> timeToMove;
         public float easing = 1;
+        public float initialWaitTime;
         public bool looping = true;
         public bool finishMovement = true;
 
@@ -31,6 +32,7 @@ namespace Game.LevelElements
         MovingPlatform platform;
         Vector3 initialPosition;
         float elapsed;
+        bool starting = true;
 
         //###########################################################
 
@@ -46,9 +48,10 @@ namespace Game.LevelElements
             platform = GetComponent<MovingPlatform>();
 
             waypoints.Add(Vector3.zero);
+
             foreach (Transform child in transform.GetChild(0))
             {
-                waypoints.Add(new Vector3(child.localPosition.x * my.lossyScale.x, child.localPosition.y * my.lossyScale.y, child.localPosition.z * my.lossyScale.z));
+                waypoints.Add(my.localRotation * new Vector3(child.localPosition.x * my.lossyScale.x, child.localPosition.y * my.lossyScale.y, child.localPosition.z * my.lossyScale.z));
             }
 
             if (waitTime.Count < waypoints.Count)
@@ -154,7 +157,8 @@ namespace Game.LevelElements
 
 			if (waitTime.Count > currentPoint) {
 				//Debug.Log ("GAGA   " +waitTime [currentPoint]);
-				yield return new WaitForSeconds (waitTime [currentPoint]);
+				yield return new WaitForSeconds (waitTime [currentPoint] + (starting ? initialWaitTime : 0));
+                starting = false;
 			}
 
             while (elapsed < timeMoving)
