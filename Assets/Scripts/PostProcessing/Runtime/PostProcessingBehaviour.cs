@@ -31,7 +31,7 @@ namespace UnityEngine.PostProcessing
         Camera m_Camera;
         PostProcessingProfile m_PreviousProfile;
 
-        bool inside;
+        bool inside, overriden;
         bool m_RenderingInSceneView = false;
 
         // Effect components
@@ -54,9 +54,11 @@ namespace UnityEngine.PostProcessing
 
         public void OverrideProfile(PostProcessingProfile newProfile) {
             profile = newProfile;
+            overriden = true;
         }
         public void StopOverridingProfile() {
             profile = inside ? profileInside : profileOutside;
+            overriden = false;
         }
 
 
@@ -111,12 +113,14 @@ namespace UnityEngine.PostProcessing
         {
             if (args.HasChangedToPillar)
             {
-                profile = profileInside;
+                if (!overriden)
+                    profile = profileInside;
                 inside = true;
             }
             else
             {
-                profile = profileOutside;
+                if(!overriden)
+                    profile = profileOutside;
                 inside = false;
             }
         }
