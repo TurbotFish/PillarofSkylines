@@ -73,7 +73,8 @@ namespace Game.Player
                 }
                 else if (gameController.PlayerModel.CheckAbilityActive(AbilityType.Echo))
                 {
-                    currentEcho = gameController.EchoManager.CreateEcho(true);
+					currentEcho = gameController.EchoManager.CreateEcho(true);
+
                     currentEcho.transform.SetParent(gameController.PlayerController.CharController.MyTransform);
                 }
             }
@@ -86,7 +87,9 @@ namespace Game.Player
             {
                 if (currentInteractableObject == null && currentEcho != null)
                 {
+
                     currentEcho.MyTransform.SetParent(null);
+					gameController.EchoManager.PlaceEcho ();
                 }
             }
         }
