@@ -10,6 +10,8 @@ namespace Game.UI
 
         void Activate(Utilities.EventManager.OnShowMenuEventArgs args);
 
+        void HandleInput();
+
         void Deactivate();
     }
 }

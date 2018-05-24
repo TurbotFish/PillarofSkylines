@@ -14,7 +14,7 @@ namespace Game.UI
 
     public class HudController : MonoBehaviour, IUiMenu
     {
-        
+
         [Header("Help"), SerializeField]
         TMPro.TextMeshProUGUI helpMessage;
         [SerializeField] float helpFadeTime = 0.1f;
@@ -28,7 +28,7 @@ namespace Game.UI
         [SerializeField]
         TMPro.TextMeshProUGUI importantDescription;
         [SerializeField] float importantFadeTime = 0.5f;
-        
+
         GameObject importantPanel;
         CanvasGroup importantRenderer;
 
@@ -47,11 +47,11 @@ namespace Game.UI
 
         public CanvasGroup myRenderer;
         public bool IsActive { get; private set; }
-        
+
         //###########################################################
 
         #region monobehaviour methods
-            
+
         void Start()
         {
             //myRenderer = GetComponent<CanvasGroup>();
@@ -70,7 +70,7 @@ namespace Game.UI
 
             Utilities.EventManager.OnShowHudMessageEvent += OnShowHudMessageEventHandler;
         }
-        
+
         void Update()
         {
             if (!IsActive)
@@ -79,7 +79,8 @@ namespace Game.UI
             if (announcePanelActive && announceTime > 0)
             {
                 announceTime -= Time.unscaledDeltaTime;
-                if (announceTime <= 0) {
+                if (announceTime <= 0)
+                {
                     announcePanelActive = false;
                     Display(announceRenderer, false, announceFadeTime);
                 }
@@ -92,7 +93,7 @@ namespace Game.UI
             }
             else if (Input.GetButtonDown("Back"))
             {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(MenuType.HelpMenu));
+                Debug.LogError("Error!");
                 return;
             }
             else if (Input.GetButtonDown("Interact") && importantPanel.activeSelf)
@@ -105,8 +106,9 @@ namespace Game.UI
         #endregion monobehaviour methods
 
         //###########################################################
-        
-        void Display(CanvasGroup canvas, bool active, float fadeTime) {
+
+        void Display(CanvasGroup canvas, bool active, float fadeTime)
+        {
             StartCoroutine(_Display(canvas, active, fadeTime));
         }
 
@@ -146,7 +148,7 @@ namespace Game.UI
             IsActive = true;
             myRenderer.alpha = 1;
             StopAllCoroutines();
-            gameObject.SetActive(true);          
+            gameObject.SetActive(true);
         }
 
         void IUiMenu.Deactivate()
@@ -169,6 +171,10 @@ namespace Game.UI
         }
 
         //###########################################################
+
+        public void HandleInput()
+        {
+        }
 
         void OnShowHudMessageEventHandler(object sender, Utilities.EventManager.OnShowHudMessageEventArgs args)
         {

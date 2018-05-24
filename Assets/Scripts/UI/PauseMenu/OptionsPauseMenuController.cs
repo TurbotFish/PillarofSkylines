@@ -25,10 +25,6 @@ namespace Game.UI
             GameController = game_controller;
         }
 
-        //###########################################################
-
-        // -- OPERATIONS
-
         void IUiMenu.Activate(EventManager.OnShowMenuEventArgs args)
         {
             this.gameObject.SetActive(true);
@@ -39,6 +35,15 @@ namespace Game.UI
         {
             this.gameObject.SetActive(false);
             IsActive = false;
+        }
+
+        //###########################################################
+
+        // -- OPERATIONS
+
+        public void HandleInput()
+        {
+
         }
     }
 }

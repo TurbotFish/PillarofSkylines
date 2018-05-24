@@ -18,7 +18,6 @@ namespace Game.UI
         [SerializeField] private EndMenuController EndMenuController;
         [SerializeField] private LoadingScreenController LoadingScreenController;
         [SerializeField] private PillarEntranceMenuController PillarEntranceMenuController;
-        [SerializeField] private HelpMenuController HelpMenuController;
         [SerializeField] private MainMenuController MainMenuController;
         [SerializeField] private PauseMenuController PauseMenuController;
 
@@ -50,7 +49,6 @@ namespace Game.UI
             UiStates.Add(MenuType.End, EndMenuController);
             UiStates.Add(MenuType.LoadingScreen, LoadingScreenController);
             UiStates.Add(MenuType.PillarEntrance, PillarEntranceMenuController);
-            UiStates.Add(MenuType.HelpMenu, HelpMenuController);
             UiStates.Add(MenuType.MainMenu, MainMenuController);
             UiStates.Add(MenuType.PauseMenu, PauseMenuController);
 
@@ -77,12 +75,17 @@ namespace Game.UI
         public EndMenuController EndMenu { get { return EndMenuController; } }
         public LoadingScreenController LoadingScreen { get { return LoadingScreenController; } }
         public PillarEntranceMenuController PillarEntranceMenu { get { return PillarEntranceMenuController; } }
-        public HelpMenuController HelpMenu { get { return HelpMenuController; } }
         public MainMenuController MainMenu { get { return MainMenuController; } }
+        public PauseMenuController PauseMenu { get { return PauseMenuController; } }
 
         //###########################################################
 
         // -- OPERATIONS
+
+        public void HandleInput()
+        {
+            UiStates[CurrentState].HandleInput();
+        }
 
         public void SwitchState(MenuType newState, Utilities.EventManager.OnShowMenuEventArgs args)
         {

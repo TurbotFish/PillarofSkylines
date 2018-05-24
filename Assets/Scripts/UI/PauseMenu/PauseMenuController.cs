@@ -12,8 +12,8 @@ namespace Game.UI
 
         // -- CONSTANTS
 
-        [SerializeField] private OverviewPauseMenuController OverviewPauseMenuController;
-        [SerializeField] private SkillsPauseMenuController SkillsPauseMenuController;
+        [SerializeField] private OverviewMenuController OverviewPauseMenuController;
+        [SerializeField] private SkillsMenuController SkillsPauseMenuController;
         [SerializeField] private OptionsPauseMenuController OptionsPauseMenuController;
 
         //###########################################################
@@ -39,7 +39,7 @@ namespace Game.UI
             SubMenuDictionary.Add(PauseMenuType.Skills, SkillsPauseMenuController);
             SubMenuDictionary.Add(PauseMenuType.Options, OptionsPauseMenuController);
 
-            foreach(var menu in SubMenuDictionary.Values)
+            foreach (var menu in SubMenuDictionary.Values)
             {
                 menu.Initialize(game_controller);
                 menu.Deactivate();
@@ -48,9 +48,10 @@ namespace Game.UI
 
         void IUiMenu.Activate(EventManager.OnShowMenuEventArgs args)
         {
+            this.gameObject.SetActive(true);
+
             SwitchMenu(PauseMenuType.Overview);
 
-            this.gameObject.SetActive(true);
             IsActive = true;
         }
 
@@ -63,6 +64,11 @@ namespace Game.UI
         //###########################################################
 
         // -- OPERATIONS
+
+        public void HandleInput()
+        {
+            SubMenuDictionary[CurrentState].HandleInput();
+        }
 
         public void SwitchMenu(PauseMenuType new_menu_type)
         {

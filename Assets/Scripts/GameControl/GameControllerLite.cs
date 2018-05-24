@@ -37,6 +37,8 @@ namespace Game.GameControl
         //
         private bool isPillarLoaded;
 
+        private bool IsInitialized;
+
         //###############################################################
 
         public PlayerModel PlayerModel { get { return playerModel; } }
@@ -205,6 +207,8 @@ namespace Game.GameControl
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
             EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(UI.MenuType.HUD));
+
+            IsInitialized = true;
         }
 
         /// <summary>
@@ -212,6 +216,11 @@ namespace Game.GameControl
         /// </summary>
         private void Update()
         {
+            if (!IsInitialized)
+            {
+                return;
+            }
+
             if (Input.GetKeyUp(KeyCode.F2))
             {
                 Debug.Log("CHEATING: One PillarKey appeared out of nowhere!");
@@ -229,6 +238,8 @@ namespace Game.GameControl
                     PlayerModel.SetAbilityState(ability.Type, AbilityState.active);
                 }
             }
+
+            UiController.HandleInput();
         }
 
         //###############################################################

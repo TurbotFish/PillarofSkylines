@@ -9,7 +9,6 @@ namespace Game.UI
         End,
         LoadingScreen,
         PillarEntrance,
-        HelpMenu,
         MainMenu,
         PauseMenu
     }

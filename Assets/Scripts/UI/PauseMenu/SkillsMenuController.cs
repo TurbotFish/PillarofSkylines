@@ -1,22 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Game.GameControl;
+using Game.Model;
 using Game.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Game.UI
 {
-    public class OverviewPauseMenuController : MonoBehaviour, IUiMenu
+    public class SkillsMenuController : MonoBehaviour, IUiMenu
     {
         //###########################################################
 
         // -- CONSTANTS
 
+        [SerializeField] private Transform EntryHolder;
         [SerializeField] private Button StartingButton;
-        [SerializeField] private Transform PillarMarkHolder;
-        [SerializeField] private Transform EyeHolder;
-        [SerializeField] private Transform AbilityHolder;
+        [SerializeField] private DescriptionPanelView DescriptionPanelView;
 
         //###########################################################
 
@@ -34,27 +34,22 @@ namespace Game.UI
         {
             GameController = game_controller;
 
-            foreach(var pillar_mark_view in PillarMarkHolder.GetComponentsInChildren<PillarMarkIconView>())
+            foreach (var entry in EntryHolder.GetComponentsInChildren<IEntryView>())
             {
-                pillar_mark_view.Initialize(game_controller);
+                entry.Initialize(game_controller, this);
             }
 
-            foreach(var eye_view in EyeHolder.GetComponentsInChildren<EyeIconView>())
-            {
-                eye_view.Initialize(game_controller);
-            }
-
-            foreach(var ability_view in AbilityHolder.GetComponentsInChildren<AbilityIconView>())
-            {
-                ability_view.Initialize(game_controller);
-            }
+            DescriptionPanelView.Initialize(game_controller);
         }
 
         void IUiMenu.Activate(EventManager.OnShowMenuEventArgs args)
         {
-            StartingButton.Select();
+            //StartCoroutine(SelectStartingButton());
 
             this.gameObject.SetActive(true);
+
+            StartingButton.Select();
+
             IsActive = true;
         }
 
@@ -68,24 +63,23 @@ namespace Game.UI
 
         // -- OPERATIONS
 
-        public void OnResumeButtonPressed()
+        public void HandleInput()
         {
-            GameController.UiController.SwitchState(MenuType.HUD, new EventManager.OnShowMenuEventArgs(MenuType.HUD));
+            if (Input.GetButtonDown("Cancel"))
+            {
+                GameController.UiController.PauseMenu.SwitchMenu(PauseMenuType.Overview);
+            }
         }
 
-        public void OnSkillsButtonPressed()
+        public void OnAbilitySelected(AbilityType ability)
         {
-            Debug.Log("Skills Button pressed!");
+            DescriptionPanelView.ShowAbility(ability);
         }
 
-        public void OnOptionsButtonsPressed()
+        private IEnumerator SelectStartingButton()
         {
-            Debug.Log("Options Button pressed!");
-        }
-
-        public void OnExitGameButtonPressed()
-        {
-            GameController.ExitGame();
+            yield return null;
+            StartingButton.Select();
         }
     }
 } // end of namespace

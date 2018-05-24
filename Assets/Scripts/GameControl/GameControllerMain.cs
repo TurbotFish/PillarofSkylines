@@ -191,7 +191,10 @@ namespace Game.GameControl
         /// </summary>
         private void Update()
         {
-
+            if (!isInitialized)
+            {
+                return;
+            }
 
             if (Input.GetKeyUp(KeyCode.F2))
             {
@@ -210,6 +213,8 @@ namespace Game.GameControl
                     PlayerModel.SetAbilityState(ability.Type, AbilityState.active);
                 }
             }
+
+            UiController.HandleInput();
         }
 
         /// <summary>
