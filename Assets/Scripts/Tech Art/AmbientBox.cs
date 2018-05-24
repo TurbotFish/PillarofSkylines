@@ -29,6 +29,7 @@ public class AmbientBox : MonoBehaviour, IInteractable
     [SerializeField] float fogFadeSpeed = 2;
 
     GradientFog fog;
+    UnityEngine.PostProcessing.PostProcessingBehaviour postProcessStack;
 
     Color defaultColor;
     Gradient defaultGradient;
@@ -45,6 +46,8 @@ public class AmbientBox : MonoBehaviour, IInteractable
         defaultGradient = fog.gradient;
         defaultStart = fog.startDistance;
         defaultEnd = fog.endDistance;
+
+        postProcessStack = FindObjectOfType<UnityEngine.PostProcessing.PostProcessingBehaviour>(); // fix that as well prob
     }
 
     #endregion initialization
@@ -73,6 +76,9 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
         if (editFog)
             StartCoroutine(FadeFog(gradient, startDistance, endDistance));
+
+        if (postProcess)
+            postProcessStack.OverrideProfile(postProcess);
     }
 
     public void OnPlayerExit()
@@ -83,6 +89,9 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
         if (editFog)
             StartCoroutine(FadeFog(defaultGradient, defaultStart, defaultEnd));
+
+        if (postProcess)
+            postProcessStack.StopOverridingProfile();
     }
 
     public void OnHoverBegin()
