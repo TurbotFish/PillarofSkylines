@@ -42,29 +42,39 @@ Shader "Custom/Smoke" {
             #pragma multi_compile_fog
             #pragma exclude_renderers gles3 metal d3d11_9x xbox360 xboxone ps3 ps4 psp2 
             #pragma target 3.0
+
+            uniform sampler2D _CameraDepthTexture;
             uniform float4 _TimeEditor;
+
             uniform sampler2D _Smoke; uniform float4 _Smoke_ST;
             uniform sampler2D _Noise; uniform float4 _Noise_ST;
             uniform sampler2D _Alpha; uniform float4 _Alpha_ST;
+
             uniform float _node_8867;
             uniform float _Emissivepower;
             uniform float _Dgrad;
             uniform float _Vitesse;
             uniform float4 _node_7877;
+
             struct VertexInput {
                 float4 vertex : POSITION;
                 float2 texcoord0 : TEXCOORD0;
             };
+
             struct VertexOutput {
                 float4 pos : SV_POSITION;
                 float2 uv0 : TEXCOORD0;
+				float4 projPos : TEXCOORD1;
                 UNITY_FOG_COORDS(1)
             };
+
             VertexOutput vert (VertexInput v) {
                 VertexOutput o = (VertexOutput)0;
                 o.uv0 = v.texcoord0;
                 o.pos = UnityObjectToClipPos(v.vertex );
                 UNITY_TRANSFER_FOG(o,o.pos);
+				o.projPos = ComputeScreenPos(o.pos);
+                COMPUTE_EYEDEPTH(o.projPos.z);
                 return o;
             }
 
@@ -73,18 +83,27 @@ Shader "Custom/Smoke" {
                 float faceSign = ( facing >= 0 ? 1 : -1 );
 ////// Lighting:
 ////// Emissive:
-                float4 node_7610 = _Time + _TimeEditor;
-                float4 node_4035 = _Time + _TimeEditor;
-                float2 node_8320 = (i.uv0+node_4035.g*float2(-0.3,-0.2));
-                float4 _Noise_var = tex2D(_Noise,TRANSFORM_TEX(node_8320, _Noise));
-                float3 node_1732 = lerp(float3(float2(i.uv0.r,((_Vitesse*node_7610.g)+i.uv0.g)),0.0),_Noise_var.rgb.rgb,_node_8867);
-                float4 _Smoke_var = tex2D(_Smoke,TRANSFORM_TEX(node_1732, _Smoke));
+
+                float sceneZ = max(0, LinearEyeDepth (UNITY_SAMPLE_DEPTH(tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.projPos)))) - _ProjectionParams.g);
+                float partZ = max(0, i.projPos.z - _ProjectionParams.g);
+
+                float4 timer = _Time + _TimeEditor;
+
+
+
+
+                float2 panner = (i.uv0 + timer.g * float2(-0.3,-0.2));
+
+                float4 _Noise_var = tex2D(_Noise,TRANSFORM_TEX(panner, _Noise));
+
+                float3 uv_deformed = lerp(float3(float2(i.uv0.r,((_Vitesse * timer.g)+i.uv0.g)),0.0),_Noise_var.rgb.rgb,_node_8867);
+                float4 _Smoke_var = tex2D(_Smoke,TRANSFORM_TEX(uv_deformed, _Smoke));
 
                 float3 emissive = ((_node_7877.rgb*_Smoke_var.a) * _Emissivepower * (1.0 - (pow(i.uv0.g,_Dgrad)+pow((1.0 - i.uv0.g),_Dgrad)))) * tex2D(_Alpha,TRANSFORM_TEX(i.uv0, _Alpha));
 
-                float3 finalColor = emissive;
-				
 
+                float3 finalColor = emissive * saturate((sceneZ-partZ));
+				
                 fixed4 finalRGBA = fixed4(finalColor,1);
                 UNITY_APPLY_FOG(i.fogCoord, finalRGBA);
 

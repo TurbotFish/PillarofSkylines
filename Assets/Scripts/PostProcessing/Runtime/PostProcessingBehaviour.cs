@@ -31,6 +31,7 @@ namespace UnityEngine.PostProcessing
         Camera m_Camera;
         PostProcessingProfile m_PreviousProfile;
 
+        bool inside;
         bool m_RenderingInSceneView = false;
 
         // Effect components
@@ -50,6 +51,14 @@ namespace UnityEngine.PostProcessing
         VignetteComponent m_Vignette;
         DitheringComponent m_Dithering;
         FxaaComponent m_Fxaa;
+
+        public void OverrideProfile(PostProcessingProfile newProfile) {
+            profile = newProfile;
+        }
+        public void StopOverridingProfile() {
+            profile = inside ? profileInside : profileOutside;
+        }
+
 
         void OnEnable()
         {
@@ -103,10 +112,12 @@ namespace UnityEngine.PostProcessing
             if (args.HasChangedToPillar)
             {
                 profile = profileInside;
+                inside = true;
             }
             else
             {
                 profile = profileOutside;
+                inside = false;
             }
         }
 
