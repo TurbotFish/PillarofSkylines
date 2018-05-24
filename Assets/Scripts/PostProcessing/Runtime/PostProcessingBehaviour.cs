@@ -55,10 +55,12 @@ namespace UnityEngine.PostProcessing
         public void OverrideProfile(PostProcessingProfile newProfile) {
             profile = newProfile;
             overriden = true;
+            OnPreCull();
         }
         public void StopOverridingProfile() {
             profile = inside ? profileInside : profileOutside;
             overriden = false;
+            OnPreCull();
         }
 
 
@@ -116,12 +118,14 @@ namespace UnityEngine.PostProcessing
                 if (!overriden)
                     profile = profileInside;
                 inside = true;
+                OnPreCull();
             }
             else
             {
                 if(!overriden)
                     profile = profileOutside;
                 inside = false;
+                OnPreCull();
             }
         }
 
