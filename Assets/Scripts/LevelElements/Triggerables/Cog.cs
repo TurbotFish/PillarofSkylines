@@ -56,6 +56,9 @@ namespace Game.LevelElements
         
         void Update()
         {
+            if (!isInitialized)
+                return;
+
             if (Triggered)
             {
                 switch (rotationAxis)
