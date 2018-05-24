@@ -34,9 +34,19 @@ namespace Game.UI
         {
             GameController = game_controller;
 
-            foreach(var pillar_mark_view in PillarMarkHolder.GetComponentsInChildren<OverviewPillarMarkView>())
+            foreach(var pillar_mark_view in PillarMarkHolder.GetComponentsInChildren<PillarMarkIconView>())
             {
                 pillar_mark_view.Initialize(game_controller);
+            }
+
+            foreach(var eye_view in EyeHolder.GetComponentsInChildren<EyeIconView>())
+            {
+                eye_view.Initialize(game_controller);
+            }
+
+            foreach(var ability_view in AbilityHolder.GetComponentsInChildren<AbilityIconView>())
+            {
+                ability_view.Initialize(game_controller);
             }
         }
 
@@ -60,7 +70,7 @@ namespace Game.UI
 
         public void OnResumeButtonPressed()
         {
-            Debug.Log("Resume Button pressed!");
+            GameController.UiController.SwitchState(MenuType.HUD, new EventManager.OnShowMenuEventArgs(MenuType.HUD));
         }
 
         public void OnSkillsButtonPressed()
@@ -75,7 +85,7 @@ namespace Game.UI
 
         public void OnExitGameButtonPressed()
         {
-            Debug.Log("Exit Game Button pressed!");
+            GameController.ExitGame();
         }
     }
 } // end of namespace

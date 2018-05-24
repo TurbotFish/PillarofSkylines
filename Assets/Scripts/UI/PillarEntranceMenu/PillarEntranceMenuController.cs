@@ -48,10 +48,7 @@ namespace Game.UI.PillarEntranceMenu
             }
             else if (canEnterPillar && Input.GetButtonDown("Interact"))
             {
-                if (playerModel.UnlockPillar(pillarId))
-                {
-                    GameController.SwitchToPillar(pillarId);
-                }             
+                Debug.LogError("This has been removed! You should only see this message if you do not have enough pillar marks!");          
             }
         }
 

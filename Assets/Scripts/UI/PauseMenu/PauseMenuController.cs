@@ -46,10 +46,6 @@ namespace Game.UI
             }
         }
 
-        //###########################################################
-
-        // -- OPERATIONS
-
         void IUiMenu.Activate(EventManager.OnShowMenuEventArgs args)
         {
             SwitchMenu(PauseMenuType.Overview);
@@ -64,7 +60,10 @@ namespace Game.UI
             IsActive = false;
         }
 
-        
+        //###########################################################
+
+        // -- OPERATIONS
+
         public void SwitchMenu(PauseMenuType new_menu_type)
         {
             if (SubMenuDictionary[CurrentState].IsActive)

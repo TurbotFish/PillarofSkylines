@@ -90,7 +90,7 @@ namespace Game.LevelElements
             model.PlayerHasNeedle = false;
 
             model.SetAbilityState(model.LevelData.GetPillarRewardAbility(gameController.ActivePillarId), Model.AbilityState.active);
-            model.SetPillarDestroyed(gameController.ActivePillarId);
+            model.SetPillarState(gameController.ActivePillarId, Model.PillarState.Destroyed);
 
             gameController.SwitchToOpenWorld();
         }

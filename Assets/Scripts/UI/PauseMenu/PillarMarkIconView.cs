@@ -7,13 +7,25 @@ using UnityEngine.UI;
 
 namespace Game.UI
 {
-    public class OverviewPillarMarkView : MonoBehaviour
+    public class PillarMarkIconView : MonoBehaviour
     {
+        //###########################################################
+
+        // -- CONSTANTS
+
         [SerializeField] private PillarMarkId PillarMarkId;
         [SerializeField] private Sprite ActiveSprite;
         [SerializeField] private Sprite InactiveSprite;
 
+        //###########################################################
+
+        // -- ATTRIBUTES
+
         private Image ImageComponent;
+
+        //###########################################################
+
+        // -- INITIALIZATION
 
         public void Initialize(IGameController game_controller)
         {
@@ -24,9 +36,18 @@ namespace Game.UI
             Utilities.EventManager.PillarMarkStateChangedEvent += OnPillarMarkStateChanged;
         }
 
+        public void OnDestroy()
+        {
+            Utilities.EventManager.PillarMarkStateChangedEvent -= OnPillarMarkStateChanged;
+        }
+
+        //###########################################################
+
+        // -- OPERATIONS
+
         private void OnPillarMarkStateChanged(object sender, Utilities.EventManager.PillarMarkStateChangedEventArgs args)
         {
-            if(PillarMarkId == args.PillarMarkId)
+            if (PillarMarkId == args.PillarMarkId)
             {
                 SetSprite(args.PillarMarkState);
             }
