@@ -55,37 +55,3 @@ Corridor/Library/metadata/
 # =========== #
 # other stuff #
 # =========== #
-
-# Cloud System
-Assets/Cloud System Demos\.meta
-Assets/Cloud System Demos/*
-Assets/Plugins/Cloud System\.meta
-Assets/Plugins/Cloud System/*
-
-# Graphs
-Assets/Graph/Animation/CHARACTER\.meta
-Assets/Graph/Animation/LIFE\.meta
-Assets/Graph/Materials/BAText\.meta
-Assets/Graph/Materials/BATint\.meta
-Assets/Graph/Materials/TERRAIN\.meta
-Assets/Graph/Meshes/BAText\.meta
-Assets/Graph/Meshes/BATint\.meta
-Assets/Graph/Meshes/FX\.meta
-Assets/Graph/Meshes/LIFE\.meta
-Assets/Graph/Meshes/TERRAIN\.meta
-Assets/Graph/Textures/BAText\.meta
-Assets/Graph/Textures/BATint\.meta
-Assets/Graph/Textures/TERRAIN\.meta
-Assets/Graph/Meshes/BLOCKOUT/Materials\.meta
-
-# Antoine
-Assets/Scenes/Antoine/Materials/Material #25\.mat\.meta
-Assets/Scenes/Antoine/Test Assets\.meta
-
-# unsorted
-Assets/Prefab/BLOCKOUT\.meta
-Assets/Scenes/SHARED/blockout_exterior\.meta
-Assets/Materials\.meta
-Assets/Plugins/AmplifyShaderEditor/Examples/Assets/Textures/Misc/ColoredNumberAtlas\.png\.meta
-Assets/Prefabs/BLOCKOUT\.meta
-
