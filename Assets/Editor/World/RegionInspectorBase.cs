@@ -47,8 +47,6 @@ namespace Game.World
             drawBoundsProperty = serializedObject.FindProperty("drawBounds");
             boundsColourProperty = serializedObject.FindProperty("boundsColour");
 
-            doNotDuplicateProperty = serializedObject.FindProperty("doNotDuplicate");
-
             GetInfo();
         }
 
@@ -59,7 +57,6 @@ namespace Game.World
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-            doNotDuplicateProperty.boolValue = EditorGUILayout.Toggle("Do Not Repeat", doNotDuplicateProperty.boolValue);
 
             //###########################################
             EditorGUILayout.LabelField("-- Bounds", EditorStyles.boldLabel);

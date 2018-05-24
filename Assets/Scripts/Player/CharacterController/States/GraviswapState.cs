@@ -109,6 +109,51 @@ namespace Game.Player.CharacterController.States
 			Quaternion quarterBack = Quaternion.AngleAxis (-inputInfo.leftStickRaw.x * 10f, charController.MyTransform.forward) * Quaternion.AngleAxis (inputInfo.leftStickRaw.z * 10f, charController.MyTransform.right);
 			charController.ChangeGravityDirection (quarterBack * -charController.MyTransform.up, charController.MyTransform.position + charController.MyTransform.up);
 
+
+            if (inputInfo.leftStickAtZero)
+            {/*
+                float xSnap = 0f, ySnap = 0f, zSnap = 0f;
+                if (charController.MyTransform.eulerAngles.x % 90 < 45)
+                {
+                    xSnap = -charController.MyTransform.eulerAngles.x % 90;
+                }
+                if (charController.MyTransform.eulerAngles.x % 90 >= 45)
+                {
+                    xSnap = 90 - charController.MyTransform.eulerAngles.x % 90;
+                }
+                if (charController.MyTransform.eulerAngles.y % 90 < 45)
+                {
+                    ySnap = -charController.MyTransform.eulerAngles.y % 90;
+                }
+                if (charController.MyTransform.eulerAngles.y % 90 >= 45)
+                {
+                    ySnap = 90 - charController.MyTransform.eulerAngles.y % 90;
+                }
+                if (charController.MyTransform.eulerAngles.z % 90 < 45)
+                {
+                    zSnap = -charController.MyTransform.eulerAngles.z % 90;
+                }
+                if (charController.MyTransform.eulerAngles.z % 90 >= 45)
+                {
+                    zSnap = 90 - charController.MyTransform.eulerAngles.z % 90;
+                }
+
+                Debug.Log("x : " + xSnap + " y : " + ySnap + " z : " + zSnap);
+
+                Quaternion quaterSnap = Quaternion.Euler(xSnap, ySnap, zSnap);
+
+                charController.ChangeGravityDirection(quaterSnap * -charController.MyTransform.up, charController.MyTransform.position + charController.MyTransform.up);*/
+
+                Vector3 snapPoint = GetClosestSnap(charController.MyTransform.up);
+
+                Quaternion quaterSnap = Quaternion.AngleAxis((Vector3.Angle(charController.MyTransform.up, snapPoint) < 5f) ? Vector3.Angle(charController.MyTransform.up, snapPoint) : 5f, Vector3.Cross(charController.MyTransform.up, snapPoint));
+
+                charController.ChangeGravityDirection(quaterSnap * -charController.MyTransform.up, charController.MyTransform.position + charController.MyTransform.up);
+
+            }
+
+            
+
             var result = new StateReturnContainer
             {
                 CanTurnPlayer = false,
@@ -117,6 +162,56 @@ namespace Game.Player.CharacterController.States
             };
             
             return result;
+        }
+
+        Vector3 GetClosestSnap(Vector3 vector)
+        {
+            Vector3 closestVector = Vector3.down;
+            float smallestAngle = float.MaxValue;
+
+            if (Vector3.Angle(charController.MyTransform.up, Vector3.up) < smallestAngle)
+            {
+                if (Vector3.Angle(charController.MyTransform.up, Vector3.up) < 45f)
+                    return Vector3.up;
+                smallestAngle = Vector3.Angle(charController.MyTransform.up, Vector3.up);
+                closestVector = Vector3.up;
+            }
+            if (Vector3.Angle(charController.MyTransform.up, -Vector3.up) < smallestAngle)
+            {
+                if (Vector3.Angle(charController.MyTransform.up, -Vector3.up) < 45f)
+                    return -Vector3.up;
+                smallestAngle = Vector3.Angle(charController.MyTransform.up, -Vector3.up);
+                closestVector = -Vector3.up;
+            }
+            if (Vector3.Angle(charController.MyTransform.up, Vector3.right) < smallestAngle)
+            {
+                if (Vector3.Angle(charController.MyTransform.up, Vector3.right) < 45f)
+                    return Vector3.right;
+                smallestAngle = Vector3.Angle(charController.MyTransform.up, Vector3.right);
+                closestVector = Vector3.right;
+            }
+            if (Vector3.Angle(charController.MyTransform.up, -Vector3.right) < smallestAngle)
+            {
+                if (Vector3.Angle(charController.MyTransform.up, -Vector3.right) < 45f)
+                    return -Vector3.right;
+                smallestAngle = Vector3.Angle(charController.MyTransform.up, -Vector3.right);
+                closestVector = -Vector3.right;
+            }
+            if (Vector3.Angle(charController.MyTransform.up, Vector3.forward) < smallestAngle)
+            {
+                if (Vector3.Angle(charController.MyTransform.up, Vector3.forward) < 45f)
+                    return Vector3.forward;
+                smallestAngle = Vector3.Angle(charController.MyTransform.up, Vector3.forward);
+                closestVector = Vector3.forward;
+            }
+            if (Vector3.Angle(charController.MyTransform.up, -Vector3.forward) < smallestAngle)
+            {
+                if (Vector3.Angle(charController.MyTransform.up, -Vector3.forward) < 45f)
+                    return -Vector3.forward;
+                smallestAngle = Vector3.Angle(charController.MyTransform.up, -Vector3.forward);
+                closestVector = -Vector3.forward;
+            }
+            return closestVector;
         }
 
         //#############################################################################

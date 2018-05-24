@@ -2,7 +2,7 @@
 
 [ExecuteInEditMode]
 [RequireComponent(typeof(Camera))]
-[AddComponentMenu("Image Effects/ColorOverlay (Grr)")]
+[AddComponentMenu("Image Effects/Eclipse PoS")]
 public class Eclipse : MonoBehaviour {
 	#region Public Properties
 

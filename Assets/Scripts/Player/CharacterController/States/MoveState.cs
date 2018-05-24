@@ -76,7 +76,7 @@ namespace Game.Player.CharacterController.States
 
                 stateMachine.ChangeState(state);
             }
-            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable && !charController.isInsideNoRunZone)
+            else if (inputInfo.rightStickButtonDown && !stateMachine.CheckStateLocked(ePlayerState.graviswap) && !charController.isInsideNoRunZone)
             {
                 stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
             }
