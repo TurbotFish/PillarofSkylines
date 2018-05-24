@@ -222,6 +222,11 @@ namespace Game.Utilities
             public Quaternion Rotation { get; private set; }
 
             /// <summary>
+            /// value='true' means that the teleport was issued as a drift. value='false' means that the teleport is not related to drifting.
+            /// </summary>
+            public bool Drifting { get; private set; }
+
+            /// <summary>
             /// value='true' means that the current scene was switched. value='false' means that the player is teleported inside the current scene.
             /// </summary>
             public bool IsNewScene { get; private set; }
@@ -235,6 +240,16 @@ namespace Game.Utilities
             {
                 Position = position;
                 Rotation = Quaternion.identity;
+                Drifting = false;
+                IsNewScene = isNewScene;
+                TakeRotation = false;
+            }
+
+            public TeleportPlayerEventArgs(Vector3 position, bool drifting, bool isNewScene)
+            {
+                Position = position;
+                Rotation = Quaternion.identity;
+                Drifting = drifting;
                 IsNewScene = isNewScene;
                 TakeRotation = false;
             }
@@ -243,6 +258,7 @@ namespace Game.Utilities
             {
                 Position = position;
                 Rotation = rotation;
+                Drifting = false;
                 IsNewScene = isNewScene;
                 TakeRotation = true;
             }
@@ -252,6 +268,7 @@ namespace Game.Utilities
                 FromPosition = fromPosition;
                 Position = position;
                 Rotation = Quaternion.identity;
+                Drifting = false;
                 IsNewScene = isNewScene;
                 TakeRotation = false;
             }
@@ -261,6 +278,7 @@ namespace Game.Utilities
                 FromPosition = fromPosition;
                 Position = position;
                 Rotation = rotation;
+                Drifting = false;
                 IsNewScene = isNewScene;
                 TakeRotation = true;
             }

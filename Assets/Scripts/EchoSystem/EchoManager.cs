@@ -96,7 +96,7 @@ namespace Game.EchoSystem
                 int lastIndex = echoList.Count - 1;
                 var targetEcho = echoList[lastIndex];
 
-                var eventArgs = new EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, false);
+                var eventArgs = new EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, true, false);
                 EventManager.SendTeleportPlayerEvent(this, eventArgs);
 
                 EventManager.SendEchoDestroyedEvent(this);
