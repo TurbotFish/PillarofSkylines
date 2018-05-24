@@ -6,6 +6,8 @@ public class AmbientBox : MonoBehaviour, IInteractable
 {
     //##################################################################
 
+    [SerializeField] UnityEngine.PostProcessing.PostProcessingProfile postProcess;
+
     [SerializeField] bool editAmbient = true;
     [SerializeField] bool editFog = false;
 
@@ -36,8 +38,7 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
     #region initialization
 
-    private void Start()
-    {
+    private void Start() {
         defaultColor = RenderSettings.ambientLight;
 
         fog = FindObjectOfType<GradientFog>(); // TODO: fix that
@@ -54,8 +55,7 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
     public Transform Transform { get { return transform; } }
 
-    public bool IsInteractable()
-    {
+    public bool IsInteractable() {
         return false;
     }
 
@@ -126,8 +126,7 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
             print(t);
 
-            foreach (GradientFog foggy in fogs)
-            {
+            foreach (GradientFog foggy in fogs) {
                 foggy.gradientLerp = t;
                 foggy.GenerateTexture();
                 foggy.startDistance = Mathf.Lerp(foggy.startDistance, startGoal, t);
