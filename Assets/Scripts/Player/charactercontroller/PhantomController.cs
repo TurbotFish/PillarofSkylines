@@ -90,7 +90,7 @@ namespace Game.Player.CharacterController
 
             var pos1 = myTransform.position;
 
-            playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
+            playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), (Vector3.Cross(Vector3.up, transform.up) != Vector3.zero ? Vector3.Cross(Vector3.up, transform.up) : Vector3.forward)));
 
 #if UNITY_EDITOR
             Debug.DrawRay(myTransform.position + playerAngle * center, velocity / Time.deltaTime, Color.green);
@@ -171,7 +171,7 @@ namespace Game.Player.CharacterController
                 Debug.LogFormat("velocity / deltaTime = {0}", velocity / Time.deltaTime);
             }*/
 
-            var result = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * velocity /*/ Time.deltaTime*/;
+            var result = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), (Vector3.Cross(transform.up, Vector3.up) != Vector3.zero ? Vector3.Cross(Vector3.up, transform.up) : Vector3.forward))) * velocity /*/ Time.deltaTime*/;
 
             return result;
             //return velocity;
@@ -323,7 +323,7 @@ namespace Game.Player.CharacterController
 
         void OnDrawGizmosSelected()
         {
-            Quaternion playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
+            Quaternion playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), (Vector3.Cross(Vector3.up, transform.up) != Vector3.zero ? Vector3.Cross(Vector3.up, transform.up) : Vector3.forward)));
             Gizmos.color = new Color(1, 0, 1, 0.75F);
             Vector3 upPosition = transform.position + playerAngle * (center + capsuleHeightModifier / 2);
             Vector3 downPosition = transform.position + playerAngle * (center - capsuleHeightModifier / 2);

@@ -122,7 +122,7 @@ namespace Game.Player.CharacterController
 			collisions.Reset();
 
 
-            playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
+            playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), (Vector3.Cross(Vector3.up, transform.up) != Vector3.zero ? Vector3.Cross(Vector3.up, transform.up) : Vector3.forward)));
             collisions.initialVelocityOnThisFrame = velocity;
 
 #if UNITY_EDITOR
@@ -180,7 +180,7 @@ namespace Game.Player.CharacterController
                 {
                     //Debug.Log("managed to add velocity from before collision");
                     //Debug.Log("added VBC : " + velocityBeforeCollision + " final velocity : " + finalVelocity);
-                    finalVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * velocityBeforeCollision.normalized * finalVelocity.magnitude;
+                    finalVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), (Vector3.Cross(transform.up, Vector3.up) != Vector3.zero ? Vector3.Cross(transform.up, Vector3.up) : Vector3.forward))) * velocityBeforeCollision.normalized * finalVelocity.magnitude;
                     velocityBeforeCollision = Vector3.zero;
                 }
                 if (timerBeforeForgetVBC < 0f)
@@ -222,7 +222,7 @@ namespace Game.Player.CharacterController
                 Debug.LogFormat("velocity / deltaTime = {0}", velocity / Time.deltaTime);
             }*/
 
-            var result = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up))) * velocity /*/ Time.deltaTime*/;
+            var result = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), (Vector3.Cross(Vector3.up, transform.up) != Vector3.zero ? Vector3.Cross(Vector3.up, transform.up) : Vector3.forward))) * velocity /*/ Time.deltaTime*/;
 
             return result;
             //return velocity;
@@ -680,7 +680,7 @@ namespace Game.Player.CharacterController
 
         void OnDrawGizmosSelected()
         {
-            Quaternion playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), Vector3.Cross(Vector3.up, transform.up)));
+            Quaternion playerAngle = (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), (Vector3.Cross(Vector3.up, transform.up) != Vector3.zero ? Vector3.Cross(Vector3.up, transform.up) : Vector3.forward)));
             Gizmos.color = new Color(1, 0, 1, 0.75F);
             Vector3 upPosition = transform.position + playerAngle * (center + capsuleHeightModifier / 2);
             Vector3 downPosition = transform.position + playerAngle * (center - capsuleHeightModifier / 2);
