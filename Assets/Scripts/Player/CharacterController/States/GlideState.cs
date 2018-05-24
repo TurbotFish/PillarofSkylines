@@ -201,12 +201,12 @@ namespace Game.Player.CharacterController.States
 		//#############################################################################
 
 		public Vector3 TurnLocalToSpace(Vector3 vector) {
-			return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, charController.MyTransform.up), Vector3.Cross(Vector3.up, charController.MyTransform.up))) * vector;
+			return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, charController.MyTransform.up), (Vector3.Cross(Vector3.up, charController.MyTransform.up) != Vector3.zero ? Vector3.Cross(Vector3.up, charController.MyTransform.up) : Vector3.forward))) * vector;
 		}
 
         public Vector3 TurnSpaceToLocal(Vector3 vector)
         {
-            return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, charController.MyTransform.up), Vector3.Cross(charController.MyTransform.up, Vector3.up))) * vector;
+            return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, charController.MyTransform.up), (Vector3.Cross(charController.MyTransform.up, Vector3.up) != Vector3.zero ? Vector3.Cross(charController.MyTransform.up, Vector3.up) : Vector3.forward))) * vector;
         }
     }
 }

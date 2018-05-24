@@ -25,7 +25,7 @@ public class BackAndForthMovement : MovingPlatform {
 
         movementProgression = 0.01f;
 		currWaitTime = waitTimeForth + initialWaitTime;
-        initialPosition = transform.position;
+        initialPosition = transform.localPosition;
         gameObject.tag = "MovingPlatform";
     }
 
@@ -70,8 +70,8 @@ public class BackAndForthMovement : MovingPlatform {
                 break;
         }
 
-        startOfFramePosition = transform.position;
-        transform.position = initialPosition + movement * movementProgression;
+        startOfFramePosition = transform.localPosition;
+        transform.localPosition = initialPosition + movement * movementProgression;
 
         if (currPlayer != null)
         {
