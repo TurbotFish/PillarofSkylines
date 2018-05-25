@@ -1,4 +1,5 @@
-﻿using Game.Utilities;
+﻿using Game.Model;
+using Game.Utilities;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,7 +17,7 @@ namespace Game.World
         {
             base.Initialize(world_controller);
 
-            EventManager.PillarDestroyedEvent += OnPillarDestroyedEventHandler;
+            EventManager.PillarStateChangedEvent += OnPillarStateChanged;
         }
 
         public override List<SubSceneVariant> AvailableSubSceneVariants
@@ -34,20 +35,30 @@ namespace Game.World
         {
             get
             {
-                return WorldController.GameController.PlayerModel.CheckIsPillarDestroyed(pillarId) ? SubSceneVariant.DestroyedPillar : SubSceneVariant.IntactPillar;
+                if(WorldController.GameController.PlayerModel.GetPillarState(pillarId) == PillarState.Destroyed)
+                {
+                    return SubSceneVariant.DestroyedPillar;
+                }
+
+                return SubSceneVariant.IntactPillar;
             }
         }
 
         //========================================================================================
 
-        void OnPillarDestroyedEventHandler(object sender, EventManager.PillarDestroyedEventArgs args)
+        private void OnPillarStateChanged(object sender, EventManager.PillarStateChangedEventArgs args)
         {
-            if (args.PillarId != pillarId)
+           if(args.PillarId == pillarId)
             {
-                return;
+                if(args.PillarState == PillarState.Destroyed && CurrentSubSceneVariant != SubSceneVariant.DestroyedPillar)
+                {
+                    SwitchVariant(SubSceneVariant.DestroyedPillar);
+                }
+                else if(args.PillarState != PillarState.Destroyed && CurrentSubSceneVariant == SubSceneVariant.DestroyedPillar)
+                {
+                    SwitchVariant(SubSceneVariant.IntactPillar);
+                }
             }
-
-            SwitchVariant(SubSceneVariant.DestroyedPillar);
         }
 
     }

@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace Game.UI
 {
-    public class LoadingScreenController : MonoBehaviour, IUiState
+    public class LoadingScreenController : MonoBehaviour, IUiMenu
     {
         [SerializeField] private float turningSpeed;
 
@@ -33,14 +33,14 @@ namespace Game.UI
 
         //###########################################################
 
-        void IUiState.Initialize(IGameController gameController)
+        void IUiMenu.Initialize(IGameController gameController)
         {
             screenImages = Resources.Load<LoadingScreenImages>("ScriptableObjects/LoadingScreenImages");
             background = transform.Find("Background").GetComponent<Image>();
             turningThing = transform.Find("TurningThing");
         }
 
-        void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
+        void IUiMenu.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
         {
             if (IsActive)
             {
@@ -62,7 +62,7 @@ namespace Game.UI
             gameObject.SetActive(true);
         }
 
-        void IUiState.Deactivate()
+        void IUiMenu.Deactivate()
         {
             if (IsActive)
             {
@@ -74,5 +74,10 @@ namespace Game.UI
         }
 
         //###########################################################
+
+        public void HandleInput()
+        {
+
+        }
     }
 }

@@ -6,6 +6,8 @@ public class AmbientBox : MonoBehaviour, IInteractable
 {
     //##################################################################
 
+    [SerializeField] UnityEngine.PostProcessing.PostProcessingProfile postProcess;
+
     [SerializeField] bool editAmbient = true;
     [SerializeField] bool editFog = false;
 
@@ -27,6 +29,7 @@ public class AmbientBox : MonoBehaviour, IInteractable
     [SerializeField] float fogFadeSpeed = 2;
 
     GradientFog fog;
+    UnityEngine.PostProcessing.PostProcessingBehaviour postProcessStack;
 
     Color defaultColor;
     Gradient defaultGradient;
@@ -36,14 +39,15 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
     #region initialization
 
-    private void Start()
-    {
+    private void Start() {
         defaultColor = RenderSettings.ambientLight;
 
         fog = FindObjectOfType<GradientFog>(); // TODO: fix that
         defaultGradient = fog.gradient;
         defaultStart = fog.startDistance;
         defaultEnd = fog.endDistance;
+
+        postProcessStack = FindObjectOfType<UnityEngine.PostProcessing.PostProcessingBehaviour>(); // fix that as well prob
     }
 
     #endregion initialization
@@ -54,8 +58,7 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
     public Transform Transform { get { return transform; } }
 
-    public bool IsInteractable()
-    {
+    public bool IsInteractable() {
         return false;
     }
 
@@ -73,6 +76,9 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
         if (editFog)
             StartCoroutine(FadeFog(gradient, startDistance, endDistance));
+
+        if (postProcess)
+            postProcessStack.OverrideProfile(postProcess);
     }
 
     public void OnPlayerExit()
@@ -83,6 +89,9 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
         if (editFog)
             StartCoroutine(FadeFog(defaultGradient, defaultStart, defaultEnd));
+
+        if (postProcess)
+            postProcessStack.StopOverridingProfile();
     }
 
     public void OnHoverBegin()
@@ -126,8 +135,7 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
             print(t);
 
-            foreach (GradientFog foggy in fogs)
-            {
+            foreach (GradientFog foggy in fogs) {
                 foggy.gradientLerp = t;
                 foggy.GenerateTexture();
                 foggy.startDistance = Mathf.Lerp(foggy.startDistance, startGoal, t);

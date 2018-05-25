@@ -353,6 +353,7 @@ namespace Game.Player.CharacterController
             //physics update
             //Debug.Log("velocity before : " + newVelocity);
             var turnedVelocity = TurnLocalToSpace(newVelocity);
+            //Debug.Log("velocity turned : " + turnedVelocity);
             Vector3 lastPositionDelta;
 
             /*
@@ -455,7 +456,7 @@ namespace Game.Player.CharacterController
 
         void OnMenuSwitchedEventHandler(object sender, Utilities.EventManager.OnMenuSwitchedEventArgs args)
         {
-            if (args.NewUiState == UI.eUiState.HUD)
+            if (args.NewUiState == UI.MenuType.HUD)
             {
                 isHandlingInput = true;
             }

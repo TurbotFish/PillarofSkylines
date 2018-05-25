@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using Game.Model;
+using UnityEditor;
 
 namespace Game.World
 {

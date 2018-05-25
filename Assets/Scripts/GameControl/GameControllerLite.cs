@@ -5,6 +5,7 @@ using Game.World;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -15,9 +16,6 @@ namespace Game.GameControl
         public const string UI_SCENE_NAME = "UiScene";
 
         //###############################################################
-
-        [SerializeField]
-        private bool showIntroMenu = false;
 
         [SerializeField]
         private GameObject uiPrefab;
@@ -38,6 +36,8 @@ namespace Game.GameControl
 
         //
         private bool isPillarLoaded;
+
+        private bool IsInitialized;
 
         //###############################################################
 
@@ -94,7 +94,7 @@ namespace Game.GameControl
         //###############################################################
         //###############################################################
 
-        IEnumerator LoadScenesRoutine()
+        private IEnumerator LoadScenesRoutine()
         {
             //***********************
             //loading the UI
@@ -105,13 +105,12 @@ namespace Game.GameControl
             yield return null;
             //***********************
 
+            // creating model
+            playerModel = new PlayerModel();
+
             //getting references in game controller
-            playerModel = GetComponentInChildren<PlayerModel>();
             echoManager = GetComponentInChildren<EchoSystem.EchoManager>();
             eclipseManager = GetComponentInChildren<EclipseManager>();
-
-            //initializing game controller
-            playerModel.Initialize();
 
             //cleaning up, just in case
             var echoManagers = FindObjectsOfType<EchoSystem.EchoManager>();
@@ -139,7 +138,7 @@ namespace Game.GameControl
             duplicationCameraController = FindObjectOfType<DuplicationCameraManager>();
 
             //initializing the ui
-            uiController.InitializeUi(this, UI.eUiState.LoadingScreen, new EventManager.OnShowLoadingScreenEventArgs());
+            uiController.Initialize(this, UI.MenuType.LoadingScreen, new EventManager.OnShowLoadingScreenEventArgs());
 
             yield return null;
             //***********************
@@ -187,7 +186,7 @@ namespace Game.GameControl
                 isPillarLoaded = true;
 
                 var worldObjects = FindObjectsOfType<MonoBehaviour>();
-                foreach(var obj in worldObjects)
+                foreach (var obj in worldObjects)
                 {
                     if (obj is IWorldObject)
                     {
@@ -205,19 +204,42 @@ namespace Game.GameControl
             //***********************
 
             //starting game
-            Utilities.EventManager.SendSceneChangedEvent(this, new Utilities.EventManager.SceneChangedEventArgs());
-            Utilities.EventManager.SendGamePausedEvent(this, new Utilities.EventManager.GamePausedEventArgs(false));
+            EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());
+            EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
+            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(UI.MenuType.HUD));
 
-            if (showIntroMenu)
+            IsInitialized = true;
+        }
+
+        /// <summary>
+        /// Unity's Update methpod.
+        /// </summary>
+        private void Update()
+        {
+            if (!IsInitialized)
             {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.Intro));
-            }
-            else
-            {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(UI.eUiState.HUD));
+                return;
             }
 
-            
+            if (Input.GetKeyUp(KeyCode.F2))
+            {
+                Debug.Log("CHEATING: One PillarKey appeared out of nowhere!");
+                foreach (var pillar_mark in Enum.GetValues(typeof(PillarMarkId)).Cast<PillarMarkId>())
+                {
+                    PlayerModel.SetPillarMarkState(pillar_mark, PillarMarkState.active);
+                }
+            }
+            else if (Input.GetKeyUp(KeyCode.F5))
+            {
+                Debug.Log("CHEATING: You were supposed to find the Tombs, not make them useless!");
+
+                foreach (var ability in PlayerModel.AbilityData.GetAllAbilities())
+                {
+                    PlayerModel.SetAbilityState(ability.Type, AbilityState.active);
+                }
+            }
+
+            UiController.HandleInput();
         }
 
         //###############################################################
@@ -240,7 +262,7 @@ namespace Game.GameControl
             return result;
         }
 
-        
+
 
         //###############################################################
     }

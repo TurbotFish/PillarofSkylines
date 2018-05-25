@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Game.UI
 {
-    public class EndMenuController : MonoBehaviour, IUiState
+    public class EndMenuController : MonoBehaviour, IUiMenu
     {
         //Player.PlayerModel playerModel;
 
@@ -48,12 +48,12 @@ namespace Game.UI
 
         //###########################################################
 
-        void IUiState.Initialize(IGameController gameController)
+        void IUiMenu.Initialize(IGameController gameController)
         {
             //this.playerModel = playerModel;
         }
 
-        void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
+        void IUiMenu.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
         {
             if (this.IsActive)
             {
@@ -64,7 +64,7 @@ namespace Game.UI
             this.gameObject.SetActive(true);
         }
 
-        void IUiState.Deactivate()
+        void IUiMenu.Deactivate()
         {
             bool wasActive = this.IsActive;
 
@@ -73,5 +73,9 @@ namespace Game.UI
         }
 
         //###########################################################
+
+        public void HandleInput()
+        {
+        }
     }
 }

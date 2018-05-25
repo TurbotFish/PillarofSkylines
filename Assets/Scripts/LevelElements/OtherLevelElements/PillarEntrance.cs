@@ -1,4 +1,5 @@
 ﻿using Game.GameControl;
+using Game.Model;
 using Game.Utilities;
 using Game.World;
 using UnityEngine;
@@ -31,26 +32,26 @@ namespace Game.LevelElements
 
             this.gameController = gameController;
 
-            isPillarDestroyed = gameController.PlayerModel.CheckIsPillarDestroyed(pillarId);
+            isPillarDestroyed = gameController.PlayerModel.GetPillarState(pillarId) == PillarState.Destroyed;
             isInitialized = true;
         }
 
         private void OnEnable()
         {
-            EventManager.PillarDestroyedEvent += OnPillarDestroyedEvent;
-
             if (isInitialized)
             {
-                if(!isPillarDestroyed && gameController.PlayerModel.CheckIsPillarDestroyed(pillarId))
+                if (!isPillarDestroyed && gameController.PlayerModel.GetPillarState(pillarId) == PillarState.Destroyed)
                 {
                     isPillarDestroyed = true;
                 }
+
+                EventManager.PillarStateChangedEvent += OnPillarStateChanged;
             }
         }
 
         private void OnDisable()
         {
-            EventManager.PillarDestroyedEvent -= OnPillarDestroyedEvent;
+            EventManager.PillarStateChangedEvent -= OnPillarStateChanged;
         }
 
         #endregion initialization
@@ -88,7 +89,7 @@ namespace Game.LevelElements
 
         public void OnInteraction()
         {
-            if (gameController.PlayerModel.CheckIsPillarUnlocked(pillarId))
+            if (gameController.PlayerModel.GetPillarState(pillarId) == PillarState.Unlocked)
             {
                 gameController.SwitchToPillar(pillarId);
             }
@@ -106,11 +107,11 @@ namespace Game.LevelElements
         {
         }
 
-        private void OnPillarDestroyedEvent(object sender, EventManager.PillarDestroyedEventArgs args)
+        private void OnPillarStateChanged(object sender, EventManager.PillarStateChangedEventArgs args)
         {
             if (args.PillarId == pillarId)
             {
-                isPillarDestroyed = true;
+                isPillarDestroyed = (args.PillarState == PillarState.Destroyed);
             }
         }
 

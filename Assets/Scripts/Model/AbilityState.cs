@@ -2,9 +2,7 @@
 {
     public enum AbilityState
     {
-        locked,
-        available,
-        active,
-        pillarLocked
+        inactive,
+        active
     }
 } //end of namespace

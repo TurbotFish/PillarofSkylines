@@ -9,19 +9,18 @@ namespace Game.Utilities
     public static class EventManager
     {
         //###########################################################
-
         #region ui events
-
+        //###########################################################
         //***********************************************************
-
         #region menu opened event
+        //***********************************************************
 
         public class OnMenuSwitchedEventArgs : EventArgs
         {
-            public UI.eUiState NewUiState { get; private set; }
-            public UI.eUiState PreviousUiState { get; private set; }
+            public UI.MenuType NewUiState { get; private set; }
+            public UI.MenuType PreviousUiState { get; private set; }
 
-            public OnMenuSwitchedEventArgs(UI.eUiState newUiState, UI.eUiState previousUiState)
+            public OnMenuSwitchedEventArgs(UI.MenuType newUiState, UI.MenuType previousUiState)
             {
                 NewUiState = newUiState;
                 PreviousUiState = previousUiState;
@@ -37,11 +36,12 @@ namespace Game.Utilities
             OnMenuSwitchedEvent?.Invoke(sender, args);
         }
 
-        #endregion menu opened event
-
         //***********************************************************
-
+        #endregion menu opened event
+        //***********************************************************
+        //***********************************************************
         #region show hud message event
+        //***********************************************************
 
         public class OnShowHudMessageEventArgs : EventArgs
         {
@@ -70,23 +70,24 @@ namespace Game.Utilities
             OnShowHudMessageEvent?.Invoke(sender, args);
         }
 
-        #endregion show hud message event
-
         //***********************************************************
-
+        #endregion show hud message event
+        //***********************************************************
+        //***********************************************************
         #region show menu event
+        //***********************************************************
 
         public class OnShowMenuEventArgs : EventArgs
         {
             /// <summary>
             /// The id of the menu to switch to.
             /// </summary>
-            public UI.eUiState Menu { get; private set; }
+            public UI.MenuType Menu { get; private set; }
 
             /// <summary>
             /// Default Contructor.
             /// </summary>
-            public OnShowMenuEventArgs(UI.eUiState menu)
+            public OnShowMenuEventArgs(UI.MenuType menu)
             {
                 Menu = menu;
             }
@@ -97,12 +98,12 @@ namespace Game.Utilities
             /// <summary>
             /// 
             /// </summary>
-            public World.PillarId PillarId { get; private set; }
+            public PillarId PillarId { get; private set; }
 
             /// <summary>
             /// Constructor for the Pillar entrance menu.
             /// </summary>
-            public OnShowPillarEntranceMenuEventArgs(World.PillarId pillarId) : base(UI.eUiState.PillarEntrance)
+            public OnShowPillarEntranceMenuEventArgs(PillarId pillarId) : base(UI.MenuType.PillarEntrance)
             {
                 PillarId = pillarId;
             }
@@ -112,12 +113,12 @@ namespace Game.Utilities
         {
             public int Id { get; private set; }
 
-            public OnShowLoadingScreenEventArgs() : base(UI.eUiState.LoadingScreen)
+            public OnShowLoadingScreenEventArgs() : base(UI.MenuType.LoadingScreen)
             {
                 Id = -1;
             }
 
-            public OnShowLoadingScreenEventArgs(World.PillarId pillarId) : base(UI.eUiState.LoadingScreen)
+            public OnShowLoadingScreenEventArgs(PillarId pillarId) : base(UI.MenuType.LoadingScreen)
             {
                 Id = (int)pillarId;
             }
@@ -132,49 +133,105 @@ namespace Game.Utilities
             OnShowMenuEvent?.Invoke(sender, args);
         }
 
-        #endregion show menu event
-
         //***********************************************************
-
+        #endregion show menu event
+        //***********************************************************
+        //###########################################################
         #endregion ui events
-
         //###########################################################
 
-        #region model events
 
+        //###########################################################
+        #region model events
+        //###########################################################
+        //***********************************************************
+        #region pillar state changed event
         //***********************************************************
 
-        #region pillar destroyed event
-
-        public class PillarDestroyedEventArgs : EventArgs
+        public class PillarStateChangedEventArgs : EventArgs
         {
-            public World.PillarId PillarId { get; private set; }
+            public PillarId PillarId { get; private set; }
+            public PillarState PillarState { get; private set; }
 
-            public PillarDestroyedEventArgs(World.PillarId pillarId)
+            public PillarStateChangedEventArgs(PillarId pillar_id, PillarState pillar_state)
             {
-                this.PillarId = pillarId;
+                PillarId = pillar_id;
+                PillarState = pillar_state;
             }
         }
 
-        public delegate void PillarDestroyedEventHandler(object sender, PillarDestroyedEventArgs args);
+        public delegate void PillarStateChangedEventHandler(object sender, PillarStateChangedEventArgs args);
+        public static event PillarStateChangedEventHandler PillarStateChangedEvent;
 
-        public static event PillarDestroyedEventHandler PillarDestroyedEvent;
-
-        public static void SendPillarDestroyedEvent(object sender, PillarDestroyedEventArgs args)
+        public static void SendPillarStateChangedEvent(object sender, PillarStateChangedEventArgs args)
         {
-            PillarDestroyedEvent?.Invoke(sender, args);
+            PillarStateChangedEvent?.Invoke(sender, args);
         }
 
-        #endregion pillar destroyed event
-
+        //***********************************************************
+        #endregion pillar state changed event
+        //***********************************************************
+        //***********************************************************
+        #region ability state changed
         //***********************************************************
 
-        #endregion model events
+        public class AbilityStateChangedEventArgs : EventArgs
+        {
+            public AbilityType AbilityType { get; private set; }
+            public AbilityState AbilityState { get; private set; }
 
+            public AbilityStateChangedEventArgs(AbilityType ability_type, AbilityState ability_state)
+            {
+                AbilityType = ability_type;
+                AbilityState = ability_state;
+            }
+        }
+
+        public delegate void AbilityStateChangedEventHandler(object sender, AbilityStateChangedEventArgs args);
+        public static event AbilityStateChangedEventHandler AbilityStateChangedEvent;
+
+        public static void SendAbilityStateChangedEvent(object sender, AbilityStateChangedEventArgs args)
+        {
+            AbilityStateChangedEvent?.Invoke(sender, args);
+        }
+
+        //***********************************************************
+        #endregion ability state changed
+        //***********************************************************
+        //***********************************************************
+        #region pillar mark state changed
+        //***********************************************************
+
+        public class PillarMarkStateChangedEventArgs : EventArgs
+        {
+            public PillarMarkId PillarMarkId { get; private set; }
+            public PillarMarkState PillarMarkState { get; private set; }
+
+            public PillarMarkStateChangedEventArgs(PillarMarkId pillar_mark_id, PillarMarkState pillar_mark_state)
+            {
+                PillarMarkId = pillar_mark_id;
+                PillarMarkState = pillar_mark_state;
+            }
+        }
+
+        public delegate void PillarMarkStateChangedEventHandler(object sender, PillarMarkStateChangedEventArgs args);
+        public static event PillarMarkStateChangedEventHandler PillarMarkStateChangedEvent;
+
+        public static void SendPillarMarkStateChangedEvent(object sender, PillarMarkStateChangedEventArgs args)
+        {
+            PillarMarkStateChangedEvent?.Invoke(sender, args);
+        }
+
+        //***********************************************************
+        #endregion pillar mark state changed
+        //***********************************************************
+        //###########################################################
+        #endregion model events
         //###########################################################
 
+        //###########################################################
         #region gameplay events
-
+        //###########################################################
         //***********************************************************
 
         #region game paused event
@@ -222,6 +279,11 @@ namespace Game.Utilities
             public Quaternion Rotation { get; private set; }
 
             /// <summary>
+            /// value='true' means that the teleport was issued as a drift. value='false' means that the teleport is not related to drifting.
+            /// </summary>
+            public bool Drifting { get; private set; }
+
+            /// <summary>
             /// value='true' means that the current scene was switched. value='false' means that the player is teleported inside the current scene.
             /// </summary>
             public bool IsNewScene { get; private set; }
@@ -235,6 +297,16 @@ namespace Game.Utilities
             {
                 Position = position;
                 Rotation = Quaternion.identity;
+                Drifting = false;
+                IsNewScene = isNewScene;
+                TakeRotation = false;
+            }
+
+            public TeleportPlayerEventArgs(Vector3 position, bool drifting, bool isNewScene)
+            {
+                Position = position;
+                Rotation = Quaternion.identity;
+                Drifting = drifting;
                 IsNewScene = isNewScene;
                 TakeRotation = false;
             }
@@ -243,6 +315,7 @@ namespace Game.Utilities
             {
                 Position = position;
                 Rotation = rotation;
+                Drifting = false;
                 IsNewScene = isNewScene;
                 TakeRotation = true;
             }
@@ -252,6 +325,7 @@ namespace Game.Utilities
                 FromPosition = fromPosition;
                 Position = position;
                 Rotation = Quaternion.identity;
+                Drifting = false;
                 IsNewScene = isNewScene;
                 TakeRotation = false;
             }
@@ -261,6 +335,7 @@ namespace Game.Utilities
                 FromPosition = fromPosition;
                 Position = position;
                 Rotation = rotation;
+                Drifting = false;
                 IsNewScene = isNewScene;
                 TakeRotation = true;
             }
@@ -305,7 +380,7 @@ namespace Game.Utilities
         public class SceneChangedEventArgs : EventArgs
         {
             public bool HasChangedToPillar { get; private set; }
-            public World.PillarId PillarId { get; private set; }
+            public PillarId PillarId { get; private set; }
 
             /// <summary>
             /// Change to Open World.
@@ -319,7 +394,7 @@ namespace Game.Utilities
             /// Change to Pillar.
             /// </summary>
             /// <param name="pillarId"></param>
-            public SceneChangedEventArgs(World.PillarId pillarId)
+            public SceneChangedEventArgs(PillarId pillarId)
             {
                 this.HasChangedToPillar = true;
                 this.PillarId = pillarId;

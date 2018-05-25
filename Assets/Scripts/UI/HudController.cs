@@ -12,9 +12,9 @@ namespace Game.UI
         Announcement
     }
 
-    public class HudController : MonoBehaviour, IUiState
+    public class HudController : MonoBehaviour, IUiMenu
     {
-        
+
         [Header("Help"), SerializeField]
         TMPro.TextMeshProUGUI helpMessage;
         [SerializeField] float helpFadeTime = 0.1f;
@@ -28,7 +28,7 @@ namespace Game.UI
         [SerializeField]
         TMPro.TextMeshProUGUI importantDescription;
         [SerializeField] float importantFadeTime = 0.5f;
-        
+
         GameObject importantPanel;
         CanvasGroup importantRenderer;
 
@@ -47,11 +47,11 @@ namespace Game.UI
 
         public CanvasGroup myRenderer;
         public bool IsActive { get; private set; }
-        
+
         //###########################################################
 
         #region monobehaviour methods
-            
+
         void Start()
         {
             //myRenderer = GetComponent<CanvasGroup>();
@@ -70,7 +70,7 @@ namespace Game.UI
 
             Utilities.EventManager.OnShowHudMessageEvent += OnShowHudMessageEventHandler;
         }
-        
+
         void Update()
         {
             if (!IsActive)
@@ -79,7 +79,8 @@ namespace Game.UI
             if (announcePanelActive && announceTime > 0)
             {
                 announceTime -= Time.unscaledDeltaTime;
-                if (announceTime <= 0) {
+                if (announceTime <= 0)
+                {
                     announcePanelActive = false;
                     Display(announceRenderer, false, announceFadeTime);
                 }
@@ -87,12 +88,12 @@ namespace Game.UI
 
             if (Input.GetButtonDown("MenuButton"))
             {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.AbilityMenu));
+                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(MenuType.PauseMenu));
                 return;
             }
             else if (Input.GetButtonDown("Back"))
             {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HelpMenu));
+                Debug.LogError("Error!");
                 return;
             }
             else if (Input.GetButtonDown("Interact") && importantPanel.activeSelf)
@@ -105,8 +106,9 @@ namespace Game.UI
         #endregion monobehaviour methods
 
         //###########################################################
-        
-        void Display(CanvasGroup canvas, bool active, float fadeTime) {
+
+        void Display(CanvasGroup canvas, bool active, float fadeTime)
+        {
             StartCoroutine(_Display(canvas, active, fadeTime));
         }
 
@@ -131,12 +133,12 @@ namespace Game.UI
 
         //###########################################################
 
-        void IUiState.Initialize(IGameController gameController)
+        void IUiMenu.Initialize(IGameController gameController)
         {
             helpMessage.text = "";
         }
 
-        void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
+        void IUiMenu.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
         {
             if (IsActive)
             {
@@ -146,10 +148,10 @@ namespace Game.UI
             IsActive = true;
             myRenderer.alpha = 1;
             StopAllCoroutines();
-            gameObject.SetActive(true);          
+            gameObject.SetActive(true);
         }
 
-        void IUiState.Deactivate()
+        void IUiMenu.Deactivate()
         {
             if (!IsActive)
             {
@@ -169,6 +171,10 @@ namespace Game.UI
         }
 
         //###########################################################
+
+        public void HandleInput()
+        {
+        }
 
         void OnShowHudMessageEventHandler(object sender, Utilities.EventManager.OnShowHudMessageEventArgs args)
         {
