@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Game.UI.PillarEntranceMenu
 {
-    public class PillarEntranceMenuController : MonoBehaviour, IUiState
+    public class PillarEntranceMenuController : MonoBehaviour, IUiMenu
     {
         [SerializeField]
         CostPanelView costPanelView;
@@ -17,7 +17,7 @@ namespace Game.UI.PillarEntranceMenu
         PlayerModel playerModel;
 
         //
-        World.PillarId pillarId;
+        PillarId pillarId;
         bool canEnterPillar = false;
         private IGameController GameController;
 
@@ -44,7 +44,7 @@ namespace Game.UI.PillarEntranceMenu
 
             if (Input.GetButtonDown("MenuButton"))
             {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HUD));
+                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(MenuType.HUD));
             }
             else if (canEnterPillar && Input.GetButtonDown("Interact"))
             {
@@ -59,13 +59,13 @@ namespace Game.UI.PillarEntranceMenu
 
         //###########################################################
 
-        void IUiState.Initialize(IGameController gameController)
+        void IUiMenu.Initialize(IGameController gameController)
         {
             GameController = gameController;
             playerModel = GameController.PlayerModel;
         }
 
-        void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
+        void IUiMenu.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
         {
             if (IsActive)
             {
@@ -85,7 +85,7 @@ namespace Game.UI.PillarEntranceMenu
             int cost = playerModel.GetPillarEntryPrice(pillarId);
             costPanelView.Initialize(cost);
 
-            if (playerModel.PillarKeys < cost)
+            if (playerModel.GetActivePillarMarkCount() < cost)
             {
                 warningMessage.SetActive(true);
             }
@@ -96,7 +96,7 @@ namespace Game.UI.PillarEntranceMenu
             }
         }
 
-        void IUiState.Deactivate()
+        void IUiMenu.Deactivate()
         {
             bool wasActive = IsActive;
 

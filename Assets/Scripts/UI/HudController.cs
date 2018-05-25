@@ -12,7 +12,7 @@ namespace Game.UI
         Announcement
     }
 
-    public class HudController : MonoBehaviour, IUiState
+    public class HudController : MonoBehaviour, IUiMenu
     {
         
         [Header("Help"), SerializeField]
@@ -87,12 +87,12 @@ namespace Game.UI
 
             if (Input.GetButtonDown("MenuButton"))
             {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.AbilityMenu));
+                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(MenuType.PauseMenu));
                 return;
             }
             else if (Input.GetButtonDown("Back"))
             {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HelpMenu));
+                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(MenuType.HelpMenu));
                 return;
             }
             else if (Input.GetButtonDown("Interact") && importantPanel.activeSelf)
@@ -131,12 +131,12 @@ namespace Game.UI
 
         //###########################################################
 
-        void IUiState.Initialize(IGameController gameController)
+        void IUiMenu.Initialize(IGameController gameController)
         {
             helpMessage.text = "";
         }
 
-        void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
+        void IUiMenu.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
         {
             if (IsActive)
             {
@@ -149,7 +149,7 @@ namespace Game.UI
             gameObject.SetActive(true);          
         }
 
-        void IUiState.Deactivate()
+        void IUiMenu.Deactivate()
         {
             if (!IsActive)
             {

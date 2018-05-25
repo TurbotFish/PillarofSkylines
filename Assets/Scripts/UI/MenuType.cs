@@ -1,15 +1,16 @@
-﻿namespace Game.UI
+﻿using System;
+
+namespace Game.UI
 {
-    public enum eUiState
+    public enum MenuType
     {
         HUD,
         AbilityMenu,
-        Intro,
         End,
         LoadingScreen,
         PillarEntrance,
         HelpMenu,
         MainMenu,
-        NONE
+        PauseMenu
     }
 } //end of namespace

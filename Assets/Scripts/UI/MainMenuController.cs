@@ -11,7 +11,7 @@ using UnityEngine.Video;
 namespace Game.UI
 {
 
-    public class MainMenuController : MonoBehaviour, IUiState
+    public class MainMenuController : MonoBehaviour, IUiMenu
     {
         //##################################################################
 
@@ -24,14 +24,14 @@ namespace Game.UI
 
         //##################################################################
 
-        void IUiState.Initialize(IGameController gameController)
+        void IUiMenu.Initialize(IGameController gameController)
         {
             this.gameController = gameController;
         }
 
         //##################################################################
 
-        void IUiState.Activate(EventManager.OnShowMenuEventArgs args)
+        void IUiMenu.Activate(EventManager.OnShowMenuEventArgs args)
         {
             if (IsActive)
             {
@@ -45,7 +45,7 @@ namespace Game.UI
             VideoPlayer.Play();
         }
 
-        void IUiState.Deactivate()
+        void IUiMenu.Deactivate()
         {
             IsActive = false;
             gameObject.SetActive(false);

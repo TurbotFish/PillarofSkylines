@@ -46,7 +46,7 @@ namespace Game.GameControl
         void OnMenuOpenedEventHandler(object sender, Utilities.EventManager.OnMenuSwitchedEventArgs args)
         {
             //slow down time
-            if (args.NewUiState != UI.eUiState.HUD && args.PreviousUiState == UI.eUiState.HUD)
+            if (args.NewUiState != UI.MenuType.HUD && args.PreviousUiState == UI.MenuType.HUD)
             {
                 if (this.isSlowingDownTime)
                 {
@@ -62,7 +62,7 @@ namespace Game.GameControl
                 StartCoroutine(ChangeTimescaleRoutine(this.timescaleMenuOpen, this.transitionTimeSlowDown));
             }
             //speed up time
-            else if (args.NewUiState == UI.eUiState.HUD && args.PreviousUiState != UI.eUiState.HUD)
+            else if (args.NewUiState == UI.MenuType.HUD && args.PreviousUiState != UI.MenuType.HUD)
             {
                 if (this.isSpeedingUpTime)
                 {

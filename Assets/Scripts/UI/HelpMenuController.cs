@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Game.UI
 {
-    public class HelpMenuController : MonoBehaviour, IUiState
+    public class HelpMenuController : MonoBehaviour, IUiMenu
     {
         //##################################################################
 
@@ -16,14 +16,14 @@ namespace Game.UI
 
         //##################################################################
 
-        void IUiState.Initialize(IGameController gameController)
+        void IUiMenu.Initialize(IGameController gameController)
         {
             this.gameController = gameController;
         }
 
         //##################################################################
 
-        void IUiState.Activate(EventManager.OnShowMenuEventArgs args)
+        void IUiMenu.Activate(EventManager.OnShowMenuEventArgs args)
         {
             if (IsActive)
             {
@@ -34,7 +34,7 @@ namespace Game.UI
             gameObject.SetActive(true);
         }
 
-        void IUiState.Deactivate()
+        void IUiMenu.Deactivate()
         {
             IsActive = false;
             gameObject.SetActive(false);
@@ -52,7 +52,7 @@ namespace Game.UI
 
             if (Input.GetButtonDown("Back"))
             {
-                EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.HUD));
+                EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(MenuType.HUD));
                 return;
             }
             else if (Input.GetButtonDown("MenuButton"))

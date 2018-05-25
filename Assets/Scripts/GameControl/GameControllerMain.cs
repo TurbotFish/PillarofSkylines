@@ -8,6 +8,7 @@ using Game.World;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -52,8 +53,10 @@ namespace Game.GameControl
             //load resources
             LevelData = Resources.Load<LevelData>("ScriptableObjects/LevelData");
 
+            // creating model
+            PlayerModel = new PlayerModel();
+
             //getting references in game controller
-            PlayerModel = GetComponentInChildren<PlayerModel>();
             EchoManager = GetComponentInChildren<EchoManager>();
             EclipseManager = GetComponentInChildren<EclipseManager>();
 
@@ -63,8 +66,7 @@ namespace Game.GameControl
             UiController = FindObjectOfType<UiController>();
 
             //initializing
-            PlayerModel.Initialize();
-            UiController.InitializeUi(this, eUiState.LoadingScreen, new EventManager.OnShowLoadingScreenEventArgs());
+            UiController.Initialize(this, MenuType.LoadingScreen, new EventManager.OnShowLoadingScreenEventArgs());
 
             PlayerController.InitializePlayerController(this);
             CameraController.InitializeCameraController(this);
@@ -108,7 +110,7 @@ namespace Game.GameControl
             SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
             isInitialized = true;
 
-            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.MainMenu));
+            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(MenuType.MainMenu));
         }
 
         //###############################################################
@@ -174,6 +176,32 @@ namespace Game.GameControl
         }
 
         /// <summary>
+        /// Unity's Update methpod.
+        /// </summary>
+        private void Update()
+        {
+
+
+            if (Input.GetKeyUp(KeyCode.F2))
+            {
+                Debug.Log("CHEATING: One PillarKey appeared out of nowhere!");
+                foreach (var pillar_mark in Enum.GetValues(typeof(PillarMarkId)).Cast<PillarMarkId>())
+                {
+                    PlayerModel.SetPillarMarkState(pillar_mark, PillarMarkState.active);
+                }
+            }
+            else if (Input.GetKeyUp(KeyCode.F5))
+            {
+                Debug.Log("CHEATING: You were supposed to find the Tombs, not make them useless!");
+
+                foreach (var ability in PlayerModel.AbilityData.GetAllAbilities())
+                {
+                    PlayerModel.SetAbilityState(ability.Type, AbilityState.active);
+                }
+            }
+        }
+
+        /// <summary>
         /// Coroutine for switching to the open world scene.
         /// </summary>
         /// <param name="useInitialSpawnPoint"></param>
@@ -190,7 +218,7 @@ namespace Game.GameControl
             AsyncOperation async;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
-            if (IsPillarLoaded && PlayerModel.CheckIsPillarDestroyed(ActivePillarId))
+            if (IsPillarLoaded && PlayerModel.GetPillarState(ActivePillarId) == PillarState.Destroyed)
             {
                 show_ability_message = true;
                 var ability = PlayerModel.AbilityData.GetAbility(PlayerModel.LevelData.GetPillarRewardAbility(ActivePillarId));
@@ -259,9 +287,13 @@ namespace Game.GameControl
             }
             else
             {
-                PillarState pillarState = PlayerModel.CheckIsPillarDestroyed(ActivePillarId) ? PillarState.Destroyed : PillarState.Intact;
-                spawn_position = SpawnPointManager.GetPillarExitPoint(ActivePillarId, pillarState);
-                spawn_rotation = SpawnPointManager.GetPillarExitOrientation(ActivePillarId, pillarState);
+                PillarVariant pillar_variant = PillarVariant.Intact;
+                if (PlayerModel.GetPillarState(ActivePillarId) == PillarState.Destroyed)
+                {
+                    pillar_variant = PillarVariant.Destroyed;
+                }
+                spawn_position = SpawnPointManager.GetPillarExitPoint(ActivePillarId, pillar_variant);
+                spawn_rotation = SpawnPointManager.GetPillarExitOrientation(ActivePillarId, pillar_variant);
             }
 
             /*
@@ -288,7 +320,7 @@ namespace Game.GameControl
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());
             yield return new WaitForSeconds(0.5f);
 
-            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.HUD));
+            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(MenuType.HUD));
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
 
             /*
@@ -391,7 +423,7 @@ namespace Game.GameControl
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs(pillarId));
             yield return new WaitForSeconds(0.5f);
 
-            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.HUD));
+            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(MenuType.HUD));
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
 
             //*****************************************
