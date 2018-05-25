@@ -91,13 +91,13 @@ namespace Game.LevelElements
 
         protected override void Activate()
         {
-            Debug.LogFormat("Platform \"{0}\": Activate called!", name);
+            //Debug.LogFormat("Platform \"{0}\": Activate called!", name);
             
         }
 
         protected override void Deactivate()
         {
-            Debug.LogFormat("Platform \"{0}\": Deactivate called!", name);
+            //Debug.LogFormat("Platform \"{0}\": Deactivate called!", name);
             if (finishMovement)
             {
                 finishingMovement = true;
