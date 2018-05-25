@@ -1,11 +1,8 @@
-﻿using Game.GameControl;
-using Game.Model;
-using System.Collections;
-using System.Collections.Generic;
+﻿using Game.Model;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Game.UI
+namespace Game.UI.PauseMenu
 {
     public class AbilityIconView : MonoBehaviour
     {
@@ -27,11 +24,11 @@ namespace Game.UI
 
         // -- INITIALIZATION
 
-        public void Initialize(IGameController game_controller)
+        public void Initialize(PlayerModel model)
         {
             ImageComponent = GetComponent<Image>();
 
-            SetSprite(game_controller.PlayerModel.GetAbilityState(AbilityType));
+            SetSprite(model.GetAbilityState(AbilityType));
 
             Utilities.EventManager.AbilityStateChangedEvent += OnAbilityStateChanged;
         }
@@ -47,7 +44,10 @@ namespace Game.UI
 
         private void OnAbilityStateChanged(object sender, Utilities.EventManager.AbilityStateChangedEventArgs args)
         {
-            throw new System.NotImplementedException();
+            if (args.AbilityType == AbilityType)
+            {
+                SetSprite(args.AbilityState);
+            }
         }
 
         private void SetSprite(AbilityState ability_state)

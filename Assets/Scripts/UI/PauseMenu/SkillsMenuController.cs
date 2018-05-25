@@ -1,14 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Game.GameControl;
-using Game.Model;
-using Game.Utilities;
+﻿using Game.Model;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Game.UI
+namespace Game.UI.PauseMenu
 {
-    public class SkillsMenuController : MonoBehaviour, IUiMenu
+    public class SkillsMenuController : MonoBehaviour, IPauseMenu
     {
         //###########################################################
 
@@ -24,28 +20,26 @@ namespace Game.UI
 
         public bool IsActive { get; private set; }
 
-        private IGameController GameController;
+        private PauseMenuController PauseMenuController;
 
         //###########################################################
 
         // -- INITIALIZATION
 
-        void IUiMenu.Initialize(IGameController game_controller)
+        public void Initialize(PlayerModel model, PauseMenuController pause_menu_controller)
         {
-            GameController = game_controller;
+            PauseMenuController = pause_menu_controller;
 
             foreach (var entry in EntryHolder.GetComponentsInChildren<IEntryView>())
             {
-                entry.Initialize(game_controller, this);
+                entry.Initialize(model, this);
             }
 
-            DescriptionPanelView.Initialize(game_controller);
+            DescriptionPanelView.Initialize(model);
         }
 
-        void IUiMenu.Activate(EventManager.OnShowMenuEventArgs args)
+        public void Activate()
         {
-            //StartCoroutine(SelectStartingButton());
-
             this.gameObject.SetActive(true);
 
             StartingButton.Select();
@@ -53,7 +47,7 @@ namespace Game.UI
             IsActive = true;
         }
 
-        void IUiMenu.Deactivate()
+        public void Deactivate()
         {
             this.gameObject.SetActive(false);
             IsActive = false;
@@ -67,19 +61,13 @@ namespace Game.UI
         {
             if (Input.GetButtonDown("Cancel"))
             {
-                GameController.UiController.PauseMenu.SwitchMenu(PauseMenuType.Overview);
+                PauseMenuController.SwitchPauseMenu(PauseMenuType.Overview);
             }
         }
 
         public void OnAbilitySelected(AbilityType ability)
         {
             DescriptionPanelView.ShowAbility(ability);
-        }
-
-        private IEnumerator SelectStartingButton()
-        {
-            yield return null;
-            StartingButton.Select();
         }
     }
 } // end of namespace

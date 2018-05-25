@@ -1,12 +1,9 @@
-﻿using Game.GameControl;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using Game.Model;
 
-namespace Game.UI
+namespace Game.UI.PauseMenu
 {
     public interface IEntryView
     {
-        void Initialize(IGameController game_controller, SkillsMenuController skills_menu_controller);
+        void Initialize(PlayerModel model, SkillsMenuController skills_menu_controller);
     }
 } // end of namespace

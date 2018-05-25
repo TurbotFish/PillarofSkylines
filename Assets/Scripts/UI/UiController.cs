@@ -1,5 +1,6 @@
 ﻿using Game.GameControl;
 using Game.UI.AbilityMenu;
+using Game.UI.PauseMenu;
 using Game.UI.PillarEntranceMenu;
 using System;
 using System.Collections;
@@ -15,7 +16,6 @@ namespace Game.UI
         // -- CONSTANTS
 
         [SerializeField] private HudController HudController;
-        [SerializeField] private EndMenuController EndMenuController;
         [SerializeField] private LoadingScreenController LoadingScreenController;
         [SerializeField] private PillarEntranceMenuController PillarEntranceMenuController;
         [SerializeField] private MainMenuController MainMenuController;
@@ -46,7 +46,6 @@ namespace Game.UI
             UiStates.Clear();
 
             UiStates.Add(MenuType.HUD, HudController);
-            UiStates.Add(MenuType.End, EndMenuController);
             UiStates.Add(MenuType.LoadingScreen, LoadingScreenController);
             UiStates.Add(MenuType.PillarEntrance, PillarEntranceMenuController);
             UiStates.Add(MenuType.MainMenu, MainMenuController);
@@ -54,7 +53,7 @@ namespace Game.UI
 
             foreach (var uiState in UiStates.Values)
             {
-                uiState.Initialize(GameController);
+                uiState.Initialize(GameController, this);
                 uiState.Deactivate();
             }
 
@@ -72,7 +71,6 @@ namespace Game.UI
         // -- INQUIRIES
 
         public HudController Hud { get { return HudController; } }
-        public EndMenuController EndMenu { get { return EndMenuController; } }
         public LoadingScreenController LoadingScreen { get { return LoadingScreenController; } }
         public PillarEntranceMenuController PillarEntranceMenu { get { return PillarEntranceMenuController; } }
         public MainMenuController MainMenu { get { return MainMenuController; } }
@@ -102,6 +100,11 @@ namespace Game.UI
             UiStates[CurrentState].Activate(args);
 
             Utilities.EventManager.SendOnMenuSwitchedEvent(this, new Utilities.EventManager.OnMenuSwitchedEventArgs(newState, previous_state));
+        }
+
+        public void ExitGame()
+        {
+            GameController.ExitGame();
         }
 
         private void OnShowMenuEventHandler(object sender, Utilities.EventManager.OnShowMenuEventArgs args)

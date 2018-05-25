@@ -1,7 +1,4 @@
-﻿using Game.GameControl;
-using Game.Model;
-using System.Collections;
-using System.Collections.Generic;
+﻿using Game.Model;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,11 +24,11 @@ namespace Game.UI
 
         // -- INITIALIZATION
 
-        public void Initialize(IGameController game_controller)
+        public void Initialize(PlayerModel model)
         {
             ImageComponent = GetComponent<Image>();
 
-            SetSprite(game_controller.PlayerModel.GetPillarMarkState(PillarMarkId));
+            SetSprite(model.GetPillarMarkState(PillarMarkId));
 
             Utilities.EventManager.PillarMarkStateChangedEvent += OnPillarMarkStateChanged;
         }

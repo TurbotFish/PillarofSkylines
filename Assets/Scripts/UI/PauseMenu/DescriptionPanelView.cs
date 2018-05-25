@@ -1,32 +1,45 @@
-﻿using Game.GameControl;
-using Game.Model;
-using System.Collections;
-using System.Collections.Generic;
+﻿using Game.Model;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Game.UI
+namespace Game.UI.PauseMenu
 {
     public class DescriptionPanelView : MonoBehaviour
     {
+        //###########################################################
+
+        // -- CONSTANTS
+
         [SerializeField] private Text NameTextComponent;
         [SerializeField] private Text DescriptionTextComponent;
         [SerializeField] private Image IconImageComponent;
 
-        private IGameController GameController;
+        //###########################################################
 
-        public void Initialize(IGameController game_controller)
+        // -- ATTRIBUTES
+
+        private PlayerModel Model;
+
+        //###########################################################
+
+        // -- INITIALIZATION
+
+        public void Initialize(PlayerModel model)
         {
-            GameController = game_controller;
+            Model = model;
         }
+
+        //###########################################################
+
+        // -- OPERATIONS
 
         public void ShowAbility(AbilityType ability)
         {
-            var ability_data = GameController.PlayerModel.AbilityData.GetAbility(ability);
+            var ability_data = Model.AbilityData.GetAbility(ability);
 
             NameTextComponent.text = ability_data.Name;
             DescriptionTextComponent.text = ability_data.Description;
             IconImageComponent.sprite = ability_data.Icon;
         }
     }
-}
+} // end of namespace
