@@ -1,12 +1,9 @@
-﻿using Game.GameControl;
-using Game.Model;
-using System.Collections;
-using System.Collections.Generic;
+﻿using Game.Model;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Game.UI
+namespace Game.UI.PauseMenu
 {
     public class AbilityEntryView : MonoBehaviour, IEntryView, ISelectHandler
     {
@@ -24,20 +21,20 @@ namespace Game.UI
 
         // -- ATTRIBUTES
 
-        private IGameController GameController;
+        private PlayerModel Model;
         private SkillsMenuController SkillsMenuController;
 
         //###########################################################
 
         // -- INITIALIZATION
 
-        public void Initialize(IGameController game_controller, SkillsMenuController skills_menu_controller)
+        public void Initialize(PlayerModel model, SkillsMenuController skills_menu_controller)
         {
-            GameController = game_controller;
+            Model = model;
             SkillsMenuController = skills_menu_controller;
 
-            NameTextComponent.text = GameController.PlayerModel.AbilityData.GetAbility(AbilityType).Name;
-            SetSprite(GameController.PlayerModel.GetAbilityState(AbilityType));
+            NameTextComponent.text = Model.AbilityData.GetAbility(AbilityType).Name;
+            SetSprite(Model.GetAbilityState(AbilityType));
 
             Utilities.EventManager.AbilityStateChangedEvent += OnAbilityStateChanged;
         }
@@ -75,4 +72,4 @@ namespace Game.UI
             }
         }
     }
-}
+} // end of namespace

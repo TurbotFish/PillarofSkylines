@@ -1,14 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Game.GameControl;
+using Game.Model;
 using Game.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Game.UI
+namespace Game.UI.PauseMenu
 {
-    public class OverviewMenuController : MonoBehaviour, IUiMenu
+    public class OverviewMenuController : MonoBehaviour, IPauseMenu
     {
         //###########################################################
 
@@ -25,33 +26,35 @@ namespace Game.UI
 
         public bool IsActive { get; private set; }
 
-        private IGameController GameController;
+        private PlayerModel Model;
+        private PauseMenuController PauseMenuController;
 
         //###########################################################
 
         // -- INITIALIZATION
 
-        void IUiMenu.Initialize(IGameController game_controller)
+        public void Initialize(PlayerModel model, PauseMenuController pause_menu_controller)
         {
-            GameController = game_controller;
+            Model = model;
+            PauseMenuController = pause_menu_controller;
 
             foreach (var pillar_mark_view in PillarMarkHolder.GetComponentsInChildren<PillarMarkIconView>())
             {
-                pillar_mark_view.Initialize(game_controller);
+                pillar_mark_view.Initialize(Model);
             }
 
             foreach (var eye_view in EyeHolder.GetComponentsInChildren<EyeIconView>())
             {
-                eye_view.Initialize(game_controller);
+                eye_view.Initialize(Model);
             }
 
             foreach (var ability_view in AbilityHolder.GetComponentsInChildren<AbilityIconView>())
             {
-                ability_view.Initialize(game_controller);
+                ability_view.Initialize(Model);
             }
         }
 
-        void IUiMenu.Activate(EventManager.OnShowMenuEventArgs args)
+        public void Activate()
         {
             this.gameObject.SetActive(true);
 
@@ -61,7 +64,7 @@ namespace Game.UI
             IsActive = true;
         }
 
-        void IUiMenu.Deactivate()
+        public void Deactivate()
         {
             this.gameObject.SetActive(false);
             IsActive = false;
@@ -73,27 +76,26 @@ namespace Game.UI
 
         public void HandleInput()
         {
-
         }
 
         public void OnResumeButtonPressed()
         {
-            GameController.UiController.SwitchState(MenuType.HUD, new EventManager.OnShowMenuEventArgs(MenuType.HUD));
+            PauseMenuController.ClosePauseMenu();
         }
 
         public void OnSkillsButtonPressed()
         {
-            GameController.UiController.PauseMenu.SwitchMenu(PauseMenuType.Skills);
+            PauseMenuController.SwitchPauseMenu(PauseMenuType.Skills);
         }
 
         public void OnOptionsButtonsPressed()
         {
-            Debug.Log("Options Button pressed!");
+            Debug.LogWarning("Options Button pressed!");
         }
 
         public void OnExitGameButtonPressed()
         {
-            GameController.ExitGame();
+            PauseMenuController.ExitGame();
         }
     }
 } // end of namespace

@@ -6,7 +6,6 @@ namespace Game.UI
     {
         HUD,
         AbilityMenu,
-        End,
         LoadingScreen,
         PillarEntrance,
         MainMenu,

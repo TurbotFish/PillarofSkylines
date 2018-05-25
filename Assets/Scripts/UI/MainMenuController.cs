@@ -1,8 +1,5 @@
 ﻿using Game.GameControl;
-using Game.Player;
 using Game.Utilities;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -15,21 +12,27 @@ namespace Game.UI
     {
         //##################################################################
 
-        public bool IsActive { get; private set; }
-
-        IGameController gameController;
+        // -- CONSTANTS
 
         [SerializeField] private Button playButton;
         [SerializeField] private VideoPlayer VideoPlayer;
 
         //##################################################################
 
-        void IUiMenu.Initialize(IGameController gameController)
+        // -- ATTRIBUTES
+
+        public bool IsActive { get; private set; }
+
+        IGameController gameController;
+
+        //##################################################################
+
+        // -- INITIALIZATION
+
+        void IUiMenu.Initialize(IGameController gameController, UiController ui_controller)
         {
             this.gameController = gameController;
         }
-
-        //##################################################################
 
         void IUiMenu.Activate(EventManager.OnShowMenuEventArgs args)
         {
@@ -56,28 +59,16 @@ namespace Game.UI
 
         //##################################################################
 
-        //// Update is called once per frame
-        //void Update()
-        //{
-        //    if (!IsActive)
-        //    {
-        //        return;
-        //    }
+        // -- OPERATIONS
 
-        //    if (Input.GetButtonDown("Interact"))
-        //    {
-        //        gameController.StartGame();
-        //    }
-        //}
-
-        public void HandleInput()
+        public bool HandleInput()
         {
             if (Input.GetButtonDown("Interact"))
             {
                 gameController.StartGame();
             }
-        }
 
-        //##################################################################
+            return true;
+        }
     }
 } //end of namespace

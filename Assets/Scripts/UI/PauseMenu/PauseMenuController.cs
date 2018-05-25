@@ -4,7 +4,7 @@ using Game.GameControl;
 using Game.Utilities;
 using UnityEngine;
 
-namespace Game.UI
+namespace Game.UI.PauseMenu
 {
     public class PauseMenuController : MonoBehaviour, IUiMenu
     {
@@ -23,16 +23,19 @@ namespace Game.UI
         public bool IsActive { get; private set; }
 
         private IGameController GameController;
+        private UiController UiController;
+
         private PauseMenuType CurrentState;
-        private Dictionary<PauseMenuType, IUiMenu> SubMenuDictionary = new Dictionary<PauseMenuType, IUiMenu>();
+        private Dictionary<PauseMenuType, IPauseMenu> SubMenuDictionary = new Dictionary<PauseMenuType, IPauseMenu>();
 
         //###########################################################
 
         // -- INITIALIZATION
 
-        void IUiMenu.Initialize(IGameController game_controller)
+        public void Initialize(IGameController game_controller, UiController ui_controller)
         {
             GameController = game_controller;
+            UiController = ui_controller;
 
             SubMenuDictionary.Clear();
             SubMenuDictionary.Add(PauseMenuType.Overview, OverviewPauseMenuController);
@@ -41,21 +44,21 @@ namespace Game.UI
 
             foreach (var menu in SubMenuDictionary.Values)
             {
-                menu.Initialize(game_controller);
+                menu.Initialize(GameController.PlayerModel, this);
                 menu.Deactivate();
             }
         }
 
-        void IUiMenu.Activate(EventManager.OnShowMenuEventArgs args)
+        public void Activate(EventManager.OnShowMenuEventArgs args)
         {
             this.gameObject.SetActive(true);
 
-            SwitchMenu(PauseMenuType.Overview);
+            SwitchPauseMenu(PauseMenuType.Overview);
 
             IsActive = true;
         }
 
-        void IUiMenu.Deactivate()
+        public void Deactivate()
         {
             this.gameObject.SetActive(false);
             IsActive = false;
@@ -65,12 +68,14 @@ namespace Game.UI
 
         // -- OPERATIONS
 
-        public void HandleInput()
+        public bool HandleInput()
         {
             SubMenuDictionary[CurrentState].HandleInput();
+
+            return true;
         }
 
-        public void SwitchMenu(PauseMenuType new_menu_type)
+        public void SwitchPauseMenu(PauseMenuType new_menu_type)
         {
             if (SubMenuDictionary[CurrentState].IsActive)
             {
@@ -79,7 +84,18 @@ namespace Game.UI
 
             CurrentState = new_menu_type;
 
-            SubMenuDictionary[CurrentState].Activate(null);
+            SubMenuDictionary[CurrentState].Activate();
+        }
+
+        public void ClosePauseMenu()
+        {
+            Debug.LogWarning("Temp");
+            UiController.SwitchState(MenuType.HUD, null);
+        }
+
+        public void ExitGame()
+        {
+            UiController.ExitGame();
         }
     }
 } // end of namespace

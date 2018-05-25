@@ -1,11 +1,8 @@
-﻿using Game.GameControl;
-using Game.Model;
-using System.Collections;
-using System.Collections.Generic;
+﻿using Game.Model;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Game.UI
+namespace Game.UI.PauseMenu
 {
     public class EyeIconView : MonoBehaviour
     {
@@ -28,11 +25,11 @@ namespace Game.UI
 
         // -- INITIALIZATION
 
-        public void Initialize(IGameController game_controller)
+        public void Initialize(PlayerModel model)
         {
             ImageComponent = GetComponent<Image>();
 
-            SetSprite(game_controller.PlayerModel.GetPillarState(PillarId));
+            SetSprite(model.GetPillarState(PillarId));
 
             Utilities.EventManager.PillarStateChangedEvent += OnPillarStateChanged;
         }

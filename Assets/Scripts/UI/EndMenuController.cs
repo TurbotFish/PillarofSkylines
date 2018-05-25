@@ -48,7 +48,7 @@ namespace Game.UI
 
         //###########################################################
 
-        void IUiMenu.Initialize(IGameController gameController)
+        void IUiMenu.Initialize(IGameController gameController, UiController ui_controller)
         {
             //this.playerModel = playerModel;
         }
@@ -74,8 +74,9 @@ namespace Game.UI
 
         //###########################################################
 
-        public void HandleInput()
+        public bool HandleInput()
         {
+            return true;
         }
     }
 }

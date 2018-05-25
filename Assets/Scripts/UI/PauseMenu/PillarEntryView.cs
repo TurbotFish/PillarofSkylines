@@ -1,12 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Game.GameControl;
-using Game.Model;
+﻿using Game.Model;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Game.UI
+namespace Game.UI.PauseMenu
 {
     public class PillarEntryView : MonoBehaviour, IEntryView, ISelectHandler
     {
@@ -25,22 +22,23 @@ namespace Game.UI
 
         // -- ATTRIBUTES
 
-        private IGameController GameController;
+        private PlayerModel Model;
         private SkillsMenuController SkillsMenuController;
+
         private AbilityType AbilityType;
 
         //###########################################################
 
         // -- INITIALIZATION
 
-        public void Initialize(IGameController game_controller, SkillsMenuController skills_menu_controller)
+        public void Initialize(PlayerModel model, SkillsMenuController skills_menu_controller)
         {
-            GameController = game_controller;
+            Model = model;
             SkillsMenuController = skills_menu_controller;
-            AbilityType = GameController.PlayerModel.LevelData.GetPillarRewardAbility(PillarId);
+            AbilityType = Model.LevelData.GetPillarRewardAbility(PillarId);
 
-            NameTextComponent.text = GameController.PlayerModel.AbilityData.GetAbility(AbilityType).Name;
-            SetSprite(GameController.PlayerModel.GetPillarState(PillarId));
+            NameTextComponent.text = Model.AbilityData.GetAbility(AbilityType).Name;
+            SetSprite(Model.GetPillarState(PillarId));
 
             Utilities.EventManager.PillarStateChangedEvent += OnPillarStateChanged;
         }

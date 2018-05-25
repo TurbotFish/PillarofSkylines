@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game.UI
+namespace Game.UI.PauseMenu
 {
     public enum PauseMenuType
     {
