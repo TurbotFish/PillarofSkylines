@@ -645,7 +645,8 @@ public class PoS_Camera : MonoBehaviour
             newYaw *= -1;
 
         float dot = Vector3.Dot(newYaw, playerVelocity.normalized);
-        if (dot < facingWallBuffer)
+
+        if (Mathf.Abs(dot) < facingWallBuffer)
             dot = 0;
 
         newYaw = Vector3.Lerp(my.forward, newYaw, dot);
