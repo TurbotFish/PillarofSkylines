@@ -141,7 +141,7 @@ namespace Game.Player.CharacterController.States
 				//if the player is falling but may still jump normally
 				if (mode == eAirStateMode.fall && jumpTimer > 0) {
 					var state = new AirState(charController, stateMachine, eAirStateMode.jump);
-					stateMachine.SetRemainingAerialJumps(remainingAerialJumps);
+					stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 
 					stateMachine.ChangeState(state);
 				}

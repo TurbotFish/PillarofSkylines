@@ -46,7 +46,7 @@ namespace Game.LevelElements
             base.Initialize(gameController);
 
             //(PersistentDataObject as PersistentStepByStepTriggerable).State = currentState;
-            Debug.Log("I am " + name);
+            //Debug.Log("I am " + name);
             my = transform;
             platform = GetComponent<MovingPlatform>();
 
@@ -54,11 +54,11 @@ namespace Game.LevelElements
 
             foreach (Transform child in transform.GetChild(0))
             {
-                Debug.Log("adding : " + child.name);
+                //Debug.Log("adding : " + child.name);
                 waypoints.Add(my.localRotation * new Vector3(child.localPosition.x * my.lossyScale.x, child.localPosition.y * my.lossyScale.y, child.localPosition.z * my.lossyScale.z));
             }
 
-            Debug.Log("waypoints " + waypoints.Count);
+            //Debug.Log("waypoints " + waypoints.Count);
 
             if (waitTime.Count < waypoints.Count)
             {
