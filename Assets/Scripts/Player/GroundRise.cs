@@ -20,6 +20,8 @@ namespace Game.Player.CharacterController
 
         [SerializeField] LayerMask collisionMask;
 
+        [SerializeField] ParticleSystem endParticles;
+
         float currHeight = 0f;
         bool finishedMoving = false;
         float timeRemaining;
@@ -202,6 +204,8 @@ namespace Game.Player.CharacterController
                         rock.transform.parent = null;
                         rock.Trigger();
                     }
+                    endParticles.transform.parent = null;
+                    endParticles.Play();
 
                     Destroy(gameObject);
                 }

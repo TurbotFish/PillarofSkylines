@@ -211,7 +211,7 @@ namespace Game.Player.CharacterController
             var pos1 = myTransform.position;
             myTransform.Translate(velocity, Space.World);
             var pos2 = myTransform.position;
-            
+
             /*
             if (myPlayer.CurrentState == ePlayerState.move)
             {
@@ -221,8 +221,9 @@ namespace Game.Player.CharacterController
                 Debug.LogFormat("axis:{0}", Vector3.Cross(transform.up, Vector3.up));
                 Debug.LogFormat("velocity / deltaTime = {0}", velocity / Time.deltaTime);
             }*/
-
-            var result = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), (Vector3.Cross(Vector3.up, transform.up) != Vector3.zero ? Vector3.Cross(Vector3.up, transform.up) : Vector3.forward))) * velocity /*/ Time.deltaTime*/;
+            //Debug.Log("char. velocity before : " + velocity);
+            var result = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), (Vector3.Cross(transform.up, Vector3.up) != Vector3.zero ? Vector3.Cross(transform.up, Vector3.up) : Vector3.forward))) * velocity /*/ Time.deltaTime*/;
+            //Debug.Log("char. velocity after : " + result);
 
             return result;
             //return velocity;

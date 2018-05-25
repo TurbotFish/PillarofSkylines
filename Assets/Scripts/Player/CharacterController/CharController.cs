@@ -353,6 +353,7 @@ namespace Game.Player.CharacterController
             //physics update
             //Debug.Log("velocity before : " + newVelocity);
             var turnedVelocity = TurnLocalToSpace(newVelocity);
+            //Debug.Log("velocity turned : " + turnedVelocity);
             Vector3 lastPositionDelta;
 
             /*
