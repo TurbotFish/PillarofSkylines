@@ -48,7 +48,7 @@ namespace Game.GameControl
         {
             // creating model
             PlayerModel = new PlayerModel();
-            EventManager.PillarStateChangedEvent += OnPillarStateChanged;
+            EventManager.PillarMarkStateChangedEvent += OnPillarMarkStateChanged;
 
             //getting references in game controller
             EchoManager = GetComponentInChildren<EchoManager>();
@@ -74,7 +74,7 @@ namespace Game.GameControl
 
         private void OnDestroy()
         {
-            EventManager.PillarStateChangedEvent -= OnPillarStateChanged;
+            EventManager.PillarMarkStateChangedEvent -= OnPillarMarkStateChanged;
         }
 
         private IEnumerator LoadOpenWorldSceneCR()
@@ -458,11 +458,11 @@ namespace Game.GameControl
         }
 
         /// <summary>
-        /// Handles the PillarStateChanged event.
+        /// Handles the PillarMarkStateChanged event.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void OnPillarStateChanged(object sender, EventManager.PillarStateChangedEventArgs args)
+        private void OnPillarMarkStateChanged(object sender, EventManager.PillarMarkStateChangedEventArgs args)
         {
             foreach (var pillar_id in Enum.GetValues(typeof(PillarId)).Cast<PillarId>())
             {
@@ -472,11 +472,11 @@ namespace Game.GameControl
                 {
                     continue;
                 }
-                else if (PlayerModel.GetActivePillarMarkCount() >= PlayerModel.GetPillarEntryPrice(pillar_id) && current_pillar_state == PillarState.Locked)
+                else if (PlayerModel.GetActivePillarMarkCount() >= PlayerModel.GetPillarEntryPrice(pillar_id))
                 {
                     PlayerModel.SetPillarState(pillar_id, PillarState.Unlocked);
                 }
-                else if (current_pillar_state == PillarState.Unlocked)
+                else
                 {
                     PlayerModel.SetPillarState(pillar_id, PillarState.Locked);
                 }
