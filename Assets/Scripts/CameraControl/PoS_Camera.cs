@@ -213,12 +213,21 @@ public class PoS_Camera : MonoBehaviour
     void LateUpdate()
     {
         if (gamePaused || !isInitialized)
-        {
             return;
-        }
 
         deltaTime = Time.deltaTime;
 
+        HandleInput();
+        
+        if (gameController.DuplicationCameraManager != null)
+            gameController.DuplicationCameraManager.UpdateDuplicationCameras();
+    }
+    #endregion
+
+    #region General Methods
+
+    public void HandleInput()
+    {
         GetInputsAndStates();
         DoRotation();
         EvaluatePosition();
@@ -227,16 +236,8 @@ public class PoS_Camera : MonoBehaviour
 
         if (enablePanoramaMode)
             DoPanorama();
-
-        if (gameController.DuplicationCameraManager != null)
-        {
-            gameController.DuplicationCameraManager.UpdateDuplicationCameras();
-        }
     }
-    #endregion
-
-    #region General Methods
-
+    
     /// <summary>
     /// Appelé quand le player spawn, change de scène ou qu'il est téléporté par le worldWrapper
     /// </summary>
@@ -304,6 +305,16 @@ public class PoS_Camera : MonoBehaviour
         characterUp = target.parent.up;
         Vector3 currentUp = targetSpace * worldUp;
         targetSpace = Quaternion.FromToRotation(currentUp, characterUp) * targetSpace;
+    }
+
+    public void RestartExecution()
+    {
+        gamePaused = false;
+    }
+
+    public void StopExecution()
+    {
+        gamePaused = true;
     }
 
     void RealignPlayer()
@@ -386,7 +397,6 @@ public class PoS_Camera : MonoBehaviour
         idealDistance = 1 + zoomValue * distanceFromAngle + additionalDistance;
 
         if (canZoom) Zoom(Input.GetAxis("Mouse ScrollWheel"));
-        //ZoomFromCeiling();
 
         offset.x = Mathf.Lerp(offsetClose.x, offsetFar.x, currentDistance / maxDistance);
         offset.y = Mathf.Lerp(offsetClose.y, offsetFar.y, currentDistance / maxDistance);
