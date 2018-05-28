@@ -36,48 +36,17 @@ namespace Game.World
         [SerializeField, HideInInspector] private int debugResultCount = 10;
 
         //###############################################################
-        //###############################################################
 
-        // -- ATTRIBUTES
-
-        public Vector3 WorldSize { get { return worldSize; } }
-
-        public float RenderDistanceNear { get { return renderDistanceNear; } }
-        public float RenderDistanceMedium { get { return renderDistanceMedium; } }
-        public float RenderDistanceFar { get { return renderDistanceFar; } }
-
-        public bool ShowRegionMode { get { return showRegionMode; } }
-        public Color ModeNearColor { get { return modeNearColor; } }
-        public Color ModeMediumColor { get { return modeMediumColor; } }
-        public Color ModeFarColor { get { return modeFarColor; } }
-
-        public bool EditorSubScenesLoaded
-        {
-            get { return editorSubScenesLoaded; }
-#if UNITY_EDITOR
-            set
-            {
-                editorSubScenesLoaded = value;
-                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
-            }
-#endif
-        }
-
-        public bool UnloadInvisibleRegions { get { return unloadInvisibleRegions; } }
-        public float InvisibilityAngle { get { return invisibilityAngle; } }
-
-
-
-
+        // -- ATTRIBUTES     
 
         public IGameController GameController { get; private set; }
         public WorldControllerState CurrentState { get; private set; }
-
 
         private List<RegionBase> RegionList = new List<RegionBase>();
         private List<SubSceneJob> SubSceneJobsList = new List<SubSceneJob>();
 
         private bool isInitialized = false;
+
         private bool isJobRunning = false;
         private int CurrentRegionIndex;
 
@@ -107,29 +76,8 @@ namespace Game.World
                 RegionList.Add(region);
             }
 
-            //if (editorSubScenesLoaded)    //no streaming
-            //{
-            //    foreach (var region in initialRegions)
-            //    {
-            //        foreach (var child in region.GetAllSubSceneRoots())    //deactivating all subScenes
-            //        {
-            //            child.gameObject.SetActive(false);
-            //        }
-            //    }
-            //}
-
             isInitialized = true;
         }
-
-        //###############################################################
-        //###############################################################
-
-        // -- INQUIRIES
-
-        //###############################################################
-        //###############################################################
-
-        // -- OPERATIONS
 
         /// <summary>
         /// Activates the WorldController.
@@ -191,16 +139,48 @@ namespace Game.World
                 region.UnloadAll();
             }
 
-            //SubSceneJobsList.Clear();
-            //foreach (var region in RegionList)
-            //{
-            //    SubSceneJobsList.AddRange(region.UnloadAll());
-            //}
-            //SubSceneJobsList.RemoveAll(item => item == null);
-
             StartCoroutine(DeactivationCR());
         }
 
+        //###############################################################
+
+        // -- INQUIRIES
+
+        public Vector3 WorldSize { get { return worldSize; } }
+
+        public float RenderDistanceNear { get { return renderDistanceNear; } }
+        public float RenderDistanceMedium { get { return renderDistanceMedium; } }
+        public float RenderDistanceFar { get { return renderDistanceFar; } }
+
+        public bool ShowRegionMode { get { return showRegionMode; } }
+        public Color ModeNearColor { get { return modeNearColor; } }
+        public Color ModeMediumColor { get { return modeMediumColor; } }
+        public Color ModeFarColor { get { return modeFarColor; } }
+
+        public bool EditorSubScenesLoaded
+        {
+            get { return editorSubScenesLoaded; }
+#if UNITY_EDITOR
+            set
+            {
+                editorSubScenesLoaded = value;
+                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+            }
+#endif
+        }
+
+        public bool UnloadInvisibleRegions { get { return unloadInvisibleRegions; } }
+        public float InvisibilityAngle { get { return invisibilityAngle; } }
+
+
+        //###############################################################
+
+        // -- OPERATIONS
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="job"></param>
         public void AddSubSceneJob(SubSceneJob job)
         {
             if (!SubSceneJobsList.Contains(job))
@@ -209,6 +189,10 @@ namespace Game.World
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="job"></param>
         public void RemoveSubSceneJob(SubSceneJob job)
         {
             SubSceneJobsList.Remove(job);
