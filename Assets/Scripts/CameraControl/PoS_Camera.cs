@@ -335,9 +335,9 @@ public class PoS_Camera : MonoBehaviour
     {
         if (autoAdjustPitch)
             pitch = Mathf.LerpAngle(pitch, targetPitch, deltaTime / autoDamp);
-        if (autoAdjustYaw)
+        if (autoAdjustYaw) {
             yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / autoDamp);
-
+        }
         if (state == eCameraState.Resetting)
         {
             if (((autoAdjustYaw && Mathf.Abs(Mathf.DeltaAngle(yaw, targetYaw)) < 1f) || !autoAdjustYaw)
@@ -640,29 +640,19 @@ public class PoS_Camera : MonoBehaviour
     void WallRunCamera()
     {
         Vector3 newYaw = Vector3.Cross(target.parent.up, controller.collisions.lastWallNormal);
-
-        //print("WALLRUN initial cross: " + target.parent.up + " (player up) × " + controller.collisions.lastWallNormal + " (wall normal) = " + newYaw);
-
-
+        
         if (Vector3.Dot(newYaw, target.parent.forward) < 0)
             newYaw *= -1;
-
-
+        
         float dot = Vector3.Dot(newYaw, playerVelocity.normalized);
 
         if (Mathf.Abs(dot) < facingWallBuffer)
             dot = 0;
-
-        //print("WALLRUN dot between " + newYaw + " (guessed direction against wall) and " + playerVelocity.normalized + " (playerVelocity): " + dot);
-
-
+        
         newYaw = Vector3.Lerp(my.forward, newYaw, dot);
-
-        //print("WALLRUN New Yaw " + newYaw + " Current Forward is " + my.forward + " Rotation towards new Yaw: " + GetRotationTowardsDirection(newYaw));
-
+        
         resetType = eResetType.WallRun;
         AllowAutoReset(true, true);
-        //SetTargetRotation(defaultPitch, GetRotationTowardsDirection(newYaw).y, wallRunDamp);
         SetTargetRotation(defaultPitch, GetRotationTowardsDirection(newYaw).y, wallRunDamp);
         state = eCameraState.WallRun;
     }
@@ -730,7 +720,7 @@ public class PoS_Camera : MonoBehaviour
     Vector2 GetRotationTowardsDirection(Vector3 direction)
     {
         Quaternion q = Quaternion.LookRotation(direction, target.up);
-        return new Vector2(q.eulerAngles.x, q.eulerAngles.y);
+        return Quaternion.Inverse(targetSpace) * new Vector2(q.eulerAngles.x, q.eulerAngles.y);
     }
 
     float GetPitchTowardsPoint(Vector3 point)
