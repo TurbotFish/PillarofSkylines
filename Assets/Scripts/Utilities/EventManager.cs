@@ -13,6 +13,7 @@ namespace Game.Utilities
         //###########################################################
         //***********************************************************
         #region menu opened event
+        //***********************************************************
 
         public class OnMenuSwitchedEventArgs : EventArgs
         {
@@ -144,29 +145,31 @@ namespace Game.Utilities
         #region model events
         //###########################################################
         //***********************************************************
-        #region pillar destroyed event
+        #region pillar state changed event
         //***********************************************************
 
-        public class PillarDestroyedEventArgs : EventArgs
+        public class PillarStateChangedEventArgs : EventArgs
         {
             public PillarId PillarId { get; private set; }
+            public PillarState PillarState { get; private set; }
 
-            public PillarDestroyedEventArgs(PillarId pillarId)
+            public PillarStateChangedEventArgs(PillarId pillar_id, PillarState pillar_state)
             {
-                PillarId = pillarId;
+                PillarId = pillar_id;
+                PillarState = pillar_state;
             }
         }
 
-        public delegate void PillarDestroyedEventHandler(object sender, PillarDestroyedEventArgs args);
-        public static event PillarDestroyedEventHandler PillarDestroyedEvent;
+        public delegate void PillarStateChangedEventHandler(object sender, PillarStateChangedEventArgs args);
+        public static event PillarStateChangedEventHandler PillarStateChangedEvent;
 
-        public static void SendPillarDestroyedEvent(object sender, PillarDestroyedEventArgs args)
+        public static void SendPillarStateChangedEvent(object sender, PillarStateChangedEventArgs args)
         {
-            PillarDestroyedEvent?.Invoke(sender, args);
+            PillarStateChangedEvent?.Invoke(sender, args);
         }
 
         //***********************************************************
-        #endregion pillar destroyed event
+        #endregion pillar state changed event
         //***********************************************************
         //***********************************************************
         #region ability state changed
@@ -226,8 +229,9 @@ namespace Game.Utilities
         #endregion model events
         //###########################################################
 
+        //###########################################################
         #region gameplay events
-
+        //###########################################################
         //***********************************************************
 
         #region game paused event

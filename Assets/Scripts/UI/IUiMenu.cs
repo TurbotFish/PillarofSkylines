@@ -6,10 +6,12 @@ namespace Game.UI
     {
         bool IsActive { get; }
 
-        void Initialize(IGameController gameController);
+        void Initialize(IGameController gameController, UiController ui_controller);
 
         void Activate(Utilities.EventManager.OnShowMenuEventArgs args);
 
+        bool HandleInput();
+
         void Deactivate();
     }
-}
+} // end of namespace

@@ -1,12 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Game.GameControl;
-using Game.Utilities;
+﻿using Game.Model;
 using UnityEngine;
 
-namespace Game.UI
+namespace Game.UI.PauseMenu
 {
-    public class OptionsPauseMenuController : MonoBehaviour, IUiMenu
+    public class OptionsPauseMenuController : MonoBehaviour, IPauseMenu
     {
         //###########################################################
 
@@ -14,31 +11,38 @@ namespace Game.UI
 
         public bool IsActive { get; private set; }
 
-        private IGameController GameController;
+        private PlayerModel Model;
+        private PauseMenuController PauseMenuController;
 
         //###########################################################
 
         // -- INITIALIZATION
 
-        void IUiMenu.Initialize(IGameController game_controller)
+        public void Initialize(PlayerModel model, PauseMenuController pause_menu_controller)
         {
-            GameController = game_controller;
+            Model = model;
+            PauseMenuController = pause_menu_controller;
+        }
+
+        public void Activate()
+        {
+            this.gameObject.SetActive(true);
+            IsActive = true;
+        }
+
+        public void Deactivate()
+        {
+            this.gameObject.SetActive(false);
+            IsActive = false;
         }
 
         //###########################################################
 
         // -- OPERATIONS
 
-        void IUiMenu.Activate(EventManager.OnShowMenuEventArgs args)
+        public void HandleInput()
         {
-            this.gameObject.SetActive(true);
-            IsActive = true;
-        }
 
-        void IUiMenu.Deactivate()
-        {
-            this.gameObject.SetActive(false);
-            IsActive = false;
         }
     }
 }

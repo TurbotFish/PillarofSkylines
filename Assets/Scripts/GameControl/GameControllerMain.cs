@@ -37,24 +37,18 @@ namespace Game.GameControl
 
         public SpawnPointManager SpawnPointManager { get; private set; }
 
-        public LevelData LevelData { get; private set; }
-
         private bool isInitialized = false;
         private bool isGameStarted = false;
 
-
-        //###############################################################
         //###############################################################
 
         // -- INITIALIZATION
 
         private void Start()
         {
-            //load resources
-            LevelData = Resources.Load<LevelData>("ScriptableObjects/LevelData");
-
             // creating model
             PlayerModel = new PlayerModel();
+            EventManager.PillarMarkStateChangedEvent += OnPillarMarkStateChanged;
 
             //getting references in game controller
             EchoManager = GetComponentInChildren<EchoManager>();
@@ -76,6 +70,11 @@ namespace Game.GameControl
 
             //load open world scene
             StartCoroutine(LoadOpenWorldSceneCR());
+        }
+
+        private void OnDestroy()
+        {
+            EventManager.PillarMarkStateChangedEvent -= OnPillarMarkStateChanged;
         }
 
         private IEnumerator LoadOpenWorldSceneCR()
@@ -114,6 +113,11 @@ namespace Game.GameControl
         }
 
         //###############################################################
+
+        // -- INQUIRIES
+
+        public LevelData LevelData { get { return PlayerModel.LevelData; } }
+
         //###############################################################
 
         // -- OPERATIONS
@@ -153,6 +157,10 @@ namespace Game.GameControl
 #endif
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pillar_id"></param>
         public void SwitchToPillar(PillarId pillar_id)
         {
             if (IsPillarLoaded)
@@ -164,6 +172,9 @@ namespace Game.GameControl
             StartCoroutine(LoadPillarSceneCR(pillar_id));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void SwitchToOpenWorld()
         {
             if (!IsPillarLoaded)
@@ -180,7 +191,10 @@ namespace Game.GameControl
         /// </summary>
         private void Update()
         {
-
+            if (!isInitialized)
+            {
+                return;
+            }
 
             if (Input.GetKeyUp(KeyCode.F2))
             {
@@ -199,6 +213,8 @@ namespace Game.GameControl
                     PlayerModel.SetAbilityState(ability.Type, AbilityState.active);
                 }
             }
+
+            UiController.HandleInput();
         }
 
         /// <summary>
@@ -439,6 +455,32 @@ namespace Game.GameControl
         {
             //Debug.Log("on scene loaded event");
             CleanScene(scene);
+        }
+
+        /// <summary>
+        /// Handles the PillarMarkStateChanged event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void OnPillarMarkStateChanged(object sender, EventManager.PillarMarkStateChangedEventArgs args)
+        {
+            foreach (var pillar_id in Enum.GetValues(typeof(PillarId)).Cast<PillarId>())
+            {
+                var current_pillar_state = PlayerModel.GetPillarState(pillar_id);
+
+                if (current_pillar_state == PillarState.Destroyed)
+                {
+                    continue;
+                }
+                else if (PlayerModel.GetActivePillarMarkCount() >= PlayerModel.GetPillarEntryPrice(pillar_id))
+                {
+                    PlayerModel.SetPillarState(pillar_id, PillarState.Unlocked);
+                }
+                else
+                {
+                    PlayerModel.SetPillarState(pillar_id, PillarState.Locked);
+                }
+            }
         }
 
         /// <summary>
