@@ -141,7 +141,7 @@ namespace Game.Player.CharacterController.States
 				//if the player is falling but may still jump normally
 				if (mode == eAirStateMode.fall && jumpTimer > 0) {
 					var state = new AirState(charController, stateMachine, eAirStateMode.jump);
-					stateMachine.SetRemainingAerialJumps(remainingAerialJumps);
+					stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 
 					stateMachine.ChangeState(state);
 				}
@@ -191,11 +191,11 @@ namespace Game.Player.CharacterController.States
             else if (collisionInfo.side && WallRunState.CheckCanEnterWallRun(charController)) {
 				stateMachine.ChangeState(new WallRunState(charController, stateMachine));
             }
-            else if (inputInfo.rightStickButtonDown && charController.graviswapAvailable)
+            else if (inputInfo.rightStickButtonDown && !stateMachine.CheckStateLocked(ePlayerState.graviswap))
             {
                 stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
             }
-            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom))
+            else if (inputInfo.echoButtonTimePressed > 1f && !stateMachine.CheckStateLocked(ePlayerState.phantom))
             {
                 stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
             }

@@ -6,41 +6,36 @@ using UnityEngine.UI;
 
 namespace Game.UI
 {
-    public class LoadingScreenController : MonoBehaviour, IUiState
+    public class LoadingScreenController : MonoBehaviour, IUiMenu
     {
+        //###########################################################
+
+        // -- CONSTANTS
+
         [SerializeField] private float turningSpeed;
+
+        //###########################################################
+
+        // -- ATTRIBUTES
+
+        public bool IsActive { get; private set; }
 
         private LoadingScreenImages screenImages;
         private Image background;
         private Transform turningThing;
 
-        public bool IsActive { get; private set; }
-
         //###########################################################
 
-        #region monobehaviour methods
+        // -- INITIALIZATION
 
-        // Update is called once per frame
-        void Update()
-        {
-            if (IsActive)
-            {
-                turningThing.Rotate(Vector3.forward * -turningSpeed * Time.unscaledDeltaTime);
-            }
-        }
-
-        #endregion monobehaviour methods
-
-        //###########################################################
-
-        void IUiState.Initialize(IGameController gameController)
+        public void Initialize(IGameController gameController, UiController ui_controller)
         {
             screenImages = Resources.Load<LoadingScreenImages>("ScriptableObjects/LoadingScreenImages");
             background = transform.Find("Background").GetComponent<Image>();
             turningThing = transform.Find("TurningThing");
         }
 
-        void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
+        public void Activate(Utilities.EventManager.OnShowMenuEventArgs args)
         {
             if (IsActive)
             {
@@ -62,7 +57,7 @@ namespace Game.UI
             gameObject.SetActive(true);
         }
 
-        void IUiState.Deactivate()
+        public void Deactivate()
         {
             if (IsActive)
             {
@@ -74,5 +69,20 @@ namespace Game.UI
         }
 
         //###########################################################
+
+        // -- OPERATIONS
+
+        public bool HandleInput()
+        {
+            return true;
+        }
+
+        void Update()
+        {
+            if (IsActive)
+            {
+                turningThing.Rotate(Vector3.forward * -turningSpeed * Time.unscaledDeltaTime);
+            }
+        }
     }
 }

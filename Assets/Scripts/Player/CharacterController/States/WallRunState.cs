@@ -120,7 +120,7 @@ namespace Game.Player.CharacterController.States
 
                 stateMachine.ChangeState(state);
             }
-            else if (inputInfo.echoButtonTimePressed > .5f && !stateMachine.CheckStateLocked(ePlayerState.phantom))
+            else if (inputInfo.echoButtonTimePressed > 1f && !stateMachine.CheckStateLocked(ePlayerState.phantom))
             {
                 stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
             }
@@ -225,7 +225,9 @@ namespace Game.Player.CharacterController.States
                 climbUp = false;
                 if (localWallRunDir != Vector3.zero)
                 {
-                    result.PlayerForward = Vector3.Project(charController.TurnLocalToSpace(localWallRunDir), Vector3.Cross(lastWallNormal, charController.MyTransform.up));
+                    Vector3 projectedVelocity = Vector3.Project(charController.TurnLocalToSpace(localWallRunDir), Vector3.Cross(lastWallNormal, charController.MyTransform.up));
+                    Debug.Log("wallrun " + projectedVelocity.magnitude/10f);
+                    result.PlayerForward = Vector3.Lerp(-lastWallNormal, projectedVelocity, projectedVelocity.magnitude/10f);
                     //Debug.Log("new player forward is : " + result.PlayerForward);
                 }
             }

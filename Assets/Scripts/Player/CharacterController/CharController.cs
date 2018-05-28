@@ -94,11 +94,7 @@ namespace Game.Player.CharacterController
         PlayerMovementInfo movementInfo = new PlayerMovementInfo();
 
         public PlayerMovementInfo MovementInfo { get { return movementInfo; } }
-
-        /// <summary>
-        /// debug pour graviswap parce que je sais pas activer/désactiver des abilities
-        /// </summary>
-        public bool graviswapAvailable = false;
+        
 
         public bool IsGrounded { get { return (CurrentState & (ePlayerState.move | ePlayerState.slide | ePlayerState.stand)) != 0; } }
 
@@ -192,6 +188,7 @@ namespace Game.Player.CharacterController
             {
                 return;
             }
+            
 
             if (Input.GetKeyDown(KeyCode.F6))
             {
@@ -229,7 +226,7 @@ namespace Game.Player.CharacterController
                     inputInfo.leftStickAtZero = false;
                 }
 
-                var toCameraAngle = Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), Vector3.Cross(transform.up, Vector3.up));
+                var toCameraAngle = Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), (Vector3.Cross(transform.up, Vector3.up) != Vector3.zero ? Vector3.Cross(transform.up, Vector3.up) : Vector3.forward));
                 inputInfo.leftStickToCamera = toCameraAngle * (rotator.right * stickH + rotator.forward * stickV);
 
                 var toSlopeAngle = Quaternion.AngleAxis(Vector3.Angle(transform.up, tempCollisionInfo.currentGroundNormal), Vector3.Cross(transform.up, tempCollisionInfo.currentGroundNormal));
@@ -354,8 +351,9 @@ namespace Game.Player.CharacterController
 
             //*******************************************
             //physics update
-
+            //Debug.Log("velocity before : " + newVelocity);
             var turnedVelocity = TurnLocalToSpace(newVelocity);
+            //Debug.Log("velocity turned : " + turnedVelocity);
             Vector3 lastPositionDelta;
 
             /*
@@ -368,6 +366,7 @@ namespace Game.Player.CharacterController
                 lastPositionDelta = tempPhysicsHandler.Move(turnedVelocity * Time.deltaTime);
             //}
             velocity = lastPositionDelta / Time.deltaTime;
+            //Debug.Log("velocity after : " + velocity);
 
 
             externalVelocity = Vector3.zero;
@@ -457,7 +456,7 @@ namespace Game.Player.CharacterController
 
         void OnMenuSwitchedEventHandler(object sender, Utilities.EventManager.OnMenuSwitchedEventArgs args)
         {
-            if (args.NewUiState == UI.eUiState.HUD)
+            if (args.NewUiState == UI.MenuType.HUD)
             {
                 isHandlingInput = true;
             }
@@ -500,12 +499,12 @@ namespace Game.Player.CharacterController
 
         public Vector3 TurnLocalToSpace(Vector3 vector)
         {
-            return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, MyTransform.up), Vector3.Cross(Vector3.up, MyTransform.up))) * vector;
+            return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, MyTransform.up), (Vector3.Cross(Vector3.up, MyTransform.up) != Vector3.zero ? Vector3.Cross(Vector3.up, MyTransform.up) : Vector3.forward))) * vector;
         }
 
         public Vector3 TurnSpaceToLocal(Vector3 vector)
         {
-            return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, MyTransform.up), Vector3.Cross(MyTransform.up, Vector3.up))) * vector;
+            return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, MyTransform.up), (Vector3.Cross(MyTransform.up, Vector3.up) != Vector3.zero ? Vector3.Cross(MyTransform.up, Vector3.up) : Vector3.forward))) * vector;
         }
 
         public void ResetEchoInputTime()

@@ -1,68 +1,68 @@
-﻿using Game.GameControl;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿//using Game.GameControl;
+//using System.Collections;
+//using System.Collections.Generic;
+//using UnityEngine;
 
-namespace Game.UI
-{
-    public class IntroMenuController : MonoBehaviour, IUiState
-    {
-        //Player.PlayerModel playerModel;
+//namespace Game.UI
+//{
+//    public class IntroMenuController : MonoBehaviour, IUiMenu
+//    {
+//        //Player.PlayerModel playerModel;
 
-        public bool IsActive { get; private set; }
+//        public bool IsActive { get; private set; }
 
-        //###########################################################
+//        //###########################################################
 
-        #region monobehaviour methods
+//        #region monobehaviour methods
 
-        // Use this for initialization
-        void Start()
-        {
+//        // Use this for initialization
+//        void Start()
+//        {
 
-        }
+//        }
 
-        // Update is called once per frame
-        void Update()
-        {
-            if (!IsActive)
-            {
-                return;
-            }
+//        // Update is called once per frame
+//        void Update()
+//        {
+//            if (!IsActive)
+//            {
+//                return;
+//            }
 
-            if (Input.GetButtonDown("MenuButton"))
-            {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(eUiState.HUD));
-            }
-        }
+//            if (Input.GetButtonDown("MenuButton"))
+//            {
+//                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(MenuType.HUD));
+//            }
+//        }
 
-        #endregion monobehaviour methods
+//        #endregion monobehaviour methods
 
-        //###########################################################
+//        //###########################################################
 
-        void IUiState.Initialize(IGameController gameController)
-        {
-            //this.playerModel = playerModel;
-        }
+//        void IUiMenu.Initialize(IGameController gameController)
+//        {
+//            //this.playerModel = playerModel;
+//        }
 
-        void IUiState.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
-        {
-            if (this.IsActive)
-            {
-                return;
-            }
+//        void IUiMenu.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
+//        {
+//            if (this.IsActive)
+//            {
+//                return;
+//            }
 
-            this.IsActive = true;
-            this.gameObject.SetActive(true);
-        }
+//            this.IsActive = true;
+//            this.gameObject.SetActive(true);
+//        }
 
-        void IUiState.Deactivate()
-        {
-            bool wasActive = this.IsActive;
+//        void IUiMenu.Deactivate()
+//        {
+//            bool wasActive = this.IsActive;
 
-            this.IsActive = false;
-            this.gameObject.SetActive(false);
-        }
+//            this.IsActive = false;
+//            this.gameObject.SetActive(false);
+//        }
 
-        //###########################################################
-    }
-} //end of namespace
+//        //###########################################################
+//    }
+//} //end of namespace

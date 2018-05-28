@@ -1,4 +1,5 @@
 ﻿using Game.Player.CharacterController.Containers;
+using Game.Utilities;
 using UnityEngine;
 
 namespace Game.Player.CharacterController.States
@@ -18,6 +19,8 @@ namespace Game.Player.CharacterController.States
 		float verticalAngle;
 		float horizontalAngle;
 
+        bool drifting;
+
 		//#############################################################################
 
 		public PhantomState(CharController charController, StateMachine stateMachine) {
@@ -29,6 +32,8 @@ namespace Game.Player.CharacterController.States
 		//#############################################################################
 
 		public void Enter() {
+
+            EventManager.TeleportPlayerEvent += TeleportPlayerEventHandler;
 
             phantomController = charController.phantomController;
             verticalAngle = 0f;
@@ -46,27 +51,34 @@ namespace Game.Player.CharacterController.States
 
 			charController.fxManager.PhantomStop ();
 
-            currentEcho.MyTransform.SetParent(null);
+            if (currentEcho != null)
+                currentEcho.MyTransform.SetParent(null);
             phantomController.gameObject.SetActive(false);
             charController.phantomController.myTransform.localPosition = new Vector3(0f, 1.45f, 0f);
             charController.rotator.SetParent(charController.MyTransform);
             charController.phantomController.myTransform.localRotation = Quaternion.identity;
-            
-            currentEcho.isActive = true;
+
+            if (currentEcho != null)
+                currentEcho.isActive = true;
             charController.ResetEchoInputTime();
 
             Time.timeScale = 1f;
 
         }
 
-		//#############################################################################
+        //#############################################################################
 
-		public void HandleInput() {
+        public void TeleportPlayerEventHandler(object sender, EventManager.TeleportPlayerEventArgs args)
+        {
+            drifting = args.Drifting;
+        }
+
+        public void HandleInput() {
 			PlayerInputInfo inputInfo = charController.InputInfo;
 			CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
 
             //stop phantoming
-            if (inputInfo.echoButtonUp || (charController.MyTransform.position - phantomController.myTransform.position).sqrMagnitude > phantomData.MaxDistance * phantomData.MaxDistance)
+            if (inputInfo.echoButtonUp || (charController.MyTransform.position - phantomController.myTransform.position).sqrMagnitude > phantomData.MaxDistance * phantomData.MaxDistance || drifting)
             {
                 AirState state = new AirState(charController, stateMachine, AirState.eAirStateMode.fall);
                 stateMachine.ChangeState(state);
@@ -145,15 +157,16 @@ namespace Game.Player.CharacterController.States
 			return result;
 		}
 
-		//#############################################################################
+        //#############################################################################
 
-		public Vector3 TurnLocalToSpace(Vector3 vector) {
-			return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, phantomController.myTransform.up), Vector3.Cross(Vector3.up, phantomController.myTransform.up))) * vector;
-		}
+        public Vector3 TurnLocalToSpace(Vector3 vector)
+        {
+            return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, charController.MyTransform.up), (Vector3.Cross(Vector3.up, charController.MyTransform.up) != Vector3.zero ? Vector3.Cross(Vector3.up, charController.MyTransform.up) : Vector3.forward))) * vector;
+        }
 
         public Vector3 TurnSpaceToLocal(Vector3 vector)
         {
-            return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, phantomController.myTransform.up), Vector3.Cross(phantomController.myTransform.up, Vector3.up))) * vector;
+            return (Quaternion.AngleAxis(Vector3.Angle(Vector3.up, charController.MyTransform.up), (Vector3.Cross(charController.MyTransform.up, Vector3.up) != Vector3.zero ? Vector3.Cross(charController.MyTransform.up, Vector3.up) : Vector3.forward))) * vector;
         }
     }
 }

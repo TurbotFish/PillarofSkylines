@@ -27,7 +27,6 @@ namespace Game.World
         [SerializeField, HideInInspector] Color boundsColour = Color.green;
 
         //###############################################################
-        //###############################################################
 
         // -- ATTRIBUTES
 
@@ -65,7 +64,6 @@ namespace Game.World
         protected abstract SubSceneVariant InitialSubSceneVariant { get; }
 
 
-        //###############################################################
         //###############################################################
 
         // -- INITIALIZATION     
@@ -110,7 +108,6 @@ namespace Game.World
             isInitialized = true;
         }
 
-        //###############################################################
         //###############################################################
 
         // -- INQUIRIES
@@ -544,7 +541,7 @@ namespace Game.World
         {
             if (currentRegionMode == new_region_mode)
             {
-                Debug.Log("AAAAAAAAAAAAAAAAAAAAAAAA");
+                return;
             }
 
             switch (new_region_mode)
@@ -588,8 +585,9 @@ namespace Game.World
 
                     break;
             }
-
+          
             currentRegionMode = new_region_mode;
+            //Debug.LogFormat("Region {0} switched to mode {1}!", this.name, currentRegionMode);
         }
 
         /// <summary>
@@ -602,19 +600,24 @@ namespace Game.World
         {
             SubSceneState sub_scene_state = GetSubSceneState(sub_scene_variant, sub_scene_layer);
 
-            //Debug.LogWarningFormat("RegionBase \"{0}\": CreateSubSceneLoadJob: mode={1}; type={2}; currentState={3}", name, subSceneMode, subSceneType, state);
-
+            /*
+             * If the sub scene is loaded or being loaded, no new load job is created.
+             */
             if ((sub_scene_state & (SubSceneState.Loaded | SubSceneState.Loading)) > 0)
             {
+                //Debug.LogFormat("Region {0}: CreateLoadJob: SubScene {1} {2} is {3}!", this.name, sub_scene_variant, sub_scene_layer, sub_scene_state);
                 return;
             }
 
+            /*
+             * If the sub scene is marked for unloading but the job has not started yet, the unload job is aborted.
+             */
             if (sub_scene_state == SubSceneState.Unloading)
             {
                 var job_list = SubSceneJobLists[sub_scene_variant][sub_scene_layer];
                 var last_job = job_list[job_list.Count - 1];
 
-                if (last_job.CurrentState != SubSceneJobState.Active && last_job.JobType == SubSceneJobType.Unload)
+                if ((last_job.CurrentState & (SubSceneJobState.Active | SubSceneJobState.Aborted)) == 0 && last_job.JobType == SubSceneJobType.Unload)
                 {
                     last_job.CurrentState = SubSceneJobState.Aborted;
 
@@ -645,17 +648,24 @@ namespace Game.World
         {
             SubSceneState sub_scene_state = GetSubSceneState(sub_scene_variant, sub_scene_layer);
 
+            /*
+             * If the sub scene is unloaded or being unloaded, no new unload job is created.
+             */
             if ((sub_scene_state & (SubSceneState.Unloaded | SubSceneState.Unloading)) > 0)
             {
+                //Debug.LogFormat("Region {0}: CreateUnloadJob: SubScene {1} {2} is {3}!", this.name, sub_scene_variant, sub_scene_layer, sub_scene_state);
                 return;
             }
 
+            /*
+             * If the sub scene is marked for loading but the job has not started yet, the load job is aborted.
+             */
             if (sub_scene_state == SubSceneState.Loading)
             {
                 var job_list = SubSceneJobLists[sub_scene_variant][sub_scene_layer];
                 var last_job = job_list[job_list.Count - 1];
 
-                if (last_job.CurrentState != SubSceneJobState.Active && last_job.JobType == SubSceneJobType.Load)
+                if ((last_job.CurrentState & (SubSceneJobState.Active | SubSceneJobState.Aborted)) == 0 && last_job.JobType == SubSceneJobType.Load)
                 {
                     last_job.CurrentState = SubSceneJobState.Aborted;
 

@@ -1,4 +1,5 @@
 ﻿using Game.Model;
+using UnityEngine;
 
 namespace Game.LevelElements
 {
@@ -9,6 +10,11 @@ namespace Game.LevelElements
     {
         //##################################################################
 
+        [Header("FavourPickup")]
+        [SerializeField] private PillarMarkId PillarMarkId;
+
+        //##################################################################
+
         public override string PickupName { get { return "Pillar Key"; } }
         public override string OnPickedUpMessage { get { return "The Eyes have marked you"; } }
         public override string OnPickedUpDescription { get { return "Destroy the Pillars to free the world"; } }
@@ -17,7 +23,7 @@ namespace Game.LevelElements
 
         protected override void OnPickedUp()
         {
-            GameController.PlayerModel.ChangePillarKeysCount(1);
+            GameController.PlayerModel.SetPillarMarkState(PillarMarkId, PillarMarkState.active);
         }
 
         //##################################################################

@@ -191,12 +191,12 @@ namespace Game.Player
         /// </summary>
         private void OnMenuSwitchedEventHandler(object sender, Utilities.EventManager.OnMenuSwitchedEventArgs args)
         {
-            if (!isActive && args.NewUiState == UI.eUiState.HUD)
+            if (!isActive && args.NewUiState == UI.MenuType.HUD)
             {
                 isActive = true;
                 //Debug.Log("InteractionController activated!");
             }
-            else if (isActive && args.PreviousUiState == UI.eUiState.HUD)
+            else if (isActive && args.PreviousUiState == UI.MenuType.HUD)
             {
                 isActive = false;
                 //Debug.Log("InteractionController deactivated!");

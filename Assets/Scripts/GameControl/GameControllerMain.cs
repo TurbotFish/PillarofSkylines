@@ -8,6 +8,7 @@ using Game.World;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -36,24 +37,20 @@ namespace Game.GameControl
 
         public SpawnPointManager SpawnPointManager { get; private set; }
 
-        public LevelData LevelData { get; private set; }
-
         private bool isInitialized = false;
         private bool isGameStarted = false;
 
-
-        //###############################################################
         //###############################################################
 
         // -- INITIALIZATION
 
         private void Start()
         {
-            //load resources
-            LevelData = Resources.Load<LevelData>("ScriptableObjects/LevelData");
+            // creating model
+            PlayerModel = new PlayerModel();
+            EventManager.PillarMarkStateChangedEvent += OnPillarMarkStateChanged;
 
             //getting references in game controller
-            PlayerModel = GetComponentInChildren<PlayerModel>();
             EchoManager = GetComponentInChildren<EchoManager>();
             EclipseManager = GetComponentInChildren<EclipseManager>();
 
@@ -63,8 +60,7 @@ namespace Game.GameControl
             UiController = FindObjectOfType<UiController>();
 
             //initializing
-            PlayerModel.Initialize();
-            UiController.InitializeUi(this, eUiState.LoadingScreen, new EventManager.OnShowLoadingScreenEventArgs());
+            UiController.Initialize(this, MenuType.LoadingScreen, new EventManager.OnShowLoadingScreenEventArgs());
 
             PlayerController.InitializePlayerController(this);
             CameraController.InitializeCameraController(this);
@@ -74,6 +70,11 @@ namespace Game.GameControl
 
             //load open world scene
             StartCoroutine(LoadOpenWorldSceneCR());
+        }
+
+        private void OnDestroy()
+        {
+            EventManager.PillarMarkStateChangedEvent -= OnPillarMarkStateChanged;
         }
 
         private IEnumerator LoadOpenWorldSceneCR()
@@ -108,10 +109,15 @@ namespace Game.GameControl
             SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
             isInitialized = true;
 
-            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.MainMenu));
+            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(MenuType.MainMenu));
         }
 
         //###############################################################
+
+        // -- INQUIRIES
+
+        public LevelData LevelData { get { return PlayerModel.LevelData; } }
+
         //###############################################################
 
         // -- OPERATIONS
@@ -151,6 +157,10 @@ namespace Game.GameControl
 #endif
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pillar_id"></param>
         public void SwitchToPillar(PillarId pillar_id)
         {
             if (IsPillarLoaded)
@@ -162,6 +172,9 @@ namespace Game.GameControl
             StartCoroutine(LoadPillarSceneCR(pillar_id));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void SwitchToOpenWorld()
         {
             if (!IsPillarLoaded)
@@ -171,6 +184,37 @@ namespace Game.GameControl
             }
 
             StartCoroutine(ActivateOpenWorldCR(false));
+        }
+
+        /// <summary>
+        /// Unity's Update methpod.
+        /// </summary>
+        private void Update()
+        {
+            if (!isInitialized)
+            {
+                return;
+            }
+
+            if (Input.GetKeyUp(KeyCode.F2))
+            {
+                Debug.Log("CHEATING: One PillarKey appeared out of nowhere!");
+                foreach (var pillar_mark in Enum.GetValues(typeof(PillarMarkId)).Cast<PillarMarkId>())
+                {
+                    PlayerModel.SetPillarMarkState(pillar_mark, PillarMarkState.active);
+                }
+            }
+            else if (Input.GetKeyUp(KeyCode.F5))
+            {
+                Debug.Log("CHEATING: You were supposed to find the Tombs, not make them useless!");
+
+                foreach (var ability in PlayerModel.AbilityData.GetAllAbilities())
+                {
+                    PlayerModel.SetAbilityState(ability.Type, AbilityState.active);
+                }
+            }
+
+            UiController.HandleInput();
         }
 
         /// <summary>
@@ -190,7 +234,7 @@ namespace Game.GameControl
             AsyncOperation async;
             SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
 
-            if (IsPillarLoaded && PlayerModel.CheckIsPillarDestroyed(ActivePillarId))
+            if (IsPillarLoaded && PlayerModel.GetPillarState(ActivePillarId) == PillarState.Destroyed)
             {
                 show_ability_message = true;
                 var ability = PlayerModel.AbilityData.GetAbility(PlayerModel.LevelData.GetPillarRewardAbility(ActivePillarId));
@@ -259,9 +303,13 @@ namespace Game.GameControl
             }
             else
             {
-                PillarState pillarState = PlayerModel.CheckIsPillarDestroyed(ActivePillarId) ? PillarState.Destroyed : PillarState.Intact;
-                spawn_position = SpawnPointManager.GetPillarExitPoint(ActivePillarId, pillarState);
-                spawn_rotation = SpawnPointManager.GetPillarExitOrientation(ActivePillarId, pillarState);
+                PillarVariant pillar_variant = PillarVariant.Intact;
+                if (PlayerModel.GetPillarState(ActivePillarId) == PillarState.Destroyed)
+                {
+                    pillar_variant = PillarVariant.Destroyed;
+                }
+                spawn_position = SpawnPointManager.GetPillarExitPoint(ActivePillarId, pillar_variant);
+                spawn_rotation = SpawnPointManager.GetPillarExitOrientation(ActivePillarId, pillar_variant);
             }
 
             /*
@@ -288,7 +336,7 @@ namespace Game.GameControl
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());
             yield return new WaitForSeconds(0.5f);
 
-            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.HUD));
+            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(MenuType.HUD));
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
 
             /*
@@ -391,7 +439,7 @@ namespace Game.GameControl
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs(pillarId));
             yield return new WaitForSeconds(0.5f);
 
-            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(eUiState.HUD));
+            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(MenuType.HUD));
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
 
             //*****************************************
@@ -407,6 +455,32 @@ namespace Game.GameControl
         {
             //Debug.Log("on scene loaded event");
             CleanScene(scene);
+        }
+
+        /// <summary>
+        /// Handles the PillarMarkStateChanged event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void OnPillarMarkStateChanged(object sender, EventManager.PillarMarkStateChangedEventArgs args)
+        {
+            foreach (var pillar_id in Enum.GetValues(typeof(PillarId)).Cast<PillarId>())
+            {
+                var current_pillar_state = PlayerModel.GetPillarState(pillar_id);
+
+                if (current_pillar_state == PillarState.Destroyed)
+                {
+                    continue;
+                }
+                else if (PlayerModel.GetActivePillarMarkCount() >= PlayerModel.GetPillarEntryPrice(pillar_id))
+                {
+                    PlayerModel.SetPillarState(pillar_id, PillarState.Unlocked);
+                }
+                else
+                {
+                    PlayerModel.SetPillarState(pillar_id, PillarState.Locked);
+                }
+            }
         }
 
         /// <summary>

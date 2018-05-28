@@ -18,9 +18,15 @@ namespace Game.Player.CharacterController
 
         MovingPlatform platform;
 
+        [SerializeField] LayerMask collisionMask;
+
+        [SerializeField] ParticleSystem endParticles;
+
         float currHeight = 0f;
         bool finishedMoving = false;
         float timeRemaining;
+
+        FallAndDie[] rocks;
 
         public void Initialize(Vector3 position, Vector3 playerUp, CharController player, Vector3 velocity)
         {
@@ -32,6 +38,19 @@ namespace Game.Player.CharacterController
             platform = GetComponent<MovingPlatform>();
             goUp = transform.GetChild(0).gameObject;
             goFlat = transform.GetChild(1).gameObject;
+
+            rocks = GetComponentsInChildren<FallAndDie>();
+
+            foreach (FallAndDie rock in rocks) {
+
+                rock.fallDirection = -transform.up;
+                rock.fallTime = 1;
+                rock.fallingSpeed = 11;
+                rock.gravity = 50;
+
+                rock.waitBeforeFalling = Random.Range(0, 0.5f);
+
+            }
 
             //print("test : " + Vector3.ProjectOnPlane(velocity, playerUp).magnitude + " > " + grRiseData.VelocityToFlat);
             /*if (Vector3.ProjectOnPlane(velocity, playerUp).magnitude > grRiseData.VelocityToFlat)
@@ -86,9 +105,10 @@ namespace Game.Player.CharacterController
                 height = grRiseData.Height;
                 goUp.SetActive(true);
                 float maxheight = height + player.tempPhysicsHandler.height * 2;
-                if (Physics.BoxCast(goUp.transform.position, new Vector3(goUp.transform.localScale.x / 2.5f, 0.01f, goUp.transform.localScale.z / 2.5f), playerUp, out hit, Quaternion.identity, maxheight, player.tempPhysicsHandler.collisionMask))
+                if (Physics.BoxCast(goUp.transform.position + goUp.transform.up * 0.5f, new Vector3(goUp.transform.localScale.x / 2.5f, 0.01f, goUp.transform.localScale.z / 2.5f), playerUp, out hit, Quaternion.identity, maxheight, collisionMask))
                 {
                     height -= maxheight - hit.distance;
+                    print("boxcast hit " + hit.collider);
                 }
             //}
             timeRemaining = grRiseData.Duration;
@@ -178,6 +198,15 @@ namespace Game.Player.CharacterController
                 timeRemaining -= Time.deltaTime;
                 if (timeRemaining < 0f)
                 {
+                    foreach (FallAndDie rock in rocks)
+                    {
+                        rock.GetComponent<BackAndForthMovement>().enabled = false;
+                        rock.transform.parent = null;
+                        rock.Trigger();
+                    }
+                    endParticles.transform.parent = null;
+                    endParticles.Play();
+
                     Destroy(gameObject);
                 }
             }

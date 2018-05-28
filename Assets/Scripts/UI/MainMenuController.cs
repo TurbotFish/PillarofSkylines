@@ -1,8 +1,5 @@
 ﻿using Game.GameControl;
-using Game.Player;
 using Game.Utilities;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -11,27 +8,33 @@ using UnityEngine.Video;
 namespace Game.UI
 {
 
-    public class MainMenuController : MonoBehaviour, IUiState
+    public class MainMenuController : MonoBehaviour, IUiMenu
     {
         //##################################################################
 
-        public bool IsActive { get; private set; }
-
-        IGameController gameController;
+        // -- CONSTANTS
 
         [SerializeField] private Button playButton;
         [SerializeField] private VideoPlayer VideoPlayer;
 
         //##################################################################
 
-        void IUiState.Initialize(IGameController gameController)
+        // -- ATTRIBUTES
+
+        public bool IsActive { get; private set; }
+
+        IGameController gameController;
+
+        //##################################################################
+
+        // -- INITIALIZATION
+
+        void IUiMenu.Initialize(IGameController gameController, UiController ui_controller)
         {
             this.gameController = gameController;
         }
 
-        //##################################################################
-
-        void IUiState.Activate(EventManager.OnShowMenuEventArgs args)
+        void IUiMenu.Activate(EventManager.OnShowMenuEventArgs args)
         {
             if (IsActive)
             {
@@ -45,7 +48,7 @@ namespace Game.UI
             VideoPlayer.Play();
         }
 
-        void IUiState.Deactivate()
+        void IUiMenu.Deactivate()
         {
             IsActive = false;
             gameObject.SetActive(false);
@@ -56,20 +59,16 @@ namespace Game.UI
 
         //##################################################################
 
-        // Update is called once per frame
-        void Update()
-        {
-            if (!IsActive)
-            {
-                return;
-            }
+        // -- OPERATIONS
 
+        public bool HandleInput()
+        {
             if (Input.GetButtonDown("Interact"))
             {
                 gameController.StartGame();
             }
-        }
 
-        //##################################################################
+            return true;
+        }
     }
 } //end of namespace

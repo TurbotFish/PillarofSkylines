@@ -1,4 +1,5 @@
-﻿using Game.World;
+﻿using Game.Model;
+using Game.World;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -98,24 +99,24 @@ namespace Game.GameControl
         /// <summary>
         /// Returns the position in the open world where the player spawns after exiting the pillar.
         /// </summary>
-        public Vector3 GetPillarExitPoint(PillarId pillarId, PillarState pillarState)
+        public Vector3 GetPillarExitPoint(PillarId pillarId, PillarVariant pillar_variant)
         {
             if (!isInitialized)
             {
                 Initialize();
             }
 
-            if (pillarState == PillarState.Intact && pillarIntactExitDictionary.ContainsKey(pillarId))
+            if (pillar_variant == PillarVariant.Intact && pillarIntactExitDictionary.ContainsKey(pillarId))
             {
                 return pillarIntactExitDictionary[pillarId].transform.position;
             }
-            else if (pillarState == PillarState.Destroyed && pillarDestroyedExitDictionary.ContainsKey(pillarId))
+            else if (pillar_variant == PillarVariant.Destroyed && pillarDestroyedExitDictionary.ContainsKey(pillarId))
             {
                 return pillarDestroyedExitDictionary[pillarId].transform.position;
             }
             else
             {
-                Debug.LogErrorFormat("SpawnPointManager: no {0} exit point found for pillar {1}!", pillarState.ToString(), pillarId.ToString());
+                Debug.LogErrorFormat("SpawnPointManager: no {0} exit point found for pillar {1}!", pillar_variant.ToString(), pillarId.ToString());
                 return Vector3.zero;
             }
         }
@@ -123,24 +124,24 @@ namespace Game.GameControl
         /// <summary>
         /// Returns the rotation the player should have when leaving the Pillar.
         /// </summary>
-        public Quaternion GetPillarExitOrientation(PillarId pillarId, PillarState pillarState)
+        public Quaternion GetPillarExitOrientation(PillarId pillarId, PillarVariant pillar_variant)
         {
             if (!isInitialized)
             {
                 Initialize();
             }
 
-            if (pillarState == PillarState.Intact && pillarIntactExitDictionary.ContainsKey(pillarId))
+            if (pillar_variant == PillarVariant.Intact && pillarIntactExitDictionary.ContainsKey(pillarId))
             {
                 return pillarIntactExitDictionary[pillarId].transform.rotation;
             }
-            else if(pillarState== PillarState.Destroyed && pillarDestroyedExitDictionary.ContainsKey(pillarId))
+            else if(pillar_variant== PillarVariant.Destroyed && pillarDestroyedExitDictionary.ContainsKey(pillarId))
             {
                 return pillarDestroyedExitDictionary[pillarId].transform.rotation;
             }
             else
             {
-                Debug.LogErrorFormat("SpawnPointManager: no {0} exit point found for pillar {1}!", pillarState.ToString(), pillarId.ToString());
+                Debug.LogErrorFormat("SpawnPointManager: no {0} exit point found for pillar {1}!", pillar_variant.ToString(), pillarId.ToString());
                 return Quaternion.identity;
             }
         }

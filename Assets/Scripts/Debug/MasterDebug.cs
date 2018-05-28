@@ -31,11 +31,6 @@ public class MasterDebug : MonoBehaviour {
         {
             player.CharData.Jump.MaxAerialJumps = player.CharData.Jump.MaxAerialJumps == 1000 ? 1 : 1000;
         }
-        else if (Input.GetKeyDown(KeyCode.F7))
-        {
-            player.graviswapAvailable = !player.graviswapAvailable;
-            print("Graviswap is " + player.graviswapAvailable);
-        }
         else if (Input.GetKeyDown(KeyCode.F12))
         {
             System.Diagnostics.Process.Start(Application.dataPath.Replace("_Data", ".exe"));
