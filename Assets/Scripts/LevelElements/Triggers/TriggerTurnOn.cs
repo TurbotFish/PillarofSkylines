@@ -16,7 +16,7 @@ namespace Game.LevelElements
 
         //###########################################################
 
-        public override void Initialize(IGameController gameController)
+        public override void Initialize(GameController gameController)
         {
             base.Initialize(gameController);
 

@@ -40,11 +40,11 @@ public class CameraControlTrigger : MonoBehaviour, IInteractable, IWorldObject
     [Tooltip("Ignore user input for this amount of seconds")]
     public float ignoreInput = 0;
 
-    private IGameController gameController;
+    private GameController gameController;
 
     //########################################################################
 
-    public void Initialize(IGameController gameController)
+    public void Initialize(GameController gameController)
     {
         this.gameController = gameController;
     }

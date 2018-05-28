@@ -12,13 +12,13 @@ namespace Game.LevelElements
 
         private static List<NoRunZone> activeNoRunZones = new List<NoRunZone>();
 
-        private IGameController gameController;
+        private GameController gameController;
 
         //########################################################################
 
         #region initialization
 
-        public void Initialize(IGameController gameController)
+        public void Initialize(GameController gameController)
         {
             this.gameController = gameController;
         }

@@ -147,14 +147,14 @@ public class PoS_Camera : MonoBehaviour
 
     Vector3 characterUp;
 
-    private IGameController gameController;
+    private GameController gameController;
     private bool isInitialized;
 
     #endregion
 
     #region MonoBehaviour
 
-    public void Initialize(IGameController gameController)
+    public void Initialize(GameController gameController)
     {
         this.gameController = gameController;
 

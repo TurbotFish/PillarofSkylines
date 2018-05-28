@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System;
 using Game.World;
-using System.Collections;
 using Game.Model;
 using Game.Utilities;
+using Game.GameControl;
 
 namespace Game.LevelElements
 {
@@ -22,81 +22,88 @@ namespace Game.LevelElements
 
         //###########################################################
 
+        // -- CONSTANTS
+
         [Header("Triggerable Object")]
-
         [SerializeField] private bool triggered;
-
-#if UNITY_EDITOR
-        [SerializeField] private List<Trigger> triggers = new List<Trigger>(); //list of Trigger objects
-#endif
-
+        [SerializeField] private List<Trigger> triggers = new List<Trigger>(); //list of Trigger objects => SHOULD NOT BE USED AT RUNTIME!!!!
         [SerializeField] private TriggerOperator triggerWith = TriggerOperator.AllOfThem;
-
         [SerializeField] private bool definitiveActivation;
 
         [SerializeField, HideInInspector] private List<string> triggerIds = new List<string>(); //list with the Id's of the Trigger objects
 
+        //###########################################################
+
+        // -- ATTRIBUTES
+
+        public bool IsInitialized { get; private set; }
+
+        protected TriggerablePersistentData PersistentDataObject { get; private set; }
+
         private PlayerModel model;
-        private TriggerablePersistentData persistentTriggerable;
-        private bool isCopy;
-        [HideInInspector]
-        public bool isInitialized;
 
         //###########################################################
 
-        #region properties
-
-        public bool Triggered { get { return triggered; } }
-
-        protected TriggerablePersistentData PersistentDataObject { get { return persistentTriggerable; } }
-
-        #endregion properties
-
-        //###########################################################
-
-        #region abstract
-
-        protected abstract void Activate();
-        protected abstract void Deactivate();
-
-        #endregion abstract
-
-        //###########################################################
-
-        #region public methods
+        // -- INITIALIZATION
 
         /// <summary>
         /// Initializes the TriggerableObject. Implemented from IWorldObjectInitialization.
         /// </summary>
         /// <param name="worldController"></param>
-        /// <param name="isCopy"></param>
-        public virtual void Initialize(GameControl.IGameController gameController)
+        public virtual void Initialize(GameController game_controller)
         {
-            //
-            this.isCopy = isCopy;
-            model = gameController.PlayerModel;
+            model = game_controller.PlayerModel;
 
-            //
-            persistentTriggerable = model.GetPersistentDataObject<TriggerablePersistentData>(UniqueId);
+            PersistentDataObject = model.GetPersistentDataObject<TriggerablePersistentData>(UniqueId);
 
-            if (persistentTriggerable == null)
+            if (PersistentDataObject == null)
             {
-                persistentTriggerable = CreatePersistentObject();
-                model.AddPersistentDataObject(persistentTriggerable);
+                PersistentDataObject = CreatePersistentObject();
+                model.AddPersistentDataObject(PersistentDataObject);
             }
             else
             {
-                if(this is Door && persistentTriggerable.Triggered != Triggered)
+                if (this is Door && PersistentDataObject.Triggered != Triggered)
                 {
-                    Debug.LogWarningFormat("TriggerableObject {0}: Initialize: persistentTriggered={1} currentTriggered={2}", this.name, persistentTriggerable.Triggered, Triggered);
+                    Debug.LogWarningFormat("TriggerableObject {0}: Initialize: persistentTriggered={1} currentTriggered={2}", this.name, PersistentDataObject.Triggered, Triggered);
                 }
 
-                SetTriggered(persistentTriggerable.Triggered, true);
+                SetTriggered(PersistentDataObject.Triggered, true);
             }
 
-            //
-            isInitialized = true;
+            IsInitialized = true;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void OnEnable()
+        {
+            if (IsInitialized && PersistentDataObject.Triggered != triggered)
+            {
+                SetTriggered(PersistentDataObject.Triggered);
+            }
+
+            EventManager.TriggerUpdatedEvent += OnTriggerUpdated;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void OnDisable()
+        {
+            EventManager.TriggerUpdatedEvent -= OnTriggerUpdated;
+        }
+
+        //###########################################################
+
+        // -- INQUIRIES
+
+        public bool Triggered { get { return triggered; } }
+
+        //###########################################################
+
+        // -- OPERATIONS
 
         /// <summary>
         /// Sets the state of the triggerable object. Has no effect if the state does not change.
@@ -104,7 +111,7 @@ namespace Game.LevelElements
         /// <param name="triggered"></param>
         public virtual void SetTriggered(bool triggered, bool initializing = false)
         {
-            if (!isInitialized)
+            if (!IsInitialized)
             {
                 //Debug.Log("TriggerableObject: SetTriggered: called while not initialized!");
             }
@@ -115,7 +122,7 @@ namespace Game.LevelElements
             }
 
             this.triggered = triggered;
-            persistentTriggerable.Triggered = triggered;
+            PersistentDataObject.Triggered = triggered;
 
             if (triggered)
             {
@@ -127,14 +134,11 @@ namespace Game.LevelElements
             }
         }
 
-#if UNITY_EDITOR
         public bool ContainsTrigger(Trigger trigger)
         {
             return triggers.Contains(trigger);
         }
-#endif
 
-#if UNITY_EDITOR
         public void AddTrigger(Trigger trigger)
         {
             if (!triggers.Contains(trigger))
@@ -143,38 +147,16 @@ namespace Game.LevelElements
                 triggerIds.Add(trigger.UniqueId);
             }
         }
-#endif
 
-#if UNITY_EDITOR
         public void RemoveTrigger(Trigger trigger)
         {
             triggers.Remove(trigger);
             triggerIds.Remove(trigger.UniqueId);
         }
-#endif
 
-        #endregion public methods
+        protected abstract void Activate();
+        protected abstract void Deactivate();
 
-        //###########################################################
-
-        #region monobehaviour methods
-
-        private void OnEnable()
-        {
-            if(isInitialized && persistentTriggerable.Triggered != triggered)
-            {
-                SetTriggered(persistentTriggerable.Triggered);
-            }
-
-            EventManager.TriggerUpdatedEvent += OnTriggerUpdated;
-        }
-
-        private void OnDisable()
-        {
-            EventManager.TriggerUpdatedEvent -= OnTriggerUpdated;
-        }
-
-#if UNITY_EDITOR
         protected override void OnValidate()
         {
             base.OnValidate();
@@ -199,13 +181,6 @@ namespace Game.LevelElements
                 }
             }
         }
-#endif
-
-        #endregion monobehaviour methods
-
-        //###########################################################
-
-        #region protected methods
 
         /// <summary>
         /// Creates the object containing persitent data for the triggerable object. Allows inherited classes to create their own version.
@@ -216,12 +191,10 @@ namespace Game.LevelElements
             return new TriggerablePersistentData(UniqueId, Triggered);
         }
 
-        #endregion protected methods
-
-        //###########################################################
-
-        #region private methods
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="toggle"></param>
         private void UpdateState(bool toggle = false)
         {
             if (toggle)
@@ -234,6 +207,10 @@ namespace Game.LevelElements
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         private bool CheckTriggers()
         {
             var persistentTriggers = new List<TriggerPersistentData>();
@@ -277,8 +254,6 @@ namespace Game.LevelElements
 
                     return true;
 
-
-
                 default: throw new ArgumentOutOfRangeException();
             }
         }
@@ -290,7 +265,7 @@ namespace Game.LevelElements
         /// <param name="args"></param>
         private void OnTriggerUpdated(object sender, Utilities.EventManager.TriggerUpdatedEventArgs args)
         {
-            if (!isInitialized)
+            if (!IsInitialized)
             {
                 return;
             }
@@ -302,9 +277,5 @@ namespace Game.LevelElements
                 UpdateState(args.Trigger.Toggle);
             }
         }
-
-        #endregion private methods
-
-        //###########################################################
     }
 } //end of namespace

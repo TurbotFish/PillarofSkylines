@@ -4,6 +4,7 @@ using Game.World;
 using Game.Utilities;
 using System;
 using Game.Model;
+using Game.GameControl;
 
 namespace Game.LevelElements
 {
@@ -35,7 +36,6 @@ namespace Game.LevelElements
 
         private TriggerPersistentData persistentTrigger;
 
-        private bool isCopy;
         private bool isInitialized;
 
         //###########################################################
@@ -63,10 +63,9 @@ namespace Game.LevelElements
         /// </summary>
         /// <param name="worldController"></param>
         /// <param name="isCopy"></param>
-        public virtual void Initialize(GameControl.IGameController gameController)
+        public virtual void Initialize(GameController gameController)
         {
             model = gameController.PlayerModel;
-            this.isCopy = isCopy;
 
             persistentTrigger = model.GetPersistentDataObject<TriggerPersistentData>(UniqueId);
 
@@ -101,15 +100,12 @@ namespace Game.LevelElements
             {
                 _triggerState = triggerState;
 
-                if (!isCopy)
+                if (persistentTrigger != null)
                 {
-                    if (persistentTrigger != null)
-                    {
-                        persistentTrigger.TriggerState = _triggerState;
-                    }
-
-                    EventManager.SendTriggerUpdatedEvent(this, new EventManager.TriggerUpdatedEventArgs(this));
+                    persistentTrigger.TriggerState = _triggerState;
                 }
+
+                EventManager.SendTriggerUpdatedEvent(this, new EventManager.TriggerUpdatedEventArgs(this));
             }
         }
 

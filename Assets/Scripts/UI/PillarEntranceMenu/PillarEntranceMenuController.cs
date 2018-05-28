@@ -19,7 +19,7 @@ namespace Game.UI.PillarEntranceMenu
         //
         PillarId pillarId;
         bool canEnterPillar = false;
-        private IGameController GameController;
+        private GameController GameController;
 
         //
         public bool IsActive { get; private set; }
@@ -56,7 +56,7 @@ namespace Game.UI.PillarEntranceMenu
 
         //###########################################################
 
-        void IUiMenu.Initialize(IGameController gameController, UiController ui_controller)
+        void IUiMenu.Initialize(GameController gameController, UiController ui_controller)
         {
             GameController = gameController;
             playerModel = GameController.PlayerModel;
@@ -103,7 +103,7 @@ namespace Game.UI.PillarEntranceMenu
 
         //###########################################################
 
-        public bool HandleInput()
+        public void HandleInput()
         {
             if (Input.GetButtonDown("MenuButton"))
             {
@@ -113,8 +113,6 @@ namespace Game.UI.PillarEntranceMenu
             {
                 Debug.LogError("This has been removed! You should only see this message if you do not have enough pillar marks!");
             }
-
-            return true;
         }
     }
 } //end of namespace

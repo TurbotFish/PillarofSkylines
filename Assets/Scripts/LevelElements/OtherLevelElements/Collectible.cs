@@ -45,7 +45,7 @@ public class Collectible : MonoBehaviour, IInteractable, IWorldObject
 
     //##################################################################
 
-    public void Initialize(IGameController gameController)
+    public void Initialize(GameController gameController)
     {
         myTransform = transform;
         startPos = myTransform.position;

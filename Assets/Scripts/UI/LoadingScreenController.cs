@@ -28,7 +28,7 @@ namespace Game.UI
 
         // -- INITIALIZATION
 
-        public void Initialize(IGameController gameController, UiController ui_controller)
+        public void Initialize(GameController gameController, UiController ui_controller)
         {
             screenImages = Resources.Load<LoadingScreenImages>("ScriptableObjects/LoadingScreenImages");
             background = transform.Find("Background").GetComponent<Image>();
@@ -72,9 +72,8 @@ namespace Game.UI
 
         // -- OPERATIONS
 
-        public bool HandleInput()
+        public void HandleInput()
         {
-            return true;
         }
 
         void Update()

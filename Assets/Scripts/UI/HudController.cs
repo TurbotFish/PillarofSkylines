@@ -55,7 +55,7 @@ namespace Game.UI
 
         // -- INITIALIZATION
 
-        public void Initialize(IGameController gameController, UiController ui_controller)
+        public void Initialize(GameController gameController, UiController ui_controller)
         {
             helpMessage.text = "";
         }
@@ -96,9 +96,18 @@ namespace Game.UI
 
         // -- OPERATIONS
 
-        public bool HandleInput()
+        public void HandleInput()
         {
-            return false;
+            if (Input.GetButtonDown("MenuButton"))
+            {
+                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(MenuType.PauseMenu));
+                return;
+            }
+            else if (Input.GetButtonDown("Interact") && importantPanel.activeSelf)
+            {
+                Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false, "", eMessageType.Important));
+                return;
+            }
         }
 
         private void Start()
@@ -133,22 +142,6 @@ namespace Game.UI
                     announcePanelActive = false;
                     Display(announceRenderer, false, announceFadeTime);
                 }
-            }
-
-            if (Input.GetButtonDown("MenuButton"))
-            {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(MenuType.PauseMenu));
-                return;
-            }
-            else if (Input.GetButtonDown("Back"))
-            {
-                Debug.LogError("Error!");
-                return;
-            }
-            else if (Input.GetButtonDown("Interact") && importantPanel.activeSelf)
-            {
-                Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false, "", eMessageType.Important));
-                return;
             }
         }
 

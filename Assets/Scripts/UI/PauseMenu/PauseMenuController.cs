@@ -22,7 +22,7 @@ namespace Game.UI.PauseMenu
 
         public bool IsActive { get; private set; }
 
-        private IGameController GameController;
+        private GameController GameController;
         private UiController UiController;
 
         private PauseMenuType CurrentState;
@@ -32,7 +32,7 @@ namespace Game.UI.PauseMenu
 
         // -- INITIALIZATION
 
-        public void Initialize(IGameController game_controller, UiController ui_controller)
+        public void Initialize(GameController game_controller, UiController ui_controller)
         {
             GameController = game_controller;
             UiController = ui_controller;
@@ -68,11 +68,9 @@ namespace Game.UI.PauseMenu
 
         // -- OPERATIONS
 
-        public bool HandleInput()
+        public void HandleInput()
         {
             SubMenuDictionary[CurrentState].HandleInput();
-
-            return true;
         }
 
         public void SwitchPauseMenu(PauseMenuType new_menu_type)
@@ -89,8 +87,7 @@ namespace Game.UI.PauseMenu
 
         public void ClosePauseMenu()
         {
-            Debug.LogWarning("Temp");
-            UiController.SwitchState(MenuType.HUD, null);
+            GameController.ClosePauseMenu();
         }
 
         public void ExitGame()

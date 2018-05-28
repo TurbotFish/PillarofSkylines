@@ -28,7 +28,7 @@ namespace Game.UI
         public bool IsInitialized { get; private set; }
         public MenuType CurrentState { get; private set; }
 
-        private IGameController GameController;
+        private GameController GameController;
 
         private Dictionary<MenuType, IUiMenu> UiStates = new Dictionary<MenuType, IUiMenu>();
 
@@ -38,7 +38,7 @@ namespace Game.UI
 
         // -- INITIALIZATION
 
-        public void Initialize(IGameController game_controller, MenuType start_state, Utilities.EventManager.OnShowMenuEventArgs args)
+        public void Initialize(GameController game_controller, MenuType start_state, Utilities.EventManager.OnShowMenuEventArgs args)
         {
             GameController = game_controller;
 

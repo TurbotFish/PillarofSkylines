@@ -39,7 +39,7 @@ namespace Game.World
 
         // -- ATTRIBUTES     
 
-        public IGameController GameController { get; private set; }
+        public GameController GameController { get; private set; }
         public WorldControllerState CurrentState { get; private set; }
 
         private List<RegionBase> RegionList = new List<RegionBase>();
@@ -61,7 +61,7 @@ namespace Game.World
         /// Initializes the GameController.
         /// </summary>
         /// <param name="gameController"></param>
-        public void Initialize(IGameController gameController)
+        public void Initialize(GameController gameController)
         {
             GameController = gameController;
             RegionList.Clear();
