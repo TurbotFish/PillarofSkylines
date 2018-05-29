@@ -92,7 +92,6 @@ namespace Game.LevelElements
             {
                 float t = elapsed / timeToMove;
 
-
                 Vector3 movement = Vector3.Lerp(startPos, endPos, t) - MyTransform.localPosition;
                 platform.Move(movement);
                 yield return null;

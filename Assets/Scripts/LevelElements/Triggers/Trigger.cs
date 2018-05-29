@@ -20,17 +20,13 @@ namespace Game.LevelElements
         [SerializeField]
         private bool toggle; //if true the triggerable object will disregard its own logic an be turned on or off
 
-#if UNITY_EDITOR
         //DO NOT RENAME
         [SerializeField]
         private List<TriggerableObject> targets = new List<TriggerableObject>(); //list of triggerable objects
-#endif
 
-#if UNITY_EDITOR
         [SerializeField]
         [HideInInspector]
         private List<TriggerableObject> targetsOld = new List<TriggerableObject>();
-#endif
 
         private PlayerModel model;
 
@@ -46,9 +42,7 @@ namespace Game.LevelElements
 
         public bool Toggle { get { return toggle; } }
 
-#if UNITY_EDITOR
         public List<TriggerableObject> Targets { get { return new List<TriggerableObject>(targets); } }
-#endif
 
         protected TriggerPersistentData PersistentDataObject { get { return persistentTrigger; } }
 

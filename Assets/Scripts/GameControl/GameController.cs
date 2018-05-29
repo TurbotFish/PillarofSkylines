@@ -289,7 +289,7 @@ namespace Game.GameControl
         /// </summary>
         public void OpenPauseMenu()
         {
-            if(CurrentGameState== GameState.Play)
+            if (CurrentGameState == GameState.Play)
             {
                 CurrentGameState = GameState.Pause;
                 UiController.SwitchState(MenuType.PauseMenu, null);
@@ -301,7 +301,7 @@ namespace Game.GameControl
         /// </summary>
         public void ClosePauseMenu()
         {
-            if(CurrentGameState == GameState.Pause)
+            if (CurrentGameState == GameState.Pause)
             {
                 CurrentGameState = GameState.Play;
                 UiController.SwitchState(MenuType.HUD, null);
