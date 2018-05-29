@@ -548,7 +548,8 @@ namespace Game.Player.CharacterController
 
         public void ImmediateMovement(Vector3 newVelocity, bool worldSpace, bool addToVelocity = false)
         {
-            newVelocity = tempPhysicsHandler.Move((worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity));
+            Vector3 temp = (!worldSpace ? TurnLocalToSpace(newVelocity) : newVelocity);
+            newVelocity = tempPhysicsHandler.Move(temp);
             if (addToVelocity)
                 velocity += newVelocity/Time.deltaTime;
         }
