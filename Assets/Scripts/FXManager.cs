@@ -22,21 +22,27 @@ public class FXManager : MonoBehaviour {
 	public Renderer pilouBody;
 	public Renderer pilouArmor;
 	public Renderer pilouHair;
-	public Renderer pilouSkirt;
+	public Renderer pilouSkirtA;
+	public Renderer pilouSkirtB;
+
 	Material pilouBodyMat;
 	Material pilouArmorMat;
 	Material pilouHairMat;
-	Material pilouSkirtMat;
-	public Color pilouSkirtColorOn;
-	public Color pilouSkirtColorOff;
+	Material pilouSkirtAMat;
+	Material pilouSkirtBMat;
+
+	Color pilouSkirtColorOn;
+	Color pilouSkirtColorOff;
 
 	void Start()
 	{
 		pilouBodyMat = pilouBody.material;
 		pilouArmorMat = pilouArmor.material;
 		pilouHairMat = pilouHair.material;
-		pilouSkirtMat = pilouSkirt.material;
-		pilouSkirtColorOn = pilouSkirtMat.color;
+		pilouSkirtAMat = pilouSkirtA.material;
+		pilouSkirtBMat = pilouSkirtB.material;
+
+		pilouSkirtColorOn = pilouSkirtAMat.color;
 		pilouSkirtColorOff = new Color (pilouSkirtColorOn.r,pilouSkirtColorOn.g,pilouSkirtColorOn.b,0);
 
 	}
@@ -69,8 +75,10 @@ public class FXManager : MonoBehaviour {
 			pilouArmorMat.DOFloat (0, "_DissolveAmount", impactTimeToAppear).SetEase(impactEaseOut).SetDelay(impactDelay);
 			pilouHairMat.DOFloat (1, "_DissolveAmount", impactTimeToDissolve).SetEase(impactEaseIn);
 			pilouHairMat.DOFloat (0, "_DissolveAmount", impactTimeToAppear).SetEase(impactEaseOut).SetDelay(impactDelay);
-			pilouSkirtMat.DOColor(pilouSkirtColorOff,"_Albedo",impactTimeToDissolve).SetEase(impactEaseIn);
-			pilouSkirtMat.DOColor(pilouSkirtColorOn,"_Albedo",impactTimeToAppear).SetEase(impactEaseOut).SetDelay(impactDelay);
+			pilouSkirtAMat.DOColor(pilouSkirtColorOff,"_Color",impactTimeToDissolve).SetEase(impactEaseIn);
+			pilouSkirtAMat.DOColor(pilouSkirtColorOn,"_Color",impactTimeToAppear).SetEase(impactEaseOut).SetDelay(impactDelay);
+			pilouSkirtBMat.DOColor(pilouSkirtColorOff,"_Color",impactTimeToDissolve).SetEase(impactEaseIn);
+			pilouSkirtBMat.DOColor(pilouSkirtColorOn,"_Color",impactTimeToAppear).SetEase(impactEaseOut).SetDelay(impactDelay);
 
 			dashLight.DOIntensity (dashLightIntensity, impactTimeToDissolve).SetEase (impactEaseIn);
 			dashLight.DOIntensity (0, impactTimeToAppear).SetEase (impactEaseOut).SetDelay(impactDelay);
@@ -122,8 +130,10 @@ public class FXManager : MonoBehaviour {
 		pilouArmorMat.DOFloat (0, "_DissolveAmount", dashTimeToAppear).SetEase(dashEaseOut).SetDelay(dashDelay);
 		pilouHairMat.DOFloat (1, "_DissolveAmount", dashTimeToDissolve).SetEase(dashEaseIn);
 		pilouHairMat.DOFloat (0, "_DissolveAmount", dashTimeToAppear).SetEase(dashEaseOut).SetDelay(dashDelay);
-		pilouSkirtMat.DOColor(pilouSkirtColorOff,"_Albedo",dashTimeToDissolve).SetEase(dashEaseIn);
-		pilouSkirtMat.DOColor(pilouSkirtColorOn,"_Albedo",dashTimeToAppear).SetEase(dashEaseOut).SetDelay(dashDelay);
+		pilouSkirtAMat.DOColor(pilouSkirtColorOff,"_Color",dashTimeToDissolve).SetEase(dashEaseIn);
+		pilouSkirtAMat.DOColor(pilouSkirtColorOn,"_Color",dashTimeToAppear).SetEase(dashEaseOut).SetDelay(dashDelay);
+		pilouSkirtBMat.DOColor(pilouSkirtColorOff,"_Color",dashTimeToDissolve).SetEase(dashEaseIn);
+		pilouSkirtBMat.DOColor(pilouSkirtColorOn,"_Color",dashTimeToAppear).SetEase(dashEaseOut).SetDelay(dashDelay);
 
 		dashLight.DOIntensity (dashLightIntensity, dashTimeToDissolve).SetEase (dashEaseIn);
 		dashLight.DOIntensity (0, dashTimeToAppear).SetEase (dashEaseOut).SetDelay(dashDelay);
@@ -153,6 +163,7 @@ public class FXManager : MonoBehaviour {
 
 		pilouBodyMat.SetFloat ("DissolveAmount", 0.3f);
 		pilouHairMat.SetFloat ("DissolveAmount", 0.3f);
+		pilouArmorMat.SetFloat ("DissolveAmount", 0.3f);
 
 		pilouBodyMat.DOFloat (jumpDissolveAmount, "_DissolveAmount", jumpTimeToDissolve).SetEase(jumpEaseIn);
 		pilouBodyMat.DOFloat (0, "_DissolveAmount", jumpTimeToAppear).SetEase(jumpEaseOut).SetDelay(jumpDelay);
