@@ -226,7 +226,6 @@ namespace Game.Player.CharacterController.States
                 if (localWallRunDir != Vector3.zero)
                 {
                     Vector3 projectedVelocity = Vector3.Project(charController.TurnLocalToSpace(localWallRunDir), Vector3.Cross(lastWallNormal, charController.MyTransform.up));
-                    Debug.Log("wallrun " + projectedVelocity.magnitude/10f);
                     result.PlayerForward = Vector3.Lerp(-lastWallNormal, projectedVelocity, projectedVelocity.magnitude/10f);
                     //Debug.Log("new player forward is : " + result.PlayerForward);
                 }

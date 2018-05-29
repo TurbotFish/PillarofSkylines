@@ -14,6 +14,7 @@ public class PlayerAudio : MonoBehaviour {
 	}
 	public void Footstep()
 	{
-		audioManager.PlayRandomFootstep ();
+		//commented this part on 28/05/18 after changing PlayRandomFootstep() - Aloïs
+		//audioManager.PlayRandomFootstep ();
 	}
 }
