@@ -17,12 +17,12 @@ public class WindTunnelPart : MonoBehaviour, IInteractable, IWorldObject
     [SerializeField] public float tunnelAttraction;
     [SerializeField] public int idInTunnel;
 
-    private IGameController gameController;
+    private GameController gameController;
     private Transform myTransform;
 
     //########################################################################
 
-    public void Initialize(IGameController gameController)
+    public void Initialize(GameController gameController)
     {
         this.gameController = gameController;
         myTransform = transform;

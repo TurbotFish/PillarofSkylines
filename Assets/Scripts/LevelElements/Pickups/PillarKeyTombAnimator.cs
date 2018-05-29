@@ -81,6 +81,7 @@ namespace Game.LevelElements
             }
             foreach (MeshRenderer ms in crystalsImmediate)
             {
+				
                 ms.material = crystalOff;
             }
             foreach (ParticleSystemRenderer psr in crystalParticles)

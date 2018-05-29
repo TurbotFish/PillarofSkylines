@@ -22,7 +22,7 @@ namespace Game.EchoSystem
 
         private Animator playerAnimator;
 
-        private IGameController gameController;
+        private GameController gameController;
         public Player.CharacterController.CharController charController;
         private EchoCameraEffect echoCamera;
         private EchoParticleSystem echoParticles;
@@ -41,7 +41,7 @@ namespace Game.EchoSystem
 
         // INITIALIZATION
 
-        public void Initialize(IGameController gameController)
+        public void Initialize(GameController gameController)
         {
             this.gameController = gameController;
             echoCamera = gameController.CameraController.EchoCameraEffect;

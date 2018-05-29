@@ -19,7 +19,7 @@ namespace Game.Player
         [SerializeField] private GameObject playerNeedle;
         public EchoSystem.Echo currentEcho;
 
-        private IGameController gameController;
+        private GameController gameController;
 
         private bool isActive = false;
 
@@ -35,7 +35,7 @@ namespace Game.Player
 
         // -- INITIALIZATION
 
-        public void Initialize(IGameController gameController)
+        public void Initialize(GameController gameController)
         {
             this.gameController = gameController;
 

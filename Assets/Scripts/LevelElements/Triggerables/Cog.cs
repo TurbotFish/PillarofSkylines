@@ -24,7 +24,7 @@ namespace Game.LevelElements
 
         #region public methods
 
-        public override void Initialize(IGameController gameController)
+        public override void Initialize(GameController gameController)
         {
             base.Initialize(gameController);
 
@@ -56,7 +56,7 @@ namespace Game.LevelElements
         
         void Update()
         {
-            if (!isInitialized)
+            if (!IsInitialized)
                 return;
 
             if (Triggered)

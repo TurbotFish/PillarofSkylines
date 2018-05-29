@@ -70,6 +70,7 @@ namespace Game.EchoSystem
 
         public void Unfreeze()
         {
+			StartParticles ();
             fluidEcho.SetActive(true);
             solidEcho.SetActive(false);
             gameObject.layer = pickUpLayer;

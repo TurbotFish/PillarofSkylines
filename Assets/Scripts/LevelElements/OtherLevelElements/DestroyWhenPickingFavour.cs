@@ -13,12 +13,12 @@ namespace Game.LevelElements
 
         [SerializeField, HideInInspector] private string pickupID;
 
-        private IGameController gameController;
+        private GameController gameController;
         private bool isInitialized;
 
         //###########################################################
 
-        public void Initialize(IGameController gameController)
+        public void Initialize(GameController gameController)
         {
             this.gameController = gameController;
 

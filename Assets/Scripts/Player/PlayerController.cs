@@ -15,40 +15,38 @@ namespace Game.Player
     {
         //########################################################################
 
-        // ATTRIBUTES
+        // -- ATTRIBUTES
+
+        public CharController CharController { get; private set; }
+        public InteractionController InteractionController { get; private set; }
 
         private Transform myTransform;
-
-        private CharController charController;
-        private InteractionController interactionController;
         private WrappableObject wrappableObject;
-
-        private AirParticle airParticle;
 
         //########################################################################
 
-        // INITIALIZATION
+        // -- INITIALIZATION
 
-        public void InitializePlayerController(IGameController gameController)
+        public void InitializePlayerController(GameController gameController)
         {
             Debug.Log("PlayerController: Initialize");
 
             //getting all references
             myTransform = transform;
 
-            charController = GetComponent<CharController>();
-            interactionController = GetComponentInChildren<InteractionController>();
+            CharController = GetComponent<CharController>();
+            InteractionController = GetComponentInChildren<InteractionController>();
             wrappableObject = GetComponent<WrappableObject>();
 
             //initializing all the things
             CharController.Initialize(gameController);
             InteractionController.Initialize(gameController);
-            wrappableObject.InitializeWrappableObject(gameController);
+            wrappableObject.Initialize(gameController);
         }
 
         //########################################################################
 
-        // INQUIRIES
+        // -- INQUIRIES
 
         public Transform PlayerTransform
         {
@@ -59,21 +57,17 @@ namespace Game.Player
             }
         }
 
-        public CharController CharController { get { return charController; } }
-        public InteractionController InteractionController { get { return interactionController; } }
-
-        public bool HasAirParticle { get { return airParticle != null; } }
-        public AirParticle AirParticle { get { return airParticle; } }
-
         //########################################################################
 
-        // OPERATIONS
+        // -- OPERATIONS
 
-        public void SetAirParticle(AirParticle airParticle)
+        /// <summary>
+        /// Called to handle input.
+        /// </summary>
+        public void HandleInput()
         {
-            this.airParticle = airParticle;
+            //charController.HandleInput();
+            //interactionController.HandleInput();
         }
-
-        //########################################################################
     }
 } // end of namespace

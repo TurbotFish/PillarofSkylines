@@ -1,7 +1,9 @@
-﻿namespace Game.World
+﻿using Game.GameControl;
+
+namespace Game.World
 {
     public interface IWorldObject
     {
-        void Initialize(GameControl.IGameController gameController);
+        void Initialize(GameController gameController);
     }
 } //end of namespace

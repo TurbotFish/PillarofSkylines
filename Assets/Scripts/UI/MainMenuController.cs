@@ -7,7 +7,6 @@ using UnityEngine.Video;
 
 namespace Game.UI
 {
-
     public class MainMenuController : MonoBehaviour, IUiMenu
     {
         //##################################################################
@@ -23,15 +22,15 @@ namespace Game.UI
 
         public bool IsActive { get; private set; }
 
-        IGameController gameController;
+        private GameController GameController;
 
         //##################################################################
 
         // -- INITIALIZATION
 
-        void IUiMenu.Initialize(IGameController gameController, UiController ui_controller)
+        void IUiMenu.Initialize(GameController gameController, UiController ui_controller)
         {
-            this.gameController = gameController;
+            this.GameController = gameController;
         }
 
         void IUiMenu.Activate(EventManager.OnShowMenuEventArgs args)
@@ -61,14 +60,12 @@ namespace Game.UI
 
         // -- OPERATIONS
 
-        public bool HandleInput()
+        public void HandleInput()
         {
             if (Input.GetButtonDown("Interact"))
             {
-                gameController.StartGame();
+                GameController.StartGame();
             }
-
-            return true;
         }
     }
 } //end of namespace

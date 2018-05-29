@@ -15,7 +15,7 @@ namespace Game.LevelElements
 
         [SerializeField] private PillarId pillarId;
 
-        private IGameController gameController;
+        private GameController gameController;
         private bool isInitialized;
         private bool isPillarDestroyed;
 
@@ -23,7 +23,7 @@ namespace Game.LevelElements
 
         #region initialization
 
-        public void Initialize(IGameController gameController)
+        public void Initialize(GameController gameController)
         {
             if (isInitialized)
             {

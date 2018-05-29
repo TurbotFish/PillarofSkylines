@@ -38,9 +38,9 @@ namespace Game.LevelElements
 
         #region public methods
 
-        public override void Initialize(IGameController gameController)
+        public override void Initialize(GameController gameController)
         {
-            if (isInitialized)
+            if (IsInitialized)
                 return;
 
             base.Initialize(gameController);
@@ -121,7 +121,7 @@ namespace Game.LevelElements
 
        private void Update()
         {
-            if (!isInitialized)
+            if (!IsInitialized)
                 return;
 
             if (currentState == eUltimatePlatformState.newOrder && (Triggered || finishingMovement))

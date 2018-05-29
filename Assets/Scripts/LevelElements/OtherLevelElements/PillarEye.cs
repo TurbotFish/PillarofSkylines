@@ -14,12 +14,12 @@ namespace Game.LevelElements
 
         [SerializeField] float lookAtDamp = 0.5f;
 
-        private IGameController gameController;
+        private GameController gameController;
         private Transform target;
 
         //########################################################################
 
-        public void Initialize(IGameController gameController)
+        public void Initialize(GameController gameController)
         {
             this.gameController = gameController;
             target = gameController.PlayerController.CharController.MyTransform;
