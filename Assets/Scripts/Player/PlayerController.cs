@@ -29,16 +29,18 @@ namespace Game.Player
 
         public void InitializePlayerController(GameController gameController)
         {
-            Debug.Log("PlayerController: Initialize");
-
-            //getting all references
+            /*
+             * getting all references
+             */
             myTransform = transform;
 
             CharController = GetComponent<CharController>();
             InteractionController = GetComponentInChildren<InteractionController>();
             wrappableObject = GetComponent<WrappableObject>();
 
-            //initializing all the things
+            /*
+             * initializing all the things
+             */
             CharController.Initialize(gameController);
             InteractionController.Initialize(gameController);
             wrappableObject.Initialize(gameController);
@@ -55,19 +57,6 @@ namespace Game.Player
                 if (myTransform == null) { myTransform = transform; }
                 return myTransform;
             }
-        }
-
-        //########################################################################
-
-        // -- OPERATIONS
-
-        /// <summary>
-        /// Called to handle input.
-        /// </summary>
-        public void HandleInput()
-        {
-            //charController.HandleInput();
-            //interactionController.HandleInput();
         }
     }
 } // end of namespace

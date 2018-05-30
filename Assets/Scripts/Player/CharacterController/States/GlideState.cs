@@ -75,8 +75,7 @@ namespace Game.Player.CharacterController.States
 			PlayerInputInfo inputInfo = charController.InputInfo;
 			PlayerMovementInfo movementInfo = charController.MovementInfo;
 			CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
-
-
+            
             //---------VERTICAL
 
 
@@ -135,7 +134,7 @@ namespace Game.Player.CharacterController.States
 
             //Debug.Log("target velocity : " + targetVelocity + " forward : " + charController.MyTransform.forward);
 
-            
+
 
             //Stall when the player is too slow
             if (currentSpeed < glideData.StallSpeed) {
@@ -168,17 +167,16 @@ namespace Game.Player.CharacterController.States
 			);
 
             //Turn the player horizontally with the angle calculated above
+            targetVelocity = Quaternion.AngleAxis(horizontalAngle, charController.MyTransform.up) * targetVelocity;
 
-            //if (!glidingDown)
-                charController.MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(TurnLocalToSpace(movementInfo.velocity), charController.MyTransform.up), charController.MyTransform.up);
+
             //Debug.Log("velocity : " + movementInfo.velocity);
 
             //Turn the player horizontally with the angle calculated above
             //charController.MyTransform.Rotate(Vector3.up, horizontalAngle, Space.Self);
 
-            targetVelocity = Quaternion.AngleAxis(horizontalAngle, charController.MyTransform.up) * targetVelocity;
 
-
+            
             var result = new StateReturnContainer
             {
                 Acceleration = TurnSpaceToLocal(targetVelocity),
@@ -186,6 +184,8 @@ namespace Game.Player.CharacterController.States
                 CanTurnPlayer = false,
                 IgnoreGravity = true
 			};
+
+            charController.MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(TurnLocalToSpace(targetVelocity), charController.MyTransform.up), charController.MyTransform.up);
 
 			//Animator 
 			charController.animator.SetFloat("GlideHorizontal", horizontalAngle);

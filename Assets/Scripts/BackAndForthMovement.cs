@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BackAndForthMovement : MovingPlatform {
+
+[RequireComponent(typeof(MovingPlatform))]
+public class BackAndForthMovement : MonoBehaviour {
 
     public float waitTimeBack;
 	public float waitTimeForth;
@@ -11,22 +13,23 @@ public class BackAndForthMovement : MovingPlatform {
     public Vector3 movement;
 	public float initialWaitTime;
 
+    MovingPlatform platform;
     float currWaitTime;
     Vector3 initialPosition;
     float movementProgression;
     Vector3 startOfFramePosition;
+    Vector3 posLastFrame;
 
 
 	eMovingState currState = eMovingState.waitingAfterBack;
 
-    protected override void Start()
+    void Start()
     {
-        base.Start();
-
+        platform = GetComponent<MovingPlatform>();
         movementProgression = 0.01f;
 		currWaitTime = waitTimeForth + initialWaitTime;
         initialPosition = transform.localPosition;
-        gameObject.tag = "MovingPlatform";
+        posLastFrame = Vector3.zero;
     }
 
     // Update is called once per frame
@@ -70,14 +73,16 @@ public class BackAndForthMovement : MovingPlatform {
                 break;
         }
 
+        /*
         startOfFramePosition = transform.localPosition;
         transform.localPosition = initialPosition + movement * movementProgression;
+        */
 
-        if (currPlayer != null)
+        if (platform != null)
         {
-            currPlayer.ImmediateMovement(transform.position - startOfFramePosition, true);
+            platform.Move((movement * movementProgression) - posLastFrame);
+            posLastFrame = movement * movementProgression;
         }
-            
     }
 
     public enum eMovingState

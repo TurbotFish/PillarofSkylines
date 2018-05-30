@@ -51,12 +51,15 @@ namespace Game.UI
         float announceTime;
         bool announcePanelActive;
 
+        private GameController GameController;
+
         //###########################################################
 
         // -- INITIALIZATION
 
         public void Initialize(GameController gameController, UiController ui_controller)
         {
+            GameController = gameController;
             helpMessage.text = "";
         }
 
@@ -100,7 +103,7 @@ namespace Game.UI
         {
             if (Input.GetButtonDown("MenuButton"))
             {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(MenuType.PauseMenu));
+                GameController.OpenPauseMenu();
                 return;
             }
             else if (Input.GetButtonDown("Interact") && importantPanel.activeSelf)

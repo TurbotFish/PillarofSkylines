@@ -60,6 +60,7 @@ namespace Game.Player.CharacterController.States
         public StateReturnContainer Update(float dt)
         {
             CharacControllerRecu.CollisionInfo collisionInfo = charController.CollisionInfo;
+            PlayerInputInfo inputInfo = charController.InputInfo;
             timer -= dt;
 
             var result = new StateReturnContainer
@@ -77,11 +78,16 @@ namespace Game.Player.CharacterController.States
             {
                 if (collisionInfo.below)
                 {
-                    Debug.Log("to move state");
                     stateMachine.ChangeState(new MoveState(charController, stateMachine));
                 } else
                 {
-                    stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
+                    if (inputInfo.glideButton && !stateMachine.CheckStateLocked(ePlayerState.glide))
+                    {
+                        stateMachine.ChangeState(new GlideState(charController, stateMachine));
+                    } else
+                    {
+                        stateMachine.ChangeState(new AirState(charController, stateMachine, AirState.eAirStateMode.fall));
+                    }
                 }
             }
 
