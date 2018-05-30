@@ -59,7 +59,7 @@ namespace Game.UI
 
             CurrentState = start_state;
             UiStates[CurrentState].Activate(args);
-            Utilities.EventManager.SendOnMenuSwitchedEvent(this, new Utilities.EventManager.OnMenuSwitchedEventArgs(start_state, MenuType.HUD));
+            //Utilities.EventManager.SendOnMenuSwitchedEvent(this, new Utilities.EventManager.OnMenuSwitchedEventArgs(start_state, MenuType.HUD));
 
             Utilities.EventManager.OnShowMenuEvent += OnShowMenuEventHandler;
 
@@ -99,7 +99,7 @@ namespace Game.UI
             CurrentState = newState;
             UiStates[CurrentState].Activate(args);
 
-            Utilities.EventManager.SendOnMenuSwitchedEvent(this, new Utilities.EventManager.OnMenuSwitchedEventArgs(newState, previous_state));
+            //Utilities.EventManager.SendOnMenuSwitchedEvent(this, new Utilities.EventManager.OnMenuSwitchedEventArgs(newState, previous_state));
         }
 
         public void ExitGame()
