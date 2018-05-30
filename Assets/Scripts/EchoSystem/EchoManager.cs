@@ -111,6 +111,9 @@ namespace Game.EchoSystem
 
                 var eventArgs = new EventManager.TeleportPlayerEventArgs(Waypoint.Position, false);
                 EventManager.SendTeleportPlayerEvent(this, eventArgs);
+
+                if (gameController.PlayerModel.PlayerHasNeedle)
+                    (Waypoint as LevelElements.NeedleSlot).OnInteraction();
             }
         }
 
