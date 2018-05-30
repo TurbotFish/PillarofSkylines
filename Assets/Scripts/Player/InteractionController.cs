@@ -59,11 +59,10 @@ namespace Game.Player
 
         // -- OPERATIONS
 
-        public void HandleInteraction()
+        private void Update()
         {
             if (IsGamePaused)
             {
-                Debug.Log("InteractionController: HandleInteraction: called while game is paused!");
                 return;
             }
 

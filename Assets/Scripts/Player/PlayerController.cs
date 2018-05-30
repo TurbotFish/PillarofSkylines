@@ -58,18 +58,5 @@ namespace Game.Player
                 return myTransform;
             }
         }
-
-        //########################################################################
-
-        // -- OPERATIONS
-
-        /// <summary>
-        /// Called to handle input.
-        /// </summary>
-        public void HandleInput()
-        {
-            //charController.HandleInput();
-            InteractionController.HandleInteraction();
-        }
     }
 } // end of namespace
