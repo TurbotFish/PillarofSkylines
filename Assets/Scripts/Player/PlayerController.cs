@@ -67,7 +67,7 @@ namespace Game.Player
         public void HandleInput()
         {
             //charController.HandleInput();
-            //interactionController.HandleInput();
+            InteractionController.HandleInput();
         }
     }
 } // end of namespace
