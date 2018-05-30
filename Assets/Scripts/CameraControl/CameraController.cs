@@ -24,7 +24,7 @@ namespace Game.CameraControl
 
         public void HandleInput()
         {
-            //PoS_Camera.HandleInput();
+            PoS_Camera.HandleInput();
         }
     }
 } // end of namespace

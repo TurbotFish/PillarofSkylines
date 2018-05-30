@@ -77,8 +77,12 @@ public class BackAndForthMovement : MonoBehaviour {
         startOfFramePosition = transform.localPosition;
         transform.localPosition = initialPosition + movement * movementProgression;
         */
-        platform.Move((movement * movementProgression) - posLastFrame);
-        posLastFrame = movement * movementProgression;
+
+        if (platform != null)
+        {
+            platform.Move((movement * movementProgression) - posLastFrame);
+            posLastFrame = movement * movementProgression;
+        }
     }
 
     public enum eMovingState
