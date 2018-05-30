@@ -71,6 +71,10 @@ namespace Game.Player.CharacterController
         PhantomData phantom = new PhantomData();
         public PhantomData Phantom { get { return phantom; } }
 
+        [SerializeField]
+        GraviswapData graviswap = new GraviswapData();
+        public GraviswapData Graviswap { get { return graviswap; } }
+
         #endregion inspector variables
 
         //#############################################################################
@@ -90,6 +94,7 @@ namespace Game.Player.CharacterController
             glide.OnValidate();
             wallRun.OnValidate();
             jetpack.OnValidate();
+            graviswap.OnValidate();
         }
 
         #endregion on validate
@@ -746,6 +751,28 @@ namespace Game.Player.CharacterController
         }
 
         #endregion phantom
+
+        //*******************************************
+
+        #region graviswap
+
+        [System.Serializable]
+        public class GraviswapData
+        {
+            [SerializeField]
+            float turnSpeed;
+            public float TurnSpeed { get { return turnSpeed; } }
+
+            [SerializeField]
+            float snapSpeed;
+            public float SnapSpeed { get { return snapSpeed; } }
+
+            public void OnValidate()
+            {
+            }
+        }
+
+        #endregion graviswap
 
         //*******************************************
 

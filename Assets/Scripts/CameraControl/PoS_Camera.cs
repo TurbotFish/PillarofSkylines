@@ -450,7 +450,7 @@ public class PoS_Camera : MonoBehaviour
     void GetInputsAndStates()
     {
         playerState = player.CurrentState;
-        playerVelocity = target.InverseTransformVector((Quaternion.AngleAxis(Vector3.Angle(worldUp, target.up), Vector3.Cross(worldUp, target.up))) * player.MovementInfo.velocity);
+        playerVelocity = target.InverseTransformVector((Quaternion.AngleAxis(Vector3.Angle(worldUp, target.up), (Vector3.Cross(worldUp, target.up) != Vector3.zero ? Vector3.Cross(worldUp, target.up) : Vector3.forward))) * player.MovementInfo.velocity);
         // TODO: ask someone to make the player velocity ACTUALLY local and not just rotated from the up vector
 
         input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
