@@ -341,8 +341,8 @@ namespace Game.GameControl
         {
             if (CurrentGameState == GameState.Pause)
             {
-                SetGameState(GameState.Play);
                 UiController.SwitchState(MenuType.HUD, null);
+                SetGameState(GameState.Play, true);
             }
             else
             {
@@ -753,21 +753,39 @@ namespace Game.GameControl
         /// Sets the state of the game.
         /// </summary>
         /// <param name="game_state"></param>
-        private void SetGameState(GameState game_state)
+        private void SetGameState(GameState game_state, bool delayed = false)
         {
-
-            CurrentGameState = game_state;
-
-            if (CurrentGameState == GameState.Play)
+            if (delayed)
             {
-                IsGamePaused = false;
+                StartCoroutine(SetGameStateDelayed(game_state));
             }
             else
             {
-                IsGamePaused = true;
-            }
+                CurrentGameState = game_state;
 
-            EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(IsGamePaused));
+                if (CurrentGameState == GameState.Play)
+                {
+                    IsGamePaused = false;
+                }
+                else
+                {
+                    IsGamePaused = true;
+                }
+
+                EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(IsGamePaused));
+            }
+        }
+
+        /// <summary>
+        /// Sets the state of the game with a delay of one Frame.
+        /// </summary>
+        /// <param name="game_state"></param>
+        /// <returns></returns>
+        private IEnumerator SetGameStateDelayed(GameState game_state)
+        {
+            yield return null;
+
+            SetGameState(game_state);
         }
 
         /// <summary>
