@@ -32,8 +32,6 @@ namespace Game.Player
         private List<IInteractable> nearbyInteractableObjects = new List<IInteractable>();
         private IInteractable currentInteractableObject;
 
-        private InteractionInputState InputState;
-
         //########################################################################
 
         // -- INITIALIZATION
@@ -61,24 +59,18 @@ namespace Game.Player
 
         // -- OPERATIONS
 
-        public void HandleInput()
-        {
-            InputState.InteractButtonWasPressed = Input.GetButtonDown("Interact");
-            InputState.DriftButtonWasPressed = Input.GetButtonDown("Drift");
-            InputState.InteractButton = Input.GetButton("Interact");
-        }
-
-        private void Update()
+        public void HandleInteraction()
         {
             if (IsGamePaused)
             {
+                Debug.Log("InteractionController: HandleInteraction: called while game is paused!");
                 return;
             }
 
             nearbyInteractableObjects.RemoveAll(item => item == null);
             SetCurrentInteractableObject();
 
-            if (InputState.InteractButtonWasPressed)
+            if (Input.GetButtonDown("Interact"))
             {
                 if (currentInteractableObject != null)
                 {
@@ -91,11 +83,11 @@ namespace Game.Player
                     currentEcho.transform.SetParent(gameController.PlayerController.CharController.MyTransform);
                 }
             }
-            else if (InputState.DriftButtonWasPressed)
+            else if (Input.GetButtonDown("Drift"))
             {
                 gameController.EchoManager.Drift();
             }
-            else if (!InputState.InteractButton)
+            else if (!Input.GetButton("Interact"))
             {
                 if (currentInteractableObject == null && currentEcho != null)
                 {
@@ -105,8 +97,6 @@ namespace Game.Player
                     gameController.EchoManager.PlaceEcho();
                 }
             }
-
-            InputState.Reset();
         }
 
         private void OnTriggerEnter(Collider other)
@@ -228,22 +218,6 @@ namespace Game.Player
         /// </summary>
         private void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
-        }
-
-        //########################################################################
-
-        private struct InteractionInputState
-        {
-            public bool InteractButtonWasPressed;
-            public bool DriftButtonWasPressed;
-            public bool InteractButton;
-
-            public void Reset()
-            {
-                InteractButtonWasPressed = false;
-                DriftButtonWasPressed = false;
-                InteractButton = false;
-            }
         }
     }
 }
