@@ -90,7 +90,7 @@ namespace Game.EchoSystem
             if (!isEclipseActive && echoList.Count > 0)
             {
                 CreateShell();
-
+                
                 echoCamera.SetFov(70, 0.15f, true);
 
                 int lastIndex = echoList.Count - 1;
@@ -106,7 +106,7 @@ namespace Game.EchoSystem
             else if (hasWaypoint)
             {
                 CreateShell();
-
+                
                 echoCamera.SetFov(70, 0.15f, true);
 
                 var eventArgs = new EventManager.TeleportPlayerEventArgs(Waypoint.Position, false);
