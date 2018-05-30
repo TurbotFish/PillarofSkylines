@@ -16,7 +16,6 @@ namespace Game.LevelElements
         void OnEclipseEventHandler(object sender, Game.Utilities.EventManager.EclipseEventArgs args)
         {
 
-            Debug.Log("I am " + (inverted ? "" : "not") + " inverted and the result is : " + !(args.EclipseOn ^ inverted));
             SetTriggerState(!(args.EclipseOn ^ inverted), true);
 
             /*

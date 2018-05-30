@@ -83,7 +83,7 @@ namespace Game.Player
                     currentEcho.transform.SetParent(gameController.PlayerController.CharController.MyTransform);
                 }
             }
-            else if (Input.GetButtonDown("Drift"))
+            else if (Input.GetButtonDown("Drift") && !Input.GetButtonUp("Drift"))
             {
                 gameController.EchoManager.Drift();
             }
