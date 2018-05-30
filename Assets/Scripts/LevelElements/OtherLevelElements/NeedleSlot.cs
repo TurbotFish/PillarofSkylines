@@ -102,7 +102,7 @@ namespace Game.LevelElements
         /// </summary>
         void IWaypoint.OnWaypointRemoved()
         {
-
+            EventManager.SendEclipseEvent(this, new EventManager.EclipseEventArgs(false));
         }
 
         protected override PersistentData CreatePersistentDataObject()

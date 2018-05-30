@@ -14,22 +14,23 @@ namespace Game.Player
     {
         //########################################################################
 
-        // -- ATTRIBUTES
+        // -- CONSTANTS
 
         [SerializeField] private GameObject playerNeedle;
+
+        //########################################################################
+
+        // -- ATTRIBUTES
+
         public EchoSystem.Echo currentEcho;
 
         private GameController gameController;
 
-        private bool isActive = false;
+        private bool IsGamePaused = true;
+        private string lastTag;    // Helps making sure the element turning off the UI is the same as the one turning it on.
 
         private List<IInteractable> nearbyInteractableObjects = new List<IInteractable>();
         private IInteractable currentInteractableObject;
-
-        /// <summary>
-        /// Helps making sure the element turning off the UI is the same as the one turning it on.
-        /// </summary>
-        private string lastTag;
 
         //########################################################################
 
@@ -42,23 +43,27 @@ namespace Game.Player
             nearbyInteractableObjects.Clear();
             currentInteractableObject = null;
 
-            Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
+            Utilities.EventManager.GamePausedEvent += OnGamePausedEvent;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
             Utilities.EventManager.PreSceneChangeEvent += PreSceneChangedEventHandler;
         }
 
-        //########################################################################
-
-        // -- INQUIRIES
+        public void OnDestroy()
+        {
+            Utilities.EventManager.GamePausedEvent -= OnGamePausedEvent;
+            Utilities.EventManager.SceneChangedEvent -= OnSceneChangedEventHandler;
+            Utilities.EventManager.PreSceneChangeEvent -= PreSceneChangedEventHandler;
+        }
 
         //########################################################################
 
         // -- OPERATIONS
 
-        private void Update()
+        public void HandleInteraction()
         {
-            if (!isActive)
+            if (IsGamePaused)
             {
+                Debug.Log("InteractionController: HandleInteraction: called while game is paused!");
                 return;
             }
 
@@ -73,23 +78,23 @@ namespace Game.Player
                 }
                 else if (gameController.PlayerModel.CheckAbilityActive(AbilityType.Echo))
                 {
-					currentEcho = gameController.EchoManager.CreateEcho(true);
+                    currentEcho = gameController.EchoManager.CreateEcho(true);
 
                     currentEcho.transform.SetParent(gameController.PlayerController.CharController.MyTransform);
                 }
             }
-            else if (Input.GetButtonDown("Drift"))
+            else if (Input.GetButtonDown("Drift") && !Input.GetButtonUp("Drift"))
             {
                 gameController.EchoManager.Drift();
             }
-
-            if (Input.GetButtonUp("Interact"))
+            else if (!Input.GetButton("Interact"))
             {
                 if (currentInteractableObject == null && currentEcho != null)
                 {
-
                     currentEcho.MyTransform.SetParent(null);
-					gameController.EchoManager.PlaceEcho ();
+                    currentEcho = null;
+
+                    gameController.EchoManager.PlaceEcho();
                 }
             }
         }
@@ -187,20 +192,13 @@ namespace Game.Player
         }
 
         /// <summary>
-        /// 
+        /// Handles the GamePaused event.
         /// </summary>
-        private void OnMenuSwitchedEventHandler(object sender, Utilities.EventManager.OnMenuSwitchedEventArgs args)
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void OnGamePausedEvent(object sender, Utilities.EventManager.GamePausedEventArgs args)
         {
-            if (!isActive && args.NewUiState == UI.MenuType.HUD)
-            {
-                isActive = true;
-                //Debug.Log("InteractionController activated!");
-            }
-            else if (isActive && args.PreviousUiState == UI.MenuType.HUD)
-            {
-                isActive = false;
-                //Debug.Log("InteractionController deactivated!");
-            }
+            IsGamePaused = args.PauseActive;
         }
 
         /// <summary>
@@ -219,7 +217,7 @@ namespace Game.Player
         /// "Reset everything!"  "Everything?"  "EVERYTHING!"
         /// </summary>
         private void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
-        {        
+        {
         }
     }
 }
