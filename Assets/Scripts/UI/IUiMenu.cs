@@ -8,7 +8,7 @@ namespace Game.UI
 
         void Initialize(GameController gameController, UiController ui_controller);
 
-        void Activate(Utilities.EventManager.OnShowMenuEventArgs args);
+        void Activate();
 
         void HandleInput();
 

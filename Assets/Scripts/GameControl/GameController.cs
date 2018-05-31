@@ -1,4 +1,5 @@
 ﻿using Game.CameraControl;
+using Game.Cutscene;
 using Game.EchoSystem;
 using Game.Model;
 using Game.Player;
@@ -29,10 +30,11 @@ namespace Game.GameControl
 
         //###############################################################
 
-        // -- ATTRIBUTES     
+        // -- ATTRIBUTES
 
         // permanent refs
         public PlayerModel PlayerModel { get; private set; }
+        public CutsceneManager CutsceneManager { get; private set; }
         public EchoManager EchoManager { get; private set; }
         public EclipseManager EclipseManager { get; private set; }
 
@@ -62,11 +64,6 @@ namespace Game.GameControl
         private string PillarDestructionMessageTitle = "";
         private string PillarDestructionMessageDescription = "";
 
-        // cutscenes
-        private Dictionary<CutsceneType, Cutscene> CutsceneDictionary = new Dictionary<CutsceneType, Cutscene>();
-        private bool IsRunningCutscene;
-        private CutsceneType CurrentCutsceneType;
-
         //###############################################################
 
         // -- INITIALIZATION
@@ -93,6 +90,7 @@ namespace Game.GameControl
             IsGamePaused = true;
 
             PlayerModel = new PlayerModel();
+            CutsceneManager = new CutsceneManager(this);
 
             /*
              * getting references
@@ -116,7 +114,7 @@ namespace Game.GameControl
             /*
              * initializing
              */
-            UiController.Initialize(this, MenuType.LoadingScreen, new EventManager.OnShowMenuEventArgs(MenuType.MainMenu));
+            UiController.Initialize(this);
 
             PlayerController.InitializePlayerController(this);
             CameraController.InitializeCameraController(this);
@@ -135,7 +133,7 @@ namespace Game.GameControl
             DuplicationCameraManager = FindObjectOfType<DuplicationCameraManager>();
             yield return null;
 
-            SetGameState(GameState.Loading);
+            SwitchGameState(GameState.Loading, MenuType.LoadingScreen);
             yield return null;
 
             if (WorldController != null)
@@ -189,12 +187,11 @@ namespace Game.GameControl
 
             if (WorldController != null && PlayIntroCutscene)
             {
-                PlayCutscene(CutsceneType.GameIntro);
+                CutsceneManager.PlayCutscene(CutsceneType.GameIntro);
             }
             else
             {
-                SetGameState(GameState.Play);
-                UiController.SwitchState(MenuType.HUD, null);
+                SwitchGameState(GameState.Play, MenuType.HUD);
             }
 
             isGameStarted = true;
@@ -206,8 +203,7 @@ namespace Game.GameControl
         /// </summary>
         private void MainInit()
         {
-            SetGameState(GameState.MainMenu);
-            UiController.SwitchState(MenuType.MainMenu, null);
+            SwitchGameState(GameState.MainMenu, MenuType.MainMenu);
 
             isInitialized = true;
         }
@@ -325,8 +321,7 @@ namespace Game.GameControl
         {
             if (CurrentGameState == GameState.Play)
             {
-                SetGameState(GameState.Pause);
-                UiController.SwitchState(MenuType.PauseMenu, null);
+                SwitchGameState(GameState.Pause, MenuType.PauseMenu);
             }
             else
             {
@@ -341,8 +336,7 @@ namespace Game.GameControl
         {
             if (CurrentGameState == GameState.Pause)
             {
-                UiController.SwitchState(MenuType.HUD, null);
-                SetGameState(GameState.Play, true);
+                SwitchGameState(GameState.Play, MenuType.HUD);
             }
             else
             {
@@ -351,32 +345,12 @@ namespace Game.GameControl
         }
 
         /// <summary>
-        /// Registers a Cutscene with the GameController.
+        /// Sets the state of the game.
         /// </summary>
-        /// <param name="cutscene_type"></param>
-        /// <param name="cutscene"></param>
-        public void RegisterCutscene(CutsceneType cutscene_type, Cutscene cutscene)
+        /// <param name="game_state"></param>
+        public void SwitchGameState(GameState game_state, MenuType menu_type)
         {
-            if (CutsceneDictionary.ContainsKey(cutscene_type))
-            {
-                CutsceneDictionary[cutscene_type] = cutscene;
-            }
-            else
-            {
-                CutsceneDictionary.Add(cutscene_type, cutscene);
-            }
-        }
-
-        /// <summary>
-        /// Called when a Cutscene is over.
-        /// </summary>
-        public void OnCutsceneEnded()
-        {
-            if (IsRunningCutscene)
-            {
-                IsRunningCutscene = false;
-                SetGameState(GameState.Play);
-            }
+                StartCoroutine(SwitchGameStateCoroutine(game_state, menu_type));
         }
 
         /// <summary>
@@ -414,12 +388,6 @@ namespace Game.GameControl
              * Handle Input
              */
             UiController.HandleInput();
-
-            if (CurrentGameState == GameState.Play)
-            {
-
-                CameraController.HandleInput();
-            }
         }
 
         /// <summary>
@@ -435,9 +403,7 @@ namespace Game.GameControl
              * Pausing game
              */
             EventManager.SendPreSceneChangeEvent(this, new EventManager.PreSceneChangeEventArgs(false));
-
-            SetGameState(GameState.Loading);
-            UiController.SwitchState(MenuType.LoadingScreen, null);
+            SwitchGameState(GameState.Loading, MenuType.LoadingScreen);
             yield return null;
 
             /*
@@ -508,15 +474,13 @@ namespace Game.GameControl
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());
             yield return new WaitForSeconds(0.5f);
 
-            UiController.SwitchState(MenuType.HUD, null);
-
             if (use_initial_spawn_point && PlayIntroCutscene)
             {
-                PlayCutscene(CutsceneType.GameIntro);
+                CutsceneManager.PlayCutscene(CutsceneType.GameIntro);
             }
             else
             {
-                SetGameState(GameState.Play);
+                SwitchGameState(GameState.Play, MenuType.HUD);
 
                 if (WasPillarDestroyed)
                 {
@@ -540,9 +504,7 @@ namespace Game.GameControl
              * Pausing game
              */
             EventManager.SendPreSceneChangeEvent(this, new EventManager.PreSceneChangeEventArgs(false));
-
-            UiController.SwitchState(MenuType.LoadingScreen, null);
-            SetGameState(GameState.Loading);
+            SwitchGameState(GameState.Loading, MenuType.LoadingScreen);
             yield return null;
 
             /*
@@ -580,8 +542,7 @@ namespace Game.GameControl
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs(pillar_id));
             yield return new WaitForSeconds(0.5f);
 
-            UiController.SwitchState(MenuType.HUD, null);
-            SetGameState(GameState.Play);
+            SwitchGameState(GameState.Play, MenuType.HUD);
         }
 
         /// <summary>
@@ -747,67 +708,33 @@ namespace Game.GameControl
                 PillarDestructionMessageTitle = "You've been granted the " + ability.Name + " Ability";
                 PillarDestructionMessageDescription = ability.Description;
             }
-        }
-
-        /// <summary>
-        /// Sets the state of the game.
-        /// </summary>
-        /// <param name="game_state"></param>
-        private void SetGameState(GameState game_state, bool delayed = false)
-        {
-            if (delayed)
-            {
-                StartCoroutine(SetGameStateDelayed(game_state));
-            }
-            else
-            {
-                CurrentGameState = game_state;
-
-                if (CurrentGameState == GameState.Play)
-                {
-                    IsGamePaused = false;
-                }
-                else
-                {
-                    IsGamePaused = true;
-                }
-
-                EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(IsGamePaused));
-            }
-        }
+        }   
 
         /// <summary>
         /// Sets the state of the game with a delay of one Frame.
         /// </summary>
         /// <param name="game_state"></param>
         /// <returns></returns>
-        private IEnumerator SetGameStateDelayed(GameState game_state)
+        private IEnumerator SwitchGameStateCoroutine(GameState game_state, MenuType menu_type)
         {
             yield return null;
 
-            SetGameState(game_state);
-        }
+            CurrentGameState = game_state;
 
-        /// <summary>
-        /// Starts a Cutscene.
-        /// </summary>
-        /// <param name="cutscene_type"></param>
-        private void PlayCutscene(CutsceneType cutscene_type)
-        {
-            if (IsRunningCutscene)
+            if (CurrentGameState == GameState.Play)
             {
-                Debug.Log("GameController: PlayCutscene: a Cutscene is already running");
-            }
-            else if (!CutsceneDictionary.ContainsKey(cutscene_type))
-            {
-                Debug.LogErrorFormat("GameController: PlayCutscene: no Cutscene of type {0}", cutscene_type);
+                IsGamePaused = false;
             }
             else
             {
-                SetGameState(GameState.Pause);
-                IsRunningCutscene = true;
-                CutsceneDictionary[cutscene_type].StartCutscene();
+                IsGamePaused = true;
             }
+
+            EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(IsGamePaused));
+
+            yield return null;
+
+            UiController.SwitchState(menu_type);
         }
 
         /// <summary>

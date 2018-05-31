@@ -49,7 +49,7 @@ namespace Game.UI.PauseMenu
             }
         }
 
-        public void Activate(EventManager.OnShowMenuEventArgs args)
+        public void Activate()
         {
             this.gameObject.SetActive(true);
 

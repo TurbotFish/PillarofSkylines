@@ -1,4 +1,4 @@
-﻿namespace Game.GameControl
+﻿namespace Game.Cutscene
 {
     public enum CutsceneType
     {
