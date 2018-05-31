@@ -95,7 +95,8 @@ namespace Game.LevelElements
             }
             else
             {
-                EventManager.SendShowMenuEvent(this, new EventManager.OnShowPillarEntranceMenuEventArgs(pillarId));
+                Debug.LogError("WIP, come back later!");
+                //EventManager.SendShowMenuEvent(this, new EventManager.OnShowPillarEntranceMenuEventArgs(pillarId));
             }
         }
 

@@ -41,7 +41,7 @@ namespace Game.EchoSystem
 
         void Update () {
 
-            transform.position = 
+            //transform.position = 
 
             //           v old v
             //transform.position = Vector3.Lerp(transform.position, target, speed * Time.deltaTime);

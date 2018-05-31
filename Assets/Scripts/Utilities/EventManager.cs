@@ -93,21 +93,21 @@ namespace Game.Utilities
             }
         }
 
-        public class OnShowPillarEntranceMenuEventArgs : OnShowMenuEventArgs
-        {
-            /// <summary>
-            /// 
-            /// </summary>
-            public PillarId PillarId { get; private set; }
+        //public class OnShowPillarEntranceMenuEventArgs : OnShowMenuEventArgs
+        //{
+        //    /// <summary>
+        //    /// 
+        //    /// </summary>
+        //    public PillarId PillarId { get; private set; }
 
-            /// <summary>
-            /// Constructor for the Pillar entrance menu.
-            /// </summary>
-            public OnShowPillarEntranceMenuEventArgs(PillarId pillarId) : base(UI.MenuType.PillarEntrance)
-            {
-                PillarId = pillarId;
-            }
-        }
+        //    /// <summary>
+        //    /// Constructor for the Pillar entrance menu.
+        //    /// </summary>
+        //    public OnShowPillarEntranceMenuEventArgs(PillarId pillarId) : base(UI.MenuType.PillarEntrance)
+        //    {
+        //        PillarId = pillarId;
+        //    }
+        //}
 
         public class OnShowLoadingScreenEventArgs : OnShowMenuEventArgs
         {

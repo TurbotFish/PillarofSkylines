@@ -1,9 +1,10 @@
-﻿using Game.World;
+﻿using Game.GameControl;
+using Game.World;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Game.GameControl
+namespace Game.Cutscene
 {
     public class Cutscene : MonoBehaviour, IWorldObject
     {
@@ -28,7 +29,7 @@ namespace Game.GameControl
         {
             GameController = game_controller;
 
-            GameController.RegisterCutscene(CutsceneType, this);
+            GameController.CutsceneManager.RegisterCutscene(CutsceneType, this);
         }
 
         //########################################################################
@@ -47,7 +48,7 @@ namespace Game.GameControl
         {
             PlayMakerFSM.enabled = false;
 
-            GameController.OnCutsceneEnded();
+            GameController.CutsceneManager.OnCutsceneEnded();
         }
     }
 }
