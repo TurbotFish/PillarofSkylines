@@ -19,7 +19,7 @@ namespace Game.UI.PillarEntranceMenu
         //
         PillarId pillarId;
         bool canEnterPillar = false;
-        private IGameController GameController;
+        private GameController GameController;
 
         //
         public bool IsActive { get; private set; }
@@ -34,32 +34,29 @@ namespace Game.UI.PillarEntranceMenu
 
         }
 
-        // Update is called once per frame
-        void Update()
-        {
-            if (!IsActive)
-            {
-                return;
-            }
+        //// Update is called once per frame
+        //void Update()
+        //{
+        //    if (!IsActive)
+        //    {
+        //        return;
+        //    }
 
-            if (Input.GetButtonDown("MenuButton"))
-            {
-                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(MenuType.HUD));
-            }
-            else if (canEnterPillar && Input.GetButtonDown("Interact"))
-            {
-                if (playerModel.UnlockPillar(pillarId))
-                {
-                    GameController.SwitchToPillar(pillarId);
-                }             
-            }
-        }
+        //    if (Input.GetButtonDown("MenuButton"))
+        //    {
+        //        Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(MenuType.HUD));
+        //    }
+        //    else if (canEnterPillar && Input.GetButtonDown("Interact"))
+        //    {
+        //        Debug.LogError("This has been removed! You should only see this message if you do not have enough pillar marks!");          
+        //    }
+        //}
 
         #endregion monobehaviour methods
 
         //###########################################################
 
-        void IUiMenu.Initialize(IGameController gameController)
+        void IUiMenu.Initialize(GameController gameController, UiController ui_controller)
         {
             GameController = gameController;
             playerModel = GameController.PlayerModel;
@@ -105,5 +102,17 @@ namespace Game.UI.PillarEntranceMenu
         }
 
         //###########################################################
+
+        public void HandleInput()
+        {
+            if (Input.GetButtonDown("MenuButton"))
+            {
+                Utilities.EventManager.SendShowMenuEvent(this, new Utilities.EventManager.OnShowMenuEventArgs(MenuType.HUD));
+            }
+            else if (canEnterPillar && Input.GetButtonDown("Interact"))
+            {
+                Debug.LogError("This has been removed! You should only see this message if you do not have enough pillar marks!");
+            }
+        }
     }
 } //end of namespace

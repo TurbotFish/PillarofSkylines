@@ -16,7 +16,6 @@ namespace Game.LevelElements
         void OnEclipseEventHandler(object sender, Game.Utilities.EventManager.EclipseEventArgs args)
         {
 
-            Debug.Log("I am " + (inverted ? "" : "not") + " inverted and the result is : " + !(args.EclipseOn ^ inverted));
             SetTriggerState(!(args.EclipseOn ^ inverted), true);
 
             /*
@@ -44,7 +43,7 @@ namespace Game.LevelElements
 
         #region public methods
 
-        public override void Initialize(IGameController gameController)
+        public override void Initialize(GameController gameController)
         {
             base.Initialize(gameController);
             //Debug.Log ("INITIALISE" + transform.name);

@@ -27,7 +27,7 @@ namespace Game.LevelElements
 
         #region public methods
 
-        public override void Initialize(IGameController gameController)
+        public override void Initialize(GameController gameController)
         {
             rend = GetComponent<Renderer>(); //this is called before base.Initialize in order to gurantee that it is set before it is used.
             rend.sharedMaterial = off;

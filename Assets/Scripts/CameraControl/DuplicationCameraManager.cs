@@ -25,7 +25,7 @@ namespace Game.CameraControl
 
         // -- INITIALIZATION
 
-        public void Initialize(IGameController gameController)
+        public void Initialize(GameController gameController)
         {
             MainCamera = gameController.CameraController.PoS_Camera.CameraComponent;
             MainCameraTransform = MainCamera.transform;

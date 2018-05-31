@@ -15,7 +15,7 @@ namespace Game.LevelElements
 
         [SerializeField] private PillarId pillarId;
 
-        private IGameController gameController;
+        private GameController gameController;
         private bool isInitialized;
         private bool isPillarDestroyed;
 
@@ -23,7 +23,7 @@ namespace Game.LevelElements
 
         #region initialization
 
-        public void Initialize(IGameController gameController)
+        public void Initialize(GameController gameController)
         {
             if (isInitialized)
             {
@@ -38,20 +38,20 @@ namespace Game.LevelElements
 
         private void OnEnable()
         {
-            EventManager.PillarDestroyedEvent += OnPillarDestroyedEvent;
-
             if (isInitialized)
             {
-                if(!isPillarDestroyed && gameController.PlayerModel.GetPillarState(pillarId) == PillarState.Destroyed)
+                if (!isPillarDestroyed && gameController.PlayerModel.GetPillarState(pillarId) == PillarState.Destroyed)
                 {
                     isPillarDestroyed = true;
                 }
+
+                EventManager.PillarStateChangedEvent += OnPillarStateChanged;
             }
         }
 
         private void OnDisable()
         {
-            EventManager.PillarDestroyedEvent -= OnPillarDestroyedEvent;
+            EventManager.PillarStateChangedEvent -= OnPillarStateChanged;
         }
 
         #endregion initialization
@@ -107,11 +107,11 @@ namespace Game.LevelElements
         {
         }
 
-        private void OnPillarDestroyedEvent(object sender, EventManager.PillarDestroyedEventArgs args)
+        private void OnPillarStateChanged(object sender, EventManager.PillarStateChangedEventArgs args)
         {
             if (args.PillarId == pillarId)
             {
-                isPillarDestroyed = true;
+                isPillarDestroyed = (args.PillarState == PillarState.Destroyed);
             }
         }
 

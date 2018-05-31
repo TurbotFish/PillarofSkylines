@@ -53,7 +53,7 @@ namespace Game.Player.CharacterController
 
         public PlayerController PlayerController { get; private set; }
 
-        public GameControl.IGameController gameController;
+        public GameControl.GameController gameController;
 
         public Transform MyTransform { get; private set; }
 
@@ -115,7 +115,7 @@ namespace Game.Player.CharacterController
 
         #region initialization
 
-        public void Initialize(GameControl.IGameController gameController)
+        public void Initialize(GameControl.GameController gameController)
         {
             tempPhysicsHandler = GetComponent<CharacControllerRecu>();
             animator = GetComponentInChildren<Animator>();
@@ -548,7 +548,8 @@ namespace Game.Player.CharacterController
 
         public void ImmediateMovement(Vector3 newVelocity, bool worldSpace, bool addToVelocity = false)
         {
-            newVelocity = tempPhysicsHandler.Move((worldSpace ? TurnSpaceToLocal(newVelocity) : newVelocity));
+            Vector3 temp = (!worldSpace ? TurnLocalToSpace(newVelocity) : newVelocity);
+            newVelocity = tempPhysicsHandler.Move(temp);
             if (addToVelocity)
                 velocity += newVelocity/Time.deltaTime;
         }

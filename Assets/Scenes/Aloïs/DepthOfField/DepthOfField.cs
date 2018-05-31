@@ -13,7 +13,7 @@ public class DepthOfField : MonoBehaviour {
     [Range(0f, 100f)]
     public float startOffset = 5f;
 
-    [Range(0f, 100f)]
+    [Range(0f, 1000f)]
     public float maxDistance = 20f;
 
     [Range(0.0f, 10.0f)]

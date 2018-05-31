@@ -14,14 +14,14 @@ namespace Game.LevelElements
 
         public bool IsInitialized { get; private set; }
 
-        protected IGameController GameController { get; private set; }
+        protected GameController GameController { get; private set; }
         protected T PersistentData { get; private set; }
 
         //##################################################################
 
         // -- INITIALIZATION
 
-        public virtual void Initialize(IGameController gameController)
+        public virtual void Initialize(GameController gameController)
         {
             GameController = gameController;
 

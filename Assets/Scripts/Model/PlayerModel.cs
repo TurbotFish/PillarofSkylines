@@ -22,9 +22,6 @@ namespace Game.Model
 
         public bool PlayerHasNeedle { get; set; }
 
-        private List<PillarId> DestoyedPillarList = new List<PillarId>();
-        private List<PillarId> UnlockedPillarList = new List<PillarId>();
-
         private Dictionary<AbilityType, AbilityState> AbilityStateDictionary;
         private Dictionary<PillarMarkId, PillarMarkState> PillarMarkStateDictionary;
         private Dictionary<PillarId, PillarState> PillarStateDictionary;
@@ -41,19 +38,19 @@ namespace Game.Model
             LevelData = Resources.Load<LevelData>("ScriptableObjects/LevelData");
 
             AbilityStateDictionary = new Dictionary<AbilityType, AbilityState>();
-            foreach(var ability in Enum.GetValues(typeof(AbilityType)).Cast<AbilityType>())
+            foreach (var ability in Enum.GetValues(typeof(AbilityType)).Cast<AbilityType>())
             {
                 AbilityStateDictionary.Add(ability, AbilityState.inactive);
             }
 
             PillarMarkStateDictionary = new Dictionary<PillarMarkId, PillarMarkState>();
-            foreach(var pillar_mark in Enum.GetValues(typeof(PillarMarkId)).Cast<PillarMarkId>())
+            foreach (var pillar_mark in Enum.GetValues(typeof(PillarMarkId)).Cast<PillarMarkId>())
             {
                 PillarMarkStateDictionary.Add(pillar_mark, PillarMarkState.inactive);
             }
 
             PillarStateDictionary = new Dictionary<PillarId, PillarState>();
-            foreach(var pillar_id in Enum.GetValues(typeof(PillarId)).Cast<PillarId>())
+            foreach (var pillar_id in Enum.GetValues(typeof(PillarId)).Cast<PillarId>())
             {
                 PillarStateDictionary.Add(pillar_id, PillarState.Locked);
             }
@@ -109,7 +106,7 @@ namespace Game.Model
 
             foreach (var pillar_mark in Enum.GetValues(typeof(PillarMarkId)).Cast<PillarMarkId>())
             {
-                if(PillarMarkStateDictionary[pillar_mark] == PillarMarkState.active)
+                if (PillarMarkStateDictionary[pillar_mark] == PillarMarkState.active)
                 {
                     result++;
                 }
@@ -135,14 +132,7 @@ namespace Game.Model
         /// <returns></returns>
         public int GetPillarEntryPrice(PillarId pillarId)
         {
-            if (UnlockedPillarList.Contains(pillarId))
-            {
-                return 0;
-            }
-            else
-            {
-                return LevelData.GetPillarSceneActivationCost(pillarId);
-            }
+            return LevelData.GetPillarSceneActivationCost(pillarId);
         }
 
         /// <summary>
@@ -191,9 +181,12 @@ namespace Game.Model
         /// </summary>
         public void SetAbilityState(AbilityType ability_type, AbilityState ability_state)
         {
-            AbilityStateDictionary[ability_type] = ability_state;
+            if (AbilityStateDictionary[ability_type] != ability_state)
+            {
+                AbilityStateDictionary[ability_type] = ability_state;
 
-            EventManager.SendAbilityStateChangedEvent(this, new EventManager.AbilityStateChangedEventArgs(ability_type, ability_state));
+                EventManager.SendAbilityStateChangedEvent(this, new EventManager.AbilityStateChangedEventArgs(ability_type, ability_state));
+            }
         }
 
         /// <summary>
@@ -203,54 +196,27 @@ namespace Game.Model
         /// <param name="pillar_mark_state"></param>
         public void SetPillarMarkState(PillarMarkId pillar_mark_id, PillarMarkState pillar_mark_state)
         {
-            PillarMarkStateDictionary[pillar_mark_id] = pillar_mark_state;
+            if (PillarMarkStateDictionary[pillar_mark_id] != pillar_mark_state)
+            {
+                PillarMarkStateDictionary[pillar_mark_id] = pillar_mark_state;
 
-            EventManager.SendPillarMarkStateChangedEvent(this, new EventManager.PillarMarkStateChangedEventArgs(pillar_mark_id, pillar_mark_state));
+                EventManager.SendPillarMarkStateChangedEvent(this, new EventManager.PillarMarkStateChangedEventArgs(pillar_mark_id, pillar_mark_state));
+            }
         }
 
+        /// <summary>
+        /// Sets the state of the pillar.
+        /// </summary>
+        /// <param name="pillar_id"></param>
+        /// <param name="pillar_state"></param>
         public void SetPillarState(PillarId pillar_id, PillarState pillar_state)
         {
-            PillarStateDictionary[pillar_id] = pillar_state;
-
-
-        }
-
-        /// <summary>
-        /// Destroys a pillar.
-        /// </summary>
-        /// <param name="pillarId">The Id of the pillar to destroy.</param>
-        public void SetPillarDestroyed(PillarId pillarId)
-        {
-            if (!DestoyedPillarList.Contains(pillarId))
+            if (PillarStateDictionary[pillar_id] != pillar_state)
             {
-                DestoyedPillarList.Add(pillarId);
+                PillarStateDictionary[pillar_id] = pillar_state;
 
-                Utilities.EventManager.SendPillarDestroyedEvent(this, new Utilities.EventManager.PillarDestroyedEventArgs(pillarId));
+                EventManager.SendPillarStateChangedEvent(this, new EventManager.PillarStateChangedEventArgs(pillar_id, pillar_state));
             }
-        }
-
-        /// <summary>
-        /// Unlocks a pillar. The entry price will be removed from the player's favours.
-        /// </summary>
-        /// <param name="pillarId">The Id of the pillar to unlock</param>
-        /// <returns>true if the Pillar is unlocked, false otherwise</returns>
-        public bool UnlockPillar(PillarId pillarId)
-        {
-            if (UnlockedPillarList.Contains(pillarId))
-            {
-                return true;
-            }
-            else
-            {
-                if (GetActivePillarMarkCount() >= GetPillarEntryPrice(pillarId))
-                {
-                    UnlockedPillarList.Add(pillarId);
-
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         /// <summary>

@@ -10,11 +10,11 @@ namespace Game.LevelElements
     {
         //########################################################################
 
-        private IGameController gameController;
+        private GameController gameController;
 
         //########################################################################
 
-        public void Initialize(IGameController gameController)
+        public void Initialize(GameController gameController)
         {
             this.gameController = gameController;
         }

@@ -19,7 +19,7 @@ public class GPUIDisplayManager : MonoBehaviour
     [SerializeField] private Material materialToDraw;
     [SerializeField] private UnityEngine.Rendering.ShadowCastingMode shadowMode;
 
-    private IGameController GameController;
+    private GameController GameController;
     private bool IsInitialized;
 
     private Dictionary<int, List<List<Matrix4x4>>> MatrixGroupDictionary = new Dictionary<int, List<List<Matrix4x4>>>();
@@ -37,7 +37,7 @@ public class GPUIDisplayManager : MonoBehaviour
 
     // INITIALIZATION
 
-    public void Initialize(IGameController gameController)
+    public void Initialize(GameController gameController)
     {
         GameController = gameController;
 

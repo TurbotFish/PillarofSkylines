@@ -18,6 +18,35 @@ public class FXManager : MonoBehaviour {
 
     }
     #endregion
+	[Header ("Special Material")]
+	public Renderer pilouBody;
+	public Renderer pilouArmor;
+	public Renderer pilouHair;
+	public Renderer pilouSkirtA;
+	public Renderer pilouSkirtB;
+
+	Material pilouBodyMat;
+	Material pilouArmorMat;
+	Material pilouHairMat;
+	Material pilouSkirtAMat;
+	Material pilouSkirtBMat;
+
+	Color pilouSkirtColorOn;
+	Color pilouSkirtColorOff;
+
+	void Start()
+	{
+		pilouBodyMat = pilouBody.material;
+		pilouArmorMat = pilouArmor.material;
+		pilouHairMat = pilouHair.material;
+		pilouSkirtAMat = pilouSkirtA.material;
+		pilouSkirtBMat = pilouSkirtB.material;
+
+		pilouSkirtColorOn = pilouSkirtAMat.color;
+		pilouSkirtColorOff = new Color (pilouSkirtColorOn.r,pilouSkirtColorOn.g,pilouSkirtColorOn.b,0);
+
+	}
+
 
 	[Header ("Impact")]
 	public float speedThreshold;
@@ -25,10 +54,11 @@ public class FXManager : MonoBehaviour {
 	public float impactTimeToAppear;
 	public float impactDelay;
 	public Ease impactEaseIn, impactEaseOut;
-	public List<Material> impactDissolveMats = new List<Material>();
+	//public List<Material> impactDissolveMats = new List<Material>();
 	public GameObject impactExplosion;
 	public List<ParticleSystem> impactParticles = new List<ParticleSystem>();
 	public GameObject shadowProjector;
+
 	public void ImpactPlay(float speed)
 	{
 		//Debug.Log (speed);
@@ -38,11 +68,17 @@ public class FXManager : MonoBehaviour {
 			foreach (ParticleSystem ps in impactParticles) {
 				ps.Play ();
 			}
-			foreach (Material mat in impactDissolveMats) {
-				mat.DOFloat (1, "_DissolveAmount", impactTimeToDissolve).SetEase(impactEaseIn);
-				mat.DOFloat (0, "_DissolveAmount", impactTimeToAppear).SetEase(impactEaseOut).SetDelay(impactDelay);
-			}
 
+			pilouBodyMat.DOFloat (1, "_DissolveAmount", impactTimeToDissolve).SetEase(impactEaseIn);
+			pilouBodyMat.DOFloat (0, "_DissolveAmount", impactTimeToAppear).SetEase(impactEaseOut).SetDelay(impactDelay);
+			pilouArmorMat.DOFloat (1, "_DissolveAmount", impactTimeToDissolve).SetEase(impactEaseIn);
+			pilouArmorMat.DOFloat (0, "_DissolveAmount", impactTimeToAppear).SetEase(impactEaseOut).SetDelay(impactDelay);
+			pilouHairMat.DOFloat (1, "_DissolveAmount", impactTimeToDissolve).SetEase(impactEaseIn);
+			pilouHairMat.DOFloat (0, "_DissolveAmount", impactTimeToAppear).SetEase(impactEaseOut).SetDelay(impactDelay);
+			pilouSkirtAMat.DOColor(pilouSkirtColorOff,"_Color",impactTimeToDissolve).SetEase(impactEaseIn);
+			pilouSkirtAMat.DOColor(pilouSkirtColorOn,"_Color",impactTimeToAppear).SetEase(impactEaseOut).SetDelay(impactDelay);
+			pilouSkirtBMat.DOColor(pilouSkirtColorOff,"_Color",impactTimeToDissolve).SetEase(impactEaseIn);
+			pilouSkirtBMat.DOColor(pilouSkirtColorOn,"_Color",impactTimeToAppear).SetEase(impactEaseOut).SetDelay(impactDelay);
 
 			dashLight.DOIntensity (dashLightIntensity, impactTimeToDissolve).SetEase (impactEaseIn);
 			dashLight.DOIntensity (0, impactTimeToAppear).SetEase (impactEaseOut).SetDelay(impactDelay);
@@ -81,17 +117,24 @@ public class FXManager : MonoBehaviour {
 	public float dashLightIntensity;
 	public List<ParticleSystem> dashParticles = new List<ParticleSystem>();
 	public GameObject dashExplosion;
-	public List<Material> dashDissolveMats = new List<Material>();
+	//public List<Material> dashDissolveMats = new List<Material>();
 
 	public void DashPlay()
 	{
 		foreach (ParticleSystem ps in dashParticles) {
 			ps.Play ();
 		}
-		foreach (Material mat in dashDissolveMats) {
-			mat.DOFloat (1, "_DissolveAmount", dashTimeToDissolve).SetEase(dashEaseIn);
-			mat.DOFloat (0, "_DissolveAmount", dashTimeToAppear).SetEase(dashEaseOut).SetDelay(dashDelay);
-		}
+		pilouBodyMat.DOFloat (1, "_DissolveAmount", dashTimeToDissolve).SetEase(dashEaseIn);
+		pilouBodyMat.DOFloat (0, "_DissolveAmount", dashTimeToAppear).SetEase(dashEaseOut).SetDelay(dashDelay);
+		pilouArmorMat.DOFloat (1, "_DissolveAmount", dashTimeToDissolve).SetEase(dashEaseIn);
+		pilouArmorMat.DOFloat (0, "_DissolveAmount", dashTimeToAppear).SetEase(dashEaseOut).SetDelay(dashDelay);
+		pilouHairMat.DOFloat (1, "_DissolveAmount", dashTimeToDissolve).SetEase(dashEaseIn);
+		pilouHairMat.DOFloat (0, "_DissolveAmount", dashTimeToAppear).SetEase(dashEaseOut).SetDelay(dashDelay);
+		pilouSkirtAMat.DOColor(pilouSkirtColorOff,"_Color",dashTimeToDissolve).SetEase(dashEaseIn);
+		pilouSkirtAMat.DOColor(pilouSkirtColorOn,"_Color",dashTimeToAppear).SetEase(dashEaseOut).SetDelay(dashDelay);
+		pilouSkirtBMat.DOColor(pilouSkirtColorOff,"_Color",dashTimeToDissolve).SetEase(dashEaseIn);
+		pilouSkirtBMat.DOColor(pilouSkirtColorOn,"_Color",dashTimeToAppear).SetEase(dashEaseOut).SetDelay(dashDelay);
+
 		dashLight.DOIntensity (dashLightIntensity, dashTimeToDissolve).SetEase (dashEaseIn);
 		dashLight.DOIntensity (0, dashTimeToAppear).SetEase (dashEaseOut).SetDelay(dashDelay);
 
@@ -110,19 +153,26 @@ public class FXManager : MonoBehaviour {
 	public float jumpDelay;
 	public Ease jumpEaseIn, jumpEaseOut;
 	public List<ParticleSystem> doubleJumpParticles = new List<ParticleSystem>();
-	public List<Material> jumpDissolveMats = new List<Material>();
+	//public List<Material> jumpDissolveMats = new List<Material>();
 
 	public void DoubleJumpPlay()
 	{
 		foreach (ParticleSystem ps in doubleJumpParticles) {
 			ps.Play ();
 		}
-		foreach (Material mat in jumpDissolveMats) {
-			mat.SetFloat ("_DissolveAmount", 0.3f);
-			mat.DOFloat (jumpDissolveAmount, "_DissolveAmount", jumpTimeToDissolve).SetEase(jumpEaseIn);
-			mat.DOFloat (0, "_DissolveAmount", jumpTimeToAppear).SetEase(jumpEaseOut).SetDelay(jumpDelay);
 
-		}
+		pilouBodyMat.SetFloat ("DissolveAmount", 0.3f);
+		pilouHairMat.SetFloat ("DissolveAmount", 0.3f);
+		pilouArmorMat.SetFloat ("DissolveAmount", 0.3f);
+
+		pilouBodyMat.DOFloat (jumpDissolveAmount, "_DissolveAmount", jumpTimeToDissolve).SetEase(jumpEaseIn);
+		pilouBodyMat.DOFloat (0, "_DissolveAmount", jumpTimeToAppear).SetEase(jumpEaseOut).SetDelay(jumpDelay);
+		pilouArmorMat.DOFloat (jumpDissolveAmount, "_DissolveAmount", jumpTimeToDissolve).SetEase(jumpEaseIn);
+		pilouArmorMat.DOFloat (0, "_DissolveAmount", jumpTimeToAppear).SetEase(jumpEaseOut).SetDelay(jumpDelay);
+		pilouHairMat.DOFloat (jumpDissolveAmount, "_DissolveAmount", jumpTimeToDissolve).SetEase(jumpEaseIn);
+		pilouHairMat.DOFloat (0, "_DissolveAmount", jumpTimeToAppear).SetEase(jumpEaseOut).SetDelay(jumpDelay);
+
+
 	}
 
 
@@ -132,7 +182,7 @@ public class FXManager : MonoBehaviour {
 	public float glideTimeToAppear;
 	public Ease glideEaseOut;
 	public List<ParticleSystem> glideParticles = new List<ParticleSystem>();
-	public List<Material> glideDissolveMats = new List<Material>();
+	//public List<Material> glideDissolveMats = new List<Material>();
 	public List<LocalTrailRenderer> glideTrails = new List<LocalTrailRenderer>();
 	public List<Cloth> glideClothes = new List<Cloth>();
 
@@ -146,9 +196,10 @@ public class FXManager : MonoBehaviour {
 		foreach (ParticleSystem ps in glideParticles) {
 			ps.Play ();
 		}
-		foreach (Material mat in glideDissolveMats) {
-			//mat.DOFloat (glideDissolveAmount, "_DissolveAmount", glideTimeToDissolve).SetEase(glideEaseIn);
-		}
+
+		//pilouBodyMat.DOFloat (glideDissolveAmount, "_DissolveAmount", glideTimeToDissolve).SetEase(glideEaseIn);
+		//pilouHairMat.DOFloat (glideDissolveAmount, "_DissolveAmount", glideTimeToDissolve).SetEase(glideEaseIn);
+
 		foreach (LocalTrailRenderer tr in glideTrails) {
 			tr.follow = true;
 		}
@@ -159,9 +210,11 @@ public class FXManager : MonoBehaviour {
 		foreach (ParticleSystem ps in glideParticles) {
 			ps.Stop ();
 		}
-		foreach (Material mat in glideDissolveMats) {
-			mat.DOFloat (0, "_DissolveAmount", glideTimeToAppear).SetEase(glideEaseOut);
-		}
+
+		pilouBodyMat.DOFloat (0, "_DissolveAmount", glideTimeToAppear).SetEase(glideEaseOut);
+		pilouArmorMat.DOFloat (0, "_DissolveAmount", glideTimeToAppear).SetEase(glideEaseOut);
+		pilouHairMat.DOFloat (0, "_DissolveAmount", glideTimeToAppear).SetEase(glideEaseOut);
+
 		foreach (LocalTrailRenderer tr in glideTrails) {
 			tr.follow = false;
 		}
@@ -173,9 +226,10 @@ public class FXManager : MonoBehaviour {
 
 	public void GlideUpdate()
 	{
-		foreach (Material mat in glideDissolveMats) {
-			mat.SetFloat ("_DissolveAmount", Mathf.Lerp(glideDissolve.min, glideDissolve.max, (receivedVelocity-velocity.min)/(velocity.max-velocity.min)));
-		}
+		pilouBodyMat.SetFloat ("_DissolveAmount", Mathf.Lerp(glideDissolve.min, glideDissolve.max, (receivedVelocity-velocity.min)/(velocity.max-velocity.min)));
+		pilouArmorMat.SetFloat ("_DissolveAmount", Mathf.Lerp(glideDissolve.min, glideDissolve.max, (receivedVelocity-velocity.min)/(velocity.max-velocity.min)));
+		pilouHairMat.SetFloat("_DissolveAmount", Mathf.Lerp(glideDissolve.min, glideDissolve.max, (receivedVelocity-velocity.min)/(velocity.max-velocity.min)));
+
 		foreach (Cloth cloth in glideClothes) {
 			float amount = clothMovement * (receivedVelocity - velocity.min) / (velocity.max - velocity.min)+50;
 			cloth.randomAcceleration = new Vector3 (amount*0.5f, amount*0.5f, amount);

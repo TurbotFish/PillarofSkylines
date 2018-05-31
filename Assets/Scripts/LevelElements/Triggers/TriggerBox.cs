@@ -15,6 +15,8 @@ namespace Game.LevelElements
         bool definitiveActivation;
         [SerializeField]
         float delayBeforeDeactivation;
+        [SerializeField]
+        bool directionIndependent;
 
         [SerializeField]
         bool changeMaterial;
@@ -58,7 +60,7 @@ namespace Game.LevelElements
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.tag == tagToActivate && Mathf.Abs(Vector3.Dot(other.transform.up, transform.up)) > 0.9f)
+            if (other.tag == tagToActivate && (Mathf.Abs(Vector3.Dot(other.transform.up, transform.up)) > 0.9f || directionIndependent))
             {
 
                 if (Toggle)
@@ -126,7 +128,7 @@ namespace Game.LevelElements
 
         #region public methods
 
-        public override void Initialize(IGameController gameController)
+        public override void Initialize(GameController gameController)
         {
             base.Initialize(gameController);
 			//Debug.Log ("INITIALISE" + transform.name);

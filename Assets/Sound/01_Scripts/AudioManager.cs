@@ -80,13 +80,18 @@ public class AudioManager : MonoBehaviour {
 	{
 		currentFootsteps = anim.GetFloat ("Footsteps");	
 		if (currentFootsteps > 0 && previousFootsteps < 0) {
-			PlayRandomFootstep ();
+			//PlayRandomFootstep ();
 		}
 		previousFootsteps = currentFootsteps;
 	}
 
-	public void PlayRandomFootstep()
+	public void PlayRandomFootstep(int _surfaceType)
 	{
+
+		//0 is concrete
+		//1 is grass
+		surface = _surfaceType == 1 ? SurfaceType.Concrete : SurfaceType.Grass;
+
 		AudioSource footstep = FSGrass[0];
 		//default footstep
 		if (surface == SurfaceType.Concrete) {
@@ -110,8 +115,14 @@ public class AudioManager : MonoBehaviour {
 			footstep = FSGrass [index];
 		}
 
-		footstep.volume = 1 + Random.Range (-volumeVariance, 0);
+
+
+		footstep.volume = 1f + Random.Range (-volumeVariance, 0);
 		footstep.pitch = 1 + Random.Range (-pitchVariance, pitchVariance);
+
+		//the faster the avatar runs, the higher the pitch
+		footstep.pitch += playerSpeed * .07f;
+
 		footstep.Play ();
 	}
 

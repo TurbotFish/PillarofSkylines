@@ -1,8 +1,5 @@
 ﻿using Game.GameControl;
-using Game.Player;
 using Game.Utilities;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -10,26 +7,31 @@ using UnityEngine.Video;
 
 namespace Game.UI
 {
-
     public class MainMenuController : MonoBehaviour, IUiMenu
     {
         //##################################################################
 
-        public bool IsActive { get; private set; }
-
-        IGameController gameController;
+        // -- CONSTANTS
 
         [SerializeField] private Button playButton;
         [SerializeField] private VideoPlayer VideoPlayer;
 
         //##################################################################
 
-        void IUiMenu.Initialize(IGameController gameController)
-        {
-            this.gameController = gameController;
-        }
+        // -- ATTRIBUTES
+
+        public bool IsActive { get; private set; }
+
+        private GameController GameController;
 
         //##################################################################
+
+        // -- INITIALIZATION
+
+        void IUiMenu.Initialize(GameController gameController, UiController ui_controller)
+        {
+            this.GameController = gameController;
+        }
 
         void IUiMenu.Activate(EventManager.OnShowMenuEventArgs args)
         {
@@ -56,20 +58,14 @@ namespace Game.UI
 
         //##################################################################
 
-        // Update is called once per frame
-        void Update()
-        {
-            if (!IsActive)
-            {
-                return;
-            }
+        // -- OPERATIONS
 
+        public void HandleInput()
+        {
             if (Input.GetButtonDown("Interact"))
             {
-                gameController.StartGame();
+                GameController.StartGame();
             }
         }
-
-        //##################################################################
     }
 } //end of namespace

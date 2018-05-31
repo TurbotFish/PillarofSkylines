@@ -131,7 +131,7 @@ public class PoS_Camera : MonoBehaviour
     float lastInput;
     float recoilIntensity;
 
-    bool gamePaused;
+    bool gamePaused = true;
 
     bool autoAdjustYaw, autoAdjustPitch;
     bool canAutoReset;
@@ -147,14 +147,16 @@ public class PoS_Camera : MonoBehaviour
 
     Vector3 characterUp;
 
-    private IGameController gameController;
+    private GameController gameController;
     private bool isInitialized;
+
+    private PosCameraInputState InputState;
 
     #endregion
 
     #region MonoBehaviour
 
-    public void Initialize(IGameController gameController)
+    public void Initialize(GameController gameController)
     {
         this.gameController = gameController;
 
@@ -210,7 +212,7 @@ public class PoS_Camera : MonoBehaviour
 #endif
     }
 
-    void LateUpdate()
+    void Update()
     {
         if (gamePaused || !isInitialized)
         {
@@ -226,17 +228,37 @@ public class PoS_Camera : MonoBehaviour
         RealignPlayer();
 
         if (enablePanoramaMode)
+        {
             DoPanorama();
+        }
 
         if (gameController.DuplicationCameraManager != null)
         {
             gameController.DuplicationCameraManager.UpdateDuplicationCameras();
         }
+
+        InputState.Reset();
     }
     #endregion
 
     #region General Methods
 
+    /// <summary>
+    /// Called by the game controller when its the camera's turn to handle input.
+    /// </summary>
+    public void HandleInput()
+    {
+        InputState.MouseXAxis = Input.GetAxis("Mouse X");
+        InputState.MouseYAxis = Input.GetAxis("Mouse Y");
+        InputState.RightStickXAxis = Input.GetAxis("RightStick X");
+        InputState.RightStickYAxis = Input.GetAxis("RightStick Y");
+        InputState.VerticalAxis = Input.GetAxis("Vertical");
+        InputState.MouseScrollWheelAxis = Input.GetAxis("Mouse ScrollWheel");
+
+        InputState.ResetCameraButton = Input.GetButton("ResetCamera");
+        InputState.AnyKey = Input.anyKey;
+    }
+    
     /// <summary>
     /// Appelé quand le player spawn, change de scène ou qu'il est téléporté par le worldWrapper
     /// </summary>
@@ -306,6 +328,16 @@ public class PoS_Camera : MonoBehaviour
         targetSpace = Quaternion.FromToRotation(currentUp, characterUp) * targetSpace;
     }
 
+    public void RestartExecution()
+    {
+        gamePaused = false;
+    }
+
+    public void StopExecution()
+    {
+        gamePaused = true;
+    }
+
     void RealignPlayer()
     {
         if (state == eCameraState.HomeDoor)
@@ -335,9 +367,9 @@ public class PoS_Camera : MonoBehaviour
     {
         if (autoAdjustPitch)
             pitch = Mathf.LerpAngle(pitch, targetPitch, deltaTime / autoDamp);
-        if (autoAdjustYaw)
+        if (autoAdjustYaw) {
             yaw = Mathf.LerpAngle(yaw, targetYaw, deltaTime / autoDamp);
-
+        }
         if (state == eCameraState.Resetting)
         {
             if (((autoAdjustYaw && Mathf.Abs(Mathf.DeltaAngle(yaw, targetYaw)) < 1f) || !autoAdjustYaw)
@@ -385,8 +417,7 @@ public class PoS_Camera : MonoBehaviour
         float distanceFromAngle = Mathf.Lerp(0, 1, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
         idealDistance = 1 + zoomValue * distanceFromAngle + additionalDistance;
 
-        if (canZoom) Zoom(Input.GetAxis("Mouse ScrollWheel"));
-        //ZoomFromCeiling();
+        if (canZoom) Zoom(InputState.MouseScrollWheelAxis);
 
         offset.x = Mathf.Lerp(offsetClose.x, offsetFar.x, currentDistance / maxDistance);
         offset.y = Mathf.Lerp(offsetClose.y, offsetFar.y, currentDistance / maxDistance);
@@ -440,11 +471,11 @@ public class PoS_Camera : MonoBehaviour
     void GetInputsAndStates()
     {
         playerState = player.CurrentState;
-        playerVelocity = target.InverseTransformVector((Quaternion.AngleAxis(Vector3.Angle(worldUp, target.up), Vector3.Cross(worldUp, target.up))) * player.MovementInfo.velocity);
+        playerVelocity = target.InverseTransformVector((Quaternion.AngleAxis(Vector3.Angle(worldUp, target.up), (Vector3.Cross(worldUp, target.up) != Vector3.zero ? Vector3.Cross(worldUp, target.up) : Vector3.forward))) * player.MovementInfo.velocity);
         // TODO: ask someone to make the player velocity ACTUALLY local and not just rotated from the up vector
 
-        input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");
-        input.y = Input.GetAxis("Mouse Y") + Input.GetAxis("RightStick Y");
+        input.x = InputState.MouseXAxis + InputState.RightStickXAxis;
+        input.y = InputState.MouseYAxis + InputState.RightStickYAxis;
 
         if (Time.time < ignoreInputEnd)
         {
@@ -480,7 +511,7 @@ public class PoS_Camera : MonoBehaviour
             additionalDistance = dashDistance;
         }
 
-        if (inverseFacingDirection && Input.GetAxis("Vertical") >= 0)
+        if (inverseFacingDirection && InputState.VerticalAxis >= 0)
         {
             startFacingDirection ^= true;
             inverseFacingDirection = false;
@@ -536,7 +567,7 @@ public class PoS_Camera : MonoBehaviour
             }
         }
 
-        if (Input.GetButton("ResetCamera"))
+        if (InputState.ResetCameraButton)
         {
             ResetCamera(slopeValue);
             targetFov += resetCameraFovSupplement;
@@ -640,29 +671,19 @@ public class PoS_Camera : MonoBehaviour
     void WallRunCamera()
     {
         Vector3 newYaw = Vector3.Cross(target.parent.up, controller.collisions.lastWallNormal);
-
-        //print("WALLRUN initial cross: " + target.parent.up + " (player up) × " + controller.collisions.lastWallNormal + " (wall normal) = " + newYaw);
-
-
+        
         if (Vector3.Dot(newYaw, target.parent.forward) < 0)
             newYaw *= -1;
-
-
+        
         float dot = Vector3.Dot(newYaw, playerVelocity.normalized);
 
         if (Mathf.Abs(dot) < facingWallBuffer)
             dot = 0;
-
-        //print("WALLRUN dot between " + newYaw + " (guessed direction against wall) and " + playerVelocity.normalized + " (playerVelocity): " + dot);
-
-
+        
         newYaw = Vector3.Lerp(my.forward, newYaw, dot);
-
-        //print("WALLRUN New Yaw " + newYaw + " Current Forward is " + my.forward + " Rotation towards new Yaw: " + GetRotationTowardsDirection(newYaw));
-
+        
         resetType = eResetType.WallRun;
         AllowAutoReset(true, true);
-        //SetTargetRotation(defaultPitch, GetRotationTowardsDirection(newYaw).y, wallRunDamp);
         SetTargetRotation(defaultPitch, GetRotationTowardsDirection(newYaw).y, wallRunDamp);
         state = eCameraState.WallRun;
     }
@@ -730,7 +751,7 @@ public class PoS_Camera : MonoBehaviour
     Vector2 GetRotationTowardsDirection(Vector3 direction)
     {
         Quaternion q = Quaternion.LookRotation(direction, target.up);
-        return new Vector2(q.eulerAngles.x, q.eulerAngles.y);
+        return Quaternion.Inverse(targetSpace) * new Vector2(q.eulerAngles.x, q.eulerAngles.y);
     }
 
     float GetPitchTowardsPoint(Vector3 point)
@@ -1028,7 +1049,7 @@ public class PoS_Camera : MonoBehaviour
 
     void DoPanorama()
     {
-        if (!Input.anyKey && input.sqrMagnitude == 0 && playerVelocity == Vector3.zero)
+        if (!InputState.AnyKey && input.sqrMagnitude == 0 && playerVelocity == Vector3.zero)
             panoramaTimer += deltaTime;
         else
         {
@@ -1244,7 +1265,7 @@ public class PoS_Camera : MonoBehaviour
         if (facingTime == -1)
         {
             facingTime = 0;
-            if (Input.GetAxis("Vertical") <= 0)
+            if (InputState.VerticalAxis <= 0)
                 temp ^= true;
             return startFacingDirection = currentFacingDirection = temp;
 
@@ -1359,5 +1380,35 @@ public class PoS_Camera : MonoBehaviour
     #endregion
 
     #endregion
+
+
+
+    //################
+
+    private struct PosCameraInputState
+    {
+        public float MouseXAxis;
+        public float MouseYAxis;
+        public float RightStickXAxis;
+        public float RightStickYAxis;
+        public float VerticalAxis;
+        public float MouseScrollWheelAxis;
+
+        public bool ResetCameraButton;
+        public bool AnyKey;
+
+        public void Reset()
+        {
+            MouseXAxis = 0;
+            MouseYAxis = 0;
+            RightStickXAxis = 0;
+            RightStickYAxis = 0;
+            VerticalAxis = 0;
+            MouseScrollWheelAxis = 0;
+
+            ResetCameraButton = false;
+            AnyKey = false;
+        }
+    }
 
 }

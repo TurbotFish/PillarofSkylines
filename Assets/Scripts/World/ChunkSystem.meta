@@ -1,8 +1,15 @@
 fileFormatVersion: 2
+<<<<<<< HEAD
 guid: 70d9b76b2ec3c7046941fb3c12915902
 folderAsset: yes
 timeCreated: 1508747815
 licenseType: Pro
+=======
+guid: 751dc15c82155b8428aef8c2f4d21127
+folderAsset: yes
+timeCreated: 1527144446
+licenseType: Free
+>>>>>>> github/Vikanya
 DefaultImporter:
   externalObjects: {}
   userData: 

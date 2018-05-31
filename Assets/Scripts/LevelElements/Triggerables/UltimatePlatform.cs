@@ -38,12 +38,15 @@ namespace Game.LevelElements
 
         #region public methods
 
-        public override void Initialize(IGameController gameController)
+        public override void Initialize(GameController gameController)
         {
+            if (IsInitialized)
+                return;
+
             base.Initialize(gameController);
 
             //(PersistentDataObject as PersistentStepByStepTriggerable).State = currentState;
-
+            //Debug.Log("I am " + name);
             my = transform;
             platform = GetComponent<MovingPlatform>();
 
@@ -51,8 +54,11 @@ namespace Game.LevelElements
 
             foreach (Transform child in transform.GetChild(0))
             {
+                //Debug.Log("adding : " + child.name);
                 waypoints.Add(my.localRotation * new Vector3(child.localPosition.x * my.lossyScale.x, child.localPosition.y * my.lossyScale.y, child.localPosition.z * my.lossyScale.z));
             }
+
+            //Debug.Log("waypoints " + waypoints.Count);
 
             if (waitTime.Count < waypoints.Count)
             {
@@ -85,13 +91,13 @@ namespace Game.LevelElements
 
         protected override void Activate()
         {
-            Debug.LogFormat("Platform \"{0}\": Activate called!", name);
+            //Debug.LogFormat("Platform \"{0}\": Activate called!", name);
             
         }
 
         protected override void Deactivate()
         {
-            Debug.LogFormat("Platform \"{0}\": Deactivate called!", name);
+            //Debug.LogFormat("Platform \"{0}\": Deactivate called!", name);
             if (finishMovement)
             {
                 finishingMovement = true;
@@ -115,7 +121,7 @@ namespace Game.LevelElements
 
        private void Update()
         {
-            if (!isInitialized)
+            if (!IsInitialized)
                 return;
 
             if (currentState == eUltimatePlatformState.newOrder && (Triggered || finishingMovement))

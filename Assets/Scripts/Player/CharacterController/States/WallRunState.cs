@@ -225,7 +225,8 @@ namespace Game.Player.CharacterController.States
                 climbUp = false;
                 if (localWallRunDir != Vector3.zero)
                 {
-                    result.PlayerForward = Vector3.Project(charController.TurnLocalToSpace(localWallRunDir), Vector3.Cross(lastWallNormal, charController.MyTransform.up));
+                    Vector3 projectedVelocity = Vector3.Project(charController.TurnLocalToSpace(localWallRunDir), Vector3.Cross(lastWallNormal, charController.MyTransform.up));
+                    result.PlayerForward = Vector3.Lerp(-lastWallNormal, projectedVelocity, projectedVelocity.magnitude/10f);
                     //Debug.Log("new player forward is : " + result.PlayerForward);
                 }
             }

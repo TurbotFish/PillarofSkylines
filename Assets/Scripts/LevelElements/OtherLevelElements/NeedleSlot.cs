@@ -20,7 +20,7 @@ namespace Game.LevelElements
 
         // INITIALIZATION
 
-        public override void Initialize(IGameController gameController)
+        public override void Initialize(GameController gameController)
         {
             base.Initialize(gameController);
 
@@ -102,7 +102,6 @@ namespace Game.LevelElements
         /// </summary>
         void IWaypoint.OnWaypointRemoved()
         {
-
         }
 
         protected override PersistentData CreatePersistentDataObject()

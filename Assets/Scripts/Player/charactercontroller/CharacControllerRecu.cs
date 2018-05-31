@@ -102,6 +102,13 @@ namespace Game.Player.CharacterController
             favourCollider.height = height + radius * 2;
             capsuleHeightModifier = new Vector3(0, height, 0);
             collisions.collisionLayer = collisionMask;
+
+            Utilities.EventManager.PreSceneChangeEvent += OnPreSceneChange;
+        }
+
+        private void OnPreSceneChange(object sender, Utilities.EventManager.PreSceneChangeEventArgs args)
+        {
+            collisions.Reset();
         }
 
         //#############################################################################

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Game.GameControl;
 
 namespace Game
 {
@@ -27,7 +28,7 @@ namespace Game
 
         #region initialization
 
-        public void InitializeEclipseManager(GameControl.IGameController gameController)
+        public void InitializeEclipseManager(GameController gameController)
         {
             this.player = gameController.PlayerController.CharController;
             this.eclipsePostEffect = gameController.CameraController.EclipseEffect;

@@ -27,7 +27,9 @@ namespace Game.EchoSystem
         private Transform echoTransform;      
         private Vector3 fxPosition;
 
-        public Transform MyTransform { get; private set; }
+        public Transform MyTransform { get { if (myTransform == null) { myTransform = transform; } return myTransform; } }
+
+        private Transform myTransform;
 
 		[Header("Particles")]
 		public List<ParticleSystem> pss = new List<ParticleSystem> ();
@@ -36,7 +38,6 @@ namespace Game.EchoSystem
 
         void Start()
         {
-            MyTransform = transform;
 
             collider = GetComponent<BoxCollider>();
             collider.isTrigger = true;
@@ -70,6 +71,7 @@ namespace Game.EchoSystem
 
         public void Unfreeze()
         {
+			StartParticles ();
             fluidEcho.SetActive(true);
             solidEcho.SetActive(false);
             gameObject.layer = pickUpLayer;

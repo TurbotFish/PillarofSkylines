@@ -20,7 +20,7 @@ public class Flyingpillar : MonoBehaviour, IInteractable, IWorldObject
 
     #region initialization
 
-    public void Initialize(IGameController gameController)
+    public void Initialize(GameController gameController)
     {
         move = movingPillar.transform;
         targetPos = move.position;

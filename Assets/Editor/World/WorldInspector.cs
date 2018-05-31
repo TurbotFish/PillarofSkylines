@@ -132,7 +132,7 @@ namespace Game.World
                         CleanSubSceneFolder();
                     }
 
-                    if (GUILayout.Button("Auto-adjust Bounds"))
+                    if (GUILayout.Button("Auto-adjust All Region Bounds"))
                     {
                         AutoAdjustAllBounds();
                     }

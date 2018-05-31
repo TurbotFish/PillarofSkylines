@@ -29,7 +29,7 @@ namespace Game.LevelElements
 
         #region public methods
 
-        public override void Initialize(IGameController gameController)
+        public override void Initialize(GameController gameController)
         {
             base.Initialize(gameController);
 
@@ -91,7 +91,6 @@ namespace Game.LevelElements
             for (elapsed = timeToMove - elapsed; elapsed < timeToMove; elapsed += Time.deltaTime * (comingBack ? comingBackMultiplicator : 1))
             {
                 float t = elapsed / timeToMove;
-
 
                 Vector3 movement = Vector3.Lerp(startPos, endPos, t) - MyTransform.localPosition;
                 platform.Move(movement);

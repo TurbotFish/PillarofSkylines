@@ -9,7 +9,7 @@ namespace Game.Player
     public class WrappableObject : MonoBehaviour
     {
 
-        IGameController gameController;
+        GameController gameController;
         Transform myTransform;
 
         AxisInfo xAxisInfo;
@@ -22,7 +22,7 @@ namespace Game.Player
 
         //#####################################################
 
-        public void InitializeWrappableObject(IGameController gameController)
+        public void Initialize(GameController gameController)
         {
             Debug.Log("WrappableObject: Initialize");
 

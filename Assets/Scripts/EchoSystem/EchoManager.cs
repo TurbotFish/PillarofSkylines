@@ -22,7 +22,7 @@ namespace Game.EchoSystem
 
         private Animator playerAnimator;
 
-        private IGameController gameController;
+        private GameController gameController;
         public Player.CharacterController.CharController charController;
         private EchoCameraEffect echoCamera;
         private EchoParticleSystem echoParticles;
@@ -41,7 +41,7 @@ namespace Game.EchoSystem
 
         // INITIALIZATION
 
-        public void Initialize(IGameController gameController)
+        public void Initialize(GameController gameController)
         {
             this.gameController = gameController;
             echoCamera = gameController.CameraController.EchoCameraEffect;
@@ -90,7 +90,7 @@ namespace Game.EchoSystem
             if (!isEclipseActive && echoList.Count > 0)
             {
                 CreateShell();
-
+                
                 echoCamera.SetFov(70, 0.15f, true);
 
                 int lastIndex = echoList.Count - 1;
@@ -106,11 +106,14 @@ namespace Game.EchoSystem
             else if (hasWaypoint)
             {
                 CreateShell();
-
+                
                 echoCamera.SetFov(70, 0.15f, true);
 
                 var eventArgs = new EventManager.TeleportPlayerEventArgs(Waypoint.Position, false);
                 EventManager.SendTeleportPlayerEvent(this, eventArgs);
+
+                if (gameController.PlayerModel.PlayerHasNeedle)
+                    (Waypoint as LevelElements.NeedleSlot).OnInteraction();
             }
         }
 

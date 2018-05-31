@@ -4,6 +4,7 @@ using Game.World;
 using Game.Utilities;
 using System;
 using Game.Model;
+using Game.GameControl;
 
 namespace Game.LevelElements
 {
@@ -19,23 +20,18 @@ namespace Game.LevelElements
         [SerializeField]
         private bool toggle; //if true the triggerable object will disregard its own logic an be turned on or off
 
-#if UNITY_EDITOR
         //DO NOT RENAME
         [SerializeField]
         private List<TriggerableObject> targets = new List<TriggerableObject>(); //list of triggerable objects
-#endif
 
-#if UNITY_EDITOR
         [SerializeField]
         [HideInInspector]
         private List<TriggerableObject> targetsOld = new List<TriggerableObject>();
-#endif
 
         private PlayerModel model;
 
         private TriggerPersistentData persistentTrigger;
 
-        private bool isCopy;
         private bool isInitialized;
 
         //###########################################################
@@ -46,9 +42,7 @@ namespace Game.LevelElements
 
         public bool Toggle { get { return toggle; } }
 
-#if UNITY_EDITOR
         public List<TriggerableObject> Targets { get { return new List<TriggerableObject>(targets); } }
-#endif
 
         protected TriggerPersistentData PersistentDataObject { get { return persistentTrigger; } }
 
@@ -63,10 +57,9 @@ namespace Game.LevelElements
         /// </summary>
         /// <param name="worldController"></param>
         /// <param name="isCopy"></param>
-        public virtual void Initialize(GameControl.IGameController gameController)
+        public virtual void Initialize(GameController gameController)
         {
             model = gameController.PlayerModel;
-            this.isCopy = isCopy;
 
             persistentTrigger = model.GetPersistentDataObject<TriggerPersistentData>(UniqueId);
 
@@ -101,15 +94,12 @@ namespace Game.LevelElements
             {
                 _triggerState = triggerState;
 
-                if (!isCopy)
+                if (persistentTrigger != null)
                 {
-                    if (persistentTrigger != null)
-                    {
-                        persistentTrigger.TriggerState = _triggerState;
-                    }
-
-                    EventManager.SendTriggerUpdatedEvent(this, new EventManager.TriggerUpdatedEventArgs(this));
+                    persistentTrigger.TriggerState = _triggerState;
                 }
+
+                EventManager.SendTriggerUpdatedEvent(this, new EventManager.TriggerUpdatedEventArgs(this));
             }
         }
 
