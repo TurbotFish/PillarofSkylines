@@ -126,11 +126,12 @@ namespace Game.LevelElements
 
         IEnumerator _DestructionSequence()
         {
-            Eclipse eclipsePostFX = FindObjectOfType<Eclipse>();
             Player.CharacterController.CharController player = gameController.PlayerController.CharController;
             Vector3 eclipseGravity = gameController.EclipseManager.eclipseGravity;
 
+            gameController.SwitchGameState(GameState.Pause, UI.MenuType.NONE);
 
+            yield return null;
 
             for (float elapsed = 0; elapsed < changeGravityTime; elapsed+=Time.deltaTime) {
                 player.ChangeGravityDirection(Vector3.Lerp(eclipseGravity, eyeGravity, elapsed / changeGravityTime));
@@ -139,33 +140,44 @@ namespace Game.LevelElements
 
             // PLAY ANIMATION
 
+            StartCoroutine(_FadeOut());
 
             for (float elapsed = 0; elapsed < changeGravityTime; elapsed += Time.deltaTime) {
-
-
-
+                renderer.sharedMaterial.Lerp(regularMat, destroyedMat, elapsed / changeGravityTime);
                 yield return null;
             }
-
-
-
+            
             yield return null;
+            
+            // BACK TO NORMAL
 
+            gameController.SwitchGameState(GameState.Play, UI.MenuType.NONE);
             gameController.SwitchToOpenWorld();
-
         }
 
         IEnumerator _FadeOut()
         {
             yield return new WaitForSeconds(delayBeforeFadeOut);
 
-            for (float elapsed = 0; elapsed < changeGravityTime; elapsed += Time.deltaTime)
-            {
+            Eclipse eclipsePostFX = FindObjectOfType<Eclipse>();
+            Vector3 luminosityInfluence = eclipsePostFX.LuminosityInfluence;
+            Vector3 defaultValue = luminosityInfluence;
 
+            ColorOverlay whiteScreen = eclipsePostFX.gameObject.AddComponent<ColorOverlay>();
+            whiteScreen.color = Color.white;
+            whiteScreen.intensity = 0;
+            
+            for (float elapsed = 0; elapsed < changeGravityTime; elapsed += Time.deltaTime) {
+                luminosityInfluence.x += Time.deltaTime * 10;
+                eclipsePostFX.LuminosityInfluence = luminosityInfluence;
 
+                whiteScreen.intensity = Mathf.Pow(elapsed / changeGravityTime, 2);
 
                 yield return null;
             }
+
+            eclipsePostFX.LuminosityInfluence = defaultValue;
+            Destroy(whiteScreen);
         }
 
 
