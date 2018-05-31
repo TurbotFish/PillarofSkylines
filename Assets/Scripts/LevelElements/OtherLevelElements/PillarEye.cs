@@ -12,9 +12,9 @@ namespace Game.LevelElements
 
         [SerializeField] new Renderer renderer;
 
-        [SerializeField] Material regularMat, destroyedMat;
+        [SerializeField] Material regularMat;
 
-        [SerializeField] Vector3 eyeGravity = new Vector3(0, 0, 1);
+        [SerializeField] Vector3 eyeGravity = new Vector3(0, 0, -1);
 
         [SerializeField] float changeGravityTime = 0.7f, destroyTime = 2.5f;
         [SerializeField] float delayBeforeFadeOut = 1.2f, fadeOutTime = 1.2f;
@@ -129,30 +129,35 @@ namespace Game.LevelElements
             Player.CharacterController.CharController player = gameController.PlayerController.CharController;
             Vector3 eclipseGravity = gameController.EclipseManager.eclipseGravity;
 
-            gameController.SwitchGameState(GameState.Pause, UI.MenuType.NONE);
+            //gameController.SwitchGameState(GameState.Pause, UI.MenuType.NONE);
 
             yield return null;
 
             for (float elapsed = 0; elapsed < changeGravityTime; elapsed+=Time.deltaTime) {
-                player.ChangeGravityDirection(Vector3.Lerp(eclipseGravity, eyeGravity, elapsed / changeGravityTime));
+                player.ChangeGravityDirection(Vector3.Slerp(eclipseGravity, eyeGravity, elapsed / changeGravityTime));
                 yield return null;
             }
 
             // PLAY ANIMATION
 
+            yield return new WaitForSeconds(1.5f);
+
+            StartCoroutine(_WhiteFlash());
+
             StartCoroutine(_FadeOut());
 
-            for (float elapsed = 0; elapsed < changeGravityTime; elapsed += Time.deltaTime) {
-                renderer.sharedMaterial.Lerp(regularMat, destroyedMat, elapsed / changeGravityTime);
+            for (float elapsed = 0; elapsed < destroyTime; elapsed += Time.deltaTime) {
+                renderer.sharedMaterial.SetFloat("_Destruction", Mathf.Pow(elapsed / destroyTime, 2));
                 yield return null;
             }
             
             yield return null;
-            
+
             // BACK TO NORMAL
 
-            gameController.SwitchGameState(GameState.Play, UI.MenuType.NONE);
-            gameController.SwitchToOpenWorld();
+            //gameController.SwitchGameState(GameState.Play, UI.MenuType.NONE);
+
+            renderer.sharedMaterial.SetFloat("_Destruction", 0);
         }
 
         IEnumerator _FadeOut()
@@ -163,12 +168,13 @@ namespace Game.LevelElements
             Vector3 luminosityInfluence = eclipsePostFX.LuminosityInfluence;
             Vector3 defaultValue = luminosityInfluence;
 
-            ColorOverlay whiteScreen = eclipsePostFX.gameObject.AddComponent<ColorOverlay>();
+            ColorOverlay whiteScreen = eclipsePostFX.gameObject.GetComponent<ColorOverlay>();
             whiteScreen.color = Color.white;
             whiteScreen.intensity = 0;
-            
+            whiteScreen.blend = ColorOverlay.BlendMode.Normal;
+
             for (float elapsed = 0; elapsed < changeGravityTime; elapsed += Time.deltaTime) {
-                luminosityInfluence.x += Time.deltaTime * 10;
+                luminosityInfluence.x += Time.deltaTime * 100;
                 eclipsePostFX.LuminosityInfluence = luminosityInfluence;
 
                 whiteScreen.intensity = Mathf.Pow(elapsed / changeGravityTime, 2);
@@ -177,10 +183,35 @@ namespace Game.LevelElements
             }
 
             eclipsePostFX.LuminosityInfluence = defaultValue;
-            Destroy(whiteScreen);
+
+
+            gameController.SwitchToOpenWorld();
+            whiteScreen.intensity = 0;
         }
 
+        IEnumerator _WhiteFlash()
+        {
 
+            ColorOverlay whiteScreen = FindObjectOfType<ColorOverlay>();
+            whiteScreen.color = Color.white;
+            whiteScreen.intensity = 0;
+            whiteScreen.blend = ColorOverlay.BlendMode.Normal;
+
+            float flashHalfTime = 0.1f;
+
+            for (float elapsed = 0; elapsed < flashHalfTime; elapsed += Time.deltaTime)
+            {
+                whiteScreen.intensity = Mathf.Pow(elapsed / flashHalfTime, 2);
+
+                yield return null;
+            }
+            for (float elapsed = 0; elapsed < flashHalfTime; elapsed += Time.deltaTime)
+            {
+                whiteScreen.intensity = 1- Mathf.Pow(elapsed / flashHalfTime, 2);
+
+                yield return null;
+            }
+        }
 
         //########################################################################
     }

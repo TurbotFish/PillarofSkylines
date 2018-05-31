@@ -94,12 +94,12 @@ namespace Game
                 float t = gravityTimer / rotationDuration;
                 if (eclipseOn)
                 {
-                    player.ChangeGravityDirection(Vector3.Lerp(regularGravity, eclipseGravity, t));
+                    player.ChangeGravityDirection(Vector3.Slerp(regularGravity, eclipseGravity, t));
                     eclipsePostEffect.Intensity = Mathf.Lerp(0, 1, t);
                 }
                 else
                 {
-                    player.ChangeGravityDirection(Vector3.Lerp(eclipseGravity, regularGravity, t));
+                    player.ChangeGravityDirection(Vector3.Slerp(eclipseGravity, regularGravity, t));
                     eclipsePostEffect.Intensity = Mathf.Lerp(1, 0, t);
                 }
                 gravityTimer += Time.deltaTime;
