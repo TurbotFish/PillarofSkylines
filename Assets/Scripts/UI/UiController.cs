@@ -76,7 +76,10 @@ namespace Game.UI
 
         public void HandleInput()
         {
-            UiStates[CurrentState].HandleInput();
+            if (UiStates.ContainsKey(CurrentState))
+            {
+                UiStates[CurrentState].HandleInput();
+            }
         }
 
         public void SwitchState(MenuType new_state)
