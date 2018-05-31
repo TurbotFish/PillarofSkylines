@@ -17,7 +17,6 @@ namespace Game.UI
 
         [SerializeField] private HudController HudController;
         [SerializeField] private LoadingScreenController LoadingScreenController;
-        [SerializeField] private PillarEntranceMenuController PillarEntranceMenuController;
         [SerializeField] private MainMenuController MainMenuController;
         [SerializeField] private PauseMenuController PauseMenuController;
 
@@ -29,16 +28,13 @@ namespace Game.UI
         public MenuType CurrentState { get; private set; }
 
         private GameController GameController;
-
         private Dictionary<MenuType, IUiMenu> UiStates = new Dictionary<MenuType, IUiMenu>();
-
-
 
         //###########################################################
 
         // -- INITIALIZATION
 
-        public void Initialize(GameController game_controller, MenuType start_state, Utilities.EventManager.OnShowMenuEventArgs args)
+        public void Initialize(GameController game_controller)
         {
             GameController = game_controller;
 
@@ -47,7 +43,6 @@ namespace Game.UI
 
             UiStates.Add(MenuType.HUD, HudController);
             UiStates.Add(MenuType.LoadingScreen, LoadingScreenController);
-            UiStates.Add(MenuType.PillarEntrance, PillarEntranceMenuController);
             UiStates.Add(MenuType.MainMenu, MainMenuController);
             UiStates.Add(MenuType.PauseMenu, PauseMenuController);
 
@@ -57,11 +52,11 @@ namespace Game.UI
                 uiState.Deactivate();
             }
 
-            CurrentState = start_state;
-            UiStates[CurrentState].Activate(args);
-            //Utilities.EventManager.SendOnMenuSwitchedEvent(this, new Utilities.EventManager.OnMenuSwitchedEventArgs(start_state, MenuType.HUD));
+            CurrentState = MenuType.LoadingScreen;
+            UiStates[CurrentState].Activate();
 
-            Utilities.EventManager.OnShowMenuEvent += OnShowMenuEventHandler;
+            //Utilities.EventManager.SendOnMenuSwitchedEvent(this, new Utilities.EventManager.OnMenuSwitchedEventArgs(start_state, MenuType.HUD));
+            //Utilities.EventManager.OnShowMenuEvent += OnShowMenuEventHandler;
 
             IsInitialized = true;
         }
@@ -72,7 +67,6 @@ namespace Game.UI
 
         public HudController Hud { get { return HudController; } }
         public LoadingScreenController LoadingScreen { get { return LoadingScreenController; } }
-        public PillarEntranceMenuController PillarEntranceMenu { get { return PillarEntranceMenuController; } }
         public MainMenuController MainMenu { get { return MainMenuController; } }
         public PauseMenuController PauseMenu { get { return PauseMenuController; } }
 
@@ -82,24 +76,32 @@ namespace Game.UI
 
         public void HandleInput()
         {
-            UiStates[CurrentState].HandleInput();
+            if (UiStates.ContainsKey(CurrentState))
+            {
+                UiStates[CurrentState].HandleInput();
+            }
         }
 
-        public void SwitchState(MenuType newState, Utilities.EventManager.OnShowMenuEventArgs args)
+        public void SwitchState(MenuType new_state)
         {
-            //if (this.currentState == newState)
-            //{
-            //    return;
-            //}
+            if (CurrentState == new_state)
+            {
+                return;
+            }
 
             MenuType previous_state = CurrentState;
 
-            UiStates[CurrentState].Deactivate();
+            if (previous_state != MenuType.NONE)
+            {
+                UiStates[CurrentState].Deactivate();
+            }
 
-            CurrentState = newState;
-            UiStates[CurrentState].Activate(args);
+            CurrentState = new_state;
 
-            //Utilities.EventManager.SendOnMenuSwitchedEvent(this, new Utilities.EventManager.OnMenuSwitchedEventArgs(newState, previous_state));
+            if (new_state != MenuType.NONE)
+            {
+                UiStates[CurrentState].Activate();
+            }
         }
 
         public void ExitGame()
@@ -107,14 +109,14 @@ namespace Game.UI
             GameController.ExitGame();
         }
 
-        private void OnShowMenuEventHandler(object sender, Utilities.EventManager.OnShowMenuEventArgs args)
-        {
-            if (!IsInitialized)
-            {
-                return;
-            }
+        //private void OnShowMenuEventHandler(object sender, Utilities.EventManager.OnShowMenuEventArgs args)
+        //{
+        //    if (!IsInitialized)
+        //    {
+        //        return;
+        //    }
 
-            SwitchState(args.Menu, args);
-        }
+        //    SwitchState(args.Menu, args);
+        //}
     }
 } //end of namespace
