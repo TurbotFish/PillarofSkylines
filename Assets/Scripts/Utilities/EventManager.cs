@@ -73,69 +73,6 @@ namespace Game.Utilities
         //***********************************************************
         #endregion show hud message event
         //***********************************************************
-        //***********************************************************
-        #region show menu event
-        //***********************************************************
-
-        public class OnShowMenuEventArgs : EventArgs
-        {
-            /// <summary>
-            /// The id of the menu to switch to.
-            /// </summary>
-            public UI.MenuType Menu { get; private set; }
-
-            /// <summary>
-            /// Default Contructor.
-            /// </summary>
-            public OnShowMenuEventArgs(UI.MenuType menu)
-            {
-                Menu = menu;
-            }
-        }
-
-        //public class OnShowPillarEntranceMenuEventArgs : OnShowMenuEventArgs
-        //{
-        //    /// <summary>
-        //    /// 
-        //    /// </summary>
-        //    public PillarId PillarId { get; private set; }
-
-        //    /// <summary>
-        //    /// Constructor for the Pillar entrance menu.
-        //    /// </summary>
-        //    public OnShowPillarEntranceMenuEventArgs(PillarId pillarId) : base(UI.MenuType.PillarEntrance)
-        //    {
-        //        PillarId = pillarId;
-        //    }
-        //}
-
-        public class OnShowLoadingScreenEventArgs : OnShowMenuEventArgs
-        {
-            public int Id { get; private set; }
-
-            public OnShowLoadingScreenEventArgs() : base(UI.MenuType.LoadingScreen)
-            {
-                Id = -1;
-            }
-
-            public OnShowLoadingScreenEventArgs(PillarId pillarId) : base(UI.MenuType.LoadingScreen)
-            {
-                Id = (int)pillarId;
-            }
-        }
-
-        public delegate void OnShowMenuEventHandler(object sender, OnShowMenuEventArgs args);
-
-        public static event OnShowMenuEventHandler OnShowMenuEvent;
-
-        public static void SendShowMenuEvent(object sender, OnShowMenuEventArgs args)
-        {
-            OnShowMenuEvent?.Invoke(sender, args);
-        }
-
-        //***********************************************************
-        #endregion show menu event
-        //***********************************************************
         //###########################################################
         #endregion ui events
         //###########################################################

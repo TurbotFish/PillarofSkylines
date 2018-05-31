@@ -63,7 +63,7 @@ namespace Game.UI
             helpMessage.text = "";
         }
 
-        public void Activate(Utilities.EventManager.OnShowMenuEventArgs args)
+        public void Activate()
         {
             if (IsActive)
             {

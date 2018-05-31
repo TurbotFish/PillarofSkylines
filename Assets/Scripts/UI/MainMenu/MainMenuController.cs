@@ -33,7 +33,7 @@ namespace Game.UI
             this.GameController = gameController;
         }
 
-        void IUiMenu.Activate(EventManager.OnShowMenuEventArgs args)
+        void IUiMenu.Activate()
         {
             if (IsActive)
             {

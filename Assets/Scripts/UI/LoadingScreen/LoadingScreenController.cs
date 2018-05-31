@@ -35,23 +35,24 @@ namespace Game.UI
             turningThing = transform.Find("TurningThing");
         }
 
-        public void Activate(Utilities.EventManager.OnShowMenuEventArgs args)
+        public void Activate()
         {
             if (IsActive)
             {
                 return;
             }
 
-            var realArgs = args as Utilities.EventManager.OnShowLoadingScreenEventArgs;
-            if (realArgs != null)
-            {
-                var sprites = screenImages.GetImages(realArgs.Id);
+            Debug.LogError("TODO: show image (Patrick)!");
+            //var realArgs = args as Utilities.EventManager.OnShowLoadingScreenEventArgs;
+            //if (realArgs != null)
+            //{
+            //    var sprites = screenImages.GetImages(realArgs.Id);
 
-                if (sprites != null && sprites.Count > 0)
-                {
-                    background.sprite = sprites[Random.Range(0, sprites.Count - 1)];
-                }
-            }
+            //    if (sprites != null && sprites.Count > 0)
+            //    {
+            //        background.sprite = sprites[Random.Range(0, sprites.Count - 1)];
+            //    }
+            //}
 
             IsActive = true;
             gameObject.SetActive(true);

@@ -15,7 +15,7 @@ namespace Game.LevelElements
 
         [SerializeField] private PillarId pillarId;
 
-        private GameController gameController;
+        private GameController GameController;
         private bool isInitialized;
         private bool isPillarDestroyed;
 
@@ -30,7 +30,7 @@ namespace Game.LevelElements
                 return;
             }
 
-            this.gameController = gameController;
+            this.GameController = gameController;
 
             isPillarDestroyed = gameController.PlayerModel.GetPillarState(pillarId) == PillarState.Destroyed;
             isInitialized = true;
@@ -40,7 +40,7 @@ namespace Game.LevelElements
         {
             if (isInitialized)
             {
-                if (!isPillarDestroyed && gameController.PlayerModel.GetPillarState(pillarId) == PillarState.Destroyed)
+                if (!isPillarDestroyed && GameController.PlayerModel.GetPillarState(pillarId) == PillarState.Destroyed)
                 {
                     isPillarDestroyed = true;
                 }
@@ -89,14 +89,21 @@ namespace Game.LevelElements
 
         public void OnInteraction()
         {
-            if (gameController.PlayerModel.GetPillarState(pillarId) == PillarState.Unlocked)
+            var pillar_state = GameController.PlayerModel.GetPillarState(pillarId);
+
+            if(pillar_state == PillarState.Unlocked)
             {
-                gameController.SwitchToPillar(pillarId);
+                GameController.SwitchToPillar(pillarId);
             }
-            else
+            else if(pillar_state == PillarState.Locked)
             {
-                Debug.LogError("WIP, come back later!");
-                //EventManager.SendShowMenuEvent(this, new EventManager.OnShowPillarEntranceMenuEventArgs(pillarId));
+                int current_pillar_marks = GameController.PlayerModel.GetActivePillarMarkCount();
+                int needed_pillar_marks = GameController.PlayerModel.GetPillarEntryPrice(pillarId);
+                string title = "The Pillar is locked!";
+                string description = "You need " + needed_pillar_marks + " Pillar Marks but only have " + current_pillar_marks + ".";
+
+                var event_args = new EventManager.OnShowHudMessageEventArgs(true, title, UI.eMessageType.Announcement, description, 4);
+                EventManager.SendShowHudMessageEvent(this, event_args);
             }
         }
 

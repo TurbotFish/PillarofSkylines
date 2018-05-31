@@ -53,7 +53,7 @@ namespace Game.UI
             }
 
             CurrentState = MenuType.LoadingScreen;
-            UiStates[CurrentState].Activate(null);
+            UiStates[CurrentState].Activate();
 
             //Utilities.EventManager.SendOnMenuSwitchedEvent(this, new Utilities.EventManager.OnMenuSwitchedEventArgs(start_state, MenuType.HUD));
             //Utilities.EventManager.OnShowMenuEvent += OnShowMenuEventHandler;
@@ -97,7 +97,7 @@ namespace Game.UI
 
             if (new_state != MenuType.NONE)
             {
-                UiStates[CurrentState].Activate(null);
+                UiStates[CurrentState].Activate();
             }
         }
 
