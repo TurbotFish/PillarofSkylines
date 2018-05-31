@@ -1,6 +1,11 @@
 fileFormatVersion: 2
+<<<<<<< HEAD
+guid: 006abcdcd69a18548b67df802318a77a
+timeCreated: 1527493654
+=======
 guid: 87fe3ff5652109c43a94b0e62f70fca3
 timeCreated: 1527234831
+>>>>>>> github/Vikanya
 licenseType: Free
 NativeFormatImporter:
   externalObjects: {}

@@ -16,7 +16,6 @@ namespace Game.EchoSystem
 
         void Awake() {
             system = GetComponentInChildren<ParticleSystem>();
-            Debug.Log("system : " + system);
             baseLifetime = system.main.startLifetime.Evaluate(0);
             EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
         }
@@ -41,10 +40,10 @@ namespace Game.EchoSystem
 
         void Update () {
 
-            //transform.position = 
+            transform.position = target;
 
             //           v old v
-            transform.position = Vector3.Lerp(transform.position, target, speed * Time.deltaTime);
+            //transform.position = Vector3.Lerp(transform.position, target, speed * Time.deltaTime);
 	    }
     }
 }
