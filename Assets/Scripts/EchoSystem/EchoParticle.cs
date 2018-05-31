@@ -9,8 +9,15 @@ namespace Game.EchoSystem
 
         public Vector3 target;
         public float speed;
+        public int rank;
 
-        void Start() {
+        ParticleSystem system;
+        float baseLifetime;
+
+        void Awake() {
+            system = GetComponentInChildren<ParticleSystem>();
+            Debug.Log("system : " + system);
+            baseLifetime = system.main.startLifetime.Evaluate(0);
             EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
         }
 
@@ -18,6 +25,13 @@ namespace Game.EchoSystem
             EventManager.TeleportPlayerEvent -= OnTeleportPlayerEventHandler;
         }
 
+        public void ChangeRank(int newRank)
+        {
+            rank = newRank;
+            ParticleSystem.MainModule main = system.main;
+            main.startLifetime = baseLifetime * (1f - (rank / 3f));
+            //main.startLifetimeMultiplier = 1f - (rank/3f);
+        }
 
         private void OnTeleportPlayerEventHandler(object sender, EventManager.TeleportPlayerEventArgs args)
         {
@@ -26,7 +40,11 @@ namespace Game.EchoSystem
         }
 
         void Update () {
-            transform.position = Vector3.Lerp(transform.position, target, speed * Time.deltaTime);
+
+            transform.position = 
+
+            //           v old v
+            //transform.position = Vector3.Lerp(transform.position, target, speed * Time.deltaTime);
 	    }
     }
 }

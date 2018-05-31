@@ -102,6 +102,12 @@ namespace Game.EchoSystem
             {
                 targets.Add(new Vector3[] { echoPosition });
             }
+            int i = 0;
+            foreach (EchoParticle part in activeEchoParticles)
+            {
+                part.ChangeRank(i);
+                i++;
+            }
         }
         
         public void RemoveAllEcho()
@@ -127,6 +133,12 @@ namespace Game.EchoSystem
             else
             {
                 targets.RemoveAt(index);
+            }
+            int i = 0;
+            foreach (EchoParticle part in activeEchoParticles)
+            {
+                part.ChangeRank(i);
+                i++;
             }
         }
         /*
