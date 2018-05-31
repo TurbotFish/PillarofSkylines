@@ -54,10 +54,11 @@ namespace Game.GameControl
 
         // local state
         public GameState CurrentGameState { get; private set; }
+        public bool IsGamePaused { get; private set; }
 
         private bool isInitialized = false;
         private bool isGameStarted = false;
-        public bool IsGamePaused { get; private set; }
+        private bool IsChangingGameState;
 
         //
         private bool WasPillarDestroyed = false;
@@ -350,7 +351,7 @@ namespace Game.GameControl
         /// <param name="game_state"></param>
         public void SwitchGameState(GameState game_state, MenuType menu_type)
         {
-                StartCoroutine(SwitchGameStateCoroutine(game_state, menu_type));
+            StartCoroutine(SwitchGameStateCoroutine(game_state, menu_type));
         }
 
         /// <summary>
@@ -708,7 +709,7 @@ namespace Game.GameControl
                 PillarDestructionMessageTitle = "You've been granted the " + ability.Name + " Ability";
                 PillarDestructionMessageDescription = ability.Description;
             }
-        }   
+        }
 
         /// <summary>
         /// Sets the state of the game with a delay of one Frame.
@@ -717,6 +718,13 @@ namespace Game.GameControl
         /// <returns></returns>
         private IEnumerator SwitchGameStateCoroutine(GameState game_state, MenuType menu_type)
         {
+            while (IsChangingGameState)
+            {
+                Debug.LogWarning("GameController: SwitchGameStateCoroutine: already running!");
+                yield return true;
+            }
+
+            IsChangingGameState = true;
             yield return null;
 
             CurrentGameState = game_state;
@@ -731,10 +739,10 @@ namespace Game.GameControl
             }
 
             EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(IsGamePaused));
-
             yield return null;
 
             UiController.SwitchState(menu_type);
+            IsChangingGameState = false;
         }
 
         /// <summary>
@@ -784,7 +792,7 @@ namespace Game.GameControl
         /// <param name="scene"></param>
         private void CleanScene(Scene scene)
         {
-            if(scene == this.gameObject.scene)
+            if (scene == this.gameObject.scene)
             {
                 return;
             }
