@@ -2,12 +2,24 @@
 using Game.Utilities;
 using Game.World;
 using UnityEngine;
+using System.Collections;
 
 namespace Game.LevelElements
 {
     public class PillarEye : MonoBehaviour, IInteractable, IWorldObject
     {
         //########################################################################
+
+        [SerializeField] new Renderer renderer;
+
+        [SerializeField] Material regularMat, destroyedMat;
+
+        [SerializeField] Vector3 eyeGravity = new Vector3(0, 0, 1);
+
+        [SerializeField] float changeGravityTime = 0.7f, destroyTime = 2.5f;
+        [SerializeField] float delayBeforeFadeOut = 1.2f, fadeOutTime = 1.2f;
+
+        [Space]
 
         [SerializeField] GameObject defaultEye;
         [SerializeField] GameObject eclipseEye;
@@ -92,12 +104,14 @@ namespace Game.LevelElements
             model.SetAbilityState(model.LevelData.GetPillarRewardAbility(gameController.ActivePillarId), Model.AbilityState.active);
             model.SetPillarState(gameController.ActivePillarId, Model.PillarState.Destroyed);
 
-            gameController.SwitchToOpenWorld();
+            // ok change here.
+
+            StartCoroutine(_DestructionSequence());
         }
 
         void OnEclipseEventHandler(object sender, EventManager.EclipseEventArgs args)
         {
-            if (args.EclipseOn) //eclipse on
+            /*if (args.EclipseOn) //eclipse on
             {
                 defaultEye.SetActive(false);
                 eclipseEye.SetActive(true);
@@ -106,8 +120,55 @@ namespace Game.LevelElements
             {
                 defaultEye.SetActive(true);
                 eclipseEye.SetActive(false);
+            }*/
+        }
+
+
+        IEnumerator _DestructionSequence()
+        {
+            Eclipse eclipsePostFX = FindObjectOfType<Eclipse>();
+            Player.CharacterController.CharController player = gameController.PlayerController.CharController;
+            Vector3 eclipseGravity = gameController.EclipseManager.eclipseGravity;
+
+
+
+            for (float elapsed = 0; elapsed < changeGravityTime; elapsed+=Time.deltaTime) {
+                player.ChangeGravityDirection(Vector3.Lerp(eclipseGravity, eyeGravity, elapsed / changeGravityTime));
+                yield return null;
+            }
+
+            // PLAY ANIMATION
+
+
+            for (float elapsed = 0; elapsed < changeGravityTime; elapsed += Time.deltaTime) {
+
+
+
+                yield return null;
+            }
+
+
+
+            yield return null;
+
+            gameController.SwitchToOpenWorld();
+
+        }
+
+        IEnumerator _FadeOut()
+        {
+            yield return new WaitForSeconds(delayBeforeFadeOut);
+
+            for (float elapsed = 0; elapsed < changeGravityTime; elapsed += Time.deltaTime)
+            {
+
+
+
+                yield return null;
             }
         }
+
+
 
         //########################################################################
     }

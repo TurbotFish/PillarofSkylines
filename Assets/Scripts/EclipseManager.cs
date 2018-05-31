@@ -15,8 +15,7 @@ namespace Game
         [SerializeField]
         Vector3 regularGravity = new Vector3(0, -1, 0);
 
-        [SerializeField]
-        Vector3 eclipseGravity = new Vector3(1, 0, 0);
+        public Vector3 eclipseGravity = new Vector3(1, 0, 0);
 
         Game.Player.CharacterController.CharController player;
 		[SerializeField]
@@ -30,8 +29,8 @@ namespace Game
 
         public void InitializeEclipseManager(GameController gameController)
         {
-            this.player = gameController.PlayerController.CharController;
-            this.eclipsePostEffect = gameController.CameraController.EclipseEffect;
+            player = gameController.PlayerController.CharController;
+            eclipsePostEffect = gameController.CameraController.EclipseEffect;
 
             Utilities.EventManager.EclipseEvent += OnEclipseEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
@@ -46,13 +45,9 @@ namespace Game
         void OnEclipseEventHandler(object sender, Game.Utilities.EventManager.EclipseEventArgs args)
         {
             if (args.EclipseOn)
-            {
                 StartEclipse();
-            }
             else
-            {
                 StopEclipse();
-            }
         }
 
         void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
@@ -66,17 +61,10 @@ namespace Game
 
         void StartEclipse()
         {
-            if (this.isEclipseActive)
-            {
+            if (isEclipseActive)
                 return;
-            }
 
-            this.isEclipseActive = true;
-
-			eclipsePostEffect.Intensity = 1;
-			eclipsePostEffect.colorChangeR = 0;
-			eclipsePostEffect.colorChangeB = 1;
-			eclipsePostEffect.colorChangeG = 1;
+            isEclipseActive = true;
 
             StopAllCoroutines();
             StartCoroutine(ChangeGravityRoutine(true));
@@ -84,12 +72,10 @@ namespace Game
 
         void StopEclipse()
         {
-            if (!this.isEclipseActive)
-            {
+            if (!isEclipseActive)
                 return;
-            }
 
-            this.isEclipseActive = false;
+            isEclipseActive = false;
             StopAllCoroutines();
             StartCoroutine(ChangeGravityRoutine(false));
         }
