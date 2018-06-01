@@ -1074,12 +1074,12 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: 'Material #24'
-    second: {fileID: 2100000, guid: 75a506875198f0544b4d3cd7c83a57f7, type: 2}
+    second: {fileID: 2100000, guid: 1031850de06710b419e52c9cb19fd534, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: 'Material #25'
-    second: {fileID: 2100000, guid: 9001aa8fef624e1429c05d5b5aacfb6a, type: 2}
+    second: {fileID: 2100000, guid: a824390bed36ba042be547bbc9f9bc35, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
@@ -1156,12 +1156,62 @@ ModelImporter:
       heightFromFeet: 0
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
-      curves: []
+      curves:
+      - name: RightFoot
+        curve:
+          serializedVersion: 2
+          curve:
+          - serializedVersion: 2
+            time: 0
+            value: -1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+          - serializedVersion: 2
+            time: 0.9885201
+            value: 1
+            inSlope: 0.53628397
+            outSlope: 0.53628397
+            tangentMode: 0
+          - serializedVersion: 2
+            time: 1
+            value: -1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+          preInfinity: 3
+          postInfinity: 3
+          rotationOrder: 0
+      - name: LeftFoot
+        curve:
+          serializedVersion: 2
+          curve:
+          - serializedVersion: 2
+            time: 0
+            value: 0
+            inSlope: -1.2006923
+            outSlope: -1.2006923
+            tangentMode: 0
+          - serializedVersion: 2
+            time: 0.43990934
+            value: -1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+          - serializedVersion: 2
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+          preInfinity: 3
+          postInfinity: 3
+          rotationOrder: 0
       events: []
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}
-      additiveReferencePoseFrame: 0
+      additiveReferencePoseFrame: 181
     - serializedVersion: 16
       name: run
       takeName: run
@@ -1184,12 +1234,56 @@ ModelImporter:
       heightFromFeet: 0
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
-      curves: []
+      curves:
+      - name: RightFoot
+        curve:
+          serializedVersion: 2
+          curve:
+          - serializedVersion: 2
+            time: 0
+            value: -1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+          - serializedVersion: 2
+            time: 0.94674927
+            value: 1
+            inSlope: 3.4818628
+            outSlope: 3.4818628
+            tangentMode: 0
+          - serializedVersion: 2
+            time: 1
+            value: -1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+          preInfinity: 3
+          postInfinity: 3
+          rotationOrder: 0
+      - name: LeftFoot
+        curve:
+          serializedVersion: 2
+          curve:
+          - serializedVersion: 2
+            time: 0
+            value: 1
+            inSlope: -9.349928
+            outSlope: -9.349928
+            tangentMode: 0
+          - serializedVersion: 2
+            time: 1
+            value: -1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+          preInfinity: 3
+          postInfinity: 3
+          rotationOrder: 0
       events: []
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}
-      additiveReferencePoseFrame: 0
+      additiveReferencePoseFrame: 30
     - serializedVersion: 16
       name: JUMP_up
       takeName: JUMP_up
