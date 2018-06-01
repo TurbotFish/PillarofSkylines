@@ -36,7 +36,7 @@ namespace Game.World
         public float RenderDistanceMedium { get { return overrideRenderDistances ? localRenderDistanceMedium : WorldController.RenderDistanceMedium; } }
         public float RenderDistanceFar { get { return overrideRenderDistances ? localRenderDistanceFar : WorldController.RenderDistanceFar; } }
 
-        public SubSceneVariant CurrentSubSceneVariant { get { return currentSubSceneVariant; } }
+        public SubSceneVariant CurrentSubSceneVariant { get; private set; }
 
         public float PlayerDistance { get; private set; }
 
@@ -49,7 +49,6 @@ namespace Game.World
         private Dictionary<SubSceneVariant, Dictionary<SubSceneLayer, List<SubSceneJob>>> SubSceneJobLists;
 
         private RegionMode currentRegionMode;
-        private SubSceneVariant currentSubSceneVariant;
 
         private bool isInitialized;
         private bool hasSubSceneModeChanged;
@@ -79,7 +78,7 @@ namespace Game.World
             WorldController = world_controller;
 
             currentRegionMode = RegionMode.Inactive;
-            currentSubSceneVariant = InitialSubSceneVariant;
+            CurrentSubSceneVariant = InitialSubSceneVariant;
 
             SubSceneJobLists = new Dictionary<SubSceneVariant, Dictionary<SubSceneLayer, List<SubSceneJob>>>();
             foreach (var sub_scene_variant in AvailableSubSceneVariants)
@@ -96,7 +95,7 @@ namespace Game.World
 
             foreach (var variant in AvailableSubSceneVariants)
             {
-                if (variant != currentSubSceneVariant)
+                if (variant != CurrentSubSceneVariant)
                 {
                     foreach (var layer in Enum.GetValues(typeof(SubSceneLayer)).Cast<SubSceneLayer>())
                     {
@@ -385,7 +384,7 @@ namespace Game.World
 
             SwitchMode(RegionMode.Inactive);
 
-            currentSubSceneVariant = new_variant;
+            CurrentSubSceneVariant = new_variant;
 
             SwitchMode(previous_mode);
         }
@@ -548,40 +547,40 @@ namespace Game.World
             {
                 case RegionMode.Near:
                     //load
-                    CreateLoadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Always);
-                    CreateLoadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Medium);
-                    CreateLoadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Near);
+                    CreateLoadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Always);
+                    CreateLoadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Medium);
+                    CreateLoadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Near);
 
                     //unload
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Far);
+                    CreateUnloadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Far);
 
                     break;
                 case RegionMode.Medium:
                     //load
-                    CreateLoadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Always);
-                    CreateLoadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Medium);
+                    CreateLoadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Always);
+                    CreateLoadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Medium);
 
                     //unload
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Near);
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Far);
+                    CreateUnloadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Near);
+                    CreateUnloadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Far);
 
                     break;
                 case RegionMode.Far:
                     //load
-                    CreateLoadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Always);
-                    CreateLoadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Far);
+                    CreateLoadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Always);
+                    CreateLoadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Far);
 
                     //unload
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Near);
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Medium);
+                    CreateUnloadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Near);
+                    CreateUnloadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Medium);
 
                     break;
                 case RegionMode.Inactive:
                     //unload
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Near);
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Medium);
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Far);
-                    CreateUnloadSubSceneJob(currentSubSceneVariant, SubSceneLayer.Always);
+                    CreateUnloadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Near);
+                    CreateUnloadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Medium);
+                    CreateUnloadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Far);
+                    CreateUnloadSubSceneJob(CurrentSubSceneVariant, SubSceneLayer.Always);
 
                     break;
             }

@@ -20,8 +20,6 @@ namespace Game.World
         public override void Initialize(WorldController world_controller)
         {
             base.Initialize(world_controller);
-
-            EventManager.PillarStateChangedEvent += OnPillarStateChanged;
         }
 
         private void OnEnable()
