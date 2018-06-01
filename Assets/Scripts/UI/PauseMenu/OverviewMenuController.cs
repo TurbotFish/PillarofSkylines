@@ -29,6 +29,11 @@ namespace Game.UI.PauseMenu
         private PlayerModel Model;
         private PauseMenuController PauseMenuController;
 
+        private bool ResumeButtonPressed;
+        private bool SkillsButtonPressed;
+        private bool OptionsButtonPressed;
+        private bool ExitGameButtonPressed;
+
         //###########################################################
 
         // -- INITIALIZATION
@@ -76,26 +81,46 @@ namespace Game.UI.PauseMenu
 
         public void HandleInput()
         {
+            if (ResumeButtonPressed)
+            {
+                ResumeButtonPressed = false;
+                PauseMenuController.ClosePauseMenu();
+            }
+            else if (SkillsButtonPressed)
+            {
+                SkillsButtonPressed = false;
+                PauseMenuController.SwitchPauseMenu(PauseMenuType.Skills);
+            }
+            else if (OptionsButtonPressed)
+            {
+                OptionsButtonPressed = false;
+                Debug.LogWarning("Options Button pressed!");
+            }
+            else if (ExitGameButtonPressed)
+            {
+                ExitGameButtonPressed = false;
+                PauseMenuController.ExitGame();
+            }
         }
 
         public void OnResumeButtonPressed()
         {
-            PauseMenuController.ClosePauseMenu();
+            ResumeButtonPressed = true;
         }
 
         public void OnSkillsButtonPressed()
         {
-            PauseMenuController.SwitchPauseMenu(PauseMenuType.Skills);
+            SkillsButtonPressed = true;
         }
 
         public void OnOptionsButtonsPressed()
         {
-            Debug.LogWarning("Options Button pressed!");
+            OptionsButtonPressed = true;
         }
 
         public void OnExitGameButtonPressed()
         {
-            PauseMenuController.ExitGame();
+            ExitGameButtonPressed = true;
         }
     }
 } // end of namespace

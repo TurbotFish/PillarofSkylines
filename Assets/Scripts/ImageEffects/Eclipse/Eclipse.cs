@@ -69,20 +69,35 @@ public class Eclipse : MonoBehaviour {
 		set { _noise = value; }
 	}
 
-	[SerializeField, Range(0,1), Header("Color Change")]
-	float _colorChangeR;
+
+    [Header("Color Change")]
+    [SerializeField, Tooltip("Set XYZ for RGB influence on luminosity.")]
+    Vector3 _luminosityInfluence = new Vector3(0.7f, 1.5f, 1);
+    public Vector3 LuminosityInfluence {
+        get { return _luminosityInfluence; }
+        set { _luminosityInfluence = value; }
+    }
+    [SerializeField, Tooltip("Set XYZ for RGB influence on colour.")]
+    Vector3 _colourInfluence = new Vector3(0.6f, 1f, 0.9f);
+    public Vector3 ColourInfluence {
+        get { return _colourInfluence; }
+        set { _colourInfluence = value; }
+    }
+
+    [SerializeField, Range(0,1)]
+	float _colorChangeR = 1;
 	public float colorChangeR {
 		get { return _colorChangeR; }
 		set { _colorChangeR = value; }
 	}
 	[SerializeField, Range(0,1)]
-	float _colorChangeG;
+	float _colorChangeG = 1;
 	public float colorChangeG {
 		get { return _colorChangeG; }
 		set { _colorChangeG = value; }
 	}
 	[SerializeField, Range(0,1)]
-	float _colorChangeB;
+	float _colorChangeB = 1;
 	public float colorChangeB {
 		get { return _colorChangeB; }
 		set { _colorChangeB = value; }
@@ -131,7 +146,11 @@ public class Eclipse : MonoBehaviour {
 		_material.SetTexture("_Noise", _noise);
         _material.SetFloat("_Falloff", _fallOff);
         _material.SetFloat("_Power", _power);
-		_material.SetFloat("_ColorChangeR", _colorChangeR);
+
+        _material.SetVector("_LuminosityInfluence", _luminosityInfluence);
+        _material.SetVector("_ColourInfluence", _colourInfluence);
+
+        _material.SetFloat("_ColorChangeR", _colorChangeR);
 		_material.SetFloat("_ColorChangeG", _colorChangeG);
 		_material.SetFloat("_ColorChangeB", _colorChangeB);
 

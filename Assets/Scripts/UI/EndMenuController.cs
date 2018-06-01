@@ -53,14 +53,14 @@ namespace Game.UI
             //this.playerModel = playerModel;
         }
 
-        void IUiMenu.Activate(Utilities.EventManager.OnShowMenuEventArgs args)
+        void IUiMenu.Activate()
         {
-            if (this.IsActive)
+            if (IsActive)
             {
                 return;
             }
 
-            this.IsActive = true;
+            IsActive = true;
             this.gameObject.SetActive(true);
         }
 

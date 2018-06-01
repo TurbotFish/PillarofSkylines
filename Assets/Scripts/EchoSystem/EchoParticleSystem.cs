@@ -63,6 +63,7 @@ namespace Game.EchoSystem
                 return;
             }
             int i = 0;
+
             foreach (EchoParticle ep in activeEchoParticles)
             {
                 Quaternion lookEcho = Quaternion.identity;
@@ -80,7 +81,7 @@ namespace Game.EchoSystem
                 if (target - transform.position != Vector3.zero)
                     lookEcho = Quaternion.LookRotation(target - transform.position);
                 
-                ep.target = transform.position + new Vector3(0f, 1f, 0f) + lookEcho * Vector3.forward;
+                ep.target = transform.position + (gameController.PlayerController.CharController.tempPhysicsHandler.playerAngle * Vector3.up) /*+ lookEcho * Vector3.forward*/;
                 ep.transform.rotation = lookEcho;
                 i++;
             }
@@ -102,6 +103,14 @@ namespace Game.EchoSystem
             {
                 targets.Add(new Vector3[] { echoPosition });
             }
+            int i = 0;
+            activeEchoParticles.Reverse();
+            foreach (EchoParticle part in activeEchoParticles)
+            {
+                part.ChangeRank(i);
+                i++;
+            }
+            activeEchoParticles.Reverse();
         }
         
         public void RemoveAllEcho()
@@ -127,6 +136,12 @@ namespace Game.EchoSystem
             else
             {
                 targets.RemoveAt(index);
+            }
+            int i = 0;
+            foreach (EchoParticle part in activeEchoParticles)
+            {
+                part.ChangeRank(i);
+                i++;
             }
         }
         /*

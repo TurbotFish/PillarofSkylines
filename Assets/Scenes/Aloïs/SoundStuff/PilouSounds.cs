@@ -56,11 +56,19 @@ public class PilouSounds : MonoBehaviour {
 		if (Physics.Raycast (rayOrigin, -transform.up, out rayHit, .5f, groundMask)) {
 			string _objectTag = rayHit.transform.gameObject.tag;
 
+			/*
 			if (_objectTag == "Concrete") {
 				groundFromRaycast = 1;
 			} else if (_objectTag == "Grass") {
 				groundFromRaycast = 2;
 			} 
+			*/
+
+			if (_objectTag == "Grass") {
+				groundFromRaycast = 2;
+			} else {
+				groundFromRaycast = 1;
+			}
 
 		}
 		return groundFromRaycast;
