@@ -144,7 +144,7 @@ namespace Game.LevelElements
             StartCoroutine(_FadeOut());
 
             for (float elapsed = 0; elapsed < destroyTime; elapsed += Time.deltaTime) {
-                renderer.sharedMaterial.SetFloat("_Destruction", Mathf.Pow(elapsed / destroyTime, 2));
+                renderer.material.SetFloat("_Destruction", Mathf.Pow(elapsed / destroyTime, 2));
                 yield return null;
             }
             
@@ -153,8 +153,6 @@ namespace Game.LevelElements
             // BACK TO NORMAL
 
             //gameController.SwitchGameState(GameState.Play, UI.MenuType.NONE);
-
-            renderer.sharedMaterial.SetFloat("_Destruction", 0);
         }
 
         IEnumerator _FadeOut()
