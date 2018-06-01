@@ -7,11 +7,15 @@ namespace Game.World
 {
     public class PillarRegion : RegionBase
     {
-        //========================================================================================
+        //########################################################################
+
+        // -- CONSTANTS
 
         [SerializeField, HideInInspector] private PillarId pillarId;
 
-        //========================================================================================
+        //########################################################################
+
+        // -- INITIALIZATION
 
         public override void Initialize(WorldController world_controller)
         {
@@ -19,6 +23,20 @@ namespace Game.World
 
             EventManager.PillarStateChangedEvent += OnPillarStateChanged;
         }
+
+        private void OnEnable()
+        {
+            EventManager.PillarStateChangedEvent += OnPillarStateChanged;
+        }
+
+        private void OnDisable()
+        {
+            EventManager.PillarStateChangedEvent -= OnPillarStateChanged;
+        }
+
+        //########################################################################
+
+        // -- INQUIRIES
 
         public override List<SubSceneVariant> AvailableSubSceneVariants
         {
@@ -35,7 +53,7 @@ namespace Game.World
         {
             get
             {
-                if(WorldController.GameController.PlayerModel.GetPillarState(pillarId) == PillarState.Destroyed)
+                if (WorldController.GameController.PlayerModel.GetPillarState(pillarId) == PillarState.Destroyed)
                 {
                     return SubSceneVariant.DestroyedPillar;
                 }
@@ -44,17 +62,19 @@ namespace Game.World
             }
         }
 
-        //========================================================================================
+        //########################################################################
+
+        // -- OPERATIONS
 
         private void OnPillarStateChanged(object sender, EventManager.PillarStateChangedEventArgs args)
         {
-           if(args.PillarId == pillarId)
+            if (args.PillarId == pillarId)
             {
-                if(args.PillarState == PillarState.Destroyed && CurrentSubSceneVariant != SubSceneVariant.DestroyedPillar)
+                if (args.PillarState == PillarState.Destroyed && CurrentSubSceneVariant != SubSceneVariant.DestroyedPillar)
                 {
                     SwitchVariant(SubSceneVariant.DestroyedPillar);
                 }
-                else if(args.PillarState != PillarState.Destroyed && CurrentSubSceneVariant == SubSceneVariant.DestroyedPillar)
+                else if (args.PillarState != PillarState.Destroyed && CurrentSubSceneVariant == SubSceneVariant.DestroyedPillar)
                 {
                     SwitchVariant(SubSceneVariant.IntactPillar);
                 }
