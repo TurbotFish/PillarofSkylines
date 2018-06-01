@@ -77,14 +77,12 @@ namespace Game.LevelElements
 
         public void OnHoverBegin()
         {
-            var eventArgs = new EventManager.OnShowHudMessageEventArgs(true, "[X]: Plant Needle");
-            EventManager.SendShowHudMessageEvent(this, eventArgs);
+            gameController.UiController.Hud.ShowHelpMessage("[X]: Plant Needle", "PillarEye");
         }
 
         public void OnHoverEnd()
         {
-            var eventArgs = new EventManager.OnShowHudMessageEventArgs(false);
-            EventManager.SendShowHudMessageEvent(this, eventArgs);
+            gameController.UiController.Hud.HideHelpMessage("PillarEye");
         }
 
         public void OnInteraction()
@@ -94,8 +92,7 @@ namespace Game.LevelElements
                 return;
             }
 
-            var showMessageEventArgs = new EventManager.OnShowHudMessageEventArgs(false);
-            EventManager.SendShowHudMessageEvent(this, showMessageEventArgs);
+            gameController.UiController.Hud.HideHelpMessage("PillarEye");
 
             var model = gameController.PlayerModel;
 

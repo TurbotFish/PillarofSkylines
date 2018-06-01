@@ -40,14 +40,12 @@ namespace Game.LevelElements
 
         public void OnHoverBegin()
         {
-            var eventArgs = new EventManager.OnShowHudMessageEventArgs(true, "[X]: Exit Pillar");
-            EventManager.SendShowHudMessageEvent(this, eventArgs);
+            gameController.UiController.Hud.ShowHelpMessage("[X]: Exit Pillar", "PillarExit");
         }
 
         public void OnHoverEnd()
         {
-            var eventArgs = new EventManager.OnShowHudMessageEventArgs(false);
-            EventManager.SendShowHudMessageEvent(this, eventArgs);
+            gameController.UiController.Hud.HideHelpMessage("PillarExit");
         }
 
         public void OnInteraction()

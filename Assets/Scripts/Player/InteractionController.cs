@@ -27,7 +27,6 @@ namespace Game.Player
         private GameController gameController;
 
         private bool IsGamePaused = true;
-        private string lastTag;    // Helps making sure the element turning off the UI is the same as the one turning it on.
 
         private List<IInteractable> nearbyInteractableObjects = new List<IInteractable>();
         private IInteractable currentInteractableObject;
@@ -163,33 +162,6 @@ namespace Game.Player
             }
         }
 
-        private void ShowUiMessage(string message, string tag)
-        {
-            lastTag = tag;
-            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message));
-        }
-
-        private void ShowAnnounceMessage(string message, float time)
-        {
-            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, UI.eMessageType.Announcement, "", time));
-        }
-
-        private void ShowImportantMessage(string message, string description)
-        {
-            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, UI.eMessageType.Important, description));
-        }
-
-        private void HideUiMessage()
-        {
-            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
-        }
-
-        private void HideUiMessage(string tag)
-        {
-            if (tag == lastTag)
-                Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
-        }
-
         /// <summary>
         /// Handles the GamePaused event.
         /// </summary>
@@ -209,7 +181,7 @@ namespace Game.Player
         {
             nearbyInteractableObjects.Clear();
 
-            HideUiMessage();
+            gameController.UiController.Hud.HideHelpMessage();
         }
 
         /// <summary>

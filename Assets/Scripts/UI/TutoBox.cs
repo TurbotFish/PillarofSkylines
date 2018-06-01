@@ -1,9 +1,11 @@
-﻿using Game.LevelElements;
+﻿using Game.GameControl;
+using Game.LevelElements;
+using Game.World;
 using UnityEngine;
 
 namespace Game.UI
 {
-    public class TutoBox : MonoBehaviour, IInteractable
+    public class TutoBox : MonoBehaviour, IInteractable, IWorldObject
     {
         //########################################################################
 
@@ -14,6 +16,21 @@ namespace Game.UI
         public string description = "Example Description.";
         [ConditionalHide("messageType", 2)]
         public float time = 2;
+
+        //########################################################################
+
+        // -- ATTRIBUTES
+
+        private GameController GameController;
+
+        //########################################################################
+
+        // -- INITIALIZATION
+
+        public void Initialize(GameController gameController)
+        {
+            GameController = gameController;
+        }
 
         //########################################################################
 
@@ -34,30 +51,21 @@ namespace Game.UI
 
         public void OnPlayerEnter()
         {
-            if (messageType == eMessageType.Important)
+            if (messageType == eMessageType.Help)
             {
-                var messageEventArgs = new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, messageType, description);
-                Utilities.EventManager.SendShowHudMessageEvent(this, messageEventArgs);
-
-                Destroy(gameObject);
-            }
-            else if (messageType == eMessageType.Announcement)
-            {
-                var messageEventArgs = new Utilities.EventManager.OnShowHudMessageEventArgs(true, message, messageType, "");
-                Utilities.EventManager.SendShowHudMessageEvent(this, messageEventArgs);
-
-                Destroy(gameObject);
+                GameController.UiController.Hud.ShowHelpMessage(message, "TutoBox");
             }
             else
             {
-                var messageEventArgs = new Utilities.EventManager.OnShowHudMessageEventArgs(true, message);
-                Utilities.EventManager.SendShowHudMessageEvent(this, messageEventArgs);
+                GameController.UiController.Hud.ShowAnnouncmentMessage(message, description);
+
+                //Destroy(this.gameObject);
             }
         }
 
         public void OnPlayerExit()
         {
-            Utilities.EventManager.SendShowHudMessageEvent(this, new Utilities.EventManager.OnShowHudMessageEventArgs(false));
+            GameController.UiController.Hud.HideHelpMessage("TutoBox");
         }
 
         public void OnHoverBegin()
@@ -71,6 +79,8 @@ namespace Game.UI
         public void OnInteraction()
         {
         }
+
+
 
         #endregion operations
 

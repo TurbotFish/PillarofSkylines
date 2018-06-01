@@ -29,6 +29,8 @@ public class PilouSounds : MonoBehaviour {
 				Debug.LogError ("Couldn't find right foot object, it's likely the hierarchy has been changed.");
 		}
 
+		soundDebug04 = transform.position;
+		//print (_event.animatorClipInfo.weight + "    " + Time.frameCount);
 
 		if (_event.animatorClipInfo.weight > .5f) {
 			//0 is left foot
@@ -46,14 +48,24 @@ public class PilouSounds : MonoBehaviour {
 
 	}
 
+	Vector3 soundDebug01;
+	Vector3 soundDebug02;
+	Vector3 soundDebug03;
+	Vector3 soundDebug04;
+
 	int CheckGroundBelowFoot(int _footThatTouchedGround){
 		//0 is left foot
 		//1 is right foot
 		rayOrigin = _footThatTouchedGround == 0 ? leftFoot.transform.position : rightFoot.transform.position;
+		rayOrigin += transform.up * .3f;
 
 		groundFromRaycast = 0;
 
-		if (Physics.Raycast (rayOrigin, -transform.up, out rayHit, .5f, groundMask)) {
+		soundDebug02 = rayOrigin;
+		soundDebug03 = rayOrigin;
+
+		Debug.DrawRay (rayOrigin, -transform.up * .8f, Color.cyan);
+		if (Physics.Raycast (rayOrigin, -transform.up, out rayHit, .8f, groundMask)) {
 			string _objectTag = rayHit.transform.gameObject.tag;
 
 			/*
@@ -63,6 +75,7 @@ public class PilouSounds : MonoBehaviour {
 				groundFromRaycast = 2;
 			} 
 			*/
+			soundDebug01 = rayHit.point;
 
 			if (_objectTag == "Grass") {
 				groundFromRaycast = 2;
@@ -76,5 +89,18 @@ public class PilouSounds : MonoBehaviour {
 
 	public void LandSound(){
 		print ("LANDLAND");
+	}
+
+	void OnDrawGizmos(){
+		Gizmos.color = Color.cyan;
+		Gizmos.DrawSphere (soundDebug01, .1f);
+
+		Gizmos.DrawLine (soundDebug02, soundDebug01);
+
+		Gizmos.color = Color.red;
+		Gizmos.DrawCube (soundDebug03, Vector3.one * .1f);
+
+		Gizmos.color = Color.yellow;
+		Gizmos.DrawCube (soundDebug04, Vector3.one * .2f);
 	}
 }
