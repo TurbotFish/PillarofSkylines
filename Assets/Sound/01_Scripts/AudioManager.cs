@@ -117,7 +117,7 @@ public class AudioManager : MonoBehaviour {
 
 
 
-		footstep.volume = 1f + Random.Range (-volumeVariance, 0);
+		footstep.volume = .5f + Random.Range (-volumeVariance, 0);
 		footstep.pitch = 1 + Random.Range (-pitchVariance, pitchVariance);
 
 		//the faster the avatar runs, the higher the pitch
