@@ -77,14 +77,12 @@ namespace Game.LevelElements
 
         public void OnHoverBegin()
         {
-            var eventArgs = new EventManager.OnShowHudMessageEventArgs(true, "[X]: Enter Pillar");
-            EventManager.SendShowHudMessageEvent(this, eventArgs);
+            GameController.UiController.Hud.ShowHelpMessage("[X]: Enter Pillar", "PillarEntrance");
         }
 
         public void OnHoverEnd()
         {
-            var eventArgs = new EventManager.OnShowHudMessageEventArgs(false);
-            EventManager.SendShowHudMessageEvent(this, eventArgs);
+            GameController.UiController.Hud.HideHelpMessage("PillarEntrance");
         }
 
         public void OnInteraction()
@@ -102,8 +100,7 @@ namespace Game.LevelElements
                 string title = "The Pillar is locked!";
                 string description = "You need " + needed_pillar_marks + " Pillar Marks but only have " + current_pillar_marks + ".";
 
-                var event_args = new EventManager.OnShowHudMessageEventArgs(true, title, UI.eMessageType.Announcement, description, 4);
-                EventManager.SendShowHudMessageEvent(this, event_args);
+                GameController.UiController.Hud.ShowAnnouncmentMessage(title, description);
             }
         }
 

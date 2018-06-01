@@ -485,8 +485,7 @@ namespace Game.GameControl
 
                 if (WasPillarDestroyed)
                 {
-                    var HUDMessageEventArgs = new EventManager.OnShowHudMessageEventArgs(true, PillarDestructionMessageTitle, eMessageType.Announcement, PillarDestructionMessageDescription, 6);
-                    EventManager.SendShowHudMessageEvent(this, HUDMessageEventArgs);
+                    UiController.Hud.ShowAnnouncmentMessage(PillarDestructionMessageTitle, PillarDestructionMessageDescription, 6);
 
                     WasPillarDestroyed = false;
                 }

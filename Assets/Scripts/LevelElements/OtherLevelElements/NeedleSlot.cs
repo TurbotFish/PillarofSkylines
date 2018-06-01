@@ -54,14 +54,13 @@ namespace Game.LevelElements
 
         public void OnHoverBegin()
         {
-            var eventArgs = new EventManager.OnShowHudMessageEventArgs(true, GameController.PlayerModel.PlayerHasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle");
-            EventManager.SendShowHudMessageEvent(this, eventArgs);
+            string message = GameController.PlayerModel.PlayerHasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle";
+            GameController.UiController.Hud.ShowHelpMessage(message, UniqueId);
         }
 
         public void OnHoverEnd()
         {
-            var eventArgs = new EventManager.OnShowHudMessageEventArgs(false);
-            EventManager.SendShowHudMessageEvent(this, eventArgs);
+            GameController.UiController.Hud.HideHelpMessage(UniqueId);
         }
 
         public void OnInteraction()
@@ -93,8 +92,8 @@ namespace Game.LevelElements
 
             EventManager.SendEclipseEvent(this, new EventManager.EclipseEventArgs(GameController.PlayerModel.PlayerHasNeedle)); // This will activate the player needle.
 
-            var showHudEventArgs = new EventManager.OnShowHudMessageEventArgs(true, GameController.PlayerModel.PlayerHasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle");
-            EventManager.SendShowHudMessageEvent(this, showHudEventArgs);
+            string message = GameController.PlayerModel.PlayerHasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle";
+            GameController.UiController.Hud.ShowHelpMessage(message, UniqueId);
         }
 
         /// <summary>
