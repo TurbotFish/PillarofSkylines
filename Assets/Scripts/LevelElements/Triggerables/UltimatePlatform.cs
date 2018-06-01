@@ -33,6 +33,10 @@ namespace Game.LevelElements
         Vector3 initialPosition;
         float elapsed;
         bool starting = true;
+        bool inCoroutine = false;
+
+        [Space(50f)]
+        public bool debug;
 
         //###########################################################
 
@@ -104,6 +108,7 @@ namespace Game.LevelElements
             }
             else
             {
+
                 currentState = eUltimatePlatformState.disabled;
             }
         }
@@ -123,6 +128,7 @@ namespace Game.LevelElements
         {
             if (!IsInitialized)
                 return;
+
 
             if (currentState == eUltimatePlatformState.newOrder && (Triggered || finishingMovement))
             {
@@ -146,6 +152,10 @@ namespace Game.LevelElements
                 }
                 currentState = eUltimatePlatformState.moving;
             }
+            if (currentState == eUltimatePlatformState.disabled && !inCoroutine)
+            {
+                currentState = eUltimatePlatformState.newOrder;
+            }
         }
 
         private void Move(Vector3 startPos, Vector3 endPos, float timeMoving)
@@ -157,6 +167,7 @@ namespace Game.LevelElements
 
         private IEnumerator _Move(Vector3 startPos, Vector3 endPos, float timeMoving)
         {
+            inCoroutine = true;
             elapsed = timeMoving - elapsed;
 
 			currentState = eUltimatePlatformState.waiting;
@@ -175,6 +186,9 @@ namespace Game.LevelElements
                     elapsed += Time.deltaTime;
                     float t = elapsed / timeMoving;
 
+                    if (debug)
+                        Debug.Log("hey " + t);
+                        
                     Vector3 movement = Vector3.Lerp(startPos, endPos, (Mathf.Pow(t, easing) / (Mathf.Pow(t, easing) + (float.IsNaN(Mathf.Pow(1 - t, easing))?0: Mathf.Pow(1 - t, easing))))) - my.localPosition;
                     platform.Move(movement);
                 }
@@ -190,6 +204,9 @@ namespace Game.LevelElements
                 finishingMovement = false;
             }
 
+            if (debug)
+                Debug.Log("out");
+            inCoroutine = false;
             currentState = eUltimatePlatformState.newOrder;
         }
 

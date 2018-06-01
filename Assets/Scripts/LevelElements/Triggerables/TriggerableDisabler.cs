@@ -1,5 +1,6 @@
 ﻿using Game.GameControl;
 using UnityEngine;
+using System.Collections;
 
 namespace Game.LevelElements
 {
@@ -13,6 +14,9 @@ namespace Game.LevelElements
 
         [SerializeField]
         private GameObject[] objects;
+
+        [SerializeField]
+        float delayBeforeActivation = 0;
 
         private Renderer rend;
 
@@ -29,8 +33,7 @@ namespace Game.LevelElements
             for(int i = 0;i < objects.Length; i++)
             {
                 var go = objects[i];
-                if (go == null)
-                {
+                if (go == null) {
                     Debug.LogErrorFormat("TriggerableDisabler: Initialize: element {0} of objects array is null!", i);
                 }
                 else
@@ -48,15 +51,22 @@ namespace Game.LevelElements
 
         protected override void Activate()
         {
-            foreach (GameObject go in objects)
-                go.SetActive(disabledByDefault);
+            StartCoroutine(_Activate(disabledByDefault));
         }
 
         protected override void Deactivate()
         {
-            foreach (GameObject go in objects)
-                go.SetActive(!disabledByDefault);
+            StartCoroutine(_Activate(!disabledByDefault));
         }
+
+        IEnumerator _Activate(bool active)
+        {
+            yield return new WaitForSeconds(delayBeforeActivation);
+
+            foreach (GameObject go in objects)
+                go.SetActive(active);
+        }
+
 
         #endregion protected methods
 
