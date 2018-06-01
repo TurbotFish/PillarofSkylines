@@ -119,8 +119,8 @@ namespace Game.LevelElements
         /// </summary>
         public void OnHoverBegin()
         {
-            var eventArgs = new EventManager.OnShowHudMessageEventArgs(true, "[X]: Accept " + PickupName);
-            EventManager.SendShowHudMessageEvent(this, eventArgs);
+            string message = "[X]: Accept " + PickupName;
+            GameController.UiController.Hud.ShowHelpMessage(message, UniqueId);
         }
 
         /// <summary>
@@ -128,8 +128,7 @@ namespace Game.LevelElements
         /// </summary>
         public void OnHoverEnd()
         {
-            var eventArgs = new EventManager.OnShowHudMessageEventArgs(false);
-            EventManager.SendShowHudMessageEvent(this, eventArgs);
+            GameController.UiController.Hud.HideHelpMessage(UniqueId);
         }
 
         /// <summary>
@@ -181,8 +180,7 @@ namespace Game.LevelElements
             OnPickedUp();
 
             // show message on screen
-            var HUDMessageEventArgs = new EventManager.OnShowHudMessageEventArgs(true, OnPickedUpMessage, UI.eMessageType.Announcement, OnPickedUpDescription, 4);
-            EventManager.SendShowHudMessageEvent(this, HUDMessageEventArgs);
+            GameController.UiController.Hud.ShowAnnouncmentMessage(OnPickedUpMessage, OnPickedUpDescription);
 
             // disable collider
             collider.enabled = false;
