@@ -39,40 +39,6 @@ namespace Game.Utilities
         //***********************************************************
         #endregion menu opened event
         //***********************************************************
-        //***********************************************************
-        #region show hud message event
-        //***********************************************************
-
-        public class OnShowHudMessageEventArgs : EventArgs
-        {
-            public bool Show { get; private set; }
-            public string Message { get; private set; }
-            public string Description { get; private set; }
-            public float Time { get; private set; }
-            public UI.eMessageType MessageType { get; private set; }
-
-            public OnShowHudMessageEventArgs(bool show, string message = null, UI.eMessageType messageType = 0, string description = "", float time = 2)
-            {
-                Show = show;
-                Message = message;
-                MessageType = messageType;
-                Description = description;
-                Time = time;
-            }
-        }
-
-        public delegate void OnShowHudMessageEventHandler(object sender, OnShowHudMessageEventArgs args);
-
-        public static event OnShowHudMessageEventHandler OnShowHudMessageEvent;
-
-        public static void SendShowHudMessageEvent(object sender, OnShowHudMessageEventArgs args)
-        {
-            OnShowHudMessageEvent?.Invoke(sender, args);
-        }
-
-        //***********************************************************
-        #endregion show hud message event
-        //***********************************************************
         //###########################################################
         #endregion ui events
         //###########################################################
@@ -443,9 +409,8 @@ namespace Game.Utilities
         #endregion trigger updated
 
         //***********************************************************
-
+        //###########################################################
         #endregion gameplay events
-
         //###########################################################
     }
 } //end of namespace
