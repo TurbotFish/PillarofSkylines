@@ -25,6 +25,10 @@ public class BackAndForthMovement : MonoBehaviour {
 
     void Start()
     {
+        if (!GetComponent<MovingPlatform>())
+        {
+            gameObject.AddComponent<MovingPlatform>();
+        }
         platform = GetComponent<MovingPlatform>();
         movementProgression = 0.01f;
 		currWaitTime = waitTimeForth + initialWaitTime;
