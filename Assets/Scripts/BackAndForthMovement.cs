@@ -80,7 +80,7 @@ public class BackAndForthMovement : MonoBehaviour {
 
         if (platform != null)
         {
-            platform.Move((movement * movementProgression) - posLastFrame);
+            platform.Move((movement * movementProgression) - posLastFrame, true);
             posLastFrame = movement * movementProgression;
         }
     }
