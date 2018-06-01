@@ -93,7 +93,7 @@ namespace Game.LevelElements
 
 
 				} else {
-					Debug.LogError ("whoopsie, " + transform.name + " isn't attached to a glyph, is it ?");
+					//Debug.LogError ("whoopsie, " + transform.name + " isn't attached to a glyph, is it ?");
 				}
             }
         }
