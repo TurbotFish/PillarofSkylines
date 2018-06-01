@@ -32,7 +32,7 @@ namespace Game.Player.CharacterController.States
         public void Enter()
         {
             timerGravDefault = .5f;
-            Debug.Log("Enter State: Graviswap");
+            //Debug.Log("Enter State: Graviswap");
             initialVelocity = charController.MovementInfo.velocity;
             charController.SetVelocity(Vector3.zero, true);
         }
@@ -43,7 +43,7 @@ namespace Game.Player.CharacterController.States
             if (timerGravDefault > 0f)
             {
                 charController.ChangeGravityDirection(Vector3.down);
-            } else
+            } /*else
             {
                 float xSnap = 0f, ySnap = 0f, zSnap = 0f;
                 if (charController.MyTransform.eulerAngles.x % 90 < 10)
@@ -73,10 +73,10 @@ namespace Game.Player.CharacterController.States
                 charController.MyTransform.eulerAngles = new Vector3(charController.MyTransform.eulerAngles.x + xSnap
                                                                     , charController.MyTransform.eulerAngles.y + ySnap
                                                                     , charController.MyTransform.eulerAngles.z + zSnap);
-            }
+            }*/
             
             
-            Debug.Log("Exit State: Graviswap");
+            //Debug.Log("Exit State: Graviswap");
         }
 
         //#############################################################################
@@ -102,11 +102,12 @@ namespace Game.Player.CharacterController.States
             timerGravDefault -= Time.deltaTime;
 
             PlayerInputInfo inputInfo = charController.InputInfo;
+            CharData.GraviswapData graviswapdata = charController.CharData.Graviswap;
 
            // charController.MyTransform.Rotate(charController.MyTransform.forward, inputInfo.leftStickRaw.x * 10, Space.World);
             //charController.MyTransform.Rotate(charController.MyTransform.right, -inputInfo.leftStickRaw.z * 10, Space.World);
 
-			Quaternion quarterBack = Quaternion.AngleAxis (-inputInfo.leftStickRaw.x * 10f, charController.MyTransform.forward) * Quaternion.AngleAxis (inputInfo.leftStickRaw.z * 10f, charController.MyTransform.right);
+			Quaternion quarterBack = Quaternion.AngleAxis (-inputInfo.leftStickRaw.x * 10f * Time.deltaTime * graviswapdata.TurnSpeed, charController.MyTransform.forward) * Quaternion.AngleAxis (inputInfo.leftStickRaw.z * 10f * Time.deltaTime * graviswapdata.TurnSpeed, charController.MyTransform.right);
 			charController.ChangeGravityDirection (quarterBack * -charController.MyTransform.up, charController.MyTransform.position + charController.MyTransform.up);
 
 
@@ -146,7 +147,7 @@ namespace Game.Player.CharacterController.States
 
                 Vector3 snapPoint = GetClosestSnap(charController.MyTransform.up);
 
-                Quaternion quaterSnap = Quaternion.AngleAxis((Vector3.Angle(charController.MyTransform.up, snapPoint) < 5f) ? Vector3.Angle(charController.MyTransform.up, snapPoint) : 5f, Vector3.Cross(charController.MyTransform.up, snapPoint));
+                Quaternion quaterSnap = Quaternion.AngleAxis((Vector3.Angle(charController.MyTransform.up, snapPoint) < 5f * Time.deltaTime * graviswapdata.SnapSpeed) ? Vector3.Angle(charController.MyTransform.up, snapPoint) : 5f * Time.deltaTime * graviswapdata.SnapSpeed, Vector3.Cross(charController.MyTransform.up, snapPoint));
 
                 charController.ChangeGravityDirection(quaterSnap * -charController.MyTransform.up, charController.MyTransform.position + charController.MyTransform.up);
 

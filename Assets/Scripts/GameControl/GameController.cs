@@ -1,4 +1,5 @@
 ﻿using Game.CameraControl;
+using Game.Cutscene;
 using Game.EchoSystem;
 using Game.Model;
 using Game.Player;
@@ -20,15 +21,20 @@ namespace Game.GameControl
 
         // -- CONSTANTS
 
+        [Header("General")]
+        [SerializeField] private bool PlayIntroCutscene = false;
+
         [Header("Lite")]
         [SerializeField] private bool IsLiteVersion = false;
         [SerializeField] private GameObject UiPrefab;
 
         //###############################################################
 
-        // -- ATTRIBUTES     
+        // -- ATTRIBUTES
 
+        // permanent refs
         public PlayerModel PlayerModel { get; private set; }
+        public CutsceneManager CutsceneManager { get; private set; }
         public EchoManager EchoManager { get; private set; }
         public EclipseManager EclipseManager { get; private set; }
 
@@ -36,6 +42,7 @@ namespace Game.GameControl
         public CameraController CameraController { get; private set; }
         public UiController UiController { get; private set; }
 
+        // world
         public bool IsOpenWorldLoaded { get; private set; }
         public WorldController WorldController { get; private set; }
         public DuplicationCameraManager DuplicationCameraManager { get; private set; }
@@ -45,11 +52,15 @@ namespace Game.GameControl
 
         public SpawnPointManager SpawnPointManager { get; private set; }
 
+        // local state
         public GameState CurrentGameState { get; private set; }
+        public bool IsGamePaused { get; private set; }
 
         private bool isInitialized = false;
         private bool isGameStarted = false;
+        private bool IsChangingGameState;
 
+        //
         private bool WasPillarDestroyed = false;
         private string PillarDestructionMessageTitle = "";
         private string PillarDestructionMessageDescription = "";
@@ -63,53 +74,54 @@ namespace Game.GameControl
         /// </summary>
         private void Start()
         {
+            LocalInitialization();
+
             if (IsLiteVersion)
             {
                 StartCoroutine(LiteInitCoroutine());
-                return;
+            }
+            else
+            {
+                MainInit();
+            }
+        }
+
+        private void LocalInitialization()
+        {
+            IsGamePaused = true;
+
+            PlayerModel = new PlayerModel();
+            CutsceneManager = new CutsceneManager(this);
+
+            /*
+             * getting references
+             */
+            if (IsLiteVersion)
+            {
+                var uiGO = Instantiate(UiPrefab);
+                UiController = uiGO.GetComponentInChildren<UiController>();
+            }
+            else
+            {
+                UiController = FindObjectOfType<UiController>();
             }
 
-            // creating model
-            PlayerModel = new PlayerModel();
-
-            //getting references in game controller
             EchoManager = GetComponentInChildren<EchoManager>();
             EclipseManager = GetComponentInChildren<EclipseManager>();
 
-            //gatting references in main scene
             PlayerController = FindObjectOfType<PlayerController>();
             CameraController = FindObjectOfType<CameraController>();
-            UiController = FindObjectOfType<UiController>();
 
-            //initializing
-            UiController.Initialize(this, MenuType.MainMenu, new EventManager.OnShowMenuEventArgs(MenuType.MainMenu));
+            /*
+             * initializing
+             */
+            UiController.Initialize(this);
 
             PlayerController.InitializePlayerController(this);
             CameraController.InitializeCameraController(this);
 
             EchoManager.Initialize(this);
             EclipseManager.InitializeEclipseManager(this);
-
-            //
-            SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
-            EventManager.PillarMarkStateChangedEvent += OnPillarMarkStateChanged;
-            EventManager.PillarStateChangedEvent += OnPillarStateChanged;
-
-            //load open world scene
-            //StartCoroutine(LoadOpenWorldSceneCR());
-
-            CurrentGameState = GameState.MainMenu;
-            isInitialized = true;
-        }
-
-        /// <summary>
-        /// Monobehaviour OnDestroy
-        /// </summary>
-        private void OnDestroy()
-        {
-            SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
-            EventManager.PillarMarkStateChangedEvent -= OnPillarMarkStateChanged;
-            EventManager.PillarStateChangedEvent -= OnPillarStateChanged;
         }
 
         /// <summary>
@@ -118,26 +130,11 @@ namespace Game.GameControl
         /// <returns></returns>
         private IEnumerator LiteInitCoroutine()
         {
-            var uiGO = Instantiate(UiPrefab);
-            UiController = uiGO.GetComponentInChildren<UI.UiController>();
-
-            PlayerModel = new PlayerModel();
-
-            EchoManager = GetComponentInChildren<EchoManager>();
-            EclipseManager = GetComponentInChildren<EclipseManager>();
-
-            PlayerController = FindObjectOfType<PlayerController>();
-            CameraController = FindObjectOfType<CameraController>();
             WorldController = FindObjectOfType<WorldController>();
             DuplicationCameraManager = FindObjectOfType<DuplicationCameraManager>();
-
-            UiController.Initialize(this, MenuType.LoadingScreen, new EventManager.OnShowLoadingScreenEventArgs());
             yield return null;
 
-            PlayerController.InitializePlayerController(this);
-            CameraController.InitializeCameraController(this);
-
-            EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(true));
+            SwitchGameState(GameState.Loading, MenuType.LoadingScreen);
             yield return null;
 
             if (WorldController != null)
@@ -184,18 +181,52 @@ namespace Game.GameControl
                 yield return null;
             }
 
-            EchoManager.Initialize(this);
-            EclipseManager.InitializeEclipseManager(this);
             SpawnPointManager = FindObjectOfType<SpawnPointManager>();
             yield return null;
 
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());
-            EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
-            EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(MenuType.HUD));
-            CurrentGameState = GameState.Play;
+
+            if (WorldController != null && PlayIntroCutscene)
+            {
+                CutsceneManager.PlayCutscene(CutsceneType.GameIntro);
+            }
+            else
+            {
+                SwitchGameState(GameState.Play, MenuType.HUD);
+            }
 
             isGameStarted = true;
             isInitialized = true;
+        }
+
+        /// <summary>
+        /// Initialization for the Main version of the GameController.
+        /// </summary>
+        private void MainInit()
+        {
+            SwitchGameState(GameState.MainMenu, MenuType.MainMenu);
+
+            isInitialized = true;
+        }
+
+        /// <summary>
+        /// MonoBehaviour OnEnable method.
+        /// </summary>
+        private void OnEnable()
+        {
+            SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
+            EventManager.PillarMarkStateChangedEvent += OnPillarMarkStateChanged;
+            EventManager.PillarStateChangedEvent += OnPillarStateChanged;
+        }
+
+        /// <summary>
+        /// MonoBehaviour OnDisable method.
+        /// </summary>
+        private void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
+            EventManager.PillarMarkStateChangedEvent -= OnPillarMarkStateChanged;
+            EventManager.PillarStateChangedEvent -= OnPillarStateChanged;
         }
 
         //###############################################################
@@ -291,8 +322,11 @@ namespace Game.GameControl
         {
             if (CurrentGameState == GameState.Play)
             {
-                CurrentGameState = GameState.Pause;
-                UiController.SwitchState(MenuType.PauseMenu, null);
+                SwitchGameState(GameState.Pause, MenuType.PauseMenu);
+            }
+            else
+            {
+                Debug.LogError("GameController: OpenPauseMenu: called but game is not in Play state!");
             }
         }
 
@@ -303,9 +337,21 @@ namespace Game.GameControl
         {
             if (CurrentGameState == GameState.Pause)
             {
-                CurrentGameState = GameState.Play;
-                UiController.SwitchState(MenuType.HUD, null);
+                SwitchGameState(GameState.Play, MenuType.HUD);
             }
+            else
+            {
+                Debug.LogError("GameController: ClosePauseMenu: called but game is not paused!");
+            }
+        }
+
+        /// <summary>
+        /// Sets the state of the game.
+        /// </summary>
+        /// <param name="game_state"></param>
+        public void SwitchGameState(GameState game_state, MenuType menu_type)
+        {
+            StartCoroutine(SwitchGameStateCoroutine(game_state, menu_type));
         }
 
         /// <summary>
@@ -340,245 +386,10 @@ namespace Game.GameControl
             }
 
             /*
-             * Input handling
+             * Handle Input
              */
             UiController.HandleInput();
-
-            if (CurrentGameState == GameState.Play)
-            {
-                PlayerController.HandleInput();
-                CameraController.HandleInput();
-            }
         }
-
-        ///// <summary>
-        ///// Coroutine for switching to the open world scene.
-        ///// </summary>
-        ///// <param name="useInitialSpawnPoint"></param>
-        ///// <returns></returns>
-        //private IEnumerator __SwitchToOpenWorldCoroutine(bool useInitialSpawnPoint)
-        //{
-        //    bool show_ability_message = false;
-        //    string message = "";
-        //    string description = "";
-
-        //    /*
-        //     * initializing
-        //     */
-        //    AsyncOperation async;
-        //    SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
-
-        //    if (IsPillarLoaded && PlayerModel.GetPillarState(ActivePillarId) == PillarState.Destroyed)
-        //    {
-        //        show_ability_message = true;
-        //        var ability = PlayerModel.AbilityData.GetAbility(PlayerModel.LevelData.GetPillarRewardAbility(ActivePillarId));
-        //        message = "You've been granted the " + ability.Name + " Ability";
-        //        description = ability.Description;
-        //    }
-
-        //    /*
-        //     * pausing game
-        //     */
-        //    EventManager.SendPreSceneChangeEvent(this, new EventManager.PreSceneChangeEventArgs(true));
-        //    EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(true));
-        //    EventManager.SendShowMenuEvent(this, new EventManager.OnShowLoadingScreenEventArgs());
-        //    yield return null;
-
-        //    /*
-        //     * unloading pillar scene
-        //     */
-        //    string pillarSceneName = LevelData.GetPillarSceneName(ActivePillarId);
-
-        //    if (IsPillarLoaded && !string.IsNullOrEmpty(pillarSceneName))
-        //    {
-        //        async = SceneManager.UnloadSceneAsync(pillarSceneName);
-
-        //        while (!async.isDone)
-        //        {
-        //            yield return null;
-        //        }
-
-        //        yield return null;
-        //    }
-
-        //    IsPillarLoaded = false;
-        //    SpawnPointManager = null;
-
-        //    /*
-        //     * "loading" open world scene
-        //     */
-        //    string worldSceneName = LevelData.OpenWorldSceneName;
-        //    Scene scene = SceneManager.GetSceneByName(worldSceneName);
-
-        //    foreach (var obj in scene.GetRootGameObjects())
-        //    {
-        //        obj.SetActive(true);
-        //    }
-
-        //    SceneManager.SetActiveScene(scene);
-        //    IsOpenWorldLoaded = true;
-
-        //    WorldController = SearchForScriptInScene<WorldController>(scene);
-        //    DuplicationCameraManager = SearchForScriptInScene<DuplicationCameraManager>(scene);
-        //    SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(scene);
-
-        //    yield return null;
-
-        //    /*
-        //     * preparing player spawn
-        //     */
-        //    Vector3 spawn_position;
-        //    Quaternion spawn_rotation;
-
-        //    if (useInitialSpawnPoint)
-        //    {
-        //        spawn_position = SpawnPointManager.GetInitialSpawnPoint();
-        //        spawn_rotation = SpawnPointManager.GetInitialSpawnOrientation();
-        //    }
-        //    else
-        //    {
-        //        PillarVariant pillar_variant = PillarVariant.Intact;
-        //        if (PlayerModel.GetPillarState(ActivePillarId) == PillarState.Destroyed)
-        //        {
-        //            pillar_variant = PillarVariant.Destroyed;
-        //        }
-        //        spawn_position = SpawnPointManager.GetPillarExitPoint(ActivePillarId, pillar_variant);
-        //        spawn_rotation = SpawnPointManager.GetPillarExitOrientation(ActivePillarId, pillar_variant);
-        //    }
-
-        //    /*
-        //     * activating world
-        //     */
-        //    WorldController.Activate(spawn_position);
-        //    DuplicationCameraManager.Activate();
-
-        //    while (WorldController.CurrentState == WorldControllerState.Activating)
-        //    {
-        //        yield return null;
-        //    }
-
-        //    /*
-        //     * teleporting player to spawn
-        //     */
-        //    var teleportPlayerEventArgs = new EventManager.TeleportPlayerEventArgs(spawn_position, spawn_rotation, true);
-        //    EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
-        //    yield return null;
-
-        //    /*
-        //     * unpausing game
-        //     */
-        //    EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());
-        //    yield return new WaitForSeconds(0.5f);
-
-        //    EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(MenuType.HUD));
-        //    EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
-
-        //    /*
-        //     * show ability gained message
-        //     */
-        //    if (show_ability_message)
-        //    {
-        //        var HUDMessageEventArgs = new EventManager.OnShowHudMessageEventArgs(true, message, eMessageType.Announcement, description, 6);
-        //        EventManager.SendShowHudMessageEvent(this, HUDMessageEventArgs);
-        //    }
-
-        //    /*
-        //     * cleaning up
-        //     */
-        //    SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
-        //}
-
-        ///// <summary>
-        ///// Coroutine for switching to a pillar scene.
-        ///// </summary>
-        ///// <param name="pillarId"></param>
-        ///// <returns></returns>
-        //private IEnumerator __SwitchToPillarCoroutine(PillarId pillarId)
-        //{
-        //    AsyncOperation async;
-        //    SceneManager.sceneLoaded += OnSceneLoadedEventHandler;
-
-        //    //*****************************************
-        //    //pausing game
-        //    EventManager.SendPreSceneChangeEvent(this, new EventManager.PreSceneChangeEventArgs(false));
-        //    EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(true));
-        //    EventManager.SendShowMenuEvent(this, new EventManager.OnShowLoadingScreenEventArgs(pillarId));
-        //    yield return null;
-
-        //    //*****************************************
-        //    //deactivating open world scene
-        //    string worldSceneName = LevelData.OpenWorldSceneName;
-        //    Scene scene = SceneManager.GetSceneByName(worldSceneName);
-
-        //    WorldController.Deactivate();
-        //    DuplicationCameraManager.Deactivate();
-
-        //    while (WorldController.CurrentState == WorldControllerState.Deactivating)
-        //    {
-        //        yield return null;
-        //    }
-
-        //    IsOpenWorldLoaded = false;
-        //    WorldController = null;
-        //    DuplicationCameraManager = null;
-        //    SpawnPointManager = null;
-
-        //    foreach (var obj in scene.GetRootGameObjects())
-        //    {
-        //        obj.SetActive(false);
-        //    }
-
-        //    //*****************************************
-        //    //loading pillar scene
-        //    string pillarSceneName = LevelData.GetPillarSceneName(pillarId);
-
-        //    async = SceneManager.LoadSceneAsync(pillarSceneName, LoadSceneMode.Additive);
-        //    async.allowSceneActivation = false;
-
-        //    while (!async.isDone)
-        //    {
-        //        if (async.progress >= 0.9f)
-        //        {
-        //            async.allowSceneActivation = true;
-        //        }
-
-        //        yield return null;
-        //    }
-
-        //    scene = SceneManager.GetSceneByName(pillarSceneName);
-        //    SceneManager.SetActiveScene(scene);
-
-        //    IsPillarLoaded = true;
-        //    ActivePillarId = pillarId;
-        //    SpawnPointManager = SearchForScriptInScene<SpawnPointManager>(scene);
-        //    yield return null;
-
-        //    //*****************************************
-        //    //initializing world objects in pillar
-        //    var worldObjects = SearchForScriptsInScene<IWorldObject>(scene);
-
-        //    foreach (var worldObject in worldObjects)
-        //    {
-        //        worldObject.Initialize(this);
-        //    }
-        //    yield return null;
-
-        //    //*****************************************
-        //    //teleporting player
-        //    var teleportPlayerEventArgs = new EventManager.TeleportPlayerEventArgs(SpawnPointManager.GetInitialSpawnPoint(), SpawnPointManager.GetInitialSpawnOrientation(), true);
-        //    EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
-
-        //    //*****************************************
-        //    //informing everyone!
-        //    EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs(pillarId));
-        //    yield return new WaitForSeconds(0.5f);
-
-        //    EventManager.SendShowMenuEvent(this, new EventManager.OnShowMenuEventArgs(MenuType.HUD));
-        //    EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
-
-        //    //*****************************************
-        //    SceneManager.sceneLoaded -= OnSceneLoadedEventHandler;
-        //}
 
         /// <summary>
         /// 
@@ -593,9 +404,7 @@ namespace Game.GameControl
              * Pausing game
              */
             EventManager.SendPreSceneChangeEvent(this, new EventManager.PreSceneChangeEventArgs(false));
-            EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(true));
-            EventManager.SendShowMenuEvent(this, new EventManager.OnShowLoadingScreenEventArgs());
-            CurrentGameState = GameState.Loading;
+            SwitchGameState(GameState.Loading, MenuType.LoadingScreen);
             yield return null;
 
             /*
@@ -665,20 +474,22 @@ namespace Game.GameControl
              */
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());
             yield return new WaitForSeconds(0.5f);
-            EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
 
-            UiController.SwitchState(MenuType.HUD, null);
-            CurrentGameState = GameState.Play;
-
-            /*
-             * show ability gained message
-             */
-            if (WasPillarDestroyed)
+            if (use_initial_spawn_point && PlayIntroCutscene)
             {
-                var HUDMessageEventArgs = new EventManager.OnShowHudMessageEventArgs(true, PillarDestructionMessageTitle, eMessageType.Announcement, PillarDestructionMessageDescription, 6);
-                EventManager.SendShowHudMessageEvent(this, HUDMessageEventArgs);
+                CutsceneManager.PlayCutscene(CutsceneType.GameIntro);
+            }
+            else
+            {
+                SwitchGameState(GameState.Play, MenuType.HUD);
 
-                WasPillarDestroyed = false;
+                if (WasPillarDestroyed)
+                {
+                    var HUDMessageEventArgs = new EventManager.OnShowHudMessageEventArgs(true, PillarDestructionMessageTitle, eMessageType.Announcement, PillarDestructionMessageDescription, 6);
+                    EventManager.SendShowHudMessageEvent(this, HUDMessageEventArgs);
+
+                    WasPillarDestroyed = false;
+                }
             }
         }
 
@@ -694,9 +505,7 @@ namespace Game.GameControl
              * Pausing game
              */
             EventManager.SendPreSceneChangeEvent(this, new EventManager.PreSceneChangeEventArgs(false));
-            EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(true));
-            EventManager.SendShowMenuEvent(this, new EventManager.OnShowLoadingScreenEventArgs(pillar_id));
-            CurrentGameState = GameState.Loading;
+            SwitchGameState(GameState.Loading, MenuType.LoadingScreen);
             yield return null;
 
             /*
@@ -733,10 +542,8 @@ namespace Game.GameControl
              */
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs(pillar_id));
             yield return new WaitForSeconds(0.5f);
-            EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(false));
 
-            UiController.SwitchState(MenuType.HUD, null);
-            CurrentGameState = GameState.Play;
+            SwitchGameState(GameState.Play, MenuType.HUD);
         }
 
         /// <summary>
@@ -905,6 +712,40 @@ namespace Game.GameControl
         }
 
         /// <summary>
+        /// Sets the state of the game with a delay of one Frame.
+        /// </summary>
+        /// <param name="game_state"></param>
+        /// <returns></returns>
+        private IEnumerator SwitchGameStateCoroutine(GameState game_state, MenuType menu_type)
+        {
+            while (IsChangingGameState)
+            {
+                Debug.LogWarning("GameController: SwitchGameStateCoroutine: already running!");
+                yield return true;
+            }
+
+            IsChangingGameState = true;
+            yield return null;
+
+            CurrentGameState = game_state;
+
+            if (CurrentGameState == GameState.Play)
+            {
+                IsGamePaused = false;
+            }
+            else
+            {
+                IsGamePaused = true;
+            }
+
+            EventManager.SendGamePausedEvent(this, new EventManager.GamePausedEventArgs(IsGamePaused));
+            yield return null;
+
+            UiController.SwitchState(menu_type);
+            IsChangingGameState = false;
+        }
+
+        /// <summary>
         /// Returns the first instance of T found in the scene.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -951,6 +792,11 @@ namespace Game.GameControl
         /// <param name="scene"></param>
         private void CleanScene(Scene scene)
         {
+            if (scene == this.gameObject.scene)
+            {
+                return;
+            }
+
             var gameControllerMainInstances = SearchForScriptsInScene<GameController>(scene);
             foreach (var instance in gameControllerMainInstances)
             {

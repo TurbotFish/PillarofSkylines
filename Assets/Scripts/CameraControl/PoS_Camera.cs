@@ -131,7 +131,7 @@ public class PoS_Camera : MonoBehaviour
     float lastInput;
     float recoilIntensity;
 
-    bool gamePaused;
+    bool gamePaused = true;
 
     bool autoAdjustYaw, autoAdjustPitch;
     bool canAutoReset;
@@ -210,24 +210,15 @@ public class PoS_Camera : MonoBehaviour
 #endif
     }
 
-    void LateUpdate()
+    void Update()
     {
         if (gamePaused || !isInitialized)
+        {
             return;
+        }
 
         deltaTime = Time.deltaTime;
 
-        HandleInput();
-        
-        if (gameController.DuplicationCameraManager != null)
-            gameController.DuplicationCameraManager.UpdateDuplicationCameras();
-    }
-    #endregion
-
-    #region General Methods
-
-    public void HandleInput()
-    {
         GetInputsAndStates();
         DoRotation();
         EvaluatePosition();
@@ -235,8 +226,18 @@ public class PoS_Camera : MonoBehaviour
         RealignPlayer();
 
         if (enablePanoramaMode)
+        {
             DoPanorama();
+        }
+
+        if (gameController.DuplicationCameraManager != null)
+        {
+            gameController.DuplicationCameraManager.UpdateDuplicationCameras();
+        }
     }
+    #endregion
+
+    #region General Methods
     
     /// <summary>
     /// Appelé quand le player spawn, change de scène ou qu'il est téléporté par le worldWrapper
@@ -450,7 +451,7 @@ public class PoS_Camera : MonoBehaviour
     void GetInputsAndStates()
     {
         playerState = player.CurrentState;
-        playerVelocity = target.InverseTransformVector((Quaternion.AngleAxis(Vector3.Angle(worldUp, target.up), Vector3.Cross(worldUp, target.up))) * player.MovementInfo.velocity);
+        playerVelocity = target.InverseTransformVector((Quaternion.AngleAxis(Vector3.Angle(worldUp, target.up), (Vector3.Cross(worldUp, target.up) != Vector3.zero ? Vector3.Cross(worldUp, target.up) : Vector3.forward))) * player.MovementInfo.velocity);
         // TODO: ask someone to make the player velocity ACTUALLY local and not just rotated from the up vector
 
         input.x = Input.GetAxis("Mouse X") + Input.GetAxis("RightStick X");

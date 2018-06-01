@@ -17,6 +17,10 @@
 	uniform int _Iterations;
 	uniform float2 _Direction;
 	uniform float2 _CameraSpeed;
+
+	uniform float4 _LuminosityInfluence;
+	uniform float4 _ColourInfluence;
+
 	uniform float _ColorChangeR;
 	uniform float _ColorChangeG;
 	uniform float _ColorChangeB;
@@ -63,7 +67,14 @@
 		}
 		// END Iterations
 
-		final = float4(lerp(final.r,saturate(final.r+final.b),_ColorChangeR), lerp(final.g,saturate(final.g + final.r),_ColorChangeG), lerp(final.b,saturate(final.b + final.r),_ColorChangeB), final.a);
+		//float v = 0.2126 * final.r + 0.7152 * final.g + 0.0722 * final.b;
+		float v = _LuminosityInfluence.r * final.r + _LuminosityInfluence.g * final.g + _LuminosityInfluence.b * final.b;
+		
+		//final = float4(lerp(final.r,saturate(final.r+final.b),_ColorChangeR), lerp(final.g,saturate(final.g + final.r),_ColorChangeG), lerp(final.b,saturate(final.b + final.r),_ColorChangeB), final.a);
+		final = float4(lerp(final.r, saturate(v * _ColourInfluence.r), _ColorChangeR), 
+					   lerp(final.g, saturate(v * _ColourInfluence.g), _ColorChangeG), 
+					   lerp(final.b, saturate(v * _ColourInfluence.b), _ColorChangeB), final.a);
+
 		final = lerp(src, final, _Intensity);
 
 

@@ -102,7 +102,6 @@ namespace Game.LevelElements
         /// </summary>
         void IWaypoint.OnWaypointRemoved()
         {
-
         }
 
         protected override PersistentData CreatePersistentDataObject()

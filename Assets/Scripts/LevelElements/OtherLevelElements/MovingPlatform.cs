@@ -38,7 +38,7 @@ public class MovingPlatform : MonoBehaviour {
     {
         transform.localPosition += movement;
         if(currPlayer!= null)
-            currPlayer.ImmediateMovement(movement, true, false);
+            currPlayer.ImmediateMovement((Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), (Vector3.Cross(Vector3.up, transform.up) != Vector3.zero ? Vector3.Cross(Vector3.up, transform.up) : Vector3.forward))) * movement, true, false);
     }
 
 	virtual public void AddPlayer(CharController player, Vector3 playerImpactPoint) {

@@ -2,12 +2,24 @@
 using Game.Utilities;
 using Game.World;
 using UnityEngine;
+using System.Collections;
 
 namespace Game.LevelElements
 {
     public class PillarEye : MonoBehaviour, IInteractable, IWorldObject
     {
         //########################################################################
+
+        [SerializeField] new Renderer renderer;
+
+        [SerializeField] Material regularMat;
+
+        [SerializeField] Vector3 eyeGravity = new Vector3(0, 0, -1);
+
+        [SerializeField] float changeGravityTime = 0.7f, destroyTime = 2.5f;
+        [SerializeField] float delayBeforeFadeOut = 1.2f, fadeOutTime = 1.2f;
+
+        [Space]
 
         [SerializeField] GameObject defaultEye;
         [SerializeField] GameObject eclipseEye;
@@ -92,12 +104,14 @@ namespace Game.LevelElements
             model.SetAbilityState(model.LevelData.GetPillarRewardAbility(gameController.ActivePillarId), Model.AbilityState.active);
             model.SetPillarState(gameController.ActivePillarId, Model.PillarState.Destroyed);
 
-            gameController.SwitchToOpenWorld();
+            // ok change here.
+
+            StartCoroutine(_DestructionSequence());
         }
 
         void OnEclipseEventHandler(object sender, EventManager.EclipseEventArgs args)
         {
-            if (args.EclipseOn) //eclipse on
+            /*if (args.EclipseOn) //eclipse on
             {
                 defaultEye.SetActive(false);
                 eclipseEye.SetActive(true);
@@ -106,6 +120,96 @@ namespace Game.LevelElements
             {
                 defaultEye.SetActive(true);
                 eclipseEye.SetActive(false);
+            }*/
+        }
+
+
+        IEnumerator _DestructionSequence()
+        {
+            Player.CharacterController.CharController player = gameController.PlayerController.CharController;
+            Vector3 eclipseGravity = gameController.EclipseManager.eclipseGravity;
+
+            //gameController.SwitchGameState(GameState.Pause, UI.MenuType.NONE);
+
+            yield return null;
+
+            for (float elapsed = 0; elapsed < changeGravityTime; elapsed+=Time.deltaTime) {
+                player.ChangeGravityDirection(Vector3.Slerp(eclipseGravity, eyeGravity, elapsed / changeGravityTime));
+                yield return null;
+            }
+
+            // PLAY ANIMATION
+
+            yield return new WaitForSeconds(1.5f);
+
+            StartCoroutine(_WhiteFlash());
+
+            StartCoroutine(_FadeOut());
+
+            for (float elapsed = 0; elapsed < destroyTime; elapsed += Time.deltaTime) {
+                renderer.sharedMaterial.SetFloat("_Destruction", Mathf.Pow(elapsed / destroyTime, 2));
+                yield return null;
+            }
+            
+            yield return null;
+
+            // BACK TO NORMAL
+
+            //gameController.SwitchGameState(GameState.Play, UI.MenuType.NONE);
+
+            renderer.sharedMaterial.SetFloat("_Destruction", 0);
+        }
+
+        IEnumerator _FadeOut()
+        {
+            yield return new WaitForSeconds(delayBeforeFadeOut);
+
+            Eclipse eclipsePostFX = FindObjectOfType<Eclipse>();
+            Vector3 luminosityInfluence = eclipsePostFX.LuminosityInfluence;
+            Vector3 defaultValue = luminosityInfluence;
+
+            ColorOverlay whiteScreen = eclipsePostFX.gameObject.GetComponent<ColorOverlay>();
+            whiteScreen.color = Color.white;
+            whiteScreen.intensity = 0;
+            whiteScreen.blend = ColorOverlay.BlendMode.Normal;
+
+            for (float elapsed = 0; elapsed < changeGravityTime; elapsed += Time.deltaTime) {
+                luminosityInfluence.x += Time.deltaTime * 100;
+                eclipsePostFX.LuminosityInfluence = luminosityInfluence;
+
+                whiteScreen.intensity = Mathf.Pow(elapsed / changeGravityTime, 2);
+
+                yield return null;
+            }
+
+            eclipsePostFX.LuminosityInfluence = defaultValue;
+
+
+            gameController.SwitchToOpenWorld();
+            whiteScreen.intensity = 0;
+        }
+
+        IEnumerator _WhiteFlash()
+        {
+
+            ColorOverlay whiteScreen = FindObjectOfType<ColorOverlay>();
+            whiteScreen.color = Color.white;
+            whiteScreen.intensity = 0;
+            whiteScreen.blend = ColorOverlay.BlendMode.Normal;
+
+            float flashHalfTime = 0.1f;
+
+            for (float elapsed = 0; elapsed < flashHalfTime; elapsed += Time.deltaTime)
+            {
+                whiteScreen.intensity = Mathf.Pow(elapsed / flashHalfTime, 2);
+
+                yield return null;
+            }
+            for (float elapsed = 0; elapsed < flashHalfTime; elapsed += Time.deltaTime)
+            {
+                whiteScreen.intensity = 1- Mathf.Pow(elapsed / flashHalfTime, 2);
+
+                yield return null;
             }
         }
 

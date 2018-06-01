@@ -114,7 +114,7 @@ namespace Game.Player.CharacterController.States
         #region
 
         public void Enter() {
-			//Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
+            //Debug.LogFormat("Enter State: Air - {0}", mode.ToString());
 
             remainingAerialJumps = stateMachine.CheckRemainingAerialJumps();
 			initializing = false;
@@ -168,7 +168,7 @@ namespace Game.Player.CharacterController.States
                 stateMachine.ChangeState(new JetpackState(charController, stateMachine));
             }
             //glide
-            else if (inputInfo.glideButtonDown && !stateMachine.CheckStateLocked(ePlayerState.glide)) {
+            else if ((inputInfo.glideButtonDown || (firstUpdate && inputInfo.glideButton)) && !stateMachine.CheckStateLocked(ePlayerState.glide)) {
 				stateMachine.ChangeState(new GlideState(charController, stateMachine));
 			}
             //landing on slope
