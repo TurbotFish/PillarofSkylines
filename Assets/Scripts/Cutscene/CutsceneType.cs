@@ -2,6 +2,7 @@
 {
     public enum CutsceneType
     {
-        GameIntro
+        GameIntro,
+        TutorialEnd
     }
 }
