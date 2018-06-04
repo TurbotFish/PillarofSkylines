@@ -34,11 +34,11 @@ public class MovingPlatform : MonoBehaviour {
         }
     }
 
-    public void Move(Vector3 movement)
+    public void Move(Vector3 movement, bool worldSpace = false)
     {
         transform.localPosition += movement;
         if(currPlayer!= null)
-            currPlayer.ImmediateMovement((Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), (Vector3.Cross(Vector3.up, transform.up) != Vector3.zero ? Vector3.Cross(Vector3.up, transform.up) : Vector3.forward))) * movement, true, false);
+            currPlayer.ImmediateMovement((worldSpace ? Quaternion.identity :(Quaternion.AngleAxis(Vector3.Angle(Vector3.up, transform.up), (Vector3.Cross(Vector3.up, transform.up) != Vector3.zero ? Vector3.Cross(Vector3.up, transform.up) : Vector3.forward)))) * movement, true, false);
     }
 
 	virtual public void AddPlayer(CharController player, Vector3 playerImpactPoint) {
