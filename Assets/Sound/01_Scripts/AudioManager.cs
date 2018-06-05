@@ -48,7 +48,6 @@ public class AudioManager : MonoBehaviour {
 	public AudioMixer masterMixer;
 
 
-
 	void Start () {
 		foreach (AudioSource source in startingAudios) {
 			source.Play ();

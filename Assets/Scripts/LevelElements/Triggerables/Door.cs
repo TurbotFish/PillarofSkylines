@@ -12,6 +12,7 @@ namespace Game.LevelElements
         [Header("Door")]
         public Vector3 offsetWhenOpen;
 
+
         Vector3 localPositionWhenOpen, localPositionWhenClosed;
 
         public float timeToMove = 1;
@@ -21,6 +22,22 @@ namespace Game.LevelElements
         MovingPlatform platform;
         float elapsed;
         bool comingBack = false;
+
+		[Header("Sound")]
+		public bool playsSoundOnStart;
+		public AudioClip startClip;
+		public float minDistanceStart = 10f;
+		public float maxDistanceStart = 50f;
+		[Range(0,2)] public float volumeStart = 1f;
+		public float clipDurationStart = 0f;
+		public bool addRandomisationStart = false;
+		public bool playsSoundOnEnd;
+		public AudioClip endClip;
+		public float minDistanceEnd = 10f;
+		public float maxDistanceEnd = 50f;
+		[Range(0,2)] public float volumeEnd = 1f;
+		public float clipDurationEnd = 0f;
+		public bool addRandomisationEnd = false;
         //###########################################################
 
         public Transform MyTransform { get { if (my == null) { my = transform; } return my; } }
@@ -50,6 +67,7 @@ namespace Game.LevelElements
                 localPositionWhenClosed = my.localPosition;
                 elapsed = timeToMove;
             }
+
         }
 
         #endregion public methods
@@ -84,6 +102,9 @@ namespace Game.LevelElements
         {
             StopAllCoroutines();
             StartCoroutine(_Move(startPos, endPos));
+
+			if(playsSoundOnStart)
+				SoundifierOfTheWorld.PlaySoundAtLocation (startClip, transform, maxDistanceStart, volumeStart, minDistanceStart, clipDurationStart, addRandomisationStart);
         }
 
         private IEnumerator _Move(Vector3 startPos, Vector3 endPos)
@@ -98,6 +119,10 @@ namespace Game.LevelElements
             }
 
             MyTransform.localPosition = endPos;
+
+			if (playsSoundOnEnd) 
+				SoundifierOfTheWorld.PlaySoundAtLocation (endClip, transform, maxDistanceEnd, volumeEnd, minDistanceEnd, clipDurationEnd, addRandomisationEnd);
+			
         }
 
         #endregion private methods
