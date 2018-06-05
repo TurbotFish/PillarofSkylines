@@ -71,11 +71,12 @@ public class Collectible : MonoBehaviour, IInteractable, IWorldObject
 
     #region operations
 
-    public void GoToCollector(Vector3 position)
+    public void GoToCollector(Transform target)
     {
         followingPlayer = false;
         collected = true;
-        targetPoint = position;
+        myTransform.parent = target;
+        targetPoint = target.position;
     }
 
     public void OnPlayerEnter()
