@@ -27,8 +27,8 @@ namespace Game.LevelElements
         [Header("Eclipse")]
         [SerializeField] public float timeInBetween;
         [SerializeField] public float intensityMax;
-        [SerializeField] public float intensitySpeed;
-        [SerializeField] public float colorVariationSpeed;
+        [SerializeField] public float intensityChangeDuration = 1f;
+        [SerializeField] public float crystalDissolveDuration = 3f;
         [SerializeField] public float colorVariationR;
         [SerializeField] public float colorVariationG;
         [SerializeField] public float colorVariationB;
@@ -70,50 +70,47 @@ namespace Game.LevelElements
             eyeLight.DOIntensity(0, 3).SetEase(Ease.InSine);
             animationFinishedCallback?.Invoke(); // Informs the Pickup that the Tomb has finished its animation.
 
-            for (int i = 0; i < 200; i++)
+            float transitionValue = 1;
+            for(float elapsed = 0; elapsed < crystalDissolveDuration; elapsed+=Time.deltaTime)
             {
-                yield return new WaitForSeconds(0.01f);
-                foreach (MeshRenderer ms in crystalsTransforming)
-                {
+                transitionValue = Mathf.Lerp(1, 0, elapsed / crystalDissolveDuration);
+                foreach (MeshRenderer ms in crystalsTransforming) {
                     Material mat = ms.material;
-                    mat.SetFloat("_Transition", mat.GetFloat("_Transition") - 0.005f);
+                    mat.SetFloat("_Transition", transitionValue);
                 }
+                yield return null;
             }
-            foreach (MeshRenderer ms in crystalsImmediate)
-            {
-				
+
+            foreach (MeshRenderer ms in crystalsTransforming)
                 ms.material = crystalOff;
-            }
+            foreach (MeshRenderer ms in crystalsImmediate)
+                ms.material = crystalOff;
             foreach (ParticleSystemRenderer psr in crystalParticles)
-            {
                 psr.material = crystalOff;
-            }
         }
 
         private IEnumerator HandleEclipse()
         {
-            _eclipse = GameObject.FindObjectOfType<Eclipse>();
+            _eclipse = FindObjectOfType<Eclipse>();
             _eclipse.colorChangeR = 0;
             _eclipse.colorChangeG = 0;
             _eclipse.colorChangeB = 0;
             _eclipse.Intensity = 0;
             _eclipse.enabled = true;
-            while (_eclipse.Intensity < intensityMax)
-            {
-                yield return new WaitForSeconds(0.01f);
-                _eclipse.Intensity += intensitySpeed;
-                _eclipse.colorChangeR += colorVariationSpeed;
-            }
 
-            yield return new WaitForSeconds(timeInBetween);
-
-            while (_eclipse.Intensity > 0)
-            {
-                yield return new WaitForSeconds(0.01f);
-                _eclipse.Intensity -= intensitySpeed;
-                _eclipse.colorChangeR -= colorVariationSpeed;
+            for (float elapsed = 0; elapsed < intensityChangeDuration; elapsed+=Time.deltaTime) {
+                _eclipse.Intensity = Mathf.Lerp(0, intensityMax, elapsed / intensityChangeDuration);
+                _eclipse.colorChangeR = Mathf.Lerp(0, 1, elapsed / intensityChangeDuration);
+                yield return null;
             }
             yield return new WaitForSeconds(timeInBetween);
+
+            for (float elapsed = 0; elapsed < intensityChangeDuration; elapsed += Time.deltaTime) {
+                _eclipse.Intensity = Mathf.Lerp(intensityMax, 0, elapsed / intensityChangeDuration);
+                _eclipse.colorChangeR = Mathf.Lerp(1, 0, elapsed / intensityChangeDuration);
+                yield return null;
+            }
+
             _eclipse.enabled = false;
         }
     }

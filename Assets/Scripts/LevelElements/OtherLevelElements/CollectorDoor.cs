@@ -9,6 +9,10 @@ public class CollectorDoor : MonoBehaviour {
 
     [SerializeField] Transform[] luluDestinations;
 
+
+    [SerializeField] Animator doorAnimator;
+    [SerializeField] string animBoolToOpen;
+
     private void Start() {
         if (luluDestinations.Length < totalCollectibles)
             Debug.LogError("There are less lulu destinations than the given amount of lulu in the world. Either update collectibles amount or add more destinations.");
@@ -19,12 +23,13 @@ public class CollectorDoor : MonoBehaviour {
         Collectible lulu = other.GetComponent<Collectible>();
 
         if (lulu && !lulu.collected) {
-            lulu.GoToCollector(luluDestinations[collected].position);
+            lulu.GoToCollector(luluDestinations[collected]);
             collected++;
 
             if (collected >= totalCollectibles) {
                 // la porte se dissolve et ouvre le passage
-                Destroy(transform.GetChild(0).gameObject);
+                //Destroy(transform.GetChild(0).gameObject);
+                doorAnimator.SetBool(animBoolToOpen, true);
             }
 
         }
