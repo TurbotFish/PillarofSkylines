@@ -34,6 +34,15 @@ namespace Game.LevelElements
         float elapsed;
         bool starting = true;
 
+		[Header("Sound")]
+		public bool playsSoundOnStart;
+		public AudioClip startClip;
+		public float minDistanceStart = 10f;
+		public float maxDistanceStart = 50f;
+		[Range(0,2)] public float volumeStart = 1f;
+		public float clipDurationStart = 0f;
+		public bool addRandomisationStart = false;
+
         //###########################################################
 
         #region public methods
@@ -153,6 +162,9 @@ namespace Game.LevelElements
             elapsed = timeMoving;
             StopAllCoroutines();
             StartCoroutine(_Move(initialPosition + startPos, initialPosition + endPos, timeMoving));
+
+			if(playsSoundOnStart)
+				SoundifierOfTheWorld.PlaySoundAtLocation (startClip, transform, maxDistanceStart, volumeStart, minDistanceStart, clipDurationStart, addRandomisationStart);
         }
 
         private IEnumerator _Move(Vector3 startPos, Vector3 endPos, float timeMoving)
