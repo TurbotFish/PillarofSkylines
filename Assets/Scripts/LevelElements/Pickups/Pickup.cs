@@ -1,4 +1,5 @@
-﻿using Game.GameControl;
+﻿using Game.Cutscene;
+using Game.GameControl;
 using Game.Model;
 using Game.Utilities;
 using System;
@@ -22,6 +23,9 @@ namespace Game.LevelElements
         [Header("Pickup")]
         [SerializeField] private TombAnimator tombAnimator;
         [SerializeField] private new Collider collider;
+
+        [SerializeField] private bool PlayCutsceneOnPickup = false;
+        [SerializeField] private CutsceneType Cutscene;
 
         //##################################################################
 
@@ -145,6 +149,11 @@ namespace Game.LevelElements
             PersistentData.IsPickedUp = true;
 
             tombAnimator.SetTombState(true, true, false, OnTombAnimatingDone);
+
+            if (PlayCutsceneOnPickup)
+            {
+                GameController.CutsceneManager.PlayCutscene(Cutscene);
+            }
         }
 
         /// <summary>
