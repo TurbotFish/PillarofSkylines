@@ -425,37 +425,13 @@ namespace Game.World
             var teleport_positions = new List<Vector3>();
 
             teleport_positions.Add(player_position + new Vector3(0, worldSize.y, 0));
-            teleport_positions.Add(player_position + new Vector3(0, -worldSize.y, 0));
+            teleport_positions.Add(player_position + new Vector3(0, worldSize.y, worldSize.z));
             teleport_positions.Add(player_position + new Vector3(0, 0, worldSize.z));
+            teleport_positions.Add(player_position + new Vector3(0, -worldSize.y, worldSize.z));
+            teleport_positions.Add(player_position + new Vector3(0, -worldSize.y, 0));
+            teleport_positions.Add(player_position + new Vector3(0, -worldSize.y, -worldSize.z));
             teleport_positions.Add(player_position + new Vector3(0, 0, -worldSize.z));
-
-            /*var half_size = worldSize * 0.5f;
-
-            if (player_position.y > half_size.y - preTeleportOffset)
-            {
-                var teleport_position = player_position;
-                teleport_position.y = -half_size.y;
-                teleport_positions.Add(teleport_position);
-            }
-            else if (player_position.y < -half_size.y + preTeleportOffset)
-            {
-                var teleport_position = player_position;
-                teleport_position.y = half_size.y;
-                teleport_positions.Add(teleport_position);
-            }
-
-            if (player_position.z > half_size.z - preTeleportOffset)
-            {
-                var teleport_position = player_position;
-                teleport_position.z = -half_size.z;
-                teleport_positions.Add(teleport_position);
-            }
-            else if (player_position.z < -half_size.z + preTeleportOffset)
-            {
-                var teleport_position = player_position;
-                teleport_position.z = half_size.z;
-                teleport_positions.Add(teleport_position);
-            }*/
+            teleport_positions.Add(player_position + new Vector3(0, worldSize.y, -worldSize.z));
 
             return teleport_positions;
         }
