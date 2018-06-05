@@ -30,6 +30,15 @@ namespace Game.LevelElements
         [ConditionalHide("changeMaterial"), SerializeField]
         new Renderer renderer;
 
+
+		[Header("Sound")]
+		public bool playsSoundOnStart;
+		public AudioClip startClip;
+		public float minDistanceStart = 10f;
+		public float maxDistanceStart = 50f;
+		[Range(0,2)] public float volumeStart = 1f;
+		public float clipDurationStart = 0f;
+		public bool addRandomisationStart = false;
         //###########################################################
 
         #region editor methods
@@ -75,6 +84,9 @@ namespace Game.LevelElements
                     sharedMaterialsCopy[materialID] = TriggerState ? on : off;
                     renderer.sharedMaterials = sharedMaterialsCopy;
                 }
+
+				if(playsSoundOnStart)
+					SoundifierOfTheWorld.PlaySoundAtLocation (startClip, transform, maxDistanceStart, volumeStart, minDistanceStart, clipDurationStart, addRandomisationStart);
 
 				GlyphFX _fx = GetComponent<GlyphFX> ();
 				if (_fx != null) {
