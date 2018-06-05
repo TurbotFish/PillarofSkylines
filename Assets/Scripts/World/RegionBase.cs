@@ -269,10 +269,10 @@ namespace Game.World
 
             var desired_mode = ComputeDesiredRegionMode();
 
-            if (currentRegionMode != desired_mode)
-            {
+            //if (currentRegionMode != desired_mode)
+            //{
                 SwitchMode(desired_mode);
-            }
+            //}
         }
 
         /// <summary>
@@ -449,29 +449,22 @@ namespace Game.World
         private float ComputePlayerDistance(Vector3 player_position, List<Vector3> teleport_positions)
         {
             float distance = float.MaxValue;
-            if (BoundingBox.Contains(player_position))
-            {
-                distance = 0;
-            }
-            else
-            {
-                distance = (BoundingBox.ClosestPoint(player_position) - player_position).magnitude;
+            List<Vector3> position_list = teleport_positions;
+            position_list.Add(player_position);
 
-                foreach (var teleportPosition in teleport_positions)
+            foreach(var position in position_list)
+            {
+                if (BoundingBox.Contains(position))
                 {
-                    if (BoundingBox.Contains(teleportPosition))
-                    {
-                        distance = 0;
-                        break;
-                    }
-                    else
-                    {
-                        float dist = (BoundingBox.ClosestPoint(teleportPosition) - teleportPosition).magnitude;
+                    return 0;
+                }
+                else
+                {
+                    float new_distance = (BoundingBox.ClosestPoint(position) - position).magnitude;
 
-                        if (dist < distance)
-                        {
-                            distance = dist;
-                        }
+                    if(new_distance < distance)
+                    {
+                        distance = new_distance;
                     }
                 }
             }
@@ -538,10 +531,10 @@ namespace Game.World
         /// <returns></returns>
         private void SwitchMode(RegionMode new_region_mode)
         {
-            if (currentRegionMode == new_region_mode)
-            {
-                return;
-            }
+            //if (currentRegionMode == new_region_mode)
+            //{
+            //    return;
+            //}
 
             switch (new_region_mode)
             {
