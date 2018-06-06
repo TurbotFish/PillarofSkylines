@@ -660,7 +660,7 @@ public class PoS_Camera : MonoBehaviour
         if (Mathf.Abs(dot) < facingWallBuffer)
             dot = 0;
         
-        newYaw = Vector3.Lerp(my.forward, newYaw, dot);
+        newYaw = Vector3.Lerp(Quaternion.Inverse(targetSpace) * my.forward, newYaw, dot);
         
         resetType = eResetType.WallRun;
         AllowAutoReset(true, true);

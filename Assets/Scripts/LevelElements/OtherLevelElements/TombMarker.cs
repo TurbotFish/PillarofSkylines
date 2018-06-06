@@ -14,6 +14,7 @@ namespace Game.LevelElements
         [SerializeField] private Pickup tomb;
         [SerializeField] private GameObject toDisable;
         [SerializeField] private GameObject waypointFeedback;
+        [SerializeField] private GameObject activationFeedback;
 
         [SerializeField, HideInInspector] private string tombID;
 
@@ -140,10 +141,12 @@ namespace Game.LevelElements
             if (active)
             {
                 GameController.EchoManager.SetWaypoint(PersistentData);
+                activationFeedback.SetActive(true);
             }
             else
             {
                 GameController.EchoManager.RemoveWaypoint(UniqueId);
+                activationFeedback.SetActive(false);
             }
 
             if (waypointFeedback != null)
