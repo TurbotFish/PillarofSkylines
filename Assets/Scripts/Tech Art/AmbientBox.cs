@@ -133,7 +133,7 @@ public class AmbientBox : MonoBehaviour, IInteractable
         {
             t += Time.deltaTime * fogFadeSpeed;
 
-            print(t);
+            //print(t);
 
             foreach (GradientFog foggy in fogs) {
                 foggy.gradientLerp = t;

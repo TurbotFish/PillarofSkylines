@@ -3,6 +3,7 @@
     public enum CutsceneType
     {
         GameIntro,
-        TutorialEnd
+        TutorialEnd,
+        PillarEyeDestruction
     }
 }
