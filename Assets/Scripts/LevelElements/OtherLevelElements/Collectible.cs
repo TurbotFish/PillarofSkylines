@@ -124,7 +124,7 @@ public class Collectible : MonoBehaviour, IInteractable, IWorldObject
         }
         else if (collected)
         {
-            myTransform.position = Vector3.Lerp(myTransform.position, targetPoint, speed * Time.deltaTime);
+            myTransform.localPosition = Vector3.Lerp(myTransform.localPosition, myTransform.InverseTransformPoint(targetPoint), speed * Time.deltaTime);
 
         } else if (!triggered)
         {
