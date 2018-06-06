@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 20ac54c7c23ad964e803cdc4d368e2df
+timeCreated: 1528189849
+licenseType: Free
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _T_Luludoor_N: {fileID: 2800000, guid: aea47eba564feb145b46aba65847d310, type: 3}
+  - _T_Luludoor_C: {fileID: 2800000, guid: 214ba42c2998183479bcb335c23ebe92, type: 3}
+  - _T_Luludoor_H: {fileID: 2800000, guid: 9b1647aeb88130e4a8ce2ad172ec0e0f, type: 3}
+  - _T_Luludoor_R: {fileID: 2800000, guid: 05f3ec825ccad634093754b7cbe26d1c, type: 3}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
