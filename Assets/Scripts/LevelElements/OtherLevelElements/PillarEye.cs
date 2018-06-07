@@ -130,12 +130,15 @@ namespace Game.LevelElements
 
             yield return null;
 
+            player.StopHandlingInput();
+
             for (float elapsed = 0; elapsed < changeGravityTime; elapsed+=Time.deltaTime) {
                 player.ChangeGravityDirection(Vector3.Slerp(eclipseGravity, eyeGravity, elapsed / changeGravityTime));
                 yield return null;
             }
 
             // PLAY ANIMATION
+            player.KillPillarEye();
 
             yield return new WaitForSeconds(1.5f);
 
@@ -143,10 +146,13 @@ namespace Game.LevelElements
 
             StartCoroutine(_FadeOut());
 
+
             for (float elapsed = 0; elapsed < destroyTime; elapsed += Time.deltaTime) {
                 renderer.material.SetFloat("_Destruction", Mathf.Pow(elapsed / destroyTime, 2));
                 yield return null;
             }
+            player.StartHandlingInput();
+
             
             yield return null;
 

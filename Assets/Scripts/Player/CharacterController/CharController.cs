@@ -275,8 +275,8 @@ namespace Game.Player.CharacterController
                     CreateGroundRise();
                 }
                 
-                stateMachine.HandleInput();
             }
+            stateMachine.HandleInput();
 
             //*******************************************
             //state update           
@@ -534,6 +534,22 @@ namespace Game.Player.CharacterController
                 grRise.Initialize(MyTransform.position, MyTransform.up, this, velocity);
             }
         }
+
+
+        public void StopHandlingInput()
+        {
+            isHandlingInput = false;
+        }
+        public void KillPillarEye()
+        {
+            isHandlingInput = false;
+            animator.SetTrigger("Kill Philippe");
+        }
+        public void StartHandlingInput()
+        {
+            isHandlingInput = true;
+        }
+
 
         public void ResetVerticalVelocity(bool onlyDownVelocity = false)
         {

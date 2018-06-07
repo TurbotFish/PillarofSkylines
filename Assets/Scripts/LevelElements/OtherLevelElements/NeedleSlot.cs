@@ -70,6 +70,20 @@ namespace Game.LevelElements
                 return;
             }
 
+            if (!GameController.PlayerModel.PlayerHasNeedle)
+            {
+                StartCoroutine(TakeNeedleAnimation());
+            }
+            else
+            {
+                EndInteraction();
+            }
+
+        }
+
+        void EndInteraction()
+        { 
+
             /*
              * transfering needle
              */
@@ -94,6 +108,17 @@ namespace Game.LevelElements
 
             string message = GameController.PlayerModel.PlayerHasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle";
             GameController.UiController.Hud.ShowHelpMessage(message, UniqueId);
+        }
+
+        IEnumerator TakeNeedleAnimation()
+        {
+            GameController.PlayerController.CharController.StopHandlingInput();
+            GameController.PlayerController.CharController.animator.SetTrigger("Take needle");
+            yield return new WaitForSeconds(1.8f);
+
+            GameController.PlayerController.CharController.StartHandlingInput();
+            EndInteraction();
+            
         }
 
         /// <summary>
