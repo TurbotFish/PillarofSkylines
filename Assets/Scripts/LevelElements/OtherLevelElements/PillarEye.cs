@@ -77,7 +77,7 @@ namespace Game.LevelElements
 
         public void OnHoverBegin()
         {
-            gameController.UiController.Hud.ShowHelpMessage("[X]: Plant Needle", "PillarEye");
+            gameController.UiController.Hud.ShowHelpMessage("[X]: Kill the Eye", "PillarEye");
         }
 
         public void OnHoverEnd()

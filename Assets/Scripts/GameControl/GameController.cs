@@ -429,7 +429,7 @@ namespace Game.GameControl
             /*
              * Teleporting Player
              */
-            var first_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(Vector3.zero, Vector3.zero, true);
+            var first_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(new Vector3(10000, 10000, 10000), Vector3.zero, true);
             EventManager.SendTeleportPlayerEvent(this, first_teleport_player_event_args);
 
             /*
@@ -529,7 +529,7 @@ namespace Game.GameControl
             /*
              * Teleporting Player
              */
-            var first_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(Vector3.zero, Vector3.zero, true);
+            var first_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(new Vector3(10000, 10000, 10000), Vector3.zero, true);
             EventManager.SendTeleportPlayerEvent(this, first_teleport_player_event_args);
 
             /*
