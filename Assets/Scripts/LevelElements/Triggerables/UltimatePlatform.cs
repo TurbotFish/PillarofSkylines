@@ -47,6 +47,8 @@ namespace Game.LevelElements
 		public float clipDurationStart = 0f;
 		public bool addRandomisationStart = false;
 
+		GameController gController;
+
         //###########################################################
 
         #region public methods
@@ -64,6 +66,8 @@ namespace Game.LevelElements
             platform = GetComponent<MovingPlatform>();
 
             waypoints.Add(Vector3.zero);
+
+			gController = gameController;
 
             foreach (Transform child in transform.GetChild(0))
             {
@@ -173,8 +177,12 @@ namespace Game.LevelElements
             StopAllCoroutines();
             StartCoroutine(_Move(initialPosition + startPos, initialPosition + endPos, timeMoving));
 
-			if(playsSoundOnStart)
-				SoundifierOfTheWorld.PlaySoundAtLocation (startClip, transform, maxDistanceStart, volumeStart, minDistanceStart, clipDurationStart, addRandomisationStart);
+			if (playsSoundOnStart) {
+				Vector3 _playerToObject = transform.position - gController.PlayerController.transform.position;
+				if(Vector3.Dot(_playerToObject, _playerToObject) < 150f)
+					SoundifierOfTheWorld.PlaySoundAtLocation (startClip, transform, maxDistanceStart, volumeStart, minDistanceStart, clipDurationStart, addRandomisationStart);
+				
+			}
         }
 
         private IEnumerator _Move(Vector3 startPos, Vector3 endPos, float timeMoving)
