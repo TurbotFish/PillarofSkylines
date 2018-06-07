@@ -52,7 +52,7 @@ namespace Game.Cutscene
         /// Starts a Cutscene.
         /// </summary>
         /// <param name="cutscene_type"></param>
-        public void PlayCutscene(CutsceneType cutscene_type)
+        public void PlayCutscene(CutsceneType cutscene_type, bool hide_ui)
         {
             if (IsRunningCutscene)
             {
@@ -64,7 +64,7 @@ namespace Game.Cutscene
             }
             else
             {
-                GameController.SwitchGameState(GameState.Pause, MenuType.NONE);
+                GameController.SwitchGameState(GameState.Pause, hide_ui ? MenuType.NONE : MenuType.HUD);
                 IsRunningCutscene = true;
                 CutsceneDictionary[cutscene_type].StartCutscene();
             }

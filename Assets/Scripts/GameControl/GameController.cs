@@ -191,7 +191,7 @@ namespace Game.GameControl
 
             if (WorldController != null && PlayIntroCutscene)
             {
-                CutsceneManager.PlayCutscene(CutsceneType.GameIntro);
+                CutsceneManager.PlayCutscene(CutsceneType.GameIntro, true);
             }
             else
             {
@@ -488,7 +488,7 @@ namespace Game.GameControl
 
             if (use_initial_spawn_point && PlayIntroCutscene)
             {
-                CutsceneManager.PlayCutscene(CutsceneType.GameIntro);
+                CutsceneManager.PlayCutscene(CutsceneType.GameIntro, true);
             }
             else
             {
