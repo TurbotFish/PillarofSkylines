@@ -30,24 +30,13 @@ namespace Game.World
 
         // -- ATTRIBUTES
 
-        public Bounds BoundingBox { get { return new Bounds(boundsCentre + transform.position, boundsSize); } }
-
-        public float RenderDistanceNear { get { return overrideRenderDistances ? localRenderDistanceNear : WorldController.RenderDistanceNear; } }
-        public float RenderDistanceMedium { get { return overrideRenderDistances ? localRenderDistanceMedium : WorldController.RenderDistanceMedium; } }
-        public float RenderDistanceFar { get { return overrideRenderDistances ? localRenderDistanceFar : WorldController.RenderDistanceFar; } }
-
         public SubSceneVariant CurrentSubSceneVariant { get; private set; }
-
         public float PlayerDistance { get; private set; }
-
 
         protected WorldController WorldController;
 
-
         private Transform myTransform;
-
         private Dictionary<SubSceneVariant, Dictionary<SubSceneLayer, List<SubSceneJob>>> SubSceneJobLists;
-
         private RegionMode currentRegionMode;
 
         private bool isInitialized;
@@ -55,13 +44,8 @@ namespace Game.World
         private bool firstJobDone;
         private bool validateSubScenes;
 
-
-
-
         public abstract List<SubSceneVariant> AvailableSubSceneVariants { get; }
-
         protected abstract SubSceneVariant InitialSubSceneVariant { get; }
-
 
         //###############################################################
 
@@ -112,6 +96,26 @@ namespace Game.World
         // -- INQUIRIES
 
         /// <summary>
+        /// The Bounding Box of the Region.
+        /// </summary>
+        public Bounds BoundingBox { get { return new Bounds(boundsCentre + transform.position, boundsSize); } }
+
+        /// <summary>
+        /// The distance at which the near mode is activated.
+        /// </summary>
+        public float RenderDistanceNear { get { return overrideRenderDistances ? localRenderDistanceNear : WorldController.RenderDistanceNear; } }
+
+        /// <summary>
+        /// The distance at which the medium mode is activated.
+        /// </summary>
+        public float RenderDistanceMedium { get { return overrideRenderDistances ? localRenderDistanceMedium : WorldController.RenderDistanceMedium; } }
+
+        /// <summary>
+        /// The distance at which the far mode is activated.
+        /// </summary>
+        public float RenderDistanceFar { get { return overrideRenderDistances ? localRenderDistanceFar : WorldController.RenderDistanceFar; } }
+
+        /// <summary>
         /// Gets the current state of a specific SubScene.
         /// </summary>
         /// <param name="sub_scene_variant"></param>
@@ -119,64 +123,42 @@ namespace Game.World
         /// <returns></returns>
         public SubSceneState GetSubSceneState(SubSceneVariant sub_scene_variant, SubSceneLayer sub_scene_layer)
         {
+            CleanSubSceneJobLists();
+
             var sub_scene_root_transform = GetSubSceneRoot(sub_scene_variant, sub_scene_layer);
             var sub_scene_job_list = SubSceneJobLists[sub_scene_variant][sub_scene_layer];
 
-            //if (sub_scene_job_list.Count > 1)
-            //{
-            //    Debug.LogWarningFormat("Region {0}: There are {1} jobs pending for SubScene {2} {3}!", this.name, sub_scene_job_list.Count, sub_scene_variant, sub_scene_layer);
-            //}
-
-            SubSceneJob last_job = null;
-            int last_job_index = sub_scene_job_list.Count - 1;
-
-            while (last_job == null && last_job_index >= 0)
+            /*
+             * There are currently jobs for the SubScene.
+             */
+            if (sub_scene_job_list.Count > 0)
             {
-                var job = sub_scene_job_list[last_job_index];
+                var last_job = sub_scene_job_list[sub_scene_job_list.Count - 1];
 
-                if ((job.CurrentState & (SubSceneJobState.Aborted)) > 0)
+                switch (last_job.JobType)
                 {
-                    last_job = job;
-                }
-                else
-                {
-                    last_job_index--;
+                    case SubSceneJobType.Load:
+                        return SubSceneState.Loading;
+                    case SubSceneJobType.Unload:
+                        return SubSceneState.Unloading;
+                    default:
+                        Debug.LogError("ERROR!");
+                        return SubSceneState.Unloaded;
                 }
             }
-
-            if (sub_scene_root_transform != null && sub_scene_root_transform.gameObject.activeSelf)
+            /*
+             * The Subscene is loaded.
+             */
+            else if (sub_scene_root_transform != null && sub_scene_root_transform.gameObject.activeSelf)
             {
-                if (sub_scene_job_list.Count == 0 || last_job == null)
-                {
-                    return SubSceneState.Loaded;
-                }
-                else if (last_job.JobType == SubSceneJobType.Unload)
-                {
-                    return SubSceneState.Unloading;
-                }
-                else
-                {
-                    Debug.LogWarningFormat("Region {0}: SubScene {1} {2} is loaded and the type of the last job is {3}", this.name, sub_scene_variant, sub_scene_layer, last_job.JobType);
-
-                    return SubSceneState.Loaded;
-                }
+                return SubSceneState.Loaded;
             }
+            /*
+             * The Subscene is unloaded.
+             */
             else
             {
-                if (sub_scene_job_list.Count == 0 || last_job == null)
-                {
-                    return SubSceneState.Unloaded;
-                }
-                if (last_job.JobType == SubSceneJobType.Load)
-                {
-                    return SubSceneState.Loading;
-                }
-                else
-                {
-                    Debug.LogWarningFormat("Region {0}: SubScene {1} {2} is loaded and the type of the last job is {3}", this.name, sub_scene_variant, sub_scene_layer, last_job.JobType);
-
-                    return SubSceneState.Unloaded;
-                }
+                return SubSceneState.Unloaded;
             }
         }
 
@@ -240,6 +222,11 @@ namespace Game.World
             return null;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="job"></param>
+        /// <returns></returns>
         public int GetJobIndex(SubSceneJob job)
         {
             return SubSceneJobLists[job.SubSceneVariant][job.SubSceneLayer].IndexOf(job);
@@ -271,7 +258,7 @@ namespace Game.World
 
             //if (currentRegionMode != desired_mode)
             //{
-                SwitchMode(desired_mode);
+            SwitchMode(desired_mode);
             //}
         }
 
@@ -452,7 +439,7 @@ namespace Game.World
             List<Vector3> position_list = teleport_positions;
             position_list.Add(player_position);
 
-            foreach(var position in position_list)
+            foreach (var position in position_list)
             {
                 if (BoundingBox.Contains(position))
                 {
@@ -462,7 +449,7 @@ namespace Game.World
                 {
                     float new_distance = (BoundingBox.ClosestPoint(position) - position).magnitude;
 
-                    if(new_distance < distance)
+                    if (new_distance < distance)
                     {
                         distance = new_distance;
                     }
@@ -577,7 +564,7 @@ namespace Game.World
 
                     break;
             }
-          
+
             currentRegionMode = new_region_mode;
             //Debug.LogFormat("Region {0} switched to mode {1}!", this.name, currentRegionMode);
         }
