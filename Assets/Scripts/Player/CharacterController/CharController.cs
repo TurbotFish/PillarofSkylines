@@ -489,6 +489,14 @@ namespace Game.Player.CharacterController
         private void OnGamePausedEventHandler(object sender, Utilities.EventManager.GamePausedEventArgs args)
         {
             gamePaused = args.PauseActive;
+
+            if (gamePaused)
+            {
+                animator.SetFloat("Turn", 0);
+                animator.SetBool("OnGround", true);
+                animator.SetFloat("Speed", 0);
+                animator.SetFloat("VerticalSpeed", 0);
+            }
         }
 
         #endregion event handlers
