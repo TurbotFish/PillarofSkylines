@@ -518,11 +518,6 @@ namespace Game.World
         /// <returns></returns>
         private void SwitchMode(RegionMode new_region_mode)
         {
-            //if (currentRegionMode == new_region_mode)
-            //{
-            //    return;
-            //}
-
             switch (new_region_mode)
             {
                 case RegionMode.Near:
@@ -566,7 +561,6 @@ namespace Game.World
             }
 
             currentRegionMode = new_region_mode;
-            //Debug.LogFormat("Region {0} switched to mode {1}!", this.name, currentRegionMode);
         }
 
         /// <summary>
@@ -584,7 +578,6 @@ namespace Game.World
              */
             if ((sub_scene_state & (SubSceneState.Loaded | SubSceneState.Loading)) > 0)
             {
-                //Debug.LogFormat("Region {0}: CreateLoadJob: SubScene {1} {2} is {3}!", this.name, sub_scene_variant, sub_scene_layer, sub_scene_state);
                 return;
             }
 
@@ -596,7 +589,7 @@ namespace Game.World
                 var job_list = SubSceneJobLists[sub_scene_variant][sub_scene_layer];
                 var last_job = job_list[job_list.Count - 1];
 
-                if ((last_job.CurrentState & (SubSceneJobState.Active | SubSceneJobState.Aborted)) == 0 && last_job.JobType == SubSceneJobType.Unload)
+                if (last_job.CurrentState == SubSceneJobState.Pending && last_job.JobType == SubSceneJobType.Unload)
                 {
                     last_job.CurrentState = SubSceneJobState.Aborted;
 
