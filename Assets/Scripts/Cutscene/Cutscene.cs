@@ -38,7 +38,6 @@ namespace Game.Cutscene
 
         public void StartCutscene()
         {
-            Debug.LogError("Cutscene: StartCutscene called!");
             if(PlayMakerFSM != null)
             {
                 PlayMakerFSM.enabled = true;

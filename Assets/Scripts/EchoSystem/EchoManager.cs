@@ -32,7 +32,6 @@ namespace Game.EchoSystem
         private bool isEclipseActive;
         private bool isDoorActive;
         private float driftInputDown;
-        private bool isActive; //set to true when a scene is loaded, false otherwise. This helps avoid errors ;)
 
         private bool hasWaypoint = false;
         private IWaypoint Waypoint;
@@ -304,8 +303,6 @@ namespace Game.EchoSystem
 
         private void OnPreSceneChangeEvent(object sender, EventManager.PreSceneChangeEventArgs args)
         {
-            isActive = false;
-
             Debug.LogFormat("EchoManager: OnPreSceneChangedEventHandler: echo count = {0}", echoList.Count);
 
             isEclipseActive = false;
@@ -328,7 +325,6 @@ namespace Game.EchoSystem
 
         private void OnSceneChangedEventHandler(object sender, EventManager.SceneChangedEventArgs args)
         {
-            isActive = true;
         }
     }
 } //end of namespace

@@ -43,6 +43,9 @@ namespace Game.GameControl
         public UiController UiController { get; private set; }
 
         // world
+        public bool IsSwitchingToOpenWorld { get; private set; }
+        public bool IsSwitchingToPillar { get; private set; }
+
         public bool IsOpenWorldLoaded { get; private set; }
         public WorldController WorldController { get; private set; }
         public DuplicationCameraManager DuplicationCameraManager { get; private set; }
@@ -396,6 +399,8 @@ namespace Game.GameControl
         /// </summary>
         private IEnumerator SwitchToOpenWorldCoroutine()
         {
+            IsSwitchingToOpenWorld = true;
+
             Vector3 spawn_position = Vector3.zero;
             Quaternion spawn_rotation;
             bool use_initial_spawn_point;
@@ -496,6 +501,8 @@ namespace Game.GameControl
                     WasPillarDestroyed = false;
                 }
             }
+
+            IsSwitchingToOpenWorld = false;
         }
 
         /// <summary>
@@ -504,7 +511,8 @@ namespace Game.GameControl
         /// <param name="pillar_id"></param>
         private IEnumerator SwitchToPillarCoroutine(PillarId pillar_id)
         {
-            // TODO: init?
+            IsSwitchingToPillar = true;
+            ActivePillarId = pillar_id;
 
             /*
              * Pausing game
@@ -555,6 +563,7 @@ namespace Game.GameControl
             yield return new WaitForSeconds(0.5f);
 
             SwitchGameState(GameState.Play, MenuType.HUD);
+            IsSwitchingToPillar = false;
         }
 
         /// <summary>

@@ -20,6 +20,7 @@ namespace Game.UI
 
         public bool IsActive { get; private set; }
 
+        private GameController GameController;
         private LoadingScreenImages screenImages;
         private Image background;
         private Transform turningThing;
@@ -30,6 +31,7 @@ namespace Game.UI
 
         public void Initialize(GameController gameController, UiController ui_controller)
         {
+            GameController = gameController;
             screenImages = Resources.Load<LoadingScreenImages>("ScriptableObjects/LoadingScreenImages");
             background = transform.Find("Background").GetComponent<Image>();
             turningThing = transform.Find("TurningThing");
@@ -42,17 +44,19 @@ namespace Game.UI
                 return;
             }
 
-            Debug.LogError("TODO: show image (Patrick)!");
-            //var realArgs = args as Utilities.EventManager.OnShowLoadingScreenEventArgs;
-            //if (realArgs != null)
-            //{
-            //    var sprites = screenImages.GetImages(realArgs.Id);
+            int loading_screen_id = -1;
+            if (GameController.IsSwitchingToPillar)
+            {
+                loading_screen_id = (int)GameController.ActivePillarId;
+            }
 
-            //    if (sprites != null && sprites.Count > 0)
-            //    {
-            //        background.sprite = sprites[Random.Range(0, sprites.Count - 1)];
-            //    }
-            //}
+            var sprites = screenImages.GetImages(loading_screen_id);
+
+            if (sprites != null && sprites.Count > 0)
+            {
+                background.sprite = sprites[Random.Range(0, sprites.Count - 1)];
+            }
+
 
             IsActive = true;
             gameObject.SetActive(true);
