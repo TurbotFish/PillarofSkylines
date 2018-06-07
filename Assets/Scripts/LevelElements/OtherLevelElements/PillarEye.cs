@@ -130,7 +130,7 @@ namespace Game.LevelElements
 
             yield return null;
 
-            player.StopHandlingInput();
+            player.SetHandlingInput(false);
 
             for (float elapsed = 0; elapsed < changeGravityTime; elapsed+=Time.deltaTime) {
                 player.ChangeGravityDirection(Vector3.Slerp(eclipseGravity, eyeGravity, elapsed / changeGravityTime));
@@ -151,7 +151,7 @@ namespace Game.LevelElements
                 renderer.material.SetFloat("_Destruction", Mathf.Pow(elapsed / destroyTime, 2));
                 yield return null;
             }
-            player.StartHandlingInput();
+            player.SetHandlingInput(true);
 
             
             yield return null;

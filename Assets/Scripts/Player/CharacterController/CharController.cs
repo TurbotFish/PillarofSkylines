@@ -536,18 +536,14 @@ namespace Game.Player.CharacterController
         }
 
 
-        public void StopHandlingInput()
+        public void SetHandlingInput(bool value)
         {
-            isHandlingInput = false;
+            isHandlingInput = value;
         }
         public void KillPillarEye()
         {
             isHandlingInput = false;
             animator.SetTrigger("Kill Philippe");
-        }
-        public void StartHandlingInput()
-        {
-            isHandlingInput = true;
         }
 
 
