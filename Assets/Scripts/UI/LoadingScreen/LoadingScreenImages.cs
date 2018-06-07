@@ -17,6 +17,11 @@ namespace Game.UI
     {
         [SerializeField, HideInInspector] private List<LoadingScreenImageElement> loadingScreenImages = new List<LoadingScreenImageElement>();
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pillarId"></param>
+        /// <returns></returns>
         public List<Sprite> GetImages(int pillarId)
         {
             var result = new List<Sprite>();
@@ -31,6 +36,11 @@ namespace Game.UI
         }
 
 #if UNITY_EDITOR
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public List<LoadingScreenImageElement> GetImageElements(int id)
         {
             var result = loadingScreenImages.Where(item => item.id == id).ToList();
@@ -39,6 +49,10 @@ namespace Game.UI
 #endif
 
 #if UNITY_EDITOR
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="element"></param>
         public void RemoveImageElement(LoadingScreenImageElement element)
         {
             loadingScreenImages.RemoveAll(item => item.id == element.id && item.sprite.GetInstanceID() == element.sprite.GetInstanceID());
@@ -48,6 +62,10 @@ namespace Game.UI
 #endif
 
 #if UNITY_EDITOR
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="element"></param>
         public void AddImageElement(LoadingScreenImageElement element)
         {
             if (loadingScreenImages.FirstOrDefault(item => item.id == element.id && item.sprite.GetInstanceID() == element.sprite.GetInstanceID()) == null)
@@ -78,6 +96,9 @@ namespace Game.UI
         //Dictionary<int, int> listSizes = new Dictionary<int, int>();
         Dictionary<int, bool> foldouts = new Dictionary<int, bool>();
 
+        /// <summary>
+        /// 
+        /// </summary>
         protected virtual void OnEnable()
         {
             self = target as LoadingScreenImages;
@@ -90,6 +111,9 @@ namespace Game.UI
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public override void OnInspectorGUI()
         {
             for (int id = -1; id < pillarIdCount; id++)
