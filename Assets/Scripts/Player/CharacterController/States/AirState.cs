@@ -149,7 +149,7 @@ namespace Game.Player.CharacterController.States
                 else if (remainingAerialJumps > 0 && charController.PlayerModel.CheckAbilityActive(AbilityType.DoubleJump)) {
 					var state = new AirState(charController, stateMachine, eAirStateMode.aerialJump);
 					stateMachine.SetRemainingAerialJumps(remainingAerialJumps - 1);
-
+                    charController.animator.SetTrigger("Double Jump");
 					stateMachine.ChangeState(state);
 				}
             }

@@ -185,7 +185,7 @@ namespace Game.Player.CharacterController.States
                 IgnoreGravity = true
 			};
 
-            charController.MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(TurnLocalToSpace(targetVelocity), charController.MyTransform.up), charController.MyTransform.up);
+            charController.MyTransform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(targetVelocity, charController.MyTransform.up), charController.MyTransform.up);
 
 			//Animator 
 			charController.animator.SetFloat("GlideHorizontal", horizontalAngle);
