@@ -15,7 +15,6 @@ public class BackAndForthMovement : MonoBehaviour {
 
     MovingPlatform platform;
     float currWaitTime;
-    Vector3 initialPosition;
     float movementProgression;
     Vector3 startOfFramePosition;
     Vector3 posLastFrame;
@@ -32,7 +31,6 @@ public class BackAndForthMovement : MonoBehaviour {
         platform = GetComponent<MovingPlatform>();
         movementProgression = 0.01f;
 		currWaitTime = waitTimeForth + initialWaitTime;
-        initialPosition = transform.localPosition;
         posLastFrame = Vector3.zero;
     }
 
