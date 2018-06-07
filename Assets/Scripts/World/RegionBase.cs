@@ -593,14 +593,18 @@ namespace Game.World
                 {
                     last_job.CurrentState = SubSceneJobState.Aborted;
 
-                    if ((GetSubSceneState(sub_scene_variant, sub_scene_layer) & (SubSceneState.Loaded | SubSceneState.Loading)) > 0)
+#if UNITY_EDITOR
+                    var new_subscene_state = GetSubSceneState(sub_scene_variant, sub_scene_layer);
+                    if ((new_subscene_state & (SubSceneState.Loaded | SubSceneState.Loading)) > 0)
                     {
+                        Debug.LogErrorFormat("Region {0}: CreateLoadSubsceneJob: unload job was aborted!", this.name);
                         return;
                     }
                     else
                     {
-                        Debug.LogErrorFormat("Region: CreateLoadSubSceneJob: unload job was aborted but the state of the SubScene is {0}", GetSubSceneState(sub_scene_variant, sub_scene_layer));
+                        Debug.LogErrorFormat("Region {0}: CreateLoadSubsceneJob: unload job was aborted but the state of the SubScene is {1}", this.name, new_subscene_state);
                     }
+#endif
                 }
             }
 
@@ -625,7 +629,6 @@ namespace Game.World
              */
             if ((sub_scene_state & (SubSceneState.Unloaded | SubSceneState.Unloading)) > 0)
             {
-                //Debug.LogFormat("Region {0}: CreateUnloadJob: SubScene {1} {2} is {3}!", this.name, sub_scene_variant, sub_scene_layer, sub_scene_state);
                 return;
             }
 
@@ -637,18 +640,22 @@ namespace Game.World
                 var job_list = SubSceneJobLists[sub_scene_variant][sub_scene_layer];
                 var last_job = job_list[job_list.Count - 1];
 
-                if ((last_job.CurrentState & (SubSceneJobState.Active | SubSceneJobState.Aborted)) == 0 && last_job.JobType == SubSceneJobType.Load)
+                if (last_job.CurrentState == SubSceneJobState.Pending && last_job.JobType == SubSceneJobType.Load)
                 {
                     last_job.CurrentState = SubSceneJobState.Aborted;
 
-                    if ((GetSubSceneState(sub_scene_variant, sub_scene_layer) & (SubSceneState.Unloaded | SubSceneState.Unloading)) > 0)
+#if UNITY_EDITOR
+                    var new_subscene_state = GetSubSceneState(sub_scene_variant, sub_scene_layer);
+                    if ((new_subscene_state & (SubSceneState.Unloaded | SubSceneState.Unloading)) > 0)
                     {
+                        Debug.LogErrorFormat("Region {0}: CreateUnloadSubsceneJob: load job was aborted!", this.name);
                         return;
                     }
                     else
                     {
-                        Debug.LogErrorFormat("Region: CreateLoadSubSceneJob: load job was aborted but the state of the SubScene is {0}", GetSubSceneState(sub_scene_variant, sub_scene_layer));
+                        Debug.LogErrorFormat("Region {0}: CreateUnloadSubSceneJob: load job was aborted but the state of the SubScene is {0}", this.name, new_subscene_state);
                     }
+#endif
                 }
             }
 
