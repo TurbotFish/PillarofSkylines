@@ -219,6 +219,8 @@ public class PoS_Camera : MonoBehaviour
 
         deltaTime = Time.deltaTime;
 
+        DebugCameraMovement();
+
         GetInputsAndStates();
         DoRotation();
         EvaluatePosition();
@@ -358,6 +360,35 @@ public class PoS_Camera : MonoBehaviour
                 StopCurrentReset();
             }
         }
+    }
+
+    bool debugMode = false;
+    Vector2 trueOffsetFar;
+
+    void DebugCameraMovement()
+    {
+        if (Input.GetKeyDown(KeyCode.F8))
+        {
+            print(zoomValue);
+            debugMode ^= true;
+            canZoom ^= true;
+
+            if (debugMode)
+            {
+                trueOffsetFar = offsetFar;
+            }
+            else
+            {
+                zoomValue = distance;
+                offsetFar = new Vector2(0, 1);
+            }
+        }
+        
+        if (debugMode) {
+            Vector2 debugMove = new Vector2(Input.GetAxis("DebugHorizontal"), Input.GetAxis("DebugVertical"));
+            offsetFar += debugMove;
+        }
+
     }
 
     void StopCurrentReset()
