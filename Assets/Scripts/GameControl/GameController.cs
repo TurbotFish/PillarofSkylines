@@ -427,6 +427,12 @@ namespace Game.GameControl
             }
 
             /*
+             * Teleporting Player
+             */
+            var first_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(new Vector3(10000, 10000, 10000), Vector3.zero, true);
+            EventManager.SendTeleportPlayerEvent(this, first_teleport_player_event_args);
+
+            /*
              * Loading Open World scene
              */
             StartCoroutine(LoadOpenWorldSceneCoroutine());
@@ -466,8 +472,8 @@ namespace Game.GameControl
             /*
              * Teleporting Player
              */
-            var teleportPlayerEventArgs = new EventManager.TeleportPlayerEventArgs(spawn_position, spawn_rotation, true);
-            EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
+            var second_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(spawn_position, spawn_rotation, true);
+            EventManager.SendTeleportPlayerEvent(this, second_teleport_player_event_args);
 
             /*
              * Unpausing game
@@ -521,6 +527,12 @@ namespace Game.GameControl
             }
 
             /*
+             * Teleporting Player
+             */
+            var first_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(new Vector3(10000, 10000, 10000), Vector3.zero, true);
+            EventManager.SendTeleportPlayerEvent(this, first_teleport_player_event_args);
+
+            /*
              * Loading Pillar scene
              */
             StartCoroutine(LoadPillarSceneCoroutine(pillar_id));
@@ -533,8 +545,8 @@ namespace Game.GameControl
             /*
              * Teleporting Player
              */
-            var teleportPlayerEventArgs = new EventManager.TeleportPlayerEventArgs(SpawnPointManager.GetInitialSpawnPoint(), SpawnPointManager.GetInitialSpawnOrientation(), true);
-            EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
+            var second_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(SpawnPointManager.GetInitialSpawnPoint(), SpawnPointManager.GetInitialSpawnOrientation(), true);
+            EventManager.SendTeleportPlayerEvent(this, second_teleport_player_event_args);
 
             /*
              * Unpausing game

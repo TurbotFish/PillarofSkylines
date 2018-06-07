@@ -9,21 +9,27 @@ public class MasterDebug : MonoBehaviour {
 	void Start () {
         player = FindObjectOfType<Game.Player.CharacterController.CharController>(); // TODO: fix that
 	}
-    
-    private void Update() {
-        if (Input.GetKeyDown(KeyCode.F1)) {
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
             var shaderScript = Camera.main.GetComponent<DebugReplacementShading>();
 
-            if (!shaderScript.enabled) {
+            if (!shaderScript.enabled)
+            {
                 shaderScript.enabled = false;
                 shaderScript.debugMode = DebugReplacementShading.DebugMode.Checker;
                 shaderScript.enabled = true;
 
-            } else if (shaderScript.debugMode == DebugReplacementShading.DebugMode.Checker) {
+            }
+            else if (shaderScript.debugMode == DebugReplacementShading.DebugMode.Checker)
+            {
                 shaderScript.enabled = false;
                 shaderScript.debugMode = DebugReplacementShading.DebugMode.SlopeCheck;
                 shaderScript.enabled = true;
-            } else
+            }
+            else
                 shaderScript.enabled = false;
 
         }
@@ -36,7 +42,16 @@ public class MasterDebug : MonoBehaviour {
             System.Diagnostics.Process.Start(Application.dataPath.Replace("_Data", ".exe"));
             Application.Quit();
         }
+        else if (Input.GetKeyDown(KeyCode.P))
+        {
+            player.animator.SetTrigger("Kill Philippe");
+        }
+        else if (Input.GetKeyDown(KeyCode.N))
+        {
+            player.animator.SetTrigger("Take needle");
+        }
     }
+
 
     private void OnDisable()
     {

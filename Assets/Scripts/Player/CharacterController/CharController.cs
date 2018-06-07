@@ -275,8 +275,8 @@ namespace Game.Player.CharacterController
                     CreateGroundRise();
                 }
                 
-                stateMachine.HandleInput();
             }
+            stateMachine.HandleInput();
 
             //*******************************************
             //state update           
@@ -489,6 +489,14 @@ namespace Game.Player.CharacterController
         private void OnGamePausedEventHandler(object sender, Utilities.EventManager.GamePausedEventArgs args)
         {
             gamePaused = args.PauseActive;
+
+            if (gamePaused)
+            {
+                animator.SetFloat("Turn", 0);
+                animator.SetBool("OnGround", true);
+                animator.SetFloat("Speed", 0);
+                animator.SetFloat("VerticalSpeed", 0);
+            }
         }
 
         #endregion event handlers
@@ -526,6 +534,18 @@ namespace Game.Player.CharacterController
                 grRise.Initialize(MyTransform.position, MyTransform.up, this, velocity);
             }
         }
+
+
+        public void SetHandlingInput(bool value)
+        {
+            isHandlingInput = value;
+        }
+        public void KillPillarEye()
+        {
+            isHandlingInput = false;
+            animator.SetTrigger("Kill Philippe");
+        }
+
 
         public void ResetVerticalVelocity(bool onlyDownVelocity = false)
         {
