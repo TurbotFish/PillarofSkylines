@@ -24,8 +24,10 @@ namespace Game.LevelElements
         [SerializeField] private TombAnimator tombAnimator;
         [SerializeField] private new Collider collider;
 
+        [Header("")]
         [SerializeField] private bool PlayCutsceneOnPickup = false;
         [SerializeField] private CutsceneType Cutscene;
+        [SerializeField] private bool HideUiInCutscene = false;
 
         //##################################################################
 
@@ -152,7 +154,7 @@ namespace Game.LevelElements
 
             if (PlayCutsceneOnPickup)
             {
-                GameController.CutsceneManager.PlayCutscene(Cutscene);
+                GameController.CutsceneManager.PlayCutscene(Cutscene, HideUiInCutscene);
             }
         }
 
