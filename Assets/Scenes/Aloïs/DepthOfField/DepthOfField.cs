@@ -24,7 +24,7 @@ public class DepthOfField : MonoBehaviour {
     const int bokehBlurPass = 2;
     const int blendPass = 3;
     
-
+	//[ImageEffectOpaque]
 	void OnRenderImage(RenderTexture _source, RenderTexture _destination) {
 
         maxDistance = Mathf.Max(maxDistance, startOffset);

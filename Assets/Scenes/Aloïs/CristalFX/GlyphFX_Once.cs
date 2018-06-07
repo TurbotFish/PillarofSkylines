@@ -12,8 +12,9 @@ public class GlyphFX_Once : GlyphFX {
 
 	public float waitTime;
 	public List<ParticleSystem> particleSystems = new List<ParticleSystem>();
+    [TestButton("Test Animation", "Test", isActiveInEditor = false)]
 
-	[Header ("Meshes & Materials")]
+    [Header ("Meshes & Materials")]
 	public Material crystalOn;
 	public List<MeshRenderer> crystals = new List<MeshRenderer>();
 	public Material lineOn;
@@ -45,6 +46,19 @@ public class GlyphFX_Once : GlyphFX {
 		colOn.SetActive (true);
 		colOff.SetActive (false);
 	}
+    
+    void Test()
+    {
+        Debug.Log("hey");
+        anim.SetBool("activated", true);
+        smallCrystalsAnim.SetBool("activated", true);
+
+        lightGlyph.DOIntensity(intensityOn, 0.2f).SetDelay(lightDelay).SetEase(Ease.OutSine);
+        psIdle.Stop();
+        StartCoroutine(Sequence());
+        colOn.SetActive(true);
+        colOff.SetActive(false);
+    }
 
 
 	IEnumerator Sequence () {
