@@ -111,6 +111,7 @@ namespace Game.LevelElements
                 yield return null;
             }
 
+            _eclipse.ResetColourChange();
             _eclipse.enabled = false;
         }
     }
