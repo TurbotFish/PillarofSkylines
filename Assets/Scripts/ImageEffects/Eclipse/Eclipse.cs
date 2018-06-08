@@ -109,7 +109,9 @@ public class Eclipse : MonoBehaviour {
 
 	[SerializeField] Shader _shader;
 	Material _material;
-	
+
+    [SerializeField, HideInInspector] Vector3 defaultColourChange;
+
 	#endregion
 
 	#region MonoBehaviour Functions
@@ -119,11 +121,18 @@ public class Eclipse : MonoBehaviour {
 			_material = new Material(_shader);
 			_material.hideFlags = HideFlags.DontSave;
 		}
+        defaultColourChange = new Vector3(_colorChangeR, _colorChangeG, _colorChangeB);
 	}
 
     [HideInInspector]
     public Vector2 camSpeed;
     Vector2 lastCamSpeed;
+
+    public void ResetColourChange() {
+        colorChangeR = defaultColourChange.x;
+        colorChangeG = defaultColourChange.y;
+        colorChangeB = defaultColourChange.z;
+    }
 
 	void OnRenderImage(RenderTexture source, RenderTexture destination) {
 		if (_material == null) {
