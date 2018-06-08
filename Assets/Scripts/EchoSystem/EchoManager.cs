@@ -24,12 +24,16 @@ namespace Game.EchoSystem
         [Header("Sound")]
         [SerializeField] private AudioClip holdClip;
         [SerializeField, Range(0, 2)] private float volumeHold = 1f;
+        [SerializeField] private bool addRandomisationHold = false;
         [SerializeField] private AudioClip dropClip;
         [SerializeField, Range(0, 2)] private float volumeDrop = 1f;
+        [SerializeField] private bool addRandomisationDrop = false;
+        [SerializeField] private AudioClip breakClip;
+        [SerializeField, Range(0, 2)] public float volumeBreak = 1f;
+        [SerializeField] private bool addRandomisationBreak = false;
         [SerializeField] private float minDistance = 10f;
         [SerializeField] private float maxDistance = 50f;
         [SerializeField] private float clipDuration = 0f;
-        [SerializeField] private bool addRandomisation = false;
 
         //##################################################################
 
@@ -50,24 +54,7 @@ namespace Game.EchoSystem
         private bool HasWaypoint = false;
         private IWaypoint Waypoint;
 
-<<<<<<< HEAD
         private GameObject CurrentHoldSoundObject;
-=======
-        [Header("Sound")]
-        public AudioClip holdClip;
-        [Range(0, 2)] public float volumeHold = 1f;
-        public bool addRandomisationHold = false;
-        public AudioClip dropClip;
-        [Range(0, 2)] public float volumeDrop = 1f;
-        public bool addRandomisationDrop = false;
-        public AudioClip breakClip;
-        [Range(0, 2)] public float volumeBreak = 1f;
-        public bool addRandomisationBreak = false;
-        public float minDistance = 10f;
-        public float maxDistance = 50f;
-        public float clipDuration = 0f;
-        GameObject CurrentHoldSoundObject;
->>>>>>> github/Vikanya
 
         //##################################################################
 
