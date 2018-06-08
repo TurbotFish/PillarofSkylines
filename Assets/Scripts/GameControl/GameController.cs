@@ -43,6 +43,9 @@ namespace Game.GameControl
         public UiController UiController { get; private set; }
 
         // world
+        public bool IsSwitchingToOpenWorld { get; private set; }
+        public bool IsSwitchingToPillar { get; private set; }
+
         public bool IsOpenWorldLoaded { get; private set; }
         public WorldController WorldController { get; private set; }
         public DuplicationCameraManager DuplicationCameraManager { get; private set; }
@@ -188,7 +191,7 @@ namespace Game.GameControl
 
             if (WorldController != null && PlayIntroCutscene)
             {
-                CutsceneManager.PlayCutscene(CutsceneType.GameIntro);
+                CutsceneManager.PlayCutscene(CutsceneType.GameIntro, true);
             }
             else
             {
@@ -396,6 +399,8 @@ namespace Game.GameControl
         /// </summary>
         private IEnumerator SwitchToOpenWorldCoroutine()
         {
+            IsSwitchingToOpenWorld = true;
+
             Vector3 spawn_position = Vector3.zero;
             Quaternion spawn_rotation;
             bool use_initial_spawn_point;
@@ -425,6 +430,12 @@ namespace Game.GameControl
             {
                 use_initial_spawn_point = true;
             }
+
+            /*
+             * Teleporting Player
+             */
+            var first_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(new Vector3(10000, 10000, 10000), Vector3.zero, true);
+            EventManager.SendTeleportPlayerEvent(this, first_teleport_player_event_args);
 
             /*
              * Loading Open World scene
@@ -466,8 +477,8 @@ namespace Game.GameControl
             /*
              * Teleporting Player
              */
-            var teleportPlayerEventArgs = new EventManager.TeleportPlayerEventArgs(spawn_position, spawn_rotation, true);
-            EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
+            var second_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(spawn_position, spawn_rotation, true);
+            EventManager.SendTeleportPlayerEvent(this, second_teleport_player_event_args);
 
             /*
              * Unpausing game
@@ -477,7 +488,7 @@ namespace Game.GameControl
 
             if (use_initial_spawn_point && PlayIntroCutscene)
             {
-                CutsceneManager.PlayCutscene(CutsceneType.GameIntro);
+                CutsceneManager.PlayCutscene(CutsceneType.GameIntro, true);
             }
             else
             {
@@ -490,6 +501,8 @@ namespace Game.GameControl
                     WasPillarDestroyed = false;
                 }
             }
+
+            IsSwitchingToOpenWorld = false;
         }
 
         /// <summary>
@@ -498,7 +511,8 @@ namespace Game.GameControl
         /// <param name="pillar_id"></param>
         private IEnumerator SwitchToPillarCoroutine(PillarId pillar_id)
         {
-            // TODO: init?
+            IsSwitchingToPillar = true;
+            ActivePillarId = pillar_id;
 
             /*
              * Pausing game
@@ -521,6 +535,12 @@ namespace Game.GameControl
             }
 
             /*
+             * Teleporting Player
+             */
+            var first_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(new Vector3(10000, 10000, 10000), Vector3.zero, true);
+            EventManager.SendTeleportPlayerEvent(this, first_teleport_player_event_args);
+
+            /*
              * Loading Pillar scene
              */
             StartCoroutine(LoadPillarSceneCoroutine(pillar_id));
@@ -533,8 +553,8 @@ namespace Game.GameControl
             /*
              * Teleporting Player
              */
-            var teleportPlayerEventArgs = new EventManager.TeleportPlayerEventArgs(SpawnPointManager.GetInitialSpawnPoint(), SpawnPointManager.GetInitialSpawnOrientation(), true);
-            EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
+            var second_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(SpawnPointManager.GetInitialSpawnPoint(), SpawnPointManager.GetInitialSpawnOrientation(), true);
+            EventManager.SendTeleportPlayerEvent(this, second_teleport_player_event_args);
 
             /*
              * Unpausing game
@@ -543,6 +563,7 @@ namespace Game.GameControl
             yield return new WaitForSeconds(0.5f);
 
             SwitchGameState(GameState.Play, MenuType.HUD);
+            IsSwitchingToPillar = false;
         }
 
         /// <summary>

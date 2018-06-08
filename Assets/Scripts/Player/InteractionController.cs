@@ -89,10 +89,9 @@ namespace Game.Player
             {
                 if (currentInteractableObject == null && currentEcho != null)
                 {
+                    gameController.EchoManager.PlaceEcho(currentEcho.MyTransform);
                     currentEcho.MyTransform.SetParent(null);
                     currentEcho = null;
-
-                    gameController.EchoManager.PlaceEcho();
                 }
             }
         }

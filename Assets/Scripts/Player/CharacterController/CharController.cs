@@ -152,6 +152,7 @@ namespace Game.Player.CharacterController
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
             Utilities.EventManager.GamePausedEvent += OnGamePausedEventHandler;
+            Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
 
             isInitialized = true;
             isHandlingInput = true;
@@ -275,8 +276,8 @@ namespace Game.Player.CharacterController
                     CreateGroundRise();
                 }
                 
-                stateMachine.HandleInput();
             }
+            stateMachine.HandleInput();
 
             //*******************************************
             //state update           
@@ -482,6 +483,7 @@ namespace Game.Player.CharacterController
                     velocity = Vector3.zero;
                     stateMachine.ChangeState(new AirState(this, stateMachine, AirState.eAirStateMode.fall));
                     ChangeGravityDirection(Vector3.down);
+
                 }
             }
         }
@@ -489,6 +491,19 @@ namespace Game.Player.CharacterController
         private void OnGamePausedEventHandler(object sender, Utilities.EventManager.GamePausedEventArgs args)
         {
             gamePaused = args.PauseActive;
+
+            if (gamePaused)
+            {
+                animator.SetFloat("Turn", 0);
+                animator.SetBool("OnGround", true);
+                animator.SetFloat("Speed", 0);
+                animator.SetFloat("VerticalSpeed", 0);
+            }
+        }
+
+        private void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
+        {
+            isHandlingInput = true;
         }
 
         #endregion event handlers
@@ -526,6 +541,18 @@ namespace Game.Player.CharacterController
                 grRise.Initialize(MyTransform.position, MyTransform.up, this, velocity);
             }
         }
+
+
+        public void SetHandlingInput(bool value)
+        {
+            isHandlingInput = value;
+        }
+        public void KillPillarEye()
+        {
+            isHandlingInput = false;
+            animator.SetTrigger("Kill Philippe");
+        }
+
 
         public void ResetVerticalVelocity(bool onlyDownVelocity = false)
         {

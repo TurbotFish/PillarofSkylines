@@ -75,8 +75,10 @@ public class AmbientBox : MonoBehaviour, IInteractable
             StartCoroutine(FadeAmbient(color));
 
         if (editFog)
+        {
             StartCoroutine(FadeFog(gradient, startDistance, endDistance));
-
+            print("Entered " + name + " changing fog");
+        }
         if (postProcess)
             postProcessStack.OverrideProfile(postProcess);
     }

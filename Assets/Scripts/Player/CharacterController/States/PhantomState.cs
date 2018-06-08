@@ -50,10 +50,12 @@ namespace Game.Player.CharacterController.States
 		public void Exit() {
 
 			charController.fxManager.PhantomStop ();
-
+            
             if (currentEcho != null)
                 currentEcho.MyTransform.SetParent(null);
+            charController.gameController.EchoManager.PlaceEcho(currentEcho.MyTransform);
             phantomController.gameObject.SetActive(false);
+            charController.PlayerController.InteractionController.currentEcho = null;
             charController.phantomController.myTransform.localPosition = new Vector3(0f, 1.45f, 0f);
             charController.rotator.SetParent(charController.MyTransform);
             charController.phantomController.myTransform.localRotation = Quaternion.identity;
@@ -61,6 +63,8 @@ namespace Game.Player.CharacterController.States
             if (currentEcho != null)
                 currentEcho.isActive = true;
             charController.ResetEchoInputTime();
+            
+
 
             Time.timeScale = 1f;
 

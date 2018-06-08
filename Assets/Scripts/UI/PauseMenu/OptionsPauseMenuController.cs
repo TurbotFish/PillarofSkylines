@@ -11,8 +11,8 @@ namespace Game.UI.PauseMenu
 
         public bool IsActive { get; private set; }
 
-        private PlayerModel Model;
-        private PauseMenuController PauseMenuController;
+        //private PlayerModel Model;
+        //private PauseMenuController PauseMenuController;
 
         //###########################################################
 
@@ -20,8 +20,8 @@ namespace Game.UI.PauseMenu
 
         public void Initialize(PlayerModel model, PauseMenuController pause_menu_controller)
         {
-            Model = model;
-            PauseMenuController = pause_menu_controller;
+            //Model = model;
+            //PauseMenuController = pause_menu_controller;
         }
 
         public void Activate()

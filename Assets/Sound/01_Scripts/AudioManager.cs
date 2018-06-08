@@ -46,6 +46,7 @@ public class AudioManager : MonoBehaviour {
 
 	[Header ("AudioMixers")]
 	public AudioMixer masterMixer;
+	public static AudioMixerGroup atmoMixerGroup;
 
 
 	void Start () {
@@ -57,6 +58,9 @@ public class AudioManager : MonoBehaviour {
 
         foreach (AudioSource source in sfx)
             SfxIndex.Add(source.name, source);
+
+
+		atmoMixerGroup = masterMixer.FindMatchingGroups("Atmosphere")[0];
 	}
 	
 

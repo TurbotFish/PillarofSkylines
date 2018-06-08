@@ -149,7 +149,7 @@ namespace Game.Player.CharacterController.States
                 else if (remainingAerialJumps > 0 && charController.PlayerModel.CheckAbilityActive(AbilityType.DoubleJump)) {
 					var state = new AirState(charController, stateMachine, eAirStateMode.aerialJump);
 					stateMachine.SetRemainingAerialJumps(remainingAerialJumps - 1);
-
+                    charController.animator.SetTrigger("Double Jump");
 					stateMachine.ChangeState(state);
 				}
             }
@@ -195,7 +195,7 @@ namespace Game.Player.CharacterController.States
             {
                 stateMachine.ChangeState(new GraviSwapState(charController, stateMachine), true);
             }
-            else if (inputInfo.echoButtonTimePressed > 1f && !stateMachine.CheckStateLocked(ePlayerState.phantom))
+            else if (inputInfo.echoButtonTimePressed > 1f && !stateMachine.CheckStateLocked(ePlayerState.phantom) && charController.PlayerController.InteractionController.currentEcho != null)
             {
                 stateMachine.ChangeState(new PhantomState(charController, stateMachine), true);
             }
