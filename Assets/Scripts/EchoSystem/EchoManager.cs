@@ -50,7 +50,24 @@ namespace Game.EchoSystem
         private bool HasWaypoint = false;
         private IWaypoint Waypoint;
 
+<<<<<<< HEAD
         private GameObject CurrentHoldSoundObject;
+=======
+        [Header("Sound")]
+        public AudioClip holdClip;
+        [Range(0, 2)] public float volumeHold = 1f;
+        public bool addRandomisationHold = false;
+        public AudioClip dropClip;
+        [Range(0, 2)] public float volumeDrop = 1f;
+        public bool addRandomisationDrop = false;
+        public AudioClip breakClip;
+        [Range(0, 2)] public float volumeBreak = 1f;
+        public bool addRandomisationBreak = false;
+        public float minDistance = 10f;
+        public float maxDistance = 50f;
+        public float clipDuration = 0f;
+        GameObject CurrentHoldSoundObject;
+>>>>>>> github/Vikanya
 
         //##################################################################
 
@@ -145,7 +162,8 @@ namespace Game.EchoSystem
                 PlacedEchoesCount--;
                 EchoParticleSystem.RemoveEcho(index);
             }
-            Instantiate(breakEchoParticles, target.MyTransform.position, target.MyTransform.rotation);
+            Transform particles = Instantiate(breakEchoParticles, target.MyTransform.position, target.MyTransform.rotation).transform;
+            SoundifierOfTheWorld.PlaySoundAtLocation(breakClip, particles, maxDistance, volumeBreak, minDistance, clipDuration, addRandomisationBreak, false, .2f);
             Destroy(target.gameObject);
         }
 
@@ -181,7 +199,7 @@ namespace Game.EchoSystem
             newEcho.echoManager = this;
             EchoList.Add(newEcho);
 
-            CurrentHoldSoundObject = SoundifierOfTheWorld.PlaySoundAtLocation(holdClip, newEcho.transform, maxDistance, volumeHold, minDistance, clipDuration, addRandomisation, true, 0f);
+            CurrentHoldSoundObject = SoundifierOfTheWorld.PlaySoundAtLocation(holdClip, newEcho.transform, maxDistance, volumeHold, minDistance, clipDuration, addRandomisationHold, true, 0f);
 
             CharController.fxManager.EchoPlay();
 
@@ -216,7 +234,7 @@ namespace Game.EchoSystem
             newEcho.echoManager = this;
             EchoList.Add(newEcho);
 
-            CurrentHoldSoundObject = SoundifierOfTheWorld.PlaySoundAtLocation(holdClip, newEcho.transform, maxDistance, volumeHold, minDistance, clipDuration, addRandomisation, true, 0f);
+            CurrentHoldSoundObject = SoundifierOfTheWorld.PlaySoundAtLocation(holdClip, newEcho.transform, maxDistance, volumeHold, minDistance, clipDuration, addRandomisationHold, true, 0f);
 
             CharController.fxManager.EchoPlay();
 
@@ -231,7 +249,7 @@ namespace Game.EchoSystem
         public void PlaceEcho(Transform echoTransform)
         {
             Destroy(CurrentHoldSoundObject);
-            SoundifierOfTheWorld.PlaySoundAtLocation(dropClip, echoTransform, maxDistance, volumeDrop, minDistance, clipDuration, addRandomisation, false, 0.2f);
+            SoundifierOfTheWorld.PlaySoundAtLocation(dropClip, echoTransform, maxDistance, volumeDrop, minDistance, clipDuration, addRandomisationDrop, false, 0.2f);
 
             CharController.fxManager.EchoStop();
             EchoList[EchoList.Count - 1].StartParticles();

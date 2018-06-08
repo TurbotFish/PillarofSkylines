@@ -144,6 +144,7 @@ namespace Game.LevelElements
 
             StartCoroutine(_WhiteFlash());
 
+            player.SetHandlingInput(true);
             StartCoroutine(_FadeOut());
 
 
@@ -151,7 +152,6 @@ namespace Game.LevelElements
                 renderer.material.SetFloat("_Destruction", Mathf.Pow(elapsed / destroyTime, 2));
                 yield return null;
             }
-            player.SetHandlingInput(true);
 
             
             yield return null;

@@ -152,6 +152,7 @@ namespace Game.Player.CharacterController
             Utilities.EventManager.OnMenuSwitchedEvent += OnMenuSwitchedEventHandler;
             Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
             Utilities.EventManager.GamePausedEvent += OnGamePausedEventHandler;
+            Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
 
             isInitialized = true;
             isHandlingInput = true;
@@ -482,6 +483,7 @@ namespace Game.Player.CharacterController
                     velocity = Vector3.zero;
                     stateMachine.ChangeState(new AirState(this, stateMachine, AirState.eAirStateMode.fall));
                     ChangeGravityDirection(Vector3.down);
+
                 }
             }
         }
@@ -497,6 +499,11 @@ namespace Game.Player.CharacterController
                 animator.SetFloat("Speed", 0);
                 animator.SetFloat("VerticalSpeed", 0);
             }
+        }
+
+        private void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
+        {
+            isHandlingInput = true;
         }
 
         #endregion event handlers
