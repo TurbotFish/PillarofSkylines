@@ -92,7 +92,6 @@ namespace Game.Player
                     gameController.EchoManager.PlaceEcho(currentEcho.MyTransform);
                     currentEcho.MyTransform.SetParent(null);
                     currentEcho = null;
-
                 }
             }
         }
