@@ -570,11 +570,17 @@ namespace Game.World
 
                     //move root to open world scene
                     Scene scene = SceneManager.GetSceneByName(sceneName);
-                    var root = scene.GetRootGameObjects()[0].transform;
-                    SceneManager.MoveGameObjectToScene(root.gameObject, gameObject.scene);
-
-                    //attach the SubScene to its Region
-                    root.SetParent(job.Region.transform, true);
+                    Transform root = null;
+                    if (scene.GetRootGameObjects().Length > 0)
+                    {
+                        root = scene.GetRootGameObjects()[0].transform;
+                        SceneManager.MoveGameObjectToScene(root.gameObject, gameObject.scene);
+                        root.SetParent(job.Region.transform, true);    // Attach the SubScene to its Region.
+                    }
+                    else
+                    {
+                        Debug.LogErrorFormat("Region {0}: Subscene {1} {2} is empty!", job.Region.name, job.SubSceneVariant, job.SubSceneLayer);
+                    }
 
                     //########
                     duration = Time.time - time;
@@ -584,12 +590,15 @@ namespace Game.World
                     yield return null;
 
                     //initializing all WorldObjects
-                    var worldObjects = root.GetComponentsInChildren<IWorldObject>();
-                    for (int i = 0; i < worldObjects.Length; i++)
+                    if (root != null)
                     {
-                        worldObjects[i].Initialize(GameController);
+                        var worldObjects = root.GetComponentsInChildren<IWorldObject>();
+                        for (int i = 0; i < worldObjects.Length; i++)
+                        {
+                            worldObjects[i].Initialize(GameController);
+                        }
+                        yield return null;
                     }
-                    yield return null;
 
                     //unload the SubScene Scene
                     async = SceneManager.UnloadSceneAsync(sceneName);

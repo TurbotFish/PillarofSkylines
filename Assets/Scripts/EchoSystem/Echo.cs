@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Game.EchoSystem
 {
@@ -21,24 +22,32 @@ namespace Game.EchoSystem
 
         [HideInInspector] public EchoManager echoManager; // TODO: init
 
-        private new BoxCollider collider;       
+        private new BoxCollider collider;
         private Vector3 defaultColliderSize;
         private int pickUpLayer;
-        private Transform echoTransform;      
+        private Transform echoTransform;
         private Vector3 fxPosition;
 
         public Transform MyTransform { get { if (myTransform == null) { myTransform = transform; } return myTransform; } }
 
         private Transform myTransform;
 
-		[Header("Particles")]
-		public List<ParticleSystem> pss = new List<ParticleSystem> ();
+        [Header("Particles")]
+        public List<ParticleSystem> pss = new List<ParticleSystem>();
 
         //##################################################################
 
+        // -- ATTRIBUTES
+
+        private List<ParticleSystem> FluidEchoParticleSystemList;
+        private List<ParticleSystem> SolidEchoParticleSystmeList;
+
+        //##################################################################
+
+        // -- INITIALIZATION
+
         void Start()
         {
-
             collider = GetComponent<BoxCollider>();
             collider.isTrigger = true;
             fluidEcho.SetActive(true);
@@ -48,38 +57,82 @@ namespace Game.EchoSystem
             echoTransform = fluidEcho.transform;
 
             pickUpLayer = gameObject.layer;
+
+            FluidEchoParticleSystemList = fluidEcho.GetComponentsInChildren<ParticleSystem>().ToList();
+            SolidEchoParticleSystmeList = solidEcho.GetComponentsInChildren<ParticleSystem>().ToList();
         }
 
         //##################################################################
 
-        //##################################################################
+        // -- OPERATIONS
 
         public void Freeze()
         {
+            isFrozen = true;
+
+            foreach (var particle_system in FluidEchoParticleSystemList)
+            {
+                particle_system.Pause();
+            }
+
             fluidEcho.SetActive(false);
+
             solidEcho.SetActive(true);
 
-            gameObject.layer = 0;
-
-            isFrozen = true;
+            foreach (var particle_system in SolidEchoParticleSystmeList)
+            {
+                particle_system.Play();
+            }
 
             collider.size *= colliderSizeWhenSolid;
             collider.isTrigger = false;
+            gameObject.layer = 0;
 
             MyTransform.rotation = Quaternion.identity;
         }
 
         public void Unfreeze()
         {
-			StartParticles ();
-            fluidEcho.SetActive(true);
-            solidEcho.SetActive(false);
-            gameObject.layer = pickUpLayer;
-
             isFrozen = false;
+
+            foreach (var particle_system in SolidEchoParticleSystmeList)
+            {
+                particle_system.Pause();
+            }
+
+            solidEcho.SetActive(false);
+
+            fluidEcho.SetActive(true);
+
+            foreach (var particle_system in FluidEchoParticleSystemList)
+            {
+                particle_system.Play();
+            }
 
             collider.size = defaultColliderSize;
             collider.isTrigger = true;
+            gameObject.layer = pickUpLayer;
+        }
+
+        public void Break(bool byPlayer = false)
+        {
+            if (isActive)
+            {
+                isActive = false;
+                if (byPlayer)
+                {
+                    Utilities.EventManager.SendEchoDestroyedEvent(this);
+                }
+                echoManager.Break(this);
+            }
+        }
+
+        public void StartParticles()
+        {
+            foreach (ParticleSystem ps in pss)
+            {
+                ps.Play();
+            }
         }
 
         private void Update()
@@ -107,25 +160,6 @@ namespace Game.EchoSystem
             }
         }
 
-        public void Break(bool byPlayer = false)
-        {
-            if (isActive)
-            {
-                isActive = false;
-                if (byPlayer)
-                {
-                    Utilities.EventManager.SendEchoDestroyedEvent(this);
-                }
-                echoManager.Break(this);
-            }
-        }
-
-		public void StartParticles()
-		{
-			foreach (ParticleSystem ps in pss) {
-				ps.Play ();
-			}
-		}
         //##################################################################
     }
 } //end of namespace
