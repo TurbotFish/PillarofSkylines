@@ -3,6 +3,7 @@ using Game.Player.CharacterController.Containers;
 using Game.Player.CharacterController.States;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Game.Player.CharacterController
@@ -98,6 +99,8 @@ namespace Game.Player.CharacterController
 
         public bool IsGrounded { get { return (CurrentState & (ePlayerState.move | ePlayerState.slide | ePlayerState.stand)) != 0; } }
 
+        private List<Cloth> ClothComponentList;
+
         //#############################################################################
 
         [Space(10)]
@@ -123,6 +126,8 @@ namespace Game.Player.CharacterController
             myCameraTransform = myCamera.transform;
 
             GetComponentInChildren<EchoSystem.EchoParticleSystem>().InitializeEchoParticleSystem(gameController);
+
+            ClothComponentList = GetComponentsInChildren<Cloth>().ToList();
 
             this.gameController = gameController;
             PlayerModel = gameController.PlayerModel;
@@ -470,6 +475,11 @@ namespace Game.Player.CharacterController
         void OnTeleportPlayerEventHandler(object sender, Utilities.EventManager.TeleportPlayerEventArgs args)
         {
             MyTransform.position = args.Position;
+
+            foreach(var cloth_component in ClothComponentList)
+            {
+                cloth_component.ClearTransformMotion();
+            }
 
             if (args.TakeRotation)
             {

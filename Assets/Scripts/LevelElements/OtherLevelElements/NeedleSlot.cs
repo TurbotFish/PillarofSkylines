@@ -16,9 +16,13 @@ namespace Game.LevelElements
         [SerializeField] private bool hasNeedleAtStart;
         [SerializeField] private GameObject needleGameObject;
 
+        [Header("Waypoint")]
+        [SerializeField] private bool useCameraAngle;
+        [SerializeField] private float cameraAngle;
+
         //########################################################################
 
-        // INITIALIZATION
+        // -- INITIALIZATION
 
         public override void Initialize(GameController gameController)
         {
@@ -29,7 +33,7 @@ namespace Game.LevelElements
 
         //########################################################################
 
-        // INQUIRIES
+        // -- INQUIRIES
 
         public Transform Transform { get { return transform; } }
 
@@ -40,9 +44,12 @@ namespace Game.LevelElements
             return (PersistentData.ContainsNeedle || GameController.PlayerModel.PlayerHasNeedle);
         }
 
+        public bool UseCameraAngle { get { return useCameraAngle; } }
+        public float CameraAngle { get { return cameraAngle; } }
+
         //########################################################################
 
-        // OPERATIONS
+        // -- OPERATIONS
 
         public void OnPlayerEnter()
         {
@@ -82,7 +89,7 @@ namespace Game.LevelElements
         }
 
         void EndInteraction()
-        { 
+        {
 
             /*
              * transfering needle
@@ -115,10 +122,10 @@ namespace Game.LevelElements
             GameController.PlayerController.CharController.SetHandlingInput(false);
             GameController.PlayerController.CharController.animator.SetTrigger("Take needle");
             yield return new WaitForSeconds(1.8f);
-            
+
             GameController.PlayerController.CharController.SetHandlingInput(true);
             EndInteraction();
-            
+
         }
 
         /// <summary>

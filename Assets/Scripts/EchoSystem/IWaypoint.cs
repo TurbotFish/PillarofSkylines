@@ -11,6 +11,8 @@ namespace Game.EchoSystem
     {
         string UniqueId { get; }
         Vector3 Position { get; }
+        float CameraAngle { get; }
+        bool UseCameraAngle { get; }
 
         void OnWaypointRemoved();
     }
