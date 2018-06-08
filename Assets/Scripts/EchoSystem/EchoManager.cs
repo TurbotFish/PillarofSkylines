@@ -44,6 +44,9 @@ namespace Game.EchoSystem
         public AudioClip dropClip;
         [Range(0, 2)] public float volumeDrop = 1f;
         public bool addRandomisationDrop = false;
+        public AudioClip breakClip;
+        [Range(0, 2)] public float volumeBreak = 1f;
+        public bool addRandomisationBreak = false;
         public float minDistance = 10f;
         public float maxDistance = 50f;
         public float clipDuration = 0f;
@@ -142,7 +145,8 @@ namespace Game.EchoSystem
                 placedEchoes--;
                 echoParticles.RemoveEcho(index);
             }
-            Instantiate(breakEchoParticles, target.MyTransform.position, target.MyTransform.rotation);
+            Transform particles = Instantiate(breakEchoParticles, target.MyTransform.position, target.MyTransform.rotation).transform;
+            SoundifierOfTheWorld.PlaySoundAtLocation(breakClip, particles, maxDistance, volumeBreak, minDistance, clipDuration, addRandomisationBreak, false, .2f);
             Destroy(target.gameObject);
         }
 
