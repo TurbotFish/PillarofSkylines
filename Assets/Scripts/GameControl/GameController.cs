@@ -124,7 +124,7 @@ namespace Game.GameControl
             CameraController.InitializeCameraController(this);
 
             EchoManager.Initialize(this);
-            EclipseManager.InitializeEclipseManager(this);
+            EclipseManager.Initialize(this);
         }
 
         /// <summary>
