@@ -128,7 +128,11 @@ namespace Game.EchoSystem
 
                 EchoCameraEffect.SetFov(70, 0.15f, true);
 
-                var eventArgs = new EventManager.TeleportPlayerEventArgs(Waypoint.Position, false);
+                var eventArgs = new EventManager.TeleportPlayerEventArgs(Waypoint.Position, false)
+                {
+                    UseCameraAngle = Waypoint.UseCameraAngle,
+                    CameraAngle = Waypoint.CameraAngle
+                };
                 EventManager.SendTeleportPlayerEvent(this, eventArgs);
 
                 if (GameController.PlayerModel.PlayerHasNeedle)
