@@ -31,6 +31,9 @@ namespace Game.EchoSystem
         [SerializeField] private AudioClip breakClip;
         [SerializeField, Range(0, 2)] public float volumeBreak = 1f;
         [SerializeField] private bool addRandomisationBreak = false;
+        [SerializeField] private AudioClip driftClip;
+        [SerializeField, Range(0, 2)] public float volumeDrift = 1f;
+        [SerializeField] private bool addRandomisationDrift = false;
         [SerializeField] private float minDistance = 10f;
         [SerializeField] private float maxDistance = 50f;
         [SerializeField] private float clipDuration = 0f;
@@ -115,6 +118,8 @@ namespace Game.EchoSystem
                 int lastIndex = EchoList.Count - 1;
                 var targetEcho = EchoList[lastIndex];
 
+                SoundifierOfTheWorld.PlaySoundAtLocation(driftClip, GameController.PlayerController.PlayerTransform, maxDistance, volumeDrift, minDistance, clipDuration, addRandomisationDrift, false, .2f);
+
                 var eventArgs = new EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, true, false);
                 EventManager.SendTeleportPlayerEvent(this, eventArgs);
 
@@ -127,6 +132,8 @@ namespace Game.EchoSystem
                 CreateShell();
 
                 EchoCameraEffect.SetFov(70, 0.15f, true);
+
+                SoundifierOfTheWorld.PlaySoundAtLocation(driftClip, GameController.PlayerController.PlayerTransform, maxDistance, volumeDrift, minDistance, clipDuration, addRandomisationDrift, false, .2f);
 
                 var eventArgs = new EventManager.TeleportPlayerEventArgs(Waypoint.Position, false)
                 {
