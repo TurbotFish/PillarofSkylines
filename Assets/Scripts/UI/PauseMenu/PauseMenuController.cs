@@ -70,6 +70,9 @@ namespace Game.UI.PauseMenu
 
         public void HandleInput()
         {
+            if (CurrentState == PauseMenuType.Overview && Input.GetButtonDown("Cancel"))
+                ClosePauseMenu();
+
             SubMenuDictionary[CurrentState].HandleInput();
         }
 
