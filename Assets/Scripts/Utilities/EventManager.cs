@@ -196,6 +196,16 @@ namespace Game.Utilities
             /// </summary>
             public bool TakeRotation { get; private set; }
 
+            /// <summary>
+            /// The direction (angle on Y axis) the camera should be looking.
+            /// </summary>
+            public float CameraAngle { get; set; }
+
+            /// <summary>
+            /// Should the camera be turned to look in a specific direction?
+            /// </summary>
+            public bool UseCameraAngle { get; set; }
+
             public TeleportPlayerEventArgs(Vector3 position, bool isNewScene)
             {
                 Position = position;

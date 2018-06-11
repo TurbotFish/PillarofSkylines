@@ -9,6 +9,14 @@ namespace Game.Model
     {
         //###########################################################
 
+        // -- CONSTANTS
+
+        [Header("Waypoint")]
+        [SerializeField] private bool useCameraAngle;
+        [SerializeField] private float cameraAngle;
+
+        //###########################################################
+
         // -- ATTRIBUTES
 
         public bool IsWaypoint { get; set; }
@@ -30,12 +38,13 @@ namespace Game.Model
 
         // -- INQUIRIES
 
-
-
         public TombMarker GetActiveInstance()
         {
             return ActiveInstance;
         }
+
+        public bool UseCameraAngle { get { return useCameraAngle; } }
+        public float CameraAngle { get { return cameraAngle; } }
 
         //###########################################################
 

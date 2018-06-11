@@ -1,5 +1,6 @@
 ﻿using Game.GameControl;
 using Game.Model;
+using Game.Player.CharacterController;
 using Game.Utilities;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,43 +11,50 @@ namespace Game.EchoSystem
     {
         //##################################################################
 
-        // ATTRIBUTES
+        // -- CONSTANTS
 
         [SerializeField] private Echo echoPrefab;
-        [SerializeField] public BreakEchoParticles breakEchoParticles; //why public?
+        [SerializeField] private BreakEchoParticles breakEchoParticles;
         [SerializeField] private int maxEchoes = 3;
 
         [Header("ShellFX")]
         [SerializeField] private GameObject shell;
-        public bool useShells = false;
-
-        private Animator playerAnimator;
-
-        private GameController gameController;
-        public Player.CharacterController.CharController charController;
-        private EchoCameraEffect echoCamera;
-        private EchoParticleSystem echoParticles;
-
-        private List<Echo> echoList = new List<Echo>();
-        private int placedEchoes; // Number of echoes placed by the player
-        private bool isEclipseActive;
-        private bool isDoorActive;
-        private float driftInputDown;
-
-        private bool hasWaypoint = false;
-        private IWaypoint Waypoint;
+        [SerializeField] private bool useShells = false;
 
         [Header("Sound")]
-        public AudioClip holdClip;
-        [Range(0, 2)] public float volumeHold = 1f;
-        public bool addRandomisationHold = false;
-        public AudioClip dropClip;
-        [Range(0, 2)] public float volumeDrop = 1f;
-        public bool addRandomisationDrop = false;
-        public float minDistance = 10f;
-        public float maxDistance = 50f;
-        public float clipDuration = 0f;
-        GameObject CurrentHoldSoundObject;
+        [SerializeField] private AudioClip holdClip;
+        [SerializeField, Range(0, 2)] private float volumeHold = 1f;
+        [SerializeField] private bool addRandomisationHold = false;
+        [SerializeField] private AudioClip dropClip;
+        [SerializeField, Range(0, 2)] private float volumeDrop = 1f;
+        [SerializeField] private bool addRandomisationDrop = false;
+        [SerializeField] private AudioClip breakClip;
+        [SerializeField, Range(0, 2)] public float volumeBreak = 1f;
+        [SerializeField] private bool addRandomisationBreak = false;
+        [SerializeField] private float minDistance = 10f;
+        [SerializeField] private float maxDistance = 50f;
+        [SerializeField] private float clipDuration = 0f;
+
+        //##################################################################
+
+        // ATTRIBUTES
+
+        private Animator PlayerAnimator;
+        private GameController GameController;
+        private CharController CharController;
+        private EchoCameraEffect EchoCameraEffect;
+        private EchoParticleSystem EchoParticleSystem;
+
+        private List<Echo> EchoList = new List<Echo>();
+        private int PlacedEchoesCount; // Number of echoes placed by the player
+        private bool IsEclipseActive;
+        private bool IsDoorActive;
+        private float DriftInputDown;
+
+        private bool HasWaypoint = false;
+        private IWaypoint Waypoint;
+
+        private GameObject CurrentHoldSoundObject;
 
         //##################################################################
 
@@ -54,13 +62,13 @@ namespace Game.EchoSystem
 
         public void Initialize(GameController gameController)
         {
-            this.gameController = gameController;
-            echoCamera = gameController.CameraController.EchoCameraEffect;
-            playerAnimator = gameController.PlayerController.CharController.animator;
-            echoParticles = gameController.PlayerController.PlayerTransform.GetComponentInChildren<EchoParticleSystem>();
-            echoParticles.numEchoes = 3;
+            GameController = gameController;
+            EchoCameraEffect = gameController.CameraController.EchoCameraEffect;
+            PlayerAnimator = gameController.PlayerController.CharController.animator;
+            EchoParticleSystem = gameController.PlayerController.PlayerTransform.GetComponentInChildren<EchoParticleSystem>();
+            EchoParticleSystem.numEchoes = 3;
 
-            charController = gameController.PlayerController.CharController;
+            CharController = gameController.PlayerController.CharController;
 
             EventManager.EclipseEvent += OnEclipseEventHandler;
             EventManager.PreSceneChangeEvent += OnPreSceneChangeEvent;
@@ -79,7 +87,7 @@ namespace Game.EchoSystem
         {
             var result = new List<Vector3>();
 
-            foreach (var echo in echoList)
+            foreach (var echo in EchoList)
             {
                 result.Add(echo.MyTransform.position);
             }
@@ -93,19 +101,19 @@ namespace Game.EchoSystem
 
         public void Drift()
         {
-            if (isEclipseActive && !gameController.PlayerModel.PlayerHasNeedle)
+            if (IsEclipseActive && !GameController.PlayerModel.PlayerHasNeedle)
             {
                 return;
             }
 
-            if (!isEclipseActive && echoList.Count > 0)
+            if (!IsEclipseActive && EchoList.Count > 0)
             {
                 CreateShell();
-                
-                echoCamera.SetFov(70, 0.15f, true);
 
-                int lastIndex = echoList.Count - 1;
-                var targetEcho = echoList[lastIndex];
+                EchoCameraEffect.SetFov(70, 0.15f, true);
+
+                int lastIndex = EchoList.Count - 1;
+                var targetEcho = EchoList[lastIndex];
 
                 var eventArgs = new EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, true, false);
                 EventManager.SendTeleportPlayerEvent(this, eventArgs);
@@ -114,16 +122,20 @@ namespace Game.EchoSystem
                 Break(targetEcho);
 
             }
-            else if (hasWaypoint)
+            else if (HasWaypoint)
             {
                 CreateShell();
-                
-                echoCamera.SetFov(70, 0.15f, true);
 
-                var eventArgs = new EventManager.TeleportPlayerEventArgs(Waypoint.Position, false);
+                EchoCameraEffect.SetFov(70, 0.15f, true);
+
+                var eventArgs = new EventManager.TeleportPlayerEventArgs(Waypoint.Position, false)
+                {
+                    UseCameraAngle = Waypoint.UseCameraAngle,
+                    CameraAngle = Waypoint.CameraAngle
+                };
                 EventManager.SendTeleportPlayerEvent(this, eventArgs);
 
-                if (gameController.PlayerModel.PlayerHasNeedle)
+                if (GameController.PlayerModel.PlayerHasNeedle)
                     (Waypoint as LevelElements.NeedleSlot).OnInteraction();
             }
         }
@@ -131,95 +143,96 @@ namespace Game.EchoSystem
         public void Break(Echo target)
         {
             int index = 0;
-            if (echoList.Contains(target))
+            if (EchoList.Contains(target))
             {
-                index = echoList.IndexOf(target);
-                echoList.Remove(target);
+                index = EchoList.IndexOf(target);
+                EchoList.Remove(target);
             }
             if (target.playerEcho)
             {
-                placedEchoes--;
-                echoParticles.RemoveEcho(index);
+                PlacedEchoesCount--;
+                EchoParticleSystem.RemoveEcho(index);
             }
-            Instantiate(breakEchoParticles, target.MyTransform.position, target.MyTransform.rotation);
+            Transform particles = Instantiate(breakEchoParticles, target.MyTransform.position, target.MyTransform.rotation).transform;
+            SoundifierOfTheWorld.PlaySoundAtLocation(breakClip, particles, maxDistance, volumeBreak, minDistance, clipDuration, addRandomisationBreak, false, .2f);
             Destroy(target.gameObject);
         }
 
         public void BreakAll()
         {
-            Echo[] killList = echoList.ToArray();
+            Echo[] killList = EchoList.ToArray();
             for (int i = 0; i < killList.Length; i++)
                 Break(killList[i]);
         }
 
         public Echo CreateEcho(bool isPlayerEcho)
         {
-            if (isEclipseActive)
+            if (IsEclipseActive)
             {
                 return null;
             }
 
-            if (placedEchoes == maxEchoes)
+            if (PlacedEchoesCount == maxEchoes)
             {
                 int i = 0;
-                var oldestEcho = echoList[i];
+                var oldestEcho = EchoList[i];
 
                 while (!oldestEcho.playerEcho)
                 {
                     i++;
-                    oldestEcho = echoList[i];
+                    oldestEcho = EchoList[i];
                 }
                 Break(oldestEcho);
             }
 
-            Echo newEcho = Instantiate(echoPrefab, gameController.PlayerController.PlayerTransform.position, gameController.PlayerController.PlayerTransform.rotation);
+            Echo newEcho = Instantiate(echoPrefab, GameController.PlayerController.PlayerTransform.position, GameController.PlayerController.PlayerTransform.rotation);
             newEcho.playerEcho = isPlayerEcho;
             newEcho.echoManager = this;
-            echoList.Add(newEcho);
+            EchoList.Add(newEcho);
 
             CurrentHoldSoundObject = SoundifierOfTheWorld.PlaySoundAtLocation(holdClip, newEcho.transform, maxDistance, volumeHold, minDistance, clipDuration, addRandomisationHold, true, 0f);
 
-            charController.fxManager.EchoPlay();
+            CharController.fxManager.EchoPlay();
 
             if (isPlayerEcho)
             {
-                placedEchoes++;
-                echoParticles.AddEcho(newEcho.transform.position);
+                PlacedEchoesCount++;
+                EchoParticleSystem.AddEcho(newEcho.transform.position);
             }
             return newEcho;
         }
 
         public Echo CreateEcho(bool isPlayerEcho, Vector3 position)
         {
-            if (isEclipseActive)
+            if (IsEclipseActive)
                 return null;
 
-            if (placedEchoes == maxEchoes)
+            if (PlacedEchoesCount == maxEchoes)
             {
                 int i = 0;
-                var oldestEcho = echoList[i];
+                var oldestEcho = EchoList[i];
 
                 while (!oldestEcho.playerEcho)
                 {
                     i++;
-                    oldestEcho = echoList[i];
+                    oldestEcho = EchoList[i];
                 }
                 Break(oldestEcho);
             }
 
-            Echo newEcho = Instantiate(echoPrefab, position, gameController.PlayerController.PlayerTransform.rotation);
+            Echo newEcho = Instantiate(echoPrefab, position, GameController.PlayerController.PlayerTransform.rotation);
             newEcho.playerEcho = isPlayerEcho;
             newEcho.echoManager = this;
-            echoList.Add(newEcho);
+            EchoList.Add(newEcho);
 
             CurrentHoldSoundObject = SoundifierOfTheWorld.PlaySoundAtLocation(holdClip, newEcho.transform, maxDistance, volumeHold, minDistance, clipDuration, addRandomisationHold, true, 0f);
 
-            charController.fxManager.EchoPlay();
+            CharController.fxManager.EchoPlay();
 
             if (isPlayerEcho)
             {
-                placedEchoes++;
-                echoParticles.AddEcho(newEcho.transform.position);
+                PlacedEchoesCount++;
+                EchoParticleSystem.AddEcho(newEcho.transform.position);
             }
             return newEcho;
         }
@@ -229,8 +242,8 @@ namespace Game.EchoSystem
             Destroy(CurrentHoldSoundObject);
             SoundifierOfTheWorld.PlaySoundAtLocation(dropClip, echoTransform, maxDistance, volumeDrop, minDistance, clipDuration, addRandomisationDrop, false, 0.2f);
 
-            charController.fxManager.EchoStop();
-            echoList[echoList.Count - 1].StartParticles();
+            CharController.fxManager.EchoStop();
+            EchoList[EchoList.Count - 1].StartParticles();
         }
 
         /// <summary>
@@ -249,7 +262,7 @@ namespace Game.EchoSystem
                 Waypoint.OnWaypointRemoved();
             }
 
-            hasWaypoint = true;
+            HasWaypoint = true;
             Waypoint = waypoint;
         }
 
@@ -268,20 +281,20 @@ namespace Game.EchoSystem
             {
                 Waypoint.OnWaypointRemoved();
                 Waypoint = null;
-                hasWaypoint = false;
+                HasWaypoint = false;
             }
         }
 
         private void FreezeAll()
         {
-            for (int i = 0; i < echoList.Count; i++)
-                echoList[i].Freeze();
+            for (int i = 0; i < EchoList.Count; i++)
+                EchoList[i].Freeze();
         }
 
         private void UnfreezeAll()
         {
-            for (int i = 0; i < echoList.Count; i++)
-                echoList[i].Unfreeze();
+            for (int i = 0; i < EchoList.Count; i++)
+                EchoList[i].Unfreeze();
         }
 
         private void CreateShell()
@@ -289,15 +302,15 @@ namespace Game.EchoSystem
             if (useShells)
             {
                 GameObject _shell;
-                _shell = Instantiate(shell, gameController.PlayerController.PlayerTransform.position, gameController.PlayerController.PlayerTransform.rotation) as GameObject;
+                _shell = Instantiate(shell, GameController.PlayerController.PlayerTransform.position, GameController.PlayerController.PlayerTransform.rotation) as GameObject;
                 //_shell.GetComponent<Animator> ().runtimeAnimatorController = playerAnimator.runtimeAnimatorController;
                 Animator _anim = _shell.GetComponent<Animator>();
-                Debug.Log("player animator : " + playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash);
-                _anim.Play(playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash, 0, playerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime);
+                Debug.Log("player animator : " + PlayerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash);
+                _anim.Play(PlayerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash, 0, PlayerAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime);
                 int i = 0;
-                foreach (var param in playerAnimator.parameters)
+                foreach (var param in PlayerAnimator.parameters)
                 {
-                    _anim.parameters[i] = playerAnimator.parameters[i];
+                    _anim.parameters[i] = PlayerAnimator.parameters[i];
                 }
                 _anim.speed = 0;
             }
@@ -308,13 +321,13 @@ namespace Game.EchoSystem
         {
             if (args.EclipseOn)
             {
-                isEclipseActive = true;
+                IsEclipseActive = true;
 
                 FreezeAll();
             }
             else
             {
-                isEclipseActive = false;
+                IsEclipseActive = false;
 
                 UnfreezeAll();
             }
@@ -322,22 +335,22 @@ namespace Game.EchoSystem
 
         private void OnPreSceneChangeEvent(object sender, EventManager.PreSceneChangeEventArgs args)
         {
-            Debug.LogFormat("EchoManager: OnPreSceneChangedEventHandler: echo count = {0}", echoList.Count);
+            Debug.LogFormat("EchoManager: OnPreSceneChangedEventHandler: echo count = {0}", EchoList.Count);
 
-            isEclipseActive = false;
+            IsEclipseActive = false;
 
-            for (int i = 0; i < echoList.Count; i++)
+            for (int i = 0; i < EchoList.Count; i++)
             {
-                if (echoList[i] == null)
+                if (EchoList[i] == null)
                 {
                     Debug.Log("echo is null");
                 }
-                Destroy(echoList[i].gameObject);
+                Destroy(EchoList[i].gameObject);
             }
 
-            placedEchoes = 0;
-            echoParticles.RemoveAllEcho();
-            echoList.Clear();
+            PlacedEchoesCount = 0;
+            EchoParticleSystem.RemoveAllEcho();
+            EchoList.Clear();
 
             RemoveWaypoint();
         }

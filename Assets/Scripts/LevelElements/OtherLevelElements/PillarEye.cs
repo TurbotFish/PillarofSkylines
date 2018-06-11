@@ -124,7 +124,7 @@ namespace Game.LevelElements
         IEnumerator _DestructionSequence()
         {
             Player.CharacterController.CharController player = gameController.PlayerController.CharController;
-            Vector3 eclipseGravity = gameController.EclipseManager.eclipseGravity;
+            Vector3 eclipseGravity = gameController.EclipseManager.EclipseGravity;
 
             //gameController.SwitchGameState(GameState.Pause, UI.MenuType.NONE);
 
