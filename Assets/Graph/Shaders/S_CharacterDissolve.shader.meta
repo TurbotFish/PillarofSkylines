@@ -4,7 +4,8 @@ timeCreated: 1522763153
 licenseType: Free
 ShaderImporter:
   externalObjects: {}
-  defaultTextures: []
+  defaultTextures:
+  - _T_pilou_marks: {fileID: 2800000, guid: a5927943e773ee642ad2c20df1c4511d, type: 3}
   userData: 
   assetBundleName: 
   assetBundleVariant: 
