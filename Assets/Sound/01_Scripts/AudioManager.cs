@@ -48,6 +48,8 @@ public class AudioManager : MonoBehaviour {
 	public AudioMixer masterMixer;
 	public static AudioMixerGroup atmoMixerGroup;
 
+	//AudioSource atmoSource;
+
 
 	void Start () {
 		foreach (AudioSource source in startingAudios) {
@@ -61,6 +63,11 @@ public class AudioManager : MonoBehaviour {
 
 
 		atmoMixerGroup = masterMixer.FindMatchingGroups("Atmosphere")[0];
+
+//		atmoSource = FindObjectOfType<AudioManager> ().transform.Find ("Nature").transform.Find ("Wind").GetComponent<AudioSource> ();//while you're at it you might want to fix this as well ;);)
+//		if (!atmoSource)
+//			Debug.LogError ("Coudln't find audiosource on P_AudioManager/Nature/Wind");
+			
 	}
 	
 
@@ -75,7 +82,11 @@ public class AudioManager : MonoBehaviour {
 	{
 		playerSpeed = player.MovementInfo.velocity.magnitude;
 		float t = playerSpeed / playerVelocityMax;
-		wind.volume = Mathf.Lerp (windVolume.min, windVolume.max, t);
+
+		if(wind.clip.name == "Sd_WindLoop"){
+			wind.volume += t * .25f;
+				// Mathf.Lerp (windVolume.min, windVolume.max, t);
+		}
 
 	}
 
