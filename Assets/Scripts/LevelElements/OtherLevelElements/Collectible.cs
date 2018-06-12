@@ -43,6 +43,15 @@ public class Collectible : MonoBehaviour, IInteractable, IWorldObject
     Transform pilouTransform;
     int timeSet = 0;
 
+
+    [Header("Sound")]
+    [SerializeField] private AudioClip getClip;
+    [SerializeField, Range(0, 2)] private float volumeGet = 1f;
+    [SerializeField] private bool addRandomisationGet = false;
+    [SerializeField] private float minDistance = 10f;
+    [SerializeField] private float maxDistance = 50f;
+    [SerializeField] private float clipDuration = 0f;
+
     //##################################################################
 
     public void Initialize(GameController gameController)
@@ -88,6 +97,8 @@ public class Collectible : MonoBehaviour, IInteractable, IWorldObject
             myTransform.parent = null;
 
             Instantiate(feedback, myTransform.position, myTransform.rotation).Play();
+
+            SoundifierOfTheWorld.PlaySoundAtLocation(getClip, myTransform, maxDistance, volumeGet, minDistance, clipDuration, addRandomisationGet, false, .2f);
 
             UpdateTargetPoint();
 
