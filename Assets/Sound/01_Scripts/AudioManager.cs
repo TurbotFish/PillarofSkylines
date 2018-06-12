@@ -83,10 +83,10 @@ public class AudioManager : MonoBehaviour {
 		playerSpeed = player.MovementInfo.velocity.magnitude;
 		float t = playerSpeed / playerVelocityMax;
 
-		if(wind.clip.name == "Sd_WindLoop"){
-			wind.volume += t * .25f;
-				// Mathf.Lerp (windVolume.min, windVolume.max, t);
-		}
+//		if(wind.clip.name == "Sd_WindLoop"){
+//			wind.volume += t * .25f;
+//				// Mathf.Lerp (windVolume.min, windVolume.max, t);
+//		}
 
 	}
 
