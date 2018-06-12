@@ -48,6 +48,8 @@ namespace Game.Player.CharacterController
         public float animationRunSpeed;
         public float animationJumpSpeed;
 
+        public Renderer playerRenderer;
+
         public PlayerModel PlayerModel { get; private set; }
 
         public CharData CharData { get; private set; }
@@ -131,6 +133,7 @@ namespace Game.Player.CharacterController
 
             this.gameController = gameController;
             PlayerModel = gameController.PlayerModel;
+            PlayerModel.playerRenderer = playerRenderer;
             CharData = Resources.Load<CharData>("ScriptableObjects/CharData");
             PlayerController = gameController.PlayerController;
 

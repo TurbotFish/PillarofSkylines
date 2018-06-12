@@ -12,7 +12,6 @@ namespace Game.UI.PauseMenu
 
         [SerializeField] private AbilityType AbilityType;
         [SerializeField] private Sprite InactiveSprite;
-        [SerializeField] private Sprite ActiveSprite;
 
         //###########################################################
 
@@ -20,15 +19,19 @@ namespace Game.UI.PauseMenu
 
         private Image ImageComponent;
 
+        private PlayerModel Model;
+
         //###########################################################
 
         // -- INITIALIZATION
 
         public void Initialize(PlayerModel model)
         {
+            Model = model;
+
             ImageComponent = GetComponent<Image>();
 
-            SetSprite(model.GetAbilityState(AbilityType));
+            SetSprite(Model.GetAbilityState(AbilityType));
 
             Utilities.EventManager.AbilityStateChangedEvent += OnAbilityStateChanged;
         }
@@ -56,9 +59,11 @@ namespace Game.UI.PauseMenu
             {
                 case AbilityState.inactive:
                     ImageComponent.sprite = InactiveSprite;
+                    ImageComponent.color = Color.gray;
                     break;
                 case AbilityState.active:
-                    ImageComponent.sprite = ActiveSprite;
+                    ImageComponent.sprite = Model.AbilityData.GetAbility(AbilityType).Icon;
+                    ImageComponent.color = Color.white;
                     break;
             }
         }
