@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace Game.Model
+﻿namespace Game.Model
 {
     public abstract class PersistentData
     {
@@ -14,4 +9,4 @@ namespace Game.Model
             UniqueId = uniqueId;
         }
     }
-} //end of namespace
+} // end of namespace
