@@ -133,7 +133,6 @@ namespace Game.Player.CharacterController
 
             this.gameController = gameController;
             PlayerModel = gameController.PlayerModel;
-            PlayerModel.playerRenderer = playerRenderer;
             CharData = Resources.Load<CharData>("ScriptableObjects/CharData");
             PlayerController = gameController.PlayerController;
 
@@ -161,6 +160,7 @@ namespace Game.Player.CharacterController
             Utilities.EventManager.TeleportPlayerEvent += OnTeleportPlayerEventHandler;
             Utilities.EventManager.GamePausedEvent += OnGamePausedEventHandler;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
+            Utilities.EventManager.PillarMarkStateChangedEvent += OnPillarMarkStateChanged;
 
             isInitialized = true;
             isHandlingInput = true;
@@ -517,6 +517,11 @@ namespace Game.Player.CharacterController
         private void OnSceneChangedEventHandler(object sender, Utilities.EventManager.SceneChangedEventArgs args)
         {
             isHandlingInput = true;
+        }
+
+        private void OnPillarMarkStateChanged(object sender, Utilities.EventManager.PillarMarkStateChangedEventArgs args)
+        {
+            playerRenderer.sharedMaterial.SetFloat("_Mark_Apparition", PlayerModel.GetActivePillarMarkCount());
         }
 
         #endregion event handlers
