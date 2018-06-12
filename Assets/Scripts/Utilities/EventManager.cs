@@ -42,14 +42,13 @@ namespace Game.Utilities
         //###########################################################
         #endregion ui events
         //###########################################################
-
-
         //###########################################################
-        #region model events
-        //###########################################################
+
+        // -- MODEL EVENTS
+
         //***********************************************************
-        #region pillar state changed event
-        //***********************************************************
+
+        // ---- PILLAR STATE CHANGED
 
         public class PillarStateChangedEventArgs : EventArgs
         {
@@ -72,11 +71,8 @@ namespace Game.Utilities
         }
 
         //***********************************************************
-        #endregion pillar state changed event
-        //***********************************************************
-        //***********************************************************
-        #region ability state changed
-        //***********************************************************
+
+        // ---- ABILITY STATE CHANGED
 
         public class AbilityStateChangedEventArgs : EventArgs
         {
@@ -99,11 +95,8 @@ namespace Game.Utilities
         }
 
         //***********************************************************
-        #endregion ability state changed
-        //***********************************************************
-        //***********************************************************
-        #region pillar mark state changed
-        //***********************************************************
+
+        // ---- PILLAR MARK STATE CHANGED
 
         public class PillarMarkStateChangedEventArgs : EventArgs
         {
@@ -126,15 +119,34 @@ namespace Game.Utilities
         }
 
         //***********************************************************
-        #endregion pillar mark state changed
-        //***********************************************************
-        //###########################################################
-        #endregion model events
-        //###########################################################
+
+        // ---- FIREFLY COUNT CHANGED
+
+        public class FireflyCountChangedEventArgs : EventArgs
+        {
+            public int OldFireflyCount { get; private set; }
+            public int NewFireflyCount { get; private set; }
+
+            public FireflyCountChangedEventArgs(int old_firefly_count, int new_firefly_count)
+            {
+                OldFireflyCount = old_firefly_count;
+                NewFireflyCount = new_firefly_count;
+            }
+        }
+
+        public delegate void FireflyCountChangedEventHandler(object sender, FireflyCountChangedEventArgs args);
+        public static event FireflyCountChangedEventHandler FireflyCountChangedEvent;
+
+        public static void SendFireflyCountChangedEvent(object sender, FireflyCountChangedEventArgs args)
+        {
+            FireflyCountChangedEvent?.Invoke(sender, args);
+        }
 
         //###########################################################
-        #region gameplay events
         //###########################################################
+
+        // -- GAMEPLAY EVENTS
+
         //***********************************************************
 
         #region game paused event
@@ -420,7 +432,6 @@ namespace Game.Utilities
 
         //***********************************************************
         //###########################################################
-        #endregion gameplay events
         //###########################################################
     }
 } //end of namespace
