@@ -21,7 +21,7 @@ namespace Game.Model
         public LevelData LevelData { get; private set; }
 
         public bool PlayerHasNeedle { get; set; }
-        private float collectedMarks = 0;
+        private int collectedMarks = 0;
         public Renderer playerRenderer;
 
         private Dictionary<AbilityType, AbilityState> AbilityStateDictionary;
@@ -212,7 +212,7 @@ namespace Game.Model
                     playerRenderer.sharedMaterial.SetFloat("_Mark_Apparition", collectedMarks);
                 }
 
-                EventManager.SendPillarMarkStateChangedEvent(this, new EventManager.PillarMarkStateChangedEventArgs(pillar_mark_id, pillar_mark_state));
+                EventManager.SendPillarMarkStateChangedEvent(this, new EventManager.PillarMarkStateChangedEventArgs(pillar_mark_id, pillar_mark_state, collectedMarks));
             }
         }
 

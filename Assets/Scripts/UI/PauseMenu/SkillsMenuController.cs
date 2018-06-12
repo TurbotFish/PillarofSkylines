@@ -13,6 +13,7 @@ namespace Game.UI.PauseMenu
         [SerializeField] private Transform EntryHolder;
         [SerializeField] private Button StartingButton;
         [SerializeField] private DescriptionPanelView DescriptionPanelView;
+        [SerializeField] private AbilityListView AbilityListView;
 
         //###########################################################
 
@@ -36,6 +37,7 @@ namespace Game.UI.PauseMenu
             }
 
             DescriptionPanelView.Initialize(model);
+            AbilityListView.Initialize(model);
         }
 
         public void Activate()
