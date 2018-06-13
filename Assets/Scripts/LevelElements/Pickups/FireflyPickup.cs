@@ -28,6 +28,7 @@ namespace Game.LevelElements
         public override string PickupName { get { return "Lulu"; } }
         public override string OnPickedUpMessage { get { return ""; } }
         public override string OnPickedUpDescription { get { return ""; } }
+        public override Sprite OnPickedUpIcon { get { return null; } }
 
         //##################################################################
 
