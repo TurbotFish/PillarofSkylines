@@ -20,6 +20,8 @@ namespace Game.LevelElements
     {
         //##################################################################
 
+        // -- CONSTANTS
+
         [Header("Pickup")]
         [SerializeField] private TombAnimator tombAnimator;
         [SerializeField] private new Collider collider;
@@ -31,7 +33,7 @@ namespace Game.LevelElements
 
         //##################################################################
 
-        #region initialization
+        // -- INITIALIZATION
 
         public override void Initialize(GameController gameController)
         {
@@ -42,10 +44,7 @@ namespace Game.LevelElements
 
             base.Initialize(gameController);
 
-            if (PersistentData.IsPickedUp && !tombAnimator.IsTombActivated)
-            {
-                tombAnimator.SetTombState(true, false, true);
-            }
+            OnPickupEnabled();
         }
 
         private void OnEnable()
@@ -54,10 +53,7 @@ namespace Game.LevelElements
 
             if (IsInitialized)
             {
-                if (PersistentData.IsPickedUp && !tombAnimator.IsTombActivated)
-                {
-                    tombAnimator.SetTombState(true, false, true);
-                }
+                OnPickupEnabled();
             }
         }
 
@@ -66,11 +62,9 @@ namespace Game.LevelElements
             EventManager.PickupCollectedEvent -= OnPickupCollectedEvent;
         }
 
-        #endregion initialization
-
         //##################################################################
 
-        #region inquiries
+        // -- INQUIRIES
 
         /// <summary>
         /// Has the Pickup already been picked up?
@@ -92,11 +86,9 @@ namespace Game.LevelElements
             return !PersistentData.IsPickedUp;
         }
 
-        #endregion inquiries
-
         //##################################################################
 
-        #region operations
+        // -- OPERATIONS
 
         /// <summary>
         /// Used to give the content of the Pickup to the player. Actual content depends on the specific implementation.
@@ -150,7 +142,14 @@ namespace Game.LevelElements
 
             PersistentData.IsPickedUp = true;
 
-            tombAnimator.SetTombState(true, true, false, OnTombAnimatingDone);
+            if (tombAnimator != null)
+            {
+                tombAnimator.SetTombState(true, true, false, OnPickupAnimationDone);
+            }
+            else
+            {
+                OnPickupAnimationDone();
+            }
 
             if (PlayCutsceneOnPickup)
             {
@@ -176,7 +175,14 @@ namespace Game.LevelElements
         {
             if (IsInitialized && (sender as Pickup<T>).UniqueId == UniqueId && !sender.Equals(this) && PersistentData.IsPickedUp)
             {
-                tombAnimator.SetTombState(true, false, false);
+                if (tombAnimator != null)
+                {
+                    tombAnimator.SetTombState(true, false, false);
+                }
+                else
+                {
+                    OnPickupAnimationDone();
+                }
 
                 collider.enabled = false;
             }
@@ -185,7 +191,7 @@ namespace Game.LevelElements
         /// <summary>
         /// Called when the pickup animation finishes.
         /// </summary>
-        private void OnTombAnimatingDone()
+        private void OnPickupAnimationDone()
         {
             // give content to player
             OnPickedUp();
@@ -201,8 +207,18 @@ namespace Game.LevelElements
             EventManager.SendPickupCollectedEvent(this, pickupCollectedEventArgs);
         }
 
-        #endregion operations
-
-        //##################################################################
+        /// <summary>
+        /// Called when the object is initialized or activated.
+        /// </summary>
+        protected virtual void OnPickupEnabled()
+        {
+            if (PersistentData.IsPickedUp)
+            {
+                if (tombAnimator != null && !tombAnimator.IsTombActivated)
+                {
+                    tombAnimator.SetTombState(true, false, true);
+                }
+            }
+        }
     }
 } // end of namespace

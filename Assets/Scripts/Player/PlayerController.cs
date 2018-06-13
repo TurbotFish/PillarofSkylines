@@ -50,8 +50,6 @@ namespace Game.Player
             CharController.Initialize(gameController);
             InteractionController.Initialize(gameController);
             wrappableObject.Initialize(gameController);
-
-            Utilities.EventManager.FireflyCountChangedEvent += OnFireflyCountChanged;
         }
 
         //########################################################################
@@ -70,10 +68,5 @@ namespace Game.Player
         //########################################################################
 
         // -- OPERATIONS
-
-        private void OnFireflyCountChanged(object sender, Utilities.EventManager.FireflyCountChangedEventArgs args)
-        {
-
-        }
     }
 } // end of namespace
