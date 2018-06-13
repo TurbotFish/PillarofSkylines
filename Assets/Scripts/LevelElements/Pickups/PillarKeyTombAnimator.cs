@@ -33,6 +33,15 @@ namespace Game.LevelElements
         [SerializeField] public float colorVariationG;
         [SerializeField] public float colorVariationB;
 
+
+        [Header("Sound")]
+        [SerializeField] private AudioClip getClip;
+        [SerializeField, Range(0, 2)] private float volumeGet = 1f;
+        [SerializeField] private bool addRandomisationGet = false;
+        [SerializeField] private float minDistance = 10f;
+        [SerializeField] private float maxDistance = 50f;
+        [SerializeField] private float clipDuration = 0f;
+
         private Eclipse _eclipse;
 
         //##################################################################
@@ -59,6 +68,7 @@ namespace Game.LevelElements
 
         private void GetMark()
         {
+            SoundifierOfTheWorld.PlaySoundAtLocation(getClip, transform, maxDistance, volumeGet, minDistance, 0f, addRandomisationGet, false, .2f);
             eyeAnim.SetBool("marked", true);
             StartCoroutine(EndAnimation());
             StartCoroutine(HandleEclipse());

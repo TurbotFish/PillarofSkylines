@@ -74,6 +74,7 @@ namespace Game.LevelElements
         public abstract string PickupName { get; }
         public abstract string OnPickedUpMessage { get; }
         public abstract string OnPickedUpDescription { get; }
+        public abstract Sprite OnPickedUpIcon { get; }
 
         public Transform Transform { get { return transform; } }
 
@@ -197,7 +198,7 @@ namespace Game.LevelElements
             OnPickedUp();
 
             // show message on screen
-            GameController.UiController.Hud.ShowAnnouncmentMessage(OnPickedUpMessage, OnPickedUpDescription);
+            GameController.UiController.Hud.ShowAnnouncmentMessage(OnPickedUpMessage, OnPickedUpDescription, 4, OnPickedUpIcon);
 
             // disable collider
             collider.enabled = false;

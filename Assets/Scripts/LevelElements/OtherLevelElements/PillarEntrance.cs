@@ -138,13 +138,15 @@ namespace Game.LevelElements
         private void OnPillarUnlocked()
         {
             PersistentData.IsPillarUnlocked = true;
-            AnimatorComponent.SetBool("BoolA", true);
+            if (AnimatorComponent)
+                AnimatorComponent.SetBool("BoolA", true);
         }
 
         private void OnDoorUnlocked()
         {
             PersistentData.IsDoorUnlocked = true;
-            AnimatorComponent.SetBool("BoolB", true);
+            if (AnimatorComponent)
+                AnimatorComponent.SetBool("BoolB", true);
             StartCoroutine(UnlockDoorCoroutine());
         }
 

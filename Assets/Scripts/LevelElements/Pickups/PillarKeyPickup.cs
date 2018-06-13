@@ -12,12 +12,14 @@ namespace Game.LevelElements
 
         [Header("FavourPickup")]
         [SerializeField] private PillarMarkId PillarMarkId;
+        [SerializeField] private Sprite tempIcon;
 
         //##################################################################
 
         public override string PickupName { get { return "Pillar Key"; } }
         public override string OnPickedUpMessage { get { return "The Eyes have marked you"; } }
         public override string OnPickedUpDescription { get { return "Break the Pillars to free the world"; } }
+        public override Sprite OnPickedUpIcon { get { return tempIcon; } }
 
         //##################################################################
 
