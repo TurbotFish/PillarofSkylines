@@ -201,7 +201,7 @@ namespace Game.Model
             {
                 PillarMarkStateDictionary[pillar_mark_id] = pillar_mark_state;
 
-                EventManager.SendPillarMarkStateChangedEvent(this, new EventManager.PillarMarkStateChangedEventArgs(pillar_mark_id, pillar_mark_state));
+                EventManager.SendPillarMarkStateChangedEvent(this, new EventManager.PillarMarkStateChangedEventArgs(pillar_mark_id, pillar_mark_state, GetActivePillarMarkCount()));
             }
         }
 
