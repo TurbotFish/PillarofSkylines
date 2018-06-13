@@ -10,6 +10,7 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
     [SerializeField] bool editAmbient = true;
     [SerializeField] bool editFog = false;
+	[SerializeField] bool editAudio = false;
 
     [Header("Ambient")]
     [ConditionalHide("editAmbient")]
@@ -27,6 +28,20 @@ public class AmbientBox : MonoBehaviour, IInteractable
     [SerializeField] float endDistance = 200;
     [ConditionalHide("editFog")]
     [SerializeField] float fogFadeSpeed = 2;
+
+	[Header("Audio")]
+	[ConditionalHide("editAudio")]
+	[SerializeField] AudioClip clip;
+	[ConditionalHide("editAudio")]
+	[SerializeField] float audioFadeSpeed = 2f;
+	[ConditionalHide("editAudio")]
+	[SerializeField] AnimationCurve fadeInCurve;
+	[ConditionalHide("editAudio")]
+	[SerializeField] AnimationCurve fadeOutCurve;
+
+	AudioClip defaultClip;
+	float currentVolume, audioTimer, defaultVolume;
+	AudioSource atmoSource;
 
     GradientFog fog;
     UnityEngine.PostProcessing.PostProcessingBehaviour postProcessStack;
@@ -48,6 +63,14 @@ public class AmbientBox : MonoBehaviour, IInteractable
         defaultEnd = fog.endDistance;
 
         postProcessStack = FindObjectOfType<UnityEngine.PostProcessing.PostProcessingBehaviour>(); // fix that as well prob
+
+		atmoSource = FindObjectOfType<AudioManager> ().transform.Find ("Nature").transform.Find ("Wind").GetComponent<AudioSource> ();//while you're at it you might want to fix this as well ;);)
+		if (!atmoSource)
+			Debug.LogError ("Coudln't find audiosource on P_AudioManager/Nature/Wind");
+		else {
+			defaultClip = atmoSource.clip;
+			defaultVolume = atmoSource.volume;
+		}
     }
 
     #endregion initialization
@@ -81,6 +104,9 @@ public class AmbientBox : MonoBehaviour, IInteractable
         }
         if (postProcess)
             postProcessStack.OverrideProfile(postProcess);
+
+		if (editAudio)
+			StartCoroutine (FadeAudio (1f, true));
     }
 
     public void OnPlayerExit()
@@ -94,6 +120,9 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
         if (postProcess)
             postProcessStack.StopOverridingProfile();
+
+		if (editAudio)
+			StartCoroutine (FadeAudio (0f, false));
     }
 
     public void OnHoverBegin()
@@ -154,6 +183,36 @@ public class AmbientBox : MonoBehaviour, IInteractable
             foggy.GenerateTexture();
         }
     }
+
+	private IEnumerator FadeAudio(float _targetVolume, bool _entering)
+	{
+
+		while (audioTimer <= audioFadeSpeed)
+		{
+			audioTimer += Time.deltaTime;
+			currentVolume = fadeOutCurve.Evaluate (Mathf.Clamp01 (audioTimer / audioFadeSpeed)) * defaultVolume;
+			atmoSource.volume = currentVolume;
+			yield return null;
+		}
+
+		audioTimer = 0f;
+
+
+		atmoSource.clip = _entering ? clip : defaultClip;
+
+		atmoSource.PlayScheduled (Random.value);
+
+		while (audioTimer <= audioFadeSpeed)
+		{
+			audioTimer += Time.deltaTime;
+			currentVolume = fadeInCurve.Evaluate (Mathf.Clamp01 (audioTimer / audioFadeSpeed)) * defaultVolume;
+			atmoSource.volume = currentVolume;
+			yield return null;
+		}
+
+		audioTimer = 0f;
+
+	}
 
     #endregion operations
 

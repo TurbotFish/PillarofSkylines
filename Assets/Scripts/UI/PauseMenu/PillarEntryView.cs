@@ -65,6 +65,8 @@ namespace Game.UI.PauseMenu
 
         private void SetSprite(PillarState pillar_state)
         {
+            IconImageComponent.sprite = Model.AbilityData.GetAbility(AbilityType).Icon;
+            /*
             switch (pillar_state)
             {
                 case PillarState.Locked:
@@ -76,7 +78,7 @@ namespace Game.UI.PauseMenu
                 case PillarState.Destroyed:
                     IconImageComponent.sprite = DestroyedSprite;
                     break;
-            }
+            }*/
         }
     }
 }

@@ -21,6 +21,7 @@ namespace Game.Model
         public LevelData LevelData { get; private set; }
 
         public bool PlayerHasNeedle { get; set; }
+        public int LucioleCount { get; private set; }
 
         private Dictionary<AbilityType, AbilityState> AbilityStateDictionary;
         private Dictionary<PillarMarkId, PillarMarkState> PillarMarkStateDictionary;
@@ -200,7 +201,7 @@ namespace Game.Model
             {
                 PillarMarkStateDictionary[pillar_mark_id] = pillar_mark_state;
 
-                EventManager.SendPillarMarkStateChangedEvent(this, new EventManager.PillarMarkStateChangedEventArgs(pillar_mark_id, pillar_mark_state));
+                EventManager.SendPillarMarkStateChangedEvent(this, new EventManager.PillarMarkStateChangedEventArgs(pillar_mark_id, pillar_mark_state, GetActivePillarMarkCount()));
             }
         }
 
@@ -248,6 +249,18 @@ namespace Game.Model
                 PersistentDataDictionary.Add(dataObject.UniqueId, dataObject);
                 return true;
             }
+        }
+
+        public void ChangeLucioleCount(int delta_luciole)
+        {
+            LucioleCount += delta_luciole;
+
+            if(LucioleCount < 0)
+            {
+                LucioleCount = 0;
+            }
+
+            Debug.LogError("TODO: send event!");
         }
     }
 } //end of namespace
