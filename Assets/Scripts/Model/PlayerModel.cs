@@ -21,13 +21,13 @@ namespace Game.Model
         public LevelData LevelData { get; private set; }
 
         public bool PlayerHasNeedle { get; set; }
-        public int FireflyCount { get; private set; }
 
         private Dictionary<AbilityType, AbilityState> AbilityStateDictionary;
         private Dictionary<PillarMarkId, PillarMarkState> PillarMarkStateDictionary;
         private Dictionary<PillarId, PillarState> PillarStateDictionary;
 
         private Dictionary<string, PersistentData> PersistentDataDictionary = new Dictionary<string, PersistentData>();
+        private List<Firefly> FireflyList = new List<Firefly>();
 
         //###########################################################
 
@@ -173,6 +173,15 @@ namespace Game.Model
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public int GetFireflyCount()
+        {
+            return FireflyList.Count;
+        }
+
         //###########################################################
 
         // -- OPERATIONS
@@ -252,21 +261,32 @@ namespace Game.Model
         }
 
         /// <summary>
-        /// Changes the amount fireflies the player is currently "carrying".
+        /// 
         /// </summary>
-        /// <param name="firefly_delta"></param>
-        public void ChangeFireflyCount(int firefly_delta)
+        /// <param name="firefly"></param>
+        public void PushFirefly(Firefly firefly)
         {
-            int old_firefly_count = FireflyCount;
-            FireflyCount += firefly_delta;
-
-            if(FireflyCount < 0)
+            if (!FireflyList.Contains(firefly))
             {
-                FireflyCount = 0;
+                FireflyList.Add(firefly);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public Firefly PopFirefly()
+        {
+            if(FireflyList.Count == 0)
+            {
+                return null;
             }
 
-            var event_args = new EventManager.FireflyCountChangedEventArgs(old_firefly_count, FireflyCount);
-            EventManager.SendFireflyCountChangedEvent(this, event_args);
+            var result = FireflyList[0];
+            FireflyList.RemoveAt(0);
+
+            return result;
         }
     }
 } //end of namespace

@@ -120,30 +120,6 @@ namespace Game.Utilities
             PillarMarkStateChangedEvent?.Invoke(sender, args);
         }
 
-        //***********************************************************
-
-        // ---- FIREFLY COUNT CHANGED
-
-        public class FireflyCountChangedEventArgs : EventArgs
-        {
-            public int OldFireflyCount { get; private set; }
-            public int NewFireflyCount { get; private set; }
-
-            public FireflyCountChangedEventArgs(int old_firefly_count, int new_firefly_count)
-            {
-                OldFireflyCount = old_firefly_count;
-                NewFireflyCount = new_firefly_count;
-            }
-        }
-
-        public delegate void FireflyCountChangedEventHandler(object sender, FireflyCountChangedEventArgs args);
-        public static event FireflyCountChangedEventHandler FireflyCountChangedEvent;
-
-        public static void SendFireflyCountChangedEvent(object sender, FireflyCountChangedEventArgs args)
-        {
-            FireflyCountChangedEvent?.Invoke(sender, args);
-        }
-
         //###########################################################
         //###########################################################
 
