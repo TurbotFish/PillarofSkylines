@@ -1,4 +1,4 @@
-﻿using Game.GameControl;
+using Game.GameControl;
 using Game.Model;
 using Game.Utilities;
 using Game.World;
@@ -82,7 +82,17 @@ namespace Game.LevelElements
 
         public void OnHoverBegin()
         {
-            GameController.UiController.Hud.ShowHelpMessage("[X]: Enter Pillar", "PillarEntrance");
+		 if (!PersistentData.IsDoorUnlocked)
+            {
+			   GameController.UiController.Hud.ShowHelpMessage("[X]: Open Pillar", "PillarEntrance");
+			}
+			else
+			{
+				GameController.UiController.Hud.ShowHelpMessage("[X]: Enter Pillar", "PillarEntrance");
+			}
+			
+                
+            
         }
 
         public void OnHoverEnd()
