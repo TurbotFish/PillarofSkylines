@@ -21,7 +21,7 @@ namespace Game.Model
         public LevelData LevelData { get; private set; }
 
         public bool PlayerHasNeedle { get; set; }
-        public int LucioleCount { get; private set; }
+        public int FireflyCount { get; private set; }
 
         private Dictionary<AbilityType, AbilityState> AbilityStateDictionary;
         private Dictionary<PillarMarkId, PillarMarkState> PillarMarkStateDictionary;
@@ -251,16 +251,22 @@ namespace Game.Model
             }
         }
 
-        public void ChangeLucioleCount(int delta_luciole)
+        /// <summary>
+        /// Changes the amount fireflies the player is currently "carrying".
+        /// </summary>
+        /// <param name="firefly_delta"></param>
+        public void ChangeFireflyCount(int firefly_delta)
         {
-            LucioleCount += delta_luciole;
+            int old_firefly_count = FireflyCount;
+            FireflyCount += firefly_delta;
 
-            if(LucioleCount < 0)
+            if(FireflyCount < 0)
             {
-                LucioleCount = 0;
+                FireflyCount = 0;
             }
 
-            Debug.LogError("TODO: send event!");
+            var event_args = new EventManager.FireflyCountChangedEventArgs(old_firefly_count, FireflyCount);
+            EventManager.SendFireflyCountChangedEvent(this, event_args);
         }
     }
 } //end of namespace

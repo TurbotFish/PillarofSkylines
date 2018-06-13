@@ -20,6 +20,7 @@ namespace Game.LevelElements
         public override string PickupName { get { return AbilityData.Name; } }
         public override string OnPickedUpMessage { get { return "You've been granted the " + AbilityData.Name; } }
         public override string OnPickedUpDescription { get { return AbilityData.Description; } }
+        public override Sprite OnPickedUpIcon { get { return GameController.PlayerModel.AbilityData.GetAbility(ability).Icon; } }
 
         //##################################################################
 
