@@ -15,6 +15,12 @@ namespace Game.Player
     {
         //########################################################################
 
+        // -- CONSTANTS
+
+        [SerializeField] private GameObject FireflyPrefab;
+
+        //########################################################################
+
         // -- ATTRIBUTES
 
         public CharController CharController { get; private set; }
@@ -44,6 +50,8 @@ namespace Game.Player
             CharController.Initialize(gameController);
             InteractionController.Initialize(gameController);
             wrappableObject.Initialize(gameController);
+
+            Utilities.EventManager.FireflyCountChangedEvent += OnFireflyCountChanged;
         }
 
         //########################################################################
@@ -57,6 +65,15 @@ namespace Game.Player
                 if (myTransform == null) { myTransform = transform; }
                 return myTransform;
             }
+        }
+
+        //########################################################################
+
+        // -- OPERATIONS
+
+        private void OnFireflyCountChanged(object sender, Utilities.EventManager.FireflyCountChangedEventArgs args)
+        {
+
         }
     }
 } // end of namespace

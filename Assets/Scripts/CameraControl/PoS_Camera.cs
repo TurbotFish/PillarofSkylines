@@ -274,6 +274,8 @@ public class PoS_Camera : MonoBehaviour
         camPosition = my.rotation * negDistance + targetWithOffset;
         lastFrameCamPos = camPosition;
 
+        //PlaceBehindPlayerNoLerp();
+
         if (args.IsNewScene)
         {
             my.position = camPosition;
@@ -367,16 +369,13 @@ public class PoS_Camera : MonoBehaviour
 
     void DebugCameraMovement()
     {
-        if (Input.GetKeyDown(KeyCode.F8))
+        if (Input.GetButtonDown("Back") || Input.GetKeyDown(KeyCode.F8))
         {
-            print(zoomValue);
             debugMode ^= true;
             canZoom ^= true;
 
             if (debugMode)
-            {
                 trueOffsetFar = offsetFar;
-            }
             else
             {
                 zoomValue = distance;
@@ -386,7 +385,7 @@ public class PoS_Camera : MonoBehaviour
         
         if (debugMode) {
             Vector2 debugMove = new Vector2(Input.GetAxis("DebugHorizontal"), Input.GetAxis("DebugVertical"));
-            offsetFar += debugMove;
+            offsetFar += debugMove * 0.2f;
         }
 
     }

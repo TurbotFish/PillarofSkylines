@@ -2,6 +2,7 @@
 using Game.Model;
 using Game.Utilities;
 using Game.World;
+using System.Collections;
 using UnityEngine;
 
 namespace Game.LevelElements
@@ -9,44 +10,52 @@ namespace Game.LevelElements
     /// <summary>
     /// Used to tag the interaction collider that allows the player to enter a pillar from the open world.
     /// </summary>
-    public class PillarEntrance : MonoBehaviour, IInteractable, IWorldObject
+    public class PillarEntrance : PersistentLevelElement<PillarEntryPersistentData>, IInteractable
     {
         //########################################################################
 
-        [SerializeField] private PillarId pillarId;
+        // -- CONSTANTS
 
-        private GameController GameController;
-        private bool isInitialized;
-        private bool isPillarDestroyed;
+        [SerializeField] private PillarId pillarId;
+        [SerializeField] private Animator AnimatorComponent;
+        [SerializeField] private float OpenDoorTime = 2f;
 
         //########################################################################
 
-        #region initialization
+        // -- ATTRIBUTES
 
-        public void Initialize(GameController gameController)
+        private bool IsUnlockingDoor;
+
+        //########################################################################
+
+        // -- INITIALIZATION
+
+        public override void Initialize(GameController game_controller)
         {
-            if (isInitialized)
+            if (IsInitialized)
             {
                 return;
             }
 
-            this.GameController = gameController;
-
-            isPillarDestroyed = gameController.PlayerModel.GetPillarState(pillarId) == PillarState.Destroyed;
-            isInitialized = true;
+            base.Initialize(game_controller);
         }
 
         private void OnEnable()
         {
-            if (isInitialized)
+            if (IsInitialized)
             {
-                if (!isPillarDestroyed && GameController.PlayerModel.GetPillarState(pillarId) == PillarState.Destroyed)
+                if(GameController.PlayerModel.GetPillarState(pillarId) == PillarState.Unlocked && !PersistentData.IsPillarUnlocked)
                 {
-                    isPillarDestroyed = true;
+                    OnPillarUnlocked();
                 }
 
-                EventManager.PillarStateChangedEvent += OnPillarStateChanged;
+                if (PersistentData.IsDoorUnlocked)
+                {
+                    OnDoorUnlocked();
+                }
             }
+
+            EventManager.PillarStateChangedEvent += OnPillarStateChanged;
         }
 
         private void OnDisable()
@@ -54,11 +63,9 @@ namespace Game.LevelElements
             EventManager.PillarStateChangedEvent -= OnPillarStateChanged;
         }
 
-        #endregion initialization
-
         //########################################################################
 
-        #region inquiries
+        // -- INQUIRIES
 
         public PillarId PillarId { get { return pillarId; } }
 
@@ -66,14 +73,12 @@ namespace Game.LevelElements
 
         public bool IsInteractable()
         {
-            return !isPillarDestroyed;
+            return PersistentData.IsPillarUnlocked;
         }
-
-        #endregion inquiries
 
         //########################################################################
 
-        #region operations
+        // -- OPERATIONS
 
         public void OnHoverBegin()
         {
@@ -87,20 +92,13 @@ namespace Game.LevelElements
 
         public void OnInteraction()
         {
-            var pillar_state = GameController.PlayerModel.GetPillarState(pillarId);
-
-            if(pillar_state == PillarState.Unlocked)
+            if (!PersistentData.IsDoorUnlocked)
+            {
+                OnDoorUnlocked();
+            }
+            else if(PersistentData.IsDoorUnlocked && !IsUnlockingDoor)
             {
                 GameController.SwitchToPillar(pillarId);
-            }
-            else if(pillar_state == PillarState.Locked)
-            {
-                int current_pillar_marks = GameController.PlayerModel.GetActivePillarMarkCount();
-                int needed_pillar_marks = GameController.PlayerModel.GetPillarEntryPrice(pillarId);
-                string title = "The Pillar is locked!";
-                string description = "You need " + needed_pillar_marks + " Pillar Marks but only have " + current_pillar_marks + ".";
-
-                GameController.UiController.Hud.ShowAnnouncmentMessage(title, description);
             }
         }
 
@@ -112,16 +110,53 @@ namespace Game.LevelElements
         {
         }
 
+        /// <summary>
+        /// Creates the PersistentData object.
+        /// </summary>
+        /// <returns></returns>
+        protected override PersistentData CreatePersistentDataObject()
+        {
+            return new PillarEntryPersistentData(UniqueId);
+        }
+
+        /// <summary>
+        /// Handles the PillarStateChanged event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void OnPillarStateChanged(object sender, EventManager.PillarStateChangedEventArgs args)
         {
             if (args.PillarId == pillarId)
             {
-                isPillarDestroyed = (args.PillarState == PillarState.Destroyed);
+                if(args.PillarState == PillarState.Unlocked)
+                {
+                    OnPillarUnlocked();
+                }
             }
         }
 
-        #endregion operations
+        private void OnPillarUnlocked()
+        {
+            PersistentData.IsPillarUnlocked = true;
+            if (AnimatorComponent)
+                AnimatorComponent.SetBool("BoolA", true);
+        }
 
-        //########################################################################
+        private void OnDoorUnlocked()
+        {
+            PersistentData.IsDoorUnlocked = true;
+            if (AnimatorComponent)
+                AnimatorComponent.SetBool("BoolB", true);
+            StartCoroutine(UnlockDoorCoroutine());
+        }
+
+        private IEnumerator UnlockDoorCoroutine()
+        {
+            IsUnlockingDoor = true;
+
+            yield return new WaitForSeconds(OpenDoorTime);
+
+            IsUnlockingDoor = false;
+        }
     }
 } //end of namespace

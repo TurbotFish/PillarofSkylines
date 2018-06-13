@@ -21,15 +21,14 @@ namespace Game.Model
         public LevelData LevelData { get; private set; }
 
         public bool PlayerHasNeedle { get; set; }
-        private float collectedMarks = 0;
-        public Renderer playerRenderer;
+        public int FireflyCount { get; private set; }
 
         private Dictionary<AbilityType, AbilityState> AbilityStateDictionary;
         private Dictionary<PillarMarkId, PillarMarkState> PillarMarkStateDictionary;
         private Dictionary<PillarId, PillarState> PillarStateDictionary;
 
         private Dictionary<string, PersistentData> PersistentDataDictionary = new Dictionary<string, PersistentData>();
-        
+
         //###########################################################
 
         // -- INITIALIZATION
@@ -202,17 +201,7 @@ namespace Game.Model
             {
                 PillarMarkStateDictionary[pillar_mark_id] = pillar_mark_state;
 
-                if (pillar_mark_state == PillarMarkState.active)
-                {
-                    collectedMarks++;
-                    playerRenderer.sharedMaterial.SetFloat("_Mark_Apparition", collectedMarks);
-                } else
-                {
-                    collectedMarks--;
-                    playerRenderer.sharedMaterial.SetFloat("_Mark_Apparition", collectedMarks);
-                }
-
-                EventManager.SendPillarMarkStateChangedEvent(this, new EventManager.PillarMarkStateChangedEventArgs(pillar_mark_id, pillar_mark_state));
+                EventManager.SendPillarMarkStateChangedEvent(this, new EventManager.PillarMarkStateChangedEventArgs(pillar_mark_id, pillar_mark_state, GetActivePillarMarkCount()));
             }
         }
 
@@ -260,6 +249,24 @@ namespace Game.Model
                 PersistentDataDictionary.Add(dataObject.UniqueId, dataObject);
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Changes the amount fireflies the player is currently "carrying".
+        /// </summary>
+        /// <param name="firefly_delta"></param>
+        public void ChangeFireflyCount(int firefly_delta)
+        {
+            int old_firefly_count = FireflyCount;
+            FireflyCount += firefly_delta;
+
+            if(FireflyCount < 0)
+            {
+                FireflyCount = 0;
+            }
+
+            var event_args = new EventManager.FireflyCountChangedEventArgs(old_firefly_count, FireflyCount);
+            EventManager.SendFireflyCountChangedEvent(this, event_args);
         }
     }
 } //end of namespace
