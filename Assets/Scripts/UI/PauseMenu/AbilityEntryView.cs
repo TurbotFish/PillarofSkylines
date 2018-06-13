@@ -25,16 +25,17 @@ namespace Game.UI.PauseMenu
 
         [SerializeField] float transitionDuration = .1f;
 
+        public float entranceDuration = 0.1f;
+
         //###########################################################
 
         // -- ATTRIBUTES
 
         private bool isInitialized;
-
-        private bool selected;
         private PlayerModel Model;
         private SkillsMenuController SkillsMenuController;
         private RectTransform myTransform;
+        public AbilityListView containerList;
 
         //###########################################################
 
@@ -66,6 +67,7 @@ namespace Game.UI.PauseMenu
         {
             if (eventData.selectedObject == this.gameObject)
             {
+                containerList.SetMovable(myTransform);
                 SkillsMenuController.OnAbilitySelected(AbilityType);
                 SetVisuals(true);
             }
@@ -75,7 +77,7 @@ namespace Game.UI.PauseMenu
         {
             SetVisuals(false);
         }
-
+        
         void OnDisable()
         {
             if (isInitialized)
@@ -165,5 +167,32 @@ namespace Game.UI.PauseMenu
             myTransform.sizeDelta = size;
         }
         
+        public void Hide()
+        {
+            Vector3 pos = myTransform.anchoredPosition;
+            pos.x = -1000;
+            myTransform.anchoredPosition = pos;
+        }
+
+        public void Entrance()
+        {
+            StartCoroutine(_Entrance());
+        }
+
+        IEnumerator _Entrance()
+        {
+            Vector3 pos = myTransform.anchoredPosition;
+
+            for(float elapsed = 0; elapsed < entranceDuration; elapsed+=Time.unscaledDeltaTime)
+            {
+                pos.x = Mathf.Lerp(-550, 0, elapsed / entranceDuration);
+                myTransform.anchoredPosition = pos;
+                yield return null;
+            }
+
+            pos.x = 0;
+            myTransform.anchoredPosition = pos;
+        }
+
     }
 } // end of namespace

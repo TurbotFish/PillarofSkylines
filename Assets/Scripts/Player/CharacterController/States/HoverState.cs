@@ -51,6 +51,8 @@ namespace Game.Player.CharacterController.States
         {
             //Debug.Log("Enter State: Hover");
             ParticleSystem.MainModule mainMod = charController.hoverFX.main;
+            
+
             mainMod.duration = hoverData.Duration;
             charController.hoverFX.Play();
         }
@@ -120,6 +122,18 @@ namespace Game.Player.CharacterController.States
             parts.transform.localScale *= (timer / hoverData.Duration) * 5;
             parts.Play();
             */
+
+            /* tentative pour rester à l même hauteru que la plateforme d'ôù on vient
+            RaycastHit hit = new RaycastHit();
+            Debug.DrawRay(charController.MyTransform.position + (charController.tempPhysicsHandler.playerAngle * charController.tempPhysicsHandler.center) - charController.MyTransform.forward
+                , -charController.MyTransform.up * (charController.tempPhysicsHandler.height / 2 + charController.tempPhysicsHandler.radius), Color.red, 2f);
+            if (Physics.Raycast(charController.MyTransform.position + (charController.tempPhysicsHandler.playerAngle * charController.tempPhysicsHandler.center) - charController.MyTransform.forward, -charController.MyTransform.up
+                , out hit, charController.tempPhysicsHandler.height / 2 + charController.tempPhysicsHandler.radius, charController.tempPhysicsHandler.collisionMask))
+            {
+                Debug.Log("new pos : " + (((charController.tempPhysicsHandler.height / 2f) + charController.tempPhysicsHandler.radius) - hit.distance) * charController.MyTransform.up);
+                charController.ImmediateMovement((((charController.tempPhysicsHandler.height / 2f) + charController.tempPhysicsHandler.radius) - hit.distance) * charController.MyTransform.up, true, false);
+                //charController.MyTransform.position += (((charController.tempPhysicsHandler.height / 2f) + charController.tempPhysicsHandler.radius) - hit.distance) * charController.MyTransform.up;
+            }*/
 
             PlayerInputInfo inputInfo = charController.InputInfo;
 

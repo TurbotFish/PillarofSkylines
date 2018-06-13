@@ -10,9 +10,9 @@ namespace Game.UI
 
         // -- CONSTANTS
 
-        [SerializeField] private PillarMarkId PillarMarkId;
-        [SerializeField] private Sprite ActiveSprite;
-        [SerializeField] private Sprite InactiveSprite;
+        [SerializeField] int order;
+        [SerializeField] private Color ActiveColor;
+        [SerializeField] private Color InactiveColor;
 
         //###########################################################
 
@@ -28,7 +28,7 @@ namespace Game.UI
         {
             ImageComponent = GetComponent<Image>();
 
-            SetSprite(model.GetPillarMarkState(PillarMarkId));
+            //SetSprite(model.GetPillarMarkState(PillarMarkId));
 
             Utilities.EventManager.PillarMarkStateChangedEvent += OnPillarMarkStateChanged;
         }
@@ -44,8 +44,7 @@ namespace Game.UI
 
         private void OnPillarMarkStateChanged(object sender, Utilities.EventManager.PillarMarkStateChangedEventArgs args)
         {
-            if (PillarMarkId == args.PillarMarkId)
-            {
+            if (order == args.PillarMarkAmount) {
                 SetSprite(args.PillarMarkState);
             }
         }
@@ -55,10 +54,10 @@ namespace Game.UI
             switch (state)
             {
                 case PillarMarkState.inactive:
-                    ImageComponent.sprite = InactiveSprite;
+                    ImageComponent.color = InactiveColor;
                     break;
                 case PillarMarkState.active:
-                    ImageComponent.sprite = ActiveSprite;
+                    ImageComponent.color = ActiveColor;
                     break;
             }
         }
