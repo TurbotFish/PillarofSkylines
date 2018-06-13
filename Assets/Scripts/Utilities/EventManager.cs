@@ -109,11 +109,13 @@ namespace Game.Utilities
         {
             public PillarMarkId PillarMarkId { get; private set; }
             public PillarMarkState PillarMarkState { get; private set; }
+            public int PillarMarkAmount;
 
-            public PillarMarkStateChangedEventArgs(PillarMarkId pillar_mark_id, PillarMarkState pillar_mark_state)
+            public PillarMarkStateChangedEventArgs(PillarMarkId pillar_mark_id, PillarMarkState pillar_mark_state, int pillar_mark_amount = 0)
             {
                 PillarMarkId = pillar_mark_id;
                 PillarMarkState = pillar_mark_state;
+                PillarMarkAmount = pillar_mark_amount;
             }
         }
 
