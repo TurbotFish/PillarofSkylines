@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using Game.GameControl;
 using System.Collections;
 using TMPro;
@@ -32,7 +33,11 @@ namespace Game.UI
         [SerializeField] private CanvasGroup AnnouncmentCanvasGroup;
         [SerializeField] private TextMeshProUGUI AnnouncmentTitleText;
         [SerializeField] private TextMeshProUGUI AnnouncmentDescriptionText;
+        [SerializeField] private RectTransform Brackets;
+        [SerializeField] private RectTransform Icon;
         [SerializeField] private float AnnouncmentFadeTime = 0.5f;
+        [SerializeField] float BracketStartWidth = 320, BracketEndWidth = 450;
+        [SerializeField] float IconStartSize = 40, IconEndSize = 90;
 
         //###########################################################
 
@@ -178,7 +183,7 @@ namespace Game.UI
         /// <param name="title"></param>
         /// <param name="description"></param>
         /// <param name="time"></param>
-        public void ShowAnnouncmentMessage(string title, string description, float time = 4f)
+        public void ShowAnnouncmentMessage(string title, string description, float time = 4f, Sprite image = null)
         {
             if (IsAnnouncmentPanelFadingIn)
             {
@@ -187,6 +192,8 @@ namespace Game.UI
                 return;
             }
 
+            if (image)
+                Icon.GetComponent<Image>().sprite = image;
 
             StartCoroutine(ReplaceAnnouncmentMessageCoroutine(title, description, time));
         }
@@ -254,10 +261,14 @@ namespace Game.UI
         {
             IsAnnouncmentPanelFadingIn = true;
 
-            for (float time_elapsed = (1 - AnnouncmentCanvasGroup.alpha) * AnnouncmentFadeTime; time_elapsed <= AnnouncmentFadeTime; time_elapsed += Time.unscaledDeltaTime)
-            {
-                AnnouncmentCanvasGroup.alpha = time_elapsed / AnnouncmentFadeTime;
+            StartCoroutine(OpenIconFeedback(time));
 
+            for (float time_elapsed = 0; time_elapsed <= AnnouncmentFadeTime; time_elapsed += Time.unscaledDeltaTime)
+            {
+                float t = time_elapsed / AnnouncmentFadeTime;
+
+                AnnouncmentCanvasGroup.alpha = t;
+                
                 yield return null;
             }
 
@@ -265,6 +276,28 @@ namespace Game.UI
             IsAnnouncmentPanelFadingIn = false;
             IsAnnouncmentPanelVisible = true;
             AnnouncmentTime = time;
+        }
+
+        IEnumerator OpenIconFeedback(float time) {
+
+            Vector3 bracketSize = Brackets.sizeDelta;
+            Vector3 iconSize = Icon.sizeDelta;
+
+            for (float time_elapsed = 0; time_elapsed <= time; time_elapsed += Time.unscaledDeltaTime)
+            {
+                float t = time_elapsed / time;
+
+                t = Mathf.Sqrt(1 - (--t) * t);
+
+                bracketSize.x = Mathf.Lerp(BracketStartWidth, BracketEndWidth, t);
+                Brackets.sizeDelta = bracketSize;
+
+                iconSize = Vector3.one * Mathf.Lerp(IconStartSize, IconEndSize, t);
+                Icon.sizeDelta = iconSize;
+                
+                yield return null;
+            }
+
         }
 
         /// <summary>
@@ -275,7 +308,7 @@ namespace Game.UI
         {
             IsAnnouncmentPanelFadingOut = true;
 
-            for (float time_elapsed = AnnouncmentCanvasGroup.alpha * AnnouncmentFadeTime; time_elapsed <= AnnouncmentFadeTime; time_elapsed += Time.unscaledDeltaTime)
+            for (float time_elapsed = 0; time_elapsed <= AnnouncmentFadeTime; time_elapsed += Time.unscaledDeltaTime)
             {
                 AnnouncmentCanvasGroup.alpha = 1 - (time_elapsed / AnnouncmentFadeTime);
 
