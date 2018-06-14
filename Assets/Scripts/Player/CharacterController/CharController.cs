@@ -83,9 +83,9 @@ namespace Game.Player.CharacterController
         public bool createdEchoOnThisInput;
 
         /// <summary>
-        /// This is set to false if the player has opened a menu, true otherwise.
+        /// This is set to true if the player is allowed to read inputs, false if not.
         /// </summary>
-        bool isHandlingInput;
+        public bool isHandlingInput;
 
         Vector3 velocity;
         Vector3 externalVelocity;

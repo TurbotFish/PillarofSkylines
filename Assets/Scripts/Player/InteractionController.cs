@@ -68,7 +68,7 @@ namespace Game.Player
             nearbyInteractableObjects.RemoveAll(item => item == null);
             SetCurrentInteractableObject();
 
-            if (Input.GetButtonDown("Interact"))
+            if (Input.GetButtonDown("Interact") && gameController.PlayerController.CharController.isHandlingInput)
             {
                 if (currentInteractableObject != null)
                 {
@@ -78,10 +78,11 @@ namespace Game.Player
                 {
                     currentEcho = gameController.EchoManager.CreateEcho(true);
 
-                    currentEcho.transform.SetParent(gameController.PlayerController.CharController.MyTransform);
+                    if (currentEcho != null)
+                        currentEcho.transform.SetParent(gameController.PlayerController.CharController.MyTransform);
                 }
             }
-            else if (Input.GetButtonDown("Drift") && !Input.GetButtonUp("Drift"))
+            else if (Input.GetButtonDown("Drift") && !Input.GetButtonUp("Drift") && gameController.PlayerController.CharController.isHandlingInput)
             {
                 gameController.EchoManager.Drift();
             }
