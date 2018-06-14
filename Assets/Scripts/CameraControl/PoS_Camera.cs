@@ -266,7 +266,8 @@ public class PoS_Camera : MonoBehaviour
         }
         else
         {
-            my.position = args.Position - lastFrameOffset;
+            //my.position = args.Position - lastFrameOffset;
+            my.position += (args.Position - args.FromPosition);
         }
 
         negDistance.z = -currentDistance;
@@ -280,6 +281,8 @@ public class PoS_Camera : MonoBehaviour
         {
             my.position = camPosition;
         }
+
+        gameController.DuplicationCameraManager.UpdateDuplicationCameras();
     }
 
     void OnGamePaused(object sender, Game.Utilities.EventManager.GamePausedEventArgs args)

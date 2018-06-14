@@ -26,7 +26,7 @@ public class TeleportDebug : MonoBehaviour
                 _x = testX;
                 _y = testY;
                 _z = testZ;
-                var eventArgs = new Game.Utilities.EventManager.TeleportPlayerEventArgs(new Vector3(_x, _y, _z), false);
+                var eventArgs = new Game.Utilities.EventManager.TeleportPlayerEventArgs(Vector3.zero, new Vector3(_x, _y, _z));
                 Game.Utilities.EventManager.SendTeleportPlayerEvent(this, eventArgs);
             }
             else
