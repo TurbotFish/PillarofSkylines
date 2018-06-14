@@ -262,7 +262,6 @@ public class PoS_Camera : MonoBehaviour
             yaw = SignedAngle(targetSpace * worldForward, args.Rotation * worldForward, target.up);
             pitch = defaultPitch;
             camRotation = my.rotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
-
         }
         else
         {
@@ -849,7 +848,7 @@ public class PoS_Camera : MonoBehaviour
         if (uTurn)
             resolvedInfluence += uTurnInfluence * Sign(lastVelocityX);
 
-        resolvedInfluence *= playerVelocityInfluence * velocityInfluenceCurve.Evaluate(velocityInfluenceTimer / velocityInfluenceDelay);
+        resolvedInfluence *= playerVelocityInfluence * velocityInfluenceCurve.Evaluate(velocityInfluenceTimer);
 
         /*if (turn && !uTurn) // Corner Influence
         {

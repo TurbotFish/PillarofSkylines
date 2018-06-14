@@ -17,7 +17,7 @@ namespace Game.Player
 
         // -- CONSTANTS
 
-        [SerializeField] private GameObject FireflyPrefab;
+
 
         //########################################################################
 
@@ -25,6 +25,7 @@ namespace Game.Player
 
         public CharController CharController { get; private set; }
         public InteractionController InteractionController { get; private set; }
+        public AudioManager AudioManager { get; private set; }
 
         private Transform myTransform;
         private WrappableObject wrappableObject;
@@ -42,6 +43,8 @@ namespace Game.Player
 
             CharController = GetComponent<CharController>();
             InteractionController = GetComponentInChildren<InteractionController>();
+            AudioManager = GetComponentInChildren<AudioManager>();
+
             wrappableObject = GetComponent<WrappableObject>();
 
             /*
