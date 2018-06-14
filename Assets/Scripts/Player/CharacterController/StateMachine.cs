@@ -150,6 +150,8 @@ namespace Game.Player.CharacterController
             jumpMultiplier = character.CharData.EchoBoost.JumpMultiplier;
             speedMultiplier = character.CharData.EchoBoost.SpeedMultiplier;
             glideMultiplier = character.CharData.EchoBoost.GlideMultiplier;
+
+            character.playerRenderer.sharedMaterial.SetColor("_Emission", new Color(0.2f, 0.5f, 0.43f));
         }
 
         public void EndEchoBoost()
@@ -158,6 +160,8 @@ namespace Game.Player.CharacterController
             jumpMultiplier = 1;
             speedMultiplier = 1;
             glideMultiplier = 1;
+
+            character.playerRenderer.sharedMaterial.SetColor("_Emission", Color.black);
         }
 
         //#############################################################################
