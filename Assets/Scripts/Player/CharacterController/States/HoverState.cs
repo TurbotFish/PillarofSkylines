@@ -85,6 +85,7 @@ namespace Game.Player.CharacterController.States
             {
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
+                state.shouldPlayJumpSound = false;
 
                 stateMachine.ChangeState(state);
             }

@@ -37,18 +37,20 @@ namespace Game.Player.CharacterController.States
         float timerAirControl = 0;
 
 		bool initializing;
-		bool firstUpdate;
-        
-		#endregion member variables
+        bool firstUpdate;
 
-		//#############################################################################
+        public bool shouldPlayJumpSound = true;
 
-		#region constructor
+        #endregion member variables
 
-		/// <summary>
-		/// Constructor for AirState. Default mode is "fall".
-		/// </summary>
-		public AirState(CharController charController, StateMachine stateMachine, eAirStateMode mode) {
+        //#############################################################################
+
+        #region constructor
+
+        /// <summary>
+        /// Constructor for AirState. Default mode is "fall".
+        /// </summary>
+        public AirState(CharController charController, StateMachine stateMachine, eAirStateMode mode) {
 			this.charController = charController;
 			this.stateMachine = stateMachine;
 			jumpData = charController.CharData.Jump;
@@ -230,12 +232,16 @@ namespace Game.Player.CharacterController.States
 
 				if (mode == eAirStateMode.aerialJump) {
 					jumpStrength *= jumpData.AerialJumpCoeff;
-					//charController.aerialJumpFX.Play();
-					charController.fxManager.DoubleJumpPlay();
-				}
-
-                SoundifierOfTheWorld.PlaySoundAtLocation(charController.jumpClip, charController.MyTransform, charController.soundMaxDistance, charController.volumeJump, charController.soundMinDistance, charController.clipDuration, charController.addRandomisationJump, false, 0f);
-
+                    //charController.aerialJumpFX.Play();
+                    if (shouldPlayJumpSound)
+                        SoundifierOfTheWorld.PlaySoundAtLocation(charController.doubleJumpClip, charController.MyTransform, charController.soundMaxDistance, charController.volumeDoubleJump, charController.soundMinDistance, charController.clipDuration, charController.addRandomisationDoubleJump, false, 0f);
+                    charController.fxManager.DoubleJumpPlay();
+				} else
+                {
+                    if (shouldPlayJumpSound)
+                        SoundifierOfTheWorld.PlaySoundAtLocation(charController.jumpClip, charController.MyTransform, charController.soundMaxDistance, charController.volumeJump, charController.soundMinDistance, charController.clipDuration, charController.addRandomisationJump, false, 0f);
+                }
+                
 				Vector3 direction = (Vector3.up + jumpDirection).normalized;
 
 				charController.AddExternalVelocity((direction) * jumpStrength + Vector3.ProjectOnPlane(charController.MovementInfo.velocity, Vector3.up) * jumpData.ImpactOfCurrentSpeed, false, false);
