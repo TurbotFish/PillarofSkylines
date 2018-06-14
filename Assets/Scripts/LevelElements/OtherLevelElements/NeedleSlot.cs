@@ -41,7 +41,7 @@ namespace Game.LevelElements
 
         public bool IsInteractable()
         {
-            return (PersistentData.ContainsNeedle || GameController.PlayerModel.PlayerHasNeedle);
+            return ((PersistentData.ContainsNeedle || GameController.PlayerModel.PlayerHasNeedle) && GameController.PlayerController.CharController.isHandlingInput);
         }
 
         public bool UseCameraAngle { get { return useCameraAngle; } }
@@ -119,12 +119,40 @@ namespace Game.LevelElements
 
         IEnumerator TakeNeedleAnimation()
         {
+            
+            /*
+             * transfering needle
+             */
+            needleGameObject.SetActive(GameController.PlayerModel.PlayerHasNeedle);
+
+            GameController.PlayerModel.PlayerHasNeedle ^= true;
+            PersistentData.ContainsNeedle = !GameController.PlayerModel.PlayerHasNeedle;
+
+            EventManager.SendEclipseEvent(this, new EventManager.EclipseEventArgs(GameController.PlayerModel.PlayerHasNeedle)); // This will activate the player needle.
+
             GameController.PlayerController.CharController.SetHandlingInput(false);
+            EventManager.TeleportPlayerEventArgs args = new EventManager.TeleportPlayerEventArgs(transform.position + transform.up + Vector3.down, Quaternion.identity, false);
+            EventManager.SendTeleportPlayerEvent(this, args);
             GameController.PlayerController.CharController.animator.SetTrigger("Take needle");
             yield return new WaitForSeconds(1.8f);
 
             GameController.PlayerController.CharController.SetHandlingInput(true);
-            EndInteraction();
+
+            /*
+             * "reacting" to the transfer
+             */
+            if (GameController.PlayerModel.PlayerHasNeedle)
+            {
+                GameController.EchoManager.SetWaypoint(this);
+            }
+            else
+            {
+                GameController.EchoManager.RemoveWaypoint();    // Removing ALL the waypoints.
+            }
+
+
+            string message = GameController.PlayerModel.PlayerHasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle";
+            GameController.UiController.Hud.ShowHelpMessage(message, UniqueId);
 
         }
 

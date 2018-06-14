@@ -12,6 +12,7 @@ namespace Game.Player.CharacterController
 
         CharController character;
         PlayerModel model;
+        FXManager fxManager;
 
         Dictionary<ePlayerState, StateCooldown> cooldownDict = new Dictionary<ePlayerState, StateCooldown>();
 
@@ -43,7 +44,7 @@ namespace Game.Player.CharacterController
         {
             this.character = character;
             model = character.PlayerModel;
-
+            fxManager = character.fxManager;
 
             Utilities.EventManager.EchoDestroyedEvent += EchoDestroyedEventHandler;
         }
@@ -150,8 +151,7 @@ namespace Game.Player.CharacterController
             jumpMultiplier = character.CharData.EchoBoost.JumpMultiplier;
             speedMultiplier = character.CharData.EchoBoost.SpeedMultiplier;
             glideMultiplier = character.CharData.EchoBoost.GlideMultiplier;
-
-            character.playerRenderer.sharedMaterial.SetColor("_Emission", new Color(0.2f, 0.5f, 0.43f));
+            fxManager.PlayEchoBoost(boostTimer);
         }
 
         public void EndEchoBoost()
@@ -160,8 +160,7 @@ namespace Game.Player.CharacterController
             jumpMultiplier = 1;
             speedMultiplier = 1;
             glideMultiplier = 1;
-
-            character.playerRenderer.sharedMaterial.SetColor("_Emission", Color.black);
+            fxManager.StopEchoBoost();
         }
 
         //#############################################################################
