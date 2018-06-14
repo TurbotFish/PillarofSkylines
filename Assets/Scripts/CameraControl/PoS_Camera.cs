@@ -274,7 +274,7 @@ public class PoS_Camera : MonoBehaviour
         camPosition = my.rotation * negDistance + targetWithOffset;
         lastFrameCamPos = camPosition;
 
-        PlaceBehindPlayerNoLerp();
+        //PlaceBehindPlayerNoLerp();
 
         if (args.IsNewScene)
         {

@@ -46,6 +46,22 @@ namespace Game.LevelElements
         [SerializeField] private float dissolveDuration = 2;
         [SerializeField] private AnimationCurve dissolveCurve;
 
+        [Header("Sound")]
+        [SerializeField] private AudioClip getClip;
+        [SerializeField, Range(0, 2)] private float volumeGet = 1f;
+        [SerializeField] private bool addRandomisationGet = false;
+        [SerializeField] private float minDistance = 10f;
+        [SerializeField] private float maxDistance = 50f;
+        [SerializeField] private float clipDuration = 0f;
+        [SerializeField] private AudioClip favourClip;
+        [SerializeField, Range(0, 2)] private float volumeFavour = 1f;
+        [SerializeField] private bool addRandomisationFavour = false;
+        [SerializeField] private AudioClip favourEndClip;
+        [SerializeField, Range(0, 2)] private float volumeFavourEnd = 1f;
+        [SerializeField] private bool addRandomisationFavourEnd = false;
+        [SerializeField] private float minDistanceFavour = 10f;
+        [SerializeField] private float maxDistanceFavour = 50f;
+
         //##################################################################
 
         public override bool SetTombState(bool isActivated, bool interactWithPlayer, bool doImmediateTransition, TombAnimationFinishedCallback callback = null)
@@ -59,6 +75,7 @@ namespace Game.LevelElements
             {
                 if (interactWithPlayer)
                 {
+                    SoundifierOfTheWorld.PlaySoundAtLocation(getClip, transform, maxDistance, volumeGet, minDistance, clipDuration, addRandomisationGet);
                     animator.SetBool("Fav_activated", true);
                     StartCoroutine(FaveurActivation());
                     StartCoroutine(ParticleManager());
@@ -95,6 +112,8 @@ namespace Game.LevelElements
             yield return new WaitForSeconds(startDelay);
             faveur.parent = null;
 
+            SoundifierOfTheWorld.PlaySoundAtLocation(favourClip, faveur, maxDistanceFavour, volumeFavour, minDistanceFavour, 0f, addRandomisationFavour, true, .5f);
+
             float elapsed = 0;
             while ((faveur.position - (player.position + player.up)).sqrMagnitude > 0.1f)
             {
@@ -104,6 +123,7 @@ namespace Game.LevelElements
             }
 
             Destroy(faveur.gameObject);
+            SoundifierOfTheWorld.PlaySoundAtLocation(favourEndClip, player, maxDistanceFavour, volumeFavourEnd, minDistanceFavour, 0f, addRandomisationFavourEnd, false, .5f);
             Instantiate(favSparksBurst, faveur.position, Quaternion.identity);
 
             animationFinishedCallback?.Invoke(); // Informs the Pickup that the Tomb has finished its animation.
