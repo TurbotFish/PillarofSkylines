@@ -30,7 +30,6 @@ namespace Game.LevelElements
         [Header("Pickup - Interaction")]
         [SerializeField] private bool _RequiresInput = true;
         [SerializeField] private bool _ShowPickupMessage = true;
-        [SerializeField] private float _MessageDelay;
 
         [Header("Pickup - Cutscene")]
         [SerializeField] private bool PlayCutsceneOnPickup = false;
@@ -175,14 +174,6 @@ namespace Game.LevelElements
             {
                 GameController.CutsceneManager.PlayCutscene(Cutscene, HideUiInCutscene);
             }
-
-            /*
-             * Announcment
-             */
-            if (_ShowPickupMessage)
-            {
-                StartCoroutine(ShowPickupMessageCoroutine());
-            }
         }
 
         /// <summary>
@@ -216,21 +207,17 @@ namespace Game.LevelElements
             // give content to player
             OnPickedUp();
 
+            /*
+             * Announcment
+             */
+            if (_ShowPickupMessage)
+            {
+                GameController.UiController.Hud.ShowAnnouncmentMessage(OnPickedUpMessage, OnPickedUpDescription, 4, OnPickedUpIcon);
+            }
+
             // inform everyone
             var pickupCollectedEventArgs = new EventManager.PickupCollectedEventArgs(UniqueId);
             EventManager.SendPickupCollectedEvent(this, pickupCollectedEventArgs);
-        }
-
-        /// <summary>
-        /// Shows the announcement with a delay.
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerator ShowPickupMessageCoroutine()
-        {
-            yield return new WaitForSeconds(_MessageDelay);
-
-            // show message on screen
-            GameController.UiController.Hud.ShowAnnouncmentMessage(OnPickedUpMessage, OnPickedUpDescription, 4, OnPickedUpIcon);
         }
     }
 } // end of namespace
