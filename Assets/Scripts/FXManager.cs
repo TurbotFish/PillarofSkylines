@@ -4,20 +4,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 
 public class FXManager : MonoBehaviour {
-
-   // public ParticleSystem doubleJumpFX,
-                          //dashFX;
-    #region Singleton
-    public static FXManager instance;
-    void Awake() {
-        if (!instance) {
-            instance = this;
-            DontDestroyOnLoad(gameObject);
-        } else if (instance != this)
-            Destroy(gameObject);
-
-    }
-    #endregion
+    
 	[Header ("Special Material")]
 	public Renderer pilouBody;
 	public Renderer pilouArmor;
@@ -292,13 +279,43 @@ public class FXManager : MonoBehaviour {
     public ParticleSystem boostParticles;
 
     public GameObject[] trails;
+    public string playerEmissiveVariable = "_Emission";
+    public Color playerEmissive = new Color(0.2f, 0.5f, 0.43f);
+    public float emissiveTransition = 0.5f;
 
-    public void PlayEchoBoost() {
+
+    public void PlayEchoBoost(float duration) {
         boostParticles.Play();
+        
+        StartCoroutine(_EchoBoostMaterialChange(duration));
+
+        foreach (GameObject obj in trails)
+            obj.SetActive(true);
     }
 
     public void StopEchoBoost() {
         boostParticles.Stop();
+
+        pilouBody.sharedMaterial.SetColor("_Emission", Color.black);
+
+        foreach (GameObject obj in trails)
+            obj.SetActive(false);
+    }
+
+    IEnumerator _EchoBoostMaterialChange(float duration) {
+        for (float elapsed = 0; elapsed < emissiveTransition; elapsed+=Time.deltaTime)
+        {
+            pilouBody.sharedMaterial.SetColor(playerEmissiveVariable, Color.Lerp(Color.black, playerEmissive, elapsed / emissiveTransition));
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(duration - (emissiveTransition * 2));
+
+        for (float elapsed = 0; elapsed < emissiveTransition; elapsed += Time.deltaTime)
+        {
+            pilouBody.sharedMaterial.SetColor(playerEmissiveVariable, Color.Lerp(playerEmissive, Color.black, elapsed / emissiveTransition));
+            yield return null;
+        }
     }
 
     #endregion
