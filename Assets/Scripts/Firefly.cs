@@ -142,6 +142,11 @@ namespace Game
             }
         }
 
+        private void OnDestroy()
+        {
+            Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayerEvent;
+        }
+
         private IEnumerator DanceCoroutine(FireflyState exit_state)
         {
             CurrentState = FireflyState.Dancing;

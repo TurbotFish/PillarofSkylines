@@ -83,9 +83,9 @@ namespace Game.Player.CharacterController
         public bool createdEchoOnThisInput;
 
         /// <summary>
-        /// This is set to false if the player has opened a menu, true otherwise.
+        /// This is set to true if the player is allowed to read inputs, false if not.
         /// </summary>
-        bool isHandlingInput;
+        public bool isHandlingInput;
 
         Vector3 velocity;
         Vector3 externalVelocity;
@@ -120,6 +120,9 @@ namespace Game.Player.CharacterController
         public AudioClip jumpClip;
         [Range(0, 2)] public float volumeJump = 1f;
         public bool addRandomisationJump = false;
+        public AudioClip doubleJumpClip;
+        [Range(0, 2)] public float volumeDoubleJump = 1f;
+        public bool addRandomisationDoubleJump = false;
         public float soundMinDistance = 10f;
         public float soundMaxDistance = 50f;
         public float clipDuration = 0f;
