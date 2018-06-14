@@ -234,6 +234,8 @@ namespace Game.Player.CharacterController.States
 					charController.fxManager.DoubleJumpPlay();
 				}
 
+                SoundifierOfTheWorld.PlaySoundAtLocation(charController.jumpClip, charController.MyTransform, charController.soundMaxDistance, charController.volumeJump, charController.soundMinDistance, charController.clipDuration, charController.addRandomisationJump, false, 0f);
+
 				Vector3 direction = (Vector3.up + jumpDirection).normalized;
 
 				charController.AddExternalVelocity((direction) * jumpStrength + Vector3.ProjectOnPlane(charController.MovementInfo.velocity, Vector3.up) * jumpData.ImpactOfCurrentSpeed, false, false);
