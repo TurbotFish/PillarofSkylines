@@ -6,7 +6,34 @@ namespace Game.CameraControl
 {
     public class DuplicationTrigger : MonoBehaviour
     {
+        //###############################################################
+
+        // -- CONSTANTS
+
+        [SerializeField] private DuplicationAxis _DuplicationAxis;
+
+        //###############################################################
+
+        // -- ATTRIBUTES
+
         public bool IsVisible { get; private set; }
+
+        private DuplicationCameraManager DuplicationCameraManager;
+
+        //###############################################################
+
+        // -- INITIALIZATION
+
+        public void Initialize(DuplicationCameraManager duplication_camera_manager)
+        {
+            DuplicationCameraManager = duplication_camera_manager;
+        }
+
+        //###############################################################
+
+        // -- INQUIRIES
+
+        public DuplicationAxis DuplicationAxis { get { return _DuplicationAxis; } }
 
         //public bool isVisible;
         //public bool rendererVisible;

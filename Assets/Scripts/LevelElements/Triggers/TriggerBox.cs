@@ -141,7 +141,7 @@ namespace Game.LevelElements
 				if (_fx != null) {
 					_fx.GlyphOff ();
 				} else {
-					Debug.LogError ("whoopsie, " + transform.name + " isn't attached to a glyph, is it ?");
+					Debug.LogWarning ("whoopsie, " + transform.name + " isn't attached to a glyph, is it ?");
 				}
             }
         }
