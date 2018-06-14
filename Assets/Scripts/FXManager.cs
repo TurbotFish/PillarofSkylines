@@ -47,8 +47,9 @@ public class FXManager : MonoBehaviour {
 
 	}
 
+    #region Impact
 
-	[Header ("Impact")]
+    [Header ("Impact")]
 	public float speedThreshold;
 	public float impactTimeToDissolve;
 	public float impactTimeToAppear;
@@ -96,9 +97,10 @@ public class FXManager : MonoBehaviour {
 		yield return new WaitForSecondsRealtime (t);
 		shadowProjector.SetActive (true);
 	}
+    #endregion
 
-
-	[Header ("Dust")]
+    #region Dust
+    [Header ("Dust")]
 	public List<ParticleSystem> dustParticles = new List<ParticleSystem>();
 	public void FootDustPlay()
 	{
@@ -106,9 +108,10 @@ public class FXManager : MonoBehaviour {
 			ps.Play ();
 		}
 	}
+    #endregion
 
-
-	[Header ("Dash")]
+    #region Dash
+    [Header ("Dash")]
 	public float dashTimeToDissolve;
 	public float dashTimeToAppear;
 	public float dashDelay;
@@ -142,11 +145,11 @@ public class FXManager : MonoBehaviour {
 		explo = Instantiate (dashExplosion, transform.position + transform.forward*2 + transform.up, Quaternion.identity) as GameObject;
 		Destroy (explo, 6);
 	}
-		
 
+    #endregion
 
-
-	[Header ("DoubleJump")]
+    #region Double Jump
+    [Header ("DoubleJump")]
 	public float jumpDissolveAmount;
 	public float jumpTimeToDissolve;
 	public float jumpTimeToAppear;
@@ -174,9 +177,10 @@ public class FXManager : MonoBehaviour {
 
 
 	}
+    #endregion
 
-
-	[Header ("Glide")]
+    #region Glide
+    [Header ("Glide")]
 	//public float glideDissolveAmount;
 	//public float glideTimeToDissolve;
 	public float glideTimeToAppear;
@@ -235,9 +239,10 @@ public class FXManager : MonoBehaviour {
 			cloth.randomAcceleration = new Vector3 (amount*0.5f, amount*0.5f, amount);
 		}
 	}
+    #endregion
 
-
-	[Header ("Echo")]
+    #region Echo
+    [Header ("Echo")]
 	public Transform echoParticlesHolder;
 	public ParticleSystem echoPose;
 	public List<ParticleSystem> holdEchoParticles = new List<ParticleSystem>();
@@ -260,11 +265,13 @@ public class FXManager : MonoBehaviour {
 			ps.Stop ();
 		}	
 	}
+    #endregion
 
-	[Header ("Phantom")]
+    #region Phantom
+    [Header ("Phantom")]
 	public ParticleSystem phantomPose;
 	public List<ParticleSystem> phantomIdleParticles = new List<ParticleSystem>();
-
+    
 	public void PhantomPlay ()
 	{
 		foreach (ParticleSystem ps in phantomIdleParticles) {
@@ -278,4 +285,21 @@ public class FXManager : MonoBehaviour {
 			ps.Stop ();
 		}	
 	}
+    #endregion
+
+    #region EchoBoost
+    [Header("EchoBoost")]
+    public ParticleSystem boostParticles;
+
+    public GameObject[] trails;
+
+    public void PlayEchoBoost() {
+        boostParticles.Play();
+    }
+
+    public void StopEchoBoost() {
+        boostParticles.Stop();
+    }
+
+    #endregion
 }
