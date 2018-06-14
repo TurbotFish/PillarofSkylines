@@ -3,6 +3,7 @@ using Game.GameControl;
 using Game.Model;
 using Game.Utilities;
 using System;
+using System.Collections;
 using UnityEngine;
 
 namespace Game.LevelElements
@@ -26,7 +27,11 @@ namespace Game.LevelElements
         [SerializeField] private TombAnimator tombAnimator;
         [SerializeField] private new Collider collider;
 
-        [Header("")]
+        [Header("Pickup - Interaction")]
+        [SerializeField] private bool _RequiresInput = true;
+        [SerializeField] private bool _ShowPickupMessage = true;
+
+        [Header("Pickup - Cutscene")]
         [SerializeField] private bool PlayCutsceneOnPickup = false;
         [SerializeField] private CutsceneType Cutscene;
         [SerializeField] private bool HideUiInCutscene = false;
@@ -49,8 +54,6 @@ namespace Game.LevelElements
 
         private void OnEnable()
         {
-            EventManager.PickupCollectedEvent += OnPickupCollectedEvent;
-
             if (IsInitialized)
             {
                 OnPickupEnabled();
@@ -59,7 +62,6 @@ namespace Game.LevelElements
 
         private void OnDisable()
         {
-            EventManager.PickupCollectedEvent -= OnPickupCollectedEvent;
         }
 
         //##################################################################
@@ -84,7 +86,7 @@ namespace Game.LevelElements
         /// <returns></returns>
         public bool IsInteractable()
         {
-            return !PersistentData.IsPickedUp;
+            return (!PersistentData.IsPickedUp && _RequiresInput);
         }
 
         //##################################################################
@@ -102,7 +104,10 @@ namespace Game.LevelElements
         /// </summary>
         public void OnPlayerEnter()
         {
-
+            if (!_RequiresInput)
+            {
+                OnInteraction();
+            }
         }
 
         /// <summary>
@@ -118,8 +123,11 @@ namespace Game.LevelElements
         /// </summary>
         public void OnHoverBegin()
         {
-            string message = "[X]: Accept " + PickupName;
-            GameController.UiController.Hud.ShowHelpMessage(message, UniqueId);
+            if (_RequiresInput)
+            {
+                string message = "[X]: Accept " + PickupName;
+                GameController.UiController.Hud.ShowHelpMessage(message, UniqueId);
+            }
         }
 
         /// <summary>
@@ -127,7 +135,10 @@ namespace Game.LevelElements
         /// </summary>
         public void OnHoverEnd()
         {
-            GameController.UiController.Hud.HideHelpMessage(UniqueId);
+            if (_RequiresInput)
+            {
+                GameController.UiController.Hud.HideHelpMessage(UniqueId);
+            }
         }
 
         /// <summary>
@@ -142,7 +153,11 @@ namespace Game.LevelElements
             }
 
             PersistentData.IsPickedUp = true;
+            collider.enabled = false;
 
+            /*
+             * Animator
+             */
             if (tombAnimator != null)
             {
                 tombAnimator.SetTombState(true, true, false, OnPickupAnimationDone);
@@ -152,6 +167,9 @@ namespace Game.LevelElements
                 OnPickupAnimationDone();
             }
 
+            /*
+             * Cutscene
+             */
             if (PlayCutsceneOnPickup)
             {
                 GameController.CutsceneManager.PlayCutscene(Cutscene, HideUiInCutscene);
@@ -168,47 +186,6 @@ namespace Game.LevelElements
         }
 
         /// <summary>
-        /// Called when another Pickup is collected.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void OnPickupCollectedEvent(object sender, EventManager.PickupCollectedEventArgs args)
-        {
-            if (IsInitialized && (sender as Pickup<T>).UniqueId == UniqueId && !sender.Equals(this) && PersistentData.IsPickedUp)
-            {
-                if (tombAnimator != null)
-                {
-                    tombAnimator.SetTombState(true, false, false);
-                }
-                else
-                {
-                    OnPickupAnimationDone();
-                }
-
-                collider.enabled = false;
-            }
-        }
-
-        /// <summary>
-        /// Called when the pickup animation finishes.
-        /// </summary>
-        private void OnPickupAnimationDone()
-        {
-            // give content to player
-            OnPickedUp();
-
-            // show message on screen
-            GameController.UiController.Hud.ShowAnnouncmentMessage(OnPickedUpMessage, OnPickedUpDescription, 4, OnPickedUpIcon);
-
-            // disable collider
-            collider.enabled = false;
-
-            // inform duplicate Pickup's
-            var pickupCollectedEventArgs = new EventManager.PickupCollectedEventArgs(UniqueId);
-            EventManager.SendPickupCollectedEvent(this, pickupCollectedEventArgs);
-        }
-
-        /// <summary>
         /// Called when the object is initialized or activated.
         /// </summary>
         protected virtual void OnPickupEnabled()
@@ -220,6 +197,27 @@ namespace Game.LevelElements
                     tombAnimator.SetTombState(true, false, true);
                 }
             }
+        }
+
+        /// <summary>
+        /// Called when the pickup animation finishes.
+        /// </summary>
+        private void OnPickupAnimationDone()
+        {
+            // give content to player
+            OnPickedUp();
+
+            /*
+             * Announcment
+             */
+            if (_ShowPickupMessage)
+            {
+                GameController.UiController.Hud.ShowAnnouncmentMessage(OnPickedUpMessage, OnPickedUpDescription, 4, OnPickedUpIcon);
+            }
+
+            // inform everyone
+            var pickupCollectedEventArgs = new EventManager.PickupCollectedEventArgs(UniqueId);
+            EventManager.SendPickupCollectedEvent(this, pickupCollectedEventArgs);
         }
     }
 } // end of namespace
