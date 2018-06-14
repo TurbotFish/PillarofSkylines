@@ -84,6 +84,7 @@ namespace Game.Player.CharacterController.States
                 var state = new AirState(charController, stateMachine, AirState.eAirStateMode.jump);
                 stateMachine.SetRemainingAerialJumps(charController.CharData.Jump.MaxAerialJumps);
 
+                state.shouldPlayJumpSound = false;
                 Vector3 jumpDirection = Vector3.zero;
                 state.SetJumpStrengthModifierFromState(wallRunData.JumpStrengthModifierLedgeGrab);
 

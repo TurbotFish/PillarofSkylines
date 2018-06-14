@@ -120,6 +120,9 @@ namespace Game.Player.CharacterController
         public AudioClip jumpClip;
         [Range(0, 2)] public float volumeJump = 1f;
         public bool addRandomisationJump = false;
+        public AudioClip doubleJumpClip;
+        [Range(0, 2)] public float volumeDoubleJump = 1f;
+        public bool addRandomisationDoubleJump = false;
         public float soundMinDistance = 10f;
         public float soundMaxDistance = 50f;
         public float clipDuration = 0f;
