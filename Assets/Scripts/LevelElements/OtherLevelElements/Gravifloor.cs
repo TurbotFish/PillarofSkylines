@@ -40,6 +40,7 @@ public class Gravifloor : MonoBehaviour {
             currentActive.StopAllCoroutines();
         currentActive = this;
         currPlayer = player;
+        StopAllCoroutines();
         StartCoroutine(_ChangeGravity(gravityDirection));
     }
     
