@@ -106,7 +106,7 @@ namespace Game.GameControl
             IsEclipseActive = true;
 
             StopAllCoroutines();
-            StartCoroutine(ChangeGravityRoutine(true));
+            StartCoroutine(ChangeGravityRoutine(true, 1.8f));
         }
 
         /// <summary>
@@ -129,8 +129,11 @@ namespace Game.GameControl
         /// </summary>
         /// <param name="eclipseOn"></param>
         /// <returns></returns>
-        private IEnumerator ChangeGravityRoutine(bool eclipseOn)
+        private IEnumerator ChangeGravityRoutine(bool eclipseOn, float delay = 0f)
         {
+            if (delay != 0f)
+                yield return new WaitForSeconds(delay);
+
             float gravityTimer = 0;
             Player.AddExternalVelocity(new Vector3(0f, 10f, 0f), false, false);
 
