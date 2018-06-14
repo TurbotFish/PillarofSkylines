@@ -1,4 +1,5 @@
 ﻿using Game.GameControl;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,16 +11,23 @@ namespace Game.CameraControl
     {
         //###############################################################
 
+        // -- CONSTANTS
+
+        [SerializeField] private Transform TriggerHolder;
+        [SerializeField] private Transform CameraHolder;
+
+        //###############################################################
+
         // -- ATTRIBUTES
 
         public Camera MainCamera { get; private set; }
         public Transform MainCameraTransform { get; private set; }
         public bool IsActive { get; private set; }
 
-        [SerializeField] private Transform TriggerHolder;
-        [SerializeField] private Transform CameraHolder;
+        
 
         private List<DuplicationCamera> DuplicationCameras = new List<DuplicationCamera>();
+        private Dictionary<DuplicationAxis, List<DuplicationTrigger>> DuplicationTriggerDictionary = new Dictionary<DuplicationAxis, List<DuplicationTrigger>>();
 
         //###############################################################
 
@@ -32,10 +40,27 @@ namespace Game.CameraControl
 
             CameraHolder.position = MainCameraTransform.position;
 
-            DuplicationCameras = GetComponentsInChildren<DuplicationCamera>().ToList();
+            /*
+             * Initialize cameras
+             */
+            DuplicationCameras = CameraHolder.GetComponentsInChildren<DuplicationCamera>().ToList();
             foreach (var camera in DuplicationCameras)
             {
                 camera.Initialize(this);
+            }
+
+            /*
+             * Initialize triggers
+             */
+            foreach(var axis in Enum.GetValues(typeof(DuplicationAxis)).Cast<DuplicationAxis>())
+            {
+                DuplicationTriggerDictionary.Add(axis, new List<DuplicationTrigger>());
+            }
+
+            foreach(var duplication_trigger in TriggerHolder.GetComponentsInChildren<DuplicationTrigger>())
+            {
+                duplication_trigger.Initialize(this);
+                DuplicationTriggerDictionary[duplication_trigger.DuplicationAxis].Add(duplication_trigger);
             }
         }
 
@@ -65,6 +90,21 @@ namespace Game.CameraControl
             foreach (var camera in DuplicationCameras)
             {
                 camera.UpdateDuplicationCamera();
+            }
+        }
+
+        public void OnTriggerStateChanged(DuplicationTrigger trigger, bool is_visible)
+        {
+            if (is_visible)
+            {
+                if (!DuplicationTriggerDictionary[trigger.DuplicationAxis].Contains(trigger))
+                {
+                    DuplicationTriggerDictionary[trigger.DuplicationAxis].Add(trigger);
+                }
+            }
+            else
+            {
+                DuplicationTriggerDictionary[trigger.DuplicationAxis].Remove(trigger);
             }
         }
     }
