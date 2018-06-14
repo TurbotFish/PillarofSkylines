@@ -1,8 +1,10 @@
-﻿using Game.LevelElements;
+﻿using Game.GameControl;
+using Game.LevelElements;
+using Game.World;
 using System.Collections;
 using UnityEngine;
 
-public class AmbientBox : MonoBehaviour, IInteractable
+public class AmbientBox : MonoBehaviour, IInteractable, IWorldObject
 {
     //##################################################################
 
@@ -10,7 +12,7 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
     [SerializeField] bool editAmbient = true;
     [SerializeField] bool editFog = false;
-	[SerializeField] bool editAudio = false;
+    [SerializeField] bool editAudio = false;
 
     [Header("Ambient")]
     [ConditionalHide("editAmbient")]
@@ -29,19 +31,20 @@ public class AmbientBox : MonoBehaviour, IInteractable
     [ConditionalHide("editFog")]
     [SerializeField] float fogFadeSpeed = 2;
 
-	[Header("Audio")]
-	[ConditionalHide("editAudio")]
-	[SerializeField] AudioClip clip;
-	[ConditionalHide("editAudio")]
-	[SerializeField] float audioFadeSpeed = 2f;
-	[ConditionalHide("editAudio")]
-	[SerializeField] AnimationCurve fadeInCurve;
-	[ConditionalHide("editAudio")]
-	[SerializeField] AnimationCurve fadeOutCurve;
+    [Header("Audio")]
+    [ConditionalHide("editAudio")]
+    [SerializeField] AudioClip clip;
+    [ConditionalHide("editAudio")]
+    [SerializeField] float audioFadeSpeed = 2f;
+    [ConditionalHide("editAudio")]
+    [SerializeField] AnimationCurve fadeInCurve;
+    [ConditionalHide("editAudio")]
+    [SerializeField] AnimationCurve fadeOutCurve;
 
-	AudioClip defaultClip;
-	float currentVolume, audioTimer, defaultVolume;
-	AudioSource atmoSource;
+    private GameController GameController;
+    AudioClip defaultClip;
+    float currentVolume, audioTimer, defaultVolume;
+    AudioSource atmoSource;
 
     GradientFog fog;
     UnityEngine.PostProcessing.PostProcessingBehaviour postProcessStack;
@@ -49,80 +52,109 @@ public class AmbientBox : MonoBehaviour, IInteractable
     Color defaultColor;
     Gradient defaultGradient;
     float defaultStart, defaultEnd;
+    private bool IsInitialized = false;
 
     //##################################################################
 
-    #region initialization
+    // -- INITIALIZATION
 
-    private void Start() {
+    public void Initialize(GameController game_controller)
+    {
+        if (IsInitialized)
+        {
+            return;
+        }
+
+        GameController = game_controller;
+
         defaultColor = RenderSettings.ambientLight;
 
-        fog = FindObjectOfType<GradientFog>(); // TODO: fix that
+        fog = GameController.CameraController.GradientFogComponent;
         defaultGradient = fog.gradient;
         defaultStart = fog.startDistance;
         defaultEnd = fog.endDistance;
 
-        postProcessStack = FindObjectOfType<UnityEngine.PostProcessing.PostProcessingBehaviour>(); // fix that as well prob
+        postProcessStack = GameController.CameraController.PostProcessingBehaviourComponent;
 
-		atmoSource = FindObjectOfType<AudioManager> ().transform.Find ("Nature").transform.Find ("Wind").GetComponent<AudioSource> ();//while you're at it you might want to fix this as well ;);)
-		if (!atmoSource)
-			Debug.LogError ("Coudln't find audiosource on P_AudioManager/Nature/Wind");
-		else {
-			defaultClip = atmoSource.clip;
-			defaultVolume = atmoSource.volume;
-		}
+        atmoSource = GameController.PlayerController.AudioManager.wind;
+
+        if (!atmoSource)
+        {
+            Debug.LogError("Coudln't find audiosource on P_AudioManager/Nature/Wind");
+        }
+        else
+        {
+            defaultClip = atmoSource.clip;
+            defaultVolume = atmoSource.volume;
+        }
+
+        IsInitialized = true;
     }
-
-    #endregion initialization
 
     //##################################################################
 
-    #region inquiries
+    // -- INQUIRIES
 
     public Transform Transform { get { return transform; } }
 
-    public bool IsInteractable() {
+    public bool IsInteractable()
+    {
         return false;
     }
 
-    #endregion inquiries
-
     //################################################################## 
 
-    #region operations
+    // -- OPERATIONS
 
     public void OnPlayerEnter()
     {
         StopAllCoroutines();
+
         if (editAmbient)
+        {
             StartCoroutine(FadeAmbient(color));
+        }
 
         if (editFog)
         {
             StartCoroutine(FadeFog(gradient, startDistance, endDistance));
             print("Entered " + name + " changing fog");
         }
-        if (postProcess)
-            postProcessStack.OverrideProfile(postProcess);
 
-		if (editAudio)
-			StartCoroutine (FadeAudio (1f, true));
+        if (postProcess)
+        {
+            postProcessStack.OverrideProfile(postProcess);
+        }
+
+        if (editAudio)
+        {
+            StartCoroutine(FadeAudio(1f, true));
+        }
     }
 
     public void OnPlayerExit()
     {
         StopAllCoroutines();
+
         if (editAmbient)
+        {
             StartCoroutine(FadeAmbient(defaultColor));
+        }
 
         if (editFog)
+        {
             StartCoroutine(FadeFog(defaultGradient, defaultStart, defaultEnd));
+        }
 
         if (postProcess)
+        {
             postProcessStack.StopOverridingProfile();
+        }
 
-		if (editAudio)
-			StartCoroutine (FadeAudio (0f, false));
+        if (editAudio)
+        {
+            StartCoroutine(FadeAudio(0f, false));
+        }
     }
 
     public void OnHoverBegin()
@@ -150,7 +182,7 @@ public class AmbientBox : MonoBehaviour, IInteractable
     {
         GradientFog[] fogs = FindObjectsOfType<GradientFog>();
         fog = fogs[0];
-        
+
         foreach (GradientFog foggy in fogs)
         {
             foggy.secondaryGradient = goal;
@@ -166,12 +198,12 @@ public class AmbientBox : MonoBehaviour, IInteractable
 
             //print(t);
 
-            foreach (GradientFog foggy in fogs) {
+            foreach (GradientFog foggy in fogs)
+            {
                 foggy.gradientLerp = t;
                 foggy.GenerateTexture();
                 foggy.startDistance = Mathf.Lerp(foggy.startDistance, startGoal, t);
                 foggy.endDistance = Mathf.Lerp(foggy.endDistance, endGoal, t);
-
             }
             yield return null;
         }
@@ -184,37 +216,30 @@ public class AmbientBox : MonoBehaviour, IInteractable
         }
     }
 
-	private IEnumerator FadeAudio(float _targetVolume, bool _entering)
-	{
+    private IEnumerator FadeAudio(float _targetVolume, bool _entering)
+    {
+        while (audioTimer <= audioFadeSpeed)
+        {
+            audioTimer += Time.deltaTime;
+            currentVolume = fadeOutCurve.Evaluate(Mathf.Clamp01(audioTimer / audioFadeSpeed)) * defaultVolume;
+            atmoSource.volume = currentVolume;
+            yield return null;
+        }
 
-		while (audioTimer <= audioFadeSpeed)
-		{
-			audioTimer += Time.deltaTime;
-			currentVolume = fadeOutCurve.Evaluate (Mathf.Clamp01 (audioTimer / audioFadeSpeed)) * defaultVolume;
-			atmoSource.volume = currentVolume;
-			yield return null;
-		}
+        audioTimer = 0f;
 
-		audioTimer = 0f;
+        atmoSource.clip = _entering ? clip : defaultClip;
 
+        atmoSource.PlayScheduled(Random.value);
 
-		atmoSource.clip = _entering ? clip : defaultClip;
+        while (audioTimer <= audioFadeSpeed)
+        {
+            audioTimer += Time.deltaTime;
+            currentVolume = fadeInCurve.Evaluate(Mathf.Clamp01(audioTimer / audioFadeSpeed)) * defaultVolume;
+            atmoSource.volume = currentVolume;
+            yield return null;
+        }
 
-		atmoSource.PlayScheduled (Random.value);
-
-		while (audioTimer <= audioFadeSpeed)
-		{
-			audioTimer += Time.deltaTime;
-			currentVolume = fadeInCurve.Evaluate (Mathf.Clamp01 (audioTimer / audioFadeSpeed)) * defaultVolume;
-			atmoSource.volume = currentVolume;
-			yield return null;
-		}
-
-		audioTimer = 0f;
-
-	}
-
-    #endregion operations
-
-    //##################################################################
+        audioTimer = 0f;
+    }
 }
