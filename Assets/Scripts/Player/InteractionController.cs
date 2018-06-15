@@ -70,7 +70,7 @@ namespace Game.Player
             NearbyInteractableObjects.RemoveAll(item => item == null);
             SetCurrentInteractableObject();
 
-            if (Input.GetButtonDown("Interact"))
+            if (Input.GetButtonDown("Interact") && GameController.PlayerController.CharController.isHandlingInput)
             {
                 if (CurrentInteractableObject != null)
                 {
@@ -79,11 +79,11 @@ namespace Game.Player
                 else if (GameController.PlayerModel.CheckAbilityActive(AbilityType.Echo))
                 {
                     currentEcho = GameController.EchoManager.CreateEcho(true);
-
-                    currentEcho.transform.SetParent(GameController.PlayerController.CharController.MyTransform);
+                    if (currentEcho != null)
+                        currentEcho.transform.SetParent(GameController.PlayerController.CharController.MyTransform);
                 }
             }
-            else if (Input.GetButtonDown("Drift") && !Input.GetButtonUp("Drift"))
+            else if (Input.GetButtonDown("Drift") && !Input.GetButtonUp("Drift") && GameController.PlayerController.CharController.isHandlingInput)
             {
                 GameController.EchoManager.Drift();
             }

@@ -116,6 +116,7 @@ namespace Game.Player.CharacterController
         public Vector3 Move(Vector3 velocity)
         {
 
+
             var pos1 = myTransform.position;
 
 			belowLastFrame = collisions.below;
@@ -357,7 +358,7 @@ namespace Game.Player.CharacterController
                 if (hit.collider.CompareTag("Gravifloor") && (currentGravifloor == null || currentGravifloor != hit.collider.GetComponent<Gravifloor>()))
                 {
                     currentGravifloor = hit.collider.GetComponent<Gravifloor>();
-                    if (currentGravifloor && Vector3.Dot(-currentGravifloor.gravityDirection, myTransform.up) > 0.6f)
+                    //if (currentGravifloor && Vector3.Dot(-currentGravifloor.gravityDirection, myTransform.up) > 0.6f)
                         currentGravifloor.AddPlayer(myPlayer, -hit.normal);
                 }
                 if (hit.collider.CompareTag("SlipperySlope"))

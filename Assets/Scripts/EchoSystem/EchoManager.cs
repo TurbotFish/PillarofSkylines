@@ -120,7 +120,12 @@ namespace Game.EchoSystem
 
                 SoundifierOfTheWorld.PlaySoundAtLocation(driftClip, GameController.PlayerController.PlayerTransform, maxDistance, volumeDrift, minDistance, clipDuration, addRandomisationDrift, false, .2f);
 
-                var eventArgs = new EventManager.TeleportPlayerEventArgs(targetEcho.MyTransform.position, true, false);
+                var eventArgs = new EventManager.TeleportPlayerEventArgs(
+                    GameController.PlayerController.PlayerTransform.position,
+                    targetEcho.MyTransform.position)
+                {
+                    Drifting = true
+                };
                 EventManager.SendTeleportPlayerEvent(this, eventArgs);
 
                 EventManager.SendEchoDestroyedEvent(this);
@@ -135,7 +140,7 @@ namespace Game.EchoSystem
 
                 SoundifierOfTheWorld.PlaySoundAtLocation(driftClip, GameController.PlayerController.PlayerTransform, maxDistance, volumeDrift, minDistance, clipDuration, addRandomisationDrift, false, .2f);
 
-                var eventArgs = new EventManager.TeleportPlayerEventArgs(Waypoint.Position, false)
+                var eventArgs = new EventManager.TeleportPlayerEventArgs(GameController.PlayerController.PlayerTransform.position, Waypoint.Position)
                 {
                     UseCameraAngle = Waypoint.UseCameraAngle,
                     CameraAngle = Waypoint.CameraAngle

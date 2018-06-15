@@ -10,8 +10,7 @@ namespace Game.CameraControl
 
         // -- ATTRIBUTES
 
-        //[SerializeField] private Vector3 OffsetDirection;
-        [SerializeField] private List<DuplicationTrigger> Triggers;
+        [SerializeField] private List<DuplicationAxis> TriggerAxes;
 
         private Transform TransformComponent;
         private Camera CameraComponent;
@@ -42,25 +41,27 @@ namespace Game.CameraControl
             if (!CameraComponent.enabled && CameraManager.IsActive && is_any_trigger_visible)
             {
                 CameraComponent.enabled = true;
-                //Debug.LogErrorFormat("{0} enabled!", this.name);
             }
             else if (CameraComponent.enabled && (!CameraManager.IsActive || !is_any_trigger_visible))
             {
                 CameraComponent.enabled = false;
-                //Debug.LogErrorFormat("{0} disabled!", this.name);
             }
 
             CameraComponent.fieldOfView = CameraManager.MainCamera.fieldOfView;
             TransformComponent.rotation = CameraManager.MainCameraTransform.rotation;
         }
 
+        /// <summary>
+        /// Checks if any of the triggers for this camera are visible.
+        /// </summary>
+        /// <returns></returns>
         private bool CheckIsAnyTriggerVisible()
         {
             bool is_trigger_visible = false;
 
-            foreach (var trigger in Triggers)
+            foreach(var axis in TriggerAxes)
             {
-                if (trigger.IsVisible)
+                if (CameraManager.IsDuplicationAxisVisible(axis))
                 {
                     is_trigger_visible = true;
                     break;

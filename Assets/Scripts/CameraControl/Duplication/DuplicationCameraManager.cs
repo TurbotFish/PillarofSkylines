@@ -24,10 +24,11 @@ namespace Game.CameraControl
         public Transform MainCameraTransform { get; private set; }
         public bool IsActive { get; private set; }
 
-        
+        private GameController GameController;
 
         private List<DuplicationCamera> DuplicationCameras = new List<DuplicationCamera>();
-        private Dictionary<DuplicationAxis, List<DuplicationTrigger>> DuplicationTriggerDictionary = new Dictionary<DuplicationAxis, List<DuplicationTrigger>>();
+        private Dictionary<DuplicationAxis, List<DuplicationTrigger>> VisibleDuplicationTriggerDictionary = new Dictionary<DuplicationAxis, List<DuplicationTrigger>>();
+        private Dictionary<DuplicationAxis, bool> DuplicationTriggerProximityDictionary = new Dictionary<DuplicationAxis, bool>();
 
         //###############################################################
 
@@ -35,7 +36,9 @@ namespace Game.CameraControl
 
         public void Initialize(GameController gameController)
         {
-            MainCamera = gameController.CameraController.PoS_Camera.CameraComponent;
+            GameController = gameController;
+
+            MainCamera = GameController.CameraController.PoS_Camera.CameraComponent;
             MainCameraTransform = MainCamera.transform;
 
             CameraHolder.position = MainCameraTransform.position;
@@ -50,18 +53,40 @@ namespace Game.CameraControl
             }
 
             /*
-             * Initialize triggers
+             * Initialize dictionaries
              */
-            foreach(var axis in Enum.GetValues(typeof(DuplicationAxis)).Cast<DuplicationAxis>())
+            foreach (var axis in Enum.GetValues(typeof(DuplicationAxis)).Cast<DuplicationAxis>())
             {
-                DuplicationTriggerDictionary.Add(axis, new List<DuplicationTrigger>());
+                VisibleDuplicationTriggerDictionary.Add(axis, new List<DuplicationTrigger>());
+                DuplicationTriggerProximityDictionary.Add(axis, false);
             }
 
-            foreach(var duplication_trigger in TriggerHolder.GetComponentsInChildren<DuplicationTrigger>())
+            /*
+             * Initialize triggers
+             */
+            foreach (var duplication_trigger in TriggerHolder.GetComponentsInChildren<DuplicationTrigger>())
             {
                 duplication_trigger.Initialize(this);
-                DuplicationTriggerDictionary[duplication_trigger.DuplicationAxis].Add(duplication_trigger);
             }
+        }
+
+        //###############################################################
+
+        // -- INQUIRIES
+
+        public bool IsDuplicationAxisVisible(DuplicationAxis axis)
+        {
+            if(VisibleDuplicationTriggerDictionary[axis].Count > 0)
+            {
+                return true;
+            }
+
+            if (DuplicationTriggerProximityDictionary[axis])
+            {
+                return true;
+            }
+
+            return false;
         }
 
         //###############################################################
@@ -86,6 +111,7 @@ namespace Game.CameraControl
             }
 
             CameraHolder.position = MainCameraTransform.position;
+            SetTriggerProximityState();
 
             foreach (var camera in DuplicationCameras)
             {
@@ -97,14 +123,43 @@ namespace Game.CameraControl
         {
             if (is_visible)
             {
-                if (!DuplicationTriggerDictionary[trigger.DuplicationAxis].Contains(trigger))
+                if (!VisibleDuplicationTriggerDictionary[trigger.DuplicationAxis].Contains(trigger))
                 {
-                    DuplicationTriggerDictionary[trigger.DuplicationAxis].Add(trigger);
+                    VisibleDuplicationTriggerDictionary[trigger.DuplicationAxis].Add(trigger);
                 }
             }
             else
             {
-                DuplicationTriggerDictionary[trigger.DuplicationAxis].Remove(trigger);
+                VisibleDuplicationTriggerDictionary[trigger.DuplicationAxis].Remove(trigger);
+            }
+        }
+
+        private void SetTriggerProximityState()
+        {
+            var world_size = GameController.WorldController.WorldSize;
+            var player_position = GameController.PlayerController.PlayerTransform.position;
+
+            DuplicationTriggerProximityDictionary[DuplicationAxis.Y_Plus_Axis] = false;
+            DuplicationTriggerProximityDictionary[DuplicationAxis.Y_Minus_Axis] = false;
+            DuplicationTriggerProximityDictionary[DuplicationAxis.Z_Plus_Axis] = false;
+            DuplicationTriggerProximityDictionary[DuplicationAxis.Z_Minus_Axis] = false;
+
+            if (player_position.y > world_size.y * 0.5f - 50)
+            {
+                DuplicationTriggerProximityDictionary[DuplicationAxis.Y_Minus_Axis] = true;
+            }
+            else if(player_position.y < -world_size.y * 0.5f + 50)
+            {
+                DuplicationTriggerProximityDictionary[DuplicationAxis.Y_Plus_Axis] = true;
+            }
+
+            if (player_position.z > world_size.z * 0.5f - 50)
+            {
+                DuplicationTriggerProximityDictionary[DuplicationAxis.Z_Minus_Axis] = true;
+            }
+            else if (player_position.z < -world_size.z * 0.5f + 50)
+            {
+                DuplicationTriggerProximityDictionary[DuplicationAxis.Z_Plus_Axis] = true;
             }
         }
     }
