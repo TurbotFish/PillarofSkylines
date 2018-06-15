@@ -7,7 +7,7 @@ public class CameraEnablerHotFix : MonoBehaviour {
 	GameObject saved;
 	
 	void Update () {
-
+        /*
 		if (Input.GetKeyDown (KeyCode.X)) {
 			saved = GameObject.Find ("P_Camera");
 
@@ -19,6 +19,6 @@ public class CameraEnablerHotFix : MonoBehaviour {
 			saved.SetActive (true);
 			saved.GetComponent<PoS_Camera> ().enabled = true;
 
-		}
+		}*/
 	}
 }
