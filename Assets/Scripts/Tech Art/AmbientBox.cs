@@ -12,6 +12,7 @@ public class AmbientBox : MonoBehaviour, IInteractable, IWorldObject
 
     [SerializeField] bool editAmbient = true;
     [SerializeField] bool editFog = false;
+    [SerializeField] bool editOverlay = false;
     [SerializeField] bool editAudio = false;
 
     [Header("Ambient")]
@@ -30,6 +31,12 @@ public class AmbientBox : MonoBehaviour, IInteractable, IWorldObject
     [SerializeField] float endDistance = 200;
     [ConditionalHide("editFog")]
     [SerializeField] float fogFadeSpeed = 2;
+
+    [Header("Colour Overlay")]
+    [ConditionalHide("editOverlay")]
+    [SerializeField] Color overlayColour;
+    [ConditionalHide("editOverlay")]
+    [SerializeField] float overlayFadeSpeed = 1;
 
     [Header("Audio")]
     [ConditionalHide("editAudio")]
@@ -51,8 +58,10 @@ public class AmbientBox : MonoBehaviour, IInteractable, IWorldObject
 
     Color defaultColor;
     Gradient defaultGradient;
+    ColorOverlay overlay;
     float defaultStart, defaultEnd;
     private bool IsInitialized = false;
+
 
     //##################################################################
 
@@ -73,6 +82,8 @@ public class AmbientBox : MonoBehaviour, IInteractable, IWorldObject
         defaultGradient = fog.gradient;
         defaultStart = fog.startDistance;
         defaultEnd = fog.endDistance;
+
+        overlay = fog.GetComponent<ColorOverlay>();
 
         postProcessStack = GameController.CameraController.PostProcessingBehaviourComponent;
 
@@ -110,6 +121,8 @@ public class AmbientBox : MonoBehaviour, IInteractable, IWorldObject
     {
         StopAllCoroutines();
 
+        print("Entered " + name);
+
         if (editAmbient)
         {
             StartCoroutine(FadeAmbient(color));
@@ -118,13 +131,15 @@ public class AmbientBox : MonoBehaviour, IInteractable, IWorldObject
         if (editFog)
         {
             StartCoroutine(FadeFog(gradient, startDistance, endDistance));
-            print("Entered " + name + " changing fog");
         }
 
         if (postProcess)
         {
             postProcessStack.OverrideProfile(postProcess);
         }
+
+        if (editOverlay)
+            StartCoroutine(FadeOverlay(overlayColour, 1));
 
         if (editAudio)
         {
@@ -150,6 +165,9 @@ public class AmbientBox : MonoBehaviour, IInteractable, IWorldObject
         {
             postProcessStack.StopOverridingProfile();
         }
+
+        if (editOverlay)
+            StartCoroutine(FadeOverlay(Color.clear, 0));
 
         if (editAudio)
         {
@@ -177,6 +195,18 @@ public class AmbientBox : MonoBehaviour, IInteractable, IWorldObject
             yield return null;
         }
     }
+    
+    private IEnumerator FadeOverlay(Color color, float goal)
+    {
+        overlay.enabled = true;
+        overlay.color = color;
+        while (Mathf.Abs(overlay.intensity - goal) > 0.001f)
+        {
+            overlay.intensity = Mathf.Lerp(overlay.intensity, goal, Time.deltaTime * overlayFadeSpeed);
+            yield return null;
+        }
+    }
+
 
     private IEnumerator FadeFog(Gradient goal, float startGoal, float endGoal)
     {
