@@ -1,9 +1,10 @@
-﻿namespace Game.Cutscene
+namespace Game.Cutscene
 {
     public enum CutsceneType
     {
         GameIntro,
         TutorialEnd,
-        PillarEyeDestruction
+        PillarEyeDestruction,
+		PillarEnter
     }
 }
