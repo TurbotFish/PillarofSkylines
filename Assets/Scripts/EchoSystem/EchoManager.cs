@@ -113,7 +113,7 @@ namespace Game.EchoSystem
             {
                 CreateShell();
 
-                EchoCameraEffect.SetFov(70, 0.15f, true);
+                EchoCameraEffect.Play();
 
                 int lastIndex = EchoList.Count - 1;
                 var targetEcho = EchoList[lastIndex];
@@ -136,7 +136,7 @@ namespace Game.EchoSystem
             {
                 CreateShell();
 
-                EchoCameraEffect.SetFov(70, 0.15f, true);
+                EchoCameraEffect.Play();
 
                 SoundifierOfTheWorld.PlaySoundAtLocation(driftClip, GameController.PlayerController.PlayerTransform, maxDistance, volumeDrift, minDistance, clipDuration, addRandomisationDrift, false, .2f);
 

@@ -281,7 +281,8 @@ public class PoS_Camera : MonoBehaviour
             my.position = camPosition;
         }
 
-        gameController.DuplicationCameraManager.UpdateDuplicationCameras();
+        if (gameController.DuplicationCameraManager)
+            gameController.DuplicationCameraManager.UpdateDuplicationCameras();
     }
 
     void OnGamePaused(object sender, Game.Utilities.EventManager.GamePausedEventArgs args)

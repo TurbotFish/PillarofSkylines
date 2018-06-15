@@ -121,7 +121,7 @@ namespace Game.GameControl
 
             IsEclipseActive = false;
             StopAllCoroutines();
-            StartCoroutine(ChangeGravityRoutine(false));
+            StartCoroutine(ChangeGravityRoutine(false, 1.8f));
         }
 
         /// <summary>

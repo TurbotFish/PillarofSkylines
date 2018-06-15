@@ -83,7 +83,9 @@ namespace Game.LevelElements
             }
             else
             {
-                EndInteraction();
+                StartCoroutine(DropNeedleAnimation());
+
+                //EndInteraction();
             }
 
         }
@@ -117,6 +119,46 @@ namespace Game.LevelElements
             GameController.UiController.Hud.ShowHelpMessage(message, UniqueId);
         }
 
+        IEnumerator DropNeedleAnimation()
+        {
+
+            /*
+             * transfering needle
+             */
+            needleGameObject.SetActive(GameController.PlayerModel.PlayerHasNeedle);
+
+            GameController.PlayerModel.PlayerHasNeedle ^= true;
+            PersistentData.ContainsNeedle = !GameController.PlayerModel.PlayerHasNeedle;
+
+            EventManager.SendEclipseEvent(this, new EventManager.EclipseEventArgs(GameController.PlayerModel.PlayerHasNeedle)); // This will activate the player needle.
+
+            GameController.PlayerController.CharController.SetHandlingInput(false);
+            EventManager.TeleportPlayerEventArgs args = new EventManager.TeleportPlayerEventArgs(GameController.PlayerController.transform.position, transform.position + Vector3.up*2f/3f, Quaternion.LookRotation(Vector3.down, Vector3.back));
+            GameController.PlayerController.CharController.SetVelocity(new Vector3(0, 0, 0), false);
+            EventManager.SendTeleportPlayerEvent(this, args);
+            GameController.PlayerController.CharController.animator.SetTrigger("Drop needle");
+            yield return new WaitForSeconds(1.8f);
+
+            GameController.PlayerController.CharController.SetHandlingInput(true);
+
+            /*
+             * "reacting" to the transfer
+             */
+            if (GameController.PlayerModel.PlayerHasNeedle)
+            {
+                GameController.EchoManager.SetWaypoint(this);
+            }
+            else
+            {
+                GameController.EchoManager.RemoveWaypoint();    // Removing ALL the waypoints.
+            }
+
+
+            string message = GameController.PlayerModel.PlayerHasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle";
+            GameController.UiController.Hud.ShowHelpMessage(message, UniqueId);
+
+        }
+
         IEnumerator TakeNeedleAnimation()
         {
             
@@ -132,6 +174,7 @@ namespace Game.LevelElements
 
             GameController.PlayerController.CharController.SetHandlingInput(false);
             EventManager.TeleportPlayerEventArgs args = new EventManager.TeleportPlayerEventArgs(GameController.PlayerController.transform.position, transform.position + transform.up + Vector3.down, Quaternion.identity);
+            GameController.PlayerController.CharController.SetVelocity(new Vector3(0, 0, 0), false);
             EventManager.SendTeleportPlayerEvent(this, args);
             GameController.PlayerController.CharController.animator.SetTrigger("Take needle");
             yield return new WaitForSeconds(1.8f);
