@@ -21,8 +21,8 @@ namespace Game.Model
 
         public bool IsWaypoint { get; set; }
         public bool IsTombCollected { get; set; }
-        public Vector3 Position { get; private set; }
 
+        private Vector3 LastPosition;
         private TombMarker ActiveInstance;
 
         //###########################################################
@@ -31,7 +31,7 @@ namespace Game.Model
 
         public TombMarkerPersistentData(string unique_id, Vector3 position) : base(unique_id)
         {
-            Position = position;
+            LastPosition = position;
         }
 
         //###########################################################
@@ -45,6 +45,18 @@ namespace Game.Model
 
         public bool UseCameraAngle { get { return useCameraAngle; } }
         public float CameraAngle { get { return cameraAngle; } }
+
+        public Vector3 Position
+        {
+            get
+            {
+                if (ActiveInstance != null)
+                {
+                    return ActiveInstance.Transform.position;
+                }
+                return LastPosition;
+            }
+        }
 
         //###########################################################
 
@@ -61,6 +73,11 @@ namespace Game.Model
 
         public void SetActiveInstance(TombMarker instance = null)
         {
+            if (instance == null && ActiveInstance != null)
+            {
+                LastPosition = ActiveInstance.Transform.position;
+            }
+
             ActiveInstance = instance;
         }
     }
