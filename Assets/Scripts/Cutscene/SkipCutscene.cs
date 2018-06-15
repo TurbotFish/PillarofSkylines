@@ -12,6 +12,8 @@ public class SkipCutscene : MonoBehaviour {
 
     [SerializeField] Animator pfAnimator;
 
+    [SerializeField] Game.LevelElements.FavourTombAnimator favour;
+
     [SerializeField] Game.Cutscene.Cutscene cutscene;
 
     bool active;
@@ -36,6 +38,9 @@ public class SkipCutscene : MonoBehaviour {
 
             if (moveCrystal)
                 moveCrystal.position -= Vector3.up * crystalYMove;
+
+            if (favour)
+                favour.Skip();
 
             cutscene.OnCutsceneOver();
 
