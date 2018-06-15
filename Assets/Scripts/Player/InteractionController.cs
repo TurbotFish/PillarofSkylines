@@ -70,31 +70,55 @@ namespace Game.Player
             NearbyInteractableObjects.RemoveAll(item => item == null);
             SetCurrentInteractableObject();
 
-            if (Input.GetButtonDown("Interact") && GameController.PlayerController.CharController.isHandlingInput)
+            if (GameController.PlayerController.CharController.isHandlingInput)
             {
-                if (CurrentInteractableObject != null)
+                /*
+                 * On Interact pressed
+                 */
+                if (Input.GetButtonDown("Interact"))
                 {
-                    CurrentInteractableObject.OnInteraction();
+                    if (CurrentInteractableObject != null)
+                    {
+                        CurrentInteractableObject.OnInteraction();
+                    }
+                    else if (GameController.PlayerModel.CheckAbilityActive(AbilityType.Echo))
+                    {
+                        currentEcho = GameController.EchoManager.CreateEcho(true);
+                        if (currentEcho != null)
+                            currentEcho.transform.SetParent(GameController.PlayerController.CharController.MyTransform);
+                    }
                 }
-                else if (GameController.PlayerModel.CheckAbilityActive(AbilityType.Echo))
+                /*
+                 * Interact not pressed
+                 */
+                else if (!Input.GetButton("Interact"))
                 {
-                    currentEcho = GameController.EchoManager.CreateEcho(true);
                     if (currentEcho != null)
-                        currentEcho.transform.SetParent(GameController.PlayerController.CharController.MyTransform);
+                    {
+                        ReleaseEcho();
+                    }
+                    else if (Input.GetButtonDown("Drift") && !Input.GetButtonUp("Drift"))
+                    {
+                        GameController.EchoManager.Drift();
+                    }
                 }
             }
-            else if (Input.GetButtonDown("Drift") && !Input.GetButtonUp("Drift") && GameController.PlayerController.CharController.isHandlingInput)
+            else
             {
-                GameController.EchoManager.Drift();
+                ReleaseEcho();
             }
-            else if (!Input.GetButton("Interact"))
+        }
+
+        /// <summary>
+        /// Releases the current echo.
+        /// </summary>
+        private void ReleaseEcho()
+        {
+            if (currentEcho != null)
             {
-                if (CurrentInteractableObject == null && currentEcho != null)
-                {
-                    GameController.EchoManager.PlaceEcho(currentEcho.MyTransform);
-                    currentEcho.MyTransform.SetParent(null);
-                    currentEcho = null;
-                }
+                GameController.EchoManager.PlaceEcho(currentEcho.MyTransform);
+                currentEcho.MyTransform.SetParent(null);
+                currentEcho = null;
             }
         }
 
@@ -149,6 +173,9 @@ namespace Game.Player
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void SetCurrentInteractableObject()
         {
             IInteractable nearestInteractableObject = null;
@@ -197,7 +224,7 @@ namespace Game.Player
 
             if (!IsGamePaused)
             {
-                foreach(var interactable_object in InteractablesEnteredDuringPause)
+                foreach (var interactable_object in InteractablesEnteredDuringPause)
                 {
                     if (!NearbyInteractableObjects.Contains(interactable_object))
                     {
@@ -216,7 +243,7 @@ namespace Game.Player
         /// <param name="args"></param>
         private void PreSceneChangedEventHandler(object sender, Utilities.EventManager.PreSceneChangeEventArgs args)
         {
-            foreach(var interactable_object in NearbyInteractableObjects)
+            foreach (var interactable_object in NearbyInteractableObjects)
             {
                 interactable_object.OnPlayerExit();
             }
