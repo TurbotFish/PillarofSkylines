@@ -434,7 +434,13 @@ namespace Game.GameControl
             /*
              * Teleporting Player
              */
-            var first_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(new Vector3(10000, 10000, 10000), Vector3.zero, true);
+            var first_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(
+                PlayerController.PlayerTransform.position,
+                new Vector3(10000, 10000, 10000))
+            {
+                IsNewScene = true
+            };
+
             EventManager.SendTeleportPlayerEvent(this, first_teleport_player_event_args);
 
             /*
@@ -477,7 +483,10 @@ namespace Game.GameControl
             /*
              * Teleporting Player
              */
-            var second_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(spawn_position, spawn_rotation, true);
+            var second_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(PlayerController.PlayerTransform.position, spawn_position, spawn_rotation)
+            {
+                IsNewScene = true
+            };
             EventManager.SendTeleportPlayerEvent(this, second_teleport_player_event_args);
 
             /*
@@ -537,7 +546,13 @@ namespace Game.GameControl
             /*
              * Teleporting Player
              */
-            var first_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(new Vector3(10000, 10000, 10000), Vector3.zero, true);
+            var first_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(
+                PlayerController.PlayerTransform.position,
+                new Vector3(10000, 10000, 10000))
+            {
+                IsNewScene = true
+            };
+
             EventManager.SendTeleportPlayerEvent(this, first_teleport_player_event_args);
 
             /*
@@ -553,7 +568,13 @@ namespace Game.GameControl
             /*
              * Teleporting Player
              */
-            var second_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(SpawnPointManager.GetInitialSpawnPoint(), SpawnPointManager.GetInitialSpawnOrientation(), true);
+            var second_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(
+                PlayerController.PlayerTransform.position,
+                SpawnPointManager.GetInitialSpawnPoint(),
+                SpawnPointManager.GetInitialSpawnOrientation())
+            {
+                IsNewScene = true
+            };
             EventManager.SendTeleportPlayerEvent(this, second_teleport_player_event_args);
 
             /*

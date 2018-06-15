@@ -172,19 +172,19 @@ namespace Game.Utilities
             public Quaternion Rotation { get; private set; }
 
             /// <summary>
+            /// Whether or not the player should change its rotation on teleport.
+            /// </summary>
+            public bool TakeRotation { get; private set; }
+
+            /// <summary>
             /// value='true' means that the teleport was issued as a drift. value='false' means that the teleport is not related to drifting.
             /// </summary>
-            public bool Drifting { get; private set; }
+            public bool Drifting { get; set; }
 
             /// <summary>
             /// value='true' means that the current scene was switched. value='false' means that the player is teleported inside the current scene.
             /// </summary>
-            public bool IsNewScene { get; private set; }
-
-            /// <summary>
-            /// Whether or not the player should change its rotation on teleport.
-            /// </summary>
-            public bool TakeRotation { get; private set; }
+            public bool IsNewScene { get; set; }
 
             /// <summary>
             /// The direction (angle on Y axis) the camera should be looking.
@@ -205,41 +205,21 @@ namespace Game.Utilities
                 TakeRotation = false;
             }
 
-            public TeleportPlayerEventArgs(Vector3 position, bool drifting, bool isNewScene)
-            {
-                Position = position;
-                Rotation = Quaternion.identity;
-                Drifting = drifting;
-                IsNewScene = isNewScene;
-                TakeRotation = false;
-            }
-
-            public TeleportPlayerEventArgs(Vector3 position, Quaternion rotation, bool isNewScene)
-            {
-                Position = position;
-                Rotation = rotation;
-                Drifting = false;
-                IsNewScene = isNewScene;
-                TakeRotation = true;
-            }
-
-            public TeleportPlayerEventArgs(Vector3 fromPosition, Vector3 position, bool isNewScene)
+            public TeleportPlayerEventArgs(Vector3 fromPosition, Vector3 position)
             {
                 FromPosition = fromPosition;
                 Position = position;
+
                 Rotation = Quaternion.identity;
-                Drifting = false;
-                IsNewScene = isNewScene;
                 TakeRotation = false;
             }
 
-            public TeleportPlayerEventArgs(Vector3 fromPosition, Vector3 position, Quaternion rotation, bool isNewScene)
+            public TeleportPlayerEventArgs(Vector3 fromPosition, Vector3 position, Quaternion rotation)
             {
                 FromPosition = fromPosition;
                 Position = position;
+
                 Rotation = rotation;
-                Drifting = false;
-                IsNewScene = isNewScene;
                 TakeRotation = true;
             }
         }
