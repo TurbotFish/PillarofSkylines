@@ -131,7 +131,7 @@ namespace Game.LevelElements
             EventManager.SendEclipseEvent(this, new EventManager.EclipseEventArgs(GameController.PlayerModel.PlayerHasNeedle)); // This will activate the player needle.
 
             GameController.PlayerController.CharController.SetHandlingInput(false);
-            EventManager.TeleportPlayerEventArgs args = new EventManager.TeleportPlayerEventArgs(transform.position + transform.up + Vector3.down, Quaternion.identity, false);
+            EventManager.TeleportPlayerEventArgs args = new EventManager.TeleportPlayerEventArgs(GameController.PlayerController.transform.position, transform.position + transform.up + Vector3.down, Quaternion.identity);
             EventManager.SendTeleportPlayerEvent(this, args);
             GameController.PlayerController.CharController.animator.SetTrigger("Take needle");
             yield return new WaitForSeconds(1.8f);

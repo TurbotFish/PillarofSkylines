@@ -4,20 +4,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 
 public class FXManager : MonoBehaviour {
-
-   // public ParticleSystem doubleJumpFX,
-                          //dashFX;
-    #region Singleton
-    public static FXManager instance;
-    void Awake() {
-        if (!instance) {
-            instance = this;
-            DontDestroyOnLoad(gameObject);
-        } else if (instance != this)
-            Destroy(gameObject);
-
-    }
-    #endregion
+    
 	[Header ("Special Material")]
 	public Renderer pilouBody;
 	public Renderer pilouArmor;
@@ -47,8 +34,9 @@ public class FXManager : MonoBehaviour {
 
 	}
 
+    #region Impact
 
-	[Header ("Impact")]
+    [Header ("Impact")]
 	public float speedThreshold;
 	public float impactTimeToDissolve;
 	public float impactTimeToAppear;
@@ -96,9 +84,10 @@ public class FXManager : MonoBehaviour {
 		yield return new WaitForSecondsRealtime (t);
 		shadowProjector.SetActive (true);
 	}
+    #endregion
 
-
-	[Header ("Dust")]
+    #region Dust
+    [Header ("Dust")]
 	public List<ParticleSystem> dustParticles = new List<ParticleSystem>();
 	public void FootDustPlay()
 	{
@@ -106,9 +95,10 @@ public class FXManager : MonoBehaviour {
 			ps.Play ();
 		}
 	}
+    #endregion
 
-
-	[Header ("Dash")]
+    #region Dash
+    [Header ("Dash")]
 	public float dashTimeToDissolve;
 	public float dashTimeToAppear;
 	public float dashDelay;
@@ -142,11 +132,11 @@ public class FXManager : MonoBehaviour {
 		explo = Instantiate (dashExplosion, transform.position + transform.forward*2 + transform.up, Quaternion.identity) as GameObject;
 		Destroy (explo, 6);
 	}
-		
 
+    #endregion
 
-
-	[Header ("DoubleJump")]
+    #region Double Jump
+    [Header ("DoubleJump")]
 	public float jumpDissolveAmount;
 	public float jumpTimeToDissolve;
 	public float jumpTimeToAppear;
@@ -174,9 +164,10 @@ public class FXManager : MonoBehaviour {
 
 
 	}
+    #endregion
 
-
-	[Header ("Glide")]
+    #region Glide
+    [Header ("Glide")]
 	//public float glideDissolveAmount;
 	//public float glideTimeToDissolve;
 	public float glideTimeToAppear;
@@ -235,9 +226,10 @@ public class FXManager : MonoBehaviour {
 			cloth.randomAcceleration = new Vector3 (amount*0.5f, amount*0.5f, amount);
 		}
 	}
+    #endregion
 
-
-	[Header ("Echo")]
+    #region Echo
+    [Header ("Echo")]
 	public Transform echoParticlesHolder;
 	public ParticleSystem echoPose;
 	public List<ParticleSystem> holdEchoParticles = new List<ParticleSystem>();
@@ -260,11 +252,13 @@ public class FXManager : MonoBehaviour {
 			ps.Stop ();
 		}	
 	}
+    #endregion
 
-	[Header ("Phantom")]
+    #region Phantom
+    [Header ("Phantom")]
 	public ParticleSystem phantomPose;
 	public List<ParticleSystem> phantomIdleParticles = new List<ParticleSystem>();
-
+    
 	public void PhantomPlay ()
 	{
 		foreach (ParticleSystem ps in phantomIdleParticles) {
@@ -278,4 +272,51 @@ public class FXManager : MonoBehaviour {
 			ps.Stop ();
 		}	
 	}
+    #endregion
+
+    #region EchoBoost
+    [Header("EchoBoost")]
+    public ParticleSystem boostParticles;
+
+    public GameObject[] trails;
+    public string playerEmissiveVariable = "_Emission";
+    public Color playerEmissive = new Color(0.2f, 0.5f, 0.43f);
+    public float emissiveTransition = 0.5f;
+
+
+    public void PlayEchoBoost(float duration) {
+        boostParticles.Play();
+        
+        StartCoroutine(_EchoBoostMaterialChange(duration));
+
+        foreach (GameObject obj in trails)
+            obj.SetActive(true);
+    }
+
+    public void StopEchoBoost() {
+        boostParticles.Stop();
+
+        pilouBody.sharedMaterial.SetColor("_Emission", Color.black);
+
+        foreach (GameObject obj in trails)
+            obj.SetActive(false);
+    }
+
+    IEnumerator _EchoBoostMaterialChange(float duration) {
+        for (float elapsed = 0; elapsed < emissiveTransition; elapsed+=Time.deltaTime)
+        {
+            pilouBody.sharedMaterial.SetColor(playerEmissiveVariable, Color.Lerp(Color.black, playerEmissive, elapsed / emissiveTransition));
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(duration - (emissiveTransition * 2));
+
+        for (float elapsed = 0; elapsed < emissiveTransition; elapsed += Time.deltaTime)
+        {
+            pilouBody.sharedMaterial.SetColor(playerEmissiveVariable, Color.Lerp(playerEmissive, Color.black, elapsed / emissiveTransition));
+            yield return null;
+        }
+    }
+
+    #endregion
 }

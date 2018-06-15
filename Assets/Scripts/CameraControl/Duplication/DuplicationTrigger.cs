@@ -6,37 +6,62 @@ namespace Game.CameraControl
 {
     public class DuplicationTrigger : MonoBehaviour
     {
+        //###############################################################
+
+        // -- CONSTANTS
+
+        [SerializeField] private DuplicationAxis _DuplicationAxis;
+
+        //###############################################################
+
+        // -- ATTRIBUTES
+
         public bool IsVisible { get; private set; }
 
-        //public bool isVisible;
-        //public bool rendererVisible;
+        private DuplicationCameraManager DuplicationCameraManager;
+        private bool IsInitialized;
 
-        //private Renderer myRenderer;
+        //###############################################################
 
-        //private void Start()
-        //{
-        //    myRenderer = GetComponent<Renderer>();
-        //}
+        // -- INITIALIZATION
+
+        public void Initialize(DuplicationCameraManager duplication_camera_manager)
+        {
+            DuplicationCameraManager = duplication_camera_manager;
+
+            DuplicationCameraManager.OnTriggerStateChanged(this, IsVisible);
+
+            IsInitialized = true;
+        }
+
+        //###############################################################
+
+        // -- INQUIRIES
+
+        public DuplicationAxis DuplicationAxis { get { return _DuplicationAxis; } }
+
+        //###############################################################
+
+        // -- OPERATIONS
 
         private void OnBecameVisible()
         {
-            //Debug.LogErrorFormat("Trigger {0} became visible!", this.name);
-
             IsVisible = true;
-            //isVisible = true;
+
+            if (IsInitialized)
+            {
+                DuplicationCameraManager.OnTriggerStateChanged(this, IsVisible);
+            }
         }
 
         private void OnBecameInvisible()
         {
-            //Debug.LogErrorFormat("Trigger {0} became invisible!", this.name);
-
             IsVisible = false;
-            //isVisible = false;
-        }
 
-        //private void Update()
-        //{
-        //    rendererVisible = myRenderer.isVisible;
-        //}
+            if (IsInitialized)
+            {
+                DuplicationCameraManager.OnTriggerStateChanged(this, IsVisible);
+            }
+        }
     }
 } // end of namespace

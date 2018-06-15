@@ -103,16 +103,9 @@ namespace Game.Player
             {
                 Vector3 newPlayerPos = playerPos + teleportOffset;
 
-                //this.myTransform.position = newPlayerPos;
+                var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(playerPos, newPlayerPos);
 
-                var teleportPlayerEventArgs = new Utilities.EventManager.TeleportPlayerEventArgs(playerPos, newPlayerPos, false);
                 Utilities.EventManager.SendTeleportPlayerEvent(this, teleportPlayerEventArgs);
-
-                //foreach (var follower in this.followers)
-                //{
-                //Vector3 newFollowerPos = follower.position + teleportOffset;
-                //follower.position = newFollowerPos;
-                //}
             }
         }
 

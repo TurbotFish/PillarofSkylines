@@ -24,12 +24,14 @@ namespace Game.Player
 
         public EchoSystem.Echo currentEcho;
 
-        private GameController gameController;
+        private GameController GameController;
 
         private bool IsGamePaused = true;
 
-        private List<IInteractable> nearbyInteractableObjects = new List<IInteractable>();
-        private IInteractable currentInteractableObject;
+        private List<IInteractable> NearbyInteractableObjects = new List<IInteractable>();
+        private IInteractable CurrentInteractableObject;
+
+        private List<IInteractable> InteractablesEnteredDuringPause = new List<IInteractable>();
 
         //########################################################################
 
@@ -37,10 +39,10 @@ namespace Game.Player
 
         public void Initialize(GameController gameController)
         {
-            this.gameController = gameController;
+            this.GameController = gameController;
 
-            nearbyInteractableObjects.Clear();
-            currentInteractableObject = null;
+            NearbyInteractableObjects.Clear();
+            CurrentInteractableObject = null;
 
             Utilities.EventManager.GamePausedEvent += OnGamePausedEvent;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
@@ -65,73 +67,122 @@ namespace Game.Player
                 return;
             }
 
-            nearbyInteractableObjects.RemoveAll(item => item == null);
+            NearbyInteractableObjects.RemoveAll(item => item == null);
             SetCurrentInteractableObject();
 
-            if (Input.GetButtonDown("Interact") && gameController.PlayerController.CharController.isHandlingInput)
+            if (GameController.PlayerController.CharController.isHandlingInput)
             {
-                if (currentInteractableObject != null)
+                /*
+                 * On Interact pressed
+                 */
+                if (Input.GetButtonDown("Interact"))
                 {
-                    currentInteractableObject.OnInteraction();
+                    if (CurrentInteractableObject != null)
+                    {
+                        CurrentInteractableObject.OnInteraction();
+                    }
+                    else if (GameController.PlayerModel.CheckAbilityActive(AbilityType.Echo))
+                    {
+                        currentEcho = GameController.EchoManager.CreateEcho(true);
+                        if (currentEcho != null)
+                            currentEcho.transform.SetParent(GameController.PlayerController.CharController.MyTransform);
+                    }
                 }
-                else if (gameController.PlayerModel.CheckAbilityActive(AbilityType.Echo))
+                /*
+                 * Interact not pressed
+                 */
+                else if (!Input.GetButton("Interact"))
                 {
-                    currentEcho = gameController.EchoManager.CreateEcho(true);
-
                     if (currentEcho != null)
-                        currentEcho.transform.SetParent(gameController.PlayerController.CharController.MyTransform);
+                    {
+                        ReleaseEcho();
+                    }
+                    else if (Input.GetButtonDown("Drift") && !Input.GetButtonUp("Drift"))
+                    {
+                        GameController.EchoManager.Drift();
+                    }
                 }
             }
-            else if (Input.GetButtonDown("Drift") && !Input.GetButtonUp("Drift") && gameController.PlayerController.CharController.isHandlingInput)
+            else
             {
-                gameController.EchoManager.Drift();
-            }
-            else if (!Input.GetButton("Interact"))
-            {
-                if (currentInteractableObject == null && currentEcho != null)
-                {
-                    gameController.EchoManager.PlaceEcho(currentEcho.MyTransform);
-                    currentEcho.MyTransform.SetParent(null);
-                    currentEcho = null;
-                }
+                ReleaseEcho();
             }
         }
 
+        /// <summary>
+        /// Releases the current echo.
+        /// </summary>
+        private void ReleaseEcho()
+        {
+            if (currentEcho != null)
+            {
+                GameController.EchoManager.PlaceEcho(currentEcho.MyTransform);
+                currentEcho.MyTransform.SetParent(null);
+                currentEcho = null;
+            }
+        }
+
+        /// <summary>
+        /// On Trigger Enter.
+        /// </summary>
+        /// <param name="other"></param>
         private void OnTriggerEnter(Collider other)
         {
-            var interactableObject = other.GetComponent<IInteractable>();
+            var interactable_object = other.GetComponent<IInteractable>();
 
-            if (interactableObject != null)
+            if (interactable_object != null)
             {
-                if (!nearbyInteractableObjects.Contains(interactableObject))
+                if (!IsGamePaused)
                 {
-                    nearbyInteractableObjects.Add(interactableObject);
-                    interactableObject.OnPlayerEnter();
+                    if (!NearbyInteractableObjects.Contains(interactable_object))
+                    {
+                        NearbyInteractableObjects.Add(interactable_object);
+                        interactable_object.OnPlayerEnter();
+                    }
+                }
+                else
+                {
+                    if (!InteractablesEnteredDuringPause.Contains(interactable_object))
+                    {
+                        InteractablesEnteredDuringPause.Add(interactable_object);
+                    }
                 }
             }
         }
 
+        /// <summary>
+        /// On Trigger Exit.
+        /// </summary>
+        /// <param name="other"></param>
         private void OnTriggerExit(Collider other)
         {
             var interactableObject = other.GetComponent<IInteractable>();
 
             if (interactableObject != null)
             {
-                if (nearbyInteractableObjects.Contains(interactableObject))
+                if (NearbyInteractableObjects.Contains(interactableObject))
                 {
-                    nearbyInteractableObjects.Remove(interactableObject);
+                    NearbyInteractableObjects.Remove(interactableObject);
                     interactableObject.OnPlayerExit();
+                }
+
+                if (InteractablesEnteredDuringPause.Contains(interactableObject))
+                {
+                    InteractablesEnteredDuringPause.Remove(interactableObject);
                 }
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void SetCurrentInteractableObject()
         {
             IInteractable nearestInteractableObject = null;
             float smallestDistance = float.MaxValue;
-            Vector3 playerPosition = gameController.PlayerController.CharController.MyTransform.position;
+            Vector3 playerPosition = GameController.PlayerController.CharController.MyTransform.position;
 
-            foreach (var interactableObject in nearbyInteractableObjects)
+            foreach (var interactableObject in NearbyInteractableObjects)
             {
                 if (!interactableObject.IsInteractable())
                 {
@@ -146,18 +197,18 @@ namespace Game.Player
                 }
             }
 
-            if (nearestInteractableObject != currentInteractableObject)
+            if (nearestInteractableObject != CurrentInteractableObject)
             {
-                if (currentInteractableObject != null)
+                if (CurrentInteractableObject != null)
                 {
-                    currentInteractableObject.OnHoverEnd();
+                    CurrentInteractableObject.OnHoverEnd();
                 }
 
-                currentInteractableObject = nearestInteractableObject;
+                CurrentInteractableObject = nearestInteractableObject;
 
-                if (currentInteractableObject != null)
+                if (CurrentInteractableObject != null)
                 {
-                    currentInteractableObject.OnHoverBegin();
+                    CurrentInteractableObject.OnHoverBegin();
                 }
             }
         }
@@ -170,6 +221,19 @@ namespace Game.Player
         private void OnGamePausedEvent(object sender, Utilities.EventManager.GamePausedEventArgs args)
         {
             IsGamePaused = args.PauseActive;
+
+            if (!IsGamePaused)
+            {
+                foreach (var interactable_object in InteractablesEnteredDuringPause)
+                {
+                    if (!NearbyInteractableObjects.Contains(interactable_object))
+                    {
+                        NearbyInteractableObjects.Add(interactable_object);
+                        interactable_object.OnPlayerEnter();
+                    }
+                }
+                InteractablesEnteredDuringPause.Clear();
+            }
         }
 
         /// <summary>
@@ -179,9 +243,13 @@ namespace Game.Player
         /// <param name="args"></param>
         private void PreSceneChangedEventHandler(object sender, Utilities.EventManager.PreSceneChangeEventArgs args)
         {
-            nearbyInteractableObjects.Clear();
+            foreach (var interactable_object in NearbyInteractableObjects)
+            {
+                interactable_object.OnPlayerExit();
+            }
+            NearbyInteractableObjects.Clear();
 
-            gameController.UiController.Hud.HideHelpMessage();
+            GameController.UiController.Hud.HideHelpMessage();
         }
 
         /// <summary>
