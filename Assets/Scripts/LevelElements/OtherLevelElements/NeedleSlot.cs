@@ -132,6 +132,7 @@ namespace Game.LevelElements
 
             GameController.PlayerController.CharController.SetHandlingInput(false);
             EventManager.TeleportPlayerEventArgs args = new EventManager.TeleportPlayerEventArgs(GameController.PlayerController.transform.position, transform.position + transform.up + Vector3.down, Quaternion.identity);
+            GameController.PlayerController.CharController.SetVelocity(new Vector3(0, 0, 0), false);
             EventManager.SendTeleportPlayerEvent(this, args);
             GameController.PlayerController.CharController.animator.SetTrigger("Take needle");
             yield return new WaitForSeconds(1.8f);
