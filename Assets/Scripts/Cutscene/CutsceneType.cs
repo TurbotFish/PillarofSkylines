@@ -5,6 +5,6 @@ namespace Game.Cutscene
         GameIntro,
         TutorialEnd,
         PillarEyeDestruction,
-		PillarEnter
+        PillarEnter
     }
 }

@@ -10,7 +10,7 @@ namespace Game.LevelElements
     public class FavourTombAnimator : TombAnimator
     {
         //##################################################################
-
+        
         // FSM: FaveurManager
         [Header("Favour Manager")]
         [SerializeField] private Transform faveur;
@@ -62,6 +62,8 @@ namespace Game.LevelElements
         [SerializeField] private float minDistanceFavour = 10f;
         [SerializeField] private float maxDistanceFavour = 50f;
 
+        WaitForSeconds _startDelay, _delay2, _delay3, _cent, _beforeDisolve;
+
         //##################################################################
 
         public override bool SetTombState(bool isActivated, bool interactWithPlayer, bool doImmediateTransition, TombAnimationFinishedCallback callback = null)
@@ -75,6 +77,11 @@ namespace Game.LevelElements
             {
                 if (interactWithPlayer)
                 {
+                    _startDelay = new WaitForSeconds(startDelay);
+                    _delay2 = new WaitForSeconds(delay2);
+                    _delay3 = new WaitForSeconds(delay3);
+                    _cent = new WaitForSeconds(0.01f);
+
                     SoundifierOfTheWorld.PlaySoundAtLocation(getClip, transform, maxDistance, volumeGet, minDistance, clipDuration, addRandomisationGet);
                     animator.SetBool("Fav_activated", true);
                     StartCoroutine(FaveurActivation());
@@ -91,10 +98,20 @@ namespace Game.LevelElements
             return true;
         }
 
+        bool skip = false;
+
+        public void Skip()
+        {
+            skip = true;
+        }
+
         private IEnumerator FaveurActivation()
         {
             float disparition = 0;
-            yield return new WaitForSeconds(startDelay);
+            for(float elapsed = 0; elapsed < startDelay; elapsed += Time.unscaledDeltaTime) {
+                if (skip) break;
+                yield return null;
+            }
 
             favSparkUp.SetActive(true);
             while (disparition < disparitionEnd)
@@ -102,14 +119,17 @@ namespace Game.LevelElements
                 disparition += disparitionSpeed;
                 recept.material.SetFloat("_Emissive_intensity", disparition);
                 animator.speed += animSpeed;
-                yield return new WaitForSeconds(0.01f);
+                yield return _cent;
             }
         }
 
         private IEnumerator FavourManager()
         {
             Transform player = FindObjectOfType<Player.CharacterController.CharController>().transform;
-            yield return new WaitForSeconds(startDelay);
+            for (float i = 0; i < startDelay; i += Time.unscaledDeltaTime) {
+                if (skip) break;
+                yield return null;
+            }
             faveur.parent = null;
 
             SoundifierOfTheWorld.PlaySoundAtLocation(favourClip, faveur, maxDistanceFavour, volumeFavour, minDistanceFavour, 0f, addRandomisationFavour, true, .5f);
@@ -132,17 +152,17 @@ namespace Game.LevelElements
         private IEnumerator ParticleManager()
         {
             favSparksOpen.SetActive(true);
-            yield return new WaitForSeconds(delay2);
+            yield return _delay2;
             favSparksBurst.SetActive(true);
             favSparks.gameObject.SetActive(true);
-            yield return new WaitForSeconds(delay3);
+            yield return _delay3;
 
             var em = favSparks.emission;
 
             while (em.rate.constant > 0f)
             {
                 em.rate = new ParticleSystem.MinMaxCurve(em.rate.constant - 1.4f);
-                yield return new WaitForSeconds(0.01f);
+                yield return _cent;
             }
             favSparks.gameObject.SetActive(false);
         }

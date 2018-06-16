@@ -125,6 +125,20 @@ namespace Game.GameControl
 
             EchoManager.Initialize(this);
             EclipseManager.Initialize(this);
+
+            /*
+             * Main Menu World Initialization
+             */
+            foreach (var root_game_object in this.gameObject.scene.GetRootGameObjects())
+            {
+                var main_scene_world = root_game_object.GetComponent<MainSceneWorld>();
+
+                if(main_scene_world != null)
+                {
+                    main_scene_world.Initialize(this);
+                    break;
+                }
+            }
         }
 
         /// <summary>
