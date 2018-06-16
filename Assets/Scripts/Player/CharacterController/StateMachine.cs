@@ -167,6 +167,7 @@ namespace Game.Player.CharacterController
 
         public StateReturnContainer Update(float dt)
         {
+            //Debug.Log("state : " + CurrentState + ", remaning aezrijazrjumà : " + remainingAerialJumps);
             //updating the state cooldowns
             List<StateCooldown> cooldownList = new List<StateCooldown>(cooldownDict.Values);
             for (int i = 0; i < cooldownList.Count; i++)
