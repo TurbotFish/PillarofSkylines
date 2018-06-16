@@ -125,7 +125,8 @@ namespace Game.LevelElements
             /*
              * transfering needle
              */
-            needleGameObject.SetActive(GameController.PlayerModel.PlayerHasNeedle);
+
+            GameController.PlayerController.InteractionController.PutNeedleInHand();
 
             GameController.PlayerModel.PlayerHasNeedle ^= true;
             PersistentData.ContainsNeedle = !GameController.PlayerModel.PlayerHasNeedle;
@@ -137,7 +138,15 @@ namespace Game.LevelElements
             GameController.PlayerController.CharController.SetVelocity(new Vector3(0, 0, 0), false);
             EventManager.SendTeleportPlayerEvent(this, args);
             GameController.PlayerController.CharController.animator.SetTrigger("Drop needle");
-            yield return new WaitForSeconds(1.8f);
+            Debug.Log("start anim at " + Time.time);
+
+            yield return new WaitForSeconds(1f);
+            Debug.Log("change needle at " + Time.time);
+            GameController.PlayerController.InteractionController.SetNeedleActive(false);
+            needleGameObject.SetActive(true);
+            yield return new WaitForSeconds(.4f);
+
+            GameController.PlayerController.InteractionController.PutNeedleInBack();
 
             GameController.PlayerController.CharController.SetHandlingInput(true);
 
@@ -165,7 +174,8 @@ namespace Game.LevelElements
             /*
              * transfering needle
              */
-            needleGameObject.SetActive(GameController.PlayerModel.PlayerHasNeedle);
+
+            GameController.PlayerController.InteractionController.PutNeedleInHand();
 
             GameController.PlayerModel.PlayerHasNeedle ^= true;
             PersistentData.ContainsNeedle = !GameController.PlayerModel.PlayerHasNeedle;
@@ -177,7 +187,13 @@ namespace Game.LevelElements
             GameController.PlayerController.CharController.SetVelocity(new Vector3(0, 0, 0), false);
             EventManager.SendTeleportPlayerEvent(this, args);
             GameController.PlayerController.CharController.animator.SetTrigger("Take needle");
-            yield return new WaitForSeconds(1.8f);
+
+            yield return new WaitForSeconds(.6f);
+            GameController.PlayerController.InteractionController.SetNeedleActive(true);
+            needleGameObject.SetActive(false);
+            yield return new WaitForSeconds(2.5f);
+
+            GameController.PlayerController.InteractionController.PutNeedleInBack();
 
             GameController.PlayerController.CharController.SetHandlingInput(true);
 
@@ -192,6 +208,7 @@ namespace Game.LevelElements
             {
                 GameController.EchoManager.RemoveWaypoint();    // Removing ALL the waypoints.
             }
+
 
 
             string message = GameController.PlayerModel.PlayerHasNeedle ? "[X]: Plant Needle" : "[X]: Take Needle";

@@ -17,6 +17,8 @@ namespace Game.Player
         // -- CONSTANTS
 
         [SerializeField] private GameObject playerNeedle;
+        [SerializeField] private Transform needleHand;
+        [SerializeField] private Transform needleHold;
 
         //########################################################################
 
@@ -25,6 +27,9 @@ namespace Game.Player
         public EchoSystem.Echo currentEcho;
 
         private GameController GameController;
+
+        private Vector3 needlePosition;
+        private Quaternion needleRotation;
 
         private bool IsGamePaused = true;
 
@@ -47,6 +52,9 @@ namespace Game.Player
             Utilities.EventManager.GamePausedEvent += OnGamePausedEvent;
             Utilities.EventManager.SceneChangedEvent += OnSceneChangedEventHandler;
             Utilities.EventManager.PreSceneChangeEvent += PreSceneChangedEventHandler;
+
+            needlePosition = playerNeedle.transform.localPosition;
+            needleRotation = playerNeedle.transform.localRotation;
         }
 
         public void OnDestroy()
@@ -54,6 +62,29 @@ namespace Game.Player
             Utilities.EventManager.GamePausedEvent -= OnGamePausedEvent;
             Utilities.EventManager.SceneChangedEvent -= OnSceneChangedEventHandler;
             Utilities.EventManager.PreSceneChangeEvent -= PreSceneChangedEventHandler;
+        }
+
+        //########################################################################
+
+        // -- PUBLIC METHODS
+
+        public void PutNeedleInHand()
+        {
+            playerNeedle.transform.parent = needleHand;
+            playerNeedle.transform.localPosition = Vector3.zero;
+            playerNeedle.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+        }
+
+        public void PutNeedleInBack()
+        {
+            playerNeedle.transform.parent = needleHold;
+            playerNeedle.transform.localPosition = needlePosition;
+            playerNeedle.transform.localRotation = needleRotation;
+        }
+
+        public void SetNeedleActive(bool state)
+        {
+            playerNeedle.SetActive(state);
         }
 
         //########################################################################
