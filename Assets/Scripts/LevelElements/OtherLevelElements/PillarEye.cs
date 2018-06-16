@@ -123,6 +123,7 @@ namespace Game.LevelElements
 
         IEnumerator _DestructionSequence()
         {
+            Debug.Log("starting destruction sequence");
             Player.CharacterController.CharController player = gameController.PlayerController.CharController;
             Vector3 eclipseGravity = gameController.EclipseManager.EclipseGravity;
 
@@ -132,28 +133,35 @@ namespace Game.LevelElements
 
             player.SetHandlingInput(false);
 
+            Debug.Log("starting gravity change");
             for (float elapsed = 0; elapsed < changeGravityTime; elapsed+=Time.deltaTime) {
                 player.ChangeGravityDirection(Vector3.Slerp(eclipseGravity, eyeGravity, elapsed / changeGravityTime));
                 yield return null;
             }
+            Debug.Log("ending gravity change, playing animation");
 
             // PLAY ANIMATION
+            gameController.PlayerController.InteractionController.PutNeedleInHand();
             player.KillPillarEye();
 
             yield return new WaitForSeconds(1.5f);
 
+            Debug.Log("starting white flash");
             StartCoroutine(_WhiteFlash());
 
+            Debug.Log("starting fadeout");
             player.SetHandlingInput(true);
             StartCoroutine(_FadeOut());
 
 
+            Debug.Log("starting destruction ???");
             for (float elapsed = 0; elapsed < destroyTime; elapsed += Time.deltaTime) {
                 renderer.material.SetFloat("_Destruction", Mathf.Pow(elapsed / destroyTime, 2));
                 yield return null;
             }
 
-            
+            Debug.Log("ending destruction sequence");
+
             yield return null;
 
             // BACK TO NORMAL
@@ -174,11 +182,11 @@ namespace Game.LevelElements
             whiteScreen.intensity = 0;
             whiteScreen.blend = ColorOverlay.BlendMode.Normal;
 
-            for (float elapsed = 0; elapsed < changeGravityTime; elapsed += Time.deltaTime) {
+            for (float elapsed = 0; elapsed < fadeOutTime; elapsed += Time.deltaTime) {
                 luminosityInfluence.x += Time.deltaTime * 100;
                 eclipsePostFX.LuminosityInfluence = luminosityInfluence;
 
-                whiteScreen.intensity = Mathf.Pow(elapsed / changeGravityTime, 2);
+                whiteScreen.intensity = Mathf.Pow(elapsed / fadeOutTime, 2);
 
                 yield return null;
             }
@@ -186,6 +194,7 @@ namespace Game.LevelElements
             eclipsePostFX.LuminosityInfluence = defaultValue;
 
 
+            Debug.Log("ending fadeout");
             gameController.SwitchToOpenWorld();
             whiteScreen.intensity = 0;
         }
@@ -206,12 +215,15 @@ namespace Game.LevelElements
 
                 yield return null;
             }
+            Debug.Log("FLASH");
+            gameController.PlayerController.InteractionController.SetNeedleActive(false);
             for (float elapsed = 0; elapsed < flashHalfTime; elapsed += Time.deltaTime)
             {
                 whiteScreen.intensity = 1- Mathf.Pow(elapsed / flashHalfTime, 2);
 
                 yield return null;
             }
+            Debug.Log("ending white flash");
         }
 
         //########################################################################
