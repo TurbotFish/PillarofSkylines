@@ -20,6 +20,7 @@ namespace Game.Cutscene
         // -- ATTRIBUTES
 
         private GameController GameController;
+        private bool initialized;
 
         //########################################################################
 
@@ -30,6 +31,13 @@ namespace Game.Cutscene
             GameController = game_controller;
 
             GameController.CutsceneManager.RegisterCutscene(CutsceneType, this);
+            initialized = true;
+        }
+
+        void OnEnable()
+        {
+            if (initialized)
+                GameController.CutsceneManager.RegisterCutscene(CutsceneType, this);
         }
 
         //########################################################################
