@@ -28,6 +28,7 @@ namespace Game.Model
 
         private Dictionary<string, PersistentData> PersistentDataDictionary = new Dictionary<string, PersistentData>();
         private List<Firefly> FireflyList = new List<Firefly>();
+        private int GatheredFireflyCount;
 
         //###########################################################
 
@@ -177,8 +178,10 @@ namespace Game.Model
         /// 
         /// </summary>
         /// <returns></returns>
-        public int GetFireflyCount()
+        public int GetFireflyCount(bool total = false)
         {
+            if (total)
+                return GatheredFireflyCount;
             return FireflyList.Count;
         }
 
@@ -268,6 +271,7 @@ namespace Game.Model
         {
             if (!FireflyList.Contains(firefly))
             {
+                GatheredFireflyCount++;
                 FireflyList.Add(firefly);
             }
         }

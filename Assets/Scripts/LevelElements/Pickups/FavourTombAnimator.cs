@@ -135,7 +135,7 @@ namespace Game.LevelElements
             SoundifierOfTheWorld.PlaySoundAtLocation(favourClip, faveur, maxDistanceFavour, volumeFavour, minDistanceFavour, 0f, addRandomisationFavour, true, .5f);
 
             float elapsed = 0;
-            while ((faveur.position - (player.position + player.up)).sqrMagnitude > 0.1f)
+            while ((faveur.position - (player.position + player.up)).sqrMagnitude > 0.1f && elapsed < 2)
             {
                 elapsed += Time.deltaTime;
                 faveur.position = Vector3.Lerp(faveur.position, player.position + player.up, elapsed / duration);

@@ -67,6 +67,7 @@ namespace Game.GameControl
         private bool WasPillarDestroyed = false;
         private string PillarDestructionMessageTitle = "";
         private string PillarDestructionMessageDescription = "";
+        private Sprite PillarDestructionMessageIcon;
 
         //###############################################################
 
@@ -519,7 +520,7 @@ namespace Game.GameControl
 
                 if (WasPillarDestroyed)
                 {
-                    UiController.Hud.ShowAnnouncmentMessage(PillarDestructionMessageTitle, PillarDestructionMessageDescription, 6);
+                    UiController.Hud.ShowAnnouncmentMessage(PillarDestructionMessageTitle, PillarDestructionMessageDescription, 6, PillarDestructionMessageIcon);
 
                     WasPillarDestroyed = false;
                 }
@@ -761,8 +762,9 @@ namespace Game.GameControl
             {
                 WasPillarDestroyed = true;
                 var ability = PlayerModel.AbilityData.GetAbility(PlayerModel.LevelData.GetPillarRewardAbility(ActivePillarId));
-                PillarDestructionMessageTitle = "You've been granted the " + ability.Name + " Ability";
+                PillarDestructionMessageTitle = "You've been granted the " + ability.Name;
                 PillarDestructionMessageDescription = ability.Description;
+                PillarDestructionMessageIcon = ability.Icon;
             }
         }
 

@@ -20,6 +20,7 @@ namespace Game.UI.PauseMenu
         [SerializeField] private Transform EyeHolder;
         [SerializeField] private Transform AbilityHolder;
         [SerializeField] private Transform PillarAbilityHolder;
+        [SerializeField] private Transform LuluHolder;
 
         //###########################################################
 
@@ -62,6 +63,11 @@ namespace Game.UI.PauseMenu
             foreach (var ability_view in PillarAbilityHolder.GetComponentsInChildren<AbilityIconView>())
             {
                 ability_view.Initialize(Model);
+            }
+
+            foreach (var lulu_view in LuluHolder.GetComponentsInChildren<LuluIconView>())
+            {
+                lulu_view.Initialize(Model);
             }
         }
 

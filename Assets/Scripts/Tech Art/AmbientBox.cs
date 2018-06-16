@@ -91,7 +91,7 @@ public class AmbientBox : MonoBehaviour, IInteractable, IWorldObject
 
         if (!atmoSource)
         {
-            Debug.LogError("Coudln't find audiosource on P_AudioManager/Nature/Wind");
+            Debug.LogError("Couldn't find audiosource on P_AudioManager/Nature/Wind");
         }
         else
         {
