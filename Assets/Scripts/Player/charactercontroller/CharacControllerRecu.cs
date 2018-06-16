@@ -188,6 +188,7 @@ namespace Game.Player.CharacterController
                 {
                     //Debug.Log("managed to add velocity from before collision");
                     //Debug.Log("added VBC : " + velocityBeforeCollision + " final velocity : " + finalVelocity);
+
                     finalVelocity = (Quaternion.AngleAxis(Vector3.Angle(transform.up, Vector3.up), (Vector3.Cross(transform.up, Vector3.up) != Vector3.zero ? Vector3.Cross(transform.up, Vector3.up) : Vector3.forward))) * velocityBeforeCollision.normalized * finalVelocity.magnitude;
                     velocityBeforeCollision = Vector3.zero;
                 }
@@ -514,8 +515,9 @@ namespace Game.Player.CharacterController
                 )
             {
 
-                if (collisionNumber == 0 && velocityBeforeCollision == Vector3.zero && (myPlayer.CurrentState != ePlayerState.slide || myPlayer.stateMachine.timeInCurrentState < 0.05f) && myPlayer.CurrentState != ePlayerState.wallRun)
-                {
+                if (collisionNumber == 0 && velocityBeforeCollision == Vector3.zero && (myPlayer.CurrentState != ePlayerState.slide || myPlayer.stateMachine.timeInCurrentState < 0.05f) && myPlayer.CurrentState != ePlayerState.wallRun
+                    && (Vector3.Dot(velocity, myTransform.up) < -.9f || Vector3.Dot(velocity, myTransform.up) > .9f))
+                { 
                     //Debug.Log("hey the velocity before collision is : " + velocity);
                     timerBeforeForgetVBC = 0.05f;
                     velocityBeforeCollision = velocity;
