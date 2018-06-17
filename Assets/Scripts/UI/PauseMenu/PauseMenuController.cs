@@ -22,7 +22,7 @@ namespace Game.UI.PauseMenu
 
         public bool IsActive { get; private set; }
 
-        private GameController GameController;
+        public GameController GameController;
         private UiController UiController;
 
         private PauseMenuType CurrentState;

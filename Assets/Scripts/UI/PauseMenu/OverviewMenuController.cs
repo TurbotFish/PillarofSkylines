@@ -106,7 +106,7 @@ namespace Game.UI.PauseMenu
             else if (OptionsButtonPressed)
             {
                 OptionsButtonPressed = false;
-                Debug.LogWarning("Options Button pressed!");
+                PauseMenuController.SwitchPauseMenu(PauseMenuType.Options);
             }
             else if (ExitGameButtonPressed)
             {
