@@ -382,6 +382,11 @@ public class PoS_Camera : MonoBehaviour
     /// <param name="immediate"> If true, a reset takes place immediately, else, wait for resetTime. </param>
     void AllowAutoReset(bool allow, bool immediate = false)
     {
+        if (photoMode) {
+            canAutoReset = false;
+            return;
+        }
+
         canAutoReset = allow;
         if (resetType != eResetType.POI) // si je suis dja en train de reset je change pas les options de reset
             lastInput = immediate ? 0 : Time.time;
@@ -392,7 +397,6 @@ public class PoS_Camera : MonoBehaviour
 
     void EvaluatePosition()
     {
-
         if (state == eCameraState.HomeDoor)
         {
             return;
@@ -405,8 +409,8 @@ public class PoS_Camera : MonoBehaviour
 
         float distanceFromAngle = Mathf.Lerp(0, 1, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
         idealDistance = 1 + zoomValue * distanceFromAngle + additionalDistance;
-
-        if (canZoom) Zoom(Input.GetAxis("Mouse ScrollWheel"));
+        
+        if (canZoom) Zoom(Input.GetAxis("DebugVertical"));
 
         offset.x = Mathf.Lerp(offsetClose.x, offsetFar.x, currentDistance / maxDistance);
         offset.y = Mathf.Lerp(offsetClose.y, offsetFar.y, currentDistance / maxDistance);
@@ -523,7 +527,7 @@ public class PoS_Camera : MonoBehaviour
             SetTargetRotation(null, null, smoothDamp);
 
         }
-        else if (state != eCameraState.Resetting)
+        else if (state != eCameraState.Resetting && !photoMode)
         {
 
             if (state == eCameraState.PlayerControl)
@@ -576,6 +580,9 @@ public class PoS_Camera : MonoBehaviour
     void ResetCamera(float slopeValue = 0, float? damp = null)
     {
         manualPitch = defaultPitch;
+        zoomValue = distance;
+        offsetFar = trueOffsetFar;
+
         AllowAutoReset(true);
 
         if (damp == null)
@@ -644,7 +651,7 @@ public class PoS_Camera : MonoBehaviour
 
         bool isFalling = playerVelocity.y < 0;
 
-        if (isFalling)
+        if (isFalling && !photoMode)
         { // je suis en train de tomber
             if (additionalDistance > -distanceReductionWhenFalling) // alors je zoom vers le perso
                 additionalDistance -= deltaTime / autoResetDamp;
@@ -703,11 +710,11 @@ public class PoS_Camera : MonoBehaviour
 
             if (photoMode)
             {
-                StartPhotoMode();
+                StartCoroutine(_StartPhotoMode());
             }
             else
             {
-                StopPhotoMode();
+                StartCoroutine(_StopPhotoMode());
             }
         }
 
@@ -715,7 +722,7 @@ public class PoS_Camera : MonoBehaviour
         {
             if (Input.GetButtonDown("Cancel") || Input.GetButtonDown("MenuButton"))
             {
-                StopPhotoMode();
+                StartCoroutine(_StopPhotoMode());
             }
 
             deltaTime = Time.unscaledDeltaTime;
@@ -726,25 +733,57 @@ public class PoS_Camera : MonoBehaviour
 
     }
 
+    WaitForEndOfFrame endOfFrame = new WaitForEndOfFrame();
+
+    IEnumerator _StartPhotoMode()
+    {
+        yield return endOfFrame;
+
+        StartPhotoMode();
+    }
+
+    IEnumerator _StopPhotoMode()
+    {
+        yield return endOfFrame;
+
+        StopPhotoMode();
+    }
+
     void StartPhotoMode()
     {
+        photoMode = true;
+
         trueOffsetFar = offsetFar;
         Time.timeScale = 0;
+        deltaTime = Time.unscaledDeltaTime;
+
+        AllowAutoReset(false, true);
+        StopCurrentReset();
+
+        autoAdjustPitch = false;
+        autoAdjustYaw = false;
+
         Game.Utilities.EventManager.SendGamePausedEvent(this, new Game.Utilities.EventManager.GamePausedEventArgs(true));
+
+        currentDistance = zoomValue = distance;
+        lastHitDistance = idealDistance;
 
         gameController.UiController.SwitchState(Game.UI.MenuType.PhotoMode);
     }
 
     void StopPhotoMode()
     {
-        zoomValue = distance;
+        photoMode = false;
+
+        currentDistance = zoomValue = distance;
         offsetFar = new Vector2(0, 1);
-        PlaceBehindPlayerNoLerp();
         Time.timeScale = 1;
         Game.Utilities.EventManager.SendGamePausedEvent(this, new Game.Utilities.EventManager.GamePausedEventArgs(false));
 
         gameController.UiController.SwitchState(Game.UI.MenuType.HUD);
     }
+
+
 
     #endregion
 
@@ -752,7 +791,6 @@ public class PoS_Camera : MonoBehaviour
 
     void DoRotation()
     {
-
         if (state == eCameraState.HomeDoor)
             return; // Dans ce cas, osef de tout le reste
 
@@ -763,7 +801,7 @@ public class PoS_Camera : MonoBehaviour
         if (invertAxis.x) clampedX = -clampedX;
         yaw += clampedX * rotationSpeed.x * deltaTime;
 
-        if (input.x == 0)
+        if (input.x == 0 && !photoMode)
             yaw += VelocityInfluence() * rotationSpeed.x * deltaTime;
 
         float clampedY = Mathf.Clamp(input.y * (idealDistance / currentDistance), -mouseSpeedLimit.y, mouseSpeedLimit.y); // Avoid going too fast (makes weird lerp)
@@ -777,8 +815,7 @@ public class PoS_Camera : MonoBehaviour
         if (float.IsNaN(pitch)) pitch = defaultPitch;
 
         if (float.IsNaN(yaw)) yaw = GetYawBehindPlayer();
-
-        print("camrot before targetSpace: " + Quaternion.Euler(pitch, yaw, 0) + " vec3: " + new Vector3(pitch, yaw, 0));
+        
         camRotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
     }
 
@@ -858,7 +895,7 @@ public class PoS_Camera : MonoBehaviour
         if (blockedByAWall && hit.distance > 0) // If we hit something, hitDistance cannot be 0, nor higher than idealDistance
             lastHitDistance = Mathf.Min(hit.distance - rayRadius, idealDistance);
         float fixedDistance = blockedByAWall ? lastHitDistance : idealDistance;
-
+        
         // If collide, use collisionDamp to quickly get in position and not be blocked by a wall
         // If not colliding, slowly get back to the idealPosition using noCollisionDamp
         currentDistance = Mathf.Lerp(currentDistance, fixedDistance, fixedDistance < currentDistance + .1f ? deltaTime / dampWhenColliding : deltaTime / dampAfterColliding);
@@ -1063,7 +1100,7 @@ public class PoS_Camera : MonoBehaviour
 
     void Zoom(float value)
     {
-        if (value != 0) zoomValue = zoomDistance.Clamp(currentDistance - value * zoomSpeed);
+        if (value != 0) zoomValue = zoomDistance.Clamp(zoomValue - value * zoomSpeed);
     }
 
     void ZoomFromCeiling()
