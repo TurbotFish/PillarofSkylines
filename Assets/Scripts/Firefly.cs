@@ -64,6 +64,11 @@ namespace Game
             ParticleSystemList = GetComponentsInChildren<ParticleSystem>().ToList();
         }
 
+        private void OnDestroy()
+        {
+            Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayerEvent;
+        }
+
         //########################################################################
 
         // -- INQUIRIES
@@ -87,7 +92,10 @@ namespace Game
             Transform.SetParent(parent, true);
             SetFollowOffset();
 
-            if(new_state == FireflyState.Following)
+            /*
+             * State dependent changes
+             */
+            if (new_state == FireflyState.Following)
             {
                 Instantiate(Feedback, Transform.position, Transform.rotation).Play();
                 SoundifierOfTheWorld.PlaySoundAtLocation(Clip, Transform, MaxDistance, Volume, MinDistance, ClipDuration, AddRandomisation, false, .2f);
@@ -98,6 +106,9 @@ namespace Game
                 Light.intensity = MaxIntensity;
             }
 
+            /*
+             * Dance
+             */
             if (do_dance)
             {
                 StartCoroutine(DanceCoroutine(new_state));
@@ -108,6 +119,9 @@ namespace Game
             }
         }
 
+        /// <summary>
+        /// Monobehaviour Update method.
+        /// </summary>
         private void Update()
         {
             if (ParentTransform == null)
@@ -118,35 +132,34 @@ namespace Game
             switch (CurrentState)
             {
                 case FireflyState.Idle:
-
-                    Transform.position = ParentTransform.position
-                                        + (Vector3.right * Mathf.Sin(Time.time / 2 * Speed) * IdleScales.x
-                                        - Vector3.up * Mathf.Sin(Time.time * Speed) * IdleScales.y
-                                        - Vector3.forward * Mathf.Sin(Time.time * Speed) * IdleScales.z);
-                    break;
-                case FireflyState.Following:
-
-                    if (Transform.position == ParentTransform.position + FollowOffset)
                     {
-                        SetFollowOffset();
+                        Transform.position = ParentTransform.position
+                                            + (Vector3.right * Mathf.Sin(Time.time / 2 * Speed) * IdleScales.x
+                                            - Vector3.up * Mathf.Sin(Time.time * Speed) * IdleScales.y
+                                            - Vector3.forward * Mathf.Sin(Time.time * Speed) * IdleScales.z);
+                        break;
                     }
+                case FireflyState.Following:
+                    {
+                        if (Transform.position == ParentTransform.position + FollowOffset)
+                        {
+                            SetFollowOffset();
+                        }
 
-                    Transform.position = Vector3.Lerp(Transform.position, ParentTransform.position + FollowOffset, Speed * Time.deltaTime);
-                    break;
+                        Transform.position = Vector3.Lerp(Transform.position, ParentTransform.position + FollowOffset, Speed * Time.deltaTime);
+                        break;
+                    }
                 case FireflyState.Static:
-
-                    Transform.position = Vector3.Lerp(Transform.position, ParentTransform.position, Speed * Time.deltaTime);
-                    break;
+                    {
+                        Transform.position = Vector3.Lerp(Transform.position, ParentTransform.position, Speed * Time.deltaTime);
+                        break;
+                    }
                 default:
                     break;
             }
         }
 
-        private void OnDestroy()
-        {
-            Utilities.EventManager.TeleportPlayerEvent -= OnTeleportPlayerEvent;
-        }
-
+        
         private IEnumerator DanceCoroutine(FireflyState exit_state)
         {
             CurrentState = FireflyState.Dancing;
@@ -203,7 +216,7 @@ namespace Game
             float trailTime = TrailRenderer.time;
             TrailRenderer.time = 0;
 
-            foreach(var particle_system in ParticleSystemList)
+            foreach (var particle_system in ParticleSystemList)
             {
                 particle_system.Pause();
             }

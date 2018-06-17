@@ -181,8 +181,23 @@ namespace Game.Model
         public int GetFireflyCount(bool total = false)
         {
             if (total)
+            {
                 return GatheredFireflyCount;
-            return FireflyList.Count;
+            }
+            else
+            {
+                return FireflyList.Count;
+            }
+        }
+
+        /// <summary>
+        /// Returns a list of all Fireflies currently attached to the player.
+        /// For access only!
+        /// </summary>
+        /// <returns></returns>
+        public List<Firefly> GetFireflyList()
+        {
+            return new List<Firefly>(FireflyList);
         }
 
         //###########################################################

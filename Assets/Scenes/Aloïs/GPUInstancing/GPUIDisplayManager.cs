@@ -136,7 +136,7 @@ public class GPUIDisplayManager : MonoBehaviour
 	private void SetGPUILayer()
 	{
 		bool hasLayerChanged = false;
-		float playerXPos = GameController.PlayerController.PlayerTransform.position.x;
+		float playerXPos = GameController.PlayerController.Transform.position.x;
 
 		if (CurrentLayer != EastLayer && playerXPos > 0)
 		{
