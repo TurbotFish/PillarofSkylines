@@ -144,7 +144,7 @@ namespace Game.LevelElements
             Debug.Log("change needle at " + Time.time);
             GameController.PlayerController.InteractionController.SetNeedleActive(false);
             needleGameObject.SetActive(true);
-            yield return new WaitForSeconds(.4f);
+            //yield return new WaitForSeconds(.4f);
 
             GameController.PlayerController.InteractionController.PutNeedleInBack();
 
