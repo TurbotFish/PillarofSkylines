@@ -339,8 +339,10 @@ public class PoS_Camera : MonoBehaviour
     void PlaceBehindPlayerNoLerp(float? argYaw = null)
     {
         currentDistance = distance;
+
         yaw = argYaw ?? GetYawBehindPlayer();
         pitch = defaultPitch;
+
         camRotation = my.rotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
         negDistance.z = -currentDistance;
         Vector3 targetWithOffset = target.position + my.right * offset.x + my.up * offset.y;
@@ -526,7 +528,8 @@ public class PoS_Camera : MonoBehaviour
 
             if (state == eCameraState.PlayerControl)
             { // Si on était en control Manuel avant
-                AllowAutoReset(true, false); // On autorise l'auto reset
+                if (!photoMode)
+                    AllowAutoReset(true, false); // On autorise l'auto reset
                 state = eCameraState.Default; // On passe en default state
             }
 
@@ -736,6 +739,7 @@ public class PoS_Camera : MonoBehaviour
     {
         zoomValue = distance;
         offsetFar = new Vector2(0, 1);
+        PlaceBehindPlayerNoLerp();
         Time.timeScale = 1;
         Game.Utilities.EventManager.SendGamePausedEvent(this, new Game.Utilities.EventManager.GamePausedEventArgs(false));
 
@@ -770,6 +774,11 @@ public class PoS_Camera : MonoBehaviour
         if (state != eCameraState.PlayerControl)
             AutomatedMovement();
 
+        if (float.IsNaN(pitch)) pitch = defaultPitch;
+
+        if (float.IsNaN(yaw)) yaw = GetYawBehindPlayer();
+
+        print("camrot before targetSpace: " + Quaternion.Euler(pitch, yaw, 0) + " vec3: " + new Vector3(pitch, yaw, 0));
         camRotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
     }
 
