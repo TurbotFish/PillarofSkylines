@@ -216,7 +216,9 @@ namespace Game.LevelElements
             var persistentTriggers = new List<TriggerPersistentData>();
             foreach (var triggerId in triggerIds)
             {
-                persistentTriggers.Add(model.GetPersistentDataObject<TriggerPersistentData>(triggerId));
+                TriggerPersistentData pers = model.GetPersistentDataObject<TriggerPersistentData>(triggerId);
+                if (pers != null)
+                    persistentTriggers.Add(pers);
             }
 
             switch (triggerWith)
