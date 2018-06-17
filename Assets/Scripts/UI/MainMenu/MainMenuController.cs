@@ -4,12 +4,16 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.Video;
+using System.Collections;
+using TMPro;
 
 namespace Game.UI
 {
     public class MainMenuController : MonoBehaviour, IUiMenu
     {
         //##################################################################
+
+
 
         // -- CONSTANTS
 
@@ -32,7 +36,7 @@ namespace Game.UI
         {
             this.GameController = gameController;
         }
-
+        
         void IUiMenu.Activate()
         {
             if (IsActive)
@@ -45,6 +49,27 @@ namespace Game.UI
 
             playButton.Select();
             VideoPlayer.Play();
+        }
+
+        void Start()
+        {
+            StartCoroutine(_AppearLeBouton());
+        }
+
+        IEnumerator _AppearLeBouton()
+        {
+            TextMeshProUGUI txt = playButton.GetComponent<TextMeshProUGUI>();
+            Color color = txt.color;
+            
+            float duration = 4.0f;
+
+            for(float elapsed = 0f; elapsed < duration; elapsed += Time.unscaledDeltaTime)
+            {
+
+                color.a = elapsed / duration;
+                txt.color = color;
+                yield return null;
+            }
         }
 
         void IUiMenu.Deactivate()
