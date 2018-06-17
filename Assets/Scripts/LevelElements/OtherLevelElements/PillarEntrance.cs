@@ -25,6 +25,7 @@ namespace Game.LevelElements
         // -- ATTRIBUTES
 
         private bool IsUnlockingDoor;
+        private bool IsPlayerInside;
 
         //########################################################################
 
@@ -38,21 +39,15 @@ namespace Game.LevelElements
             }
 
             base.Initialize(game_controller);
+
+            OnEntranceEnabled();
         }
 
         private void OnEnable()
         {
             if (IsInitialized)
             {
-                if(GameController.PlayerModel.GetPillarState(pillarId) == PillarState.Unlocked && !PersistentData.IsPillarUnlocked)
-                {
-                    OnPillarUnlocked();
-                }
-
-                if (PersistentData.IsDoorUnlocked)
-                {
-                    OnDoorUnlocked();
-                }
+                OnEntranceEnabled();
             }
 
             EventManager.PillarStateChangedEvent += OnPillarStateChanged;
@@ -82,31 +77,46 @@ namespace Game.LevelElements
 
         public void OnHoverBegin()
         {
-		 if (!PersistentData.IsDoorUnlocked)
+            if (!PersistentData.IsPillarUnlocked)
             {
-			   GameController.UiController.Hud.ShowHelpMessage("[X]: Open Pillar", "PillarEntrance");
-			}
-			else
-			{
-				GameController.UiController.Hud.ShowHelpMessage("[X]: Enter Pillar", "PillarEntrance");
-			}
-			
-                
-            
+                return;
+            }
+
+            IsPlayerInside = true;
+
+            if (!PersistentData.IsDoorUnlocked)
+            {
+                GameController.UiController.Hud.ShowHelpMessage("[X]: Open Pillar", "PillarEntrance");
+            }
+            else if (PersistentData.IsDoorUnlocked && !IsUnlockingDoor)
+            {
+                GameController.UiController.Hud.ShowHelpMessage("[X]: Enter Pillar", "PillarEntrance");
+            }
         }
 
         public void OnHoverEnd()
         {
+            if (!PersistentData.IsPillarUnlocked)
+            {
+                return;
+            }
+
+            IsPlayerInside = false;
             GameController.UiController.Hud.HideHelpMessage("PillarEntrance");
         }
 
         public void OnInteraction()
         {
+            if (!PersistentData.IsPillarUnlocked)
+            {
+                return;
+            }
+
             if (!PersistentData.IsDoorUnlocked)
             {
                 OnDoorUnlocked();
             }
-            else if(PersistentData.IsDoorUnlocked && !IsUnlockingDoor)
+            else if (PersistentData.IsDoorUnlocked && !IsUnlockingDoor)
             {
                 GameController.SwitchToPillar(pillarId);
             }
@@ -138,13 +148,16 @@ namespace Game.LevelElements
         {
             if (args.PillarId == pillarId)
             {
-                if(args.PillarState == PillarState.Unlocked)
+                if (args.PillarState == PillarState.Unlocked)
                 {
                     OnPillarUnlocked();
                 }
             }
         }
 
+        /// <summary>
+        /// Called when the pillar is unlocked.
+        /// </summary>
         private void OnPillarUnlocked()
         {
             PersistentData.IsPillarUnlocked = true;
@@ -152,6 +165,9 @@ namespace Game.LevelElements
                 AnimatorComponent.SetBool("BoolA", true);
         }
 
+        /// <summary>
+        /// Called when the door is unlocked.
+        /// </summary>
         private void OnDoorUnlocked()
         {
             PersistentData.IsDoorUnlocked = true;
@@ -160,13 +176,40 @@ namespace Game.LevelElements
             StartCoroutine(UnlockDoorCoroutine());
         }
 
+        /// <summary>
+        /// Coroutine to handle the opening of the door.
+        /// </summary>
+        /// <returns></returns>
         private IEnumerator UnlockDoorCoroutine()
         {
             IsUnlockingDoor = true;
 
+            GameController.UiController.Hud.HideHelpMessage("PillarEntrance");
+
             yield return new WaitForSeconds(OpenDoorTime);
 
+            if (IsPlayerInside)
+            {
+                OnHoverBegin();
+            }
+
             IsUnlockingDoor = false;
+        }
+
+        /// <summary>
+        /// called when the entrance is initialized for the first time or when the gameobject is reenabled.
+        /// </summary>
+        private void OnEntranceEnabled()
+        {
+            if (GameController.PlayerModel.GetPillarState(pillarId) == PillarState.Unlocked && !PersistentData.IsPillarUnlocked)
+            {
+                OnPillarUnlocked();
+            }
+
+            if (PersistentData.IsDoorUnlocked)
+            {
+                OnDoorUnlocked();
+            }
         }
     }
 } //end of namespace
