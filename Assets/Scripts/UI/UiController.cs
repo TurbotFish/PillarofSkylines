@@ -19,6 +19,7 @@ namespace Game.UI
         [SerializeField] private LoadingScreenController LoadingScreenController;
         [SerializeField] private MainMenuController MainMenuController;
         [SerializeField] private PauseMenuController PauseMenuController;
+        [SerializeField] private PhotoModeUIController PhotoModeController;
 
         //###########################################################
 
@@ -45,6 +46,7 @@ namespace Game.UI
             UiStates.Add(MenuType.LoadingScreen, LoadingScreenController);
             UiStates.Add(MenuType.MainMenu, MainMenuController);
             UiStates.Add(MenuType.PauseMenu, PauseMenuController);
+            UiStates.Add(MenuType.PhotoMode, PhotoModeController);
 
             foreach (var uiState in UiStates.Values)
             {
@@ -69,6 +71,7 @@ namespace Game.UI
         public LoadingScreenController LoadingScreen { get { return LoadingScreenController; } }
         public MainMenuController MainMenu { get { return MainMenuController; } }
         public PauseMenuController PauseMenu { get { return PauseMenuController; } }
+        public PhotoModeUIController PhotoMode { get { return PhotoModeController; } }
 
         //###########################################################
 

@@ -12,9 +12,7 @@ namespace Game.UI
     public class MainMenuController : MonoBehaviour, IUiMenu
     {
         //##################################################################
-
-
-
+        
         // -- CONSTANTS
 
         [SerializeField] private Button playButton;
@@ -61,7 +59,7 @@ namespace Game.UI
             TextMeshProUGUI txt = playButton.GetComponent<TextMeshProUGUI>();
             Color color = txt.color;
             
-            float duration = 4.0f;
+            float duration = 7.0f;
 
             for(float elapsed = 0f; elapsed < duration; elapsed += Time.unscaledDeltaTime)
             {
