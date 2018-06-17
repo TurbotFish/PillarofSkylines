@@ -212,7 +212,7 @@ public class PoS_Camera : MonoBehaviour
 
     void Update()
     {
-        if (gamePaused || !isInitialized)
+        if ((gamePaused && !photoMode) || !isInitialized)
         {
             return;
         }
@@ -339,8 +339,10 @@ public class PoS_Camera : MonoBehaviour
     void PlaceBehindPlayerNoLerp(float? argYaw = null)
     {
         currentDistance = distance;
+
         yaw = argYaw ?? GetYawBehindPlayer();
         pitch = defaultPitch;
+
         camRotation = my.rotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
         negDistance.z = -currentDistance;
         Vector3 targetWithOffset = target.position + my.right * offset.x + my.up * offset.y;
@@ -365,32 +367,6 @@ public class PoS_Camera : MonoBehaviour
                 StopCurrentReset();
             }
         }
-    }
-
-    bool debugMode = false;
-    Vector2 trueOffsetFar;
-
-    void DebugCameraMovement()
-    {
-        if (Input.GetButtonDown("Back") || Input.GetKeyDown(KeyCode.F8))
-        {
-            debugMode ^= true;
-            canZoom ^= true;
-
-            if (debugMode)
-                trueOffsetFar = offsetFar;
-            else
-            {
-                zoomValue = distance;
-                offsetFar = new Vector2(0, 1);
-            }
-        }
-        
-        if (debugMode) {
-            Vector2 debugMove = new Vector2(Input.GetAxis("DebugHorizontal"), Input.GetAxis("DebugVertical"));
-            offsetFar += debugMove * 0.2f;
-        }
-
     }
 
     void StopCurrentReset()
@@ -456,6 +432,12 @@ public class PoS_Camera : MonoBehaviour
         // damping value is the inverse of speed, we simply give the camera a speed of 1/smoothDamp
         // so deltaTime * speed = deltaTime * 1/smoothDamp = deltaTime/smoothDamp
 
+        if (float.IsNaN(lastFrameCamPos.x) || float.IsNaN(lastFrameCamPos.y) || float.IsNaN(lastFrameCamPos.z))
+            lastFrameCamPos = my.position;
+
+        if (float.IsNaN(camPosition.x) || float.IsNaN(camPosition.y) || float.IsNaN(camPosition.z))
+            camPosition = my.position;
+
         camera.fieldOfView = Mathf.Lerp(camera.fieldOfView, targetFov, fovDamp * deltaTime);
         my.position = SmoothApproach(my.position, lastFrameCamPos, camPosition, t);
         my.rotation = Quaternion.Lerp(my.rotation, camRotation, t); // TODO: only local space calculation?
@@ -473,8 +455,11 @@ public class PoS_Camera : MonoBehaviour
 
     Vector3 SmoothApproach(Vector3 pastPosition, Vector3 pastTargetPosition, Vector3 targetPosition, float t)
     {
+        if (t == 0) return pastPosition;
+
         Vector3 v = (targetPosition - pastTargetPosition) / t;
         Vector3 f = pastPosition - pastTargetPosition + v;
+        //print("smooth approach v: " + v + " | f: " + f + " | targetPos: " + targetPosition + " | t: " + t + " | Exp(t): " + Mathf.Exp(t));
         return targetPosition - v + f * Mathf.Exp(-t);
     }
     #endregion
@@ -543,7 +528,8 @@ public class PoS_Camera : MonoBehaviour
 
             if (state == eCameraState.PlayerControl)
             { // Si on était en control Manuel avant
-                AllowAutoReset(true, false); // On autorise l'auto reset
+                if (!photoMode)
+                    AllowAutoReset(true, false); // On autorise l'auto reset
                 state = eCameraState.Default; // On passe en default state
             }
 
@@ -703,6 +689,65 @@ public class PoS_Camera : MonoBehaviour
 
     #endregion
 
+    #region PhotoMode
+    
+    bool photoMode = false;
+    Vector2 trueOffsetFar;
+
+    void DebugCameraMovement()
+    {
+        if (Input.GetButtonDown("Back") || Input.GetKeyDown(KeyCode.F8))
+        {
+            photoMode ^= true;
+            canZoom ^= true;
+
+            if (photoMode)
+            {
+                StartPhotoMode();
+            }
+            else
+            {
+                StopPhotoMode();
+            }
+        }
+
+        if (photoMode)
+        {
+            if (Input.GetButtonDown("Cancel") || Input.GetButtonDown("MenuButton"))
+            {
+                StopPhotoMode();
+            }
+
+            deltaTime = Time.unscaledDeltaTime;
+
+            Vector2 debugMove = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+            offsetFar += debugMove * 0.2f;
+        }
+
+    }
+
+    void StartPhotoMode()
+    {
+        trueOffsetFar = offsetFar;
+        Time.timeScale = 0;
+        Game.Utilities.EventManager.SendGamePausedEvent(this, new Game.Utilities.EventManager.GamePausedEventArgs(true));
+
+        gameController.UiController.SwitchState(Game.UI.MenuType.PhotoMode);
+    }
+
+    void StopPhotoMode()
+    {
+        zoomValue = distance;
+        offsetFar = new Vector2(0, 1);
+        PlaceBehindPlayerNoLerp();
+        Time.timeScale = 1;
+        Game.Utilities.EventManager.SendGamePausedEvent(this, new Game.Utilities.EventManager.GamePausedEventArgs(false));
+
+        gameController.UiController.SwitchState(Game.UI.MenuType.HUD);
+    }
+
+    #endregion
+
     #region Rotation
 
     void DoRotation()
@@ -729,6 +774,11 @@ public class PoS_Camera : MonoBehaviour
         if (state != eCameraState.PlayerControl)
             AutomatedMovement();
 
+        if (float.IsNaN(pitch)) pitch = defaultPitch;
+
+        if (float.IsNaN(yaw)) yaw = GetYawBehindPlayer();
+
+        print("camrot before targetSpace: " + Quaternion.Euler(pitch, yaw, 0) + " vec3: " + new Vector3(pitch, yaw, 0));
         camRotation = targetSpace * Quaternion.Euler(pitch, yaw, 0);
     }
 

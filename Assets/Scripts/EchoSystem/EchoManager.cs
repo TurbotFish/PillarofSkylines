@@ -68,7 +68,7 @@ namespace Game.EchoSystem
             GameController = gameController;
             EchoCameraEffect = gameController.CameraController.EchoCameraEffect;
             PlayerAnimator = gameController.PlayerController.CharController.animator;
-            EchoParticleSystem = gameController.PlayerController.PlayerTransform.GetComponentInChildren<EchoParticleSystem>();
+            EchoParticleSystem = gameController.PlayerController.Transform.GetComponentInChildren<EchoParticleSystem>();
             EchoParticleSystem.numEchoes = 3;
 
             CharController = gameController.PlayerController.CharController;
@@ -118,10 +118,10 @@ namespace Game.EchoSystem
                 int lastIndex = EchoList.Count - 1;
                 var targetEcho = EchoList[lastIndex];
 
-                SoundifierOfTheWorld.PlaySoundAtLocation(driftClip, GameController.PlayerController.PlayerTransform, maxDistance, volumeDrift, minDistance, clipDuration, addRandomisationDrift, false, .2f);
+                SoundifierOfTheWorld.PlaySoundAtLocation(driftClip, GameController.PlayerController.Transform, maxDistance, volumeDrift, minDistance, clipDuration, addRandomisationDrift, false, .2f);
 
                 var eventArgs = new EventManager.TeleportPlayerEventArgs(
-                    GameController.PlayerController.PlayerTransform.position,
+                    GameController.PlayerController.Transform.position,
                     targetEcho.MyTransform.position)
                 {
                     Drifting = true
@@ -138,9 +138,9 @@ namespace Game.EchoSystem
 
                 EchoCameraEffect.Play();
 
-                SoundifierOfTheWorld.PlaySoundAtLocation(driftClip, GameController.PlayerController.PlayerTransform, maxDistance, volumeDrift, minDistance, clipDuration, addRandomisationDrift, false, .2f);
+                SoundifierOfTheWorld.PlaySoundAtLocation(driftClip, GameController.PlayerController.Transform, maxDistance, volumeDrift, minDistance, clipDuration, addRandomisationDrift, false, .2f);
 
-                var eventArgs = new EventManager.TeleportPlayerEventArgs(GameController.PlayerController.PlayerTransform.position, Waypoint.Position)
+                var eventArgs = new EventManager.TeleportPlayerEventArgs(GameController.PlayerController.Transform.position, Waypoint.Position)
                 {
                     UseCameraAngle = Waypoint.UseCameraAngle,
                     CameraAngle = Waypoint.CameraAngle
@@ -197,7 +197,7 @@ namespace Game.EchoSystem
                 Break(oldestEcho);
             }
 
-            Echo newEcho = Instantiate(echoPrefab, GameController.PlayerController.PlayerTransform.position, GameController.PlayerController.PlayerTransform.rotation);
+            Echo newEcho = Instantiate(echoPrefab, GameController.PlayerController.Transform.position, GameController.PlayerController.Transform.rotation);
             newEcho.playerEcho = isPlayerEcho;
             newEcho.echoManager = this;
             EchoList.Add(newEcho);
@@ -232,7 +232,7 @@ namespace Game.EchoSystem
                 Break(oldestEcho);
             }
 
-            Echo newEcho = Instantiate(echoPrefab, position, GameController.PlayerController.PlayerTransform.rotation);
+            Echo newEcho = Instantiate(echoPrefab, position, GameController.PlayerController.Transform.rotation);
             newEcho.playerEcho = isPlayerEcho;
             newEcho.echoManager = this;
             EchoList.Add(newEcho);
@@ -314,7 +314,7 @@ namespace Game.EchoSystem
             if (useShells)
             {
                 GameObject _shell;
-                _shell = Instantiate(shell, GameController.PlayerController.PlayerTransform.position, GameController.PlayerController.PlayerTransform.rotation) as GameObject;
+                _shell = Instantiate(shell, GameController.PlayerController.Transform.position, GameController.PlayerController.Transform.rotation) as GameObject;
                 //_shell.GetComponent<Animator> ().runtimeAnimatorController = playerAnimator.runtimeAnimatorController;
                 Animator _anim = _shell.GetComponent<Animator>();
                 Debug.Log("player animator : " + PlayerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash);

@@ -1,6 +1,7 @@
 ﻿using Game.GameControl;
 using Game.LevelElements;
 using Game.Player.CharacterController;
+using Game.Utilities;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,49 +28,92 @@ namespace Game.Player
         public InteractionController InteractionController { get; private set; }
         public AudioManager AudioManager { get; private set; }
 
-        private Transform myTransform;
-        private WrappableObject wrappableObject;
+        private GameController GameController;
+        private WrappableObject WrappableObject;
+
+        private Transform MyTransform;
 
         //########################################################################
 
         // -- INITIALIZATION
 
-        public void InitializePlayerController(GameController gameController)
+        public void InitializePlayerController(GameController game_controller)
         {
+            GameController = game_controller;
+
             /*
              * getting all references
              */
-            myTransform = transform;
-
             CharController = GetComponent<CharController>();
             InteractionController = GetComponentInChildren<InteractionController>();
             AudioManager = GetComponentInChildren<AudioManager>();
 
-            wrappableObject = GetComponent<WrappableObject>();
+            WrappableObject = GetComponent<WrappableObject>();
 
             /*
              * initializing all the things
              */
-            CharController.Initialize(gameController);
-            InteractionController.Initialize(gameController);
-            wrappableObject.Initialize(gameController);
+            CharController.Initialize(GameController);
+            InteractionController.Initialize(GameController);
+            WrappableObject.Initialize(GameController);
+
+            EventManager.PreSceneChangeEvent += OnPreSceneChangeEvent;
+            EventManager.SceneChangedEvent += OnSceneChangedEvent;
+        }
+
+        private void OnDestroy()
+        {
+            EventManager.PreSceneChangeEvent -= OnPreSceneChangeEvent;
+            EventManager.SceneChangedEvent -= OnSceneChangedEvent;
         }
 
         //########################################################################
 
         // -- INQUIRIES
 
-        public Transform PlayerTransform
+        /// <summary>
+        /// Returns a reference to the Transform component of the player.
+        /// </summary>
+        public Transform Transform
         {
             get
             {
-                if (myTransform == null) { myTransform = transform; }
-                return myTransform;
+                if (MyTransform == null) { MyTransform = this.transform; }
+                return MyTransform;
             }
         }
 
         //########################################################################
 
         // -- OPERATIONS
+
+        /// <summary>
+        /// Handles the PreSceneChange event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void OnPreSceneChangeEvent(object sender, EventManager.PreSceneChangeEventArgs args)
+        {
+            foreach (var firefly in GameController.PlayerModel.GetFireflyList())
+            {
+                firefly.gameObject.SetActive(false);
+            }
+        }
+
+        /// <summary>
+        /// Handles the SceneChanged event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void OnSceneChangedEvent(object sender, EventManager.SceneChangedEventArgs args)
+        {
+            if (!args.HasChangedToPillar)
+            {
+                foreach (var firefly in GameController.PlayerModel.GetFireflyList())
+                {
+                    firefly.gameObject.SetActive(true);
+                }
+            }
+        }
     }
 } // end of namespace

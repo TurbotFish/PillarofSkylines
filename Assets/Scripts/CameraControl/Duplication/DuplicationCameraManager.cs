@@ -137,7 +137,7 @@ namespace Game.CameraControl
         private void SetTriggerProximityState()
         {
             var world_size = GameController.WorldController.WorldSize;
-            var player_position = GameController.PlayerController.PlayerTransform.position;
+            var player_position = GameController.PlayerController.Transform.position;
 
             DuplicationTriggerProximityDictionary[DuplicationAxis.Y_Plus_Axis] = false;
             DuplicationTriggerProximityDictionary[DuplicationAxis.Y_Minus_Axis] = false;

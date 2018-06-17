@@ -47,7 +47,7 @@ namespace Game.LevelElements
 
         protected override void OnPickedUp()
         {
-            Firefly.SetParent(GameController.PlayerController.PlayerTransform, true, Firefly.FireflyState.Following);
+            Firefly.SetParent(GameController.PlayerController.Transform, true, Firefly.FireflyState.Following);
             GameController.PlayerModel.PushFirefly(Firefly);
             Firefly = null;
         }

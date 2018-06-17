@@ -155,7 +155,7 @@ namespace Game.LevelElements
         public override void Initialize(GameController gameController)
         {
             base.Initialize(gameController);
-			//Debug.Log ("INITIALISE" + transform.name);
+
             GetComponent<BoxCollider>().isTrigger = true;
         }
 
