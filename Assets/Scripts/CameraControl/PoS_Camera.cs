@@ -182,6 +182,8 @@ public class PoS_Camera : MonoBehaviour
 
         manualPitch = defaultPitch;
         state = eCameraState.Default;
+        
+        trueOffsetFar = offsetFar;
 
         ResetGravity();
         PlaceBehindPlayerNoLerp();
@@ -753,7 +755,6 @@ public class PoS_Camera : MonoBehaviour
     {
         photoMode = true;
 
-        trueOffsetFar = offsetFar;
         Time.timeScale = 0;
         deltaTime = Time.unscaledDeltaTime;
 
