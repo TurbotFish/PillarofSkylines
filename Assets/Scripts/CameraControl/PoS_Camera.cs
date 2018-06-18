@@ -191,7 +191,8 @@ public class PoS_Camera : MonoBehaviour
 
         photoPath = Application.dataPath;
         #if !UNITY_EDITOR
-                photoPath.Remove(photoPath.Length - 5, 5);
+            int lid = photoPath.LastIndexOf('/');
+            photoPath = photoPath.Remove(lid, photoPath.Length - lid);
         #endif
         photoPath += "/Photos/";
 
