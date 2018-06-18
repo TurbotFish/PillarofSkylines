@@ -177,6 +177,7 @@ public class PoS_Camera : MonoBehaviour
         player = target.GetComponentInParent<CharController>();
         controller = player.GetComponent<CharacControllerRecu>();
         postProcess = GetComponent<PostProcessingBehaviour>();
+        snapshotSound = GetComponent<AudioSource>();
 
         currentDistance = zoomValue = idealDistance = distance;
         maxDistance = canZoom ? zoomDistance.max : distance;
@@ -189,6 +190,7 @@ public class PoS_Camera : MonoBehaviour
         trueOffsetFar = offsetFar;
 
         photoPath = Application.dataPath + "/Photos/";
+        filterCount = filters.Length;
 
         ResetGravity();
         PlaceBehindPlayerNoLerp();
@@ -709,12 +711,17 @@ public class PoS_Camera : MonoBehaviour
     Vector2 trueOffsetFar;
     string photoPath;
 
+    AudioSource snapshotSound;
     PostProcessingBehaviour postProcess;
     PostProcessingProfile defaultProfile;
     int currentFilter = 0;
+    int filterCount;
     bool postProcessWasOverriden;
+    bool pressingTrigger;
 
+    [Header("PhotoMode")]
     [SerializeField] PostProcessingProfile[] filters;
+    [SerializeField] string[] filterNames;
 
 
     void DebugCameraMovement()
@@ -744,6 +751,22 @@ public class PoS_Camera : MonoBehaviour
                 TakePicture();
             }
 
+            if (Input.GetAxis("Left Trigger") > 0)
+            {
+                if (!pressingTrigger)
+                    SetFilter(currentFilter + 1);
+                pressingTrigger = true;
+
+            } else if (Input.GetAxis("Right Trigger") > 0)
+            {
+                if (!pressingTrigger)
+                    SetFilter(currentFilter - 1);
+                pressingTrigger = true;
+            } else
+            {
+                pressingTrigger = false;
+            }
+            
             deltaTime = Time.unscaledDeltaTime;
 
             Vector2 debugMove = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
@@ -791,6 +814,7 @@ public class PoS_Camera : MonoBehaviour
 
     void StopPhotoMode()
     {
+        SetFilter(0);
         photoMode = false;
 
         currentDistance = zoomValue = distance;
@@ -801,10 +825,42 @@ public class PoS_Camera : MonoBehaviour
         gameController.UiController.SwitchState(Game.UI.MenuType.HUD);
     }
 
+    void SetFilter(int newFilter)
+    {
+        if (currentFilter == 0 && postProcess.IsOverriden())
+        {
+            postProcessWasOverriden = true;
+            defaultProfile = postProcess.GetCurrentProfile();
+        }
+
+        currentFilter = newFilter;
+
+        if (currentFilter == filterCount)
+            currentFilter = 0;
+        
+        if (currentFilter == -1)
+            currentFilter += filterCount;
+
+        if (currentFilter == 0)
+        {
+            if (postProcessWasOverriden)
+                postProcess.OverrideProfile(defaultProfile);
+            else
+                postProcess.StopOverridingProfile();
+        } else
+        {
+            postProcess.OverrideProfile(filters[currentFilter]);
+        }
+
+        gameController.UiController.PhotoModeController.SetFilterName(filterNames[currentFilter]);
+
+    }
+
     void TakePicture()
     {
         gameController.UiController.PhotoModeController.SetVisible(false, true);
 
+        snapshotSound.Play();
         StartCoroutine(_WhiteFlash());
 
         if (!Directory.Exists(photoPath))

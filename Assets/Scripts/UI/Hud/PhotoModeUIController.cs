@@ -19,6 +19,8 @@ namespace Game.UI
         private CanvasGroup MyCanvasGroup;
         private GameController GameController;
 
+        [SerializeField] TextMeshProUGUI filterName;
+
         bool IsVisible;
 
         //###########################################################
@@ -87,7 +89,7 @@ namespace Game.UI
 
         public void SetVisible(bool visible, bool resetIfTrue = false)
         {
-            if (IsVisible == true)
+            if (IsVisible == true && resetIfTrue)
                 StartCoroutine(_ResetVisible());
 
             IsVisible = visible;
@@ -101,6 +103,11 @@ namespace Game.UI
             SetVisible(true);
         }
 
+        public void SetFilterName(string newName)
+        {
+            filterName.text = newName;
+
+        }
 
     }
 }
