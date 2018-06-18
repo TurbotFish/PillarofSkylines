@@ -829,6 +829,7 @@ public class PoS_Camera : MonoBehaviour
         offsetFar = new Vector2(0, 1);
         Time.timeScale = 1;
         Game.Utilities.EventManager.SendGamePausedEvent(this, new Game.Utilities.EventManager.GamePausedEventArgs(false));
+        gamePaused = false;
 
         gameController.UiController.SwitchState(Game.UI.MenuType.HUD);
     }
