@@ -734,7 +734,6 @@ public class PoS_Camera : MonoBehaviour
         if (Input.GetButtonDown("Back") || Input.GetKeyDown(KeyCode.F8))
         {
             photoMode ^= true;
-            canZoom ^= true;
 
             if (photoMode)
             {
@@ -798,7 +797,9 @@ public class PoS_Camera : MonoBehaviour
 
     void StartPhotoMode()
     {
+        canZoom = true;
         photoMode = true;
+        enablePanoramaMode = false;
 
         Time.timeScale = 0;
         deltaTime = Time.unscaledDeltaTime;
@@ -820,7 +821,9 @@ public class PoS_Camera : MonoBehaviour
     void StopPhotoMode()
     {
         SetFilter(0);
+        canZoom = false;
         photoMode = false;
+        enablePanoramaMode = true;
 
         currentDistance = zoomValue = distance;
         offsetFar = new Vector2(0, 1);
