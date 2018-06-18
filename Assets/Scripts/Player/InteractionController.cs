@@ -16,7 +16,7 @@ namespace Game.Player
 
         // -- CONSTANTS
 
-        [SerializeField] private GameObject playerNeedle;
+        [SerializeField] public GameObject playerNeedle;
         [SerializeField] private Transform needleHand;
         [SerializeField] private Transform needleHold;
 
@@ -72,7 +72,7 @@ namespace Game.Player
         {
             playerNeedle.transform.parent = needleHand;
             playerNeedle.transform.localPosition = Vector3.zero;
-            playerNeedle.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            playerNeedle.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
         }
 
         public void PutNeedleInBack()
