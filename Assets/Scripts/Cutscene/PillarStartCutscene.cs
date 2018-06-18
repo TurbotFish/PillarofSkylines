@@ -20,7 +20,6 @@ public class PillarStartCutscene : MonoBehaviour {
         eyeAnim.enabled = true;
         exitAnim.enabled = true;
 
-        GameController = FindObjectOfType<GameController>();
 
         GameController.SwitchGameState(GameState.Pause, MenuType.NONE);
 
@@ -33,6 +32,7 @@ public class PillarStartCutscene : MonoBehaviour {
         yield return new WaitForSeconds(0.5f);
         //GameController.SwitchGameState(GameState.Pause, MenuType.NONE);
 
+        GameController = FindObjectOfType<GameController>();
         GameController.PlayerController.CharController.isHandlingInput = false;
 
         yield return new WaitForSeconds(animTime);

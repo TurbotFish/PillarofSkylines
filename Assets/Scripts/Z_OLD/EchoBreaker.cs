@@ -1,26 +1,53 @@
-﻿//using UnityEngine;
+﻿using UnityEngine;
+using Game.GameControl;
+using Game.LevelElements;
+using Game.World;
 
-//namespace Game.EchoSystem
-//{
-//    [RequireComponent(typeof(Collider))]
-//    public class EchoBreaker : MonoBehaviour
-//    {
-//        EchoManager echoes;
-//        Collider col;
-//        private void Start()
-//        {
-//            col = GetComponent<Collider>();
-//            col.isTrigger = true;
-//            echoes = EchoManager.instance;
-//        }
+namespace Game.EchoSystem
+{
+    [RequireComponent(typeof(Collider))]
+    public class EchoBreaker : MonoBehaviour, IInteractable, IWorldObject
+    {
+        GameController gameControl;
 
-//        private void OnTriggerEnter(Collider other)
-//        {
-//            if (other.tag == "Player")
-//            {
-//                echoes.BreakAll();
-//            }
-//        }
+        public Transform Transform
+        {
+            get
+            {
+                return transform;
+            }
+        }
 
-//    }
-//} //end of namespace
+        public void Initialize(GameController gameController)
+        {
+            gameControl = gameController;
+        }
+
+        public bool IsInteractable()
+        {
+            return false;
+        }
+
+        public void OnHoverBegin()
+        {
+        }
+
+        public void OnHoverEnd()
+        {
+        }
+
+        public void OnInteraction()
+        {
+        }
+
+        public void OnPlayerEnter()
+        {
+            gameControl.EchoManager.BreakAll();
+        }
+
+        public void OnPlayerExit()
+        {
+        }
+        
+    }
+} //end of namespace
