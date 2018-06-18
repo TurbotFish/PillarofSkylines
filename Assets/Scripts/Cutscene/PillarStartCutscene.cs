@@ -19,12 +19,8 @@ public class PillarStartCutscene : MonoBehaviour {
     {
         eyeAnim.enabled = true;
         exitAnim.enabled = true;
-
-
-        GameController.SwitchGameState(GameState.Pause, MenuType.NONE);
-
+        
         StartCoroutine(_WaitForCutscene());
-
     }
 
     IEnumerator _WaitForCutscene()
