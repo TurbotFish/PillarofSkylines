@@ -84,13 +84,27 @@ namespace Game.LevelElements
              */
             if (Mathf.Abs(Vector3.Dot(GameController.PlayerController.Transform.up, transform.up)) > 0.9f || directionIndependent)
             {
-                ActivateTriggerBox();
+                //ActivateTriggerBox();
+
+                if (Toggle)
+                {
+                    SetTriggerState(!TriggerState);
+                }
+                else
+                {
+                    SetTriggerState(true);
+                }
             }
         }
 
         public void OnPlayerExit()
         {
-            StartCoroutine(DeactivateTriggerBoxCoroutine());
+            //StartCoroutine(DeactivateTriggerBoxCoroutine());
+
+            if (!definitiveActivation && !Toggle)
+            {
+                SetTriggerState(false);
+            }
         }
 
         public void OnHoverBegin()
@@ -154,19 +168,19 @@ namespace Game.LevelElements
                 SoundifierOfTheWorld.PlaySoundAtLocation(onClip, transform, maxDistanceStart, volume, minDistanceStart, clipDuration, addRandomisation);
             }
 
-            if (Toggle)
-            {
-                SetTriggerState(!TriggerState);
-            }
-            else
-            {
-                SetTriggerState(true);
-            }
+            //if (Toggle)
+            //{
+            //    SetTriggerState(!TriggerState);
+            //}
+            //else
+            //{
+            //    SetTriggerState(true);
+            //}
 
             if (changeMaterial)
             {
                 Material[] sharedMaterialsCopy = renderer.sharedMaterials;
-                sharedMaterialsCopy[materialID] = TriggerState ? on : off;
+                sharedMaterialsCopy[materialID] = on;
                 renderer.sharedMaterials = sharedMaterialsCopy;
             }
 
@@ -185,21 +199,23 @@ namespace Game.LevelElements
             GlyphFX _fx = GetComponent<GlyphFX>();
             if (_fx != null)
             {
-                if (Toggle)
-                {
-                    if (TriggerState)
-                    {
-                        _fx.GlyphOn();
-                    }
-                    else
-                    {
-                        _fx.GlyphOff();
-                    }
-                }
-                else
-                {
-                    _fx.GlyphOn();
-                }
+                _fx.GlyphOn();
+
+                //if (Toggle)
+                //{
+                //    if (TriggerState)
+                //    {
+                //        _fx.GlyphOn();
+                //    }
+                //    else
+                //    {
+                //        _fx.GlyphOff();
+                //    }
+                //}
+                //else
+                //{
+                //    _fx.GlyphOn();
+                //}
             }
             else
             {
@@ -213,13 +229,14 @@ namespace Game.LevelElements
         /// <returns></returns>
         private IEnumerator DeactivateTriggerBoxCoroutine()
         {
-            if (definitiveActivation || Toggle)
+            if (definitiveActivation)
             {
+                Debug.LogErrorFormat("TriggerBox {0}: DeactivateTriggerBoxCoroutine: definitiveActivation=true!", this.name);
                 yield break;
             }
 
             yield return new WaitForSeconds(delayBeforeDeactivation);
-            SetTriggerState(false);
+            //SetTriggerState(false);
 
             if (changeMaterial)
             {
