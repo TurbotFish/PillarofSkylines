@@ -147,6 +147,8 @@ namespace Game.LevelElements
         /// </summary>
         private void ActivateTriggerBox()
         {
+            //Debug.LogErrorFormat("TriggerBox {0}: ActivateTrigger called!", this.name);
+
             if (definitiveActivation && playsSoundOnStart && !TriggerState)
             {
                 SoundifierOfTheWorld.PlaySoundAtLocation(onClip, transform, maxDistanceStart, volume, minDistanceStart, clipDuration, addRandomisation);

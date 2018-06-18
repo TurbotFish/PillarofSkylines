@@ -88,7 +88,7 @@ namespace Game.LevelElements
         {
             if (!IsInitialized)
             {
-                Debug.LogError("Trigger: SetTriggerState: Trigger not yet initialized!");
+                Debug.LogErrorFormat("Trigger {0}: SetTriggerState: Trigger not yet initialized!", this.name);
                 return;
             }
 
@@ -102,8 +102,11 @@ namespace Game.LevelElements
             }
             else
             {
+                bool old_state = PersistentDataObject.TriggerState;
+
                 PersistentDataObject.TriggerState = new_trigger_state;
 
+                OnTriggerStateChanged(old_state, new_trigger_state);
                 EventManager.SendTriggerUpdatedEvent(this, new EventManager.TriggerUpdatedEventArgs(this));
             }
         }
@@ -185,7 +188,7 @@ namespace Game.LevelElements
 
             if (IsTriggeredAtStart != PersistentDataObject.TriggerState)
             {
-                Debug.LogErrorFormat("Trigger {0}: LateInitCoroutine: setting trigger state to {1}", this.name, PersistentDataObject.TriggerState);
+                //Debug.LogErrorFormat("Trigger {0}: LateInitCoroutine: setting trigger state to {1}", this.name, PersistentDataObject.TriggerState);
                 SetTriggerState(PersistentDataObject.TriggerState, true);
             }
         }
