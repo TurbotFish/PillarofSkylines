@@ -190,6 +190,8 @@ namespace Game.LevelElements
 
             yield return new WaitForSeconds(.6f);
             GameController.PlayerController.InteractionController.SetNeedleActive(true);
+
+            GameController.PlayerController.InteractionController.playerNeedle.transform.rotation = Quaternion.Euler(0f, -90f, 0f);
             needleGameObject.SetActive(false);
             yield return new WaitForSeconds(2.5f);
 
