@@ -75,7 +75,7 @@ namespace Game.LevelElements
 
             isInitialized = true;
 
-            SetTriggerState(_triggerState, true);
+            //SetTriggerState(_triggerState, true); // ??
         }
 
         /// <summary>
