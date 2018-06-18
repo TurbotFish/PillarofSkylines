@@ -145,8 +145,7 @@ namespace Game.LevelElements
             player.KillPillarEye();
 
             yield return new WaitForSeconds(1.5f);
-
-            Debug.Log("starting white flash");
+            
             StartCoroutine(_WhiteFlash());
 
             Debug.Log("starting fadeout");
@@ -215,7 +214,7 @@ namespace Game.LevelElements
 
                 yield return null;
             }
-            Debug.Log("FLASH");
+
             gameController.PlayerController.InteractionController.SetNeedleActive(false);
             for (float elapsed = 0; elapsed < flashHalfTime; elapsed += Time.deltaTime)
             {
@@ -223,7 +222,7 @@ namespace Game.LevelElements
 
                 yield return null;
             }
-            Debug.Log("ending white flash");
+
         }
 
         //########################################################################

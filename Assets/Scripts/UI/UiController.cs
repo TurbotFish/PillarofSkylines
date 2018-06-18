@@ -19,7 +19,7 @@ namespace Game.UI
         [SerializeField] private LoadingScreenController LoadingScreenController;
         [SerializeField] private MainMenuController MainMenuController;
         [SerializeField] private PauseMenuController PauseMenuController;
-        [SerializeField] private PhotoModeUIController PhotoModeController;
+        [SerializeField] public PhotoModeUIController PhotoModeController;
 
         //###########################################################
 

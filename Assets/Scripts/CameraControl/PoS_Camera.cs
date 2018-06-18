@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
+using System.IO;
 using System.Collections;
 using Game.Player.CharacterController;
 using Game.GameControl;
+using UnityEngine.PostProcessing;
 
 [AddComponentMenu("Camera/Third Person Camera")]
 [RequireComponent(typeof(Camera))]
@@ -174,6 +176,7 @@ public class PoS_Camera : MonoBehaviour
         eclipseFX = GetComponent<Eclipse>();
         player = target.GetComponentInParent<CharController>();
         controller = player.GetComponent<CharacControllerRecu>();
+        postProcess = GetComponent<PostProcessingBehaviour>();
 
         currentDistance = zoomValue = idealDistance = distance;
         maxDistance = canZoom ? zoomDistance.max : distance;
@@ -184,6 +187,8 @@ public class PoS_Camera : MonoBehaviour
         state = eCameraState.Default;
         
         trueOffsetFar = offsetFar;
+
+        photoPath = Application.dataPath + "/Photos/";
 
         ResetGravity();
         PlaceBehindPlayerNoLerp();
@@ -702,6 +707,15 @@ public class PoS_Camera : MonoBehaviour
     
     bool photoMode = false;
     Vector2 trueOffsetFar;
+    string photoPath;
+
+    PostProcessingBehaviour postProcess;
+    PostProcessingProfile defaultProfile;
+    int currentFilter = 0;
+    bool postProcessWasOverriden;
+
+    [SerializeField] PostProcessingProfile[] filters;
+
 
     void DebugCameraMovement()
     {
@@ -725,6 +739,9 @@ public class PoS_Camera : MonoBehaviour
             if (Input.GetButtonDown("Cancel") || Input.GetButtonDown("MenuButton"))
             {
                 StartCoroutine(_StopPhotoMode());
+
+            } else if (Input.GetButtonDown("Jump")) {
+                TakePicture();
             }
 
             deltaTime = Time.unscaledDeltaTime;
@@ -784,7 +801,55 @@ public class PoS_Camera : MonoBehaviour
         gameController.UiController.SwitchState(Game.UI.MenuType.HUD);
     }
 
+    void TakePicture()
+    {
+        gameController.UiController.PhotoModeController.SetVisible(false, true);
 
+        StartCoroutine(_WhiteFlash());
+
+        if (!Directory.Exists(photoPath))
+            Directory.CreateDirectory(photoPath);
+
+        string date = System.DateTime.Now.ToString();
+        date = date.Replace("/", "-");
+        date = date.Replace(" ", "_");
+        date = date.Replace(":", "-");
+        ScreenCapture.CaptureScreenshot(photoPath + date + ".png");
+
+    }
+
+    ColorOverlay whiteScreen;
+
+    IEnumerator _WhiteFlash()
+    {
+        if (!whiteScreen)
+            whiteScreen = GetComponent<ColorOverlay>();
+
+        whiteScreen.color = Color.white;
+        whiteScreen.intensity = 0;
+        whiteScreen.blend = ColorOverlay.BlendMode.Normal;
+
+        float flashHalfTime = 0.05f;
+
+        for (float elapsed = 0; elapsed < flashHalfTime; elapsed += Time.unscaledDeltaTime)
+        {
+            whiteScreen.intensity = Mathf.Pow(elapsed / flashHalfTime, 2);
+
+            yield return null;
+        }
+
+        flashHalfTime = 0.1f;
+
+        gameController.PlayerController.InteractionController.SetNeedleActive(false);
+        for (float elapsed = 0; elapsed < flashHalfTime; elapsed += Time.unscaledDeltaTime)
+        {
+            whiteScreen.intensity = 1 - Mathf.Pow(elapsed / flashHalfTime, 2);
+
+            yield return null;
+        }
+        whiteScreen.intensity = 0;
+
+    }
 
     #endregion
 

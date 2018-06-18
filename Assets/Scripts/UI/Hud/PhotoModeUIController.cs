@@ -15,8 +15,7 @@ namespace Game.UI
         // -- ATTRIBUTES
 
         public bool IsActive { get; private set; }
-
-
+        
         private CanvasGroup MyCanvasGroup;
         private GameController GameController;
 
@@ -82,11 +81,25 @@ namespace Game.UI
         public void HandleInput() {
             if (Input.GetButtonDown("GroundRise"))
             {
-                IsVisible ^= true;
-                MyCanvasGroup.alpha = IsVisible ? 1 : 0;
+                SetVisible(!IsVisible);
             }
         }
 
+        public void SetVisible(bool visible, bool resetIfTrue = false)
+        {
+            if (IsVisible == true)
+                StartCoroutine(_ResetVisible());
+
+            IsVisible = visible;
+            MyCanvasGroup.alpha = IsVisible ? 1 : 0;
+        }
+
+        IEnumerator _ResetVisible()
+        {
+            yield return null;
+
+            SetVisible(true);
+        }
 
 
     }

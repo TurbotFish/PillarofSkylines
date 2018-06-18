@@ -52,6 +52,7 @@ namespace UnityEngine.PostProcessing
         DitheringComponent m_Dithering;
         FxaaComponent m_Fxaa;
 
+
         public void OverrideProfile(PostProcessingProfile newProfile) {
             profile = newProfile;
             overriden = true;
@@ -61,6 +62,14 @@ namespace UnityEngine.PostProcessing
             profile = inside ? profileInside : profileOutside;
             overriden = false;
             OnPreCull();
+        }
+        public PostProcessingProfile GetCurrentProfile()
+        {
+            return profile;
+        }
+        public bool IsOverriden()
+        {
+            return overriden;
         }
 
 
