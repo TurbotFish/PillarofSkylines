@@ -63,6 +63,11 @@ namespace Game.LevelElements
             GetComponent<BoxCollider>().isTrigger = true;
         }
 
+        protected override void OnTriggerStateChanged(bool old_state, bool new_state)
+        {
+            throw new System.NotImplementedException();
+        }
+
         #endregion public methods
 
         //###########################################################

@@ -161,8 +161,11 @@ namespace Game.LevelElements
         private void OnPillarUnlocked()
         {
             PersistentData.IsPillarUnlocked = true;
+
             if (AnimatorComponent)
+            {
                 AnimatorComponent.SetBool("BoolA", true);
+            }
         }
 
         /// <summary>
@@ -171,8 +174,12 @@ namespace Game.LevelElements
         private void OnDoorUnlocked()
         {
             PersistentData.IsDoorUnlocked = true;
+
             if (AnimatorComponent)
+            {
                 AnimatorComponent.SetBool("BoolB", true);
+            }
+
             StartCoroutine(UnlockDoorCoroutine());
         }
 
@@ -201,13 +208,15 @@ namespace Game.LevelElements
         /// </summary>
         private void OnEntranceEnabled()
         {
-            if (GameController.PlayerModel.GetPillarState(pillarId) == PillarState.Unlocked && !PersistentData.IsPillarUnlocked)
+            if (GameController.PlayerModel.GetPillarState(pillarId) == PillarState.Unlocked || PersistentData.IsPillarUnlocked)
             {
+                //Debug.LogErrorFormat("PillarEntrance {0}: OnEntranceEnabled: pillar unlocked!", this.name);
                 OnPillarUnlocked();
             }
 
             if (PersistentData.IsDoorUnlocked)
             {
+                //Debug.LogErrorFormat("PillarEntrance {0}: OnEntranceEnabled: door unlocked!", this.name);
                 OnDoorUnlocked();
             }
         }

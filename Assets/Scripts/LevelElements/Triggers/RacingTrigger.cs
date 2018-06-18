@@ -111,6 +111,10 @@ namespace Game.LevelElements
             racing = false;
         }
 
+        protected override void OnTriggerStateChanged(bool old_state, bool new_state)
+        {
+        }
+
         #endregion private methods
 
         //###########################################################
