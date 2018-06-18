@@ -1014,13 +1014,14 @@ public class PoS_Camera : MonoBehaviour
     float lastHitDistance;
     void CheckForCollision(Vector3 targetPos, Vector3 targetWithOffset)
     {
+
         Vector3 rayStart = targetPos;
 
         negDistance.z = -idealDistance;
         Vector3 rayEnd = camRotation * negDistance + targetWithOffset;
 
         RaycastHit hit;
-        blockedByAWall = Physics.SphereCast(rayStart, rayRadius, rayEnd - rayStart, out hit, idealDistance, blockingLayer);
+        blockedByAWall = Physics.SphereCast(rayStart, rayRadius, rayEnd - rayStart, out hit, idealDistance, blockingLayer) && !photoMode;
         //Debug.DrawLine(rayStart, rayEnd, Color.yellow);
 
         if (blockedByAWall && hit.distance > 0) // If we hit something, hitDistance cannot be 0, nor higher than idealDistance
@@ -1325,6 +1326,9 @@ public class PoS_Camera : MonoBehaviour
             RaycastHit hit; // tirer un rayon pour voir s'il y a un mur en travers de l'offset prévu, réduire l'offset si c'est le cas
             if (Physics.Linecast(potentialPosition, potentialPosition + player.transform.forward * cliffOffsetDistance, out hit, blockingLayer))
                 cliffOffsetDistance = Mathf.Min(cliffOffsetDistance, hit.distance - rayRadius);
+
+            if (float.IsNaN(contextualOffset.x) || float.IsNaN(contextualOffset.y) || float.IsNaN(contextualOffset.z))
+                contextualOffset = Vector3.zero;
 
             contextualOffset = Vector3.Lerp(contextualOffset, player.transform.forward * cliffOffsetDistance, deltaTime / autoResetDamp);
         }
