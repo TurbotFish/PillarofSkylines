@@ -5,6 +5,7 @@ using Game.World;
 using Game.Model;
 using Game.Utilities;
 using Game.GameControl;
+using System.Collections;
 
 namespace Game.LevelElements
 {
@@ -68,7 +69,8 @@ namespace Game.LevelElements
                     Debug.LogWarningFormat("TriggerableObject {0}: Initialize: persistentTriggered={1} currentTriggered={2}", this.name, PersistentDataObject.Triggered, Triggered);
                 }
 
-                SetTriggered(PersistentDataObject.Triggered, true);
+                //SetTriggered(PersistentDataObject.Triggered, true);
+                StartCoroutine(LateInitCoroutine());
             }
 
             IsInitialized = true;
@@ -108,29 +110,32 @@ namespace Game.LevelElements
         /// <summary>
         /// Sets the state of the triggerable object. Has no effect if the state does not change.
         /// </summary>
-        /// <param name="triggered"></param>
-        public virtual void SetTriggered(bool triggered, bool initializing = false)
+        /// <param name="new_trigger_state"></param>
+        public virtual void SetTriggered(bool new_trigger_state, bool initializing = false)
         {
             if (!IsInitialized)
             {
-                //Debug.Log("TriggerableObject: SetTriggered: called while not initialized!");
-            }
-
-            if (triggered == this.triggered)
-            {
+                Debug.LogErrorFormat("TriggerableObject {0}: SetTriggered: called while not initialized!", this.name);
                 return;
             }
 
-            this.triggered = triggered;
-            PersistentDataObject.Triggered = triggered;
-
-            if (triggered)
+            if (new_trigger_state == this.triggered)
             {
-                Activate();
+                return;
             }
-            else if (!definitiveActivation)
+            else
             {
-                Deactivate();
+                this.triggered = new_trigger_state;
+                PersistentDataObject.Triggered = new_trigger_state;
+
+                if (new_trigger_state)
+                {
+                    Activate();
+                }
+                else if (!definitiveActivation)
+                {
+                    Deactivate();
+                }
             }
         }
 
@@ -277,6 +282,21 @@ namespace Game.LevelElements
                 //Debug.Log("xxx: " + args.TriggerId);
 
                 UpdateState(args.Trigger.Toggle);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerator LateInitCoroutine()
+        {
+            yield return null;
+
+            if(triggered != PersistentDataObject.Triggered)
+            {
+                //Debug.LogErrorFormat("TriggerableObject {0}: LateInitCoroutine: setting triggered to {1}", this.name, PersistentDataObject.Triggered);
+                SetTriggered(PersistentDataObject.Triggered, true);
             }
         }
     }

@@ -10,9 +10,8 @@ namespace Game.Model
 
         //###########################################################
 
-        public TriggerPersistentData(Trigger trigger) : base(trigger.UniqueId)
+        public TriggerPersistentData(string unique_id) : base(unique_id)
         {
-            TriggerState = trigger.TriggerState;
         }
 
         //###########################################################

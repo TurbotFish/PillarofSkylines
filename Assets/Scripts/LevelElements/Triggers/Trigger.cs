@@ -5,6 +5,8 @@ using Game.Utilities;
 using System;
 using Game.Model;
 using Game.GameControl;
+using System.Collections;
+using UnityEngine.Serialization;
 
 namespace Game.LevelElements
 {
@@ -12,45 +14,31 @@ namespace Game.LevelElements
     {
         //###########################################################
 
-        //DO NOT RENAME
-        [SerializeField]
-        bool _triggerState = false; //the state of the trigger (on/off)
+        // -- CONSTANTS
+
+        [FormerlySerializedAs("_triggerState")]
+        [SerializeField] private bool IsTriggeredAtStart = false; //the state of the trigger (on/off)
 
         //DO NOT RENAME
-        [SerializeField]
-        private bool toggle; //if true the triggerable object will disregard its own logic an be turned on or off
+        [SerializeField] private bool toggle; //if true the triggerable object will disregard its own logic an be turned on or off
 
         //DO NOT RENAME
-        [SerializeField]
-        private List<TriggerableObject> targets = new List<TriggerableObject>(); //list of triggerable objects
+        [SerializeField] private List<TriggerableObject> targets = new List<TriggerableObject>(); //list of triggerable objects
 
-        [SerializeField]
-        [HideInInspector]
-        private List<TriggerableObject> targetsOld = new List<TriggerableObject>();
-
-        private PlayerModel model;
-
-        private TriggerPersistentData persistentTrigger;
-
-        private bool isInitialized;
+        [SerializeField, HideInInspector] private List<TriggerableObject> targetsOld = new List<TriggerableObject>();
 
         //###########################################################
 
-        #region properties
+        // -- ATTRIBUTES
 
-        public bool TriggerState { get { return _triggerState; } }
+        protected TriggerPersistentData PersistentDataObject { get; private set; }
+        protected GameController GameController { get; private set; }
 
-        public bool Toggle { get { return toggle; } }
-
-        public List<TriggerableObject> Targets { get { return new List<TriggerableObject>(targets); } }
-
-        protected TriggerPersistentData PersistentDataObject { get { return persistentTrigger; } }
-
-        #endregion properties
+        private bool IsInitialized;
 
         //###########################################################
 
-        #region public methods
+        // -- INITIALIZATION
 
         /// <summary>
         /// Initializes the Trigger. Implemented from IWorldObjectInitialization.
@@ -59,59 +47,80 @@ namespace Game.LevelElements
         /// <param name="isCopy"></param>
         public virtual void Initialize(GameController gameController)
         {
-            model = gameController.PlayerModel;
+            GameController = gameController;
 
-            persistentTrigger = model.GetPersistentDataObject<TriggerPersistentData>(UniqueId);
+            PersistentDataObject = GameController.PlayerModel.GetPersistentDataObject<TriggerPersistentData>(UniqueId);
 
-            if (persistentTrigger == null)
+            if (PersistentDataObject == null)
             {
-                persistentTrigger = CreatePersistentDataObject();
-                model.AddPersistentDataObject(persistentTrigger);
+                PersistentDataObject = CreatePersistentDataObject();
+                GameController.PlayerModel.AddPersistentDataObject(PersistentDataObject);
             }
             else
             {
-                _triggerState = persistentTrigger.TriggerState;
+                //_triggerState = persistentTrigger.TriggerState;
+                //SetTriggerState(persistentTrigger.TriggerState);
+                StartCoroutine(LateInitCoroutine());
             }
 
-            isInitialized = true;
-
-            //SetTriggerState(_triggerState, true); // ??
+            IsInitialized = true;
         }
+
+        //###########################################################
+
+        // -- INQUIRIES
+
+        public bool TriggerState { get { return PersistentDataObject.TriggerState; } }
+
+        public bool Toggle { get { return toggle; } }
+
+        public List<TriggerableObject> Targets { get { return new List<TriggerableObject>(targets); } }
+
+        //###########################################################
+
+        // -- OPERATIONS
 
         /// <summary>
         /// Sets the state of the Trigger. Will send an event to inform all the attached triggerables.
         /// </summary>
-        /// <param name="triggerState"></param>
-        protected void SetTriggerState(bool triggerState, bool alwaysExecute = false)
+        /// <param name="new_trigger_state"></param>
+        protected void SetTriggerState(bool new_trigger_state, bool always_execute = false)
         {
-            if (!isInitialized)
+            if (!IsInitialized)
             {
+                Debug.LogErrorFormat("Trigger {0}: SetTriggerState: Trigger not yet initialized!", this.name);
                 return;
             }
-            if (_triggerState == triggerState && !alwaysExecute) //if the value does not change we don't do anything
-            { // "alwaysExecute" skips this check and always executes the trigger even if the value did not change
+
+            /*
+             * if the value does not change we don't do anything
+             * "alwaysExecute" skips this check and always executes the trigger even if the value did not change
+             */
+            if (PersistentDataObject.TriggerState == new_trigger_state && !always_execute)
+            {
                 return;
             }
             else
             {
-                _triggerState = triggerState;
+                bool old_state = PersistentDataObject.TriggerState;
 
-                if (persistentTrigger != null)
-                {
-                    persistentTrigger.TriggerState = _triggerState;
-                }
+                PersistentDataObject.TriggerState = new_trigger_state;
 
+                OnTriggerStateChanged(old_state, new_trigger_state);
                 EventManager.SendTriggerUpdatedEvent(this, new EventManager.TriggerUpdatedEventArgs(this));
             }
         }
 
-        #endregion public methods
+        /// <summary>
+        /// Called by SetTriggerState when the state of the trigger changes.
+        /// </summary>
+        /// <param name="old_state"></param>
+        /// <param name="new_state"></param>
+        protected abstract void OnTriggerStateChanged(bool old_state, bool new_state);
 
-        //###########################################################
-
-        #region monobehaviour methods
-
-#if UNITY_EDITOR
+        /// <summary>
+        /// EDITOR: OnValidate
+        /// </summary>
         protected override void OnValidate()
         {
             base.OnValidate();
@@ -136,9 +145,10 @@ namespace Game.LevelElements
 
             targetsOld = new List<TriggerableObject>(targets);
         }
-#endif
 
-#if UNITY_EDITOR
+        /// <summary>
+        /// EDITOR: OnDrawGizmos
+        /// </summary>
         protected virtual void OnDrawGizmos()
         {
             Matrix4x4 rotationMatrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.lossyScale);
@@ -155,13 +165,6 @@ namespace Game.LevelElements
                 }
             }
         }
-#endif
-
-        #endregion monobehaviour methods
-
-        //###########################################################
-
-        #region protected methods
 
         /// <summary>
         /// Creates the object containing persitent data for the trigger object. Allows inherited classes to create their own version.
@@ -169,11 +172,25 @@ namespace Game.LevelElements
         /// <returns></returns>
         protected virtual TriggerPersistentData CreatePersistentDataObject()
         {
-            return new TriggerPersistentData(this);
+            return new TriggerPersistentData(UniqueId)
+            {
+                TriggerState = IsTriggeredAtStart
+            };
         }
 
-        #endregion protected methods
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerator LateInitCoroutine()
+        {
+            yield return null;
 
-        //###########################################################
+            if (IsTriggeredAtStart != PersistentDataObject.TriggerState)
+            {
+                //Debug.LogErrorFormat("Trigger {0}: LateInitCoroutine: setting trigger state to {1}", this.name, PersistentDataObject.TriggerState);
+                SetTriggerState(PersistentDataObject.TriggerState, true);
+            }
+        }
     }
 } //end of namespace

@@ -189,7 +189,12 @@ public class PoS_Camera : MonoBehaviour
         
         trueOffsetFar = offsetFar;
 
-        photoPath = Application.dataPath + "/Photos/";
+        photoPath = Application.dataPath;
+        #if !UNITY_EDITOR
+                photoPath.Remove(photoPath.Length - 5, 5);
+        #endif
+        photoPath += "/Photos/";
+
         filterCount = filters.Length;
 
         ResetGravity();
@@ -246,9 +251,9 @@ public class PoS_Camera : MonoBehaviour
             gameController.DuplicationCameraManager.UpdateDuplicationCameras();
         }
     }
-    #endregion
+#endregion
 
-    #region General Methods
+#region General Methods
     
     /// <summary>
     /// Appelé quand le player spawn, change de scène ou qu'il est téléporté par le worldWrapper
@@ -475,9 +480,9 @@ public class PoS_Camera : MonoBehaviour
         //print("smooth approach v: " + v + " | f: " + f + " | targetPos: " + targetPosition + " | t: " + t + " | Exp(t): " + Mathf.Exp(t));
         return targetPosition - v + f * Mathf.Exp(-t);
     }
-    #endregion
+#endregion
 
-    #region Inputs and States
+#region Inputs and States
 
     void GetInputsAndStates()
     {
@@ -703,9 +708,9 @@ public class PoS_Camera : MonoBehaviour
         state = eCameraState.WallRun;
     }
 
-    #endregion
+#endregion
 
-    #region PhotoMode
+#region PhotoMode
     
     bool photoMode = false;
     Vector2 trueOffsetFar;
@@ -729,7 +734,6 @@ public class PoS_Camera : MonoBehaviour
         if (Input.GetButtonDown("Back") || Input.GetKeyDown(KeyCode.F8))
         {
             photoMode ^= true;
-            canZoom ^= true;
 
             if (photoMode)
             {
@@ -793,7 +797,9 @@ public class PoS_Camera : MonoBehaviour
 
     void StartPhotoMode()
     {
+        canZoom = true;
         photoMode = true;
+        enablePanoramaMode = false;
 
         Time.timeScale = 0;
         deltaTime = Time.unscaledDeltaTime;
@@ -815,12 +821,15 @@ public class PoS_Camera : MonoBehaviour
     void StopPhotoMode()
     {
         SetFilter(0);
+        canZoom = false;
         photoMode = false;
+        enablePanoramaMode = true;
 
         currentDistance = zoomValue = distance;
         offsetFar = new Vector2(0, 1);
         Time.timeScale = 1;
         Game.Utilities.EventManager.SendGamePausedEvent(this, new Game.Utilities.EventManager.GamePausedEventArgs(false));
+        gamePaused = false;
 
         gameController.UiController.SwitchState(Game.UI.MenuType.HUD);
     }
@@ -907,9 +916,9 @@ public class PoS_Camera : MonoBehaviour
 
     }
 
-    #endregion
+#endregion
 
-    #region Rotation
+#region Rotation
 
     void DoRotation()
     {
@@ -997,21 +1006,22 @@ public class PoS_Camera : MonoBehaviour
             Vector3.Dot(n, Vector3.Cross(v1, v2)),
             Vector3.Dot(v1, v2)) * 57.29578f; // Radian to Degrees constant
     }
-    #endregion
+#endregion
 
-    #region Collisions
+#region Collisions
 
     bool blockedByAWall;
     float lastHitDistance;
     void CheckForCollision(Vector3 targetPos, Vector3 targetWithOffset)
     {
+
         Vector3 rayStart = targetPos;
 
         negDistance.z = -idealDistance;
         Vector3 rayEnd = camRotation * negDistance + targetWithOffset;
 
         RaycastHit hit;
-        blockedByAWall = Physics.SphereCast(rayStart, rayRadius, rayEnd - rayStart, out hit, idealDistance, blockingLayer);
+        blockedByAWall = Physics.SphereCast(rayStart, rayRadius, rayEnd - rayStart, out hit, idealDistance, blockingLayer) && !photoMode;
         //Debug.DrawLine(rayStart, rayEnd, Color.yellow);
 
         if (blockedByAWall && hit.distance > 0) // If we hit something, hitDistance cannot be 0, nor higher than idealDistance
@@ -1022,9 +1032,9 @@ public class PoS_Camera : MonoBehaviour
         // If not colliding, slowly get back to the idealPosition using noCollisionDamp
         currentDistance = Mathf.Lerp(currentDistance, fixedDistance, fixedDistance < currentDistance + .1f ? deltaTime / dampWhenColliding : deltaTime / dampAfterColliding);
     }
-    #endregion
+#endregion
 
-    #region Additional Rotation Factors
+#region Additional Rotation Factors
 
     [Header("Additional Factors")]
     public float playerVelocityInfluence = 0.1f;
@@ -1118,9 +1128,9 @@ public class PoS_Camera : MonoBehaviour
         return v >= 0 ? 1 : -1;
     }
 
-    #endregion
+#endregion
 
-    #region Slopes and Cliffs
+#region Slopes and Cliffs
 
     [Header("Slopes")]
     public float limitVertical = 0.7f;
@@ -1209,9 +1219,9 @@ public class PoS_Camera : MonoBehaviour
             AllowAutoReset(true);
         onEdgeOfCliff = false;
     }
-    #endregion
+#endregion
 
-    #region Zoom
+#region Zoom
     [Header("Zoom")]
     public bool canZoom;
     public float zoomSpeed = 5;
@@ -1263,9 +1273,9 @@ public class PoS_Camera : MonoBehaviour
             StopCoroutine(zoomRoutine);
         zoomValue = distance;
     }
-    #endregion
+#endregion
 
-    #region Panorama Mode
+#region Panorama Mode
     float panoramaTimer = 0;
     bool inPanorama = false;
 
@@ -1289,9 +1299,9 @@ public class PoS_Camera : MonoBehaviour
         }
     }
 
-    #endregion
+#endregion
 
-    #region Contextual Offset
+#region Contextual Offset
     Vector3 contextualOffset;
     bool cameraBounce;
 
@@ -1317,6 +1327,9 @@ public class PoS_Camera : MonoBehaviour
             if (Physics.Linecast(potentialPosition, potentialPosition + player.transform.forward * cliffOffsetDistance, out hit, blockingLayer))
                 cliffOffsetDistance = Mathf.Min(cliffOffsetDistance, hit.distance - rayRadius);
 
+            if (float.IsNaN(contextualOffset.x) || float.IsNaN(contextualOffset.y) || float.IsNaN(contextualOffset.z))
+                contextualOffset = Vector3.zero;
+
             contextualOffset = Vector3.Lerp(contextualOffset, player.transform.forward * cliffOffsetDistance, deltaTime / autoResetDamp);
         }
         else
@@ -1335,9 +1348,9 @@ public class PoS_Camera : MonoBehaviour
             contextualOffset = Vector3.Lerp(contextualOffset, Vector3.zero, deltaTime / autoResetDamp);*/
         //return offset + contextualOffset;
     }
-    #endregion
+#endregion
 
-    #region Home Door
+#region Home Door
 
     [Header("Home Door")]
     [SerializeField] float homeDoorMaxZoom = 10;
@@ -1422,9 +1435,9 @@ public class PoS_Camera : MonoBehaviour
         target.LookAt(target.position + forward, characterUp); // Reoriente the character's rotator
     }
 
-    #endregion
+#endregion
 
-    #region Triggers
+#region Triggers
 
     public void EnterTrigger(CameraControlTrigger trigger)
     {
@@ -1507,7 +1520,7 @@ public class PoS_Camera : MonoBehaviour
         return currentFacingDirection;
     }
 
-    #region Point of Interest
+#region Point of Interest
 
     bool nearPOI, alwaysLookAt = true;
     Vector3 targetPOI;
@@ -1545,9 +1558,9 @@ public class PoS_Camera : MonoBehaviour
         else
             resetType = eResetType.None;
     }
-    #endregion
+#endregion
 
-    #region Align with Axis
+#region Align with Axis
 
     Vector3 axisAligned = Vector3.zero;
     bool faceBothWays;
@@ -1577,9 +1590,9 @@ public class PoS_Camera : MonoBehaviour
             return; // Attempting to clear a direction that isn't currently set
         axisAligned = Vector3.zero;
     }
-    #endregion
+#endregion
 
-    #region Override Position and Rotation
+#region Override Position and Rotation
 
     Vector3 overridePos, overrideRot;
     float overrideDamp;
@@ -1599,8 +1612,8 @@ public class PoS_Camera : MonoBehaviour
         overriden = false;
     }
 
-    #endregion
+#endregion
 
-    #endregion
+#endregion
 
 }
