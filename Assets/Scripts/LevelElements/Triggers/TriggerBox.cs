@@ -84,8 +84,6 @@ namespace Game.LevelElements
              */
             if (Mathf.Abs(Vector3.Dot(GameController.PlayerController.Transform.up, transform.up)) > 0.9f || directionIndependent)
             {
-                //ActivateTriggerBox();
-
                 if (Toggle)
                 {
                     SetTriggerState(!TriggerState);
@@ -99,11 +97,9 @@ namespace Game.LevelElements
 
         public void OnPlayerExit()
         {
-            //StartCoroutine(DeactivateTriggerBoxCoroutine());
-
             if (!definitiveActivation && !Toggle)
             {
-                SetTriggerState(false);
+                StartCoroutine(DelayedSetTriggerState(false));
             }
         }
 
@@ -135,8 +131,20 @@ namespace Game.LevelElements
             }
             else
             {
-                StartCoroutine(DeactivateTriggerBoxCoroutine());
+                DeactivateTriggerBox();
             }
+        }
+
+        /// <summary>
+        /// This calls Trigger.SetTriggerState with a delay.
+        /// </summary>
+        /// <param name="new_trigger_state"></param>
+        /// <returns></returns>
+        private IEnumerator DelayedSetTriggerState(bool new_trigger_state)
+        {
+            yield return new WaitForSeconds(delayBeforeDeactivation);
+
+            SetTriggerState(new_trigger_state);
         }
 
         /// <summary>
@@ -163,20 +171,17 @@ namespace Game.LevelElements
         {
             //Debug.LogErrorFormat("TriggerBox {0}: ActivateTrigger called!", this.name);
 
-            if (definitiveActivation && playsSoundOnStart && !TriggerState)
+            /*
+             * Sound
+             */
+            if (playsSoundOnStart)
             {
                 SoundifierOfTheWorld.PlaySoundAtLocation(onClip, transform, maxDistanceStart, volume, minDistanceStart, clipDuration, addRandomisation);
             }
 
-            //if (Toggle)
-            //{
-            //    SetTriggerState(!TriggerState);
-            //}
-            //else
-            //{
-            //    SetTriggerState(true);
-            //}
-
+            /*
+             * Material
+             */
             if (changeMaterial)
             {
                 Material[] sharedMaterialsCopy = renderer.sharedMaterials;
@@ -184,42 +189,17 @@ namespace Game.LevelElements
                 renderer.sharedMaterials = sharedMaterialsCopy;
             }
 
-            if (playsSoundOnStart && !definitiveActivation)
-            {
-                if (TriggerState)
-                {
-                    SoundifierOfTheWorld.PlaySoundAtLocation(onClip, transform, maxDistanceStart, volume, minDistanceStart, clipDuration, addRandomisation);
-                }
-                else
-                {
-                    SoundifierOfTheWorld.PlaySoundAtLocation(offClip, transform, maxDistanceStart, volume, minDistanceStart, clipDuration, addRandomisation);
-                }
-            }
-
+            /*
+             * Glyph
+             */
             GlyphFX _fx = GetComponent<GlyphFX>();
             if (_fx != null)
             {
                 _fx.GlyphOn();
-
-                //if (Toggle)
-                //{
-                //    if (TriggerState)
-                //    {
-                //        _fx.GlyphOn();
-                //    }
-                //    else
-                //    {
-                //        _fx.GlyphOff();
-                //    }
-                //}
-                //else
-                //{
-                //    _fx.GlyphOn();
-                //}
             }
             else
             {
-                //Debug.LogError ("whoopsie, " + transform.name + " isn't attached to a glyph, is it ?");
+                Debug.LogError ("whoopsie, " + transform.name + " isn't attached to a glyph, is it ?");
             }
         }
 
@@ -227,17 +207,25 @@ namespace Game.LevelElements
         /// Deactivates the TriggerBox.
         /// </summary>
         /// <returns></returns>
-        private IEnumerator DeactivateTriggerBoxCoroutine()
+        private void DeactivateTriggerBox()
         {
             if (definitiveActivation)
             {
                 Debug.LogErrorFormat("TriggerBox {0}: DeactivateTriggerBoxCoroutine: definitiveActivation=true!", this.name);
-                yield break;
+                return;
             }
 
-            yield return new WaitForSeconds(delayBeforeDeactivation);
-            //SetTriggerState(false);
+            /*
+             * Sound
+             */
+            if (playsSoundOnStart)
+            {
+                SoundifierOfTheWorld.PlaySoundAtLocation(offClip, transform, maxDistanceStart, volume, minDistanceStart, clipDuration, addRandomisation);
+            }
 
+            /*
+             * Material
+             */
             if (changeMaterial)
             {
                 Material[] sharedMaterialsCopy = renderer.sharedMaterials;
@@ -245,6 +233,9 @@ namespace Game.LevelElements
                 renderer.sharedMaterials = sharedMaterialsCopy;
             }
 
+            /*
+             * Glyph
+             */
             GlyphFX _fx = GetComponent<GlyphFX>();
             if (_fx != null)
             {
