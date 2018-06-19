@@ -39,6 +39,7 @@ namespace Game.LevelElements
         // -- ATTRIBUTES
 
         private Transform MyTransform;
+        private bool isInitialized;
 
         //###########################################################
 
@@ -47,7 +48,7 @@ namespace Game.LevelElements
         public override void Initialize(GameController gameController)
         {
             base.Initialize(gameController);
-
+            isInitialized = true;
             GetComponent<BoxCollider>().isTrigger = true;
         }
 
@@ -79,6 +80,11 @@ namespace Game.LevelElements
 
         public void OnPlayerEnter()
         {
+            if (!isInitialized)
+                return;
+
+
+
             /*
              * gravity check
              */
