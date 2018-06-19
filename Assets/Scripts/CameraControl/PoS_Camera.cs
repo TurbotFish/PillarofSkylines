@@ -423,6 +423,8 @@ public class PoS_Camera : MonoBehaviour
         }
 
         float distanceFromAngle = Mathf.Lerp(0, 1, distanceFromRotation.Evaluate(pitchRotationLimit.InverseLerp(pitch)));
+        if (photoMode)
+            distanceFromAngle = 0.8f;
         idealDistance = 1 + zoomValue * distanceFromAngle + additionalDistance;
         
         if (canZoom) Zoom(Input.GetAxis("DebugVertical"));
@@ -1233,7 +1235,7 @@ public class PoS_Camera : MonoBehaviour
 
     void Zoom(float value)
     {
-        if (value != 0) zoomValue = zoomDistance.Clamp(zoomValue - value * zoomSpeed);
+        if (value != 0) zoomValue = zoomDistance.Clamp(zoomValue - value * zoomSpeed * currentDistance);
     }
 
     void ZoomFromCeiling()
