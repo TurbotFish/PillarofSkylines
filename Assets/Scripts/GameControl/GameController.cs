@@ -155,6 +155,21 @@ namespace Game.GameControl
             SwitchGameState(GameState.Loading, MenuType.LoadingScreen);
             yield return null;
 
+            /*
+             * Teleporting Player
+             */
+            Vector3 original_player_pos = PlayerController.Transform.position;
+            var first_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(
+                PlayerController.Transform.position,
+                new Vector3(10000, 10000, 10000))
+            {
+                IsNewScene = true
+            };
+            yield return null;
+
+            /*
+             * Initializing scene
+             */
             if (WorldController != null)
             {
                 IsOpenWorldLoaded = true;
@@ -185,6 +200,8 @@ namespace Game.GameControl
             }
             else
             {
+
+
                 IsOpenWorldLoaded = false;
                 IsPillarLoaded = true;
 
@@ -202,6 +219,19 @@ namespace Game.GameControl
             SpawnPointManager = FindObjectOfType<SpawnPointManager>();
             yield return null;
 
+            /*
+             * Teleporting Player
+             */
+            var second_teleport_player_event_args = new EventManager.TeleportPlayerEventArgs(PlayerController.Transform.position, original_player_pos)
+            {
+                IsNewScene = true
+            };
+            EventManager.SendTeleportPlayerEvent(this, second_teleport_player_event_args);
+            yield return null;
+
+            /*
+             * finishing loading
+             */
             EventManager.SendSceneChangedEvent(this, new EventManager.SceneChangedEventArgs());
 
             if (WorldController != null && PlayIntroCutscene)
