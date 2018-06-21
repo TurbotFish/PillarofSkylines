@@ -82,9 +82,7 @@ namespace Game.LevelElements
         {
             if (!isInitialized)
                 return;
-
-            Debug.Log("im here");
-
+            
             /*
              * gravity check
              */

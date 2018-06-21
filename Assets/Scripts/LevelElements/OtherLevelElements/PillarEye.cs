@@ -149,7 +149,6 @@ namespace Game.LevelElements
             StartCoroutine(_WhiteFlash());
 
             Debug.Log("starting fadeout");
-            player.SetHandlingInput(true);
             StartCoroutine(_FadeOut());
 
 
@@ -161,6 +160,7 @@ namespace Game.LevelElements
 
             Debug.Log("ending destruction sequence");
 
+            player.SetHandlingInput(true);
             yield return null;
 
             // BACK TO NORMAL
