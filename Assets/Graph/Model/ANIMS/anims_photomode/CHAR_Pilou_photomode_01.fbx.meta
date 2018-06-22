@@ -1389,7 +1389,7 @@ ModelImporter:
       name: CHAR_photo_idle
       takeName: CHAR_photo_idle
       firstFrame: 76
-      lastFrame: 83
+      lastFrame: 76.1
       wrapMode: 0
       orientationOffsetY: 0
       level: 0

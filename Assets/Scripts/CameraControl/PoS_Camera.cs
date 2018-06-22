@@ -145,6 +145,10 @@ public class PoS_Camera : MonoBehaviour
     /// </summary>
     float autoDamp;
 
+    int poseNumber = 0;
+    int maxPoseNumber = 12;
+    bool newInput;
+
     public Camera CameraComponent { get { return camera; } }
 
     Vector3 characterUp;
@@ -773,7 +777,32 @@ public class PoS_Camera : MonoBehaviour
             {
                 pressingTrigger = false;
             }
-            
+            if (Input.GetAxis("DebugHorizontal") > 0.5f && newInput)
+            {
+                newInput = false;
+                if (poseNumber == maxPoseNumber)
+                    poseNumber = -1;
+                player.animator.SetFloat("PoseNumber", ++poseNumber);
+            } else if (Input.GetAxis("DebugHorizontal") < -0.5f && newInput)
+            {
+                newInput = false;
+                if (poseNumber == 0)
+                    poseNumber = maxPoseNumber+1;
+                player.animator.SetFloat("PoseNumber", --poseNumber);
+            }
+            else if (Input.GetAxis("DebugHorizontal") > -0.5f && Input.GetAxis("DebugHorizontal") < 0.5f)
+            {
+                newInput = true;
+            }
+
+            if (poseNumber == 0)
+            {
+                player.animator.SetLayerWeight(1, 0);
+            }
+            else
+            {
+                player.animator.SetLayerWeight(1, 1);
+            }
             deltaTime = Time.unscaledDeltaTime;
 
             Vector2 debugMove = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
@@ -800,6 +829,7 @@ public class PoS_Camera : MonoBehaviour
 
     void StartPhotoMode()
     {
+
         canZoom = true;
         photoMode = true;
         enablePanoramaMode = false;
@@ -817,6 +847,7 @@ public class PoS_Camera : MonoBehaviour
 
         currentDistance = zoomValue = distance;
         lastHitDistance = idealDistance;
+        //player.animator.updateMode = AnimatorUpdateMode.UnscaledTime;
 
         gameController.UiController.SwitchState(Game.UI.MenuType.PhotoMode);
     }
@@ -833,6 +864,9 @@ public class PoS_Camera : MonoBehaviour
         Time.timeScale = 1;
         Game.Utilities.EventManager.SendGamePausedEvent(this, new Game.Utilities.EventManager.GamePausedEventArgs(false));
         gamePaused = false;
+        //player.animator.updateMode = AnimatorUpdateMode.Normal;
+        player.animator.SetLayerWeight(1, 0);
+        player.animator.SetFloat("PoseNumber", 0);
 
         gameController.UiController.SwitchState(Game.UI.MenuType.HUD);
     }
